@@ -20,7 +20,7 @@ trait CreatesTryotoShipments
 {
     /**
      * Create Tryoto shipment(s) after the purchase is successfully created.
-     * Store the results in vendor_shipping_id as JSON, and update the shipping/shipping_title for the view.
+     * Store the results in merchant_shipping_id as JSON, and update the shipping/shipping_title for the view.
      *
      * @param Purchase $purchase
      * @param array $input
@@ -29,7 +29,7 @@ trait CreatesTryotoShipments
     protected function createOtoShipments(Purchase $purchase, array $input): void
     {
         // Check shipping selection — supports array (multi-vendor) or single-value scenarios
-        $shippingInput = $input['shipping'] ?? $input['vendor_shipping_id'] ?? null;
+        $shippingInput = $input['shipping'] ?? $input['merchant_shipping_id'] ?? null;
         if (!$shippingInput) {
             return;
         }
@@ -135,8 +135,8 @@ trait CreatesTryotoShipments
         }
 
         if ($otoPayloads) {
-            // 1) Store the details in vendor_shipping_id as JSON text (no migration required)
-            $purchase->vendor_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
+            // 1) Store the details in merchant_shipping_id as JSON text (no migration required)
+            $purchase->merchant_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
 
             // 2) Quick display and explanation
             $first = $otoPayloads[0];

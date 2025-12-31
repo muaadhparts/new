@@ -65,18 +65,18 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * - Each vendor is financially responsible for their own transactions
      * - Uses vendor's own test_mode and country settings
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @return array
      * @throws \Exception If vendor doesn't have payment credentials configured
      */
-    protected function getVendorMfConfig(int $vendorId): array
+    protected function getVendorMfConfig(int $merchantId): array
     {
         // Get vendor-specific API key - NO FALLBACK
-        $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($vendorId);
+        $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($merchantId);
 
         if (empty($apiKey)) {
             throw new \Exception(
-                "MyFatoorah payment credentials not configured for vendor #{$vendorId}. " .
+                "MyFatoorah payment credentials not configured for vendor #{$merchantId}. " .
                 "Each vendor must have their own payment credentials. " .
                 "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
             );
@@ -84,7 +84,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Get vendor's gateway settings (test_mode, country)
         $gateway = \DB::table('payment_gateways')
-            ->where('user_id', $vendorId)
+            ->where('user_id', $merchantId)
             ->where('keyword', 'myfatoorah')
             ->first();
 
@@ -111,24 +111,24 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * - NO session fallback, NO POST fallback
      * - Fail immediately if vendor_id not in route
      *
-     * @param int $vendorId From route: /checkout/vendor/{vendorId}/payment/myfatoorah
+     * @param int $merchantId From route: /checkout/vendor/{vendorId}/payment/myfatoorah
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function index($vendorId) {
+    public function index($merchantId) {
         // ====================================================================
         // STRICT POLICY: vendor_id FROM ROUTE ONLY
         // No session, no POST, no fallback - fail immediately if missing
         // ====================================================================
         Log::info('MyFatoorah index() called', [
-            'vendorId_raw' => $vendorId,
+            'vendorId_raw' => $merchantId,
             'request_path' => request()->path(),
             'request_method' => request()->method(),
             'user_id' => Auth::id()
         ]);
 
-        $vendorId = (int)$vendorId;
+        $merchantId = (int)$merchantId;
 
-        if (!$vendorId) {
+        if (!$merchantId) {
             Log::error('MyFatoorah: vendor_id missing from route', [
                 'user_id' => Auth::id(),
                 'route' => request()->path()
@@ -141,21 +141,21 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Get vendor-specific MyFatoorah config - NO FALLBACK
         try {
-            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+            $this->mfConfig = $this->getVendorMfConfig($merchantId);
         } catch (\Exception $e) {
             Log::error('MyFatoorah: Vendor credentials not configured', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'error' => $e->getMessage()
             ]);
             return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
         }
 
         // Get checkout steps from vendor-specific sessions
-        $step1 = Session::get('vendor_step1_' . $vendorId);
-        $step2 = Session::get('vendor_step2_' . $vendorId);
+        $step1 = Session::get('vendor_step1_' . $merchantId);
+        $step2 = Session::get('vendor_step2_' . $merchantId);
 
         Log::info('MyFatoorah: Checking sessions', [
-            'vendorId' => $vendorId,
+            'vendorId' => $merchantId,
             'step1_exists' => !empty($step1),
             'step2_exists' => !empty($step2),
             'all_session_keys' => array_keys(Session::all())
@@ -163,7 +163,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         if (!$step1 || !$step2) {
             Log::warning('MyFatoorah: Session expired', [
-                'vendorId' => $vendorId,
+                'vendorId' => $merchantId,
                 'step1' => $step1,
                 'step2' => $step2
             ]);
@@ -232,14 +232,14 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     public function notify(Request $request)
     {
-        // Get vendor checkout data at start
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
+        // Get merchant checkout data at start
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantId = $merchantData['merchant_id'];
 
         $cancel_url = route('front.cart');
 
         // POLICY: Vendor ID is REQUIRED for all payment operations
-        if (!$vendorId) {
+        if (!$merchantId) {
             Log::error('MyFatoorah notify: No vendor_id in checkout session', [
                 'user_id' => Auth::id(),
                 'session_data' => $vendorData
@@ -249,16 +249,16 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Get vendor-specific MyFatoorah config - NO FALLBACK
         try {
-            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+            $this->mfConfig = $this->getVendorMfConfig($merchantId);
         } catch (\Exception $e) {
             Log::error('MyFatoorah notify: Vendor credentials not configured', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'error' => $e->getMessage()
             ]);
             return redirect($cancel_url)->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد.'));
         }
 
-        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_merchant_checkout']);
+        $steps = $this->getCheckoutSteps($merchantId, $merchantData['is_merchant_checkout']);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -314,7 +314,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // ✅ الدفع نجح - إنشاء الطلب
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $vendorId);
+        $cart = $this->filterCartForVendor($originalCart, $merchantId);
         // PurchaseHelper::license_check($cart); // For License Checking
         $t_oldCart = Session::get('cart');
         $t_cart = new Cart($t_oldCart);
@@ -334,71 +334,71 @@ class MyFatoorahController extends CheckoutBaseControlller {
             // Single shipping mode
             // تأكد أن القيم موجودة ولها قيم افتراضية
             if (!isset($input['shipping_title'])) $input['shipping_title'] = '';
-            if (!isset($input['vendor_shipping_id'])) $input['vendor_shipping_id'] = 0;
+            if (!isset($input['merchant_shipping_id'])) $input['merchant_shipping_id'] = 0;
             if (!isset($input['packing_title'])) $input['packing_title'] = '';
-            if (!isset($input['vendor_packing_id'])) $input['vendor_packing_id'] = 0;
+            if (!isset($input['merchant_packing_id'])) $input['merchant_packing_id'] = 0;
             if (!isset($input['shipping_cost'])) $input['shipping_cost'] = 0;
             if (!isset($input['packing_cost'])) $input['packing_cost'] = 0;
 
             // تحويل القيم المصفوفية إلى JSON إذا كانت مصفوفات
-            if (!isset($input['vendor_shipping_ids']) || empty($input['vendor_shipping_ids'])) {
-                $input['vendor_shipping_ids'] = json_encode([]);
-            } elseif (is_array($input['vendor_shipping_ids'])) {
-                $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+            if (!isset($input['merchant_shipping_ids']) || empty($input['merchant_shipping_ids'])) {
+                $input['merchant_shipping_ids'] = json_encode([]);
+            } elseif (is_array($input['merchant_shipping_ids'])) {
+                $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
             }
 
-            if (!isset($input['vendor_packing_ids']) || empty($input['vendor_packing_ids'])) {
-                $input['vendor_packing_ids'] = json_encode([]);
-            } elseif (is_array($input['vendor_packing_ids'])) {
-                $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+            if (!isset($input['merchant_packing_ids']) || empty($input['merchant_packing_ids'])) {
+                $input['merchant_packing_ids'] = json_encode([]);
+            } elseif (is_array($input['merchant_packing_ids'])) {
+                $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
             }
 
-            if (!isset($input['vendor_ids']) || empty($input['vendor_ids'])) {
-                $input['vendor_ids'] = json_encode([]);
-            } elseif (is_array($input['vendor_ids'])) {
-                $input['vendor_ids'] = json_encode($input['vendor_ids']);
+            if (!isset($input['merchant_ids']) || empty($input['merchant_ids'])) {
+                $input['merchant_ids'] = json_encode([]);
+            } elseif (is_array($input['merchant_ids'])) {
+                $input['merchant_ids'] = json_encode($input['merchant_ids']);
             }
         } else {
             // Multi shipping mode
             // تحويل المصفوفات إلى JSON للحفظ في قاعدة البيانات
             if (isset($input['shipping']) && is_array($input['shipping'])) {
-                $input['vendor_shipping_ids'] = json_encode($input['shipping']);
+                $input['merchant_shipping_ids'] = json_encode($input['shipping']);
                 $input['shipping_title'] = json_encode($input['shipping']);
-                $input['vendor_shipping_id'] = json_encode($input['shipping']);
-            } elseif (isset($input['vendor_shipping_ids'])) {
-                if (is_array($input['vendor_shipping_ids'])) {
-                    $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+                $input['merchant_shipping_id'] = json_encode($input['shipping']);
+            } elseif (isset($input['merchant_shipping_ids'])) {
+                if (is_array($input['merchant_shipping_ids'])) {
+                    $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
                 }
-                $input['shipping_title'] = $input['vendor_shipping_ids'];
-                $input['vendor_shipping_id'] = $input['vendor_shipping_ids'];
+                $input['shipping_title'] = $input['merchant_shipping_ids'];
+                $input['merchant_shipping_id'] = $input['merchant_shipping_ids'];
             } else {
-                $input['vendor_shipping_ids'] = json_encode([]);
+                $input['merchant_shipping_ids'] = json_encode([]);
                 $input['shipping_title'] = json_encode([]);
-                $input['vendor_shipping_id'] = json_encode([]);
+                $input['merchant_shipping_id'] = json_encode([]);
             }
 
             if (isset($input['packeging']) && is_array($input['packeging'])) {
-                $input['vendor_packing_ids'] = json_encode($input['packeging']);
+                $input['merchant_packing_ids'] = json_encode($input['packeging']);
                 $input['packing_title'] = json_encode($input['packeging']);
-                $input['vendor_packing_id'] = json_encode($input['packeging']);
-            } elseif (isset($input['vendor_packing_ids'])) {
-                if (is_array($input['vendor_packing_ids'])) {
-                    $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+                $input['merchant_packing_id'] = json_encode($input['packeging']);
+            } elseif (isset($input['merchant_packing_ids'])) {
+                if (is_array($input['merchant_packing_ids'])) {
+                    $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
                 }
-                $input['packing_title'] = $input['vendor_packing_ids'];
-                $input['vendor_packing_id'] = $input['vendor_packing_ids'];
+                $input['packing_title'] = $input['merchant_packing_ids'];
+                $input['merchant_packing_id'] = $input['merchant_packing_ids'];
             } else {
-                $input['vendor_packing_ids'] = json_encode([]);
+                $input['merchant_packing_ids'] = json_encode([]);
                 $input['packing_title'] = json_encode([]);
-                $input['vendor_packing_id'] = json_encode([]);
+                $input['merchant_packing_id'] = json_encode([]);
             }
 
-            if (isset($input['vendor_ids'])) {
-                if (is_array($input['vendor_ids'])) {
-                    $input['vendor_ids'] = json_encode($input['vendor_ids']);
+            if (isset($input['merchant_ids'])) {
+                if (is_array($input['merchant_ids'])) {
+                    $input['merchant_ids'] = json_encode($input['merchant_ids']);
                 }
             } else {
-                $input['vendor_ids'] = json_encode([]);
+                $input['merchant_ids'] = json_encode([]);
             }
 
             if (!isset($input['shipping_cost'])) $input['shipping_cost'] = 0;
@@ -469,7 +469,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         Session::put('tempcart', $cart);
 
         // Remove only vendor's products from cart
-        $this->removeVendorProductsFromCart($vendorId, $originalCart);
+        $this->removeVendorProductsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
@@ -515,7 +515,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $mailer->sendCustomMail($data);
 
         // Determine success URL based on remaining cart items
-        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
+        $success_url = $this->getSuccessUrl($merchantId, $originalCart);
         return redirect($success_url);
 
 

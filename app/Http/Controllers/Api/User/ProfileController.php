@@ -19,11 +19,11 @@ class ProfileController extends Controller
         try {
             $user = Auth::guard('api')->user();
             $data['user'] = $user;
-            $data['affilate_income'] = CatalogItem::vendorConvertPrice($user->affilate_income);
-            $data['current_balance'] = CatalogItem::vendorConvertPrice($user->current_balance);
-            $data['completed_orders'] = (string) Auth::user()->orders()->where('status', 'completed')->count();
-            $data['pending_orders'] = (string) Auth::user()->orders()->where('status', 'pending')->count();
-            $data['recent_orders'] = (string) Auth::user()->orders()->latest()->take(5)->get();
+            $data['affilate_income'] = CatalogItem::merchantConvertPrice($user->affilate_income);
+            $data['current_balance'] = CatalogItem::merchantConvertPrice($user->current_balance);
+            $data['completed_purchases'] = (string) Auth::user()->purchases()->where('status', 'completed')->count();
+            $data['pending_purchases'] = (string) Auth::user()->purchases()->where('status', 'pending')->count();
+            $data['recent_purchases'] = (string) Auth::user()->purchases()->latest()->take(5)->get();
             return response()->json(['status' => true, 'data' => $data, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => $e->getMessage()]);
@@ -151,11 +151,11 @@ class ProfileController extends Controller
         try {
             $input = $request->all();
             $user = Auth::guard('api')->user();
-            $ck = FavoriteSeller::where('user_id', $user->id)->where('vendor_id', $input['vendor_id'])->exists();
+            $ck = FavoriteSeller::where('user_id', $user->id)->where('merchant_id', $input['merchant_id'])->exists();
             if (!$ck) {
                 $fav = new FavoriteSeller();
                 $fav->user_id = $user->id;
-                $fav->vendor_id = $input['vendor_id'];
+                $fav->merchant_id = $input['merchant_id'];
                 $fav->save();
                 return response()->json(['status' => true, 'data' => ['message' => 'Successfully Added To Favorite Seller.'], 'error' => []]);
             } else {
@@ -175,7 +175,7 @@ class ProfileController extends Controller
             $favorites = FavoriteSeller::where('user_id', '=', $user->id)->get();
             $vendors = array();
             foreach ($favorites as $key => $favorite) {
-                $seller = User::find($favorite->vendor_id);
+                $seller = User::find($favorite->merchant_id);
                 if ($seller) {
                     $vendors[$key]['id'] = $favorite->id;
                     $vendors[$key]['shop_id'] = $seller->id;

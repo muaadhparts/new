@@ -26,7 +26,7 @@ class DeliveryRider extends Model
 
     public function merchant()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'merchant_id');
     }
 
     /**

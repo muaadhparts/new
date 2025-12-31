@@ -90,12 +90,12 @@
 
 
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products/types') || request()->is('merchant/products/physical/create') || request()->is('merchant/products/digital/create') || request()->is('merchant/products/license/create') || request()->is('merchant/listing/create') ? 'active' : '' }}"
-                        href="{{ route('merchant-prod-types') }}">@lang('Add New Product')</a>
+                        href="{{ route('merchant-catalog-item-types') }}">@lang('Add New Product')</a>
                 </li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products') || request()->is('merchant/products/edit/*') ? 'active' : '' }}"
-                        href="{{ route('merchant-prod-index') }}">@lang('All Product')</a></li>
+                        href="{{ route('merchant-catalog-item-index') }}">@lang('All Product')</a></li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products/catalogs') || request()->is('merchant/products/catalog/*') ? 'active' : '' }}"
-                        href="{{ route('merchant-prod-catalogs') }}">@lang('Product Catalogs')</a></li>
+                        href="{{ route('merchant-catalog-item-catalogs') }}">@lang('Product Catalogs')</a></li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/stock/*') ? 'active' : '' }}"
                         href="{{ route('merchant-stock-management') }}">
                         <i class="fas fa-boxes"></i> @lang('Stock Management')
@@ -112,7 +112,7 @@
 
 
         <li class="{{ request()->is('merchant/products/import') ? 'active' : '' }}">
-            <a href="{{ route('merchant-prod-import') }}">
+            <a href="{{ route('merchant-catalog-item-import') }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
                     <path

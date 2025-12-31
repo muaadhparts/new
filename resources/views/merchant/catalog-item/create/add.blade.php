@@ -9,7 +9,7 @@
     <!-- breadcrumb start  -->
     <div class="gs-vendor-breadcrumb has-mb">
         <div class="gs-deposit-title ms-0 d-flex align-items-center gap-4">
-            <a href="{{ route('merchant-prod-index') }}" class="back-btn">
+            <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                 <i class="fa-solid fa-arrow-left-long"></i>
             </a>
             <h4>@lang('Add Product')</h4>
@@ -19,7 +19,7 @@
                 <a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a>
             </li>
             <li>
-                <a href="{{ route('merchant-prod-index') }}">@lang('Products')</a>
+                <a href="{{ route('merchant-catalog-item-index') }}">@lang('Products')</a>
             </li>
             <li>
                 <a href="#">@lang('Add Product')</a>
@@ -52,7 +52,7 @@
 
     <!-- Product Info & Form (Hidden until product is found) -->
     <div id="product_form_section" style="display: none;">
-        <form id="addProductForm" action="{{ route('merchant-prod-store-offer') }}" method="POST">
+        <form id="addProductForm" action="{{ route('merchant-catalog-item-store-offer') }}" method="POST">
             @csrf
             <input type="hidden" name="product_id" id="product_id" value="">
 
@@ -280,7 +280,7 @@
 
             <div class="row mt-4">
                 <div class="col-12 text-end">
-                    <a href="{{ route('merchant-prod-index') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
                     <button type="submit" class="btn btn-success btn-lg">
                         <i class="fas fa-plus me-2"></i>@lang('Add Product')
                     </button>

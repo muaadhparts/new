@@ -32,7 +32,7 @@ class CatalogItemDetailsController extends FrontBaseController
      * 4. NO best_merchant_item or merchantItems()->first() allowed
      * ==========================================================================
      */
-    public function showByMerchantItem(Request $request, $slug, $vendor_id = null, $merchant_item_id = null)
+    public function showByMerchantItem(Request $request, $slug, $merchant_id = null, $merchant_item_id = null)
     {
         $gs = $this->gs;
 
@@ -43,8 +43,8 @@ class CatalogItemDetailsController extends FrontBaseController
 
         // Handle old short route format: /item/{slug}/{merchant_item_id}
         if (count($routeParams) == 2) {
-            $merchant_item_id = $vendor_id;
-            $vendor_id = null;
+            $merchant_item_id = $merchant_id;
+            $merchant_id = null;
         }
 
         // ======================================================================
@@ -66,14 +66,14 @@ class CatalogItemDetailsController extends FrontBaseController
         // ======================================================================
         // STEP 3: STRICT GUARD - Vendor ID MUST match (when provided)
         // ======================================================================
-        if ($vendor_id !== null) {
-            $vendor_id = (int) $vendor_id;
+        if ($merchant_id !== null) {
+            $merchant_id = (int) $merchant_id;
             $actualVendorId = (int) $merchantItem->user_id;
 
-            if ($vendor_id !== $actualVendorId) {
+            if ($merchant_id !== $actualVendorId) {
                 // Log security violation attempt
                 \Log::warning('CatalogItemDetails: vendor_id mismatch', [
-                    'requested_vendor_id' => $vendor_id,
+                    'requested_vendor_id' => $merchant_id,
                     'actual_vendor_id' => $actualVendorId,
                     'merchant_item_id' => $merchant_item_id,
                     'ip' => $request->ip(),
@@ -117,7 +117,7 @@ class CatalogItemDetailsController extends FrontBaseController
         if ($productt->slug !== $slug) {
             return redirect()->route('front.catalog-item', [
                 'slug' => $productt->slug,
-                'vendor_id' => $merchantItem->user_id,
+                'merchant_id' => $merchantItem->user_id,
                 'merchant_item_id' => $merchantItem->id
             ], 301);
         }
@@ -193,12 +193,12 @@ class CatalogItemDetailsController extends FrontBaseController
         // $productt is READONLY catalog data (name, description, images)
         // ======================================================================
         $merchant = $merchantItem;
-        $vendorId = $merchantItem->user_id;
+        $merchantId = $merchantItem->user_id;
 
         return view('frontend.catalog-item', compact(
             'productt',               // CatalogItem (READONLY - catalog only)
             'merchant',               // MerchantItem (AUTHORITATIVE - price/stock/qty)
-            'vendorId',               // Verified vendor ID
+            'merchantId',             // Verified merchant user ID
             'otherSellers',           // Alternative sellers
             'vendorListings',         // More from this vendor
             'relatedMerchantItems',   // Related items (pre-loaded, optimized)
@@ -234,7 +234,7 @@ class CatalogItemDetailsController extends FrontBaseController
         // Redirect to new preferred route
         return redirect()->route('front.catalog-item', [
             'slug' => $slug,
-            'vendor_id' => $merchantItem->user_id,
+            'merchant_id' => $merchantItem->user_id,
             'merchant_item_id' => $merchantItem->id
         ], 302);
     }
@@ -265,7 +265,7 @@ class CatalogItemDetailsController extends FrontBaseController
         // Redirect to new preferred route
         return redirect()->route('front.catalog-item', [
             'slug' => $slug,
-            'vendor_id' => $merchantItem->user_id,
+            'merchant_id' => $merchantItem->user_id,
             'merchant_item_id' => $merchantItem->id
         ], 302);
     }
@@ -295,7 +295,7 @@ class CatalogItemDetailsController extends FrontBaseController
         // Redirect to new preferred route
         return redirect()->route('front.catalog-item', [
             'slug' => $slug,
-            'vendor_id' => $merchantItem->user_id,
+            'merchant_id' => $merchantItem->user_id,
             'merchant_item_id' => $merchantItem->id
         ], 302);
     }
@@ -306,11 +306,11 @@ class CatalogItemDetailsController extends FrontBaseController
         $mp = null;
 
         // البائع من ?user=
-        $vendorId = (int) request()->query('user', 0);
-        if ($vendorId > 0) {
+        $merchantId = (int) request()->query('user', 0);
+        if ($merchantId > 0) {
             $mp = MerchantItem::with(['qualityBrand', 'user'])
                 ->where('catalog_item_id', $product->id)
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->first();
 
             if ($mp) {

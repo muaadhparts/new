@@ -1821,9 +1821,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // CATALOG ITEM SECTION
     Route::get(
-        '/item/{slug}/store/{vendor_id}/merchant_items/{merchant_item_id}',
+        '/item/{slug}/store/{merchant_id}/merchant_items/{merchant_item_id}',
         'Front\CatalogItemDetailsController@showByMerchantItem'
-    )->whereNumber('vendor_id')->whereNumber('merchant_item_id')
+    )->whereNumber('merchant_id')->whereNumber('merchant_item_id')
     ->name('front.catalog-item');
 
     Route::get('/item/{slug}/{user}', 'Front\CatalogItemDetailsController@showByUser')

@@ -73,7 +73,7 @@
                                 $hasAllParams = $itemSlug && $itemVendorId && $itemMpId;
 
                                 $productUrl = $hasAllParams
-                                    ? route('front.catalog-item', ['slug' => $itemSlug, 'vendor_id' => $itemVendorId, 'merchant_item_id' => $itemMpId])
+                                    ? route('front.catalog-item', ['slug' => $itemSlug, 'merchant_id' => $itemVendorId, 'merchant_item_id' => $itemMpId])
                                     : '#';
 
                                 $itemPrice = $product['item_price'] ?? 0;

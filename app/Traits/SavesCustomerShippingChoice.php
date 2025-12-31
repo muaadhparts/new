@@ -20,18 +20,18 @@ trait SavesCustomerShippingChoice
      * Extract customer's shipping choice data from step2 session
      *
      * @param array|null $step2Data Step2 session data (if null, will read from session)
-     * @param int|null $vendorId Vendor ID for vendor-specific checkout
+     * @param int|null $merchantId Vendor ID for vendor-specific checkout
      * @param bool $isVendorCheckout Whether this is vendor-specific checkout
      * @return string|null JSON encoded shipping choices per vendor, or null if empty
      */
-    protected function extractCustomerShippingChoice($step2Data = null, $vendorId = null, $isVendorCheckout = false)
+    protected function extractCustomerShippingChoice($step2Data = null, $merchantId = null, $isVendorCheckout = false)
     {
         $choices = [];
 
         // If step2Data not provided, try to get from session
         if ($step2Data === null) {
-            if ($isVendorCheckout && $vendorId) {
-                $step2Data = Session::get('vendor_step2_' . $vendorId, []);
+            if ($isVendorCheckout && $merchantId) {
+                $step2Data = Session::get('vendor_step2_' . $merchantId, []);
             } else {
                 $step2Data = Session::get('step2', []);
             }
@@ -41,20 +41,20 @@ trait SavesCustomerShippingChoice
         $shippingSelections = $step2Data['shipping'] ?? [];
 
         // For vendor checkout, the shipping might be stored directly
-        if ($isVendorCheckout && $vendorId) {
+        if ($isVendorCheckout && $merchantId) {
             // Check if shipping is stored as vendor_id => value
-            if (is_array($shippingSelections) && isset($shippingSelections[$vendorId])) {
+            if (is_array($shippingSelections) && isset($shippingSelections[$merchantId])) {
                 // Already in correct format
             } elseif (!is_array($shippingSelections) && !empty($shippingSelections)) {
                 // Shipping value stored directly, convert to array format
-                $shippingSelections = [$vendorId => $shippingSelections];
+                $shippingSelections = [$merchantId => $shippingSelections];
             }
         }
 
         if (!is_array($shippingSelections)) {
             // If single value, try to use it with vendorId
-            if ($vendorId && !empty($shippingSelections)) {
-                $shippingSelections = [$vendorId => $shippingSelections];
+            if ($merchantId && !empty($shippingSelections)) {
+                $shippingSelections = [$merchantId => $shippingSelections];
             } else {
                 return null;
             }
@@ -101,13 +101,13 @@ trait SavesCustomerShippingChoice
      *
      * @param array $input The input array to modify
      * @param array|null $step2Data Step2 session data
-     * @param int|null $vendorId Vendor ID
+     * @param int|null $merchantId Vendor ID
      * @param bool $isVendorCheckout Whether vendor-specific checkout
      * @return array Modified input array
      */
-    protected function addCustomerShippingChoiceToInput(array $input, $step2Data = null, $vendorId = null, $isVendorCheckout = false)
+    protected function addCustomerShippingChoiceToInput(array $input, $step2Data = null, $merchantId = null, $isVendorCheckout = false)
     {
-        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2Data, $vendorId, $isVendorCheckout);
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2Data, $merchantId, $isVendorCheckout);
         return $input;
     }
 }

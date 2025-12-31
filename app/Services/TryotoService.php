@@ -92,9 +92,9 @@ class TryotoService
     /**
      * @deprecated Use forMerchant() instead
      */
-    public function forVendor(int $vendorId): self
+    public function forVendor(int $merchantId): self
     {
-        return $this->forMerchant($vendorId);
+        return $this->forMerchant($merchantId);
     }
 
     /**
@@ -1242,9 +1242,9 @@ class TryotoService
     /**
      * @deprecated Use getMerchantShipments() instead
      */
-    public function getVendorShipments(int $vendorId, ?string $status = null, int $limit = 50)
+    public function getVendorShipments(int $merchantId, ?string $status = null, int $limit = 50)
     {
-        return $this->getMerchantShipments($vendorId, $status, $limit);
+        return $this->getMerchantShipments($merchantId, $status, $limit);
     }
 
     /**
@@ -1282,9 +1282,9 @@ class TryotoService
     /**
      * @deprecated Use getMerchantStatistics() instead
      */
-    public function getVendorStatistics(int $vendorId): array
+    public function getVendorStatistics(int $merchantId): array
     {
-        return $this->getMerchantStatistics($vendorId);
+        return $this->getMerchantStatistics($merchantId);
     }
 
     /**

@@ -37,7 +37,6 @@ trait HandlesMerchantCheckout
         // Return empty - merchant_id must come from route
         return [
             'merchant_id' => null,
-            'vendor_id' => null, // Backward compatibility alias
             'is_merchant_checkout' => false
         ];
     }

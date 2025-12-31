@@ -68,59 +68,59 @@ class CheckoutBaseControlller extends Controller
         }
 
         // تحضير vendor_ids من السلة
-        $vendor_ids = [];
+        $merchant_ids = [];
         foreach ($cart->items as $item) {
             $vid = $item['item']['user_id'] ?? 0;
-            if (!in_array($vid, $vendor_ids)) {
-                $vendor_ids[] = $vid;
+            if (!in_array($vid, $merchant_ids)) {
+                $merchant_ids[] = $vid;
             }
         }
-        $input['vendor_ids'] = json_encode($vendor_ids);
+        $input['merchant_ids'] = json_encode($merchant_ids);
 
         // تحضير بيانات الشحن والتغليف
         if ($this->gs->multiple_shipping == 0) {
             // Single shipping
-            if (!isset($input['vendor_shipping_ids'])) {
-                $input['vendor_shipping_ids'] = json_encode([]);
-            } elseif (is_array($input['vendor_shipping_ids'])) {
-                $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+            if (!isset($input['merchant_shipping_ids'])) {
+                $input['merchant_shipping_ids'] = json_encode([]);
+            } elseif (is_array($input['merchant_shipping_ids'])) {
+                $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
             }
 
-            if (!isset($input['vendor_packing_ids'])) {
-                $input['vendor_packing_ids'] = json_encode([]);
-            } elseif (is_array($input['vendor_packing_ids'])) {
-                $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+            if (!isset($input['merchant_packing_ids'])) {
+                $input['merchant_packing_ids'] = json_encode([]);
+            } elseif (is_array($input['merchant_packing_ids'])) {
+                $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
             }
         } else {
             // Multi shipping
             // Shipping
             if (isset($input['shipping']) && is_array($input['shipping'])) {
-                $input['vendor_shipping_ids'] = json_encode($input['shipping']);
+                $input['merchant_shipping_ids'] = json_encode($input['shipping']);
                 $input['shipping_title'] = json_encode($input['shipping']);
-                $input['vendor_shipping_id'] = json_encode($input['shipping']);
-            } elseif (isset($input['vendor_shipping_ids']) && is_array($input['vendor_shipping_ids'])) {
-                $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
-                $input['shipping_title'] = $input['vendor_shipping_ids'];
-                $input['vendor_shipping_id'] = $input['vendor_shipping_ids'];
+                $input['merchant_shipping_id'] = json_encode($input['shipping']);
+            } elseif (isset($input['merchant_shipping_ids']) && is_array($input['merchant_shipping_ids'])) {
+                $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
+                $input['shipping_title'] = $input['merchant_shipping_ids'];
+                $input['merchant_shipping_id'] = $input['merchant_shipping_ids'];
             } else {
-                $input['vendor_shipping_ids'] = json_encode([]);
+                $input['merchant_shipping_ids'] = json_encode([]);
                 $input['shipping_title'] = json_encode([]);
-                $input['vendor_shipping_id'] = json_encode([]);
+                $input['merchant_shipping_id'] = json_encode([]);
             }
 
             // Packing
             if (isset($input['packeging']) && is_array($input['packeging'])) {
-                $input['vendor_packing_ids'] = json_encode($input['packeging']);
+                $input['merchant_packing_ids'] = json_encode($input['packeging']);
                 $input['packing_title'] = json_encode($input['packeging']);
-                $input['vendor_packing_id'] = json_encode($input['packeging']);
-            } elseif (isset($input['vendor_packing_ids']) && is_array($input['vendor_packing_ids'])) {
-                $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
-                $input['packing_title'] = $input['vendor_packing_ids'];
-                $input['vendor_packing_id'] = $input['vendor_packing_ids'];
+                $input['merchant_packing_id'] = json_encode($input['packeging']);
+            } elseif (isset($input['merchant_packing_ids']) && is_array($input['merchant_packing_ids'])) {
+                $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
+                $input['packing_title'] = $input['merchant_packing_ids'];
+                $input['merchant_packing_id'] = $input['merchant_packing_ids'];
             } else {
-                $input['vendor_packing_ids'] = json_encode([]);
+                $input['merchant_packing_ids'] = json_encode([]);
                 $input['packing_title'] = json_encode([]);
-                $input['vendor_packing_id'] = json_encode([]);
+                $input['merchant_packing_id'] = json_encode([]);
             }
 
             unset($input['packeging']);
@@ -145,11 +145,11 @@ class CheckoutBaseControlller extends Controller
      * Parses Tryoto format: "deliveryOptionId#companyName#price"
      *
      * @param array $step2Data Step2 session data
-     * @param int|null $vendorId Vendor ID for vendor-specific checkout
+     * @param int|null $merchantId Vendor ID for vendor-specific checkout
      * @param bool $isMerchantCheckout Whether this is vendor-specific checkout
      * @return string JSON encoded shipping choices per vendor
      */
-    protected function extractCustomerShippingChoice($step2Data, $vendorId = null, $isMerchantCheckout = false)
+    protected function extractCustomerShippingChoice($step2Data, $merchantId = null, $isMerchantCheckout = false)
     {
         $choices = [];
 
@@ -162,21 +162,21 @@ class CheckoutBaseControlller extends Controller
         $freeShippingDiscount = $step2Data['free_shipping_discount'] ?? 0;
 
         // For vendor checkout, the shipping might be stored directly
-        if ($isMerchantCheckout && $vendorId) {
+        if ($isMerchantCheckout && $merchantId) {
             // Check if shipping is stored as vendor_id => value
-            if (isset($shippingSelections[$vendorId])) {
-                $shippingValue = $shippingSelections[$vendorId];
+            if (isset($shippingSelections[$merchantId])) {
+                $shippingValue = $shippingSelections[$merchantId];
             } elseif (!is_array($shippingSelections)) {
                 // Shipping value stored directly
                 $shippingValue = $shippingSelections;
-                $shippingSelections = [$vendorId => $shippingValue];
+                $shippingSelections = [$merchantId => $shippingValue];
             }
         }
 
         if (!is_array($shippingSelections)) {
             // If single value, try to use it with vendorId
-            if ($vendorId && !empty($shippingSelections)) {
-                $shippingSelections = [$vendorId => $shippingSelections];
+            if ($merchantId && !empty($shippingSelections)) {
+                $shippingSelections = [$merchantId => $shippingSelections];
             } else {
                 return json_encode($choices);
             }
@@ -237,12 +237,12 @@ class CheckoutBaseControlller extends Controller
     /**
      * Check if vendor qualifies for free shipping based on free_above threshold
      *
-     * @param int $vendorId Vendor ID
+     * @param int $merchantId Vendor ID
      * @param float $shippingPrice Original shipping price
      * @param int|null $shippingId Shipping method ID (for manual/debts)
      * @return array ['is_free' => bool, 'reason' => string|null]
      */
-    protected function checkVendorFreeShipping($vendorId, $shippingPrice, $shippingId = null)
+    protected function checkVendorFreeShipping($merchantId, $shippingPrice, $shippingId = null)
     {
         // Get cart from session
         $cart = Session::get('cart');
@@ -254,7 +254,7 @@ class CheckoutBaseControlller extends Controller
         $vendorProductsTotal = 0;
         foreach ($cart->items as $item) {
             $itemVendorId = $item['item']['user_id'] ?? $item['item']['vendor_user_id'] ?? 0;
-            if ($itemVendorId == $vendorId) {
+            if ($itemVendorId == $merchantId) {
                 $vendorProductsTotal += (float)($item['price'] ?? 0);
             }
         }
@@ -267,7 +267,7 @@ class CheckoutBaseControlller extends Controller
         } else {
             // For Tryoto, check vendor's Tryoto shipping entry
             $vendorTryotoShipping = \DB::table('shippings')
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->where('provider', 'tryoto')
                 ->first();
             $freeAbove = (float)($vendorTryotoShipping->free_above ?? 0);

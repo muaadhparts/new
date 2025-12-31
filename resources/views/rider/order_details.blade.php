@@ -124,7 +124,7 @@
                                         $extra_price = 0;
                                     @endphp
                                     @foreach (json_decode($order->cart, true)['items'] as $product)
-                                        @if ($product['user_id'] == $data->vendor_id)
+                                        @if ($product['user_id'] == $data->merchant_id)
                                             <tr>
                                                 <td data-label="{{ __('ID#') }}">
                                                     <div>
@@ -178,17 +178,17 @@
 
 
                             @php
-                               
-                               $order_shipping = json_decode($order->vendor_shipping_id, true) ?? [];
-                                $order_package = json_decode($order->vendor_packing_id, true) ?? [];
-                                
-                                // Retrieve vendor-specific shipping and packing IDs, defaulting to null if not found
-                                $vendor_shipping_id = $order_shipping[$data->vendor_id] ?? null;
-                                $vendor_package_id = $order_package[$data->vendor_id] ?? null;
+
+                               $order_shipping = json_decode($order->merchant_shipping_id, true) ?? [];
+                                $order_package = json_decode($order->merchant_packing_id, true) ?? [];
+
+                                // Retrieve merchant-specific shipping and packing IDs, defaulting to null if not found
+                                $merchant_shipping_id = $order_shipping[$data->merchant_id] ?? null;
+                                $merchant_package_id = $order_package[$data->merchant_id] ?? null;
                                 
                                 // Retrieve the Shipping and Package models, or null if not found
-                                $shipping = $vendor_shipping_id ? App\Models\Shipping::find($vendor_shipping_id) : null;
-                                $package = $vendor_package_id ? App\Models\Package::find($vendor_package_id) : null;
+                                $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
+                                $package = $merchant_package_id ? App\Models\Package::find($merchant_package_id) : null;
                                 
                                 // Calculate shipping and packing costs, defaulting to 0 if models are not found
                                 $shipping_cost = $shipping ? $shipping->price : 0;
@@ -203,7 +203,7 @@
                                 @lang('Collection Amount from Customer') :
                                 @if ($order->method == 'Cash On Delivery')
                                     {{ \PriceHelper::showAdminCurrencyPrice(
-                                        ($order->merchantPurchases->where('user_id', $data->vendor_id)->sum('price') + $extra_price) *
+                                        ($order->merchantPurchases->where('user_id', $data->merchant_id)->sum('price') + $extra_price) *
                                             $data->purchase->currency_value,
                                         $order->currency_sign,
                                     ) }}

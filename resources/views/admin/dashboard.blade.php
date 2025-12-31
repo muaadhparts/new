@@ -137,7 +137,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card c-info-box-area">
                 <div class="c-info-box box3">
-                    <p>{{ App\Models\Order::where('status','=','completed')->where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
+                    <p>{{ App\Models\Purchase::where('status','=','completed')->where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
                 </div>
                 <div class="c-info-box-content">
                     <h6 class="title">{{ __('Total Sales') }}</h6>
@@ -148,7 +148,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card c-info-box-area">
                 <div class="c-info-box box4">
-                     <p>{{ App\Models\Order::where('status','=','completed')->get()->count() }}</p>
+                     <p>{{ App\Models\Purchase::where('status','=','completed')->get()->count() }}</p>
                 </div>
                 <div class="c-info-box-content">
                     <h6 class="title">{{ __('Total Sales') }}</h6>

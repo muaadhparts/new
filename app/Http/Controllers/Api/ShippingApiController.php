@@ -30,9 +30,9 @@ class ShippingApiController extends Controller
     public function getTryotoOptions(Request $request)
     {
         try {
-            $vendorId = $request->input('vendor_id');
+            $merchantId = $request->input('merchant_id');
 
-            if (!$vendorId) {
+            if (!$merchantId) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Vendor ID is required',
@@ -49,10 +49,10 @@ class ShippingApiController extends Controller
             }
 
             // 2. Calculate shipping data using cart items
-            $shippingData = MerchantCartService::calculateVendorShipping($vendorId, $cart->items);
+            $shippingData = MerchantCartService::calculateVendorShipping($merchantId, $cart->items);
 
             Log::debug('ShippingApiController: Shipping data calculated', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'shipping_data' => $shippingData
             ]);
 
@@ -67,7 +67,7 @@ class ShippingApiController extends Controller
             }
 
             // 3. Get vendor city
-            $vendorCityData = ShippingCalculatorService::getVendorCity($vendorId);
+            $vendorCityData = ShippingCalculatorService::getVendorCity($merchantId);
 
             if (!$vendorCityData || empty($vendorCityData['city_name'])) {
                 return response()->json([
@@ -79,7 +79,7 @@ class ShippingApiController extends Controller
             $originCity = $this->normalizeCityName($vendorCityData['city_name']);
 
             // 4. Get destination city from session
-            $destinationCity = $this->getDestinationCity($vendorId);
+            $destinationCity = $this->getDestinationCity($merchantId);
 
             if (!$destinationCity) {
                 return response()->json([
@@ -93,7 +93,7 @@ class ShippingApiController extends Controller
             $dimensions = $shippingData['dimensions'] ?? [];
 
             Log::debug('ShippingApiController: Calling Tryoto API', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'origin' => $originCity,
                 'destination' => $destinationCity,
                 'weight' => $weight,
@@ -102,7 +102,7 @@ class ShippingApiController extends Controller
 
             // 6. Call Tryoto API with vendor-specific credentials
             $result = $this->tryotoService
-                ->forVendor($vendorId)
+                ->forVendor($merchantId)
                 ->getDeliveryOptions(
                     $originCity,
                     $destinationCity,
@@ -114,7 +114,7 @@ class ShippingApiController extends Controller
             if (!$result['success']) {
                 Log::error('ShippingApiController: Failed to get delivery options', [
                     'error' => $result['error'],
-                    'vendor_id' => $vendorId,
+                    'merchant_id' => $merchantId,
                 ]);
 
                 return response()->json([
@@ -126,7 +126,7 @@ class ShippingApiController extends Controller
             $deliveryCompany = $result['raw']['deliveryCompany'] ?? [];
 
             Log::debug('ShippingApiController: Got delivery options', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'options_count' => count($deliveryCompany),
                 'origin' => $originCity,
                 'destination' => $destinationCity,
@@ -135,7 +135,7 @@ class ShippingApiController extends Controller
 
             if (empty($deliveryCompany)) {
                 Log::warning('ShippingApiController: No delivery options returned from Tryoto', [
-                    'vendor_id' => $vendorId,
+                    'merchant_id' => $merchantId,
                     'origin' => $originCity,
                     'destination' => $destinationCity,
                     'weight' => $weight,
@@ -158,7 +158,7 @@ class ShippingApiController extends Controller
 
             return response()->json([
                 'success' => true,
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'delivery_options' => $convertedOptions,
                 'count' => count($convertedOptions),
                 'weight' => $weight,
@@ -168,7 +168,7 @@ class ShippingApiController extends Controller
             Log::error('ShippingApiController: Exception', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
-                'vendor_id' => $vendorId ?? null,
+                'merchant_id' => $merchantId ?? null,
             ]);
 
             // Check if this is a credentials missing error
@@ -193,13 +193,13 @@ class ShippingApiController extends Controller
      */
     public function getTryotoHtml(Request $request)
     {
-        $vendorId = $request->input('vendor_id');
+        $merchantId = $request->input('merchant_id');
 
         // Get currency from CheckoutPriceService (single source of truth)
         $curr = $this->priceService->getCurrency();
 
         // Get free shipping threshold from vendor's Tryoto config
-        $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $vendorId)
+        $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
             ->where('provider', 'tryoto')
             ->first();
         $freeAbove = $vendorTryotoShipping ? (float)$vendorTryotoShipping->free_above : 0;
@@ -211,7 +211,7 @@ class ShippingApiController extends Controller
         if ($cart && !empty($cart->items)) {
             foreach ($cart->items as $item) {
                 $itemVendorId = data_get($item, 'item.user_id') ?? data_get($item, 'item.vendor_user_id') ?? 0;
-                if ($itemVendorId == $vendorId) {
+                if ($itemVendorId == $merchantId) {
                     $vendorProductsTotal += (float)($item['price'] ?? 0);
                 }
             }
@@ -237,7 +237,7 @@ class ShippingApiController extends Controller
 
         $html = view('partials.api.tryoto-options', [
             'deliveryCompany' => $data['delivery_options'],
-            'vendorId' => $vendorId,
+            'vendorId' => $merchantId,
             'weight' => $data['weight'],
             'curr' => $curr,
             'freeAbove' => $freeAboveConverted,
@@ -273,13 +273,13 @@ class ShippingApiController extends Controller
      * This is the SINGLE SOURCE OF TRUTH for city resolution.
      * Does geocoding here (not in Step 1), with fallback to nearest supported city.
      */
-    protected function getDestinationCity(int $vendorId): ?string
+    protected function getDestinationCity(int $merchantId): ?string
     {
-        $step1 = Session::get('vendor_step1_' . $vendorId) ?? Session::get('step1');
+        $step1 = Session::get('vendor_step1_' . $merchantId) ?? Session::get('step1');
 
         if (!$step1) {
             Log::warning('ShippingApiController: No step1 session found', [
-                'vendor_id' => $vendorId
+                'merchant_id' => $merchantId
             ]);
             return null;
         }
@@ -289,7 +289,7 @@ class ShippingApiController extends Controller
 
         if (!$latitude || !$longitude) {
             Log::warning('ShippingApiController: No coordinates in session', [
-                'vendor_id' => $vendorId
+                'merchant_id' => $merchantId
             ]);
             return null;
         }
@@ -313,20 +313,20 @@ class ShippingApiController extends Controller
                 $geocodingSuccess = true;
 
                 Log::info('ShippingApiController: Geocoding successful', [
-                    'vendor_id' => $vendorId,
+                    'merchant_id' => $merchantId,
                     'city' => $cityName,
                     'state' => $stateName,
                     'country' => $countryName,
                 ]);
             } else {
                 Log::warning('ShippingApiController: Geocoding failed', [
-                    'vendor_id' => $vendorId,
+                    'merchant_id' => $merchantId,
                     'error' => $geocodeResult['error'] ?? 'Unknown error'
                 ]);
             }
         } catch (\Exception $e) {
             Log::error('ShippingApiController: Geocoding exception', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'error' => $e->getMessage()
             ]);
         }
@@ -343,7 +343,7 @@ class ShippingApiController extends Controller
 
             if ($resolution['success']) {
                 Log::info('ShippingApiController: City resolved by name', [
-                    'vendor_id' => $vendorId,
+                    'merchant_id' => $merchantId,
                     'resolved_city' => $resolution['resolved_name'],
                     'strategy' => $resolution['strategy']
                 ]);
@@ -363,7 +363,7 @@ class ShippingApiController extends Controller
         }
 
         Log::warning('ShippingApiController: City resolution failed', [
-            'vendor_id' => $vendorId,
+            'merchant_id' => $merchantId,
             'latitude' => $latitude,
             'longitude' => $longitude
         ]);

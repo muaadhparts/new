@@ -15,7 +15,7 @@
                     $photo    = data_get($product, 'item.photo');
 
                     $productUrl = ($vendorId && $merchantItemId)
-                        ? route('front.catalog-item', ['slug' => $slug, 'vendor_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
+                        ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
                         : 'javascript:;';
                 @endphp
 

@@ -381,10 +381,10 @@ class CatalogItemFilterService
         }
 
         // Selected vendors (use localized shop name)
-        $vendorIds = $this->normalizeArrayInput($request->vendor);
-        if (!empty($vendorIds)) {
+        $merchantIds = $this->normalizeArrayInput($request->vendor);
+        if (!empty($merchantIds)) {
             foreach ($allVendors as $vendor) {
-                if (in_array($vendor->user_id, $vendorIds)) {
+                if (in_array($vendor->user_id, $merchantIds)) {
                     $summary['vendors'][] = $this->getLocalizedShopName($vendor);
                 }
             }

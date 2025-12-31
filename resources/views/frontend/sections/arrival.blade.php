@@ -24,7 +24,7 @@ Receives: $merchantItems (Collection of MerchantItem models)
         // URL
         $productUrl = route('front.catalog-item', [
             'slug' => $actualProduct->slug,
-            'vendor_id' => $mp->user_id,
+            'merchant_id' => $mp->user_id,
             'merchant_item_id' => $mp->id
         ]);
 

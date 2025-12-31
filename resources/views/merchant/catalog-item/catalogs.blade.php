@@ -28,7 +28,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-prod-index') }}" class="text-capitalize"> @lang('Products') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('Products') </a>
                 </li>
                 <li>
                     <a href="#" class="text-capitalize"> @lang('Product Catalogs') </a>
@@ -84,7 +84,7 @@
                                         @if ($ck)
                                             {{ __('Added To Catalog') }}
                                         @else
-                                            <a href="{{ route('merchant-prod-catalog-edit', $data->id) }}"
+                                            <a href="{{ route('merchant-catalog-item-catalog-edit', $data->id) }}"
                                                 class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
                                                     viewBox="0 0 12 12" fill="none">

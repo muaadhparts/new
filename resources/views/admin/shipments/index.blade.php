@@ -114,11 +114,11 @@
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">{{ __('Vendor') }}</label>
-                    <select name="vendor_id" class="form-control">
-                        <option value="">{{ __('All Vendors') }}</option>
+                    <label class="form-label">{{ __('Merchant') }}</label>
+                    <select name="merchant_id" class="form-control">
+                        <option value="">{{ __('All Merchants') }}</option>
                         @foreach($vendors as $vendor)
-                            <option value="{{ $vendor->id }}" {{ $vendorId == $vendor->id ? 'selected' : '' }}>
+                            <option value="{{ $vendor->id }}" {{ $merchantId == $vendor->id ? 'selected' : '' }}>
                                 {{ $vendor->shop_name ?? $vendor->name }}
                             </option>
                         @endforeach

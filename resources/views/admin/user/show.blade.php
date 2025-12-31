@@ -111,14 +111,14 @@
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody>
-                                                                        @foreach($data->orders as $order)
+                                                                        @foreach($data->purchases as $purchase)
                                                                         <tr>
-            <td><a href="{{ route('admin-purchase-invoice',$order->id) }}">{{sprintf("%'.08d", $order->id)}}</a></td>
-                                                                            <td>{{ date('Y-m-d h:i:s a',strtotime($order->created_at)) }}</td>
-                                                                            <td>{{ \PriceHelper::showOrderCurrencyPrice(($order->pay_amount * $order->currency_value),$order->currency_sign) }}</td>
-                                                                            <td>{{ $order->status }}</td>
+            <td><a href="{{ route('admin-purchase-invoice',$purchase->id) }}">{{sprintf("%'.08d", $purchase->id)}}</a></td>
+                                                                            <td>{{ date('Y-m-d h:i:s a',strtotime($purchase->created_at)) }}</td>
+                                                                            <td>{{ \PriceHelper::showOrderCurrencyPrice(($purchase->pay_amount * $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                                                            <td>{{ $purchase->status }}</td>
                                                                             <td>
-                                                                                <a href=" {{ route('admin-purchase-show',$order->id) }}" class="view-details">
+                                                                                <a href=" {{ route('admin-purchase-show',$purchase->id) }}" class="view-details">
                                                                                     <i class="fas fa-check"></i>{{ __("Details") }}
                                                                                 </a>
                                                                             </td>

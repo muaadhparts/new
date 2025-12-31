@@ -63,7 +63,7 @@ class DeliveryController extends MerchantBaseController
     private function checkTryotoStatus(): array
     {
         $tryotoService = new TryotoService();
-        $config = $tryotoService->checkConfiguration();
+        $config = $tryotoService->checkConfiguration($this->user->id);
 
         $status = [
             'available' => $config['configured'],
@@ -116,7 +116,7 @@ class DeliveryController extends MerchantBaseController
 
 
             ->editColumn('riders', function (Purchase $data) {
-                $delivery =  DeliveryRider::where('purchase_id', $data->id)->whereVendorId(auth()->id())->first();
+                $delivery =  DeliveryRider::where('purchase_id', $data->id)->where('merchant_id', auth()->id())->first();
 
                 if ($delivery) {
                     $message = '<strong class="display-5">Rider : ' . $delivery->rider->name . ' </br>Delivery Cost : ' . PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price) . '</br>

@@ -48,7 +48,7 @@ class DiscountCodeController extends FrontBaseController
      * - 3: Discount exceeds eligible amount
      * - Array: Success [newTotal, code, discountAmount, discountCodeId, percentage, 1, rawTotal]
      */
-    public function discountCodeCheck(Request $request, $vendorId = null)
+    public function discountCodeCheck(Request $request, $merchantId = null)
     {
         $code = trim($request->code ?? '');
         $requestTotal = (float)($request->total ?? 0);
@@ -71,7 +71,7 @@ class DiscountCodeController extends FrontBaseController
         }
 
         // Determine checkout type - vendorId from route (policy: no session fallback)
-        $checkoutVendorId = $vendorId ? (int)$vendorId : null;
+        $checkoutVendorId = $merchantId ? (int)$merchantId : null;
         $isVendorCheckout = !empty($checkoutVendorId);
 
         // Validate discount code ownership for vendor checkout
@@ -138,22 +138,22 @@ class DiscountCodeController extends FrontBaseController
      * Remove discount code (AJAX endpoint)
      * Route: POST /carts/discount-code/remove
      */
-    public function removeDiscountCode(Request $request, $vendorId = null)
+    public function removeDiscountCode(Request $request, $merchantId = null)
     {
         // vendorId from route (policy: no session fallback)
-        $isVendorCheckout = !empty($vendorId);
+        $isVendorCheckout = !empty($merchantId);
 
         // Get current discount amount before removing
         $discountAmount = 0;
-        if ($isVendorCheckout && $vendorId) {
-            $discountAmount = Session::get('discount_code_vendor_' . $vendorId, 0);
+        if ($isVendorCheckout && $merchantId) {
+            $discountAmount = Session::get('discount_code_vendor_' . $merchantId, 0);
             // Clear vendor-specific session keys
             Session::forget([
-                'already_vendor_' . $vendorId,
-                'discount_code_vendor_' . $vendorId,
-                'discount_code_value_vendor_' . $vendorId,
-                'discount_code_id_vendor_' . $vendorId,
-                'discount_percentage_vendor_' . $vendorId,
+                'already_vendor_' . $merchantId,
+                'discount_code_vendor_' . $merchantId,
+                'discount_code_value_vendor_' . $merchantId,
+                'discount_code_id_vendor_' . $merchantId,
+                'discount_percentage_vendor_' . $merchantId,
             ]);
         } else {
             $discountAmount = Session::get('discount_code', 0);
@@ -298,15 +298,15 @@ class DiscountCodeController extends FrontBaseController
     /**
      * Save discount code data to session
      */
-    private function saveDiscountCodeToSession($code, $discountCode, $discountAmount, $percentage, $isVendorCheckout, $vendorId)
+    private function saveDiscountCodeToSession($code, $discountCode, $discountAmount, $percentage, $isVendorCheckout, $merchantId)
     {
-        if ($isVendorCheckout && $vendorId) {
+        if ($isVendorCheckout && $merchantId) {
             // Vendor checkout - use vendor-specific keys
-            Session::put('already_vendor_' . $vendorId, $code);
-            Session::put('discount_code_vendor_' . $vendorId, $discountAmount);
-            Session::put('discount_code_value_vendor_' . $vendorId, $code);
-            Session::put('discount_code_id_vendor_' . $vendorId, $discountCode->id);
-            Session::put('discount_percentage_vendor_' . $vendorId, $percentage);
+            Session::put('already_vendor_' . $merchantId, $code);
+            Session::put('discount_code_vendor_' . $merchantId, $discountAmount);
+            Session::put('discount_code_value_vendor_' . $merchantId, $code);
+            Session::put('discount_code_id_vendor_' . $merchantId, $discountCode->id);
+            Session::put('discount_percentage_vendor_' . $merchantId, $percentage);
         } else {
             // Regular checkout - use standard keys
             Session::put('already', $code);

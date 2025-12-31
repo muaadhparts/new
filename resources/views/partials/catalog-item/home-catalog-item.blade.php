@@ -3,7 +3,7 @@
     $homeProdMerchant = $prod->best_merchant_item;
 
     $homeProdUrl = $homeProdMerchant && $prod->slug
-        ? route('front.catalog-item', ['slug' => $prod->slug, 'vendor_id' => $homeProdMerchant->user_id, 'merchant_item_id' => $homeProdMerchant->id])
+        ? route('front.catalog-item', ['slug' => $prod->slug, 'merchant_id' => $homeProdMerchant->user_id, 'merchant_item_id' => $homeProdMerchant->id])
         : ($prod->slug ? route('front.catalog-item.legacy', $prod->slug) : '#');
 @endphp
 

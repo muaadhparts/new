@@ -6,7 +6,7 @@
 
         $productSlug = $favorite->catalogItem->slug ?? $favorite->slug ?? null;
         $favoriteProductUrl = $favoriteMerchant && $productSlug
-            ? route('front.catalog-item', ['slug' => $productSlug, 'vendor_id' => $favoriteMerchant->user_id, 'merchant_item_id' => $favoriteMerchant->id])
+            ? route('front.catalog-item', ['slug' => $productSlug, 'merchant_id' => $favoriteMerchant->user_id, 'merchant_item_id' => $favoriteMerchant->id])
             : ($productSlug ? route('front.catalog-item.legacy', $productSlug) : '#');
     @endphp
 

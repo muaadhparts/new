@@ -85,12 +85,12 @@
 
                                 // Check for local rider delivery
                                 $delivery = App\Models\DeliveryRider::where('purchase_id', $data->id)
-                                    ->where('vendor_id', $vendorId)
+                                    ->where('merchant_id', $vendorId)
                                     ->first();
 
                                 // Check for Tryoto shipment
                                 $shipment = App\Models\ShipmentStatusLog::where('purchase_id', $data->id)
-                                    ->where('vendor_id', $vendorId)
+                                    ->where('merchant_id', $vendorId)
                                     ->orderBy('status_date', 'desc')
                                     ->orderBy('created_at', 'desc')
                                     ->first();
@@ -515,7 +515,7 @@
                 if (response.error_code === 'VENDOR_CITY_MISSING') {
                     toastr.warning('@lang("Please configure your city in vendor settings")');
                     if (response.show_settings_link) {
-                        $('#shippingCompanySelect').after('<a href="{{ route("vendor-profile") }}" class="btn btn-sm btn-link">@lang("Go to Settings")</a>');
+                        $('#shippingCompanySelect').after('<a href="{{ route("merchant-profile") }}" class="btn btn-sm btn-link">@lang("Go to Settings")</a>');
                     }
                 } else if (response.error_code === 'CUSTOMER_CITY_MISSING') {
                     toastr.warning('@lang("Customer city not specified in order")');

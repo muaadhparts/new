@@ -47,7 +47,7 @@
                 <div class="form-group">
                     <label for="c_balance">@lang('Current Balance')</label>
                     <input type="text" class="form-control" id="c_balance"
-                        placeholder="{{ App\Models\Product::vendorConvertPrice(Auth::user()->current_balance) }}"
+                        placeholder="{{ App\Models\CatalogItem::merchantConvertPrice(Auth::user()->current_balance) }}"
                         disabled />
 
                     <label for="withmethod">@lang('Withdraw Method')</label>

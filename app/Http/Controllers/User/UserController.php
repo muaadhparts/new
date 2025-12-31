@@ -104,7 +104,7 @@ class UserController extends UserBaseController
     {
         $fav = new FavoriteSeller();
         $fav->user_id = $id1;
-        $fav->vendor_id = $id2;
+        $fav->merchant_id = $id2;
         $fav->save();
         $data['icon'] = '<i class="fas fa-check"></i>';
         $data['text'] = __('Favorite');

@@ -72,7 +72,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Current Balance')</p>
                         <h3 class="value">{{$curr->sign}}<span class="counter">
-                                {{ App\Models\Product::vendorConvertWithoutCurrencyPrice(auth()->user()->current_balance) }}</span></h3>
+                                {{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice(auth()->user()->current_balance) }}</span></h3>
                     </div>
                 </div>
             </div>
@@ -86,7 +86,7 @@
                             $totalPrice = $datas->count() > 0 ? $datas->sum('price') : 0;
                         @endphp
                         <h3 class="value">{{$curr->sign}}<span
-                                class="counter">{{ App\Models\Product::vendorConvertWithoutCurrencyPrice($totalPrice) }}</span></h3>
+                                class="counter">{{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($totalPrice) }}</span></h3>
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@
                             });
                         @endphp
                         <h3 class="value">{{$curr->sign}}<span
-                                class="counter">{{ App\Models\Product::vendorConvertWithoutCurrencyPrice($user->admin_commission) }}</span>
+                                class="counter">{{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($user->admin_commission) }}</span>
                         </h3>
                     </div>
                 </div>
@@ -170,7 +170,7 @@
                                         </td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ route('merchant-prod-edit', $merchantItem ? $merchantItem->id : $data->id) }}" class="view-btn">
+                                                <a href="{{ route('merchant-catalog-item-edit', $merchantItem ? $merchantItem->id : $data->id) }}" class="view-btn">
                                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                         xmlns="http://www.w3.org/2000/svg">
                                                         <g clip-path="url(#clip0_548_165892)">

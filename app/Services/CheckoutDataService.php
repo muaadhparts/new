@@ -30,7 +30,7 @@ class CheckoutDataService
     public static function loadVendorData(array $products): array
     {
         // Extract unique vendor IDs from products
-        $vendorIds = collect($products)
+        $merchantIds = collect($products)
             ->pluck('user_id')
             ->unique()
             ->filter()
@@ -38,15 +38,15 @@ class CheckoutDataService
             ->toArray();
 
         // Handle case where vendor_id = 0 (admin products)
-        $hasAdminProducts = in_array(0, $vendorIds) || empty($vendorIds);
+        $hasAdminProducts = in_array(0, $merchantIds) || empty($merchantIds);
 
         // Remove 0 from vendor IDs for User query
-        $vendorIds = array_filter($vendorIds, fn($id) => $id > 0);
+        $merchantIds = array_filter($merchantIds, fn($id) => $id > 0);
 
         // Bulk load all data
-        $vendors = self::loadVendors($vendorIds);
-        $shippingByVendor = self::loadShipping($vendorIds, $hasAdminProducts);
-        $packagingByVendor = self::loadPackaging($vendorIds);
+        $vendors = self::loadVendors($merchantIds);
+        $shippingByVendor = self::loadShipping($merchantIds, $hasAdminProducts);
+        $packagingByVendor = self::loadPackaging($merchantIds);
         $admin = $hasAdminProducts ? Admin::find(1) : null;
 
         // Provider labels (static)
@@ -59,12 +59,12 @@ class CheckoutDataService
         // Build result array
         $result = [];
 
-        foreach ($vendorIds as $vendorId) {
-            $shipping = $shippingByVendor[$vendorId] ?? collect();
-            $result[$vendorId] = [
-                'vendor' => $vendors[$vendorId] ?? null,
+        foreach ($merchantIds as $merchantId) {
+            $shipping = $shippingByVendor[$merchantId] ?? collect();
+            $result[$merchantId] = [
+                'vendor' => $vendors[$merchantId] ?? null,
                 'shipping' => $shipping,
-                'packaging' => $packagingByVendor[$vendorId] ?? collect(),
+                'packaging' => $packagingByVendor[$merchantId] ?? collect(),
                 'grouped_shipping' => $shipping->groupBy('provider'),
                 'provider_labels' => $providerLabels,
             ];
@@ -88,13 +88,13 @@ class CheckoutDataService
     /**
      * Bulk load vendors by IDs
      */
-    private static function loadVendors(array $vendorIds): Collection
+    private static function loadVendors(array $merchantIds): Collection
     {
-        if (empty($vendorIds)) {
+        if (empty($merchantIds)) {
             return collect();
         }
 
-        return User::whereIn('id', $vendorIds)
+        return User::whereIn('id', $merchantIds)
             ->get()
             ->keyBy('id');
     }
@@ -103,9 +103,9 @@ class CheckoutDataService
      * Bulk load shipping for all vendors
      * ✅ FIX: Returns Collection grouped by user_id (not array)
      */
-    private static function loadShipping(array $vendorIds, bool $includeAdmin = false): Collection
+    private static function loadShipping(array $merchantIds, bool $includeAdmin = false): Collection
     {
-        $allVendorIds = $vendorIds;
+        $allVendorIds = $merchantIds;
         if ($includeAdmin) {
             $allVendorIds[] = 0;
         }
@@ -125,13 +125,13 @@ class CheckoutDataService
      * Bulk load packaging for all vendors
      * ✅ FIX: Returns Collection grouped by user_id
      */
-    private static function loadPackaging(array $vendorIds): Collection
+    private static function loadPackaging(array $merchantIds): Collection
     {
-        if (empty($vendorIds)) {
+        if (empty($merchantIds)) {
             return collect();
         }
 
-        $allPackaging = Package::whereIn('user_id', $vendorIds)->get();
+        $allPackaging = Package::whereIn('user_id', $merchantIds)->get();
 
         // Group by user_id - returns Collection of Collections
         return $allPackaging->groupBy('user_id');

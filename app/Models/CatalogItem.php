@@ -393,7 +393,7 @@ class CatalogItem extends Model
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
     }
 
-    public static function vendorConvertPrice($price)
+    public static function merchantConvertPrice($price)
     {
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
 
@@ -405,7 +405,7 @@ class CatalogItem extends Model
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
     }
 
-    public static function vendorConvertWithoutCurrencyPrice($price)
+    public static function merchantConvertWithoutCurrencyPrice($price)
     {
         $curr = Session::has('currency')
             ? Currency::find(Session::get('currency'))

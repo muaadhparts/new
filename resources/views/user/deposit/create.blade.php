@@ -28,7 +28,7 @@
 
                                     <label for="c_balance">@lang('Current Balance')</label>
                                     <input type="text" class="form-control" id="c_balance"
-                                        placeholder="{{ App\Models\Product::vendorConvertPrice(Auth::user()->balance) }}"
+                                        placeholder="{{ App\Models\CatalogItem::merchantConvertPrice(Auth::user()->balance) }}"
                                         disabled>
 
                                     <label for="d_amount">@lang('Deposit Amount')</label>

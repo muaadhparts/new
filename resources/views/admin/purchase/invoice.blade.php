@@ -59,7 +59,7 @@
                             $adminInvoiceShipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
                                 ->orderBy('status_date', 'desc')
                                 ->get()
-                                ->groupBy('vendor_id');
+                                ->groupBy('merchant_id');
                         @endphp
                         @if($adminInvoiceShipments->count() > 0)
                         <br><br>
@@ -136,7 +136,7 @@
                                                 if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
                                                     $invoiceProductUrl = route('front.catalog-item', [
                                                         'slug' => $product['item']['slug'],
-                                                        'vendor_id' => $product['user_id'],
+                                                        'merchant_id' => $product['user_id'],
                                                         'merchant_item_id' => $product['merchant_item_id']
                                                     ]);
                                                 } elseif (isset($product['item']['slug'])) {

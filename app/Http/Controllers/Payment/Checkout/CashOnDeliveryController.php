@@ -65,15 +65,15 @@ class CashOnDeliveryController extends CheckoutBaseControlller
      * POLICY: vendor_id comes from ROUTE only
      * Route: /checkout/vendor/{vendorId}/payment/cod
      */
-    public function store(Request $request, $vendorId)
+    public function store(Request $request, $merchantId)
     {
         // ====================================================================
         // STRICT POLICY: vendor_id FROM ROUTE ONLY
         // No session, no POST, no fallback - fail immediately if missing
         // ====================================================================
-        $vendorId = (int)$vendorId;
+        $merchantId = (int)$merchantId;
 
-        if (!$vendorId) {
+        if (!$merchantId) {
             return redirect()->route('front.cart')
                 ->with('unsuccess', __('خطأ: لم يتم تحديد التاجر في مسار الدفع.'));
         }
@@ -81,7 +81,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input = $request->all();
 
         // Load step data from vendor-specific session
-        $steps = $this->getCheckoutSteps($vendorId);
+        $steps = $this->getCheckoutSteps($merchantId);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -108,7 +108,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         // CRITICAL: Filter cart to include ONLY this vendor's products
         // vendor_id comes from route, so we ALWAYS filter
-        $cart = $this->filterCartForVendor($originalCart, $vendorId);
+        $cart = $this->filterCartForVendor($originalCart, $merchantId);
 
         PurchaseHelper::license_check($cart); // For License Checking
         $t_cart = $cart;
@@ -125,15 +125,15 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $orderTotal = (float) ($input['total'] ?? 0) / $this->curr->value;
 
         // Prepare vendor IDs from cart
-        $vendor_ids = [];
+        $merchant_ids = [];
         foreach ($cart->items as $item) {
-            if (!in_array($item['item']['user_id'], $vendor_ids)) {
-                $vendor_ids[] = $item['item']['user_id'];
+            if (!in_array($item['item']['user_id'], $merchant_ids)) {
+                $merchant_ids[] = $item['item']['user_id'];
             }
         }
 
         // تحضير بيانات الشحن والتغليف - تأكد من تحويل كل القيم إلى JSON
-        $input['vendor_ids'] = json_encode($vendor_ids);
+        $input['merchant_ids'] = json_encode($merchant_ids);
 
         // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
         $originalShippingMethod = $steps['step1']['shipping'] ?? 'shipto';
@@ -149,8 +149,8 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['packing_title'] = '';
         $input['shipping_cost'] = 0;
         $input['packing_cost'] = 0;
-        $input['vendor_shipping_ids'] = json_encode([$vendorId => (int)($input['vendor_shipping_id'] ?? 0)]);
-        $input['vendor_packing_ids'] = json_encode([$vendorId => (int)($input['vendor_packing_id'] ?? 0)]);
+        $input['merchant_shipping_ids'] = json_encode([$merchantId => (int)($input['merchant_shipping_id'] ?? 0)]);
+        $input['merchant_packing_ids'] = json_encode([$merchantId => (int)($input['merchant_packing_id'] ?? 0)]);
 
         /* DISABLED: Regular checkout logic (kept for reference)
         if ($this->gs->multiple_shipping == 0) {
@@ -161,16 +161,16 @@ class CashOnDeliveryController extends CheckoutBaseControlller
                 $input['packing_cost'] = (float)($input['packing_cost'] ?? 0);
 
                 // تحويل إلى JSON إذا كانت مصفوفات
-                if (isset($input['vendor_shipping_ids']) && is_array($input['vendor_shipping_ids'])) {
-                    $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
-                } elseif (!isset($input['vendor_shipping_ids'])) {
-                    $input['vendor_shipping_ids'] = json_encode([]);
+                if (isset($input['merchant_shipping_ids']) && is_array($input['merchant_shipping_ids'])) {
+                    $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
+                } elseif (!isset($input['merchant_shipping_ids'])) {
+                    $input['merchant_shipping_ids'] = json_encode([]);
                 }
 
-                if (isset($input['vendor_packing_ids']) && is_array($input['vendor_packing_ids'])) {
-                    $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
-                } elseif (!isset($input['vendor_packing_ids'])) {
-                    $input['vendor_packing_ids'] = json_encode([]);
+                if (isset($input['merchant_packing_ids']) && is_array($input['merchant_packing_ids'])) {
+                    $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
+                } elseif (!isset($input['merchant_packing_ids'])) {
+                    $input['merchant_packing_ids'] = json_encode([]);
                 }
             } else {
                 // Multi shipping
@@ -179,37 +179,37 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
                 // تحويل المصفوفات إلى JSON
                 if (isset($input['shipping']) && is_array($input['shipping'])) {
-                    $input['vendor_shipping_ids'] = json_encode($input['shipping']);
+                    $input['merchant_shipping_ids'] = json_encode($input['shipping']);
                     $input['shipping_title'] = json_encode($input['shipping']);
-                    $input['vendor_shipping_id'] = json_encode($input['shipping']);
+                    $input['merchant_shipping_id'] = json_encode($input['shipping']);
                     unset($input['shipping']);
-                } elseif (isset($input['vendor_shipping_ids'])) {
-                    if (is_array($input['vendor_shipping_ids'])) {
-                        $input['vendor_shipping_ids'] = json_encode($input['vendor_shipping_ids']);
+                } elseif (isset($input['merchant_shipping_ids'])) {
+                    if (is_array($input['merchant_shipping_ids'])) {
+                        $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
                     }
-                    $input['shipping_title'] = $input['vendor_shipping_ids'];
-                    $input['vendor_shipping_id'] = $input['vendor_shipping_ids'];
+                    $input['shipping_title'] = $input['merchant_shipping_ids'];
+                    $input['merchant_shipping_id'] = $input['merchant_shipping_ids'];
                 } else {
-                    $input['vendor_shipping_ids'] = json_encode([]);
+                    $input['merchant_shipping_ids'] = json_encode([]);
                     $input['shipping_title'] = json_encode([]);
-                    $input['vendor_shipping_id'] = json_encode([]);
+                    $input['merchant_shipping_id'] = json_encode([]);
                 }
 
                 if (isset($input['packeging']) && is_array($input['packeging'])) {
-                    $input['vendor_packing_ids'] = json_encode($input['packeging']);
+                    $input['merchant_packing_ids'] = json_encode($input['packeging']);
                     $input['packing_title'] = json_encode($input['packeging']);
-                    $input['vendor_packing_id'] = json_encode($input['packeging']);
+                    $input['merchant_packing_id'] = json_encode($input['packeging']);
                     unset($input['packeging']);
-                } elseif (isset($input['vendor_packing_ids'])) {
-                    if (is_array($input['vendor_packing_ids'])) {
-                        $input['vendor_packing_ids'] = json_encode($input['vendor_packing_ids']);
+                } elseif (isset($input['merchant_packing_ids'])) {
+                    if (is_array($input['merchant_packing_ids'])) {
+                        $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
                     }
-                    $input['packing_title'] = $input['vendor_packing_ids'];
-                    $input['vendor_packing_id'] = $input['vendor_packing_ids'];
+                    $input['packing_title'] = $input['merchant_packing_ids'];
+                    $input['merchant_packing_id'] = $input['merchant_packing_ids'];
                 } else {
-                    $input['vendor_packing_ids'] = json_encode([]);
+                    $input['merchant_packing_ids'] = json_encode([]);
                     $input['packing_title'] = json_encode([]);
-                    $input['vendor_packing_id'] = json_encode([]);
+                    $input['merchant_packing_id'] = json_encode([]);
                 }
             }
         }
@@ -222,14 +222,14 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['shipping'] = $originalShippingMethod;
 
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل
-        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2, $vendorId);
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2, $merchantId);
 
         $purchase = new Purchase;
 
         // Determine redirect URL:
         // - If other vendors remain in cart: Redirect to /carts
         // - If cart is now empty: Redirect to success page
-        $success_url = $this->getSuccessUrl($vendorId, $oldCart);
+        $success_url = $this->getSuccessUrl($merchantId, $oldCart);
         $input['user_id'] = Auth::check() ? Auth::user()->id : null;
         $input['cart'] = $new_cart;
         $input['affilate_users'] = $affilate_users;
@@ -303,7 +303,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // CRITICAL: Remove ONLY this merchant's products from cart
         // Other merchants' products remain for separate checkout
         // Uses HandlesMerchantCheckout trait method
-        $this->removeMerchantProductsFromCart($vendorId, $oldCart);
+        $this->removeMerchantProductsFromCart($merchantId, $oldCart);
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

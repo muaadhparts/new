@@ -101,9 +101,9 @@ class ShippingCalculatorService
     /**
      * @deprecated Use getMerchantCity() instead
      */
-    public static function getVendorCity(int $vendorId): ?array
+    public static function getVendorCity(int $merchantId): ?array
     {
-        return self::getMerchantCity($vendorId);
+        return self::getMerchantCity($merchantId);
     }
 
     /**
@@ -186,7 +186,7 @@ class ShippingCalculatorService
                 'codAmount' => $customerData['cod_amount'] ?? 0,
             ],
             'meta' => [
-                'vendor_id' => $vendorShippingData['vendor_id'] ?? null,
+                'merchant_id' => $vendorShippingData['merchant_id'] ?? null,
                 'actual_weight' => $vendorShippingData['actual_weight'] ?? null,
                 'volumetric_weight' => $vendorShippingData['volumetric_weight'] ?? null,
                 'items_count' => $vendorShippingData['items_count'] ?? 0,

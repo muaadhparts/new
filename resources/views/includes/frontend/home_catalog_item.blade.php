@@ -70,7 +70,7 @@
 
         $productSlug = $isMerchantItem ? optional($actualCatalogItem)->slug : $catalogItem->slug;
         $productUrl = $merchant && $productSlug
-            ? route('front.catalog-item', ['slug' => $productSlug, 'vendor_id' => $merchant->user_id, 'merchant_item_id' => $merchant->id])
+            ? route('front.catalog-item', ['slug' => $productSlug, 'merchant_id' => $merchant->user_id, 'merchant_item_id' => $merchant->id])
             : ($productSlug ? route('front.catalog-item.legacy', $productSlug) : '#');
 
         $mainPhoto = $actualCatalogItem->photo ?? null;

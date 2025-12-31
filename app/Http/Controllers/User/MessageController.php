@@ -54,7 +54,7 @@ class MessageController extends UserBaseController
         $data = 1;
         $user = User::findOrFail($request->user_id);
         $vendor = User::where('email', '=', $request->email)->first();
-        $seller = User::findOrFail($request->vendor_id);
+        $seller = User::findOrFail($request->merchant_id);
 
         if (!$vendor) {
             return back()->with('unsuccess', 'Vendor Not Found');

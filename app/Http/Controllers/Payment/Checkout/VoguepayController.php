@@ -25,13 +25,13 @@ class VoguepayController extends CheckoutBaseControlller
     {
         $input = $request->all();
 
-        // Get vendor checkout data
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
-        $isMerchantCheckout = $vendorData['is_merchant_checkout'];
+        // Get merchant checkout data
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantId = $merchantData['merchant_id'];
+        $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
         // Get steps from vendor sessions
-        $steps = $this->getCheckoutSteps($vendorId, $isMerchantCheckout);
+        $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -55,7 +55,7 @@ class VoguepayController extends CheckoutBaseControlller
         // Get cart and filter for vendor
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $vendorId);
+        $cart = $this->filterCartForVendor($originalCart, $merchantId);
 
         PurchaseHelper::license_check($cart); // For License Checking
         $new_cart = [];
@@ -72,7 +72,7 @@ class VoguepayController extends CheckoutBaseControlller
         $orderTotal = $prepared['order_total'];
 
         $purchase = new Purchase;
-        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
+        $success_url = $this->getSuccessUrl($merchantId, $originalCart);
         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
         $input['cart'] = $new_cart;
         $input['affilate_users'] = $affilate_users;
@@ -138,7 +138,7 @@ class VoguepayController extends CheckoutBaseControlller
         Session::put('tempcart', $cart);
 
         // Remove only vendor's products from cart
-        $this->removeVendorProductsFromCart($vendorId, $originalCart);
+        $this->removeVendorProductsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

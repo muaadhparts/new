@@ -56,7 +56,7 @@ class ImportController extends AdminBaseController
 
                 $prodLink = route('front.catalog-item', [
                     'slug' => $product->slug,
-                    'vendor_id' => $mp->user_id,
+                    'merchant_id' => $mp->user_id,
                     'merchant_item_id' => $mp->id
                 ]);
 
@@ -325,9 +325,9 @@ class ImportController extends AdminBaseController
         $prod->update();
 
         // إنشاء/تحديث عرض البائع (MerchantItem)
-        $vendorId = (int) ($request->input('user_id') ?? $request->input('vendor_id') ?? 0);
-        // // dd(['vendorId' => $vendorId, 'product_id' => $prod->id]); // اختباري
-        if ($vendorId <= 0) {
+        $merchantId = (int) ($request->input('user_id') ?? $request->input('merchant_id') ?? 0);
+        // // dd(['vendorId' => $merchantId, 'product_id' => $prod->id]); // اختباري
+        if ($merchantId <= 0) {
             return response()->json(['errors' => ['vendor' => 'Vendor (user) is required']], 422);
         }
 
@@ -358,7 +358,7 @@ class ImportController extends AdminBaseController
         }
 
         MerchantItem::updateOrCreate(
-            ['product_id' => $prod->id, 'user_id' => $vendorId],
+            ['product_id' => $prod->id, 'user_id' => $merchantId],
             [
                 'product_type'        => 'affiliate',
                 'price'               => $mpPrice,
@@ -579,8 +579,8 @@ class ImportController extends AdminBaseController
         $prod->update();
 
         // تحديث/إنشاء سجل MerchantItem
-        $vendorId = (int) ($request->input('user_id') ?? $request->input('vendor_id') ?? 0);
-        if ($vendorId <= 0) {
+        $merchantId = (int) ($request->input('user_id') ?? $request->input('merchant_id') ?? 0);
+        if ($merchantId <= 0) {
             return response()->json(['errors' => ['vendor' => 'Vendor (user) is required']], 422);
         }
 
@@ -608,7 +608,7 @@ class ImportController extends AdminBaseController
         }
 
         MerchantItem::updateOrCreate(
-            ['product_id' => $prod->id, 'user_id' => $vendorId],
+            ['product_id' => $prod->id, 'user_id' => $merchantId],
             [
                 'product_type'        => 'affiliate',
                 'price'               => $mpPrice,

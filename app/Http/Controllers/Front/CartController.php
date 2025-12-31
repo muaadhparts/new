@@ -74,7 +74,7 @@ class CartController extends FrontBaseController
             'qty' => 'nullable|integer|min:1',
             'size' => 'nullable|string|max:100',
             'color' => 'nullable|string|max:50',
-            'vendor_id' => 'nullable|integer',
+            'merchant_id' => 'nullable|integer',
             'size_price' => 'nullable|numeric|min:0',
             'color_price' => 'nullable|numeric|min:0',
         ]);
@@ -165,12 +165,12 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
-        // Guard: vendor_id must match (if provided)
-        if ($request->filled('vendor_id')) {
-            $requestedVendorId = (int) $request->input('vendor_id');
-            if ($requestedVendorId !== (int) $mp->user_id) {
-                \Log::warning('Cart: vendor_id mismatch', [
-                    'requested' => $requestedVendorId,
+        // Guard: merchant_id must match (if provided)
+        if ($request->filled('merchant_id')) {
+            $requestedMerchantId = (int) $request->input('merchant_id');
+            if ($requestedMerchantId !== (int) $mp->user_id) {
+                \Log::warning('Cart: merchant_id mismatch', [
+                    'requested' => $requestedMerchantId,
                     'actual' => $mp->user_id,
                     'mp_id' => $mpId,
                     'ip' => $request->ip(),
@@ -690,21 +690,21 @@ class CartController extends FrontBaseController
 
         foreach ($products as $rowKey => $product) {
             // استخراج vendor_id باستخدام نفس منطق MerchantCartService
-            $vendorId = $product['user_id']
+            $merchantId = $product['user_id']
                 ?? data_get($product, 'item.user_id')
                 ?? data_get($product, 'item.vendor_user_id')
                 ?? 0;
 
-            if (!isset($grouped[$vendorId])) {
+            if (!isset($grouped[$merchantId])) {
                 // جلب مدينة التاجر باستخدام ShippingCalculatorService
-                $vendorCityData = ShippingCalculatorService::getVendorCity($vendorId);
-                $vendor = \App\Models\User::find($vendorId);
+                $vendorCityData = ShippingCalculatorService::getVendorCity($merchantId);
+                $merchant = \App\Models\User::find($merchantId);
 
-                $grouped[$vendorId] = [
-                    'vendor_id' => $vendorId,
-                    'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : null,
-                    'vendor_city' => $vendorCityData['city_name'] ?? null,
-                    'vendor_city_id' => $vendorCityData['city_id'] ?? null,
+                $grouped[$merchantId] = [
+                    'merchant_id' => $merchantId,
+                    'merchant_name' => $merchant ? ($merchant->shop_name ?? $merchant->name) : null,
+                    'merchant_city' => $vendorCityData['city_name'] ?? null,
+                    'merchant_city_id' => $vendorCityData['city_id'] ?? null,
                     'products' => [],
                     'total' => 0,
                     'count' => 0,
@@ -754,19 +754,19 @@ class CartController extends FrontBaseController
             $product['row_weight'] = $dimensions && $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
             $product['reservation'] = $reservationData;
 
-            $grouped[$vendorId]['products'][$rowKey] = $product;
-            $grouped[$vendorId]['total'] += (float)($product['price'] ?? 0);
-            $grouped[$vendorId]['count'] += (int)($product['qty'] ?? 1);
+            $grouped[$merchantId]['products'][$rowKey] = $product;
+            $grouped[$merchantId]['total'] += (float)($product['price'] ?? 0);
+            $grouped[$merchantId]['count'] += (int)($product['qty'] ?? 1);
 
             // تجميع الوزن الكلي
             if ($dimensions && $dimensions['weight']) {
-                $grouped[$vendorId]['total_weight'] += $dimensions['weight'] * $qty;
+                $grouped[$merchantId]['total_weight'] += $dimensions['weight'] * $qty;
             }
         }
 
         // بناء بيانات الشحن لكل تاجر باستخدام MerchantCartService
-        foreach ($grouped as $vendorId => &$vendorData) {
-            $shippingData = MerchantCartService::calculateVendorShipping($vendorId, $products);
+        foreach ($grouped as $merchantId => &$vendorData) {
+            $shippingData = MerchantCartService::calculateVendorShipping($merchantId, $products);
             $vendorData['shipping_data'] = $shippingData;
             $vendorData['has_complete_data'] = $shippingData['has_complete_data'];
             $vendorData['missing_data'] = $shippingData['missing_data'];
@@ -961,16 +961,16 @@ class CartController extends FrontBaseController
         $cart->totalPrice = $totalPrice;
     }
 
-    private function findRowKeyInCart(Cart $cart, int $productId, ?int $vendorId, ?string $sizeKey, ?string $size, ?string $color, ?string $values): ?string
+    private function findRowKeyInCart(Cart $cart, int $productId, ?int $merchantId, ?string $sizeKey, ?string $size, ?string $color, ?string $values): ?string
     {
         $valuesNorm = is_string($values) ? str_replace([' ', ','], '', $values) : null;
         foreach ((array)$cart->items as $k => $row) {
             $rowItem = $row['item'] ?? null;
             if (!$rowItem) continue;
             if ((int)($rowItem->id ?? 0) !== $productId) continue;
-            if ($vendorId !== null) {
+            if ($merchantId !== null) {
                 $rowVendor = (int)($rowItem->vendor_user_id ?? $rowItem->user_id ?? 0);
-                if ($rowVendor !== $vendorId) continue;
+                if ($rowVendor !== $merchantId) continue;
             }
             if ($sizeKey !== null && $sizeKey !== '') {
                 if ((string)($row['size_key'] ?? '') !== (string)$sizeKey) continue;
@@ -1176,7 +1176,7 @@ class CartController extends FrontBaseController
         }
 
         // تأكيد تطابق البائع (STRICT ASSERTION)
-        $vendorId = (int)$mp->user_id;
+        $merchantId = (int)$mp->user_id;
 
         // احسب المخزون الفعلي للمقاس الحالي
         $size = (string)($row['size'] ?? '');
@@ -1222,8 +1222,8 @@ class CartController extends FrontBaseController
         $bulkDiscount = MerchantCartService::calculateBulkDiscount($mp->id, $newQty);
 
         // حقن سياق البائع داخل كائن المنتج
-        $prod->user_id             = $vendorId;
-        $prod->vendor_user_id      = $vendorId;
+        $prod->user_id             = $merchantId;
+        $prod->vendor_user_id      = $merchantId;
         $prod->merchant_product_id = $mp->id;
         $prod->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
         $prod->previous_price      = $mp->previous_price;
@@ -1325,7 +1325,7 @@ class CartController extends FrontBaseController
         }
 
         // تأكيد تطابق البائع (STRICT ASSERTION)
-        $vendorId = (int)$mp->user_id;
+        $merchantId = (int)$mp->user_id;
 
         // التحقق من الحد الأدنى للكمية قبل التنقيص
         // minimum_qty = الخطوة (step) للزيادة/النقصان (للأطقم)
@@ -1359,8 +1359,8 @@ class CartController extends FrontBaseController
         $bulkDiscount = MerchantCartService::calculateBulkDiscount($mp->id, $newQty);
 
         // حقن سياق البائع
-        $prod->user_id             = $vendorId;
-        $prod->vendor_user_id      = $vendorId;
+        $prod->user_id             = $merchantId;
+        $prod->vendor_user_id      = $merchantId;
         $prod->merchant_product_id = $mp->id;
         $prod->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
         $prod->previous_price      = $mp->previous_price;
@@ -1448,12 +1448,12 @@ class CartController extends FrontBaseController
         $rowKey = $request->input('row', $id);
         if (!is_array($cart->items) || !array_key_exists($rowKey, $cart->items)) {
             $productId = (int) $id;
-            $vendorId  = $request->has('user') ? (int)$request->input('user') : null;
+            $merchantId  = $request->has('user') ? (int)$request->input('user') : null;
             $sizeKey   = $request->input('size_key');
             $size      = $request->input('size');
             $color     = $request->input('color');
             $values    = $request->input('values');
-            $rowKey = $this->findRowKeyInCart($cart, $productId, $vendorId, $sizeKey, $size, $color, $values);
+            $rowKey = $this->findRowKeyInCart($cart, $productId, $merchantId, $sizeKey, $size, $color, $values);
             if (!$rowKey) {
                 foreach ((array)$cart->items as $k => $row) {
                     if ((int)($row['item']->id ?? 0) === $productId) { $rowKey = $k; break; }

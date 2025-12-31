@@ -34,7 +34,7 @@
                 <h4 class="title">@lang('Update a group of Products Using the Provided Smaple CSV')</h4>
                 <a href="{{ asset('assets/product-csv-format.csv') }}" class="template-btn black-btn" type="button">@lang('Downlod Sample CSV')</a>
             </div>
-            <form class="dropzone upload-box" action="{{ route('merchant-prod-importsubmit') }}" method="POST" enctype="multipart/form-data">
+            <form class="dropzone upload-box" action="{{ route('merchant-catalog-item-importsubmit') }}" method="POST" enctype="multipart/form-data">
 				@csrf
                 <img src="{{ asset('assets') }}/front/images/file1.png" alt="">
                 <div class="upload-box-texts-wrapper">

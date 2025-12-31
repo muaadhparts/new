@@ -163,11 +163,11 @@ class PurchaseController extends AdminBaseController
             } else {
                 if ($input['status'] == "completed") {
 
-                    if ($data->vendor_ids) {
-                        $vendor_ids = json_decode($data->vendor_ids, true);
+                    if ($data->merchant_ids) {
+                        $merchant_ids = json_decode($data->merchant_ids, true);
 
-                        foreach ($vendor_ids as $vendor) {
-                            $deliveryRider = DeliveryRider::where('purchase_id', $data->id)->where('vendor_id', $vendor)->first();
+                        foreach ($merchant_ids as $vendor) {
+                            $deliveryRider = DeliveryRider::where('purchase_id', $data->id)->where('merchant_id', $vendor)->first();
                             if ($deliveryRider) {
                                 $rider = Rider::findOrFail($deliveryRider->rider_id);
                                 $service_area = RiderServiceArea::findOrFail($deliveryRider->service_area_id);
@@ -242,10 +242,10 @@ class PurchaseController extends AdminBaseController
                         $x = (string) $prod['stock'];
                         if ($x != null) {
                             // Find the merchant product that was used for this purchase item
-                            $vendorId = $prod['item']['user_id'] ?? null;
-                            if ($vendorId) {
+                            $merchantId = $prod['item']['user_id'] ?? null;
+                            if ($merchantId) {
                                 $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $prod['item']['id'])
-                                    ->where('user_id', $vendorId)
+                                    ->where('user_id', $merchantId)
                                     ->first();
 
                                 if ($merchantItem) {
@@ -260,10 +260,10 @@ class PurchaseController extends AdminBaseController
                     foreach ($cart->items as $prod) {
                         $x = (string) $prod['size_qty'];
                         if (!empty($x)) {
-                            $vendorId = $prod['item']['user_id'] ?? null;
-                            if ($vendorId) {
+                            $merchantId = $prod['item']['user_id'] ?? null;
+                            if ($merchantId) {
                                 $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $prod['item']['id'])
-                                    ->where('user_id', $vendorId)
+                                    ->where('user_id', $merchantId)
                                     ->first();
 
                                 if ($merchantItem && $merchantItem->size_qty) {
@@ -319,10 +319,10 @@ class PurchaseController extends AdminBaseController
     public function product_submit(Request $request)
     {
         $sku = $request->sku;
-        $vendorId = $request->vendor_id;
+        $merchantId = $request->merchant_id;
 
         // Find product through merchant_items relationship
-        $merchantItem = \App\Models\MerchantItem::where('user_id', $vendorId)
+        $merchantItem = \App\Models\MerchantItem::where('user_id', $merchantId)
             ->whereHas('catalogItem', function($query) use ($sku) {
                 $query->where('sku', $sku)->where('status', 1);
             })
@@ -373,11 +373,11 @@ class PurchaseController extends AdminBaseController
         $product = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
 
         // Get vendor-specific data from merchant_products
-        $vendorId = (int) ($_GET['vendor_id'] ?? 0);
+        $merchantId = (int) ($_GET['merchant_id'] ?? 0);
         $merchantProduct = null;
-        if ($vendorId > 0) {
+        if ($merchantId > 0) {
             $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $id)
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->where('status', 1)
                 ->first();
         }
@@ -558,11 +558,11 @@ class PurchaseController extends AdminBaseController
         $product = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
 
         // Get vendor-specific data from merchant_products
-        $vendorId = (int) ($_GET['vendor_id'] ?? 0);
+        $merchantId = (int) ($_GET['merchant_id'] ?? 0);
         $merchantProduct = null;
-        if ($vendorId > 0) {
+        if ($merchantId > 0) {
             $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $id)
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->where('status', 1)
                 ->first();
         }

@@ -123,17 +123,17 @@
                                         </thead>
                                         <tbody>
 
-                                            @foreach($data->orders as $order)
+                                            @foreach($data->purchases as $deliveryRider)
 
                                             <tr>
-                                                <td><a href="{{ route('admin-purchase-invoice',$order->order->id) }}">{{sprintf("%'.08d",
-                                                        $order->order->id)}}</a></td>
-                                                <td>{{ Carbon\Carbon::parse($order->created_at)->format('d/m/Y') }}</td>
-                                                <td>{{ \PriceHelper::showOrderCurrencyPrice(($order->order->pay_amount *
-                                                    $order->order->currency_value),$order->order->currency_sign) }}</td>
-                                                <td>{{ ucwords($order->status) }}</td>
+                                                <td><a href="{{ route('admin-purchase-invoice',$deliveryRider->purchase->id) }}">{{sprintf("%'.08d",
+                                                        $deliveryRider->purchase->id)}}</a></td>
+                                                <td>{{ Carbon\Carbon::parse($deliveryRider->created_at)->format('d/m/Y') }}</td>
+                                                <td>{{ \PriceHelper::showOrderCurrencyPrice(($deliveryRider->purchase->pay_amount *
+                                                    $deliveryRider->purchase->currency_value),$deliveryRider->purchase->currency_sign) }}</td>
+                                                <td>{{ ucwords($deliveryRider->status) }}</td>
                                                 <td>
-                                                    <a href=" {{ route('admin-purchase-show',$order->order->id) }}"
+                                                    <a href=" {{ route('admin-purchase-show',$deliveryRider->purchase->id) }}"
                                                         class="view-details">
                                                         <i class="fas fa-check"></i>{{ __("Details") }}
                                                     </a>

@@ -583,7 +583,7 @@
                                 @endif
 
                                 @if (Auth::check())
-                                    @if (Auth::user()->favorites()->where('vendor_id', '=', $merchant->user_id)->get()->count() > 0)
+                                    @if (Auth::user()->favoriteSellers()->where('merchant_id', '=', $merchant->user_id)->exists())
                                         <a class="m-btn m-btn--ghost" href="javascript:;" >
                                             <i class="fas fa-check"></i>
                                             {{ __('Favorite') }}
@@ -749,8 +749,8 @@
                                     <div class="write-comment-area">
 
                                         <form action="{{ route('front.review.submit') }}"
-                                            data-href="{{ route('front.reviews', $productt->id) }}"
-                                            data-side-href="{{ route('front.side.reviews', $productt->id) }}"
+                                            data-href="{{ route('front.catalog-item.reviews', $productt->id) }}"
+                                            data-side-href="{{ route('front.catalog-item.side.reviews', $productt->id) }}"
                                             method="POST">
                                             @csrf
                                             <input type="hidden" id="rating" name="rating" value="5">
@@ -871,7 +871,7 @@
     <!-- Product report Modal Start -->
     @if (auth()->check())
         <div class="modal gs-modal fade" id="report-modal" tabindex="-1" aria-hidden="true">
-            <form action="{{ route('product.report') }}" method="POST"
+            <form action="{{ route('catalog-item.report') }}" method="POST"
                 class="modal-dialog assign-rider-modal-dialog modal-dialog-centered">
                 {{ csrf_field() }}
                 <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">

@@ -25,7 +25,7 @@ class ShipmentController extends AdminBaseController
     public function index(Request $request)
     {
         $status = $request->get('status');
-        $vendorId = $request->get('vendor_id');
+        $merchantId = $request->get('merchant_id');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
         $search = $request->get('search');
@@ -40,14 +40,14 @@ class ShipmentController extends AdminBaseController
             ->get();
 
         // Get shipments with filters
-        $shipments = ShipmentStatusLog::whereIn('id', function ($sub) use ($status, $vendorId, $dateFrom, $dateTo, $search) {
+        $shipments = ShipmentStatusLog::whereIn('id', function ($sub) use ($status, $merchantId, $dateFrom, $dateTo, $search) {
                 $sub->selectRaw('MAX(id)')
                     ->from('shipment_status_logs')
                     ->when($status, function ($q) use ($status) {
                         $q->where('status', $status);
                     })
-                    ->when($vendorId, function ($q) use ($vendorId) {
-                        $q->where('vendor_id', $vendorId);
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
                     })
                     ->when($dateFrom, function ($q) use ($dateFrom) {
                         $q->whereDate('status_date', '>=', $dateFrom);
@@ -65,11 +65,11 @@ class ShipmentController extends AdminBaseController
                     })
                     ->groupBy('tracking_number');
             })
-            ->with(['purchase:id,purchase_number,customer_name,pay_amount,currency_sign', 'vendor:id,shop_name,name'])
+            ->with(['purchase:id,purchase_number,customer_name,pay_amount,currency_sign', 'merchant:id,shop_name,name'])
             ->orderBy('status_date', 'desc')
             ->paginate(25);
 
-        return view('admin.shipments.index', compact('stats', 'shipments', 'vendors', 'status', 'vendorId', 'dateFrom', 'dateTo', 'search'));
+        return view('admin.shipments.index', compact('stats', 'shipments', 'vendors', 'status', 'merchantId', 'dateFrom', 'dateTo', 'search'));
     }
 
     /**
@@ -86,7 +86,7 @@ class ShipmentController extends AdminBaseController
             ->get();
 
         $purchase = Purchase::with('user')->find($shipment->purchase_id);
-        $vendor = User::find($shipment->vendor_id);
+        $vendor = User::find($shipment->merchant_id);
 
         // Try to get live status
         $liveStatus = $this->tryotoService->trackShipment($trackingNumber);
@@ -148,16 +148,16 @@ class ShipmentController extends AdminBaseController
     public function export(Request $request)
     {
         $status = $request->get('status');
-        $vendorId = $request->get('vendor_id');
+        $merchantId = $request->get('merchant_id');
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        $query = ShipmentStatusLog::with(['purchase:id,purchase_number,customer_name,pay_amount', 'vendor:id,shop_name'])
+        $query = ShipmentStatusLog::with(['purchase:id,purchase_number,customer_name,pay_amount', 'merchant:id,shop_name'])
             ->when($status, function ($q) use ($status) {
                 $q->where('status', $status);
             })
-            ->when($vendorId, function ($q) use ($vendorId) {
-                $q->where('vendor_id', $vendorId);
+            ->when($merchantId, function ($q) use ($merchantId) {
+                $q->where('merchant_id', $merchantId);
             })
             ->when($dateFrom, function ($q) use ($dateFrom) {
                 $q->whereDate('status_date', '>=', $dateFrom);
@@ -244,7 +244,7 @@ class ShipmentController extends AdminBaseController
     public function reports(Request $request)
     {
         $period = $request->get('period', 'month');
-        $vendorId = $request->get('vendor_id');
+        $merchantId = $request->get('merchant_id');
 
         // Get date range based on period
         $dateFrom = match($period) {
@@ -257,12 +257,12 @@ class ShipmentController extends AdminBaseController
         };
 
         // Overall Statistics
-        $overallStats = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $vendorId) {
+        $overallStats = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
                 $sub->selectRaw('MAX(id)')
                     ->from('shipment_status_logs')
                     ->where('status_date', '>=', $dateFrom)
-                    ->when($vendorId, function ($q) use ($vendorId) {
-                        $q->where('vendor_id', $vendorId);
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
                     })
                     ->groupBy('tracking_number');
             })
@@ -271,20 +271,20 @@ class ShipmentController extends AdminBaseController
             ->pluck('count', 'status')
             ->toArray();
 
-        // Top Vendors by Shipments
+        // Top Merchants by Shipments
         $topVendors = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
-            ->whereNotNull('vendor_id')
-            ->select('vendor_id', DB::raw('COUNT(DISTINCT tracking_number) as total'))
-            ->groupBy('vendor_id')
+            ->whereNotNull('merchant_id')
+            ->select('merchant_id', DB::raw('COUNT(DISTINCT tracking_number) as total'))
+            ->groupBy('merchant_id')
             ->orderBy('total', 'desc')
             ->limit(10)
-            ->with('vendor:id,shop_name,name')
+            ->with('merchant:id,shop_name,name')
             ->get();
 
         // Daily Shipments Chart Data
         $dailyShipments = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
-            ->when($vendorId, function ($q) use ($vendorId) {
-                $q->where('vendor_id', $vendorId);
+            ->when($merchantId, function ($q) use ($merchantId) {
+                $q->where('merchant_id', $merchantId);
             })
             ->select(
                 DB::raw('DATE(status_date) as date'),
@@ -309,12 +309,12 @@ class ShipmentController extends AdminBaseController
         $successRate = $total > 0 ? round(($delivered / $total) * 100, 1) : 0;
 
         // Companies Performance
-        $companiesPerformance = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $vendorId) {
+        $companiesPerformance = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
                 $sub->selectRaw('MAX(id)')
                     ->from('shipment_status_logs')
                     ->where('status_date', '>=', $dateFrom)
-                    ->when($vendorId, function ($q) use ($vendorId) {
-                        $q->where('vendor_id', $vendorId);
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
                     })
                     ->groupBy('tracking_number');
             })
@@ -338,7 +338,7 @@ class ShipmentController extends AdminBaseController
             'companiesPerformance',
             'vendors',
             'period',
-            'vendorId',
+            'merchantId',
             'total'
         ));
     }
@@ -383,7 +383,7 @@ class ShipmentController extends AdminBaseController
         // Create new log entry
         $newLog = ShipmentStatusLog::create([
             'purchase_id' => $existingLog->purchase_id,
-            'vendor_id' => $existingLog->vendor_id,
+            'merchant_id' => $existingLog->merchant_id,
             'tracking_number' => $trackingNumber,
             'shipment_id' => $payload['shipmentId'] ?? $existingLog->shipment_id,
             'company_name' => $payload['companyName'] ?? $existingLog->company_name,

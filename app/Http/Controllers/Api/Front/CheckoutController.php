@@ -100,13 +100,13 @@ class CheckoutController extends Controller
             // إنقاص رخص MP (بدل products) وتعيين الترخيص بالسلة
             foreach ($cart->items as $key => $prod) {
                 if (!empty($prod['item']['license']) && !empty($prod['item']['license_qty'])) {
-                    $vendorId = (int)($prod['item']['user_id'] ?? 0);
-                    if (!$vendorId) {
+                    $merchantId = (int)($prod['item']['user_id'] ?? 0);
+                    if (!$merchantId) {
                         continue;
                     }
 
                     $mp = MerchantItem::where('catalog_item_id', $prod['item']['id'])
-                        ->where('user_id', $vendorId)
+                        ->where('user_id', $merchantId)
                         ->first();
 
                     if ($mp && !empty($mp->license_qty)) {
@@ -145,7 +145,7 @@ class CheckoutController extends Controller
                 $packeing            = $orderCalculate['packeing'];
                 $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
                 $vendor_packing_ids  = $orderCalculate['vendor_packing_ids'];
-                $vendor_ids          = $orderCalculate['vendor_ids'];
+                $merchant_ids          = $orderCalculate['merchant_ids'];
 
                 $input['shipping_title']     = @$shipping->title;
                 $input['vendor_shipping_id'] = @$shipping->id;
@@ -155,7 +155,7 @@ class CheckoutController extends Controller
                 $input['packing_cost']       = @$packeing->price ?? 0;
                 $input['vendor_shipping_ids']= $vendor_shipping_ids;
                 $input['vendor_packing_ids'] = $vendor_packing_ids;
-                $input['vendor_ids']         = $vendor_ids;
+                $input['merchant_ids']         = $merchant_ids;
             } else {
                 // multi shipping
                 $orderTotal          = $orderCalculate['total_amount'];
@@ -163,7 +163,7 @@ class CheckoutController extends Controller
                 $packeing            = $orderCalculate['packeing'];
                 $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
                 $vendor_packing_ids  = $orderCalculate['vendor_packing_ids'];
-                $vendor_ids          = $orderCalculate['vendor_ids'];
+                $merchant_ids          = $orderCalculate['merchant_ids'];
                 $shipping_cost       = $orderCalculate['shipping_cost'];
                 $packing_cost        = $orderCalculate['packing_cost'];
 
@@ -175,7 +175,7 @@ class CheckoutController extends Controller
                 $input['packing_cost']       = $packing_cost;
                 $input['vendor_shipping_ids']= $vendor_shipping_ids;
                 $input['vendor_packing_ids'] = $vendor_packing_ids;
-                $input['vendor_ids']         = $vendor_ids;
+                $input['merchant_ids']         = $merchant_ids;
                 unset($input['shipping'], $input['packeging']);
             }
 
@@ -441,7 +441,7 @@ class CheckoutController extends Controller
     /**
      * إضافة للسلة — Vendor-aware: يعتمد على MerchantItem فقط
      */
-    protected function addtocart($cart, $currency_code, $p_id, $p_qty, $p_size, $p_color, $p_size_qty, $p_size_price, $p_size_key, $p_keys, $p_values, $p_prices, $affilate_user, $vendorId)
+    protected function addtocart($cart, $currency_code, $p_id, $p_qty, $p_size, $p_color, $p_size_qty, $p_size_price, $p_size_key, $p_keys, $p_values, $p_prices, $affilate_user, $merchantId)
     {
         try {
             // // dd(func_get_args()); // اختباري
@@ -487,13 +487,13 @@ class CheckoutController extends Controller
             }
 
             // عرض البائع
-            $vendorId = (int)$vendorId;
-            if ($vendorId <= 0) {
+            $merchantId = (int)$merchantId;
+            if ($merchantId <= 0) {
                 return false;
             }
 
             $mp = MerchantItem::where('catalog_item_id', $prod->id)
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->where('status', 1)
                 ->first();
 
@@ -502,7 +502,7 @@ class CheckoutController extends Controller
             }
 
             // حقن سياق البائع بالقيم الصحيحة
-            $prod->user_id              = $vendorId;             // inject vendor context
+            $prod->user_id              = $merchantId;             // inject vendor context
             $prod->merchant_product_id  = $mp->id;
 
             // سعر أساسي + عمولة + سعر مقاس إن وجد
@@ -602,7 +602,7 @@ class CheckoutController extends Controller
 
     public function VendorWisegetShippingPackaging(Request $request)
     {
-        $explode = explode(',', $request->vendor_ids);
+        $explode = explode(',', $request->merchant_ids);
         foreach ($explode as $key => $value) {
             $shipping[$value]  = Shipping::forVendor($value)->get();
             $packaging[$value] = Package::where('user_id', $value)->get();
@@ -625,17 +625,17 @@ class CheckoutController extends Controller
 
         foreach ($cart->items as $prod) {
             $productId = (int)($prod['item']['id'] ?? 0);
-            $vendorId  = (int)($prod['item']['user_id'] ?? 0);
+            $merchantId  = (int)($prod['item']['user_id'] ?? 0);
             $qty       = (int)($prod['qty'] ?? 0);
             $sizeKey   = $prod['size_key'] ?? null;
             $sizeQty   = $prod['size_qty'] ?? null; // قد تم تمريره من العميل (قيمة جديدة/مباشرة)
 
-            if (!$productId || !$vendorId || $qty <= 0) {
+            if (!$productId || !$merchantId || $qty <= 0) {
                 continue;
             }
 
             $mp = MerchantItem::where('catalog_item_id', $productId)
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->first();
 
             if (!$mp) {
@@ -671,17 +671,17 @@ class CheckoutController extends Controller
 
         foreach ($cart->items as $prod) {
             $productId = (int)($prod['item']['id'] ?? 0);
-            $vendorId  = (int)($prod['item']['user_id'] ?? 0);
+            $merchantId  = (int)($prod['item']['user_id'] ?? 0);
             $qty       = (int)($prod['qty'] ?? 0);
             $sizeKey   = $prod['size_key'] ?? null;
             $sizeQty   = $prod['size_qty'] ?? null;
 
-            if (!$productId || !$vendorId || $qty <= 0) {
+            if (!$productId || !$merchantId || $qty <= 0) {
                 continue;
             }
 
             $mp = MerchantItem::where('catalog_item_id', $productId)
-                ->where('user_id', $vendorId)
+                ->where('user_id', $merchantId)
                 ->first();
 
             if (!$mp) {
@@ -721,7 +721,7 @@ class CheckoutController extends Controller
         $selections = is_array($shippingInput) ? $shippingInput : [0 => $shippingInput];
 
         $otoPayloads = [];
-        foreach ($selections as $vendorId => $value) {
+        foreach ($selections as $merchantId => $value) {
             // OTO option is in the form: deliveryOptionId#Company#price
             if (!is_string($value) || strpos($value, '#') === false) {
                 continue; // Not OTO, could be an internal shipping ID
@@ -729,10 +729,10 @@ class CheckoutController extends Controller
             [$deliveryOptionId, $company, $price] = explode('#', $value);
 
             // Use vendor-specific credentials for each vendor
-            $tryotoService = app(\App\Services\TryotoService::class)->forVendor((int)$vendorId);
+            $tryotoService = app(\App\Services\TryotoService::class)->forVendor((int)$merchantId);
             $result = $tryotoService->createShipment(
                 $purchase,
-                (int)$vendorId ?: 0,
+                (int)$merchantId ?: 0,
                 $deliveryOptionId,
                 $company,
                 (float)$price,
@@ -741,7 +741,7 @@ class CheckoutController extends Controller
 
             if ($result['success']) {
                 $otoPayloads[] = [
-                    'vendor_id' => (string)$vendorId,
+                    'merchant_id' => (string)$merchantId,
                     'company' => $company,
                     'price' => (float)$price,
                     'deliveryOptionId'=> $deliveryOptionId,
@@ -751,15 +751,15 @@ class CheckoutController extends Controller
             } else {
                 Log::error('Tryoto createShipment failed via TryotoService', [
                     'purchase_id' => $purchase->id,
-                    'vendor_id' => $vendorId,
+                    'merchant_id' => $merchantId,
                     'error' => $result['error'] ?? 'Unknown error'
                 ]);
             }
         }
 
         if ($otoPayloads) {
-            // 1) Store the details in vendor_shipping_id as JSON text (no migration required)
-            $purchase->vendor_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
+            // 1) Store the details in merchant_shipping_id as JSON text (no migration required)
+            $purchase->merchant_shipping_id = json_encode(['oto' => $otoPayloads], JSON_UNESCAPED_UNICODE);
 
             // 2) Quick display and explanation
             $first = $otoPayloads[0];

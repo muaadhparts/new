@@ -23,7 +23,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-prod-index') }}" class="text-capitalize"> @lang('Products') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('Products') </a>
                 </li>
                 <li>
                     <a href="#" class="text-capitalize"> @lang('Add Product') </a>
@@ -42,7 +42,7 @@
                     <br>
                     @lang('You can then set your own price, stock, and other offer details.')
                 </p>
-                <a href="{{ route('merchant-prod-add') }}" class="btn btn-primary btn-lg">
+                <a href="{{ route('merchant-catalog-item-add') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-plus me-2"></i>@lang('Add Product by SKU')
                 </a>
             </div>
@@ -53,7 +53,7 @@
 <script>
     // Auto redirect after 3 seconds
     setTimeout(function() {
-        window.location.href = "{{ route('merchant-prod-add') }}";
+        window.location.href = "{{ route('merchant-catalog-item-add') }}";
     }, 3000);
 </script>
 @endsection

@@ -885,7 +885,7 @@
 				var img = $('#feature_photo').val();
 
 				$.ajax({
-					url: "{{route('merchant-prod-upload-update',$data->id)}}",
+					url: "{{route('merchant-catalog-item-upload-update',$data->id)}}",
 					type: "POST",
 					data: {
 						"image": img

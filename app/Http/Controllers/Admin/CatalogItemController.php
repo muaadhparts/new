@@ -60,7 +60,7 @@ class CatalogItemController extends AdminBaseController
 
                 $prodLink = route('front.catalog-item', [
                     'slug' => $catalogItem->slug,
-                    'vendor_id' => $mp->user_id,
+                    'merchant_id' => $mp->user_id,
                     'merchant_item_id' => $mp->id
                 ]);
 
@@ -170,7 +170,7 @@ class CatalogItemController extends AdminBaseController
 
                 $prodLink = route('front.catalog-item', [
                     'slug' => $catalogItem->slug,
-                    'vendor_id' => $mp->user_id,
+                    'merchant_id' => $mp->user_id,
                     'merchant_item_id' => $mp->id
                 ]);
 
@@ -456,11 +456,11 @@ class CatalogItemController extends AdminBaseController
         $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
         // Store vendor-specific data before removing from input
-        $vendorId = (int) ($request->input('user_id') ?? 0);
+        $merchantId = (int) ($request->input('user_id') ?? 0);
         $brandQualityId = $request->input('brand_quality_id') ?: null;
 
         // Remove vendor-specific fields from catalog item table input
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['vendor_id']);
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['merchant_id']);
         if ($request->cross_products) {
             $input['cross_products'] = implode(',', $request->cross_products);
         }
@@ -528,10 +528,10 @@ class CatalogItemController extends AdminBaseController
         $data->fill($input)->save();
 
         // Create merchant_item entry for the vendor
-        if ($vendorId > 0) {
+        if ($merchantId > 0) {
             MerchantItem::create([
                 'catalog_item_id' => $data->id,
-                'user_id' => $vendorId,
+                'user_id' => $merchantId,
                 'brand_quality_id' => $brandQualityId,
                 'price' => $basePrice,
                 'previous_price' => $basePreviousPrice,
@@ -984,7 +984,7 @@ class CatalogItemController extends AdminBaseController
 
         // Update merchant_item entry
         $merchantItem->update([
-            'user_id' => (int) ($request->input('vendor_id') ?? $merchantItem->user_id),
+            'user_id' => (int) ($request->input('merchant_id') ?? $merchantItem->user_id),
             'brand_quality_id' => $request->input('brand_quality_id') ?: null,
             'price' => $basePrice,
             'previous_price' => $basePreviousPrice,

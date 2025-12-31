@@ -205,7 +205,7 @@ class CartHelper
                 'merchant_product_id' => $mpId,
                 'product_id' => $mp->product_id,
                 'user_id' => $mp->user_id,
-                'vendor_id' => $mp->user_id, // صريح للاستخدام في route
+                'merchant_id' => $mp->user_id, // صريح للاستخدام في route
                 'brand_quality_id' => $mp->brand_quality_id,
 
                 // معلومات المنتج
@@ -404,21 +404,21 @@ class CartHelper
         $grouped = [];
 
         foreach ($cart['items'] as $cartKey => $item) {
-            $vendorId = $item['user_id'] ?? 0;
+            $merchantId = $item['user_id'] ?? 0;
 
-            if (!isset($grouped[$vendorId])) {
-                $grouped[$vendorId] = [
-                    'vendor_id' => $vendorId,
-                    'vendor_name' => $item['vendor_name'] ?? __('Unknown Vendor'),
+            if (!isset($grouped[$merchantId])) {
+                $grouped[$merchantId] = [
+                    'merchant_id' => $merchantId,
+                    'merchant_name' => $item['merchant_name'] ?? __('Unknown Merchant'),
                     'items' => [],
                     'total' => 0,
                     'count' => 0
                 ];
             }
 
-            $grouped[$vendorId]['items'][$cartKey] = $item;
-            $grouped[$vendorId]['total'] += (float)($item['total_price'] ?? 0);
-            $grouped[$vendorId]['count'] += (int)($item['qty'] ?? 0);
+            $grouped[$merchantId]['items'][$cartKey] = $item;
+            $grouped[$merchantId]['total'] += (float)($item['total_price'] ?? 0);
+            $grouped[$merchantId]['count'] += (int)($item['qty'] ?? 0);
         }
 
         return $grouped;

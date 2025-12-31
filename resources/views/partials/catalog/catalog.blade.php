@@ -174,7 +174,7 @@
                                         $catalogMerchant = $catalogProdObj?->best_merchant_item;
 
                                         $catalogProdUrl = $catalogMerchant && isset($prod['slug'])
-                                            ? route('front.catalog-item', ['slug' => $prod['slug'], 'vendor_id' => $catalogMerchant->user_id, 'merchant_item_id' => $catalogMerchant->id])
+                                            ? route('front.catalog-item', ['slug' => $prod['slug'], 'merchant_id' => $catalogMerchant->user_id, 'merchant_item_id' => $catalogMerchant->id])
                                             : (isset($prod['slug']) ? route('front.catalog-item.legacy', $prod['slug']) : '#');
                                     @endphp
 

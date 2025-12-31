@@ -664,7 +664,7 @@ class GeocodingController extends Controller
 
         // Store location data in location_draft session (not step1)
         // Will be merged into step1 on form submit
-        $vendorId = $request->input('vendor_id');
+        $merchantId = $request->input('merchant_id');
         $locationDraft = [
             'latitude' => $latitude,
             'longitude' => $longitude,
@@ -679,8 +679,8 @@ class GeocodingController extends Controller
             'tax_location' => $taxLocation,
         ];
 
-        if ($vendorId) {
-            \Session::put('location_draft_vendor_' . $vendorId, $locationDraft);
+        if ($merchantId) {
+            \Session::put('location_draft_vendor_' . $merchantId, $locationDraft);
         } else {
             \Session::put('location_draft', $locationDraft);
         }

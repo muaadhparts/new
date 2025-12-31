@@ -24,16 +24,16 @@
                         <div class="single-product-widget contact-vendor-wrapper">
                             <h5 class="widget-title">@lang('Contact Vendor')</h5>
                             <div class="img-wrapper">
-                                <img src="{{ asset('assets/images/users/' . $vendor->photo) }}" alt="vendor img">
+                                <img src="{{ asset('assets/images/users/' . $merchant->photo) }}" alt="vendor img">
                             </div>
                             <ul>
-                                <li><span><b>@lang('Store Name:') </b>{{ getLocalizedShopName($vendor) }}</span></li>
-                                <li><span><b>@lang('Owner Name:') </b>{{ $vendor->owner_name }}</span></li>
-                                <li><span><b>@lang('Phone:') </b> {{ $vendor->shop_number }}</span></li>
-                                <li><span><b>@lang('Email:') </b>{{ $vendor->email }}</span></li>
-                                <li><span><b>@lang('Address:') </b>{{ $vendor->shop_address }}</span></li>
+                                <li><span><b>@lang('Store Name:') </b>{{ getLocalizedShopName($merchant) }}</span></li>
+                                <li><span><b>@lang('Owner Name:') </b>{{ $merchant->owner_name }}</span></li>
+                                <li><span><b>@lang('Phone:') </b> {{ $merchant->shop_number }}</span></li>
+                                <li><span><b>@lang('Email:') </b>{{ $merchant->email }}</span></li>
+                                <li><span><b>@lang('Address:') </b>{{ $merchant->shop_address }}</span></li>
                             </ul>
-                            @if (!auth()->id() == $vendor->id)
+                            @if (!auth()->id() == $merchant->id)
                             @if (auth()->check())
                             <form action="{{ route('user-contact') }}" method="POST">
                                 @csrf 
@@ -42,7 +42,7 @@
                                    
                                     <div class="input-wrapper">
                                         <input class="input-cls" id="email" name="email" type="email"
-                                            placeholder="@lang('Email')" readonly value="{{$vendor->email}}" />
+                                            placeholder="@lang('Email')" readonly value="{{$merchant->email}}" />
                                     </div>
                                     <div class="input-wrapper">
                                         <input class="input-cls" id="subject" name="subject" type="tel"
@@ -93,7 +93,7 @@
                                     @endforeach
                                 </ul>
                             </div>
-                            <a href="{{ route('front.merchant', str_replace(' ', '-', $vendor->shop_name)) }}"
+                            <a href="{{ route('front.merchant', str_replace(' ', '-', $merchant->shop_name)) }}"
                                 class="template-btn dark-btn w-100 mt-3">@lang('Clear Filter')</a>
                         </div>
                         @endif
@@ -194,7 +194,7 @@
                                 <div class="m-pagination-simple"
                                      data-current="{{ $vprods->currentPage() }}"
                                      data-last="{{ $vprods->lastPage() }}"
-                                     data-base-url="{{ route('front.merchant', str_replace(' ', '-', $vendor->shop_name)) }}">
+                                     data-base-url="{{ route('front.merchant', str_replace(' ', '-', $merchant->shop_name)) }}">
 
                                     {{-- Previous Button --}}
                                     <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $vprods->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
@@ -237,7 +237,7 @@
             // ========================================
             // Vendor Products AJAX System
             // ========================================
-            const baseUrl = '{{ route('front.merchant', str_replace(' ', '-', $vendor->shop_name)) }}';
+            const baseUrl = '{{ route('front.merchant', str_replace(' ', '-', $merchant->shop_name)) }}';
             const $scrollContainer = $('.vendor-products-scroll');
             const $productsContainer = $('.vendor-products-scroll');
             const $paginationContainer = $('.m-pagination-simple');

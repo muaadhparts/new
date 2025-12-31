@@ -63,12 +63,12 @@ class PaypalController extends CheckoutBaseControlller
         // ====================================================================
         // VENDOR CHECKOUT: Get vendor-specific session data
         // ====================================================================
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
-        $isMerchantCheckout = $vendorData['is_merchant_checkout'];
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantId = $merchantData['merchant_id'];
+        $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
         // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $isMerchantCheckout);
+        $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -144,12 +144,12 @@ class PaypalController extends CheckoutBaseControlller
         // ====================================================================
         // VENDOR CHECKOUT: Get vendor-specific session data
         // ====================================================================
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
-        $isMerchantCheckout = $vendorData['is_merchant_checkout'];
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantId = $merchantData['merchant_id'];
+        $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
         // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $isMerchantCheckout);
+        $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -163,9 +163,9 @@ class PaypalController extends CheckoutBaseControlller
         // Get cart and filter for vendor
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $vendorId);
+        $cart = $this->filterCartForVendor($originalCart, $merchantId);
 
-        $success_url = $this->getSuccessUrl($vendorId, $originalCart);
+        $success_url = $this->getSuccessUrl($merchantId, $originalCart);
         $cancel_url = route('front.payment.cancle');
         
 
@@ -260,7 +260,7 @@ class PaypalController extends CheckoutBaseControlller
             // ====================================================================
             // VENDOR CHECKOUT: Remove only vendor's products from cart
             // ====================================================================
-            $this->removeVendorProductsFromCart($vendorId, $originalCart);
+            $this->removeVendorProductsFromCart($merchantId, $originalCart);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                 PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

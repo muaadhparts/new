@@ -17,7 +17,7 @@
 		}
 
 		$productUrl = ($merchantItemId && $vendorId)
-			? route('front.catalog-item', ['slug' => $productSlug, 'vendor_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
+			? route('front.catalog-item', ['slug' => $productSlug, 'merchant_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
 			: 'javascript:;';
 	@endphp
 	<div class="docname">

@@ -52,10 +52,10 @@ class FrontendController extends Controller
 
     // Display All Type Of Products
 
-    public function vendor_products(Request $request, $vendor_id)
+    public function merchant_products(Request $request, $merchant_id)
     {
         try {
-            $user = User::where('id', $vendor_id)->first();
+            $user = User::where('id', $merchant_id)->first();
             if (!$user) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Vendor not found']]);
             }

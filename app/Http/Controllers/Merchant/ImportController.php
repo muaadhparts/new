@@ -42,7 +42,7 @@ class ImportController extends MerchantBaseController
 
                 // تمرير {vendor_id} و {merchant_item_id} في الرابط
                 $id = '<small>' . __('Catalog Item ID') . ': <a href="' .
-                    route('front.catalog-item', ['slug' => $catalogItem->slug, 'vendor_id' => $data->user_id, 'merchant_item_id' => $data->id]) .
+                    route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $data->user_id, 'merchant_item_id' => $data->id]) .
                     '" target="_blank">' . sprintf("%'.08d", $catalogItem->id) . '</a></small>';
 
                 return $name . '<br>' . $id;
@@ -56,7 +56,7 @@ class ImportController extends MerchantBaseController
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
                 $s     = $data->status == 1 ? 'selected' : '';
                 $ns    = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('merchant-prod-status', ['id1' => $data->product_id, 'id2' => 1]) . '" ' . $s . '>' . __('Activated') . '</option><option data-val="0" value="' . route('merchant-prod-status', ['id1' => $data->product_id, 'id2' => 0]) . '" ' . $ns . '>' . __('Deactivated') . '</option></select></div>';
+                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('merchant-catalog-item-status', ['id1' => $data->product_id, 'id2' => 1]) . '" ' . $s . '>' . __('Activated') . '</option><option data-val="0" value="' . route('merchant-catalog-item-status', ['id1' => $data->product_id, 'id2' => 0]) . '" ' . $ns . '>' . __('Deactivated') . '</option></select></div>';
             })
             ->addColumn('action', function (MerchantItem $data) {
                 return '<div class="action-list">
@@ -67,7 +67,7 @@ class ImportController extends MerchantBaseController
                                 <input type="hidden" value="' . $data->catalog_item_id . '">
                                 <i class="fas fa-eye"></i> ' . __('View Gallery') . '
                             </a>
-                            <a href="javascript:;" data-href="' . route('merchant-prod-delete', $data->catalog_item_id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
+                            <a href="javascript:;" data-href="' . route('merchant-catalog-item-delete', $data->catalog_item_id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete">
                                 <i class="fas fa-trash-alt"></i>
                             </a>
                         </div>';

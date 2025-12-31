@@ -45,8 +45,8 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ Auth::user()->orders()->count() }}</h5>
-                                <p>@lang('Total Orders')</p>
+                                <h5>{{ Auth::user()->purchases()->count() }}</h5>
+                                <p>@lang('Total Purchases')</p>
                             </div>
                         </div>
                         <div class="col-12 col-sm-6 col-lg-3">
@@ -76,8 +76,8 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ Auth::user()->orders()->where('status', 'pending')->count() }}</h5>
-                                <p>@lang('Pending Orders')</p>
+                                <h5>{{ Auth::user()->purchases()->where('status', 'pending')->count() }}</h5>
+                                <p>@lang('Pending Purchases')</p>
                             </div>
                         </div>
                         <div class="col-12 col-sm-6 col-lg-3">
@@ -180,34 +180,34 @@
                                 <th><span class="header-title">@lang('Order Status')</span></th>
                                 <th><span class="header-title">@lang('View')</span></th>
                             </tr>
-                            @foreach (Auth::user()->orders()->latest()->take(6)->get() as $order)
+                            @foreach (Auth::user()->purchases()->latest()->take(6)->get() as $purchase)
                                 <tr>
-                                    <td><span class="content">{{ $order->purchase_number }}</span></td>
-                                    <td><span class="content">{{ date('d M Y', strtotime($order->created_at)) }}</span>
+                                    <td><span class="content">{{ $purchase->purchase_number }}</span></td>
+                                    <td><span class="content">{{ date('d M Y', strtotime($purchase->created_at)) }}</span>
                                     </td>
                                     <td><span
-                                            class="content">{{ \PriceHelper::showAdminCurrencyPrice($order->pay_amount * $order->currency_value, $order->currency_sign) }}</span>
+                                            class="content">{{ \PriceHelper::showAdminCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                     </td>
                                     <td>
                                         @php
-                                            if ($order->status == 'pending') {
+                                            if ($purchase->status == 'pending') {
                                                 $class = 'yellow-btn';
-                                            } elseif ($order->status == 'processing') {
+                                            } elseif ($purchase->status == 'processing') {
                                                 $class = 'yellow-btn';
-                                            } elseif ($order->status == 'completed') {
+                                            } elseif ($purchase->status == 'completed') {
                                                 $class = 'green-btn';
-                                            } elseif ($order->status == 'declined') {
+                                            } elseif ($purchase->status == 'declined') {
                                                 $class = 'red-btn';
-                                            }else if($order->status == "on delivery"){
+                                            }else if($purchase->status == "on delivery"){
                                                 $class = 'black-btn';
                                             }
                                         @endphp
                                         <button type="button" disabled class="template-btn md-btn {{ $class }}">
-                                            {{ ucwords($order->status) }}
+                                            {{ ucwords($purchase->status) }}
                                         </button>
                                     </td>
                                     <td class="view-btn-wrapper">
-                                        <a href="{{route('user-purchase',$order->id)}}" class="view-btn">
+                                        <a href="{{route('user-purchase',$purchase->id)}}" class="view-btn">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_548_16589)">

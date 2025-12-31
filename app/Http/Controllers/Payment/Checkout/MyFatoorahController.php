@@ -76,18 +76,18 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * - Each vendor is financially responsible for their own transactions
      * - Uses vendor's own test_mode and country settings
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @return array
      * @throws \Exception If vendor doesn't have payment credentials configured
      */
-    protected function getVendorMfConfig(int $vendorId): array
+    protected function getVendorMfConfig(int $merchantId): array
     {
         // Get vendor-specific API key - NO FALLBACK
-        $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($vendorId);
+        $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($merchantId);
 
         if (empty($apiKey)) {
             throw new \Exception(
-                "MyFatoorah payment credentials not configured for vendor #{$vendorId}. " .
+                "MyFatoorah payment credentials not configured for vendor #{$merchantId}. " .
                 "Each vendor must have their own payment credentials. " .
                 "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
             );
@@ -95,7 +95,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Get vendor's gateway settings (test_mode, country)
         $gateway = \DB::table('payment_gateways')
-            ->where('user_id', $vendorId)
+            ->where('user_id', $merchantId)
             ->where('keyword', 'myfatoorah')
             ->first();
 
@@ -123,32 +123,32 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // FIX: Read vendor_id from form POST first, then fall back to session
         // This prevents vendor_id loss when session expires or user navigates
         // ====================================================================
-        $vendorIdFromPost = $request->input('checkout_vendor_id');
+        $merchantIdFromPost = $request->input('checkout_vendor_id');
         $isMerchantCheckoutFromPost = $request->input('is_merchant_checkout') === '1';
 
         // Get from session as fallback
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorIdFromSession = $vendorData['vendor_id'];
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantIdFromSession = $merchantData['merchant_id'];
 
         // Use POST value first, then session
-        $vendorId = !empty($vendorIdFromPost) ? (int)$vendorIdFromPost : $vendorIdFromSession;
-        $isMerchantCheckout = $isMerchantCheckoutFromPost || $vendorData['is_merchant_checkout'];
+        $merchantId = !empty($merchantIdFromPost) ? (int)$merchantIdFromPost : $merchantIdFromSession;
+        $isMerchantCheckout = $isMerchantCheckoutFromPost || $merchantData['is_merchant_checkout'];
 
         // If we got vendor_id from POST but not in session, restore it to session for later use
-        if ($vendorId && !$vendorIdFromSession) {
-            Session::put('checkout_vendor_id', $vendorId);
+        if ($merchantId && !$merchantIdFromSession) {
+            Session::put('checkout_vendor_id', $merchantId);
             \Log::info('MyFatoorah store: Restored vendor_id to session from POST', [
-                'vendor_id' => $vendorId
+                'merchant_id' => $merchantId
             ]);
         }
 
         // POLICY: Vendor ID is REQUIRED for all payment operations
         // MyFatoorah credentials are ONLY in vendor_credentials table
-        if (!$vendorId) {
+        if (!$merchantId) {
             \Log::error('MyFatoorah store: No vendor_id found in POST or session', [
                 'user_id' => \Auth::id(),
-                'post_vendor_id' => $vendorIdFromPost,
-                'session_vendor_id' => $vendorIdFromSession,
+                'post_vendor_id' => $merchantIdFromPost,
+                'session_vendor_id' => $merchantIdFromSession,
                 'session_data' => $vendorData
             ]);
             return redirect()->route('front.cart')->with('unsuccess', __('خطأ في جلسة الدفع. يرجى إعادة المحاولة من السلة.'));
@@ -156,17 +156,17 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         // Get vendor-specific MyFatoorah config - NO FALLBACK
         try {
-            $this->mfConfig = $this->getVendorMfConfig($vendorId);
+            $this->mfConfig = $this->getVendorMfConfig($merchantId);
         } catch (\Exception $e) {
             \Log::error('MyFatoorah store: Vendor credentials not configured', [
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'error' => $e->getMessage()
             ]);
             return redirect()->route('front.cart')->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
         }
 
         // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $isMerchantCheckout);
+        $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -182,7 +182,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $vendorId);
+        $cart = $this->filterCartForVendor($originalCart, $merchantId);
         PurchaseHelper::license_check($cart);
 
         $cartData = [
@@ -240,7 +240,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         PurchaseHelper::vendor_purchase_check($cart, $purchase);
 
         // Clear Session and Prepare for Next Purchase
-        $this->clearPurchaseSession($purchase, $cart, $vendorId, $originalCart);
+        $this->clearPurchaseSession($purchase, $cart, $merchantId, $originalCart);
 
         // Send Emails
         $this->sendPurchaseEmails($purchase);
@@ -298,13 +298,13 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
     }
 
-    private function clearPurchaseSession(Purchase $purchase, Cart $cart, $vendorId, $originalCart)
+    private function clearPurchaseSession(Purchase $purchase, Cart $cart, $merchantId, $originalCart)
     {
         Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
         // Remove only vendor's products from cart
-        $this->removeVendorProductsFromCart($vendorId, $originalCart);
+        $this->removeVendorProductsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id && $purchase->wallet_price) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price);

@@ -15,20 +15,20 @@ class CatalogItemListResource extends JsonResource
     public function toArray($request)
     {
         // Get vendor context from request or catalog item attribute
-        $vendorId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
+        $merchantId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
 
         // Get vendor-aware pricing using the merchant_items system
         $currentPrice = method_exists($this, 'ApishowPrice')
-            ? (string) $this->ApishowPrice($vendorId ?: null)
+            ? (string) $this->ApishowPrice($merchantId ?: null)
             : (string) 0;
 
         $previousPrice = method_exists($this, 'ApishowPreviousPrice')
-            ? (string) $this->ApishowPreviousPrice($vendorId ?: null)
+            ? (string) $this->ApishowPreviousPrice($merchantId ?: null)
             : (string) 0;
 
         // Get active merchant item for additional data
         $mp = method_exists($this, 'activeMerchant')
-            ? $this->activeMerchant($vendorId ?: null)
+            ? $this->activeMerchant($merchantId ?: null)
             : null;
 
         return [

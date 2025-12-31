@@ -23,7 +23,7 @@ class CatalogReviewController extends AdminBaseController
 									if ($data->merchantItem && $data->merchantItem->id && $data->catalogItem) {
 										$prodLink = route('front.catalog-item', [
 											'slug' => $data->catalogItem->slug,
-											'vendor_id' => $data->merchantItem->user_id,
+											'merchant_id' => $data->merchantItem->user_id,
 											'merchant_item_id' => $data->merchantItem->id
 										]);
 									} elseif ($data->catalogItem && $data->catalogItem->sku) {

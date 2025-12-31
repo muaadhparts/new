@@ -26,12 +26,12 @@ class PaytmController extends CheckoutBaseControlller
 
     public function store(Request $request)
     {
-        // Get vendor checkout data
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
+        // Get merchant checkout data
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantId = $merchantData['merchant_id'];
 
-        // Get steps from vendor sessions ONLY
-        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_merchant_checkout']);
+        // Get steps from merchant sessions ONLY
+        $steps = $this->getCheckoutSteps($merchantId, $vendorData['is_merchant_checkout']);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -79,11 +79,11 @@ class PaytmController extends CheckoutBaseControlller
 
     public function notify(Request $request)
     {
-        // Get vendor checkout data at start
-        $vendorData = $this->getVendorCheckoutData();
-        $vendorId = $vendorData['vendor_id'];
+        // Get merchant checkout data at start
+        $merchantData = $this->getMerchantCheckoutData();
+        $merchantId = $merchantData['merchant_id'];
 
-        $steps = $this->getCheckoutSteps($vendorId, $vendorData['is_merchant_checkout']);
+        $steps = $this->getCheckoutSteps($merchantId, $merchantData['is_merchant_checkout']);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
@@ -113,7 +113,7 @@ class PaytmController extends CheckoutBaseControlller
 
                 $oldCart = Session::get('cart');
                 $originalCart = new Cart($oldCart);
-                $cart = $this->filterCartForVendor($originalCart, $vendorId);
+                $cart = $this->filterCartForVendor($originalCart, $merchantId);
                 PurchaseHelper::license_check($cart); // For License Checking
 
                 $t_cart = new Cart($oldCart);
@@ -200,7 +200,7 @@ class PaytmController extends CheckoutBaseControlller
                 Session::put('tempcart', $cart);
 
                 // Remove only vendor's products from cart
-                $this->removeVendorProductsFromCart($vendorId, $originalCart);
+                $this->removeVendorProductsFromCart($merchantId, $originalCart);
 
                 if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                     PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
@@ -230,7 +230,7 @@ class PaytmController extends CheckoutBaseControlller
                 $mailer->sendCustomMail($data);
 
                 // Determine success URL based on remaining cart items
-                $success_url = $this->getSuccessUrl($vendorId, $originalCart);
+                $success_url = $this->getSuccessUrl($merchantId, $originalCart);
                 return redirect($success_url);
             }
         }

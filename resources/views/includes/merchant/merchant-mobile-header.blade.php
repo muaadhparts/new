@@ -90,12 +90,12 @@
 
 
                     <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products/types') || request()->is('merchant/products/physical/create') || request()->is('merchant/products/digital/create') || request()->is('merchant/products/license/create') || request()->is('merchant/listing/create') ? 'active' : '' }}"
-                            href="{{ route('merchant-prod-types') }}">@lang('Add New Product')</a>
+                            href="{{ route('merchant-catalog-item-types') }}">@lang('Add New Product')</a>
                     </li>
                     <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products') || request()->is('merchant/products/edit/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-prod-index') }}">@lang('All Product')</a></li>
+                            href="{{ route('merchant-catalog-item-index') }}">@lang('All Product')</a></li>
                     <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products/catalogs') || request()->is('merchant/products/catalog/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-prod-catalogs') }}">@lang('Product Catalogs')</a></li>
+                            href="{{ route('merchant-catalog-item-catalogs') }}">@lang('Product Catalogs')</a></li>
                 </ul>
             </li>
 
@@ -104,7 +104,7 @@
 
 
             <li class="{{ request()->is('merchant/products/import') ? 'active' : '' }}">
-                <a href="{{ route('merchant-prod-import') }}">
+                <a href="{{ route('merchant-catalog-item-import') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path
                             d="M16 12L12 8M12 8L8 12M12 8V17.2C12 18.5907 12 19.2861 12.5505 20.0646C12.9163 20.5819 13.9694 21.2203 14.5972 21.3054C15.5421 21.4334 15.9009 21.2462 16.6186 20.8719C19.8167 19.2036 22 15.8568 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 15.7014 4.01099 18.9331 7 20.6622"

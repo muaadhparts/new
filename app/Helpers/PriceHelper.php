@@ -109,10 +109,10 @@ class PriceHelper
 //     public static function getOrderTotal($input, $cart)
 //     {
 //         try {
-//             $vendor_ids = [];
+//             $merchant_ids = [];
 //             foreach ($cart->items as $item) {
-//                 if (!in_array($item['item']['user_id'], $vendor_ids)) {
-//                     $vendor_ids[] = $item['item']['user_id'];
+//                 if (!in_array($item['item']['user_id'], $merchant_ids)) {
+//                     $merchant_ids[] = $item['item']['user_id'];
 //                 }
 //             }
 
@@ -132,11 +132,11 @@ class PriceHelper
 //             }
 
 //             if ($gs->multiple_shipping == 0) {
-//                 $vendor_shipping_ids = [];
-//                 $vendor_packing_ids = [];
-//                 foreach ($vendor_ids as $vendor_id) {
-//                     $vendor_shipping_ids[$vendor_id] = isset($input['shipping_id']) && $input['shipping_id'] != 0 ? $input['shipping_id'] : null;
-//                     $vendor_packing_ids[$vendor_id] = isset($input['packaging_id']) && $input['packaging_id'] != 0 ? $input['packaging_id'] : null;
+//                 $merchant_shipping_ids = [];
+//                 $merchant_packing_ids = [];
+//                 foreach ($merchant_ids as $merchant_id) {
+//                     $merchant_shipping_ids[$merchant_id] = isset($input['shipping_id']) && $input['shipping_id'] != 0 ? $input['shipping_id'] : null;
+//                     $merchant_packing_ids[$merchant_id] = isset($input['packaging_id']) && $input['packaging_id'] != 0 ? $input['packaging_id'] : null;
 //                 }
 
 
@@ -158,9 +158,9 @@ class PriceHelper
 //                     'packeing' => $packeing,
 //                     'is_shipping' => 0,
 //                     'tax'            => $tax_amount, // ✅ أُضيفت قيمة الضريبة
-//                     'vendor_shipping_ids' => @json_encode($vendor_shipping_ids),
-//                     'vendor_packing_ids' => @json_encode($vendor_packing_ids),
-//                     'vendor_ids' => @json_encode($vendor_ids),
+//                     'merchant_shipping_ids' => @json_encode($merchant_shipping_ids),
+//                     'merchant_packing_ids' => @json_encode($merchant_packing_ids),
+//                     'merchant_ids' => @json_encode($merchant_ids),
 //                     'success' => true,
 //                 ];
 
@@ -176,7 +176,7 @@ class PriceHelper
 // //                dd($input);
 //                 $shipping_cost = 0;
 //                 $packaging_cost = 0;
-//                 $vendor_ids = [];
+//                 $merchant_ids = [];
 //                 if (isset($input['shipping']) && $input['shipping'] != 0 && is_array($shippingData)) {
 // //                    dd($shippingData);
 //                     foreach ($shippingData as $key => $shipping_id) {
@@ -191,8 +191,8 @@ class PriceHelper
 //                             }
 
 
-//                         if (!in_array($shipping->user_id, $vendor_ids)) {
-//                             $vendor_ids[] = $shipping->user_id;
+//                         if (!in_array($shipping->user_id, $merchant_ids)) {
+//                             $merchant_ids[] = $shipping->user_id;
 //                         }
 //                     }
 //                 }
@@ -207,8 +207,8 @@ class PriceHelper
 //                     foreach ($packegingData as $key => $packaging_id) {
 //                         $packeing = Package::findOrFail($packaging_id);
 //                         $packaging_cost += $packeing->price;
-//                         if (!in_array($packeing->user_id, $vendor_ids)) {
-//                             $vendor_ids[] = $packeing->user_id;
+//                         if (!in_array($packeing->user_id, $merchant_ids)) {
+//                             $merchant_ids[] = $packeing->user_id;
 //                         }
 //                     }
 //                 }
@@ -224,9 +224,9 @@ class PriceHelper
 //                     'packeing' => isset($packeing) ? $packeing : null,
 //                     'is_shipping' => 1,
 //                     'tax' => $tax_amount,
-//                     'vendor_shipping_ids' => @json_encode($input['shipping']),
-//                     'vendor_packing_ids' => @json_encode($input['packeging']),
-//                     'vendor_ids' => @json_encode($vendor_ids),
+//                     'merchant_shipping_ids' => @json_encode($input['shipping']),
+//                     'merchant_packing_ids' => @json_encode($input['packeging']),
+//                     'merchant_ids' => @json_encode($merchant_ids),
 //                     'shipping_cost' => $shipping_cost,
 //                     'packing_cost' => $packaging_cost,
 //                     'success' => true,
@@ -244,10 +244,10 @@ class PriceHelper
     {
         try {
             // اجمع vendor_ids من محتوى السلة
-            $vendor_ids = [];
+            $merchant_ids = [];
             foreach ($cart->items as $item) {
-                if (!in_array($item['item']['user_id'], $vendor_ids)) {
-                    $vendor_ids[] = $item['item']['user_id'];
+                if (!in_array($item['item']['user_id'], $merchant_ids)) {
+                    $merchant_ids[] = $item['item']['user_id'];
                 }
             }
 
@@ -266,12 +266,12 @@ class PriceHelper
 
             // شحن مفرد
             if ((int)$gs->multiple_shipping === 0) {
-                $vendor_shipping_ids = [];
-                $vendor_packing_ids  = [];
+                $merchant_shipping_ids = [];
+                $merchant_packing_ids  = [];
 
-                foreach ($vendor_ids as $vendor_id) {
-                    $vendor_shipping_ids[$vendor_id] = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0) ? (int)$input['shipping_id'] : null;
-                    $vendor_packing_ids[$vendor_id]  = (!empty($input['packaging_id']) && (int)$input['packaging_id'] !== 0) ? (int)$input['packaging_id'] : null;
+                foreach ($merchant_ids as $merchant_id) {
+                    $merchant_shipping_ids[$merchant_id] = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0) ? (int)$input['shipping_id'] : null;
+                    $merchant_packing_ids[$merchant_id]  = (!empty($input['packaging_id']) && (int)$input['packaging_id'] !== 0) ? (int)$input['packaging_id'] : null;
                 }
 
                 $shipping = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0)
@@ -297,9 +297,9 @@ class PriceHelper
                     'shipping'            => $shipping,
                     'packeing'            => $packeing,
                     'tax'                 => $tax_amount,
-                    'vendor_shipping_ids' => @json_encode($vendor_shipping_ids),
-                    'vendor_packing_ids'  => @json_encode($vendor_packing_ids),
-                    'vendor_ids'          => @json_encode($vendor_ids),
+                    'merchant_shipping_ids' => @json_encode($merchant_shipping_ids),
+                    'merchant_packing_ids'  => @json_encode($merchant_packing_ids),
+                    'merchant_ids'          => @json_encode($merchant_ids),
                     'success'             => true,
                 ];
             }
@@ -380,9 +380,9 @@ class PriceHelper
                 'shipping'            => null, // متعدد: لا يوجد واحد محدد
                 'packeing'            => null,
                 'tax'                 => $tax_amount,
-                'vendor_shipping_ids' => @json_encode($input['shipping'] ?? []),
-                'vendor_packing_ids'  => @json_encode($input['packeging'] ?? []),
-                'vendor_ids'          => @json_encode($vendor_ids),
+                'merchant_shipping_ids' => @json_encode($input['shipping'] ?? []),
+                'merchant_packing_ids'  => @json_encode($input['packeging'] ?? []),
+                'merchant_ids'          => @json_encode($merchant_ids),
                 'shipping_cost'       => $shipping_cost,
                 'packing_cost'        => $packaging_cost,
                 'success'             => true,
@@ -409,10 +409,10 @@ class PriceHelper
     //     }
 
     //     try {
-    //         $vendor_ids = [];
+    //         $merchant_ids = [];
     //         foreach ($cart->items as $item) {
-    //             if (!in_array($item['item']['user_id'], $vendor_ids)) {
-    //                 $vendor_ids[] = $item['item']['user_id'];
+    //             if (!in_array($item['item']['user_id'], $merchant_ids)) {
+    //                 $merchant_ids[] = $item['item']['user_id'];
     //             }
     //         }
 
@@ -432,11 +432,11 @@ class PriceHelper
     //         }
 
     //         if ($gs->multiple_shipping == 0) {
-    //             $vendor_shipping_ids = [];
-    //             $vendor_packing_ids = [];
-    //             foreach ($vendor_ids as $vendor_id) {
-    //                 $vendor_shipping_ids[$vendor_id] = $input['shipping_id'];
-    //                 $vendor_packing_ids[$vendor_id] = $input['packaging_id'];
+    //             $merchant_shipping_ids = [];
+    //             $merchant_packing_ids = [];
+    //             foreach ($merchant_ids as $merchant_id) {
+    //                 $merchant_shipping_ids[$merchant_id] = $input['shipping_id'];
+    //                 $merchant_packing_ids[$merchant_id] = $input['packaging_id'];
     //             }
 
     //             $shipping = Shipping::findOrFail($input['shipping_id']);
@@ -447,13 +447,13 @@ class PriceHelper
 
     //             $shipping_cost = 0;
     //             $packaging_cost = 0;
-    //             $vendor_ids = [];
+    //             $merchant_ids = [];
     //             if ($input['shipping']) {
     //                 foreach ($input['shipping'] as $key => $shipping_id) {
     //                     $shipping = Shipping::findOrFail($shipping_id);
     //                     $shipping_cost += $shipping->price;
-    //                     if (!in_array($shipping->user_id, $vendor_ids)) {
-    //                         $vendor_ids[] = $shipping->user_id;
+    //                     if (!in_array($shipping->user_id, $merchant_ids)) {
+    //                         $merchant_ids[] = $shipping->user_id;
     //                     }
     //                 }
     //             }
@@ -461,8 +461,8 @@ class PriceHelper
     //                 foreach ($input['packeging'] as $key => $packaging_id) {
     //                     $packeing = Package::findOrFail($packaging_id);
     //                     $packaging_cost += $packeing->price;
-    //                     if (!in_array($packeing->user_id, $vendor_ids)) {
-    //                         $vendor_ids[] = $packeing->user_id;
+    //                     if (!in_array($packeing->user_id, $merchant_ids)) {
+    //                         $merchant_ids[] = $packeing->user_id;
     //                     }
     //                 }
     //             }
@@ -494,10 +494,10 @@ class PriceHelper
 
         try {
             // vendor_ids من السلة
-            $vendor_ids = [];
+            $merchant_ids = [];
             foreach ($cart->items as $item) {
-                if (!in_array($item['item']['user_id'], $vendor_ids)) {
-                    $vendor_ids[] = $item['item']['user_id'];
+                if (!in_array($item['item']['user_id'], $merchant_ids)) {
+                    $merchant_ids[] = $item['item']['user_id'];
                 }
             }
 

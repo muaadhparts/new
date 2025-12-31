@@ -38,7 +38,7 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
     // Build product URL with vendor context
     $productUrl = route('front.catalog-item', [
         'slug' => $actualProduct->slug,
-        'vendor_id' => $mp->user_id,
+        'merchant_id' => $mp->user_id,
         'merchant_item_id' => $mp->id
     ]);
 

@@ -76,7 +76,7 @@ html {
                             $adminPrintShipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
                                 ->orderBy('status_date', 'desc')
                                 ->get()
-                                ->groupBy('vendor_id');
+                                ->groupBy('merchant_id');
                         @endphp
                         @if($adminPrintShipments->count() > 0)
                         <br><br>

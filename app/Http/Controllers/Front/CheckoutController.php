@@ -13,11 +13,11 @@
  *
  * Key Features:
  * 1. VENDOR-SPECIFIC CHECKOUT ROUTES (all include vendorId):
- *    - checkoutVendor($vendorId): Step 1 - Customer info
- *    - checkoutVendorStep1($vendorId): Save customer data
- *    - checkoutVendorStep2($vendorId): Step 2 - Shipping
- *    - checkoutVendorStep2Submit($vendorId): Save shipping
- *    - checkoutVendorStep3($vendorId): Step 3 - Payment
+ *    - checkoutVendor($merchantId): Step 1 - Customer info
+ *    - checkoutVendorStep1($merchantId): Save customer data
+ *    - checkoutVendorStep2($merchantId): Step 2 - Shipping
+ *    - checkoutVendorStep2Submit($merchantId): Save shipping
+ *    - checkoutVendorStep3($merchantId): Step 3 - Payment
  *
  * 2. VENDOR ISOLATION:
  *    - Filters cart items to show only products from specified vendor
@@ -115,8 +115,8 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
         $dp = 1;
-        $vendor_shipping_id = 0;
-        $vendor_packing_id = 0;
+        $merchant_shipping_id = 0;
+        $merchant_packing_id = 0;
         $curr = $this->curr;
         $pickups = DB::table('pickups')->get();
         $oldCart = Session::get('cart');
@@ -130,7 +130,7 @@ class CheckoutController extends FrontBaseController
             if ($this->gs->multiple_shipping == 1) {
                 $ship_data = Purchase::getShipData($cart);
                 $shipping_data = $ship_data['shipping_data'];
-                $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+                $merchant_shipping_id = $ship_data['merchant_shipping_id'];
             } else {
                 $shipping_data = DB::table('shippings')->whereUserId(0)->get();
             }
@@ -140,7 +140,7 @@ class CheckoutController extends FrontBaseController
             if ($this->gs->multiple_shipping == 1) {
                 $pack_data = Purchase::getPackingData($cart);
                 $package_data = $pack_data['package_data'];
-                $vendor_packing_id = $pack_data['vendor_packing_id'];
+                $merchant_packing_id = $pack_data['merchant_packing_id'];
             } else {
                 // No global packaging - empty collection
                 $package_data = collect();
@@ -164,14 +164,14 @@ class CheckoutController extends FrontBaseController
 
 //            dd($total ,$cart->items);
 
-            return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id]);
+            return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
                 if ($this->gs->multiple_shipping == 1) {
                     $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
-                    $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+                    $merchant_shipping_id = $ship_data['merchant_shipping_id'];
                 } else {
                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
                 }
@@ -181,7 +181,7 @@ class CheckoutController extends FrontBaseController
                 if ($this->gs->multiple_shipping == 1) {
                     $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
-                    $vendor_packing_id = $pack_data['vendor_packing_id'];
+                    $merchant_packing_id = $pack_data['merchant_packing_id'];
                 } else {
                     $package_data = DB::table('packages')->whereUserId('0')->get();
 
@@ -207,11 +207,11 @@ class CheckoutController extends FrontBaseController
                     if ($prod['item']['type'] != 'Physical') {
                         if (!Auth::check()) {
                             $ck = 1;
-                            return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id]);
+                            return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
                         }
                     }
                 }
-                return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id]);
+                return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -223,7 +223,7 @@ class CheckoutController extends FrontBaseController
                 if ($this->gs->multiple_shipping == 1) {
                     $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
-                    $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+                    $merchant_shipping_id = $ship_data['merchant_shipping_id'];
                 } else {
                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
                 }
@@ -233,7 +233,7 @@ class CheckoutController extends FrontBaseController
                 if ($this->gs->multiple_packaging == 1) {
                     $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
-                    $vendor_packing_id = $pack_data['vendor_packing_id'];
+                    $merchant_packing_id = $pack_data['merchant_packing_id'];
                 } else {
                     $package_data = DB::table('packages')->where('user_id', '=', 0)->get();
                 }
@@ -249,7 +249,7 @@ class CheckoutController extends FrontBaseController
                     $total = $total;
                 }
                 $ck = 1;
-                return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id]);
+                return view('frontend.checkout.step1', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
         }
     }
@@ -270,8 +270,8 @@ class CheckoutController extends FrontBaseController
         $step1 = (object) Session::get('step1');
 //        dd($step1);
         $dp = 1;
-        $vendor_shipping_id = 0;
-        $vendor_packing_id = 0;
+        $merchant_shipping_id = 0;
+        $merchant_packing_id = 0;
         $curr = $this->curr;
         $pickups = DB::table('pickups')->get();
         $oldCart = Session::get('cart');
@@ -286,7 +286,7 @@ class CheckoutController extends FrontBaseController
             if ($this->gs->multiple_shipping == 1) {
                 $ship_data = Purchase::getShipData($cart);
                 $shipping_data = $ship_data['shipping_data'];
-                $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+                $merchant_shipping_id = $ship_data['merchant_shipping_id'];
             } else {
                 $shipping_data = DB::table('shippings')->whereUserId(0)->get();
             }
@@ -296,7 +296,7 @@ class CheckoutController extends FrontBaseController
             if ($this->gs->multiple_shipping == 1) {
                 $pack_data = Purchase::getPackingData($cart);
                 $package_data = $pack_data['package_data'];
-                $vendor_packing_id = $pack_data['vendor_packing_id'];
+                $merchant_packing_id = $pack_data['merchant_packing_id'];
             } else {
                 // No global packaging - empty collection
                 $package_data = collect();
@@ -322,14 +322,14 @@ class CheckoutController extends FrontBaseController
             // N+1 FIX: Pre-load all vendor data
             $step2Data = $this->prepareStep2VendorData($cart->items, $step1);
 
-            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
+            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
                 if ($this->gs->multiple_shipping == 1) {
                     $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
-                    $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+                    $merchant_shipping_id = $ship_data['merchant_shipping_id'];
                 } else {
                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
                 }
@@ -339,7 +339,7 @@ class CheckoutController extends FrontBaseController
                 if ($this->gs->multiple_shipping == 1) {
                     $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
-                    $vendor_packing_id = $pack_data['vendor_packing_id'];
+                    $merchant_packing_id = $pack_data['merchant_packing_id'];
                 } else {
                     $package_data = DB::table('packages')->whereUserId('0')->get();
 
@@ -368,12 +368,12 @@ class CheckoutController extends FrontBaseController
                     if ($prod['item']['type'] != 'Physical') {
                         if (!Auth::check()) {
                             $ck = 1;
-                            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
+                            return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
                         }
                     }
                 }
 //                dd($cart->items);
-                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
+                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -385,7 +385,7 @@ class CheckoutController extends FrontBaseController
                 if ($this->gs->multiple_shipping == 1) {
                     $ship_data = Purchase::getShipData($cart);
                     $shipping_data = $ship_data['shipping_data'];
-                    $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+                    $merchant_shipping_id = $ship_data['merchant_shipping_id'];
                 } else {
                     $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
                 }
@@ -395,7 +395,7 @@ class CheckoutController extends FrontBaseController
                 if ($this->gs->multiple_packaging == 1) {
                     $pack_data = Purchase::getPackingData($cart);
                     $package_data = $pack_data['package_data'];
-                    $vendor_packing_id = $pack_data['vendor_packing_id'];
+                    $merchant_packing_id = $pack_data['merchant_packing_id'];
                 } else {
                     $package_data = DB::table('packages')->where('user_id', '=', 0)->get();
                 }
@@ -415,7 +415,7 @@ class CheckoutController extends FrontBaseController
                 // N+1 FIX: Pre-load all vendor data
                 $step2Data = $this->prepareStep2VendorData($cart->items, $step1);
 
-                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'vendor_shipping_id' => $vendor_shipping_id, 'vendor_packing_id' => $vendor_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
+                return view('frontend.checkout.step2', ['products' => $cart->items, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'vendorData' => $step2Data['vendorData'], 'preloadedCountry' => $step2Data['country']]);
             }
         }
     }
@@ -426,11 +426,11 @@ class CheckoutController extends FrontBaseController
      */
     public function resetLocation(Request $request)
     {
-        $vendorId = $request->input('vendor_id');
+        $merchantId = $request->input('merchant_id');
 
         // Clear location draft only (not step1/step2/step3)
-        if ($vendorId) {
-            Session::forget('location_draft_vendor_' . $vendorId);
+        if ($merchantId) {
+            Session::forget('location_draft_vendor_' . $merchantId);
         } else {
             Session::forget('location_draft');
         }
@@ -490,8 +490,8 @@ class CheckoutController extends FrontBaseController
             'password_confirmation' => $step1['password_confirmation'] ?? null,
             'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
-            'vendor_shipping_id' => $step1['vendor_shipping_id'] ?? 0,
-            'vendor_packing_id' => $step1['vendor_packing_id'] ?? 0,
+            'merchant_shipping_id' => $step1['merchant_shipping_id'] ?? 0,
+            'merchant_packing_id' => $step1['merchant_packing_id'] ?? 0,
             'currency_sign' => $step1['currency_sign'] ?? null,
             'currency_name' => $step1['currency_name'] ?? null,
             'currency_value' => $step1['currency_value'] ?? 1,
@@ -547,21 +547,21 @@ class CheckoutController extends FrontBaseController
 
         $vendorTaxData = [];
         foreach ($cart->items as $product) {
-            $vendorId = $product['item']['user_id'] ?? 0;
+            $merchantId = $product['item']['user_id'] ?? 0;
 
-            if (!isset($vendorTaxData[$vendorId])) {
-                $vendorTaxData[$vendorId] = [
+            if (!isset($vendorTaxData[$merchantId])) {
+                $vendorTaxData[$merchantId] = [
                     'subtotal' => 0,
                     'tax_rate' => $taxRate,
                     'tax_amount' => 0,
                 ];
             }
 
-            $vendorTaxData[$vendorId]['subtotal'] += (float)($product['price'] ?? 0);
+            $vendorTaxData[$merchantId]['subtotal'] += (float)($product['price'] ?? 0);
         }
 
         // Calculate tax amount for each vendor
-        foreach ($vendorTaxData as $vendorId => &$taxData) {
+        foreach ($vendorTaxData as $merchantId => &$taxData) {
             $taxData['tax_amount'] = ($taxData['subtotal'] * $taxData['tax_rate']) / 100;
         }
 
@@ -612,7 +612,7 @@ class CheckoutController extends FrontBaseController
         // حالة الشحن المتعدد: shipping[vendor_id] = {id أو deliveryOptionId#Company#price}
         if (isset($step2['shipping']) && is_array($step2['shipping'])) {
 
-            foreach ($step2['shipping'] as $vendorId => $val) {
+            foreach ($step2['shipping'] as $merchantId => $val) {
                 if (is_string($val) && strpos($val, '#') !== false) {
                     // تنسيق Tryoto: deliveryOptionId#CompanyName#price
                     $parts   = explode('#', $val);
@@ -621,7 +621,7 @@ class CheckoutController extends FrontBaseController
                     $original_shipping_cost += $price;
 
                     // ✅ تطبيق free_above من إعدادات Tryoto للتاجر
-                    $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $vendorId)
+                    $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
                         ->where('provider', 'tryoto')
                         ->first();
                     $freeAbove = $vendorTryotoShipping ? (float)$vendorTryotoShipping->free_above : 0;
@@ -698,7 +698,7 @@ class CheckoutController extends FrontBaseController
         // Check for array format (multi-vendor) or single value
         if (isset($step2['packeging']) && is_array($step2['packeging'])) {
             // Multi-vendor format: packeging[vendor_id] = package_id
-            foreach ($step2['packeging'] as $vendorId => $packageId) {
+            foreach ($step2['packeging'] as $merchantId => $packageId) {
                 $packId = (int)$packageId;
                 if ($packId > 0) {
                     $package = \App\Models\Package::find($packId);
@@ -807,8 +807,8 @@ class CheckoutController extends FrontBaseController
         $step1 = (object) Session::get('step1');
         $step2 = (object) Session::get('step2');
         $dp = 1;
-        $vendor_shipping_id = 0;
-        $vendor_packing_id = 0;
+        $merchant_shipping_id = 0;
+        $merchant_packing_id = 0;
         $curr = $this->curr;
         $gateways = PaymentGateway::scopeHasGateway($this->curr->id);
         $pickups = DB::table('pickups')->get();
@@ -829,7 +829,7 @@ class CheckoutController extends FrontBaseController
         if ($this->gs->multiple_shipping == 1) {
             $ship_data = Purchase::getShipData($cart);
             $shipping_data = $ship_data['shipping_data'];
-            $vendor_shipping_id = $ship_data['vendor_shipping_id'];
+            $merchant_shipping_id = $ship_data['merchant_shipping_id'];
         } else {
             $shipping_data = collect(); // No global shipping
         }
@@ -837,7 +837,7 @@ class CheckoutController extends FrontBaseController
         if ($this->gs->multiple_shipping == 1) {
             $pack_data = Purchase::getPackingData($cart);
             $package_data = $pack_data['package_data'];
-            $vendor_packing_id = $pack_data['vendor_packing_id'];
+            $merchant_packing_id = $pack_data['merchant_packing_id'];
         } else {
             $package_data = collect(); // No global packaging
         }
@@ -866,8 +866,8 @@ class CheckoutController extends FrontBaseController
             'curr'                => $curr,
             'shipping_data'       => $shipping_data,
             'package_data'        => $package_data,
-            'vendor_shipping_id'  => $vendor_shipping_id,
-            'vendor_packing_id'   => $vendor_packing_id,
+            'merchant_shipping_id'  => $merchant_shipping_id,
+            'merchant_packing_id'   => $merchant_packing_id,
             'paystack'            => $paystackData,
             'step2'               => $step2,
             'step1'               => $step1,
@@ -964,7 +964,7 @@ class CheckoutController extends FrontBaseController
      * - Total quantity
      * - Digital/Physical flag
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @return array [vendorProducts, totalPrice, totalQty, digital]
      */
     /**
@@ -978,17 +978,17 @@ class CheckoutController extends FrontBaseController
      * 5. Cart instance is discarded after use
      * 6. Returns filtered data as array
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @return array ['vendorProducts', 'totalPrice', 'totalQty', 'digital']
      */
-    private function getVendorCartData($vendorId): array
+    private function getVendorCartData($merchantId): array
     {
         // READ-ONLY: Get cart from session without modification
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
 
         // Ensure vendorId is integer for comparison
-        $vendorId = (int)$vendorId;
+        $merchantId = (int)$merchantId;
 
         // Filter products for this vendor only
         $vendorProducts = [];
@@ -1014,7 +1014,7 @@ class CheckoutController extends FrontBaseController
                 $productVendorId = (int)$product['item']->vendor_user_id;
             }
 
-            if ($productVendorId === $vendorId) {
+            if ($productVendorId === $merchantId) {
                 // إضافة بيانات الخصم والأبعاد باستخدام MerchantCartService
                 $mpId = data_get($product, 'item.merchant_product_id')
                     ?? data_get($product, 'merchant_product_id')
@@ -1054,7 +1054,7 @@ class CheckoutController extends FrontBaseController
         }
 
         // حساب بيانات الشحن للتاجر باستخدام MerchantCartService
-        $shippingData = MerchantCartService::calculateVendorShipping($vendorId, $cart->items);
+        $shippingData = MerchantCartService::calculateVendorShipping($merchantId, $cart->items);
 
         // Return filtered data (Cart instance is discarded - no session modification)
         return [
@@ -1081,21 +1081,21 @@ class CheckoutController extends FrontBaseController
      * 7. Does NOT call Purchase::getShipData or Purchase::getPackingData (avoids cart-wide logic)
      * 8. Does NOT modify auth state - only reads Auth::check()
      *
-     * @param int $vendorId The vendor's user_id
+     * @param int $merchantId The vendor's user_id
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     /**
      * POLICY: vendor_id comes from ROUTE only - NOT from session
      */
-    public function checkoutVendor($vendorId)
+    public function checkoutVendor($merchantId)
     {
         // ====================================================================
         // STRICT POLICY: vendor_id FROM ROUTE ONLY
         // No session storage for vendor context
         // ====================================================================
-        $vendorId = (int)$vendorId;
+        $merchantId = (int)$merchantId;
 
-        if (!$vendorId) {
+        if (!$merchantId) {
             return redirect()->route('front.cart')->with('unsuccess', __('خطأ: لم يتم تحديد التاجر.'));
         }
 
@@ -1113,14 +1113,14 @@ class CheckoutController extends FrontBaseController
             // Redirect to login with return URL that includes vendor_id
             return redirect()->route('user.login')
                 ->with('unsuccess', __('Please login to continue.'))
-                ->with('return_to', route('front.checkout.vendor', $vendorId));
+                ->with('return_to', route('front.checkout.vendor', $merchantId));
         }
 
         // Clean old step data for THIS vendor to allow form refresh
-        Session::forget(['vendor_step1_' . $vendorId, 'vendor_step2_' . $vendorId]);
+        Session::forget(['vendor_step1_' . $merchantId, 'vendor_step2_' . $merchantId]);
 
         // Get vendor cart data using helper method (avoids code duplication)
-        $cartData = $this->getVendorCartData($vendorId);
+        $cartData = $this->getVendorCartData($merchantId);
         $vendorProducts = $cartData['vendorProducts'];
         $totalPrice = $cartData['totalPrice'];
         $totalQty = $cartData['totalQty'];
@@ -1132,10 +1132,10 @@ class CheckoutController extends FrontBaseController
         }
 
         // جلب طرق الشحن الخاصة بهذا التاجر فقط (vendor-specific only)
-        $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
+        $shipping_data = \App\Models\Shipping::forVendor($merchantId)->get();
 
         // جلب طرق التغليف الخاصة بهذا التاجر فقط (vendor-specific only)
-        $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
+        $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
         // productsTotal = RAW price (no discount deduction)
@@ -1155,12 +1155,12 @@ class CheckoutController extends FrontBaseController
             'curr' => $curr,
             'shipping_data' => $shipping_data,
             'package_data' => $package_data,
-            'vendor_shipping_id' => $vendorId,
-            'vendor_packing_id' => $vendorId,
+            'merchant_shipping_id' => $merchantId,
+            'merchant_packing_id' => $merchantId,
             'is_merchant_checkout' => true,
-            'vendor_id' => $vendorId,
+            'merchant_id' => $merchantId,
             // بيانات الشحن الموحدة من MerchantCartService
-            'vendor_shipping_data' => $vendorShippingData,
+            'merchant_shipping_data' => $vendorShippingData,
             'has_complete_shipping_data' => $cartData['has_complete_shipping_data'],
             'missing_shipping_data' => $cartData['missing_shipping_data'],
         ]);
@@ -1171,7 +1171,7 @@ class CheckoutController extends FrontBaseController
      * Collects customer data, coordinates from map, calculates tax.
      * Data saved to vendor_step1_{vendor_id} session.
      */
-    public function checkoutVendorStep1(Request $request, $vendorId)
+    public function checkoutVendorStep1(Request $request, $merchantId)
     {
         $step1 = $request->all();
 
@@ -1246,8 +1246,8 @@ class CheckoutController extends FrontBaseController
             'create_account' => $step1['create_account'] ?? null,
             'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
-            'vendor_shipping_id' => $step1['vendor_shipping_id'] ?? 0,
-            'vendor_packing_id' => $step1['vendor_packing_id'] ?? 0,
+            'merchant_shipping_id' => $step1['merchant_shipping_id'] ?? 0,
+            'merchant_packing_id' => $step1['merchant_packing_id'] ?? 0,
             'currency_sign' => $step1['currency_sign'] ?? null,
             'currency_name' => $step1['currency_name'] ?? null,
             'currency_value' => $step1['currency_value'] ?? 1,
@@ -1258,7 +1258,7 @@ class CheckoutController extends FrontBaseController
         ];
 
         // Merge location_draft_vendor_{id} into step1Data (if available)
-        $locationDraft = Session::get('location_draft_vendor_' . $vendorId);
+        $locationDraft = Session::get('location_draft_vendor_' . $merchantId);
         if ($locationDraft) {
             $step1Data = array_merge($step1Data, [
                 'country_id' => $locationDraft['country_id'] ?? $step1Data['country_id'],
@@ -1274,7 +1274,7 @@ class CheckoutController extends FrontBaseController
                 'tax_location' => $locationDraft['tax_location'] ?? '',
             ]);
             // Clear location_draft after merging
-            Session::forget('location_draft_vendor_' . $vendorId);
+            Session::forget('location_draft_vendor_' . $merchantId);
         }
 
         // Calculate tax from country_id (fallback if no location_draft)
@@ -1314,7 +1314,7 @@ class CheckoutController extends FrontBaseController
                 $productVendorId = (int)$product['item']['user_id'];
             }
 
-            if ($productVendorId == (int)$vendorId) {
+            if ($productVendorId == (int)$merchantId) {
                 $vendorSubtotal += (float)($product['price'] ?? 0);
             }
         }
@@ -1329,38 +1329,38 @@ class CheckoutController extends FrontBaseController
         $step1Data['products_total'] = $vendorSubtotal;
         $step1Data['total_with_tax'] = $vendorSubtotal + $taxAmount;
 
-        Session::put('vendor_step1_' . $vendorId, $step1Data);
+        Session::put('vendor_step1_' . $merchantId, $step1Data);
         Session::save();
-        return redirect()->route('front.checkout.vendor.step2', $vendorId);
+        return redirect()->route('front.checkout.vendor.step2', $merchantId);
     }
 
     /**
      * VENDOR CHECKOUT STEP 2 - Shipping selection page.
      */
-    public function checkoutVendorStep2($vendorId)
+    public function checkoutVendorStep2($merchantId)
     {
-        if (!Session::has('vendor_step1_' . $vendorId)) {
-            return redirect()->route('front.checkout.vendor', $vendorId)->with('success', __("Please fill up step 1."));
+        if (!Session::has('vendor_step1_' . $merchantId)) {
+            return redirect()->route('front.checkout.vendor', $merchantId)->with('success', __("Please fill up step 1."));
         }
 
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
-        $step1 = (object) Session::get('vendor_step1_' . $vendorId);
+        $step1 = (object) Session::get('vendor_step1_' . $merchantId);
 
-        $step2 = Session::has('vendor_step2_' . $vendorId)
-            ? (object) Session::get('vendor_step2_' . $vendorId)
+        $step2 = Session::has('vendor_step2_' . $merchantId)
+            ? (object) Session::get('vendor_step2_' . $merchantId)
             : null;
 
-        $cartData = $this->getVendorCartData($vendorId);
+        $cartData = $this->getVendorCartData($merchantId);
         $vendorProducts = $cartData['vendorProducts'];
         $totalPrice = $cartData['totalPrice'];
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
 
-        $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
-        $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
+        $shipping_data = \App\Models\Shipping::forVendor($merchantId)->get();
+        $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
         $pickups = DB::table('pickups')->get();
@@ -1387,15 +1387,15 @@ class CheckoutController extends FrontBaseController
             'curr' => $curr,
             'shipping_data' => $shipping_data,
             'package_data' => $package_data,
-            'vendor_shipping_id' => $vendorId,
-            'vendor_packing_id' => $vendorId,
+            'merchant_shipping_id' => $merchantId,
+            'merchant_packing_id' => $merchantId,
             'step1' => $step1,
             'step2' => $step2, // ✅ Pass saved step2 data to view
             'country' => $country, // For tax calculation (N+1 FIX)
             'preloadedCountry' => $country, // Alias for Blade
             'isState' => $isState, // For tax calculation
             'is_merchant_checkout' => true,
-            'vendor_id' => $vendorId,
+            'merchant_id' => $merchantId,
             'vendorData' => $step2VendorData['vendorData'], // N+1 FIX
         ]);
     }
@@ -1411,10 +1411,10 @@ class CheckoutController extends FrontBaseController
      * 5. Does NOT modify cart or auth state
      *
      * @param Request $request
-     * @param int $vendorId
+     * @param int $merchantId
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function checkoutVendorStep2Submit(Request $request, $vendorId)
+    public function checkoutVendorStep2Submit(Request $request, $merchantId)
     {
         $step2 = $request->all();
         $oldCart = Session::get('cart');
@@ -1424,7 +1424,7 @@ class CheckoutController extends FrontBaseController
         $hasPhysicalProducts = false;
         foreach ($cart->items as $product) {
             $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
-            if ($productVendorId == $vendorId) {
+            if ($productVendorId == $merchantId) {
                 // Check if this is a physical product (dp = 0)
                 if (isset($product['dp']) && $product['dp'] == 0) {
                     $hasPhysicalProducts = true;
@@ -1440,7 +1440,7 @@ class CheckoutController extends FrontBaseController
             // Check for array format (multi-vendor shipping)
             if (isset($step2['shipping']) && is_array($step2['shipping'])) {
                 // Check if this vendor has a shipping selection
-                if (isset($step2['shipping'][$vendorId]) && !empty($step2['shipping'][$vendorId])) {
+                if (isset($step2['shipping'][$merchantId]) && !empty($step2['shipping'][$merchantId])) {
                     $hasShipping = true;
                 }
             }
@@ -1457,7 +1457,7 @@ class CheckoutController extends FrontBaseController
             }
         }
 
-        $input = Session::get('vendor_step1_' . $vendorId) + $step2;
+        $input = Session::get('vendor_step1_' . $merchantId) + $step2;
 
         // NOTE: Creating Cart instance for READ-ONLY access
         // This does NOT modify session - only used to read and filter vendor products
@@ -1467,7 +1467,7 @@ class CheckoutController extends FrontBaseController
         $vendorTotal = 0;
         foreach ($cart->items as $product) {
             $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
-            if ($productVendorId == $vendorId) {
+            if ($productVendorId == $merchantId) {
                 $vendorTotal += (float)($product['price'] ?? 0);
             }
         }
@@ -1483,11 +1483,11 @@ class CheckoutController extends FrontBaseController
         $discountPercentage = '';
         $discountCodeId = null;
 
-        if (Session::has('discount_code_vendor_' . $vendorId)) {
-            $discountAmount = (float)Session::get('discount_code_vendor_' . $vendorId, 0);
-            $discountCode = Session::get('discount_code_value_vendor_' . $vendorId, '');
-            $discountPercentage = Session::get('discount_percentage_vendor_' . $vendorId, '');
-            $discountCodeId = Session::get('discount_code_id_vendor_' . $vendorId);
+        if (Session::has('discount_code_vendor_' . $merchantId)) {
+            $discountAmount = (float)Session::get('discount_code_vendor_' . $merchantId, 0);
+            $discountCode = Session::get('discount_code_value_vendor_' . $merchantId, '');
+            $discountPercentage = Session::get('discount_percentage_vendor_' . $merchantId, '');
+            $discountCodeId = Session::get('discount_code_id_vendor_' . $merchantId);
         } elseif (Session::has('discount_code')) {
             $discountAmount = (float)Session::get('discount_code', 0);
             $discountCode = Session::get('discount_code_value', '');
@@ -1579,9 +1579,9 @@ class CheckoutController extends FrontBaseController
         $packId = null;
         if (isset($step2['packeging']) && is_array($step2['packeging'])) {
             // Format: packeging[vendor_id] = package_id
-            $packId = (int)($step2['packeging'][$vendorId] ?? 0);
-        } elseif (isset($step2['vendor_packing_id']) && $step2['vendor_packing_id']) {
-            $packId = (int)$step2['vendor_packing_id'];
+            $packId = (int)($step2['packeging'][$merchantId] ?? 0);
+        } elseif (isset($step2['merchant_packing_id']) && $step2['merchant_packing_id']) {
+            $packId = (int)$step2['merchant_packing_id'];
         } elseif (isset($step2['packeging_id']) && $step2['packeging_id']) {
             $packId = (int)$step2['packeging_id'];
         } elseif (isset($step2['packaging_id']) && $step2['packaging_id']) {
@@ -1599,7 +1599,7 @@ class CheckoutController extends FrontBaseController
         $packing_name = count($packing_names) ? implode(' + ', array_unique($packing_names)) : null;
 
         // Get tax data from vendor step1
-        $step1Data = Session::get('vendor_step1_' . $vendorId);
+        $step1Data = Session::get('vendor_step1_' . $merchantId);
         $taxAmount = $step1Data['tax_amount'] ?? 0;
         $taxRate = $step1Data['tax_rate'] ?? 0;
         $taxLocation = $step1Data['tax_location'] ?? '';
@@ -1645,10 +1645,10 @@ class CheckoutController extends FrontBaseController
             $step2['saved_packing_selections'] = $step2['packeging'];
         }
 
-        Session::put('vendor_step2_' . $vendorId, $step2);
+        Session::put('vendor_step2_' . $merchantId, $step2);
         Session::save(); // Ensure session is saved before redirect
 
-        return redirect()->route('front.checkout.vendor.step3', $vendorId);
+        return redirect()->route('front.checkout.vendor.step3', $merchantId);
     }
 
     /**
@@ -1663,26 +1663,26 @@ class CheckoutController extends FrontBaseController
      *
      * This ensures each vendor uses ONLY their configured payment methods
      *
-     * @param int $vendorId
+     * @param int $merchantId
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
-    public function checkoutVendorStep3($vendorId)
+    public function checkoutVendorStep3($merchantId)
     {
-        if (!Session::has('vendor_step1_' . $vendorId)) {
-            return redirect()->route('front.checkout.vendor', $vendorId)->with('success', __("Please fill up step 1."));
+        if (!Session::has('vendor_step1_' . $merchantId)) {
+            return redirect()->route('front.checkout.vendor', $merchantId)->with('success', __("Please fill up step 1."));
         }
-        if (!Session::has('vendor_step2_' . $vendorId)) {
-            return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('success', __("Please fill up step 2."));
+        if (!Session::has('vendor_step2_' . $merchantId)) {
+            return redirect()->route('front.checkout.vendor.step2', $merchantId)->with('success', __("Please fill up step 2."));
         }
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
         }
 
-        $step1 = (object) Session::get('vendor_step1_' . $vendorId);
-        $step2 = (object) Session::get('vendor_step2_' . $vendorId);
+        $step1 = (object) Session::get('vendor_step1_' . $merchantId);
+        $step2 = (object) Session::get('vendor_step2_' . $merchantId);
 
         // Get vendor cart data using helper method (avoids code duplication)
-        $cartData = $this->getVendorCartData($vendorId);
+        $cartData = $this->getVendorCartData($merchantId);
         $vendorProducts = $cartData['vendorProducts'];
         $productsTotal = $cartData['totalPrice']; // Products only (no shipping)
         $totalQty = $cartData['totalQty'];
@@ -1692,7 +1692,7 @@ class CheckoutController extends FrontBaseController
         // CRITICAL: Only show payment methods owned by this vendor
         // scopeHasGateway returns a Collection, so we filter it
         $allGateways = PaymentGateway::scopeHasGateway($this->curr->id);
-        $gateways = $allGateways->where('user_id', $vendorId)
+        $gateways = $allGateways->where('user_id', $merchantId)
             ->where('checkout', 1); // checkout=1 means enabled for checkout
 
         // If vendor has no payment methods, show error (NO FALLBACK to admin methods)
@@ -1701,10 +1701,10 @@ class CheckoutController extends FrontBaseController
         }
 
         // جلب طرق الشحن
-        $shipping_data = \App\Models\Shipping::forVendor($vendorId)->get();
+        $shipping_data = \App\Models\Shipping::forVendor($merchantId)->get();
 
         // جلب طرق التغليف
-        $package_data = DB::table('packages')->where('user_id', $vendorId)->get();
+        $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
         // No fallback to user 0 - if vendor has no packages, collection will be empty
 
         $pickups = DB::table('pickups')->get();
@@ -1733,13 +1733,13 @@ class CheckoutController extends FrontBaseController
             'curr' => $curr,
             'shipping_data' => $shipping_data,
             'package_data' => $package_data,
-            'vendor_shipping_id' => $vendorId,
-            'vendor_packing_id' => $vendorId,
+            'merchant_shipping_id' => $merchantId,
+            'merchant_packing_id' => $merchantId,
             'paystack' => $paystackData,
             'step2' => $step2, // CRITICAL: Contains pre-calculated total (products + tax + shipping)
             'step1' => $step1,
             'is_merchant_checkout' => true,
-            'vendor_id' => $vendorId,
+            'merchant_id' => $merchantId,
             'preloadedCountry' => $preloadedCountry,
         ]);
     }
@@ -1764,12 +1764,12 @@ class CheckoutController extends FrontBaseController
         $grouped = [];
 
         foreach ($products as $rowKey => $product) {
-            $vendorId = data_get($product, 'item.user_id') ?? 0;
+            $merchantId = data_get($product, 'item.user_id') ?? 0;
 
-            if (!isset($grouped[$vendorId])) {
-                $vendor = \App\Models\User::find($vendorId);
-                $grouped[$vendorId] = [
-                    'vendor_id' => $vendorId,
+            if (!isset($grouped[$merchantId])) {
+                $vendor = \App\Models\User::find($merchantId);
+                $grouped[$merchantId] = [
+                    'merchant_id' => $merchantId,
                     'vendor_name' => $vendor ? ($vendor->shop_name ?? $vendor->name) : 'Unknown',
                     'products' => [],
                     'total' => 0,
@@ -1777,9 +1777,9 @@ class CheckoutController extends FrontBaseController
                 ];
             }
 
-            $grouped[$vendorId]['products'][$rowKey] = $product;
-            $grouped[$vendorId]['total'] += (float)($product['price'] ?? 0);
-            $grouped[$vendorId]['count'] += (int)($product['qty'] ?? 1);
+            $grouped[$merchantId]['products'][$rowKey] = $product;
+            $grouped[$merchantId]['total'] += (float)($product['price'] ?? 0);
+            $grouped[$merchantId]['count'] += (int)($product['qty'] ?? 1);
         }
 
         return $grouped;
@@ -1798,10 +1798,10 @@ class CheckoutController extends FrontBaseController
      * 4. Cleans up vendor-specific session data
      * 5. Does NOT affect auth state
      *
-     * @param int $vendorId معرف التاجر
+     * @param int $merchantId معرف التاجر
      * @return void
      */
-    public static function removeVendorProductsFromCart($vendorId)
+    public static function removeVendorProductsFromCart($merchantId)
     {
         if (!Session::has('cart')) {
             return;
@@ -1816,7 +1816,7 @@ class CheckoutController extends FrontBaseController
             $productVendorId = data_get($product, 'item.user_id') ?? data_get($product, 'item.vendor_user_id') ?? 0;
 
             // إذا لم يكن من نفس التاجر، نحتفظ به
-            if ($productVendorId != $vendorId) {
+            if ($productVendorId != $merchantId) {
                 $remainingItems[$rowKey] = $product;
             }
         }
@@ -1842,9 +1842,9 @@ class CheckoutController extends FrontBaseController
         }
 
         // حذف بيانات الخطوات الخاصة بهذا التاجر
-        Session::forget('vendor_step1_' . $vendorId);
-        Session::forget('vendor_step2_' . $vendorId);
-        Session::forget('discount_code_vendor_' . $vendorId);
+        Session::forget('vendor_step1_' . $merchantId);
+        Session::forget('vendor_step2_' . $merchantId);
+        Session::forget('discount_code_vendor_' . $merchantId);
         Session::forget('checkout_vendor_id');
     }
 

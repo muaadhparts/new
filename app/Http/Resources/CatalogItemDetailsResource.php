@@ -21,21 +21,21 @@ class CatalogItemDetailsResource extends JsonResource
     // // dd(['vendorId' => $request->get('user'), 'catalog_item_id' => $this->id]); // debug
 
     // 1) التعرّف على البائع (vendorId) من كويري سترنج ?user= أو من حقل حقناه مسبقًا على المنتج (vendor_user_id)
-    $vendorId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
+    $merchantId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
 
     // 2) جلب عرض البائع الفعّال عبر دالّة المنتج (مضافة لديك في الموديل)
     //    إن لم يُمرَّر vendorId سنأخذ أول عرض فعّال.
     $mp = method_exists($this, 'activeMerchant')
-        ? $this->activeMerchant($vendorId ?: null)
+        ? $this->activeMerchant($merchantId ?: null)
         : null;
 
     // 3) أسعار الـ API: تعتمد على دوال الـ CatalogItem الداعمة للبائع
     $currentPrice  = method_exists($this, 'ApishowDetailsPrice')
-        ? (string) $this->ApishowDetailsPrice($vendorId ?: null)
+        ? (string) $this->ApishowDetailsPrice($merchantId ?: null)
         : (string) $this->ApishowPrice();
 
     $previousPrice = method_exists($this, 'ApishowPreviousPrice')
-        ? (string) $this->ApishowPreviousPrice($vendorId ?: null)
+        ? (string) $this->ApishowPreviousPrice($merchantId ?: null)
         : (string) 0;
 
     // 4) اسم المتجر/عدد العناصر: إن وُجد MP + علاقته بالمستخدم

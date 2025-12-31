@@ -319,12 +319,12 @@ class StockManagerCommand extends Command
     protected function doCheck(bool $all, int $userId, float $margin): int
     {
         if ($all) {
-            $vendorIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
-            if ($vendorIds->isEmpty()) {
+            $merchantIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
+            if ($merchantIds->isEmpty()) {
                 $this->warn('No vendors found in merchant_items.');
                 return self::SUCCESS;
             }
-            foreach ($vendorIds as $uid) {
+            foreach ($merchantIds as $uid) {
                 $this->line("== Vendor {$uid} ==");
                 $this->printStockDiff($uid);
                 $this->printPriceDiff($uid, $margin);
@@ -422,8 +422,8 @@ class StockManagerCommand extends Command
 
     protected function updateStockForAll(): int
     {
-        $vendorIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
-        if ($vendorIds->isEmpty()) {
+        $merchantIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
+        if ($merchantIds->isEmpty()) {
             $this->warn('No vendors found in merchant_items.');
             return self::SUCCESS;
         }
@@ -433,7 +433,7 @@ class StockManagerCommand extends Command
         $totalMissing = 0;
         $totalUpdated = 0;
 
-        foreach ($vendorIds as $uid) {
+        foreach ($merchantIds as $uid) {
             // 0) إدراج الصفوف الناقصة لهذا التاجر
             $insertMissingSql = "
                 INSERT INTO merchant_items (
@@ -552,8 +552,8 @@ class StockManagerCommand extends Command
 
     protected function updatePriceForAll(float $margin): int
     {
-        $vendorIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
-        if ($vendorIds->isEmpty()) {
+        $merchantIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
+        if ($merchantIds->isEmpty()) {
             $this->warn('No vendors found in merchant_items.');
             return self::SUCCESS;
         }
@@ -562,7 +562,7 @@ class StockManagerCommand extends Command
         $totalNeeds   = 0;
         $totalUpdated = 0;
 
-        foreach ($vendorIds as $uid) {
+        foreach ($merchantIds as $uid) {
             $stats = DB::selectOne("
                 SELECT
                     COUNT(*) AS matches,

@@ -12,14 +12,14 @@
         <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('merchant-prod-index') }}">@lang('Products')</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-index') }}">@lang('Products')</a></li>
                 <li class="breadcrumb-item active" aria-current="page">@lang('Edit Offer')</li>
             </ol>
         </nav>
     </div>
     <!-- breadcrumb end -->
 
-    <form id="muaadhform" action="{{ route('merchant-prod-update-offer', $merchantItem->id) }}" method="POST" enctype="multipart/form-data">
+    <form id="muaadhform" action="{{ route('merchant-catalog-item-update-offer', $merchantItem->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         @method('PUT')
 
@@ -303,7 +303,7 @@
 
         <div class="row mt-4">
             <div class="col-12 text-end">
-                <a href="{{ route('merchant-prod-index') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
+                <a href="{{ route('merchant-catalog-item-index') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
                 <button type="submit" class="btn btn-primary">@lang('Update Offer')</button>
             </div>
         </div>

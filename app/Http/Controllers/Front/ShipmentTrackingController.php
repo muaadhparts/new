@@ -142,7 +142,7 @@ class ShipmentTrackingController extends Controller
         $userId = Auth::id();
 
         $purchases = Purchase::where('user_id', $userId)
-            ->whereNotNull('vendor_shipping_id')
+            ->whereNotNull('merchant_shipping_id')
             ->latest()
             ->get();
 

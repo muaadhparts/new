@@ -511,7 +511,7 @@
                     $quickMerchantId = $quickMerchant->id ?? null;
                 @endphp
                 @if($quickMerchantId)
-                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $product->slug, 'vendor_id' => $quickVendorId, 'merchant_item_id' => $quickMerchantId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $product->slug, 'merchant_id' => $quickVendorId, 'merchant_item_id' => $quickMerchantId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
                 @endif
               </div>
 

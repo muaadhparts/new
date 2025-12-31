@@ -48,7 +48,7 @@ class CheckoutPriceService
     protected $currencyValue;
     protected $currencySign;
     protected $currencyFormat;
-    protected $vendorId;
+    protected $merchantId;
     protected $isVendorCheckout;
 
     public function __construct()
@@ -151,9 +151,9 @@ class CheckoutPriceService
     /**
      * Set vendor context for vendor-specific checkout
      */
-    public function forVendor($vendorId)
+    public function forVendor($merchantId)
     {
-        $this->vendorId = $vendorId;
+        $this->vendorId = $merchantId;
         $this->isVendorCheckout = true;
         return $this;
     }
@@ -162,7 +162,7 @@ class CheckoutPriceService
      * Calculate products total for a vendor
      * This is the RAW total without any discounts
      */
-    public function calculateProductsTotal($vendorId = null)
+    public function calculateProductsTotal($merchantId = null)
     {
         $cart = Session::get('cart');
         if (!$cart || empty($cart->items)) {
@@ -174,7 +174,7 @@ class CheckoutPriceService
             $itemVendorId = $this->getItemVendorId($item);
 
             // If vendor specified, only count that vendor's products
-            if ($vendorId !== null && $itemVendorId != $vendorId) {
+            if ($merchantId !== null && $itemVendorId != $merchantId) {
                 continue;
             }
 
@@ -187,10 +187,10 @@ class CheckoutPriceService
     /**
      * Get discount code amount
      */
-    public function getDiscountAmount($vendorId = null)
+    public function getDiscountAmount($merchantId = null)
     {
-        if ($vendorId) {
-            return (float)Session::get('discount_code_vendor_' . $vendorId, 0);
+        if ($merchantId) {
+            return (float)Session::get('discount_code_vendor_' . $merchantId, 0);
         }
         return (float)Session::get('discount_code', 0);
     }
@@ -198,14 +198,14 @@ class CheckoutPriceService
     /**
      * Get discount code data
      */
-    public function getDiscountCodeData($vendorId = null)
+    public function getDiscountCodeData($merchantId = null)
     {
-        if ($vendorId) {
+        if ($merchantId) {
             return [
-                'amount' => (float)Session::get('discount_code_vendor_' . $vendorId, 0),
-                'code' => Session::get('discount_code_value_vendor_' . $vendorId, ''),
-                'id' => Session::get('discount_code_id_vendor_' . $vendorId),
-                'percentage' => Session::get('discount_percentage_vendor_' . $vendorId, ''),
+                'amount' => (float)Session::get('discount_code_vendor_' . $merchantId, 0),
+                'code' => Session::get('discount_code_value_vendor_' . $merchantId, ''),
+                'id' => Session::get('discount_code_id_vendor_' . $merchantId),
+                'percentage' => Session::get('discount_percentage_vendor_' . $merchantId, ''),
             ];
         }
         return [
@@ -299,13 +299,13 @@ class CheckoutPriceService
      * ========================================================================
      * Returns all data needed for Step 1 display and session storage
      */
-    public function calculateStep1($vendorId, $taxRate = 0, $taxLocation = '')
+    public function calculateStep1($merchantId, $taxRate = 0, $taxLocation = '')
     {
         // 1. Products Total (RAW - never changes)
-        $productsTotal = $this->calculateProductsTotal($vendorId);
+        $productsTotal = $this->calculateProductsTotal($merchantId);
 
         // 2. Discount Code
-        $discountData = $this->getDiscountCodeData($vendorId);
+        $discountData = $this->getDiscountCodeData($merchantId);
         $discountAmount = $discountData['amount'];
 
         // 3. Subtotal (products - discount)
@@ -341,7 +341,7 @@ class CheckoutPriceService
      * ========================================================================
      * Returns all data needed for Step 2 display and session storage
      */
-    public function calculateStep2($vendorId, $step1Data, $shippingData, $packingId)
+    public function calculateStep2($merchantId, $step1Data, $shippingData, $packingId)
     {
         // Get step1 values
         $productsTotal = $step1Data['products_total'] ?? 0;
@@ -352,7 +352,7 @@ class CheckoutPriceService
         $taxLocation = $step1Data['tax_location'] ?? '';
 
         // Calculate shipping
-        $shippingResult = $this->processShippingData($shippingData, $productsTotal, $vendorId);
+        $shippingResult = $this->processShippingData($shippingData, $productsTotal, $merchantId);
 
         // Calculate packing
         $packingResult = $this->calculatePackingCost($packingId);
@@ -397,7 +397,7 @@ class CheckoutPriceService
     /**
      * Process shipping data (handles both array and single ID formats)
      */
-    protected function processShippingData($shippingData, $productsTotal, $vendorId)
+    protected function processShippingData($shippingData, $productsTotal, $merchantId)
     {
         $totalCost = 0;
         $totalOriginal = 0;
@@ -480,7 +480,7 @@ class CheckoutPriceService
     /**
      * Get price breakdown for display (used by checkout-price-summary component)
      */
-    public function getPriceBreakdown($step, $step1Data = null, $step2Data = null, $vendorId = null)
+    public function getPriceBreakdown($step, $step1Data = null, $step2Data = null, $merchantId = null)
     {
         $productsTotal = 0;
         $discountAmount = 0;
@@ -501,8 +501,8 @@ class CheckoutPriceService
 
         if ($step == 1) {
             // Step 1: Only products and tax (calculated dynamically)
-            $productsTotal = $this->calculateProductsTotal($vendorId);
-            $discountData = $this->getDiscountCodeData($vendorId);
+            $productsTotal = $this->calculateProductsTotal($merchantId);
+            $discountData = $this->getDiscountCodeData($merchantId);
             $discountAmount = $discountData['amount'];
             $discountCode = $discountData['code'];
             $discountPercentage = $discountData['percentage'];
@@ -517,7 +517,7 @@ class CheckoutPriceService
                 $taxAmount = $step1Data->tax_amount ?? 0;
                 $taxLocation = $step1Data->tax_location ?? '';
             }
-            $discountData = $this->getDiscountCodeData($vendorId);
+            $discountData = $this->getDiscountCodeData($merchantId);
             $discountAmount = $discountData['amount'];
             $discountCode = $discountData['code'];
             $discountPercentage = $discountData['percentage'];
@@ -579,10 +579,10 @@ class CheckoutPriceService
      *
      * Views should ONLY format (number_format + sign), NEVER convert.
      */
-    public function getConvertedPriceBreakdown($step, $step1Data = null, $step2Data = null, $vendorId = null): array
+    public function getConvertedPriceBreakdown($step, $step1Data = null, $step2Data = null, $merchantId = null): array
     {
         // Get raw SAR values
-        $raw = $this->getPriceBreakdown($step, $step1Data, $step2Data, $vendorId);
+        $raw = $this->getPriceBreakdown($step, $step1Data, $step2Data, $merchantId);
 
         // Convert all monetary values
         return [
@@ -617,9 +617,9 @@ class CheckoutPriceService
     /**
      * Get formatted prices ready for display (converted + formatted)
      */
-    public function getFormattedPriceBreakdown($step, $step1Data = null, $step2Data = null, $vendorId = null): array
+    public function getFormattedPriceBreakdown($step, $step1Data = null, $step2Data = null, $merchantId = null): array
     {
-        $converted = $this->getConvertedPriceBreakdown($step, $step1Data, $step2Data, $vendorId);
+        $converted = $this->getConvertedPriceBreakdown($step, $step1Data, $step2Data, $merchantId);
 
         return [
             // Formatted strings (ready for display)

@@ -29,13 +29,13 @@ class ShippingQuoteController extends Controller
     public function getQuote(Request $request): JsonResponse
     {
         $request->validate([
-            'vendor_id' => 'required|integer|exists:users,id',
+            'merchant_id' => 'required|integer|exists:users,id',
             'weight' => 'nullable|numeric|min:0.01|max:100',
             'product_id' => 'nullable|integer',
             'city_id' => 'nullable|integer|exists:cities,id',
         ]);
 
-        $vendorId = (int) $request->vendor_id;
+        $merchantId = (int) $request->merchant_id;
         $weight = (float) ($request->weight ?? 0.5);
         $cityId = $request->city_id ? (int) $request->city_id : null;
 
@@ -50,7 +50,7 @@ class ShippingQuoteController extends Controller
             }
         }
 
-        $result = $this->quoteService->getProductQuote($vendorId, $weight, $cityId);
+        $result = $this->quoteService->getProductQuote($merchantId, $weight, $cityId);
 
         return response()->json($result);
     }
@@ -62,16 +62,16 @@ class ShippingQuoteController extends Controller
     public function quickEstimate(Request $request): JsonResponse
     {
         $request->validate([
-            'vendor_id' => 'required|integer|exists:users,id',
+            'merchant_id' => 'required|integer|exists:users,id',
             'weight' => 'nullable|numeric|min:0.01|max:100',
             'city_id' => 'nullable|integer|exists:cities,id',
         ]);
 
-        $vendorId = (int) $request->vendor_id;
+        $merchantId = (int) $request->merchant_id;
         $weight = (float) ($request->weight ?? 0.5);
         $cityId = $request->city_id ? (int) $request->city_id : null;
 
-        $result = $this->quoteService->getProductQuote($vendorId, $weight, $cityId);
+        $result = $this->quoteService->getProductQuote($merchantId, $weight, $cityId);
 
         if (!$result['success']) {
             return response()->json([

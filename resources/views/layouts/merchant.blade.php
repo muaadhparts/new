@@ -150,7 +150,7 @@
         var mainurl = "{{ url('/') }}";
         var admin_loader = {{ $gs->is_admin_loader }};
         var whole_sell = {{ $gs->wholesell }};
-        var getattrUrl = '{{ route('merchant-prod-getattributes') }}';
+        var getattrUrl = '{{ route('merchant-catalog-item-getattributes') }}';
         var curr = {!! json_encode($curr) !!};
         var lang = {
             'additional_price': '{{ __('0.00 (Additional Price)') }}'

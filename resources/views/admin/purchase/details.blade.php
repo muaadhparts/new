@@ -354,11 +354,11 @@
         {{-- Shipment Status Section --}}
         @php
             $shipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                ->select('vendor_id', 'company_name', 'tracking_number', 'status', 'status_ar', 'message', 'message_ar', 'location', 'status_date')
-                ->orderBy('vendor_id')
+                ->select('merchant_id', 'company_name', 'tracking_number', 'status', 'status_ar', 'message', 'message_ar', 'location', 'status_date')
+                ->orderBy('merchant_id')
                 ->orderBy('status_date', 'desc')
                 ->get()
-                ->groupBy('vendor_id');
+                ->groupBy('merchant_id');
 
             $deliveries = App\Models\DeliveryRider::where('purchase_id', $purchase->id)->get();
         @endphp
@@ -416,10 +416,10 @@
 
                                 @foreach($deliveries as $delivery)
                                     @php
-                                        $vendor = App\Models\User::find($delivery->vendor_id);
+                                        $vendor = App\Models\User::find($delivery->merchant_id);
                                     @endphp
                                     <tr>
-                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor #' . $delivery->vendor_id }}</td>
+                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Merchant #' . $delivery->merchant_id }}</td>
                                         <td>
                                             <span class="badge badge-secondary">{{ __('Local Rider') }}</span>
                                         </td>
@@ -559,7 +559,7 @@
                                         if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
                                             $detailsProductUrl = route('front.catalog-item', [
                                                 'slug' => $product['item']['slug'],
-                                                'vendor_id' => $product['user_id'],
+                                                'merchant_id' => $product['user_id'],
                                                 'merchant_item_id' => $product['merchant_item_id']
                                             ]);
                                         } elseif (isset($product['item']['slug'])) {
@@ -662,7 +662,7 @@
 
                                         <div class="action-list">
 
-                                            @if (App\Models\Product::whereId($product['item']['id'])->exists())
+                                            @if (App\Models\CatalogItem::whereId($product['item']['id'])->exists())
                                             <a class="btn btn-primary btn-sm edit-product" data-href="{{ route('admin-purchase-product-edit',[$itemKey, $product['item']['id'] ,$purchase->id]) }}"
                                                 data-bs-toggle="modal" data-bs-target="#edit-product-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}

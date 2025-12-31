@@ -15,7 +15,7 @@ class FavoriteSeller extends Model
 
     public function merchant()
     {
-        return $this->belongsTo('App\Models\User','user_id');
+        return $this->belongsTo('App\Models\User', 'merchant_id');
     }
 
     /**

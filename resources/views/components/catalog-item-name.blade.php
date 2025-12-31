@@ -97,7 +97,7 @@
     } else {
         // Use catalog item details route
         $catalogItemRoute = !empty($slug) && $userId && $mpId
-            ? route('front.catalog-item', ['slug' => $slug, 'vendor_id' => $userId, 'merchant_item_id' => $mpId])
+            ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $userId, 'merchant_item_id' => $mpId])
             : '#';
     }
 @endphp

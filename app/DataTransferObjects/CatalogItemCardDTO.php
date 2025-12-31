@@ -27,8 +27,8 @@ class CatalogItemCardDTO
     public int $catalogReviewsCount;
 
     // MerchantItem
-    public ?int $merchantItemId;
-    public ?int $vendorId;
+    public ?int $merchantItemId = null;
+    public ?int $merchantId = null;
     public float $price;
     public string $priceFormatted;
     public float $previousPrice;
@@ -67,7 +67,6 @@ class CatalogItemCardDTO
     {
         // Map old names to new names for backward compatibility
         if ($name === 'productId') return $this->catalogItemId;
-        if ($name === 'merchantId') return $this->merchantItemId;
         return null;
     }
 
@@ -98,6 +97,7 @@ class CatalogItemCardDTO
 
         // MerchantItem data
         $dto->merchantItemId = $merchant->id;
+        $dto->merchantId = $merchant->user_id;
         $dto->vendorId = $merchant->user_id;
         $dto->price = (float) $merchant->price;
         $dto->priceFormatted = $merchant->showPrice();
@@ -223,16 +223,16 @@ class CatalogItemCardDTO
         return (int) round((($previousPrice - $currentPrice) * 100) / $previousPrice);
     }
 
-    private static function buildDetailsUrl(string $slug, ?int $vendorId, ?int $merchantItemId): string
+    private static function buildDetailsUrl(string $slug, ?int $merchantId, ?int $merchantItemId): string
     {
         if (!$slug) {
             return '#';
         }
 
-        if ($vendorId && $merchantItemId) {
+        if ($merchantId && $merchantItemId) {
             return route('front.catalog-item', [
                 'slug' => $slug,
-                'vendor_id' => $vendorId,
+                'merchant_id' => $merchantId,
                 'merchant_item_id' => $merchantItemId
             ]);
         }

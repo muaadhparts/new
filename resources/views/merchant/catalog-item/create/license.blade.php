@@ -9,7 +9,7 @@
         <!-- breadcrumb start  -->
         <div class="gs-vendor-breadcrumb has-mb">
             <div class="gs-deposit-title ms-0 d-flex align-items-center gap-4">
-                <a href="{{ route('merchant-prod-index') }}" class="back-btn">
+                <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>
                 <h4>@lang('Add Product')</h4>
@@ -33,7 +33,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-prod-index') }}" class="text-capitalize"> @lang('Products') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('Products') </a>
                 </li>
                 <li>
                     <a href="#" class="text-capitalize"> @lang('Add Product') </a>
@@ -43,7 +43,7 @@
         <!-- breadcrumb end -->
 
         <!-- add product form start  -->
-        <form class="row gy-3 gy-lg-4 add-product-form" action="{{ route('merchant-prod-store') }}" method="POST"
+        <form class="row gy-3 gy-lg-4 add-product-form" action="{{ route('merchant-catalog-item-store') }}" method="POST"
             enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="type" value="License">

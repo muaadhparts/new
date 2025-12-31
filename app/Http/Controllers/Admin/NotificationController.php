@@ -41,13 +41,13 @@ class NotificationController extends AdminBaseController
       return view('admin.notification.register',compact('datas'));           
   } 
 
-  public function order_notf_clear()
+  public function purchase_notf_clear()
   {
       $data = CatalogEvent::where('purchase_id','!=',null);
       $data->delete();
   }
 
-  public function order_notf_show()
+  public function purchase_notf_show()
   {
       $datas = CatalogEvent::where('purchase_id','!=',null)->latest('id')->get();
       if($datas->count() > 0){
@@ -55,8 +55,8 @@ class NotificationController extends AdminBaseController
           $data->is_read = 1;
           $data->update();
         }
-      }       
-      return view('admin.notification.order',compact('datas'));           
+      }
+      return view('admin.notification.purchase',compact('datas'));           
   } 
 
   public function product_notf_clear()

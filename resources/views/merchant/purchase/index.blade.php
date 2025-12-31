@@ -59,9 +59,7 @@
                 <tbody>
                     @foreach ($purchases as $purchase)
                     @php
-                    $purchase_v = App\Models\Order::findOrFail($purchase->id);
-
-                    $price = $purchase_v
+                    $price = $purchase
                     ->merchantPurchases()
                     ->where('user_id', '=', $user->id)
                     ->sum('price');

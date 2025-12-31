@@ -12,15 +12,15 @@
         <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('merchant-prod-index') }}">@lang('Products')</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('merchant-prod-catalogs') }}">@lang('Catalog')</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-index') }}">@lang('Products')</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-catalogs') }}">@lang('Catalog')</a></li>
                 <li class="breadcrumb-item active" aria-current="page">@lang('Create Offer')</li>
             </ol>
         </nav>
     </div>
     <!-- breadcrumb end -->
 
-    <form id="muaadhform" action="{{ route('merchant-prod-store-offer') }}" method="POST" enctype="multipart/form-data">
+    <form id="muaadhform" action="{{ route('merchant-catalog-item-store-offer') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <input type="hidden" name="product_id" value="{{ $product->id }}">
 
@@ -236,7 +236,7 @@
 
         <div class="row mt-4">
             <div class="col-12 text-end">
-                <a href="{{ route('merchant-prod-catalogs') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
+                <a href="{{ route('merchant-catalog-item-catalogs') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
                 <button type="submit" class="btn btn-primary">@lang('Create Offer')</button>
             </div>
         </div>

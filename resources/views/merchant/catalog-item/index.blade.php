@@ -7,7 +7,7 @@
             <div class="d-flex gap-4  flex-wrap align-items-center custom-gap-sm-2">
                 <h4 class="text-capitalize">@lang('All Products')</h4>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('merchant-prod-add') }}"
+                    <a href="{{ route('merchant-catalog-item-add') }}"
                         class="template-btn md-btn black-btn data-table-btn">
                         <i class="fas fa-plus"></i> @lang('Add New Product')
                     </a>
@@ -34,7 +34,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-prod-index') }}" class="text-capitalize"> @lang('Products') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('Products') </a>
                 </li>
                 <li>
                     <a href="#" class="text-capitalize"> @lang('All Products') </a>
@@ -121,11 +121,11 @@
                                             <select class="form-control nice-select form__control {{ $activeClass }}"
                                                 id="product_status">
                                                 <option
-                                                    value="{{ route('merchant-prod-status', ['id1' => $merchantItemId, 'id2' => 1]) }}"
+                                                    value="{{ route('merchant-catalog-item-status', ['id1' => $merchantItemId, 'id2' => 1]) }}"
                                                     {{ $active }}> {{ __('Activated') }}
                                                 </option>
                                                 <option
-                                                    value="{{ route('merchant-prod-status', ['id1' => $merchantItemId, 'id2' => 0]) }}"
+                                                    value="{{ route('merchant-catalog-item-status', ['id1' => $merchantItemId, 'id2' => 0]) }}"
                                                     {{ $deactivated }}> {{ __('Deactivated') }}
                                                 </option>
                                             </select>
@@ -134,7 +134,7 @@
                                 </td>
                                 <td>
                                     <div class="table-icon-btns-wrapper">
-                                        <a href="{{ route('merchant-prod-edit', $merchantItemId) }}" class="view-btn edit-btn">
+                                        <a href="{{ route('merchant-catalog-item-edit', $merchantItemId) }}" class="view-btn edit-btn">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                 viewBox="0 0 24 24" fill="none">
                                                 <g clip-path="url(#clip0_910_50031)">
@@ -158,7 +158,7 @@
                                         @php
                                             // Build catalog item URL using merchant item data
                                             $vendorProdUrl = $merchantItem && $data->slug
-                                                ? route('front.catalog-item', ['slug' => $data->slug, 'vendor_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
+                                                ? route('front.catalog-item', ['slug' => $data->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
                                                 : '#';
                                         @endphp
                                         <a href="{{ $vendorProdUrl }}" target="_blank"
@@ -177,7 +177,7 @@
                                                 </defs>
                                             </svg>
                                         </a>
-                                        <a data-href="{{ route('merchant-prod-delete', $merchantItemId) }}" href="javascript:;"
+                                        <a data-href="{{ route('merchant-catalog-item-delete', $merchantItemId) }}" href="javascript:;"
                                             class="view-btn delete-btn delete_button" data-bs-toggle="modal"
                                             data-bs-target="#confirm-detete-modal">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"

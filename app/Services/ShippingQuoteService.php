@@ -28,12 +28,12 @@ class ShippingQuoteService
     /**
      * Get shipping quote for a product
      *
-     * @param int $vendorId Vendor user_id
+     * @param int $merchantId Vendor user_id
      * @param float $weight Product weight in kg
      * @param int|null $cityId Destination city (uses session if null)
      * @return array Quote result
      */
-    public function getProductQuote(int $vendorId, float $weight = 0.5, ?int $cityId = null): array
+    public function getProductQuote(int $merchantId, float $weight = 0.5, ?int $cityId = null): array
     {
         // 1. Get destination city
         $destinationCityId = $cityId ?? $this->locationService->getCityId();
@@ -47,7 +47,7 @@ class ShippingQuoteService
         }
 
         // 2. Get origin city (vendor's city)
-        $originCity = $this->getVendorCity($vendorId);
+        $originCity = $this->getVendorCity($merchantId);
 
         if (!$originCity) {
             return [
@@ -67,7 +67,7 @@ class ShippingQuoteService
         }
 
         // 4. Try to get quote, if fails try nearby supported cities
-        $result = $this->tryGetQuote($vendorId, $originCity, $destCity->city_name, $weight);
+        $result = $this->tryGetQuote($merchantId, $originCity, $destCity->city_name, $weight);
 
         if ($result['success']) {
             return $result;
@@ -76,7 +76,7 @@ class ShippingQuoteService
         // 5. If no route, try nearby supported cities
         if ($destCity->latitude && $destCity->longitude) {
             $alternativeCity = $this->findNearestWorkingCity(
-                $vendorId,
+                $merchantId,
                 $originCity,
                 $destCity->latitude,
                 $destCity->longitude,
@@ -100,10 +100,10 @@ class ShippingQuoteService
     /**
      * Try to get quote for a specific route
      */
-    protected function tryGetQuote(int $vendorId, string $originCity, string $destinationCity, float $weight): array
+    protected function tryGetQuote(int $merchantId, string $originCity, string $destinationCity, float $weight): array
     {
         // Check cache
-        $cacheKey = "quote:{$vendorId}:{$originCity}:{$destinationCity}:{$weight}";
+        $cacheKey = "quote:{$merchantId}:{$originCity}:{$destinationCity}:{$weight}";
         $cached = Cache::get($cacheKey);
         if ($cached) {
             return $cached;
@@ -111,7 +111,7 @@ class ShippingQuoteService
 
         try {
             $result = $this->tryotoService
-                ->forVendor($vendorId)
+                ->forVendor($merchantId)
                 ->getDeliveryOptions($originCity, $destinationCity, $weight, 0, []);
 
             if (!$result['success']) {
@@ -170,7 +170,7 @@ class ShippingQuoteService
      * Find nearest city with working shipping route
      */
     protected function findNearestWorkingCity(
-        int $vendorId,
+        int $merchantId,
         string $originCity,
         float $lat,
         float $lng,
@@ -202,7 +202,7 @@ class ShippingQuoteService
 
         // Try top 5 nearest cities
         foreach (array_slice($citiesWithDistance, 0, 5) as $item) {
-            $result = $this->tryGetQuote($vendorId, $originCity, $item['city']->city_name, $weight);
+            $result = $this->tryGetQuote($merchantId, $originCity, $item['city']->city_name, $weight);
 
             if ($result['success']) {
                 $result['destination'] = $item['city']->city_name;
@@ -246,11 +246,11 @@ class ShippingQuoteService
     /**
      * Get vendor's origin city name
      */
-    protected function getVendorCity(int $vendorId): ?string
+    protected function getVendorCity(int $merchantId): ?string
     {
         $vendor = DB::table('users')
             ->select('city')
-            ->where('id', $vendorId)
+            ->where('id', $merchantId)
             ->first();
 
         if (!$vendor || empty($vendor->city)) {

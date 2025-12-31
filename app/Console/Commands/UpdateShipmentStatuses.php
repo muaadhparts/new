@@ -50,17 +50,17 @@ class UpdateShipmentStatuses extends Command
         }
 
         $limit = (int) $this->option('limit');
-        $vendorId = $this->option('vendor');
+        $merchantId = $this->option('vendor');
         $force = $this->option('force');
 
         // Get unique tracking numbers with their latest status
         $query = ShipmentStatusLog::query()
-            ->whereIn('id', function ($sub) use ($statuses, $vendorId) {
+            ->whereIn('id', function ($sub) use ($statuses, $merchantId) {
                 $sub->selectRaw('MAX(id)')
                     ->from('shipment_status_logs')
                     ->whereIn('status', $statuses)
-                    ->when($vendorId, function ($q) use ($vendorId) {
-                        $q->where('vendor_id', $vendorId);
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
                     })
                     ->groupBy('tracking_number');
             });

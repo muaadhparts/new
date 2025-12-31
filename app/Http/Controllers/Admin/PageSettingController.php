@@ -270,8 +270,8 @@ class PageSettingController extends AdminBaseController
                     'quality_brand' => $mp->qualityBrand?->localized_name,
                     'quality_brand_logo' => $mp->qualityBrand?->logo_url,
                     // Vendor
-                    'vendor_id' => $mp->user_id,
-                    'vendor_name' => app()->getLocale() == 'ar'
+                    'merchant_id' => $mp->user_id,
+                    'merchant_name' => app()->getLocale() == 'ar'
                         ? ($mp->user->shop_name_ar ?: $mp->user->shop_name)
                         : $mp->user->shop_name,
                     // Pricing
@@ -478,8 +478,8 @@ class PageSettingController extends AdminBaseController
                     'quality_brand_id' => $mp->quality_brand_id,
                     'quality_brand' => $mp->qualityBrand?->localized_name,
                     'quality_brand_logo' => $mp->qualityBrand?->logo_url,
-                    'vendor_id' => $mp->user_id,
-                    'vendor_name' => app()->getLocale() == 'ar'
+                    'merchant_id' => $mp->user_id,
+                    'merchant_name' => app()->getLocale() == 'ar'
                         ? ($mp->user->shop_name_ar ?: $mp->user->shop_name)
                         : $mp->user->shop_name,
                     'price' => $mp->price,

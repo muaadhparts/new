@@ -33,7 +33,7 @@
 
                             </thead>
                             @php
-                                $purchases = App\Models\Order::where('user_id', Auth::user()->id)
+                                $purchases = App\Models\Purchase::where('user_id', Auth::user()->id)
                                     ->latest()
                                     ->paginate(12);
                             @endphp

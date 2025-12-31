@@ -68,7 +68,7 @@
                                         </svg>
                                     </div>
                                     <h6>@lang('Current Balance')</h6>
-                                    <h4>{{ App\Models\Product::vendorConvertPrice($user->balance) }}</h4>
+                                    <h4>{{ App\Models\CatalogItem::merchantConvertPrice($user->balance) }}</h4>
                                 </div>
                             </div>
                         </div>
@@ -107,18 +107,18 @@
 
                                         @php
 
-                                             $order_shipping = json_decode($order->purchase->vendor_shipping_id, true) ?? [];
-                                            $order_package = json_decode($order->purchase->vendor_packing_id, true) ?? [];
+                                             $order_shipping = json_decode($order->purchase->merchant_shipping_id, true) ?? [];
+                                            $order_package = json_decode($order->purchase->merchant_packing_id, true) ?? [];
 
-                                            // Retrieve vendor-specific shipping and packing IDs
-                                            $vendor_shipping_id = $order_shipping[$order->vendor_id] ?? null;
-                                            $vendor_package_id = $order_package[$order->vendor_id] ?? null;
+                                            // Retrieve merchant-specific shipping and packing IDs
+                                            $merchant_shipping_id = $order_shipping[$order->merchant_id] ?? null;
+                                            $merchant_package_id = $order_package[$order->merchant_id] ?? null;
 
                                             // Retrieve Shipping model or set to null if not found
-                                            $shipping = $vendor_shipping_id ? App\Models\Shipping::find($vendor_shipping_id) : null;
+                                            $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
 
                                             // Retrieve Package model or set to null if not found
-                                            $package = $vendor_package_id ? App\Models\Package::find($vendor_package_id) : null;
+                                            $package = $merchant_package_id ? App\Models\Package::find($merchant_package_id) : null;
 
                                             // Calculate costs if models are found, default to 0 if null
                                             $shipping_cost = $shipping ? $shipping->price : 0;
@@ -129,7 +129,7 @@
                                         @endphp
 
                                         {{ \PriceHelper::showAdminCurrencyPrice(
-                                            ($order->purchase->merchantPurchases->where('user_id', $order->vendor_id)->sum('price') + $extra_price) *
+                                            ($order->purchase->merchantPurchases->where('user_id', $order->merchant_id)->sum('price') + $extra_price) *
                                                 $order->purchase->currency_value,
                                             $order->currency_sign,
                                         ) }}
