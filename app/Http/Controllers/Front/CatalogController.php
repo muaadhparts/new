@@ -6,13 +6,15 @@ use App\Models\Category;
 use App\Models\Report;
 use App\Models\Subcategory;
 use App\Services\CatalogItemFilterService;
+use App\Services\NewCategoryTreeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
 class CatalogController extends FrontBaseController
 {
     public function __construct(
-        private CatalogItemFilterService $filterService
+        private CatalogItemFilterService $filterService,
+        private NewCategoryTreeService $categoryTreeService
     ) {
         parent::__construct();
     }
@@ -78,6 +80,105 @@ class CatalogController extends FrontBaseController
 
         return view('frontend.catalog-items', $data);
     }
+
+    // -------------------------------- NEW CATEGORY TREE SECTION ----------------------------------------
+
+    /**
+     * Unified catalog category tree with recursive descendant traversal
+     * Route: /catalog/{brand_slug}/{catalog_slug}/category/{cat1?}/{cat2?}/{cat3?}
+     *
+     * Shows all parts from selected category AND all descendant categories
+     * Only shows parts that have merchant_items (available for sale)
+     */
+    public function newCategory(
+        Request $request,
+        string $brand_slug,
+        string $catalog_slug,
+        ?string $cat1 = null,
+        ?string $cat2 = null,
+        ?string $cat3 = null
+    ) {
+        // Handle view mode
+        if ($request->view_check) {
+            Session::put('view', $request->view_check);
+        }
+
+        // Pagination settings
+        $pageby = $request->pageby && $request->pageby !== 'undefined' && is_numeric($request->pageby)
+            ? (int)$request->pageby
+            : null;
+        $perPage = $pageby ?? $this->gs->page_count ?? 12;
+        $page = max(1, (int)$request->get('page', 1));
+
+        // Resolve brand and catalog from URL slugs
+        $resolved = $this->categoryTreeService->resolveBrandAndCatalog($brand_slug, $catalog_slug);
+        $brand = $resolved['brand'];
+        $catalog = $resolved['catalog'];
+
+        if (!$brand || !$catalog) {
+            abort(404, __('Catalog not found'));
+        }
+
+        // Resolve category hierarchy from newcategories
+        $hierarchy = $this->categoryTreeService->resolveCategoryHierarchy(
+            $catalog->id,
+            $cat1,
+            $cat2,
+            $cat3
+        );
+
+        $selectedCategory = $hierarchy['deepest'];
+        $breadcrumb = collect();
+
+        if ($selectedCategory) {
+            $breadcrumb = $this->categoryTreeService->getBreadcrumb($selectedCategory);
+        }
+
+        // Get all descendant category IDs (includes selected category)
+        $categoryIds = [];
+        if ($selectedCategory) {
+            $categoryIds = $this->categoryTreeService->getDescendantIds(
+                $selectedCategory->id,
+                $catalog->id
+            );
+        }
+
+        // Get parts with merchant_items only
+        $items = $this->categoryTreeService->getPartsWithMerchantItems(
+            $categoryIds,
+            $catalog->code,
+            $perPage,
+            $page
+        );
+
+        // Build category tree for sidebar
+        $categoryTree = $this->categoryTreeService->buildCategoryTree($catalog->id, $brand->id);
+
+        // Prepare data for view
+        $data = [
+            'brand' => $brand,
+            'catalog' => $catalog,
+            'categoryTree' => $categoryTree,
+            'selectedCategory' => $selectedCategory,
+            'breadcrumb' => $breadcrumb,
+            'hierarchy' => $hierarchy,
+            'items' => $items,
+            'cat1_slug' => $cat1,
+            'cat2_slug' => $cat2,
+            'cat3_slug' => $cat3,
+            'brand_slug' => $brand_slug,
+            'catalog_slug' => $catalog_slug,
+        ];
+
+        if ($request->ajax()) {
+            $data['ajax_check'] = 1;
+            return view('frontend.ajax.new-category', $data);
+        }
+
+        return view('frontend.new-catalog-items', $data);
+    }
+
+    // -------------------------------- NEW CATEGORY TREE SECTION ENDS ----------------------------------------
 
     public function getsubs(Request $request)
     {
