@@ -81,26 +81,26 @@
                     <tbody>
                         @foreach ($datas as $data)
                             @php
-                                $vendorId = auth()->id();
+                                $merchantId = auth()->id();
 
                                 // Check for local rider delivery
                                 $delivery = App\Models\DeliveryRider::where('purchase_id', $data->id)
-                                    ->where('merchant_id', $vendorId)
+                                    ->where('merchant_id', $merchantId)
                                     ->first();
 
                                 // Check for Tryoto shipment
                                 $shipment = App\Models\ShipmentStatusLog::where('purchase_id', $data->id)
-                                    ->where('merchant_id', $vendorId)
+                                    ->where('merchant_id', $merchantId)
                                     ->orderBy('status_date', 'desc')
                                     ->orderBy('created_at', 'desc')
                                     ->first();
 
                                 // ✅ Get customer's shipping choice
-                                $customerChoice = $data->getCustomerShippingChoice($vendorId);
+                                $customerChoice = $data->getCustomerShippingChoice($merchantId);
 
                                 // Calculate price
                                 $order = $data;
-                                $price = $order->merchantPurchases()->where('user_id', $vendorId)->sum('price');
+                                $price = $order->merchantPurchases()->where('user_id', $merchantId)->sum('price');
                             @endphp
                             <tr>
                                 <!-- Purchase Number -->

@@ -7,7 +7,7 @@
         <div class="gs-vendor-breadcrumb has-mb">
 
             <div class="gs-deposit-title d-flex align-items-center gap-4">
-                <a href="{{route("vendor-purchase-index")}}" class="back-btn">
+                <a href="{{route("merchant-purchase-index")}}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>
                 <h4 class="text-capitalize">@lang('Purchase Invoice')</h4>
@@ -49,7 +49,7 @@
                     <h4 class="order-number">@lang('Genius Shop')</h4>
                 </div>
 
-                <a href="{{route('merchant-purchase-print',$order->purchase_number)}}" class="m-btn m-btn--secondary" type="button">
+                <a href="{{route('merchant-purchase-print',$purchase->purchase_number)}}" class="m-btn m-btn--secondary" type="button">
                     @lang('Print Purchase')
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                         xmlns="http://www.w3.org/2000/svg">
@@ -65,7 +65,7 @@
 
                 @php
 
-                    $price = $order
+                    $price = $purchase
                         ->merchantPurchases()
                         ->where('user_id', '=', $user->id)
                         ->sum('price');
@@ -81,16 +81,16 @@
                     <ul>
                         <li>
                             <span class="fw-semibold">@lang('Invoice Number :')</span>
-                            <span class="fw-normal">{{ $order->purchase_number }}</span>
+                            <span class="fw-normal">{{ $purchase->purchase_number }}</span>
                         </li>
                         <li>
                             <span class="fw-semibold">@lang('Purchase Date :')</span>
-                            <span class="fw-normal">{{ date('d-M-Y H:i:s a', strtotime($order->created_at)) }}</span>
+                            <span class="fw-normal">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
                         </li>
 
                         @php
-                            $invoiceVendorId = $user->id;
-                            $invoiceCustomerChoice = $order->getCustomerShippingChoice($invoiceVendorId);
+                            $invoiceMerchantId = $user->id;
+                            $invoiceCustomerChoice = $purchase->getCustomerShippingChoice($invoiceMerchantId);
                         @endphp
                         @if ($invoiceCustomerChoice)
                             <li>
@@ -98,15 +98,15 @@
                                 <span class="fw-normal">
                                     {{ $invoiceCustomerChoice['company_name'] ?? 'N/A' }}
                                     @if(isset($invoiceCustomerChoice['price']))
-                                    | {{ \PriceHelper::showOrderCurrencyPrice($invoiceCustomerChoice['price'] * $order->currency_value, $order->currency_sign) }}
+                                    | {{ \PriceHelper::showOrderCurrencyPrice($invoiceCustomerChoice['price'] * $purchase->currency_value, $purchase->currency_sign) }}
                                     @endif
                                 </span>
                             </li>
                         @endif
 
                         @php
-                            $invoiceShipmentLog = App\Models\ShipmentStatusLog::where('purchase_id', $order->id)
-                                ->where('vendor_id', $invoiceVendorId)
+                            $invoiceShipmentLog = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
+                                ->where('merchant_id', $invoiceMerchantId)
                                 ->orderBy('status_date', 'desc')
                                 ->first();
                         @endphp
@@ -127,16 +127,16 @@
 
                         <li>
                             <span class="fw-semibold">@lang('Payment Method :')</span>
-                            <span class="fw-normal">{{ $order->method }}</span>
+                            <span class="fw-normal">{{ $purchase->method }}</span>
                         </li>
 
                         <li>
                             <span class="fw-semibold">@lang('Transaction ID :')</span>
-                            <span class="fw-normal">{{ $order->txnid ?? '--' }}</span>
+                            <span class="fw-normal">{{ $purchase->txnid ?? '--' }}</span>
                         </li>
                         <li>
                             <span class="fw-semibold">@lang('Payment Status :')</span>
-                            @if ($order->payment_status == 'Pending')
+                            @if ($purchase->payment_status == 'Pending')
                                 <span class="m-badge m-badge--danger">@lang('Unpaid')</span>
                             @else
                                 <span class="m-badge m-badge--paid">@lang('Paid')</span>
@@ -160,10 +160,10 @@
                                     d="M11.9999 12C14.4851 12 16.4999 9.98528 16.4999 7.5C16.4999 5.01472 14.4851 3 11.9999 3C9.51457 3 7.49985 5.01472 7.49985 7.5C7.49985 9.98528 9.51457 12 11.9999 12Z"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $order->customer_name }}
+                            {{ $purchase->customer_name }}
                         </li>
 
-                        @if ($order->customer_address)
+                        @if ($purchase->customer_address)
                             
                        
                         <li>
@@ -176,7 +176,7 @@
                                     d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $order->customer_address }}
+                            {{ $purchase->customer_address }}
                         </li>
                         @endif
 
@@ -188,7 +188,7 @@
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
-                            {{ $order->customer_phone }}
+                            {{ $purchase->customer_phone }}
                         </li>
                         <li>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -198,22 +198,22 @@
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
-                            {{ $order->customer_email }}
+                            {{ $purchase->customer_email }}
                         </li>
                     </ul>
                 </div>
 
 
-                @if ($order->dp == 0)
+                @if ($purchase->dp == 0)
                 <!-- shipping address -->
                 <div class="address-item">
                     <h5>@lang('Shipping Address')</h5>
                     <ul>
 
-                        @if ($order->shipping == 'pickup')
+                        @if ($purchase->shipping == 'pickup')
                         <li class="info-list-item">
                             <span class="info-type">@lang('Pickup Location :')</span> <span
-                                class="info">{{ $order->pickup_location }}</span>
+                                class="info">{{ $purchase->pickup_location }}</span>
                         </li>
                         @else
 
@@ -229,10 +229,10 @@
                                     d="M11.9999 12C14.4851 12 16.4999 9.98528 16.4999 7.5C16.4999 5.01472 14.4851 3 11.9999 3C9.51457 3 7.49985 5.01472 7.49985 7.5C7.49985 9.98528 9.51457 12 11.9999 12Z"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $order->customer_name }}
+                            {{ $purchase->customer_name }}
                         </li>
 
-                        @if ($order->customer_address)
+                        @if ($purchase->customer_address)
 
                         <li>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -244,7 +244,7 @@
                                     d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
-                            {{ $order->customer_address }}
+                            {{ $purchase->customer_address }}
                         </li>
                         @endif
 
@@ -257,7 +257,7 @@
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
-                            {{ $order->customer_phone }}
+                            {{ $purchase->customer_phone }}
                         </li>
                         <li>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
@@ -267,7 +267,7 @@
                                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
 
-                            {{ $order->customer_email }}
+                            {{ $purchase->customer_email }}
                         </li>
                         @endif
                     </ul>
@@ -377,7 +377,7 @@
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Price :')</span>
                                                         <span
-                                                            class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
+                                                            class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                                     </div>
 
 
@@ -404,13 +404,13 @@
                                             <!-- Total Price -->
                                             <td class="text-start">
                                                 <span class="content ">
-                                                    {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
+                                                    {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $purchase->currency_value, $purchase->currency_sign) }}
                                                     <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
                                                 </span>
                                             </td>
 
                                             @php
-                                                $subtotal += round($product['price'] * $order->currency_value, 2);
+                                                $subtotal += round($product['price'] * $purchase->currency_value, 2);
                                             @endphp
                                         </tr>
                                     @endif
@@ -424,43 +424,43 @@
             <ul class="calculation-list">
                 <li class="calculation-list-item">
                     <span class="amount-type">@lang('Subtotal')</span> <span
-                        class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal, $order->currency_sign) }}</span>
+                        class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal, $purchase->currency_sign) }}</span>
                 </li>
 
 
-                @if (Auth::user()->id == $order->vendor_shipping_id)
-                    @if ($order->shipping_cost != 0)
+                @if (Auth::user()->id == $purchase->vendor_shipping_id)
+                    @if ($purchase->shipping_cost != 0)
                         <li class="calculation-list-item">
                             <span class="amount-type">@lang('Shipping Cost')</span> <span
-                                class="amount">{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost, $order->currency_sign) }}</span>
+                                class="amount">{{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost, $purchase->currency_sign) }}</span>
                         </li>
 
                         @php
-                            $data += round($order->shipping_cost, 2);
+                            $data += round($purchase->shipping_cost, 2);
                         @endphp
                     @endif
                 @endif
-                @if (Auth::user()->id == $order->vendor_packing_id)
-                    @if ($order->packing_cost != 0)
+                @if (Auth::user()->id == $purchase->vendor_packing_id)
+                    @if ($purchase->packing_cost != 0)
                         <li class="calculation-list-item">
                             <span class="amount-type">@lang('Packaging Cost')</span> <span
-                                class="amount">{{ \PriceHelper::showOrderCurrencyPrice($order->packing_cost, $order->currency_sign) }}</span>
+                                class="amount">{{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost, $purchase->currency_sign) }}</span>
                         </li>
                         @php
-                            $data += round($order->packing_cost, 2);
+                            $data += round($purchase->packing_cost, 2);
                         @endphp
                     @endif
                 @endif
 
-                @if ($order->tax != 0)
+                @if ($purchase->tax != 0)
                     @php
-                        $tax = ($subtotal / 100) * $order->tax;
+                        $tax = ($subtotal / 100) * $purchase->tax;
                         $subtotal = $subtotal + $tax;
                     @endphp
 
                     <li class="calculation-list-item">
-                        <span class="amount-type">@lang('TAX')({{ $order->currency_sign }})</span> <span
-                            class="amount">{{ \PriceHelper::showOrderCurrencyPrice($tax, $order->currency_sign) }}</span>
+                        <span class="amount-type">@lang('TAX')({{ $purchase->currency_sign }})</span> <span
+                            class="amount">{{ \PriceHelper::showOrderCurrencyPrice($tax, $purchase->currency_sign) }}</span>
                     </li>
                 @endif
 
@@ -470,7 +470,7 @@
 
                 <li class="calculation-list-item">
                     <span class="amount-type">@lang('Total')</span> <span
-                        class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal + $data, $order->currency_sign) }}</span>
+                        class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal + $data, $purchase->currency_sign) }}</span>
                 </li>
             </ul>
         </div>

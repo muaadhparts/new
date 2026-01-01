@@ -143,7 +143,7 @@ window.i18n = {
 
 window.ILL_ROUTES = {
   quick:        "{{ route('modal.quickview',    ['id' => 0]) }}".replace(/0$/, ''),
-  product:      "{{ route('modal.product',      ['key' => 'SKU']) }}".replace(/SKU$/, ''),
+  catalogItem:  "{{ route('modal.catalog-item', ['key' => 'SKU']) }}".replace(/SKU$/, ''),
   alternative:  "{{ route('modal.alternative',  ['key' => 'SKU']) }}".replace(/SKU$/, ''),
   compatibility:"{{ route('modal.compatibility',['key' => 'SKU']) }}".replace(/SKU$/, '')
 };

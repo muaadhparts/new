@@ -7,7 +7,7 @@
         <!-- breadcrumb start  -->
         <div class="gs-vendor-breadcrumb has-mb">
             <div class="d-flex align-items-center flex-wrap gap-4">
-                <a class="back-btn" href="{{route("vendor-purchase-index")}}">
+                <a class="back-btn" href="{{route("merchant-purchase-index")}}">
                     <i class="fa-solid fa-arrow-left-long"></i>
                     </a>
                 <h4 class="text-capitalize">@lang('Purchase Details')</h4>
@@ -47,23 +47,23 @@
 
                         <h5 class="title">@lang('Purchase Details')
                         </h5>
-                        @if (@App\Models\DeliveryRider::where('vendor_id', auth()->id())->where('purchase_id', $order->id)->first()->status == 'delivered' && $order->merchantPurchases()->where('status', 'completed')->count() == 0)
-                            <a href="{{ route('merchant-purchase-status', ['id1' => $order->purchase_number, 'status' => 'completed']) }}"
+                        @if (@App\Models\DeliveryRider::where('merchant_id', auth()->id())->where('purchase_id', $purchase->id)->first()->status == 'delivered' && $purchase->merchantPurchases()->where('status', 'completed')->count() == 0)
+                            <a href="{{ route('merchant-purchase-status', ['id1' => $purchase->purchase_number, 'status' => 'completed']) }}"
                                 class="m-btn m-btn--success m-btn--sm">@lang('Make Complete')</a>
                         @endif
                     </div>
                     <ul class="info-list">
                         <li class="info-list-item">
-                            <span class="info-type">@lang('Purchase ID')</span> <span class="info">{{ $order->purchase_number }}</span>
+                            <span class="info-type">@lang('Purchase ID')</span> <span class="info">{{ $purchase->purchase_number }}</span>
                         </li>
                         <li class="info-list-item">
                             <span class="info-type">@lang('Total Product')</span> <span
-                                class="info">{{ $order->merchantPurchases()->where('user_id', '=', $user->id)->sum('qty') }}</span>
+                                class="info">{{ $purchase->merchantPurchases()->where('user_id', '=', $user->id)->sum('qty') }}</span>
                         </li>
 
                         @php
 
-                            $price = $order
+                            $price = $purchase
                                 ->merchantPurchases()
                                 ->where('user_id', '=', $user->id)
                                 ->sum('price');
@@ -71,44 +71,44 @@
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Total Cost')</span> <span
-                                class="info">{{ \PriceHelper::showOrderCurrencyPrice($price * $order->currency_value, $order->currency_sign) }}</span>
+                                class="info">{{ \PriceHelper::showOrderCurrencyPrice($price * $purchase->currency_value, $purchase->currency_sign) }}</span>
                         </li>
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Purchase Date')</span> <span
-                                class="info">{{ date('d-M-Y H:i:s a', strtotime($order->created_at)) }}</span>
+                                class="info">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
                         </li>
 
 
                         <li class="info-list-item">
-                            <span class="info-type">@lang('Payment Method')</span> <span class="info">{{ $order->method }}</span>
+                            <span class="info-type">@lang('Payment Method')</span> <span class="info">{{ $purchase->method }}</span>
                         </li>
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Transaction ID')</span> <span
-                                class="info">{{ $order->txnid ?? '--' }}</span>
+                                class="info">{{ $purchase->txnid ?? '--' }}</span>
                         </li>
 
 
                         <li class="info-list-item">
                                 <span class="info-type">@lang('Payment Status')</span>
-                                @if ($order->payment_status == 'Pending')
+                                @if ($purchase->payment_status == 'Pending')
                                     <span class="m-badge m-badge--danger">@lang('Unpaid')</span>
                                 @else
                                     <span class="m-badge m-badge--paid">@lang('Paid')</span>
                                 @endif
                         </li>
 
-                        @if (!empty($order->order_note))
+                        @if (!empty($purchase->order_note))
                             <li class="info-list-item">
                                 <span class="info-type">@lang('Purchase Note')</span> <span
-                                    class="info">{{ $order->order_note }}</span>
+                                    class="info">{{ $purchase->order_note }}</span>
                             </li>
                         @endif
 
 
                     </ul>
-                    <a href="{{ route('merchant-purchase-invoice', $order->purchase_number) }}"
+                    <a href="{{ route('merchant-purchase-invoice', $purchase->purchase_number) }}"
                         class="m-btn m-btn--secondary m-btn--lg">@lang('View Invoice')</a>
                 </div>
             </div>
@@ -118,28 +118,28 @@
                     <h5 class="title">@lang('Billing Details')</h5>
                     <ul class="info-list">
                         <li class="info-list-item">
-                            <span class="info-type">@lang('Name')</span> <span class="info">{{ $order->customer_name }}</span>
+                            <span class="info-type">@lang('Name')</span> <span class="info">{{ $purchase->customer_name }}</span>
                         </li>
                         <li class="info-list-item">
-                            <span class="info-type">@lang('Email')</span> <span class="info">{{ $order->customer_email }}</span>
+                            <span class="info-type">@lang('Email')</span> <span class="info">{{ $purchase->customer_email }}</span>
                         </li>
                         <li class="info-list-item">
-                            <span class="info-type">@lang('Phone')</span> <span class="info">{{ $order->customer_phone }}</span>
+                            <span class="info-type">@lang('Phone')</span> <span class="info">{{ $purchase->customer_phone }}</span>
                         </li>
                         <li class="info-list-item">
                             <span class="info-type">@lang('Address')</span> <span
-                                class="info">{{ $order->customer_address }}</span>
+                                class="info">{{ $purchase->customer_address }}</span>
                         </li>
                         <li class="info-list-item">
                             <span class="info-type">@lang('Country')</span> <span
-                                class="info">{{ $order->customer_country }}</span>
+                                class="info">{{ $purchase->customer_country }}</span>
                         </li>
                         <li class="info-list-item">
-                            <span class="info-type">@lang('City')</span> <span class="info">{{ $order->customer_city }}</span>
+                            <span class="info-type">@lang('City')</span> <span class="info">{{ $purchase->customer_city }}</span>
                         </li>
                         <li class="info-list-item">
                             <span class="info-type">@lang('Postal Code')</span> <span
-                                class="info">{{ $order->customer_zip }}</span>
+                                class="info">{{ $purchase->customer_zip }}</span>
                         </li>
                     </ul>
                 </div>
@@ -147,46 +147,46 @@
 
 
 
-            @if ($order->dp == 0)
+            @if ($purchase->dp == 0)
                 <!-- Shipping Address Card  -->
                 <div class="col">
                     <div class="order-info-card shipping-address-card">
                         <h5 class="title">@lang('Shipping Address')</h5>
                         <ul class="info-list">
 
-                            @if ($order->shipping == 'pickup')
+                            @if ($purchase->shipping == 'pickup')
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Pickup Location')</span> <span
-                                        class="info">{{ $order->pickup_location }}</span>
+                                        class="info">{{ $purchase->pickup_location }}</span>
                                 </li>
                             @else
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Name')</span> <span
-                                        class="info">{{ $order->customer_name }}</span>
+                                        class="info">{{ $purchase->customer_name }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Email')</span> <span
-                                        class="info">{{ $order->customer_email }}</span>
+                                        class="info">{{ $purchase->customer_email }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Phone')</span> <span
-                                        class="info">{{ $order->customer_phone }}</span>
+                                        class="info">{{ $purchase->customer_phone }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Address')</span> <span
-                                        class="info">{{ $order->customer_address }}</span>
+                                        class="info">{{ $purchase->customer_address }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Country')</span> <span
-                                        class="info">{{ $order->customer_country }}</span>
+                                        class="info">{{ $purchase->customer_country }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('City')</span> <span
-                                        class="info">{{ $order->customer_city }}</span>
+                                        class="info">{{ $purchase->customer_city }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Postal Code')</span> <span
-                                        class="info">{{ $order->customer_zip }}</span>
+                                        class="info">{{ $purchase->customer_zip }}</span>
                                 </li>
                             @endif
                         </ul>
@@ -196,18 +196,18 @@
 
             {{-- ✅ Shipment Status Card --}}
             @php
-                $vendorId = auth()->id();
-                $shipment = App\Models\ShipmentStatusLog::where('purchase_id', $order->id)
-                    ->where('vendor_id', $vendorId)
+                $merchantId = auth()->id();
+                $shipment = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
+                    ->where('merchant_id', $merchantId)
                     ->orderBy('status_date', 'desc')
                     ->orderBy('created_at', 'desc')
                     ->first();
 
-                $delivery = App\Models\DeliveryRider::where('purchase_id', $order->id)
-                    ->where('vendor_id', $vendorId)
+                $delivery = App\Models\DeliveryRider::where('purchase_id', $purchase->id)
+                    ->where('merchant_id', $merchantId)
                     ->first();
 
-                $customerChoice = $order->getCustomerShippingChoice($vendorId);
+                $customerChoice = $purchase->getCustomerShippingChoice($merchantId);
             @endphp
 
             @if ($shipment || $delivery || $customerChoice)
@@ -299,7 +299,7 @@
                                     <span class="info">
                                         @if ($customerChoice['provider'] === 'tryoto')
                                             <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'Tryoto' }}</span>
-                                            - {{ $order->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
+                                            - {{ $purchase->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
                                         @else
                                             {{ $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual' }}
                                         @endif
@@ -360,12 +360,12 @@
                                         <td>
                                             @if ($product['item']['user_id'] != 0)
                                                 @php
-                                                    $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id', '=', $order->id)
+                                                    $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id', '=', $purchase->id)
                                                         ->where('user_id', '=', $product['item']['user_id'])
                                                         ->first();
                                                 @endphp
 
-                                                @if ($order->dp == 1 && $order->payment_status == 'Completed')
+                                                @if ($purchase->dp == 1 && $purchase->payment_status == 'Completed')
                                                     <span class="m-badge m-badge--completed">{{ __('Completed') }}</span>
                                                 @else
                                                     @if ($merchantPurchase->status == 'pending')
@@ -442,7 +442,7 @@
 
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">@lang('Price :')</span>
-                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $order->currency_value, $order->currency_sign) }}</span>
+                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                                 </div>
 
 
@@ -467,7 +467,7 @@
                                         <!-- Total Price -->
                                         <td class="text-start">
                                             <span class="content ">
-                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $order->currency_value, $order->currency_sign) }}
+                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $purchase->currency_value, $purchase->currency_sign) }}
                                                         <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
                                             </span>
                                         </td>

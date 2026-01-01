@@ -58,24 +58,24 @@ html {
                 <div class="col-lg-6">
                     <div class="invoice__orderDetails">
                         <p><strong>{{ __('Purchase Details') }} </strong></p>
-                        <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $order->id) }}</span><br>
-                        <span><strong>{{ __('Purchase Date') }} :</strong> {{ date('d-M-Y',strtotime($order->created_at)) }}</span><br>
-                        <span><strong>{{  __('Purchase ID')}} :</strong> {{ $order->purchase_number }}</span><br>
-                        @if($order->dp == 0)
+                        <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $purchase->id) }}</span><br>
+                        <span><strong>{{ __('Purchase Date') }} :</strong> {{ date('d-M-Y',strtotime($purchase->created_at)) }}</span><br>
+                        <span><strong>{{  __('Purchase ID')}} :</strong> {{ $purchase->purchase_number }}</span><br>
+                        @if($purchase->dp == 0)
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
-                            @if($order->shipping == "pickup")
+                            @if($purchase->shipping == "pickup")
                             {{ __('Pick Up') }}
                             @else
                             {{ __('Ship To Address') }}
                             @endif
                         </span><br>
                         @endif
-                        <span> <strong>{{ __('Payment Method') }} :</strong> {{$order->method}}</span>
+                        <span> <strong>{{ __('Payment Method') }} :</strong> {{$purchase->method}}</span>
                         @php
-                            $printVendorId = $user->id;
-                            $printCustomerChoice = $order->getCustomerShippingChoice($printVendorId);
-                            $printShipmentLog = App\Models\ShipmentStatusLog::where('purchase_id', $order->id)
-                                ->where('vendor_id', $printVendorId)
+                            $printMerchantId = $user->id;
+                            $printCustomerChoice = $purchase->getCustomerShippingChoice($printMerchantId);
+                            $printShipmentLog = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
+                                ->where('merchant_id', $printMerchantId)
                                 ->orderBy('status_date', 'desc')
                                 ->first();
                         @endphp
@@ -92,24 +92,24 @@ html {
             </div>
 
             <div class="invoice__metaInfo" style="margin-top:0px;">
-                @if($order->dp == 0)
+                @if($purchase->dp == 0)
                 <div class="col-lg-6">
                         <div class="invoice__orderDetails" style="margin-top:5px;">
                             <p><strong>{{ __('Shipping Details') }}</strong></p>
-                           <span><strong>{{ __('Customer Name') }}</strong>: {{ $order->customer_name }}</span><br>
-                           <span><strong>{{ __('Address') }}</strong>: {{ $order->customer_address }}</span><br>
-                           <span><strong>{{ __('City') }}</strong>: {{ $order->customer_city }}</span><br>
-                           <span><strong>{{ __('Country') }}</strong>: {{ $order->customer_country }}</span>
+                           <span><strong>{{ __('Customer Name') }}</strong>: {{ $purchase->customer_name }}</span><br>
+                           <span><strong>{{ __('Address') }}</strong>: {{ $purchase->customer_address }}</span><br>
+                           <span><strong>{{ __('City') }}</strong>: {{ $purchase->customer_city }}</span><br>
+                           <span><strong>{{ __('Country') }}</strong>: {{ $purchase->customer_country }}</span>
                         </div>
                 </div>
                 @endif
                 <div class="col-lg-6" style="width:50%;">
                         <div class="invoice__orderDetails" style="margin-top:5px;">
                             <p><strong>{{ __('Billing Details') }}</strong></p>
-                            <span><strong>{{ __('Customer Name') }}</strong>: {{ $order->customer_name}}</span><br>
-                            <span><strong>{{ __('Address') }}</strong>: {{ $order->customer_address }}</span><br>
-                            <span><strong>{{ __('City') }}</strong>: {{ $order->customer_city }}</span><br>
-                            <span><strong>{{ __('Country') }}</strong>: {{ $order->customer_country }}</span>
+                            <span><strong>{{ __('Customer Name') }}</strong>: {{ $purchase->customer_name}}</span><br>
+                            <span><strong>{{ __('Address') }}</strong>: {{ $purchase->customer_address }}</span><br>
+                            <span><strong>{{ __('City') }}</strong>: {{ $purchase->customer_city }}</span><br>
+                            <span><strong>{{ __('Country') }}</strong>: {{ $purchase->customer_country }}</span>
                         </div>
                 </div>
             </div>
@@ -155,7 +155,7 @@ html {
                                                 @endif
                                                 <p>
                                                         <strong>{{ __('Price') }} :</strong> 
-                                                        {{ \PriceHelper::showOrderCurrencyPrice(($product['item_price'] * $order->currency_value),$order->currency_sign) }}
+                                                        {{ \PriceHelper::showOrderCurrencyPrice(($product['item_price'] * $purchase->currency_value),$purchase->currency_sign) }}
                                                 </p>
                                                <p>
                                                     <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{ $product['item']['measure'] }}
@@ -175,10 +175,10 @@ html {
                                             </td>
 
                                             <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice(($product['price'] * $order->currency_value),$order->currency_sign) }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'% '.__('Off').')' }}</small>
+                                                {{ \PriceHelper::showOrderCurrencyPrice(($product['price'] * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'% '.__('Off').')' }}</small>
                                             </td>
                                             @php
-                                            $subtotal += round($product['price'] * $order->currency_value, 2);
+                                            $subtotal += round($product['price'] * $purchase->currency_value, 2);
                                             @endphp
 
                                         </tr>
@@ -192,55 +192,55 @@ html {
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Subtotal') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice($subtotal,$order->currency_sign) }}
+                                            {{ \PriceHelper::showOrderCurrencyPrice($subtotal,$purchase->currency_sign) }}
                                             </td>
 
                                         </tr>
-                                        @if(Auth::user()->id == $order->vendor_shipping_id)
-                                            @if($order->shipping_cost != 0)
+                                        @if(Auth::user()->id == $purchase->vendor_shipping_id)
+                                            @if($purchase->shipping_cost != 0)
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
-                                                <td><strong>{{ __('Shipping Cost') }}({{$order->currency_sign}})</strong></td>
+                                                <td><strong>{{ __('Shipping Cost') }}({{$purchase->currency_sign}})</strong></td>
                                                 <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost,$order->currency_sign) }}
+                                                {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost,$purchase->currency_sign) }}
 
 
                                                 </td>
                                             </tr>
                                             @php 
-                                                $data +=  round($order->shipping_cost , 2);
+                                                $data +=  round($purchase->shipping_cost , 2);
                                             @endphp
                                             @endif
                                         @endif
-                                        @if(Auth::user()->id == $order->vendor_packing_id)
-                                            @if($order->packing_cost != 0)
+                                        @if(Auth::user()->id == $purchase->vendor_packing_id)
+                                            @if($purchase->packing_cost != 0)
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
-                                                <td><strong>{{ __('Packaging Cost') }}({{$order->currency_sign}})</strong></td>
+                                                <td><strong>{{ __('Packaging Cost') }}({{$purchase->currency_sign}})</strong></td>
                                                 <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice($order->packing_cost,$order->currency_sign) }}
+                                                {{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost,$purchase->currency_sign) }}
                                                 </td>
                                             </tr>
                                             @php 
-                                                $data +=  round($order->packing_cost , 2);
+                                                $data +=  round($purchase->packing_cost , 2);
                                             @endphp
                                             @endif
                                         @endif
 
-                                        @if($order->tax != 0)
+                                        @if($purchase->tax != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('TAX') }}({{$order->currency_sign}})</strong></td>
+                                            <td><strong>{{ __('TAX') }}({{$purchase->currency_sign}})</strong></td>
 
                                             @php
-                                                $tax = ($subtotal / 100) * $order->tax;
+                                                $tax = ($subtotal / 100) * $purchase->tax;
                                                 $subtotal =  $subtotal + $tax;
                                             @endphp
                                             
 
                                             <td>
 
-                                            {{ \PriceHelper::showOrderCurrencyPrice($tax,$order->currency_sign) }}
+                                            {{ \PriceHelper::showOrderCurrencyPrice($tax,$purchase->currency_sign) }}
 
                                             </td>
                                         </tr>
@@ -251,7 +251,7 @@ html {
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Total') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice(($subtotal + $data),$order->currency_sign) }}
+                                            {{ \PriceHelper::showOrderCurrencyPrice(($subtotal + $data),$purchase->currency_sign) }}
                                             </td>
                                         </tr>
 

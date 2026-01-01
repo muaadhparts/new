@@ -31,7 +31,7 @@
                         <div class="gocover"
                             style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                         </div>
-                        <form action="{{ route('admin-gs-prod-settings-update') }}" id="muaadhform" method="POST"
+                        <form action="{{ route('admin-gs-catalog-item-settings-update') }}" id="muaadhform" method="POST"
                             enctype="multipart/form-data">
                             @csrf
 
@@ -175,8 +175,8 @@
 
                             <hr>
 
-                            <h4 class="text-center">{{ __('VENDOR PAGE SECTION') }}</h4>
-      
+                            <h4 class="text-center">{{ __('MERCHANT PAGE SECTION') }}</h4>
+
                             <hr>
 
 
@@ -189,8 +189,8 @@
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Products Per Page') }}" name="vendor_page_count"
-                                        value="{{ $gs->vendor_page_count }}" required="" min="0">
+                                        placeholder="{{ __('Display Products Per Page') }}" name="merchant_page_count"
+                                        value="{{ $gs->merchant_page_count }}" required="" min="0">
                                 </div>
                             </div>
 
