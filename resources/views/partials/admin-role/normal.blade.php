@@ -72,35 +72,7 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('categories'))
-
-<li>
-    <a href="#menu5" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false"><i
-            class="fas fa-sitemap"></i>{{ __('Manage Categories') }}</a>
-    <ul class="collapse list-unstyled
-        @if(request()->is('admin/attribute/*/manage') && request()->input('type')=='category')
-          show
-        @elseif(request()->is('admin/attribute/*/manage') && request()->input('type')=='subcategory')
-          show
-        @elseif(request()->is('admin/attribute/*/manage') && request()->input('type')=='childcategory')
-          show
-        @endif" id="menu5" data-bs-parent="#accordion">
-        <li
-            class="@if(request()->is('admin/attribute/*/manage') && request()->input('type')=='category') active @endif">
-            <a href="{{ route('admin-cat-index') }}"><span>{{ __('Main Category') }}</span></a>
-        </li>
-        <li
-            class="@if(request()->is('admin/attribute/*/manage') && request()->input('type')=='subcategory') active @endif">
-            <a href="{{ route('admin-subcat-index') }}"><span>{{ __('Sub Category') }}</span></a>
-        </li>
-        <li
-            class="@if(request()->is('admin/attribute/*/manage') && request()->input('type')=='childcategory') active @endif">
-            <a href="{{ route('admin-childcat-index') }}"><span>{{ __('Child Category') }}</span></a>
-        </li>
-    </ul>
-</li>
-
-@endif
+{{-- Old Category menu removed - using TreeCategories system --}}
 
 @if(Auth::guard('admin')->user()->sectionCheck('products'))
 

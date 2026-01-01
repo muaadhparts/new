@@ -124,7 +124,6 @@ class CatalogItemController extends MerchantBaseController
                 'sku' => $catalogItem->sku,
                 'type' => $catalogItem->type,
                 'brand' => $catalogItem->brand ? $catalogItem->brand->name : null,
-                'category' => $catalogItem->category ? $catalogItem->category->name : null,
                 'photo' => $photoUrl,
             ]
         ]);
@@ -803,58 +802,8 @@ class CatalogItemController extends MerchantBaseController
         if (!empty($request->tags)) { $input['tags'] = $request->tags; }
         if (empty($request->tags))  { $input['tags'] = null; }
 
+        // Old category attribute system removed - categories now linked via TreeCategories
         $attrArr = [];
-        if (!empty($request->category_id)) {
-            $catAttrs = Attribute::where('attributable_id', $request->category_id)->where('attributable_type', 'App\Models\Category')->get();
-            if (!empty($catAttrs)) {
-                foreach ($catAttrs as $key => $catAttr) {
-                    $in_name = $catAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $catAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
-        if (!empty($request->subcategory_id)) {
-            $subAttrs = Attribute::where('attributable_id', $request->subcategory_id)->where('attributable_type', 'App\Models\Subcategory')->get();
-            if (!empty($subAttrs)) {
-                foreach ($subAttrs as $key => $subAttr) {
-                    $in_name = $subAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $subAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
-        if (!empty($request->childcategory_id)) {
-            $childAttrs = Attribute::where('attributable_id', $request->childcategory_id)->where('attributable_type', 'App\Models\Childcategory')->get();
-            if (!empty($childAttrs)) {
-                foreach ($childAttrs as $key => $childAttr) {
-                    $in_name = $childAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $childAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
         $input['attributes'] = empty($attrArr) ? null : json_encode($attrArr);
 
         unset($input['price'], $input['previous_price'], $input['stock']);

@@ -31,7 +31,7 @@ body[dir="rtl"] {
     text-align: right;
 }
 
-[dir="rtl"] .product-item .product-image {
+[dir="rtl"] .product-item .catalog-item-image {
     float: right;
 }
 

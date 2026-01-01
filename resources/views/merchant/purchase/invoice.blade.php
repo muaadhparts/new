@@ -42,7 +42,7 @@
         <!-- breadcrumb end -->
 
         <!-- Vendor Purchase Invoice start  -->
-        <div class="gs-vendor-order-invoice">
+        <div class="gs-merchant-purchase-invoice">
             <!-- order address info -->
             <div class="user-purchase-title-wrapper">
                 <div>

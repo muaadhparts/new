@@ -2,16 +2,17 @@
 {{-- API-based Tryoto shipping options partial - Grid Layout --}}
 
 {{-- Variables from ShippingApiController:
-     $curr, $vendorId, $deliveryCompany, $weight, $freeAbove, $vendorProductsTotal
+     $curr, $merchantUserId, $deliveryCompany, $weight, $freeAbove, $merchantProductsTotal
 --}}
 
 @php
     $freeAboveValue = $freeAbove ?? 0;
-    $vendorTotal = $vendorProductsTotal ?? 0;
-    $isFreeShipping = ($freeAboveValue > 0 && $vendorTotal >= $freeAboveValue);
+    $merchantTotal = $merchantProductsTotal ?? $vendorProductsTotal ?? 0;
+    $isFreeShipping = ($freeAboveValue > 0 && $merchantTotal >= $freeAboveValue);
+    $merchantUserIdValue = $merchantUserId ?? $vendorId ?? 0;
 @endphp
 
-<div class="tryoto-options-container" data-vendor-id="{{ $vendorId ?? 0 }}">
+<div class="tryoto-options-container" data-merchant-user-id="{{ $merchantUserIdValue }}">
 
     {{-- ✅ Free Shipping Alert --}}
     @if($isFreeShipping)
@@ -31,7 +32,7 @@
             </div>
             <div class="tryoto-free-alert__content">
                 <strong>@lang('Free shipping on orders above') {{ $curr->sign }}{{ number_format($freeAboveValue, 2) }}</strong>
-                <span>@lang('Your current order'): {{ $curr->sign }}{{ number_format($vendorTotal, 2) }}</span>
+                <span>@lang('Your current order'): {{ $curr->sign }}{{ number_format($merchantTotal, 2) }}</span>
             </div>
         </div>
     @endif

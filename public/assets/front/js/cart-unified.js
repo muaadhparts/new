@@ -186,8 +186,9 @@
             const c = this.container;
             return {
                 mpId: parseInt(c.dataset.mpId) || 0,
-                merchantId: parseInt(c.dataset.merchantId) || 0,
-                productId: parseInt(c.dataset.productId) || 0,
+                // New naming: data-merchant-user-id, fallback to data-merchant-id for legacy
+                merchantUserId: parseInt(c.dataset.merchantUserId) || parseInt(c.dataset.merchantId) || 0,
+                catalogItemId: parseInt(c.dataset.catalogItemId) || parseInt(c.dataset.productId) || 0,
                 price: parseFloat(c.dataset.price) || 0,
                 stock: parseInt(c.dataset.stock) || 0,
                 preordered: c.dataset.preordered === '1',
@@ -405,8 +406,8 @@
         buildPayload() {
             return {
                 merchant_item_id: this.data.mpId,
-                merchant_id: this.data.merchantId,
-                catalog_item_id: this.data.productId,
+                merchant_id: this.data.merchantUserId,
+                catalog_item_id: this.data.catalogItemId,
                 qty: this.state.qty,
                 size: this.state.selectedSize,
                 color: this.state.selectedColor,
@@ -491,8 +492,8 @@
                 return;
             }
 
-            // Get merchant_id (optional but recommended)
-            const merchantId = btn.dataset.merchantId || 0;
+            // Get merchant_user_id (new naming, fallback to merchantId for legacy)
+            const merchantUserId = btn.dataset.merchantUserId || btn.dataset.merchantId || 0;
 
             // Get redirect URL (for Buy Now buttons)
             const redirectUrl = btn.dataset.redirect || null;
@@ -549,7 +550,7 @@
             // Build payload with new naming convention
             const payload = {
                 merchant_item_id: parseInt(mpId),
-                merchant_id: parseInt(merchantId) || 0,
+                merchant_id: parseInt(merchantUserId) || 0,
                 qty: qty,
             };
 

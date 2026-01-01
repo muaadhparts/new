@@ -60,56 +60,7 @@
                         <input type="text" class="form-control" name="sku" placeholder="@lang('Enter Product SKU')"
                             value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
                     </div>
-                    <!-- Category -->
-                    <div class="input-label-wrapper">
-                        <label>@lang('Category*')</label>
-                        <div class="dropdown-container">
-                            <select class="form-control nice-select form__control " name="category_id" id="cat">
-                                <option value="" disabled selected>
-                                    @lang('Select Category')
-                                </option>
-                                @foreach ($cats as $cat)
-                                    <option data-href="{{ route('merchant-subcat-load', $cat->id) }}"
-                                        value="{{ $cat->id }}">{{ $cat->name }}</option>
-                                @endforeach
-                                <!-- Add more options here if needed -->
-                            </select>
-                        </div>
-                    </div>
-                    <!-- Sub Category -->
-                    <div class="input-label-wrapper">
-                        <label>@lang('Sub Category*')</label>
-                        <div class="dropdown-container">
-                            <select class="form-control nice-select form__control subcategory" name="subcategory_id"
-                                id="subcat">
-                                <option value="" disabled selected>
-                                    @lang('Select Sub Category')
-                                </option>
-
-                                <!-- Add more options here if needed -->
-                            </select>
-                        </div>
-                    </div>
-                    <!-- Child Category -->
-                    <div class="input-label-wrapper">
-                        <label>@lang('Child Category*')</label>
-                        <div class="dropdown-container">
-                            <select class="form-control nice-select form__control childcat" name="childcategory_id"
-                                id="childcat">
-                                <option value="" disabled selected>
-                                    @lang('Select Child Category')
-                                </option>
-
-                                <!-- Add more options here if needed -->
-                            </select>
-                        </div>
-                    </div>
-
-                    <div id="showAttr" class="d-none">
-                        <div id="catAttributes"></div>
-                        <div id="subcatAttributes"></div>
-                        <div id="childcatAttributes"></div>
-                    </div>
+                    {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
 
                     <!-- Allow Product Condition Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_child-category" role="region"

@@ -35,7 +35,7 @@ class DashboardController extends AdminBaseController
         $data['blogs'] = Blog::count();
 
         // جلب أحدث العناصر من merchant_items (العناصر النشطة فقط)
-        $data['pproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'catalogItem.category', 'catalogItem.subcategory', 'catalogItem.childcategory', 'user', 'qualityBrand'])
+        $data['pproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1);
@@ -47,7 +47,7 @@ class DashboardController extends AdminBaseController
         $data['rpurchases'] = Purchase::latest('id')->take(5)->get();
 
         // جلب العناصر الشائعة من merchant_items (حسب views من catalog_items)
-        $data['poproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'catalogItem.category', 'catalogItem.subcategory', 'catalogItem.childcategory', 'user', 'qualityBrand'])
+        $data['poproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1)->orderBy('views', 'desc');

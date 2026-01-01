@@ -9,14 +9,8 @@
                     <h2 class="breadcrumb-title">{{ $productt->localized_name }}</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        @if ($productt->category)
-                            <li><a href="{{ route('front.category', $productt->category->slug) }}">{{ $productt->category->localized_name }}</a></li>
-                        @endif
-                        @if ($productt->subcategory_id && $productt->subcategory)
-                            <li><a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug]) }}">{{ $productt->subcategory->localized_name }}</a></li>
-                        @endif
-                        @if ($productt->childcategory_id && $productt->childcategory)
-                            <li><a href="{{ route('front.category', [$productt->category->slug, $productt->subcategory->slug, $productt->childcategory->slug]) }}">{{ $productt->childcategory->localized_name }}</a></li>
+                        @if ($productt->brand)
+                            <li><a href="{{ route('front.category', $productt->brand->slug) }}">{{ $productt->brand->localized_name }}</a></li>
                         @endif
                         <li><a href="javascript:;">{{ Str::limit($productt->localized_name, 30) }}</a></li>
                     </ul>
@@ -355,7 +349,7 @@
                             <div class="col">
                                 <button type="button" class="m-btn m-btn--primary m-btn--block m-cart-add"
                                     data-merchant-item-id="{{ $merchant->id }}"
-                                    data-vendor-id="{{ $merchant->user_id }}"
+                                    data-merchant-user-id="{{ $merchant->user_id }}"
                                     data-min-qty="{{ $mpMinQty }}"
                                     data-qty-input="#order-qty">
                                     @lang('add to cart')
@@ -364,7 +358,7 @@
                             <div class="col">
                                 <button type="button" class="m-btn m-btn--success m-btn--block m-cart-add"
                                     data-merchant-item-id="{{ $merchant->id }}"
-                                    data-vendor-id="{{ $merchant->user_id }}"
+                                    data-merchant-user-id="{{ $merchant->user_id }}"
                                     data-min-qty="{{ $mpMinQty }}"
                                     data-qty-input="#order-qty"
                                     data-redirect="/cart">
@@ -377,8 +371,8 @@
                         @if($productt->type == 'Physical')
                             <div class="mt-3">
                                 <x-shipping-quote-button
-                                    :vendor-id="$merchant->user_id"
-                                    :product-name="$productt->localized_name"
+                                    :merchant-user-id="$merchant->user_id"
+                                    :catalog-item-name="$productt->localized_name"
                                     class="m-btn--block"
                                 />
                             </div>

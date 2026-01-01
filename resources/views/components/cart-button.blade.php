@@ -26,7 +26,7 @@
 
     // Extract all data from MerchantItem - NO FALLBACK
     $mpId = $mp->id;
-    $vendorId = $mp->user_id;
+    $merchantUserId = $mp->user_id;
     $catalogItemId = $mp->catalog_item_id;
 
     // Pricing
@@ -111,7 +111,7 @@
 <div class="m-cart-button {{ $class }}"
      id="{{ $uniqueId }}"
      data-mp-id="{{ $mpId }}"
-     data-vendor-id="{{ $vendorId }}"
+     data-merchant-user-id="{{ $merchantUserId }}"
      data-catalog-item-id="{{ $catalogItemId }}"
      data-price="{{ $price }}"
      data-stock="{{ $stock }}"

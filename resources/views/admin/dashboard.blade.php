@@ -250,16 +250,7 @@
                                             <tr>
                                             <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
                                             <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
-                                            <td>{{ $data->product && $data->product->category ? getLocalizedCategoryName($data->product->category) : 'N/A' }}
-                                                    @if(isset($data->product->subcategory))
-                                                    <br>
-                                                    {{ getLocalizedCategoryName($data->product->subcategory) }}
-                                                    @endif
-                                                    @if(isset($data->product->childcategory))
-                                                    <br>
-                                                    {{ getLocalizedCategoryName($data->product->childcategory) }}
-                                                    @endif
-                                                </td>
+                                            <td>{{ $data->product && $data->product->brand ? $data->product->brand->localized_name : 'N/A' }}</td>
                                                 <td>{{ $data->product->type ?? 'N/A' }}</td>
 
                                                 <td> {{ $data->showPrice() }} </td>
@@ -306,16 +297,7 @@
                                                     <tr>
                                                     <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
                                                     <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
-                                                    <td>{{ $data->product && $data->product->category ? getLocalizedCategoryName($data->product->category) : 'N/A' }}
-                                                        @if(isset($data->product->subcategory))
-                                                        <br>
-                                                        {{ getLocalizedCategoryName($data->product->subcategory) }}
-                                                        @endif
-                                                        @if(isset($data->product->childcategory))
-                                                        <br>
-                                                        {{ getLocalizedCategoryName($data->product->childcategory) }}
-                                                        @endif
-                                                    </td>
+                                                    <td>{{ $data->product && $data->product->brand ? $data->product->brand->localized_name : 'N/A' }}</td>
                                                         <td>{{ $data->product->type ?? 'N/A' }}</td>
                                                         <td> {{ $data->showPrice() }} </td>
                                                         <td>

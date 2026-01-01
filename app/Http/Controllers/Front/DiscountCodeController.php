@@ -358,16 +358,13 @@ class DiscountCodeController extends FrontBaseController
 
     /**
      * Check if product matches discount code category
+     * @deprecated Old category system removed - category_id/subcategory_id/childcategory_id no longer exist
+     * Category-based discount codes are no longer supported
      */
     private function productMatchesDiscountCodeCategory($product, $discountCode)
     {
-        if ($discountCode->apply_to == 'category') {
-            return $product->category_id == $discountCode->category;
-        } elseif ($discountCode->apply_to == 'sub_category') {
-            return $product->subcategory_id == $discountCode->sub_category;
-        } elseif ($discountCode->apply_to == 'child_category') {
-            return $product->childcategory_id == $discountCode->child_category;
-        }
+        // Old category columns removed from catalog_items
+        // Category-based discount codes not supported with new TreeCategory system
         return false;
     }
 }

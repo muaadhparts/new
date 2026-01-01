@@ -80,10 +80,6 @@
                                     <td id="product_brand"></td>
                                 </tr>
                                 <tr>
-                                    <th>@lang('Category'):</th>
-                                    <td id="product_category"></td>
-                                </tr>
-                                <tr>
                                     <th>@lang('Type'):</th>
                                     <td id="product_type"></td>
                                 </tr>
@@ -318,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
         searchResult.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>@lang("Searching...")</div>';
         productFormSection.style.display = 'none';
 
-        fetch('{{ route("vendor-prod-search-sku") }}?sku=' + encodeURIComponent(sku))
+        fetch('{{ route("merchant-catalog-item-search-sku") }}?sku=' + encodeURIComponent(sku))
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -341,7 +337,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('product_name').textContent = product.name;
                     document.getElementById('product_sku').textContent = product.sku;
                     document.getElementById('product_brand').textContent = product.brand || '@lang("N/A")';
-                    document.getElementById('product_category').textContent = product.category || '@lang("N/A")';
                     document.getElementById('product_type').textContent = product.type;
 
                     if (product.photo) {

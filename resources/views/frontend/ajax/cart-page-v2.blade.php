@@ -42,7 +42,7 @@
             </div>
         @else
             @foreach ($productsByVendor as $vendorId => $vendorGroup)
-            <div class="m-cart__vendor" data-vendor-id="{{ $vendorId }}">
+            <div class="m-cart__merchant" data-merchant-user-id="{{ $vendorId }}">
                 {{-- Vendor Header --}}
                 <div class="m-cart__vendor-header">
                     <div class="m-cart__vendor-info">
@@ -254,10 +254,10 @@
                                 <div class="m-cart__item-remove">
                                     <button type="button"
                                        class="m-cart__remove-btn cart-remove-ajax"
-                                       data-url="{{ route('product.cart.remove', $rowKey) }}"
+                                       data-url="{{ route('cart.remove', $rowKey) }}"
                                        data-row-key="{{ $rowKey }}"
                                        data-dom-key="{{ $domKey }}"
-                                       data-vendor-id="{{ $vendorId }}"
+                                       data-merchant-user-id="{{ $vendorId }}"
                                        title="@lang('Remove')">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>

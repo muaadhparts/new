@@ -444,7 +444,7 @@
                                                 <button type="button"
                                                     class="m-cart-add btn-cart"
                                                     data-merchant-item-id="{{ $mp->id }}"
-                                                    data-vendor-id="{{ $mp->user_id }}"
+                                                    data-merchant-user-id="{{ $mp->user_id }}"
                                                     data-min-qty="{{ max(1, (int)($mp->minimum_qty ?? 1)) }}">
                                                     <i class="fas fa-shopping-cart"></i> @lang('Add To Cart')
                                                 </button>
@@ -462,8 +462,8 @@
                                 <td>
                                     @if ($product['item']->type == 'Physical' && $product['merchant_item'])
                                         <x-shipping-quote-button
-                                            :vendor-id="$product['merchant_item']->user_id"
-                                            :product-name="getLocalizedProductName($product['item'])"
+                                            :merchant-user-id="$product['merchant_item']->user_id"
+                                            :catalog-item-name="getLocalizedProductName($product['item'])"
                                         />
                                     @else
                                         <span class="table-value">-</span>

@@ -59,74 +59,7 @@
                         value="{{ $data->name }}">
                 </div>
 
-                <!-- Category -->
-                <div class="input-label-wrapper">
-                    <label>@lang('Category*')</label>
-                    <div class="dropdown-container">
-                        <select class="form-control nice-select form__control " name="category_id" id="cat">
-                            <option value="" disabled selected>
-                                @lang('Select Category')
-                            </option>
-                            @foreach ($cats as $cat)
-                            <option data-href="{{ route('merchant-subcat-load', $cat->id) }}" value="{{ $cat->id }}" {{
-                                $cat->id == $data->category_id ? 'selected' : '' }}>
-                                {{ $cat->name }}</option>
-                            @endforeach
-                            <!-- Add more options here if needed -->
-                        </select>
-                    </div>
-                </div>
-                <!-- Sub Category -->
-                <div class="input-label-wrapper">
-                    <label>@lang('Sub Category*')</label>
-                    <div class="dropdown-container">
-                        <select class="form-control nice-select form__control subcategory" name="subcategory_id"
-                            id="subcat">
-                            <option value="" disabled selected>
-                                @lang('Select Sub Category')
-                            </option>
-                            @if ($data->subcategory_id == null)
-                            @foreach ($data->category->subs as $sub)
-                            <option data-href="{{ route('merchant-childcat-load', $sub->id) }}" value="{{ $sub->id }}">{{
-                                $sub->name }}</option>
-                            @endforeach
-                            @else
-                            @foreach ($data->category->subs as $sub)
-                            <option data-href="{{ route('merchant-childcat-load', $sub->id) }}" value="{{ $sub->id }}" {{
-                                $sub->id == $data->subcategory_id ? 'selected' : '' }}>
-                                {{ $sub->name }}</option>
-                            @endforeach
-                            @endif
-                            <!-- Add more options here if needed -->
-                        </select>
-                    </div>
-                </div>
-                <!-- Child Category -->
-                <div class="input-label-wrapper">
-                    <label>@lang('Child Category*')</label>
-                    <div class="dropdown-container">
-                        <select class="form-control nice-select form__control childcat" name="childcategory_id"
-                            id="childcat" {{ $data->subcategory_id == null ? 'disabled' : '' }}>
-                            <option value="" disabled selected>
-                                @lang('Select Child Category')
-                            </option>
-                            @if ($data->subcategory_id != null)
-                            @if ($data->childcategory_id == null)
-                            @foreach ($data->subcategory->childs as $child)
-                            <option value="{{ $child->id }}">{{ $child->name }}</option>
-                            @endforeach
-                            @else
-                            @foreach ($data->subcategory->childs as $child)
-                            <option value="{{ $child->id }} " {{ $child->id == $data->childcategory_id ? 'selected' : ''
-                                }}>
-                                {{ $child->name }}</option>
-                            @endforeach
-                            @endif
-                            @endif
-                            <!-- Add more options here if needed -->
-                        </select>
-                    </div>
-                </div>
+                {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
 
 
 

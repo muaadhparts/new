@@ -10,7 +10,7 @@
 <div class="col">
     <div class="product type-product">
         <div class="product-wrapper">
-            <div class="product-image">
+            <div class="catalog-item-image">
                 <a href="{{ $bestProdUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ filter_var($prod->photo, FILTER_VALIDATE_URL) ? $prod->photo : ($prod->photo ? \Illuminate\Support\Facades\Storage::url($prod->photo) : asset('assets/images/noimage.png')) }}" alt="Product Image"></a>
                 @if (round($prod->offPercentage() )>0)
                 <div class="on-sale">-{{ round($prod->offPercentage() )}}%</div>
@@ -35,8 +35,8 @@
                 {{-- Shipping Quote Button --}}
                 @if(($prod->type ?? 'Physical') == 'Physical' && $bestProdMerchant)
                     <x-shipping-quote-button
-                        :vendor-id="$bestProdMerchant->user_id"
-                        :product-name="$prod->showName()"
+                        :merchant-user-id="$bestProdMerchant->user_id"
+                        :catalog-item-name="$prod->showName()"
                         class="mt-2"
                     />
                 @endif

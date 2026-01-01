@@ -765,11 +765,11 @@ class CartController extends FrontBaseController
         }
 
         // بناء بيانات الشحن لكل تاجر باستخدام MerchantCartService
-        foreach ($grouped as $merchantId => &$vendorData) {
-            $shippingData = MerchantCartService::calculateVendorShipping($merchantId, $products);
-            $vendorData['shipping_data'] = $shippingData;
-            $vendorData['has_complete_data'] = $shippingData['has_complete_data'];
-            $vendorData['missing_data'] = $shippingData['missing_data'];
+        foreach ($grouped as $merchantId => &$merchantData) {
+            $shippingData = MerchantCartService::calculateMerchantShipping($merchantId, $products);
+            $merchantData['shipping_data'] = $shippingData;
+            $merchantData['has_complete_data'] = $shippingData['has_complete_data'];
+            $merchantData['missing_data'] = $shippingData['missing_data'];
         }
 
         return $grouped;

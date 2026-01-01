@@ -168,8 +168,9 @@ class ImportController extends MerchantBaseController
             $sign = $this->curr;
 
             // تعريف العنصر (هوية فقط — بدون سعر/مخزون/مقاسات)
+            // Note: category_id, subcategory_id, childcategory_id removed - using TreeCategories
             $catalogItemInput = $request->only([
-                'type', 'sku', 'category_id', 'subcategory_id', 'childcategory_id',
+                'type', 'sku',
                 'attributes', 'name', 'details', 'weight', 'policy', 'tags',
                 'features', 'colors', 'is_meta', 'meta_tag', 'meta_description',
                 'youtube', 'link', 'platform', 'region', 'measure', 'is_catalog',
@@ -315,8 +316,9 @@ class ImportController extends MerchantBaseController
         }
 
         // حقول تعريف العنصر (هوية فقط)
+        // Note: category_id, subcategory_id, childcategory_id removed - using TreeCategories
         $catalogItemInput = $request->only([
-            'type', 'sku', 'category_id', 'subcategory_id', 'childcategory_id',
+            'type', 'sku',
             'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'details',
             'weight', 'policy', 'tags', 'features', 'colors', 'is_meta', 'meta_tag',
             'meta_description', 'youtube', 'type', 'link', 'platform', 'region',

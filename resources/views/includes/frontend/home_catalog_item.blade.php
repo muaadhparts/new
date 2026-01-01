@@ -21,23 +21,23 @@
 
     if (isset($card) && $card instanceof \App\DataTransferObjects\CatalogItemCardDTO) {
         // === Source: CatalogItemCardDTO ===
-        $productId = $card->productId;
-        $merchantId = $card->merchantId;
-        $vendorId = $card->vendorId;
-        $productName = $card->productName;
-        $productUrl = $card->detailsUrl;
+        $catalogItemId = $card->productId;
+        $merchantItemId = $card->merchantId;
+        $merchantUserId = $card->vendorId;
+        $catalogItemName = $card->productName;
+        $catalogItemUrl = $card->detailsUrl;
         $photo = $card->photo;
         $sku = $card->sku;
         $brandName = $card->brandName;
         $brandLogo = $card->brandLogo ?? null;
         $qualityBrandName = $card->qualityBrandName;
         $qualityBrandLogo = $card->qualityBrandLogo ?? null;
-        $vendorName = $card->vendorName;
+        $merchantName = $card->vendorName;
         $offPercentage = $card->offPercentage;
         $inStock = $card->inStock;
         $stockQty = $card->stock;
         $stockText = $card->stockText ?? ($inStock ? __('In Stock') : __('Out of Stock'));
-        $hasVendor = $card->hasVendor;
+        $hasMerchant = $card->hasVendor;
         $priceFormatted = $card->priceFormatted;
         $previousPrice = $card->previousPrice;
         $previousPriceFormatted = $card->previousPriceFormatted;
@@ -45,8 +45,8 @@
         $ratingsCount = $card->catalogReviewsCount;
         $minQty = $card->minQty;
         $preordered = $card->preordered ?? false;
-        $productType = $card->type;
-        $affiliateProductType = $card->productType ?? null;
+        $catalogItemType = $card->type;
+        $affiliateCatalogItemType = $card->productType ?? null;
         $affiliateLink = $card->affiliateLink ?? null;
         $favoriteUrl = $card->favoriteUrl ?? null;
         $isInFavorites = $card->isInFavorites ?? false;
@@ -56,22 +56,27 @@
         $isMerchantItem = $catalogItem instanceof \App\Models\MerchantItem;
 
         if ($isMerchantItem) {
-            $merchant = $catalogItem;
+            $merchantItem = $catalogItem;
             $actualCatalogItem = $catalogItem->catalogItem;
         } else {
             $actualCatalogItem = $catalogItem;
-            $merchant = $mp ?? $catalogItem->best_merchant_item ?? null;
+            $merchantItem = $mp ?? $catalogItem->best_merchant_item ?? null;
         }
 
-        $productId = $actualCatalogItem->id ?? null;
-        $merchantId = $merchant->id ?? null;
-        $vendorId = $merchant->user_id ?? null;
-        $productName = $actualCatalogItem->showName();
+        // Skip if catalog item no longer exists
+        if (!$actualCatalogItem) {
+            return;
+        }
 
-        $productSlug = $isMerchantItem ? optional($actualCatalogItem)->slug : $catalogItem->slug;
-        $productUrl = $merchant && $productSlug
-            ? route('front.catalog-item', ['slug' => $productSlug, 'merchant_id' => $merchant->user_id, 'merchant_item_id' => $merchant->id])
-            : ($productSlug ? route('front.catalog-item.legacy', $productSlug) : '#');
+        $catalogItemId = $actualCatalogItem->id;
+        $merchantItemId = $merchantItem->id ?? null;
+        $merchantUserId = $merchantItem->user_id ?? null;
+        $catalogItemName = $actualCatalogItem->showName();
+
+        $catalogItemSlug = $isMerchantItem ? optional($actualCatalogItem)->slug : $catalogItem->slug;
+        $catalogItemUrl = $merchantItem && $catalogItemSlug
+            ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
+            : ($catalogItemSlug ? route('front.catalog-item.legacy', $catalogItemSlug) : '#');
 
         $mainPhoto = $actualCatalogItem->photo ?? null;
         $photo = $mainPhoto
@@ -81,22 +86,22 @@
         $sku = $actualCatalogItem->sku ?? null;
         $brandName = $actualCatalogItem->brand?->localized_name;
         $brandLogo = $actualCatalogItem->brand?->photo_url;
-        $qualityBrandName = $merchant?->qualityBrand?->localized_name;
-        $qualityBrandLogo = $merchant?->qualityBrand?->logo_url;
-        $vendorName = $merchant?->user ? getLocalizedShopName($merchant->user) : null;
+        $qualityBrandName = $merchantItem?->qualityBrand?->localized_name;
+        $qualityBrandLogo = $merchantItem?->qualityBrand?->logo_url;
+        $merchantName = $merchantItem?->user ? getLocalizedShopName($merchantItem->user) : null;
 
-        $offPercentage = $merchant && method_exists($merchant, 'offPercentage')
-            ? $merchant->offPercentage()
+        $offPercentage = $merchantItem && method_exists($merchantItem, 'offPercentage')
+            ? $merchantItem->offPercentage()
             : ($actualCatalogItem && method_exists($actualCatalogItem, 'offPercentage') ? $actualCatalogItem->offPercentage() : 0);
 
-        $stockQty = $merchant ? (int)($merchant->stock ?? 0) : 0;
-        $inStock = $stockQty > 0 || ($merchant && $merchant->preordered);
+        $stockQty = $merchantItem ? (int)($merchantItem->stock ?? 0) : 0;
+        $inStock = $stockQty > 0 || ($merchantItem && $merchantItem->preordered);
         $stockText = $inStock ? __('In Stock') : __('Out of Stock');
-        $hasVendor = $merchant && $merchant->user_id > 0;
+        $hasMerchant = $merchantItem && $merchantItem->user_id > 0;
 
-        if ($merchant) {
-            $priceFormatted = method_exists($merchant, 'showPrice') ? $merchant->showPrice() : \App\Models\CatalogItem::convertPrice($merchant->price);
-            $previousPrice = $merchant->previous_price ?? 0;
+        if ($merchantItem) {
+            $priceFormatted = method_exists($merchantItem, 'showPrice') ? $merchantItem->showPrice() : \App\Models\CatalogItem::convertPrice($merchantItem->price);
+            $previousPrice = $merchantItem->previous_price ?? 0;
             $previousPriceFormatted = $previousPrice > 0 ? \App\Models\CatalogItem::convertPrice($previousPrice) : '';
         } else {
             $priceFormatted = $actualCatalogItem->showPrice();
@@ -106,18 +111,18 @@
 
         $ratingsAvg = $actualCatalogItem->catalog_reviews_avg_rating ?? 0;
         $ratingsCount = $actualCatalogItem->catalog_reviews_count ?? 0;
-        $minQty = max(1, (int)($merchant->minimum_qty ?? 1));
-        $preordered = $merchant->preordered ?? false;
-        $productType = $actualCatalogItem->type ?? 'Physical';
+        $minQty = max(1, (int)($merchantItem->minimum_qty ?? 1));
+        $preordered = $merchantItem->preordered ?? false;
+        $catalogItemType = $actualCatalogItem->type ?? 'Physical';
         // product_type and affiliate_link are now on merchant_items, not catalog_items
-        $affiliateProductType = $merchant->product_type ?? null;
-        $affiliateLink = $merchant->affiliate_link ?? null;
+        $affiliateCatalogItemType = $merchantItem->product_type ?? null;
+        $affiliateLink = $merchantItem->affiliate_link ?? null;
         $favoriteUrl = route('user-favorite-add', $actualCatalogItem->id);
         $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualCatalogItem->id);
         $compareUrl = route('catalog-item.compare.add', $actualCatalogItem->id);
     }
 
-    $cardId = 'pc_' . ($productId ?? uniqid()) . '_' . ($merchantId ?? '0');
+    $cardId = 'ci_' . ($catalogItemId ?? uniqid()) . '_' . ($merchantItemId ?? '0');
     $cardClass = $layout === 'list' ? 'product-card product-card--list' : 'product-card';
 @endphp
 
@@ -152,8 +157,8 @@
                 </a>
             @endauth
 
-            <a href="{{ $productUrl }}" class="product-card__media-link">
-                <img src="{{ $photo }}" alt="{{ $productName }}" class="product-card__img"
+            <a href="{{ $catalogItemUrl }}" class="product-card__media-link">
+                <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="product-card__img"
                      loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
             </a>
         </div>
@@ -161,10 +166,10 @@
         {{-- Content Section --}}
         <div class="product-card__content">
             <h6 class="product-card__title">
-                <a href="{{ $productUrl }}">{{ $productName }}</a>
+                <a href="{{ $catalogItemUrl }}">{{ $catalogItemName }}</a>
             </h6>
 
-            {{-- Product Info Badges --}}
+            {{-- Catalog Item Info Badges --}}
             <div class="product-card__info-badges">
                 @if($sku)
                     <span class="badge bg-light text-dark">
@@ -187,9 +192,9 @@
                         {{ $qualityBrandName }}
                     </span>
                 @endif
-                @if($vendorName)
+                @if($merchantName)
                     <span class="badge bg-primary">
-                        <i class="fas fa-store me-1"></i>{{ $vendorName }}
+                        <i class="fas fa-store me-1"></i>{{ $merchantName }}
                     </span>
                 @endif
                 <span class="badge {{ $inStock ? 'bg-success' : 'bg-danger' }}">{{ $stockText }}</span>
@@ -216,17 +221,17 @@
             </div>
 
             {{-- Shipping Quote Button --}}
-            @if($productType === 'Physical' && $vendorId)
-                <x-shipping-quote-button :vendor-id="$vendorId" :product-name="$productName" class="mt-2" />
+            @if($catalogItemType === 'Physical' && $merchantUserId)
+                <x-shipping-quote-button :merchant-user-id="$merchantUserId" :catalog-item-name="$catalogItemName" class="mt-2" />
             @endif
 
             {{-- Add to Cart --}}
-            @if($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
-                @if($inStock && $hasVendor && $merchantId)
+            @if($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
+                @if($inStock && $hasMerchant && $merchantItemId)
                     <button type="button" class="product-card__cart-btn m-cart-add"
-                        data-catalog-item-id="{{ $productId }}"
-                        data-merchant-item-id="{{ $merchantId }}"
-                        data-vendor-id="{{ $vendorId }}"
+                        data-catalog-item-id="{{ $catalogItemId }}"
+                        data-merchant-item-id="{{ $merchantItemId }}"
+                        data-merchant-user-id="{{ $merchantUserId }}"
                         data-min-qty="{{ $minQty }}"
                         data-stock="{{ $stockQty }}"
                         data-preordered="{{ $preordered ? '1' : '0' }}">
@@ -239,7 +244,7 @@
                         <span>@lang('Out of Stock')</span>
                     </button>
                 @endif
-            @elseif($affiliateProductType === 'affiliate' && $affiliateLink)
+            @elseif($affiliateCatalogItemType === 'affiliate' && $affiliateLink)
                 <a href="{{ $affiliateLink }}" target="_blank" class="product-card__cart-btn">
                     <i class="fas fa-external-link-alt"></i>
                     <span>@lang('Buy Now')</span>
@@ -289,18 +294,18 @@
                 </a>
             @endauth
 
-            <a href="{{ $productUrl }}" class="product-card__media-link">
-                <img src="{{ $photo }}" alt="{{ $productName }}" class="product-card__img"
+            <a href="{{ $catalogItemUrl }}" class="product-card__media-link">
+                <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="product-card__img"
                      loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
             </a>
 
-            @if ($productType !== 'Listing')
+            @if ($catalogItemType !== 'Listing')
                 <div class="product-card__actions">
                     <button type="button" class="product-card__action compare_product"
                         data-href="{{ $compareUrl }}" title="@lang('Compare')">
                         <i class="fas fa-exchange-alt"></i>
                     </button>
-                    <a href="{{ $productUrl }}" class="product-card__action" title="@lang('View')">
+                    <a href="{{ $catalogItemUrl }}" class="product-card__action" title="@lang('View')">
                         <i class="far fa-eye"></i>
                     </a>
                 </div>
@@ -310,10 +315,10 @@
         {{-- Content Section --}}
         <div class="product-card__content">
             <h6 class="product-card__title">
-                <a href="{{ $productUrl }}">{{ Str::limit($productName, 50) }}</a>
+                <a href="{{ $catalogItemUrl }}">{{ Str::limit($catalogItemName, 50) }}</a>
             </h6>
 
-            {{-- Product Info --}}
+            {{-- Catalog Item Info --}}
             <div class="product-card__info">
                 @if($sku)
                     <span class="product-card__sku">{{ $sku }}</span>
@@ -334,9 +339,9 @@
                         {{ $qualityBrandName }}
                     </span>
                 @endif
-                @if($vendorName)
-                    <span class="product-card__vendor">
-                        <i class="fas fa-store"></i> {{ $vendorName }}
+                @if($merchantName)
+                    <span class="product-card__merchant">
+                        <i class="fas fa-store"></i> {{ $merchantName }}
                     </span>
                 @endif
                 <span class="product-card__stock {{ $inStock ? 'product-card__stock--in' : 'product-card__stock--out' }}">
@@ -360,17 +365,17 @@
             </div>
 
             {{-- Shipping Quote Button --}}
-            @if($productType === 'Physical' && $vendorId)
-                <x-shipping-quote-button :vendor-id="$vendorId" :product-name="$productName" class="mt-2" />
+            @if($catalogItemType === 'Physical' && $merchantUserId)
+                <x-shipping-quote-button :merchant-user-id="$merchantUserId" :catalog-item-name="$catalogItemName" class="mt-2" />
             @endif
 
             {{-- Add to Cart --}}
-            @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
-                @if ($inStock && $hasVendor && $merchantId)
+            @if ($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
+                @if ($inStock && $hasMerchant && $merchantItemId)
                     <button type="button" class="product-card__cart-btn m-cart-add"
-                        data-merchant-item-id="{{ $merchantId }}"
-                        data-vendor-id="{{ $vendorId }}"
-                        data-catalog-item-id="{{ $productId }}"
+                        data-merchant-item-id="{{ $merchantItemId }}"
+                        data-merchant-user-id="{{ $merchantUserId }}"
+                        data-catalog-item-id="{{ $catalogItemId }}"
                         data-min-qty="{{ $minQty }}"
                         data-stock="{{ $stockQty }}"
                         data-preordered="{{ $preordered ? '1' : '0' }}">
@@ -383,7 +388,7 @@
                         <span>@lang('Out of Stock')</span>
                     </button>
                 @endif
-            @elseif ($affiliateProductType === 'affiliate' && $affiliateLink)
+            @elseif ($affiliateCatalogItemType === 'affiliate' && $affiliateLink)
                 <a href="{{ $affiliateLink }}" class="product-card__cart-btn" target="_blank">
                     <i class="fas fa-external-link-alt"></i>
                     <span>@lang('Buy Now')</span>

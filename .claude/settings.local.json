@@ -60,7 +60,10 @@
       "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Admin\\\\VendorSubscriptionController.php\" -Force)",
       "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Front\\\\VendorController.php\" -Force)",
       "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Controllers\\\\Api\\\\Front\\\\VendorController.php\" -Force)",
-      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Resources\\\\VendorResource.php\" -Force)"
+      "Bash(Remove-Item -Path \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Http\\\\Resources\\\\VendorResource.php\" -Force)",
+      "Bash(if exist \"catalog-items.blade.php\" ren \"catalog-items.blade.php\" \"catalog-items-old.blade.php\")",
+      "Bash(if exist \"new-catalog-items.blade.php\" ren \"new-catalog-items.blade.php\" \"catalog-items.blade.php\")",
+      "Bash(findstr:*)"
     ]
   }
 }

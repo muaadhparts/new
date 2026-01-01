@@ -143,7 +143,7 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                     @if ($inStock)
                         <button type="button" class="muaadh-btn muaadh-btn-primary m-cart-add"
                             data-merchant-item-id="{{ $mp->id }}"
-                            data-vendor-id="{{ $mp->user_id }}"
+                            data-merchant-user-id="{{ $mp->user_id }}"
                             data-catalog-item-id="{{ $actualProduct->id }}"
                             data-min-qty="{{ $minQty }}"
                             data-stock="{{ $stockQty }}"
@@ -171,8 +171,8 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                 {{-- Shipping Quote Button --}}
                 @if($productType == 'Physical')
                     <x-shipping-quote-button
-                        :vendor-id="$mp->user_id"
-                        :product-name="$actualProduct->showName()"
+                        :merchant-user-id="$mp->user_id"
+                        :catalog-item-name="$actualProduct->showName()"
                         class="mt-2"
                     />
                 @endif

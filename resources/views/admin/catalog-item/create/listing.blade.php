@@ -154,52 +154,7 @@
                                         </div>
 
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Category') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select id="cat" name="category_id" required="">
-                                                    <option value="">{{ __('Select Category') }}</option>
-                                                    @foreach($cats as $cat)
-                                                        <option data-href="{{ route('admin-subcat-load',$cat->id) }}" value="{{ $cat->id }}">{{$cat->name}}</option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Sub Category') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select id="subcat" name="subcategory_id" disabled="">
-                                                        <option value="">{{ __('Select Sub Category') }}</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Child Category') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select id="childcat" name="childcategory_id" disabled="">
-                                                        <option value="">{{ __('Select Child Category') }}</option>
-                                                </select>
-                                            </div>
-                                        </div>
-
-
-                                        <div id="catAttributes"></div>
-                                        <div id="subcatAttributes"></div>
-                                        <div id="childcatAttributes"></div>
+                                        {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
 
                                     
 

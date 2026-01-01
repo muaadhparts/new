@@ -181,7 +181,7 @@
                                     <div class="col mb-1">
                                         <div class="product type-product">
                                             <div class="product-wrapper">
-                                                <div class="product-image">
+                                                <div class="catalog-item-image">
                                                     <a href="{{ $catalogProdUrl }}"
                                                         class="woocommerce-LoopProduct-link"><img
                                                             src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"

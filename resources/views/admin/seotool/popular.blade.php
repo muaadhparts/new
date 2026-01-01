@@ -61,7 +61,7 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            {{ $prod->product && $prod->product->category ? getLocalizedCategoryName($prod->product->category) : __('N/A') }}
+                                                            {{ $prod->product && $prod->product->brand ? $prod->product->brand->localized_name : __('N/A') }}
                                                         </td>
                                                         <td>{{ $productt->count() }}</td>
                                                         </tr>

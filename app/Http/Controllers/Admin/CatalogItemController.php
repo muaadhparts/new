@@ -24,7 +24,7 @@ class CatalogItemController extends AdminBaseController
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
         // product_type is now on merchant_items, not catalog_items
-        $query = MerchantItem::with(['catalogItem.brand', 'catalogItem.category', 'user', 'qualityBrand'])
+        $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('product_type', 'normal');
 
         if ($request->type == 'deactive') {
@@ -136,7 +136,7 @@ class CatalogItemController extends AdminBaseController
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
         // فقط المنتجات المضافة للكتالوج (is_catalog = 1)
-        $query = MerchantItem::with(['catalogItem.brand', 'catalogItem.category', 'user', 'qualityBrand'])
+        $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->whereHas('catalogItem', function($q) {
                 $q->where('is_catalog', 1);
             });
@@ -463,58 +463,8 @@ class CatalogItemController extends AdminBaseController
             $input['cross_products'] = implode(',', $request->cross_products);
         }
 
+        // Old category attribute system removed - categories now linked via TreeCategories
         $attrArr = [];
-        if (!empty($request->category_id)) {
-            $catAttrs = Attribute::where('attributable_id', $request->category_id)->where('attributable_type', 'App\Models\Category')->get();
-            if (!empty($catAttrs)) {
-                foreach ($catAttrs as $key => $catAttr) {
-                    $in_name = $catAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $catAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
-        if (!empty($request->subcategory_id)) {
-            $subAttrs = Attribute::where('attributable_id', $request->subcategory_id)->where('attributable_type', 'App\Models\Subcategory')->get();
-            if (!empty($subAttrs)) {
-                foreach ($subAttrs as $key => $subAttr) {
-                    $in_name = $subAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $subAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
-        if (!empty($request->childcategory_id)) {
-            $childAttrs = Attribute::where('attributable_id', $request->childcategory_id)->where('attributable_type', 'App\Models\Childcategory')->get();
-            if (!empty($childAttrs)) {
-                foreach ($childAttrs as $key => $childAttr) {
-                    $in_name = $childAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $childAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
         if (empty($attrArr)) {
             $input['attributes'] = null;
         } else {
@@ -709,10 +659,6 @@ class CatalogItemController extends AdminBaseController
                             'status' => 1
                         ]);
 
-                    } else {
-                        $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('No Category Found!') . "<br>";
-                    }
-
                 } else {
                     $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('Duplicate Product Code!') . "<br>";
                 }
@@ -897,58 +843,8 @@ class CatalogItemController extends AdminBaseController
         unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
 
         // store filtering attributes for physical catalog item
+        // Old category attribute system removed - categories now linked via TreeCategories
         $attrArr = [];
-        if (!empty($request->category_id)) {
-            $catAttrs = Attribute::where('attributable_id', $request->category_id)->where('attributable_type', 'App\Models\Category')->get();
-            if (!empty($catAttrs)) {
-                foreach ($catAttrs as $key => $catAttr) {
-                    $in_name = $catAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $catAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
-        if (!empty($request->subcategory_id)) {
-            $subAttrs = Attribute::where('attributable_id', $request->subcategory_id)->where('attributable_type', 'App\Models\Subcategory')->get();
-            if (!empty($subAttrs)) {
-                foreach ($subAttrs as $key => $subAttr) {
-                    $in_name = $subAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $subAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
-        if (!empty($request->childcategory_id)) {
-            $childAttrs = Attribute::where('attributable_id', $request->childcategory_id)->where('attributable_type', 'App\Models\Childcategory')->get();
-            if (!empty($childAttrs)) {
-                foreach ($childAttrs as $key => $childAttr) {
-                    $in_name = $childAttr->input_name;
-                    if ($request->has("$in_name")) {
-                        $attrArr["$in_name"]["values"] = $request["$in_name"];
-                        foreach ($request["$in_name" . "_price"] as $aprice) {
-                            $ttt["$in_name" . "_price"][] = $aprice / $sign->value;
-                        }
-                        $attrArr["$in_name"]["prices"] = $ttt["$in_name" . "_price"];
-                        $attrArr["$in_name"]["details_status"] = $childAttr->details_status ? 1 : 0;
-                    }
-                }
-            }
-        }
-
         if (empty($attrArr)) {
             $input['attributes'] = null;
         } else {
@@ -1168,9 +1064,13 @@ class CatalogItemController extends AdminBaseController
         return response()->json($attrOptions);
     }
 
+    /**
+     * @deprecated category_id column removed from catalog_items
+     */
     public function getCrossCatalogItem($catId)
     {
-        $crossCatalogItems = CatalogItem::where('category_id', $catId)->status(1)->get();
+        // category_id column removed - return empty collection
+        $crossCatalogItems = collect();
         return view('load.cross_catalog_item', compact('crossCatalogItems'));
     }
 

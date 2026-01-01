@@ -9,13 +9,13 @@
                     $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
 
                     $slug     = data_get($product, 'item.slug');
-                    $vendorId = data_get($product, 'item.user_id');
+                    $merchantUserId = data_get($product, 'item.user_id');
                     $merchantItemId = data_get($product, 'item.id');
                     $name     = data_get($product, 'item.name');
                     $photo    = data_get($product, 'item.photo');
 
-                    $productUrl = ($vendorId && $merchantItemId)
-                        ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
+                    $catalogItemUrl = ($merchantUserId && $merchantItemId)
+                        ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $merchantUserId, 'merchant_item_id' => $merchantItemId])
                         : 'javascript:;';
                 @endphp
 
@@ -27,14 +27,14 @@
                         <i class="fas fa-times"></i>
                     </div>
 
-                    <a href="{{ $productUrl }}" class="product-image">
+                    <a href="{{ $catalogItemUrl }}" class="catalog-item-image">
                         <img
                             src="{{ \Illuminate\Support\Facades\Storage::url($photo) ?? asset('assets/images/noimage.png') }}"
                             class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail"
                             alt="Cart product">
                     </a>
 
-                    <x-catalog-item-name :item="$product['item']" :vendor-id="$vendorId" :merchantItemId="$merchantItemId" target="_self" :useSearchRoute="false" class="catalog-item-name" />
+                    <x-catalog-item-name :item="$product['item']" :merchant-user-id="$merchantUserId" :merchantItemId="$merchantItemId" target="_self" :useSearchRoute="false" class="catalog-item-name" />
 
                     <div class="cart-item-quantity">
                         <span class="cart-product-qty" id="cqt{{ $domKey }}">{{ $product['qty'] }}</span>

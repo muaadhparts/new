@@ -55,8 +55,6 @@ class CatalogItemDetailsController extends FrontBaseController
             'qualityBrand',
             'catalogItem.galleries',
             'catalogItem.brand',
-            'catalogItem.category',
-            'catalogItem.subcategory',
         ])->find($merchant_item_id);
 
         if (!$merchantItem) {

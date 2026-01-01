@@ -2,7 +2,7 @@
 @props([
     'catalogItem' => null,
     'item' => null, // for cart items format
-    'vendorId' => null,
+    'merchantUserId' => null,
     'merchantItemId' => null,
     'showSku' => false, // SKU يعرض في catalog-item-info component
     'target' => '_self',
@@ -25,7 +25,7 @@
         // Cart item format: $item['item']['name']
         $sku = $itemData['item']['sku'] ?? '';
         $slug = $itemData['item']['slug'] ?? '';
-        $userId = $vendorId ?? $itemData['item']['user_id'] ?? $itemData['user_id'] ?? 0;
+        $userId = $merchantUserId ?? $itemData['item']['user_id'] ?? $itemData['user_id'] ?? 0;
         // For merchant_item_id: prioritize explicit prop, then try to infer
         $mpId = $merchantItemId;
         if (!$mpId) {
@@ -40,7 +40,7 @@
         // Direct catalog item object format: $catalogItem->name
         $sku = $itemData->sku ?? $itemData['sku'] ?? '';
         $slug = $itemData->slug ?? $itemData['slug'] ?? '';
-        $userId = $vendorId ?? $itemData->user_id ?? $itemData['user_id'] ?? 0;
+        $userId = $merchantUserId ?? $itemData->user_id ?? $itemData['user_id'] ?? 0;
         // For merchant_item_id: prioritize explicit prop
         $mpId = $merchantItemId;
         if (!$mpId) {

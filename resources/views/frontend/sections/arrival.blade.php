@@ -8,46 +8,46 @@ Receives: $merchantItems (Collection of MerchantItem models)
 
 @if(isset($merchantItems) && $merchantItems->count() > 0)
 <div class="row">
-    @foreach($merchantItems as $mp)
+    @foreach($merchantItems as $merchantItem)
     @php
-        $actualProduct = $mp->catalogItem;
-        if (!$actualProduct) continue;
+        $actualCatalogItem = $merchantItem->catalogItem;
+        if (!$actualCatalogItem) continue;
 
         $defaultImage = asset('assets/images/noimage.png');
 
-        // Product info
-        $productId = $actualProduct->id;
-        $merchantId = $mp->id;
-        $vendorId = $mp->user_id;
-        $productName = $actualProduct->showName();
+        // Catalog item info
+        $catalogItemId = $actualCatalogItem->id;
+        $merchantItemId = $merchantItem->id;
+        $merchantUserId = $merchantItem->user_id;
+        $catalogItemName = $actualCatalogItem->showName();
 
         // URL
-        $productUrl = route('front.catalog-item', [
-            'slug' => $actualProduct->slug,
-            'merchant_id' => $mp->user_id,
-            'merchant_item_id' => $mp->id
+        $catalogItemUrl = route('front.catalog-item', [
+            'slug' => $actualCatalogItem->slug,
+            'merchant_id' => $merchantItem->user_id,
+            'merchant_item_id' => $merchantItem->id
         ]);
 
         // Photo
-        $mainPhoto = $actualProduct->photo ?? null;
+        $mainPhoto = $actualCatalogItem->photo ?? null;
         $photo = $mainPhoto
             ? (filter_var($mainPhoto, FILTER_VALIDATE_URL) ? $mainPhoto : Storage::url($mainPhoto))
             : $defaultImage;
 
-        // Brand info (from product)
-        $brandName = $actualProduct->brand?->localized_name;
-        $brandLogo = $actualProduct->brand?->photo_url;
+        // Brand info (from catalog item)
+        $brandName = $actualCatalogItem->brand?->localized_name;
+        $brandLogo = $actualCatalogItem->brand?->photo_url;
 
-        // Quality Brand info (from merchant_product)
-        $qualityBrandName = $mp->qualityBrand?->localized_name;
-        $qualityBrandLogo = $mp->qualityBrand?->logo_url;
+        // Quality Brand info (from merchant item)
+        $qualityBrandName = $merchantItem->qualityBrand?->localized_name;
+        $qualityBrandLogo = $merchantItem->qualityBrand?->logo_url;
 
-        // Vendor info
-        $vendorName = $mp->user ? getLocalizedShopName($mp->user) : null;
+        // Merchant info
+        $merchantName = $merchantItem->user ? getLocalizedShopName($merchantItem->user) : null;
 
         // Price
-        $price = $mp->price ?? 0;
-        $previousPrice = $mp->previous_price ?? 0;
+        $price = $merchantItem->price ?? 0;
+        $previousPrice = $merchantItem->previous_price ?? 0;
         $offPercentage = ($previousPrice > 0 && $previousPrice > $price)
             ? round((($previousPrice - $price) / $previousPrice) * 100)
             : 0;
@@ -55,20 +55,20 @@ Receives: $merchantItems (Collection of MerchantItem models)
         $previousPriceFormatted = $previousPrice > 0 ? \App\Models\CatalogItem::convertPrice($previousPrice) : '';
 
         // Stock
-        $stockQty = (int)($mp->stock ?? 0);
-        $inStock = $stockQty > 0 || $mp->preordered;
+        $stockQty = (int)($merchantItem->stock ?? 0);
+        $inStock = $stockQty > 0 || $merchantItem->preordered;
         $stockText = $inStock ? __('In Stock') : __('Out of Stock');
-        $minQty = max(1, (int)($mp->minimum_qty ?? 1));
-        $preordered = $mp->preordered ?? false;
+        $minQty = max(1, (int)($merchantItem->minimum_qty ?? 1));
+        $preordered = $merchantItem->preordered ?? false;
 
-        // Product type
-        $productType = $actualProduct->type ?? 'Physical';
-        $affiliateProductType = $mp->product_type ?? null;
-        $affiliateLink = $mp->affiliate_link ?? null;
+        // Catalog item type
+        $catalogItemType = $actualCatalogItem->type ?? 'Physical';
+        $affiliateCatalogItemType = $merchantItem->product_type ?? null;
+        $affiliateLink = $merchantItem->affiliate_link ?? null;
     @endphp
 
     <div class="col-6 col-md-4 col-lg-3 mb-4">
-        <div class="product-card" id="pc_{{ $productId }}_{{ $merchantId }}">
+        <div class="product-card" id="ci_{{ $catalogItemId }}_{{ $merchantItemId }}">
             {{-- Media Section --}}
             <div class="product-card__media">
                 @if ($offPercentage > 0)
@@ -83,8 +83,8 @@ Receives: $merchantItems (Collection of MerchantItem models)
                     </span>
                 @endif
 
-                <a href="{{ $productUrl }}" class="product-card__media-link">
-                    <img src="{{ $photo }}" alt="{{ $productName }}" class="product-card__img"
+                <a href="{{ $catalogItemUrl }}" class="product-card__media-link">
+                    <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="product-card__img"
                          loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
                 </a>
             </div>
@@ -92,10 +92,10 @@ Receives: $merchantItems (Collection of MerchantItem models)
             {{-- Content Section --}}
             <div class="product-card__content">
                 <h6 class="product-card__title">
-                    <a href="{{ $productUrl }}">{{ Str::limit($productName, 50) }}</a>
+                    <a href="{{ $catalogItemUrl }}">{{ Str::limit($catalogItemName, 50) }}</a>
                 </h6>
 
-                {{-- Product Info: Brand, Quality, Vendor --}}
+                {{-- Catalog Item Info: Brand, Quality, Merchant --}}
                 <div class="product-card__info">
                     @if($brandName)
                         <span class="product-card__brand">
@@ -113,9 +113,9 @@ Receives: $merchantItems (Collection of MerchantItem models)
                             {{ $qualityBrandName }}
                         </span>
                     @endif
-                    @if($vendorName)
-                        <span class="product-card__vendor">
-                            <i class="fas fa-store"></i> {{ $vendorName }}
+                    @if($merchantName)
+                        <span class="product-card__merchant">
+                            <i class="fas fa-store"></i> {{ $merchantName }}
                         </span>
                     @endif
                     <span class="product-card__stock {{ $inStock ? 'product-card__stock--in' : 'product-card__stock--out' }}">
@@ -132,12 +132,12 @@ Receives: $merchantItems (Collection of MerchantItem models)
                 </div>
 
                 {{-- Add to Cart --}}
-                @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
+                @if ($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
                     @if ($inStock)
                         <button type="button" class="product-card__cart-btn m-cart-add"
-                            data-merchant-item-id="{{ $merchantId }}"
-                            data-vendor-id="{{ $vendorId }}"
-                            data-catalog-item-id="{{ $productId }}"
+                            data-merchant-item-id="{{ $merchantItemId }}"
+                            data-merchant-user-id="{{ $merchantUserId }}"
+                            data-catalog-item-id="{{ $catalogItemId }}"
                             data-min-qty="{{ $minQty }}"
                             data-stock="{{ $stockQty }}"
                             data-preordered="{{ $preordered ? '1' : '0' }}">
@@ -150,7 +150,7 @@ Receives: $merchantItems (Collection of MerchantItem models)
                             <span>@lang('Out of Stock')</span>
                         </button>
                     @endif
-                @elseif ($affiliateProductType === 'affiliate' && $affiliateLink)
+                @elseif ($affiliateCatalogItemType === 'affiliate' && $affiliateLink)
                     <a href="{{ $affiliateLink }}" class="product-card__cart-btn" target="_blank">
                         <i class="fas fa-external-link-alt"></i>
                         <span>@lang('Buy Now')</span>
@@ -158,10 +158,10 @@ Receives: $merchantItems (Collection of MerchantItem models)
                 @endif
 
                 {{-- Shipping Quote Button --}}
-                @if($productType == 'Physical')
+                @if($catalogItemType == 'Physical')
                     <x-shipping-quote-button
-                        :vendor-id="$vendorId"
-                        :product-name="$productName"
+                        :merchant-user-id="$merchantUserId"
+                        :catalog-item-name="$catalogItemName"
                         class="mt-2"
                     />
                 @endif

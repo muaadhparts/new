@@ -4,43 +4,43 @@
     A reusable button that calculates and displays shipping costs.
 
     Usage:
-    <x-shipping-quote-button :vendor-id="$vendorId" :weight="$weight" />
+    <x-shipping-quote-button :merchant-user-id="$merchantUserId" :weight="$weight" />
 
-    Or with product:
-    <x-shipping-quote-button :product="$product" />
+    Or with merchant item:
+    <x-shipping-quote-button :merchant-item="$merchantItem" />
 
     Props:
-    - vendor-id (required): The vendor's user ID
-    - weight (optional): Product weight in kg (default: 0.5)
-    - product (optional): Product object (will extract vendor_id and weight)
-    - product-name (optional): Product name for modal title
+    - merchant-user-id (required): The merchant's user ID
+    - weight (optional): Catalog item weight in kg (default: 0.5)
+    - merchant-item (optional): MerchantItem object (will extract user_id and weight)
+    - catalog-item-name (optional): Catalog item name for modal title
     - class (optional): Additional CSS classes
 --}}
 
 @props([
-    'vendorId' => null,
+    'merchantUserId' => null,
     'weight' => 0.5,
-    'product' => null,
-    'productName' => '',
+    'merchantItem' => null,
+    'catalogItemName' => '',
     'class' => '',
 ])
 
 @php
-    // Extract from product if provided
-    if ($product) {
-        $vendorId = $vendorId ?? ($product->user_id ?? $product->vendor_id ?? null);
-        $weight = $product->weight ?? $weight;
-        $productName = $productName ?: (getLocalizedProductName($product) ?? '');
+    // Extract from merchant item if provided
+    if ($merchantItem) {
+        $merchantUserId = $merchantUserId ?? ($merchantItem->user_id ?? null);
+        $weight = $merchantItem->catalogItem?->weight ?? $weight;
+        $catalogItemName = $catalogItemName ?: (getLocalizedProductName($merchantItem->catalogItem) ?? '');
     }
 @endphp
 
-@if($vendorId)
+@if($merchantUserId)
 <button type="button"
     class="m-shipping-quote-btn {{ $class }}"
     data-shipping-quote
-    data-vendor-id="{{ $vendorId }}"
+    data-merchant-user-id="{{ $merchantUserId }}"
     data-weight="{{ $weight }}"
-    data-product-name="{{ $productName }}"
+    data-catalog-item-name="{{ $catalogItemName }}"
 >
     <i class="fas fa-truck m-shipping-quote-btn__icon"></i>
     <span class="m-shipping-quote-btn__text">@lang('احسب الشحن')</span>

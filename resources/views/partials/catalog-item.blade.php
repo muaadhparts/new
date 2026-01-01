@@ -8,7 +8,9 @@
      * - أو من product->vendor_user_id (إذا حقنه الكنترولر)
      * - أو من product->user_id كـ fallback أخير
      */
-    $vendorId = (int) (request()->get('user') ?? ($product->vendor_user_id ?? $product->user_id ?? 0));
+    // Alias: الكنترولر يرسل $product لكن المتغير الجديد هو $catalogItem
+    $catalogItem = $product;
+    $merchantUserId = (int) (request()->get('user') ?? ($catalogItem->vendor_user_id ?? $catalogItem->user_id ?? 0));
 
     // صورة أساسية
     $mainPhoto = filter_var($product->photo ?? '', FILTER_VALIDATE_URL)
@@ -63,7 +65,7 @@
     $canBuy = $inStock || $preordered;
 @endphp
 
-<div class="catalog-quickview ill-product" data-product-id="{{ $product->id }}" data-user="{{ $vendorId }}">
+<div class="catalog-quickview ill-product" data-catalog-item-id="{{ $catalogItem->id }}" data-merchant-user-id="{{ $merchantUserId }}">
     <div class="row g-3 g-md-4">
         {{-- Image Column --}}
         <div class="col-12 col-md-5">
@@ -77,11 +79,11 @@
 
                 {{-- Gallery Thumbnails (vendor-specific) --}}
                 @php
-                    $vendorGalleries = $product->galleriesForVendor($vendorId, 4);
+                    $merchantGalleries = $catalogItem->galleriesForVendor($merchantUserId, 4);
                 @endphp
-                @if($vendorGalleries->count() > 0)
+                @if($merchantGalleries->count() > 0)
                     <div class="catalog-quickview-gallery">
-                        @foreach($vendorGalleries as $gallery)
+                        @foreach($merchantGalleries as $gallery)
                             @php
                                 $gUrl = filter_var($gallery->photo ?? '', FILTER_VALIDATE_URL)
                                     ? $gallery->photo
@@ -101,7 +103,7 @@
         <div class="col-12 col-md-7">
             {{-- Catalog Item Name --}}
             <h4 class="catalog-quickview-title">
-                <x-catalog-item-name :catalog-item="$product" :vendor-id="$vendorId" target="_blank" />
+                <x-catalog-item-name :catalog-item="$catalogItem" :merchant-user-id="$merchantUserId" target="_blank" />
             </h4>
 
             {{-- Rating --}}
@@ -221,8 +223,8 @@
                     <button type="button"
                             class="catalog-quickview-btn catalog-quickview-btn-cart m-cart-add"
                             data-merchant-item-id="{{ $mp->id }}"
-                            data-vendor-id="{{ $vendorId }}"
-                            data-catalog-item-id="{{ $product->id }}"
+                            data-merchant-user-id="{{ $merchantUserId }}"
+                            data-catalog-item-id="{{ $catalogItem->id }}"
                             data-min-qty="{{ $minQty }}"
                             data-stock="{{ $stock }}"
                             data-preordered="{{ $preordered }}"
@@ -233,8 +235,8 @@
                     <button type="button"
                             class="catalog-quickview-btn catalog-quickview-btn-buy m-cart-add"
                             data-merchant-item-id="{{ $mp->id }}"
-                            data-vendor-id="{{ $vendorId }}"
-                            data-catalog-item-id="{{ $product->id }}"
+                            data-merchant-user-id="{{ $merchantUserId }}"
+                            data-catalog-item-id="{{ $catalogItem->id }}"
                             data-min-qty="{{ $minQty }}"
                             data-stock="{{ $stock }}"
                             data-preordered="{{ $preordered }}"
@@ -250,7 +252,7 @@
 
                 {{-- View Details Link --}}
                 @if($mp)
-                    <a href="{{ route('front.catalog-item', ['slug' => $product->slug, 'merchant_id' => $vendorId, 'merchant_item_id' => $mp->id]) }}"
+                    <a href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $merchantUserId, 'merchant_item_id' => $mp->id]) }}"
                        class="catalog-quickview-btn catalog-quickview-btn-details"
                        target="_blank">
                         <i class="fas fa-external-link-alt"></i> @lang('View Details')
@@ -262,8 +264,8 @@
             @if(($product->type ?? 'Physical') == 'Physical' && $mp)
                 <div class="mt-3">
                     <x-shipping-quote-button
-                        :vendor-id="$vendorId"
-                        :product-name="$product->name ?? $product->sku"
+                        :merchant-user-id="$merchantUserId"
+                        :catalog-item-name="$catalogItem->name ?? $catalogItem->sku"
                         class="w-100"
                     />
                 </div>

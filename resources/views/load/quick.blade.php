@@ -15,11 +15,11 @@
                       </a>
 
                       @php
-                        // Get vendor-specific galleries
-                        $quickVendorId = request()->get('user', $product->user_id);
-                        $vendorGalleries = $product->galleriesForVendor($quickVendorId, 4);
+                        // Get merchant-specific galleries
+                        $quickMerchantUserId = request()->get('user', $product->user_id);
+                        $merchantGalleries = $product->galleriesForVendor($quickMerchantUserId, 4);
                       @endphp
-                      @foreach($vendorGalleries as $gal)
+                      @foreach($merchantGalleries as $gal)
 
                       <a href="{{asset('assets/images/galleries/'.$gal->photo)}}">
                         <img class="xzoom-gallery5" width="80" src="{{asset('assets/images/galleries/'.$gal->photo)}}" >
@@ -36,8 +36,11 @@
           </div>
           <div class="col-lg-7">
             <div class="product-info">
+              @php
+                  $headerMerchantUserId = request()->get('user', $product->user_id);
+              @endphp
               <h4 class="item-name">
-                <x-catalog-item-name :catalog-item="$product" :vendor-id="request()->get('user', $product->user_id)" target="_blank" />
+                <x-catalog-item-name :catalog-item="$product" :merchant-user-id="$headerMerchantUserId" target="_blank" />
               </h4>
 
               <div class="top-meta">
@@ -168,14 +171,14 @@
                   {{-- PRODUCT SIZE SECTION  --}}
 
                   @php
-                    $vendorId = request()->get('user') ?? ($product->vendor_user_id ?? $product->user_id);
-                    $vendorSizes = $product->getVendorSizes($vendorId);
+                    $merchantUserId = request()->get('user') ?? ($product->vendor_user_id ?? $product->user_id);
+                    $merchantSizes = $product->getVendorSizes($merchantUserId);
                   @endphp
-                  @if(!empty($vendorSizes))
+                  @if(!empty($merchantSizes))
                   <div class="mproduct-size">
                     <p class="title">{{ __('Size :') }}</p>
                     <ul class="siz-list">
-                      @foreach($vendorSizes as $key => $data1)
+                      @foreach($merchantSizes as $key => $data1)
                     <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
                           <span class="box">
                             {{ $data1 }}
@@ -201,20 +204,20 @@
                     <ul class="color-list">
 
                       @php
-                        $vendorColors = $product->getVendorColors($vendorId);
+                        $merchantColors = $product->getVendorColors($merchantUserId);
                       @endphp
-                      @foreach($vendorColors as $key => $data1)
+                      @foreach($merchantColors as $key => $data1)
 
-                        <li class="{{ $loop->first ? 'active' : '' }} {{ $product->IsSizeColor($vendorSizes[$key] ?? '') ? str_replace(' ','',($vendorSizes[$key] ?? '')) : ''  }} {{ ($vendorSizes[$key] ?? '') == ($vendorSizes[0] ?? '') ? 'show-colors' : '' }}">
-                          <span class="box" data-color="{{ $vendorColors[$key] }}" style="background-color: {{ $vendorColors[$key] }}">
+                        <li class="{{ $loop->first ? 'active' : '' }} {{ $product->IsSizeColor($merchantSizes[$key] ?? '') ? str_replace(' ','',($merchantSizes[$key] ?? '')) : ''  }} {{ ($merchantSizes[$key] ?? '') == ($merchantSizes[0] ?? '') ? 'show-colors' : '' }}">
+                          <span class="box" data-color="{{ $merchantColors[$key] }}" style="background-color: {{ $merchantColors[$key] }}">
                             @php
-                                $vendorSizeQty = $product->getVendorSizeQty($vendorId, $key);
-                                $vendorSizePrice = $product->getVendorSizePrice($vendorId, $key);
+                                $merchantSizeQty = $product->getVendorSizeQty($merchantUserId, $key);
+                                $merchantSizePrice = $product->getVendorSizePrice($merchantUserId, $key);
                             @endphp
-                            <input type="hidden" class="msize" value="{{ $vendorSizes[$key] ?? '' }}">
-                            <input type="hidden" class="msize_qty" value="{{ $vendorSizeQty }}">
+                            <input type="hidden" class="msize" value="{{ $merchantSizes[$key] ?? '' }}">
+                            <input type="hidden" class="msize_qty" value="{{ $merchantSizeQty }}">
                             <input type="hidden" class="msize_key" value="{{$key}}">
-                            <input type="hidden" class="msize_price" value="{{ round($vendorSizePrice * $curr->value,2) }}">
+                            <input type="hidden" class="msize_price" value="{{ round($merchantSizePrice * $curr->value,2) }}">
 
                           </span>
                         </li>
@@ -230,13 +233,13 @@
 
                   @else
                   @php
-                    $vendorSizeAll = $product->getVendorSizeAll($vendorId);
+                    $merchantSizeAll = $product->getVendorSizeAll($merchantUserId);
                 @endphp
-                @if(!empty($vendorSizeAll))
+                @if(!empty($merchantSizeAll))
                   <div class="mproduct-size" data-key="false">
                     <p class="title">{{ __('Size :') }}</p>
                     <ul class="siz-list">
-                      @foreach(array_unique(explode(',', $vendorSizeAll)) as $key => $data1)
+                      @foreach(array_unique(explode(',', $merchantSizeAll)) as $key => $data1)
                     <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
                           <span class="box">
                             {{ $data1 }}
@@ -249,15 +252,15 @@
                   </div>
                   @endif
                   @php
-                      $vendorColorAll = $product->getVendorColorAll($vendorId);
+                      $merchantColorAll = $product->getVendorColorAll($merchantUserId);
                   @endphp
-                  @if(!empty($vendorColorAll))
+                  @if(!empty($merchantColorAll))
 
                   <div class="mproduct-color" data-key="false">
                     <div class="title">{{ __('Color :') }}</div>
                     <ul class="color-list">
 
-                      @foreach(explode(',', $vendorColorAll) as $key => $color1)
+                      @foreach(explode(',', $merchantColorAll) as $key => $color1)
 
                         <li class="{{ $loop->first ? 'active' : '' }} show-colors">
                           <span class="box" data-color="{{ $color1 }}" style="background-color: {{ $color1 }}">
@@ -278,10 +281,10 @@
 
               {{-- PRODUCT STOCK CONDITION SECTION  --}}
 
-              @if(!empty($vendorSizes))
+              @if(!empty($merchantSizes))
 
                 @php
-                    $firstSizeQty = $product->getVendorSizeQty($vendorId, 0);
+                    $firstSizeQty = $product->getVendorSizeQty($merchantUserId, 0);
                 @endphp
                 <input type="hidden" class="product-stock" value="{{ $firstSizeQty }}">
 
@@ -344,22 +347,22 @@
 
               {{-- PRODUCT ADD CART SECTION --}}
               @php
-                  $quickVendorId = request()->get('user', $product->user_id);
-                  $quickMp = $product->merchantItems()->where('user_id', $quickVendorId)->where('status', 1)->first();
-                  $quickMinQty = $quickMp ? max(1, (int)($quickMp->minimum_qty ?? 1)) : max(1, (int)($product->minimum_qty ?? 1));
-                  $quickStock = $quickMp ? (int)($quickMp->stock ?? 0) : (int)($product->stock ?? 0);
-                  $quickPreordered = $quickMp ? (int)($quickMp->preordered ?? 0) : 0;
+                  $quickMerchantUserId = request()->get('user', $product->user_id);
+                  $quickMerchantItem = $product->merchantItems()->where('user_id', $quickMerchantUserId)->where('status', 1)->first();
+                  $quickMinQty = $quickMerchantItem ? max(1, (int)($quickMerchantItem->minimum_qty ?? 1)) : max(1, (int)($product->minimum_qty ?? 1));
+                  $quickStock = $quickMerchantItem ? (int)($quickMerchantItem->stock ?? 0) : (int)($product->stock ?? 0);
+                  $quickPreordered = $quickMerchantItem ? (int)($quickMerchantItem->preordered ?? 0) : 0;
                   $quickCanBuy = $quickStock > 0 || $quickPreordered;
               @endphp
 
               <input type="hidden" id="mproduct_price" value="{{ round($product->vendorSizePrice() * $curr->value,2) }}">
               <input type="hidden" id="mproduct_id" value="{{ $product->id }}">
-              <input type="hidden" id="mmerchant_item_id" value="{{ $quickMp->id ?? '' }}">
-              <input type="hidden" id="mvendor_user_id" value="{{ $quickVendorId }}">
+              <input type="hidden" id="mmerchant_item_id" value="{{ $quickMerchantItem->id ?? '' }}">
+              <input type="hidden" id="mmerchant_user_id" value="{{ $quickMerchantUserId }}">
               <input type="hidden" id="mcurr_pos" value="{{ $gs->currency_format }}">
               <input type="hidden" id="mcurr_sign" value="{{ $curr->sign }}">
 
-              @if($quickCanBuy && $quickMp)
+              @if($quickCanBuy && $quickMerchantItem)
 
                 <div class="inner-box">
                   <div class="cart-btn">
@@ -368,7 +371,7 @@
                       {{-- PRODUCT QUANTITY SECTION --}}
 
                       {{-- product_type is now on merchant_items --}}
-                      @if($quickMp && $quickMp->product_type != "affiliate" && $product->type == 'Physical')
+                      @if($quickMerchantItem && $quickMerchantItem->product_type != "affiliate" && $product->type == 'Physical')
 
                           <li>
                             <div class="multiple-item-price">
@@ -391,7 +394,7 @@
                       {{-- PRODUCT QUANTITY SECTION ENDS --}}
 
                       {{-- product_type is now on merchant_items --}}
-                      @if($quickMp && $quickMp->product_type == "affiliate")
+                      @if($quickMerchantItem && $quickMerchantItem->product_type == "affiliate")
 
                       <li>
                         <a href="{{ route('affiliate.product', $product->slug) }}" target="_blank">
@@ -405,8 +408,8 @@
                       {{-- UNIFIED: Use data attributes for cart-unified.js --}}
                       <li>
                         <button type="button" class="m-cart-add"
-                                data-merchant-item-id="{{ $quickMp->id }}"
-                                data-vendor-id="{{ $quickVendorId }}"
+                                data-merchant-item-id="{{ $quickMerchantItem->id }}"
+                                data-merchant-user-id="{{ $quickMerchantUserId }}"
                                 data-min-qty="{{ $quickMinQty }}"
                                 data-qty-input=".modal-total">
                           <i class="icofont-cart"></i>
@@ -416,8 +419,8 @@
 
                       <li>
                         <button type="button" class="m-cart-add"
-                                data-merchant-item-id="{{ $quickMp->id }}"
-                                data-vendor-id="{{ $quickVendorId }}"
+                                data-merchant-item-id="{{ $quickMerchantItem->id }}"
+                                data-merchant-user-id="{{ $quickMerchantUserId }}"
                                 data-min-qty="{{ $quickMinQty }}"
                                 data-qty-input=".modal-total"
                                 data-redirect="/cart">
@@ -464,14 +467,14 @@
               @endif
 
               @php
-                $quickVendorId = request()->get('user', $product->user_id);
-                $quickMerchant = $product->merchantItems()->where('user_id', $quickVendorId)->where('status', 1)->first();
+                $qualityMerchantUserId = request()->get('user', $product->user_id);
+                $qualityMerchantItem = $product->merchantItems()->where('user_id', $qualityMerchantUserId)->where('status', 1)->first();
               @endphp
 
-              @if($quickMerchant && $quickMerchant->qualityBrand)
+              @if($qualityMerchantItem && $qualityMerchantItem->qualityBrand)
               <div class="product-id">
                 {{ __('Brand qualities:') }}
-                <span>{{ getLocalizedQualityName($quickMerchant->qualityBrand) }}</span>
+                <span>{{ getLocalizedQualityName($qualityMerchantItem->qualityBrand) }}</span>
               </div>
               @endif
 
@@ -506,12 +509,12 @@
 
               <div class="mt-2">
                 @php
-                    $quickVendorId = request()->get('user', $product->user_id);
-                    $quickMerchant = $product->merchantItems()->where('user_id', $quickVendorId)->where('status', 1)->first();
-                    $quickMerchantId = $quickMerchant->id ?? null;
+                    $detailMerchantUserId = request()->get('user', $product->user_id);
+                    $detailMerchantItem = $product->merchantItems()->where('user_id', $detailMerchantUserId)->where('status', 1)->first();
+                    $detailMerchantItemId = $detailMerchantItem->id ?? null;
                 @endphp
-                @if($quickMerchantId)
-                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $product->slug, 'merchant_id' => $quickVendorId, 'merchant_item_id' => $quickMerchantId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                @if($detailMerchantItemId)
+                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $product->slug, 'merchant_id' => $detailMerchantUserId, 'merchant_item_id' => $detailMerchantItemId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
                 @endif
               </div>
 

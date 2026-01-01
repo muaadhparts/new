@@ -137,67 +137,7 @@
 										</div>
 
 
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="left-area">
-													<h4 class="heading">{{ __('Category') }}*</h4>
-												</div>
-											</div>
-											<div class="col-lg-12">
-												<select id="cat" name="category_id" required="">
-													<option>{{ __('Select Category') }}</option>
-													@foreach($cats as $cat)
-														<option data-href="{{ route('admin-subcat-load',$cat->id) }}" value="{{$cat->id}}" {{$cat->id == $data->category_id ? "selected":""}} >{{$cat->name}}</option>
-													@endforeach
-												</select>
-											</div>
-										</div>
-
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="left-area">
-													<h4 class="heading">{{ __('Sub Category') }}*</h4>
-												</div>
-											</div>
-											<div class="col-lg-12">
-													<select id="subcat" name="subcategory_id">
-														<option value="">{{ __('Select Sub Category') }}</option>
-														@if($data->subcategory_id == null)
-														@foreach($data->category->subs as $sub)
-														<option data-href="{{ route('admin-childcat-load',$sub->id) }}" value="{{$sub->id}}" >{{$sub->name}}</option>
-														@endforeach
-														@else
-														@foreach($data->category->subs as $sub)
-														<option data-href="{{ route('admin-childcat-load',$sub->id) }}" value="{{$sub->id}}" {{$sub->id == $data->subcategory_id ? "selected":""}} >{{$sub->name}}</option>
-														@endforeach
-														@endif
-													</select>
-											</div>
-										</div>
-
-										<div class="row">
-											<div class="col-lg-12">
-												<div class="left-area">
-													<h4 class="heading">{{ __('Child Category') }}*</h4>
-												</div>
-											</div>
-											<div class="col-lg-12">
-												<select id="childcat" name="childcategory_id" {{$data->subcategory_id == null ? "disabled":""}}>
-														<option value="">{{ __('Select Child Category') }}</option>
-														@if($data->subcategory_id != null)
-														@if($data->childcategory_id == null)
-														@foreach($data->subcategory->childs as $child)
-														<option value="{{$child->id}}" >{{$child->name}}</option>
-														@endforeach
-														@else
-														@foreach($data->subcategory->childs as $child)
-														<option value="{{$child->id}} " {{$child->id == $data->childcategory_id ? "selected":""}}>{{$child->name}}</option>
-														@endforeach
-														@endif
-														@endif
-												</select>
-											</div>
-										</div>
+										{{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
 
 										<div class="row">
 											<div class="col-lg-12">

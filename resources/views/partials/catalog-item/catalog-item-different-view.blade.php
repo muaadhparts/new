@@ -11,7 +11,7 @@
          <div class="col">
           <div class="product type-product">
             <div class="product-wrapper">
-            <div class="product-image">
+            <div class="catalog-item-image">
                <a href="{{ $productUrl }}" class="woocommerce-LoopProduct-link"><img
                  src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                  alt="Product Image"></a>
@@ -108,7 +108,7 @@
          <div class="col">
           <div class="product type-product">
             <div class="product-wrapper">
-            <div class="product-image">
+            <div class="catalog-item-image">
                <a href="{{ $productUrl }}" class="woocommerce-LoopProduct-link"><img
                  src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                  alt="Product Image"></a>
@@ -207,7 +207,7 @@
         <div class="col">
          <div class="product type-product">
            <div class="product-wrapper">
-            <div class="product-image">
+            <div class="catalog-item-image">
                <a href="{{ $productUrl }}" class="woocommerce-LoopProduct-link"><img
                   src="{{ filter_var($product->photo, FILTER_VALIDATE_URL) ? $product->photo : ($product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png')) }}"
                   alt="Product Image"></a>
