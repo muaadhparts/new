@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Merchant;
 use App\{
     Models\Gallery,
     Models\CatalogItem,
-    Models\Category,
     Models\Muaadhsetting
 };
 
@@ -88,7 +87,7 @@ class ImportController extends MerchantBaseController
     //*** GET Request
     public function createImport()
     {
-        $cats = Category::all();
+        $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
         if ($this->gs->affilite == 1) {
             return view('merchant.productimport.createone', compact('cats', 'sign'));
@@ -100,7 +99,7 @@ class ImportController extends MerchantBaseController
     //*** GET Request
     public function importCSV()
     {
-        $cats = Category::all();
+        $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
         return view('merchant.productimport.importcsv', compact('cats', 'sign'));
     }
@@ -283,7 +282,7 @@ class ImportController extends MerchantBaseController
     //*** GET Request
     public function edit($id)
     {
-        $cats = Category::all();
+        $cats = collect(); // Category system removed - using TreeCategories
         $data = CatalogItem::findOrFail($id);
 
         // Get merchant item data for this vendor

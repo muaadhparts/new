@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Models\Category;
 use App\Models\Report;
-use App\Models\Subcategory;
 use App\Services\CatalogItemFilterService;
 use App\Services\NewCategoryTreeService;
 use Illuminate\Http\Request;
@@ -194,11 +192,13 @@ class CatalogController extends FrontBaseController
 
     // -------------------------------- NEW CATEGORY TREE SECTION ENDS ----------------------------------------
 
+    /**
+     * @deprecated Use getCatalogs() instead
+     */
     public function getsubs(Request $request)
     {
-        $category = Category::where('slug', $request->category)->firstOrFail();
-        $subcategories = Subcategory::where('category_id', $category->id)->get();
-        return $subcategories;
+        // Legacy method - now redirects to getCatalogs
+        return $this->getCatalogs($request);
     }
 
     // =========================================================

@@ -9,7 +9,6 @@ use App\{
     Classes\MuaadhMailer,
     Models\Conversation
 };
-use App\Models\Category;
 use App\Models\QualityBrand;
 use Illuminate\{
     Http\Request,
@@ -38,7 +37,8 @@ class MerchantController extends FrontBaseController
 
         $data['merchant']     = $merchant;
         $data['services']   = DB::table('services')->where('user_id', '=', $merchant->id)->get();
-        $data['categories'] = Category::where('status', 1)->get();
+        // TODO: Removed - old category system
+        $data['categories'] = collect(); // Category::where('status', 1)->get();
 
         // Get Brand Qualities available for this merchant
         $merchantQualityIds = DB::table('merchant_items')

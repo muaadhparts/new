@@ -4,13 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Attribute;
 use App\Models\AttributeOption;
-use App\Models\Category;
-use App\Models\Childcategory;
 use App\Models\Currency;
 use App\Models\Gallery;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
-use App\Models\Subcategory;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
@@ -269,7 +266,8 @@ class CatalogItemController extends AdminBaseController
     //*** GET Request
     public function create($slug)
     {
-        $cats = Category::all();
+        // TODO: Removed - old category system
+        $cats = collect(); // Category::all();
         $sign = $this->curr;
         if ($slug == 'physical') {
             return view('admin.catalog-item.create.physical', compact('cats', 'sign'));
@@ -586,7 +584,8 @@ class CatalogItemController extends AdminBaseController
     //*** GET Request
     public function import()
     {
-        $cats = Category::all();
+        // TODO: Removed - old category system
+        $cats = collect(); // Category::all();
         $sign = $this->curr;
         return view('admin.catalog-item.catalogitemcsv', compact('cats', 'sign'));
     }
@@ -631,29 +630,9 @@ class CatalogItemController extends AdminBaseController
                     $input['type'] = 'Physical';
                     $input['sku'] = $line[0];
 
-                    $input['category_id'] = null;
-                    $input['subcategory_id'] = null;
-                    $input['childcategory_id'] = null;
-
-                    $mcat = Category::where(DB::raw('lower(name)'), strtolower($line[1]));
-
-                    if ($mcat->exists()) {
-                        $input['category_id'] = $mcat->first()->id;
-
-                        if ($line[2] != "") {
-                            $scat = Subcategory::where(DB::raw('lower(name)'), strtolower($line[2]));
-
-                            if ($scat->exists()) {
-                                $input['subcategory_id'] = $scat->first()->id;
-                            }
-                        }
-                        if ($line[3] != "") {
-                            $chcat = Childcategory::where(DB::raw('lower(name)'), strtolower($line[3]));
-
-                            if ($chcat->exists()) {
-                                $input['childcategory_id'] = $chcat->first()->id;
-                            }
-                        }
+                    // Old category system removed - now using TreeCategories
+                    // category_id, subcategory_id, childcategory_id no longer used
+                    // Categories are linked via parts tables instead
 
                         $input['photo'] = $line[5];
                         $input['name'] = $line[4];
@@ -751,7 +730,8 @@ class CatalogItemController extends AdminBaseController
     //*** GET Request
     public function edit($merchantItemId)
     {
-        $cats = Category::all();
+        // TODO: Removed - old category system
+        $cats = collect(); // Category::all();
         $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->findOrFail($merchantItemId);
         $data = $merchantItem->catalogItem;
         $sign = $this->curr;

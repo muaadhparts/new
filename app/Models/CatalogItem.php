@@ -18,7 +18,7 @@ class CatalogItem extends Model
      * vendor-specific data is stored on MerchantItem.
      */
     protected $fillable = [
-        'brand_id', 'sku', 'category_id', 'subcategory_id', 'childcategory_id',
+        'brand_id', 'sku',
         'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight',
         'length', 'width', 'height', 'status',
         'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
@@ -31,7 +31,7 @@ class CatalogItem extends Model
      */
     public $selectable = [
         'id', 'name', 'slug', 'features', 'thumbnail', 'attributes',
-        'category_id', 'type', 'weight'
+        'brand_id', 'type', 'weight'
     ];
 
     /* =========================================================================
@@ -64,24 +64,9 @@ class CatalogItem extends Model
      |  Relations
      | ========================================================================= */
 
-    public function category()
-    {
-        return $this->belongsTo('App\Models\Category')->withDefault();
-    }
-
     public function brand()
     {
         return $this->belongsTo('App\Models\Brand')->withDefault();
-    }
-
-    public function subcategory()
-    {
-        return $this->belongsTo('App\Models\Subcategory')->withDefault();
-    }
-
-    public function childcategory()
-    {
-        return $this->belongsTo('App\Models\Childcategory')->withDefault();
     }
 
     /**
@@ -90,14 +75,6 @@ class CatalogItem extends Model
     public function merchantItems()
     {
         return $this->hasMany(MerchantItem::class, 'catalog_item_id');
-    }
-
-    /**
-     * Catalog item fitments (vehicle tree assignments).
-     */
-    public function fitments()
-    {
-        return $this->hasMany(CatalogItemFitment::class, 'catalog_item_id');
     }
 
     public function favorite()

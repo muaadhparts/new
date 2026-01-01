@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\{
     Models\CatalogItem,
-    Models\Category,
     Models\Currency,
     Models\Gallery
 };
@@ -126,7 +125,7 @@ class ImportController extends AdminBaseController
     //*** GET Request
     public function createImport()
     {
-        $cats = Category::all();
+        $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
         return view('admin.productimport.createone',compact('cats','sign'));
     }
@@ -134,7 +133,7 @@ class ImportController extends AdminBaseController
     //*** GET Request
     public function importCSV()
     {
-        $cats = Category::all();
+        $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
         return view('admin.productimport.importcsv',compact('cats','sign'));
     }
@@ -406,7 +405,7 @@ class ImportController extends AdminBaseController
     //*** GET Request
     public function edit($id)
     {
-        $cats = Category::all();
+        $cats = collect(); // Category system removed - using TreeCategories
         $data = CatalogItem::findOrFail($id);
         $sign = $this->curr;
         return view('admin.productimport.editone',compact('cats','data','sign'));

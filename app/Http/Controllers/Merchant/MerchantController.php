@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Category;
-use App\Models\Muaadhsetting;use App\Models\CatalogItem;
-use App\Models\Subcategory;
+use App\Models\Muaadhsetting;
+use App\Models\CatalogItem;
 use App\Models\MerchantPurchase;
 use App\Models\Verification;
 use Illuminate\Http\Request;
@@ -143,19 +142,19 @@ class MerchantController extends MerchantBaseController
         return view('merchant.social', compact('data'));
     }
 
-    //*** GET Request
-    public function subcatload($id)
-    {
-        $cat = Category::findOrFail($id);
-        return view('load.subcategory', compact('cat'));
-    }
+    // TODO: Removed - old category system
+    // public function subcatload($id)
+    // {
+    //     $cat = Category::findOrFail($id);
+    //     return view('load.subcategory', compact('cat'));
+    // }
 
-    //*** GET Request
-    public function childcatload($id)
-    {
-        $subcat = Subcategory::findOrFail($id);
-        return view('load.childcategory', compact('subcat'));
-    }
+    // TODO: Removed - old category system
+    // public function childcatload($id)
+    // {
+    //     $subcat = Subcategory::findOrFail($id);
+    //     return view('load.childcategory', compact('subcat'));
+    // }
 
     //*** GET Request
     public function verify()

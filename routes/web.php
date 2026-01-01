@@ -325,65 +325,7 @@ Route::prefix('admin')->group(function () {
 
     /////////////////////////////// ////////////////////////////////////////////
 
-    //------------ ADMIN MANAGE CATEGORY SECTION ------------
-
-    Route::group(['middleware' => 'permissions:categories'], function () {
-
-        Route::get('/category/datatables', 'Admin\CategoryController@datatables')->name('admin-cat-datatables'); //JSON REQUEST
-        Route::get('/category', 'Admin\CategoryController@index')->name('admin-cat-index');
-        Route::get('/category/create', 'Admin\CategoryController@create')->name('admin-cat-create');
-        Route::post('/category/create', 'Admin\CategoryController@store')->name('admin-cat-store');
-        Route::get('/category/edit/{id}', 'Admin\CategoryController@edit')->name('admin-cat-edit');
-        Route::post('/category/edit/{id}', 'Admin\CategoryController@update')->name('admin-cat-update');
-        Route::delete('/category/delete/{id}', 'Admin\CategoryController@destroy')->name('admin-cat-delete');
-        Route::get('/category/featured/{id1}/{id2}', 'Admin\CategoryController@featured')->name('admin-cat-featured');
-        Route::get('/category/status/{id1}/{id2}', 'Admin\CategoryController@status')->name('admin-cat-status');
-
-        //------------ ADMIN ATTRIBUTE SECTION ------------
-
-        Route::get('/attribute/datatables', 'Admin\AttributeController@datatables')->name('admin-attr-datatables'); //JSON REQUEST
-        Route::get('/attribute', 'Admin\AttributeController@index')->name('admin-attr-index');
-        Route::get('/attribute/{catid}/attrCreateForCategory', 'Admin\AttributeController@attrCreateForCategory')->name('admin-attr-createForCategory');
-        Route::get('/attribute/{subcatid}/attrCreateForSubcategory', 'Admin\AttributeController@attrCreateForSubcategory')->name('admin-attr-createForSubcategory');
-        Route::get('/attribute/{childcatid}/attrCreateForChildcategory', 'Admin\AttributeController@attrCreateForChildcategory')->name('admin-attr-createForChildcategory');
-        Route::post('/attribute/store', 'Admin\AttributeController@store')->name('admin-attr-store');
-        Route::get('/attribute/{id}/manage', 'Admin\AttributeController@manage')->name('admin-attr-manage');
-        Route::get('/attribute/{attrid}/edit', 'Admin\AttributeController@edit')->name('admin-attr-edit');
-        Route::post('/attribute/edit/{id}', 'Admin\AttributeController@update')->name('admin-attr-update');
-        Route::get('/attribute/{id}/options', 'Admin\AttributeController@options')->name('admin-attr-options');
-        Route::get('/attribute/delete/{id}', 'Admin\AttributeController@destroy')->name('admin-attr-delete');
-
-        // SUBCATEGORY SECTION ------------
-
-        Route::get('/subcategory/datatables', 'Admin\SubCategoryController@datatables')->name('admin-subcat-datatables'); //JSON REQUEST
-        Route::get('/subcategory', 'Admin\SubCategoryController@index')->name('admin-subcat-index');
-        Route::get('/subcategory/create', 'Admin\SubCategoryController@create')->name('admin-subcat-create');
-        Route::post('/subcategory/create', 'Admin\SubCategoryController@store')->name('admin-subcat-store');
-        Route::get('/subcategory/edit/{id}', 'Admin\SubCategoryController@edit')->name('admin-subcat-edit');
-        Route::post('/subcategory/edit/{id}', 'Admin\SubCategoryController@update')->name('admin-subcat-update');
-        Route::delete('/subcategory/delete/{id}', 'Admin\SubCategoryController@destroy')->name('admin-subcat-delete');
-        Route::get('/subcategory/status/{id1}/{id2}', 'Admin\SubCategoryController@status')->name('admin-subcat-status');
-        Route::get('/load/subcategories/{id}/', 'Admin\SubCategoryController@load')->name('admin-subcat-load'); //JSON REQUEST
-
-        // SUBCATEGORY SECTION ENDS------------
-
-        // CHILDCATEGORY SECTION ------------
-
-        Route::get('/childcategory/datatables', 'Admin\ChildCategoryController@datatables')->name('admin-childcat-datatables'); //JSON REQUEST
-        Route::get('/childcategory', 'Admin\ChildCategoryController@index')->name('admin-childcat-index');
-        Route::get('/childcategory/create', 'Admin\ChildCategoryController@create')->name('admin-childcat-create');
-        Route::post('/childcategory/create', 'Admin\ChildCategoryController@store')->name('admin-childcat-store');
-        Route::get('/childcategory/edit/{id}', 'Admin\ChildCategoryController@edit')->name('admin-childcat-edit');
-        Route::post('/childcategory/edit/{id}', 'Admin\ChildCategoryController@update')->name('admin-childcat-update');
-        Route::delete('/childcategory/delete/{id}', 'Admin\ChildCategoryController@destroy')->name('admin-childcat-delete');
-        Route::get('/childcategory/status/{id1}/{id2}', 'Admin\ChildCategoryController@status')->name('admin-childcat-status');
-        Route::get('/load/childcategories/{id}/', 'Admin\ChildCategoryController@load')->name('admin-childcat-load'); //JSON REQUEST
-
-        // CHILDCATEGORY SECTION ENDS------------
-
-    });
-
-    //------------ ADMIN MANAGE CATEGORY SECTION ENDS------------
+    // Note: Old Category/Subcategory/Childcategory and Attribute routes removed - now using TreeCategories
 
     //------------ ADMIN CATALOG ITEM SECTION ------------
 

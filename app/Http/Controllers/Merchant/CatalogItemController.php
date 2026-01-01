@@ -4,14 +4,11 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Models\Attribute;
 use App\Models\AttributeOption;
-use App\Models\Category;
-use App\Models\Childcategory;
 use App\Models\Currency;
 use App\Models\Gallery;
 use App\Models\Muaadhsetting;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
-use App\Models\Subcategory;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
@@ -160,7 +157,8 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        $cats = Category::all();
+        // TODO: Removed - old category system
+        $cats = collect(); // Category::all();
         $sign = $this->curr;
 
         switch ($slug) {
@@ -267,7 +265,8 @@ class CatalogItemController extends MerchantBaseController
     //*** POST Request
     public function import()
     {
-        $cats = Category::all();
+        // TODO: Removed - old category system
+        $cats = collect(); // Category::all();
         $sign = $this->curr;
         return view('merchant.catalog-item.catalogitemcsv', compact('cats', 'sign'));
     }
@@ -693,7 +692,8 @@ class CatalogItemController extends MerchantBaseController
     //*** GET Request CATALOG
     public function catalogedit($id)
     {
-        $cats = Category::all();
+        // TODO: Removed - old category system
+        $cats = collect(); // Category::all();
         $data = CatalogItem::findOrFail($id);
 
         $merchantItem = MerchantItem::where('catalog_item_id', $id)

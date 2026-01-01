@@ -6,7 +6,6 @@ use App\Classes\MuaadhMailer;
 use App\Models\ArrivalSection;
 use App\Models\Blog;
 use App\Models\BlogCategory;
-use App\Models\Category;
 use App\Models\Muaadhsetting;
 use App\Models\HomePageTheme;
 use App\Models\MerchantItem;
@@ -113,8 +112,9 @@ class FrontendController extends FrontBaseController
         // SECTION: Featured Categories (if enabled in theme)
         // ============================================================================
         if ($theme->show_categories) {
+            // TODO: Removed - old category system
             $data['featured_categories'] = Cache::remember('featured_categories_with_count', 3600, function () {
-                return Category::withCount('products')->where('is_featured', 1)->get();
+                return collect(); // Category::withCount('products')->where('is_featured', 1)->get();
             });
         }
 

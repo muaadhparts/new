@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Category;
-use App\Models\Childcategory;
 use App\Models\DiscountCode;
-use App\Models\Subcategory;
 use App\Models\Currency;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
@@ -195,20 +192,21 @@ class DiscountCodeController extends MerchantBaseController
         // جلب العناصر كـ Collection
         $catalogItems = \App\Models\CatalogItem::whereIn('id', $merchantItemIds)->get();
 
-        if ($type == 'category') {
-            $categoryIds = $catalogItems->pluck('category_id')->unique()->filter();
-            $categories = Category::whereIn('id', $categoryIds)->where('status', 1)->get(['id', 'name']);
-            return response()->json($categories);
-        } elseif ($type == 'sub_category') {
-            $subCategoryIds = $catalogItems->pluck('subcategory_id')->unique()->filter();
-            $subCategories = Subcategory::whereIn('id', $subCategoryIds)->where('status', 1)->get(['id', 'name']);
-            return response()->json($subCategories);
-        } elseif ($type == 'child_category') {
-            $childCategoryIds = $catalogItems->pluck('childcategory_id')->unique()->filter();
-            $childCategories = Childcategory::whereIn('id', $childCategoryIds)->where('status', 1)->get(['id', 'name']);
-            return response()->json($childCategories);
-        }
+        // TODO: Removed - old category system
+        // if ($type == 'category') {
+        //     $categoryIds = $catalogItems->pluck('category_id')->unique()->filter();
+        //     $categories = Category::whereIn('id', $categoryIds)->where('status', 1)->get(['id', 'name']);
+        //     return response()->json($categories);
+        // } elseif ($type == 'sub_category') {
+        //     $subCategoryIds = $catalogItems->pluck('subcategory_id')->unique()->filter();
+        //     $subCategories = Subcategory::whereIn('id', $subCategoryIds)->where('status', 1)->get(['id', 'name']);
+        //     return response()->json($subCategories);
+        // } elseif ($type == 'child_category') {
+        //     $childCategoryIds = $catalogItems->pluck('childcategory_id')->unique()->filter();
+        //     $childCategories = Childcategory::whereIn('id', $childCategoryIds)->where('status', 1)->get(['id', 'name']);
+        //     return response()->json($childCategories);
+        // }
 
-        return response()->json([]);
+        return response()->json(collect());
     }
 }
