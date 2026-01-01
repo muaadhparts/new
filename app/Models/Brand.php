@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Brand extends Model
 {
-    protected $fillable = ['name', 'name_ar', 'link', 'photo'];
+    protected $fillable = ['name', 'name_ar', 'slug', 'status', 'featured', 'link', 'photo'];
 
     public $timestamps = false;
 
@@ -18,39 +18,31 @@ class Brand extends Model
     protected $appends = ['localized_name', 'photo_url'];
 
     // =========================================================
-    // COMPATIBILITY ACCESSORS - للتوافق مع views القديمة
-    // التي كانت تستخدم Category model
+    // COMPATIBILITY - للتوافق مع Category model القديم
     // =========================================================
 
     /**
-     * Alias for catalogs() - للتوافق مع $category->subs
+     * Alias: subs → catalogs (للتوافق مع $category->subs)
      */
     public function getSubsAttribute()
     {
-        return $this->catalogs;
+        return $this->catalogs()->where('status', 1)->get();
     }
 
     /**
-     * Slug accessor - يستخدم name كـ slug
+     * الكتالوجات المرتبطة بالبراند
      */
-    public function getSlugAttribute(): string
-    {
-        return str_replace(' ', '-', strtolower($this->name ?? ''));
-    }
-
-    /**
-     * Status accessor - دائماً active
-     */
-    public function getStatusAttribute(): int
-    {
-        return 1;
-    }
-
-
     public function catalogs(): HasMany
     {
-//        dd($this);
-        return $this->hasMany(Catalog::class ,'brand_id','id');
+        return $this->hasMany(Catalog::class, 'brand_id', 'id');
+    }
+
+    /**
+     * TreeCategories المرتبطة بالبراند
+     */
+    public function treeCategories(): HasMany
+    {
+        return $this->hasMany(TreeCategory::class, 'brand_id');
     }
 
 

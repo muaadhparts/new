@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
-use App\Models\NewCategory;
 
 class Catalog extends Model
 {
@@ -17,64 +16,29 @@ class Catalog extends Model
     protected $guarded = ['id'];
 
     // تحميل البراند دائمًا مع الكتالوج
-    protected $with = ['brand:id,name'];
+    protected $with = ['brand:id,name,slug'];
 
     public $timestamps = true;
 
+    protected $appends = ['localized_name'];
+
     // =========================================================
-    // COMPATIBILITY ACCESSORS - للتوافق مع views القديمة
-    // التي كانت تستخدم Subcategory model
+    // COMPATIBILITY - للتوافق مع Subcategory model القديم
     // =========================================================
 
     /**
-     * Slug accessor - يولد slug من الاسم للتوافق مع Subcategory slugs
-     * مثال: "SAFARI PATROL ( 1997 - )" → "safari-patrol-1997"
-     */
-    public function getSlugAttribute(): string
-    {
-        // إذا كان هناك subcategory بنفس الـ ID، نستخدم slug-ها
-        // لأن Catalog IDs = Subcategory IDs
-        static $subcategorySlugs = null;
-
-        if ($subcategorySlugs === null) {
-            $subcategorySlugs = \App\Models\Subcategory::pluck('slug', 'id')->toArray();
-        }
-
-        if (isset($subcategorySlugs[$this->id])) {
-            return $subcategorySlugs[$this->id];
-        }
-
-        // Fallback: generate slug from name
-        $name = $this->name ?? '';
-        // Remove parentheses and their content, clean up
-        $name = preg_replace('/\s*\([^)]*\)/', '', $name);
-        $name = trim($name);
-        $slug = strtolower(str_replace(' ', '-', $name));
-        $slug = preg_replace('/[^a-z0-9\-]/', '', $slug);
-        $slug = preg_replace('/-+/', '-', $slug);
-        return trim($slug, '-');
-    }
-
-    /**
-     * Childs accessor - يُرجع collection فارغة
-     * للتوافق مع $subcategory->childs
-     * (Catalog ليس له مستوى ثالث في الهيكل الجديد)
+     * Alias: childs → treeCategories Level 1 (للتوافق مع $subcategory->childs)
      */
     public function getChildsAttribute()
     {
-        return collect([]);
+        return $this->treeCategories()
+            ->where('level', 1)
+            ->orderBy('label_en')
+            ->get();
     }
 
     /**
-     * Status accessor - دائماً active
-     */
-    public function getStatusAttribute(): int
-    {
-        return 1;
-    }
-
-    /**
-     * Localized name accessor
+     * Localized name - الاسم حسب اللغة
      */
     public function getLocalizedNameAttribute(): string
     {
@@ -135,20 +99,20 @@ class Catalog extends Model
     }
 
     /**
-     * 🔗 الفئات المرتبطة بالكتالوج (من جدول newcategories)
+     * 🔗 TreeCategories المرتبطة بالكتالوج
      */
-    public function categories(): HasMany
+    public function treeCategories(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'catalog_id');
+        return $this->hasMany(TreeCategory::class, 'catalog_id');
     }
 
     /**
-     * 🔗 الفئات الرئيسية فقط (اللي ما لها أب)
+     * 🔗 الفئات الجذرية (المستوى الأول)
      */
-    public function parentCategories(): HasMany
+    public function rootCategories(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'catalog_id')
-                    ->whereNull('parent_id');
+        return $this->hasMany(TreeCategory::class, 'catalog_id')
+                    ->where('level', 1);
     }
 
     /**

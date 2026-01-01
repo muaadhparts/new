@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use App\Models\Blog;
 use App\Models\Brand;
-use App\Models\Category;
 use App\Models\Currency;
 use App\Models\Language;
 use App\Models\Page;
@@ -76,11 +75,9 @@ class AppServiceProvider extends ServiceProvider
             }
 
             // Header data - cached and eager loaded
-            // UPDATED: Now uses Brand::catalogs instead of Category::subs.childs
-            // Brand model has compatibility accessors (subs, slug, status)
-            // Catalog model has compatibility accessors (slug, childs, status)
+            // Uses Brand → Catalog → TreeCategory hierarchy
             $settings->with('categories', cache()->remember('header_categories', 3600, function () {
-                return Brand::with(['catalogs'])->get();
+                return Brand::with(['catalogs'])->where('status', 1)->get();
             }));
 
             $settings->with('pages', cache()->remember('header_pages', 3600, function () {

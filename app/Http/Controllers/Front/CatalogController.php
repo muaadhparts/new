@@ -51,7 +51,18 @@ class CatalogController extends FrontBaseController
 
     // -------------------------------- CATEGORY SECTION ----------------------------------------
 
-    public function category(Request $request, $slug = null, $slug1 = null, $slug2 = null, $slug3 = null)
+    /**
+     * Unified 5-level category route
+     * Structure: /category/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
+     *
+     * @param Request $request
+     * @param string|null $slug Brand slug (e.g., "nissan")
+     * @param string|null $slug1 Catalog slug (e.g., "safari-patrol-1997")
+     * @param string|null $slug2 TreeCategory L1 slug (e.g., "engine")
+     * @param string|null $slug3 TreeCategory L2 slug (e.g., "cooling")
+     * @param string|null $slug4 TreeCategory L3 slug (e.g., "radiator")
+     */
+    public function category(Request $request, $slug = null, $slug1 = null, $slug2 = null, $slug3 = null, $slug4 = null)
     {
         // Handle view mode
         if ($request->view_check) {
@@ -64,13 +75,16 @@ class CatalogController extends FrontBaseController
         $currValue = $this->curr->value ?? 1;
 
         // Use service to get all data with filters applied
+        // Pass all 5 levels: brand, catalog, cat1, cat2, cat3
         $data = $this->filterService->getCatalogItemResults(
             $request,
-            $slug,       // category slug
-            $slug1,      // subcategory slug
-            $slug2,      // childcategory slug
+            $slug,       // Brand slug
+            $slug1,      // Catalog slug
+            $slug2,      // TreeCategory L1 slug
             $perPage,
-            $currValue
+            $currValue,
+            $slug3,      // TreeCategory L2 slug
+            $slug4       // TreeCategory L3 slug
         );
 
         if ($request->ajax()) {

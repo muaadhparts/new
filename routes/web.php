@@ -1802,14 +1802,12 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // NEW: Unified catalog tree with recursive category traversal
     // Shows all items from selected category AND all descendants
-    // Use this for brand → catalog → newcategories navigation
-    Route::get('/catalog/{brand_slug}/{catalog_slug}/category/{cat1?}/{cat2?}/{cat3?}',
-        'Front\CatalogController@newCategory')
-        ->name('front.catalog.category');
-
-    // LEGACY: 3-level category route (kept for header/menu navigation)
-    // This uses the old categories/subcategories/childcategories tables
-    Route::get('/category/{category?}/{subcategory?}/{childcategory?}', 'Front\CatalogController@category')->name('front.category');
+    // UNIFIED: 5-level category route
+    // Structure: /category/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
+    // - brand = Brand slug (e.g., "nissan")
+    // - catalog = Catalog slug (e.g., "safari-patrol-1997")
+    // - cat1/cat2/cat3 = TreeCategory slugs (levels 1, 2, 3)
+    Route::get('/category/{category?}/{subcategory?}/{childcategory?}/{cat2?}/{cat3?}', 'Front\CatalogController@category')->name('front.category');
     // CATEGORY SECTION ENDS
 
     // TAG SECTION
