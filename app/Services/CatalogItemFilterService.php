@@ -246,11 +246,11 @@ class CatalogItemFilterService
                 $exists->selectRaw(1)
                     ->from("{$partsTable} as p")
                     ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
-                    ->join('sections as s', 's.id', '=', 'sp.section_id')
                     ->whereColumn('p.part_number', 'catalog_items.sku');
 
+                // section_parts.category_id links directly to treecategories (level 3 only)
                 if ($categoryIds !== null) {
-                    $exists->whereIn('s.category_id', $categoryIds);
+                    $exists->whereIn('sp.category_id', $categoryIds);
                 }
             });
         });

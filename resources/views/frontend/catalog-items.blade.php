@@ -85,93 +85,127 @@
                             <h5 class="widget-title">@lang('Product categories')</h5>
                             <div class="product-cat-widget">
 
-                                {{-- Multi-Step Category Selector --}}
+                                {{-- Multi-Step Category Selector (5 Levels - Lightweight) --}}
                                 <div class="category-step-selector">
                                     @php
-                                        $currentCatSlug = Request::segment(2);
-                                        $currentSubcatSlug = Request::segment(3);
-                                        $currentChildcatSlug = Request::segment(4);
+                                        use App\Models\Catalog;
+                                        use App\Models\TreeCategory;
 
-                                        $selectedCat = $categories->firstWhere('slug', $currentCatSlug);
-                                        $selectedSubcat = $selectedCat ? $selectedCat->subs->firstWhere('slug', $currentSubcatSlug) : null;
-                                        $selectedChildcat = $selectedSubcat ? $selectedSubcat->childs->firstWhere('slug', $currentChildcatSlug) : null;
+                                        // Read URL segments
+                                        $currentBrandSlug = Request::segment(2);
+                                        $currentCatalogSlug = Request::segment(3);
+                                        $currentLevel1Slug = Request::segment(4);
+                                        $currentLevel2Slug = Request::segment(5);
+                                        $currentLevel3Slug = Request::segment(6);
+
+                                        // Resolve ONLY what's needed (no recursive loading)
+                                        $selectedBrand = $currentBrandSlug ? $categories->firstWhere('slug', $currentBrandSlug) : null;
+
+                                        // Load catalogs ONLY for selected brand
+                                        $brandCatalogs = $selectedBrand
+                                            ? Catalog::where('brand_id', $selectedBrand->id)->where('status', 1)->orderBy('name')->get(['id', 'slug', 'name', 'name_ar'])
+                                            : collect();
+                                        $selectedCatalog = $currentCatalogSlug ? $brandCatalogs->firstWhere('slug', $currentCatalogSlug) : null;
+
+                                        // Load Level 1 ONLY for selected catalog
+                                        $catalogLevel1 = $selectedCatalog
+                                            ? TreeCategory::where('catalog_id', $selectedCatalog->id)->where('level', 1)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
+                                            : collect();
+                                        $selectedLevel1 = $currentLevel1Slug ? $catalogLevel1->firstWhere('slug', $currentLevel1Slug) : null;
+
+                                        // Load Level 2 ONLY for selected Level 1
+                                        $level1Level2 = $selectedLevel1
+                                            ? TreeCategory::where('parent_id', $selectedLevel1->id)->where('level', 2)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
+                                            : collect();
+                                        $selectedLevel2 = $currentLevel2Slug ? $level1Level2->firstWhere('slug', $currentLevel2Slug) : null;
+
+                                        // Load Level 3 ONLY for selected Level 2
+                                        $level2Level3 = $selectedLevel2
+                                            ? TreeCategory::where('parent_id', $selectedLevel2->id)->where('level', 3)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
+                                            : collect();
+                                        $selectedLevel3 = $currentLevel3Slug ? $level2Level3->firstWhere('slug', $currentLevel3Slug) : null;
                                     @endphp
 
-                                    {{-- Step 1: Main Category --}}
+                                    {{-- Step 1: Brand --}}
                                     <div class="step-selector-item mb-3">
-                                        <label class="step-label">@lang('Category')</label>
-                                        <select class="form-select category-select" id="main-category-select">
-                                            <option value="">-- @lang('Select Category') --</option>
-                                            @foreach ($categories as $category)
-                                                <option value="{{ $category->slug }}"
-                                                    data-has-subs="{{ $category->subs->count() > 0 ? '1' : '0' }}"
-                                                    {{ $currentCatSlug === $category->slug ? 'selected' : '' }}>
-                                                    {{ $category->localized_name }}
+                                        <label class="step-label">@lang('Brand')</label>
+                                        <select class="form-select category-select" id="brand-select">
+                                            <option value="">-- @lang('Select Brand') --</option>
+                                            @foreach ($categories as $brand)
+                                                <option value="{{ $brand->slug }}"
+                                                    {{ $currentBrandSlug === $brand->slug ? 'selected' : '' }}>
+                                                    {{ $brand->localized_name }}
                                                 </option>
                                             @endforeach
                                         </select>
                                     </div>
 
-                                    {{-- Step 2: Subcategory (shown when category selected and has subs) --}}
-                                    <div class="step-selector-item mb-3 {{ $selectedCat && $selectedCat->subs->count() > 0 ? '' : 'd-none' }}" id="subcategory-step">
+                                    {{-- Step 2: Catalog (Model) --}}
+                                    <div class="step-selector-item mb-3 {{ $brandCatalogs->count() > 0 ? '' : 'd-none' }}" id="catalog-step">
                                         <label class="step-label">@lang('Model')</label>
-                                        <select class="form-select category-select" id="subcategory-select">
+                                        <select class="form-select category-select" id="catalog-select">
                                             <option value="">-- @lang('Select Model') --</option>
-                                            @if($selectedCat)
-                                                @foreach ($selectedCat->subs as $subcategory)
-                                                    <option value="{{ $subcategory->slug }}"
-                                                        data-has-childs="{{ $subcategory->childs->count() > 0 ? '1' : '0' }}"
-                                                        {{ $currentSubcatSlug === $subcategory->slug ? 'selected' : '' }}>
-                                                        {{ $subcategory->localized_name }}
-                                                    </option>
-                                                @endforeach
-                                            @endif
+                                            @foreach ($brandCatalogs as $catalog)
+                                                <option value="{{ $catalog->slug }}"
+                                                    {{ $currentCatalogSlug === $catalog->slug ? 'selected' : '' }}>
+                                                    {{ $catalog->localized_name }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
 
-                                    {{-- Step 3: Child Category (shown when subcategory selected and has childs) --}}
-                                    <div class="step-selector-item mb-3 {{ $selectedSubcat && $selectedSubcat->childs->count() > 0 ? '' : 'd-none' }}" id="childcategory-step">
+                                    {{-- Step 3: TreeCategory Level 1 --}}
+                                    <div class="step-selector-item mb-3 {{ $catalogLevel1->count() > 0 ? '' : 'd-none' }}" id="level1-step">
+                                        <label class="step-label">@lang('Category')</label>
+                                        <select class="form-select category-select" id="level1-select">
+                                            <option value="">-- @lang('Select Category') --</option>
+                                            @foreach ($catalogLevel1 as $level1)
+                                                <option value="{{ $level1->slug }}"
+                                                    {{ $currentLevel1Slug === $level1->slug ? 'selected' : '' }}>
+                                                    {{ $level1->localized_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    {{-- Step 4: TreeCategory Level 2 --}}
+                                    <div class="step-selector-item mb-3 {{ $level1Level2->count() > 0 ? '' : 'd-none' }}" id="level2-step">
+                                        <label class="step-label">@lang('Subcategory')</label>
+                                        <select class="form-select category-select" id="level2-select">
+                                            <option value="">-- @lang('Select Subcategory') --</option>
+                                            @foreach ($level1Level2 as $level2)
+                                                <option value="{{ $level2->slug }}"
+                                                    {{ $currentLevel2Slug === $level2->slug ? 'selected' : '' }}>
+                                                    {{ $level2->localized_name }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+
+                                    {{-- Step 5: TreeCategory Level 3 --}}
+                                    <div class="step-selector-item mb-3 {{ $level2Level3->count() > 0 ? '' : 'd-none' }}" id="level3-step">
                                         <label class="step-label">@lang('Part Type')</label>
-                                        <select class="form-select category-select" id="childcategory-select">
+                                        <select class="form-select category-select" id="level3-select">
                                             <option value="">-- @lang('Select Part Type') --</option>
-                                            @if($selectedSubcat)
-                                                @foreach ($selectedSubcat->childs as $child)
-                                                    <option value="{{ $child->slug }}"
-                                                        {{ $currentChildcatSlug === $child->slug ? 'selected' : '' }}>
-                                                        {{ $child->localized_name }}
-                                                    </option>
-                                                @endforeach
-                                            @endif
+                                            @foreach ($level2Level3 as $level3)
+                                                <option value="{{ $level3->slug }}"
+                                                    {{ $currentLevel3Slug === $level3->slug ? 'selected' : '' }}>
+                                                    {{ $level3->localized_name }}
+                                                </option>
+                                            @endforeach
                                         </select>
                                     </div>
 
                                 </div>
 
-                                {{-- Hidden data for JavaScript --}}
-                                @php
-                                    $categoriesJson = $categories->map(function($cat) {
-                                        return [
-                                            'slug' => $cat->slug,
-                                            'name' => $cat->localized_name,
-                                            'subs' => $cat->subs->map(function($sub) use ($cat) {
-                                                return [
-                                                    'slug' => $sub->slug,
-                                                    'name' => $sub->localized_name,
-                                                    'cat_slug' => $cat->slug,
-                                                    'childs' => $sub->childs->map(function($child) use ($cat, $sub) {
-                                                        return [
-                                                            'slug' => $child->slug,
-                                                            'name' => $child->localized_name,
-                                                            'cat_slug' => $cat->slug,
-                                                            'sub_slug' => $sub->slug,
-                                                        ];
-                                                    })->values()
-                                                ];
-                                            })->values()
-                                        ];
-                                    })->values();
-                                @endphp
-                                <script type="application/json" id="categories-data">{!! json_encode($categoriesJson) !!}</script>
+                                {{-- API URLs for AJAX loading --}}
+                                <script type="application/json" id="category-api-urls">
+                                    {!! json_encode([
+                                        'catalogs' => route('front.api.catalogs'),
+                                        'tree' => route('front.api.tree'),
+                                        'category' => route('front.category')
+                                    ]) !!}
+                                </script>
 
                             </div>
                         </div>
@@ -874,18 +908,17 @@
         })(jQuery);
     </script>
 
-    {{-- Multi-Step Category Selector JavaScript --}}
+    {{-- Multi-Step Category Selector JavaScript (5 Levels - AJAX) --}}
     <script>
         (function($) {
             "use strict";
 
-            // Load categories data from JSON
-            const categoriesData = JSON.parse($('#categories-data').text() || '[]');
-            const categoryBaseUrl = '{{ route("front.category") }}';
+            // API URLs
+            const apiUrls = JSON.parse($('#category-api-urls').text() || '{}');
+            const categoryBaseUrl = apiUrls.category || '{{ route("front.category") }}';
 
-            // Reference to AJAX system from main script
+            // Reference to AJAX system
             const $scrollContainer = $('.category-products-scroll');
-            const $productsContainer = $('.category-products-scroll');
             const $paginationContainer = $('.m-pagination-simple');
             const $totalProducts = $('.product-nav-wrapper h5').first();
 
@@ -893,45 +926,32 @@
             function buildCategoryUrl(basePath) {
                 let params = new URLSearchParams();
 
-                // Preserve Sort (from global categoryPageSort)
                 if (categoryPageSort && categoryPageSort !== '') {
                     params.set('sort', categoryPageSort);
                 }
 
-                // Preserve Vendor filters
                 $(".vendor-filter:checked").each(function() {
                     params.append('vendor[]', $(this).val());
                 });
 
-                // Preserve Brand Quality filters
                 $(".brand-quality-filter:checked").each(function() {
                     params.append('brand_quality[]', $(this).val());
                 });
 
-                // Preserve other attribute filters
                 $(".attribute-input:checked").each(function() {
                     const name = $(this).attr('name');
-                    // Skip vendor and brand_quality as they're handled above
                     if (name !== 'vendor[]' && name !== 'brand_quality[]') {
                         params.append(name, $(this).val());
                     }
                 });
 
-                // Preserve Price filter
                 const minPrice = $("#update_min_price").val();
                 const maxPrice = $("#update_max_price").val();
-                if (minPrice && minPrice !== '') {
-                    params.set('min', minPrice);
-                }
-                if (maxPrice && maxPrice !== '') {
-                    params.set('max', maxPrice);
-                }
+                if (minPrice && minPrice !== '') params.set('min', minPrice);
+                if (maxPrice && maxPrice !== '') params.set('max', maxPrice);
 
-                // Preserve View mode
                 const viewMode = $('.check_view.active').data('shopview');
-                if (viewMode) {
-                    params.set('view_check', viewMode);
-                }
+                if (viewMode) params.set('view_check', viewMode);
 
                 const queryString = params.toString();
                 return queryString ? basePath + '?' + queryString : basePath;
@@ -952,17 +972,14 @@
                         const $paginationData = $response.find('#ajax-pagination-data');
                         const $newPagination = $response.find('.m-pagination-simple');
 
-                        // Update products content (handles both products and no-results box)
                         if ($ajaxContent.length) {
                             $scrollContainer.html($ajaxContent.html());
                         }
 
-                        // Update pagination
                         if ($newPagination.length && $paginationContainer.length) {
                             $paginationContainer.replaceWith($newPagination);
                         }
 
-                        // Update total products count
                         if ($paginationData.length) {
                             try {
                                 const data = JSON.parse($paginationData.text());
@@ -970,13 +987,8 @@
                             } catch(e) {}
                         }
 
-                        // Scroll to top
                         $scrollContainer.scrollTop(0);
-
-                        // Update URL
                         history.pushState({categoryUrl: url}, '', url);
-
-                        // Reinitialize tooltips
                         $('[data-bs-toggle="tooltip"]').tooltip({});
                     },
                     error: function() {
@@ -988,92 +1000,130 @@
                 });
             }
 
-            // Main Category Change
-            $('#main-category-select').on('change', function() {
-                const selectedSlug = $(this).val();
-                const $subcatStep = $('#subcategory-step');
-                const $childcatStep = $('#childcategory-step');
-                const $subcatSelect = $('#subcategory-select');
-                const $childcatSelect = $('#childcategory-select');
+            // Helper: Reset and hide steps from given level onwards
+            function resetStepsFrom(level) {
+                const steps = ['catalog', 'level1', 'level2', 'level3'];
+                const startIndex = steps.indexOf(level);
 
-                // Reset and hide subsequent steps
-                $subcatSelect.html('<option value="">-- @lang("Select Model") --</option>');
-                $childcatSelect.html('<option value="">-- @lang("Select Part Type") --</option>');
-                $subcatStep.addClass('d-none');
-                $childcatStep.addClass('d-none');
+                for (let i = startIndex; i < steps.length; i++) {
+                    const stepId = steps[i];
+                    $(`#${stepId}-step`).addClass('d-none');
+                    $(`#${stepId}-select`).html(`<option value="">-- @lang('Select') --</option>`);
+                }
+            }
+
+            // Helper: Populate select with options from AJAX response
+            function populateSelect($select, data, defaultText) {
+                $select.html(`<option value="">-- ${defaultText} --</option>`);
+                data.forEach(item => {
+                    $select.append(`<option value="${item.slug}">${item.name}</option>`);
+                });
+            }
+
+            // Step 1: Brand Change - fetch catalogs via AJAX
+            $('#brand-select').on('change', function() {
+                const selectedSlug = $(this).val();
+                resetStepsFrom('catalog');
 
                 if (!selectedSlug) {
-                    // Load base category page via AJAX
                     loadCategoryContent(categoryBaseUrl);
                     return;
                 }
 
-                // Find selected category
-                const selectedCat = categoriesData.find(cat => cat.slug === selectedSlug);
+                // Fetch catalogs via AJAX
+                $.get(apiUrls.catalogs, { brand: selectedSlug }, function(data) {
+                    if (data && data.length > 0) {
+                        populateSelect($('#catalog-select'), data, '@lang("Select Model")');
+                        $('#catalog-step').removeClass('d-none');
+                    }
+                });
 
-                if (selectedCat && selectedCat.subs && selectedCat.subs.length > 0) {
-                    // Populate subcategories
-                    selectedCat.subs.forEach(sub => {
-                        $subcatSelect.append(
-                            `<option value="${sub.slug}" data-has-childs="${sub.childs && sub.childs.length > 0 ? '1' : '0'}">${sub.name}</option>`
-                        );
-                    });
-                    $subcatStep.removeClass('d-none');
-                }
-
-                // Load category page via AJAX
                 loadCategoryContent(categoryBaseUrl + '/' + selectedSlug);
             });
 
-            // Subcategory Change
-            $('#subcategory-select').on('change', function() {
-                const catSlug = $('#main-category-select').val();
+            // Step 2: Catalog Change - fetch Level 1 via AJAX
+            $('#catalog-select').on('change', function() {
+                const brandSlug = $('#brand-select').val();
                 const selectedSlug = $(this).val();
-                const $childcatStep = $('#childcategory-step');
-                const $childcatSelect = $('#childcategory-select');
-
-                // Reset and hide child step
-                $childcatSelect.html('<option value="">-- @lang("Select Part Type") --</option>');
-                $childcatStep.addClass('d-none');
+                resetStepsFrom('level1');
 
                 if (!selectedSlug) {
-                    // Load category page via AJAX
-                    loadCategoryContent(categoryBaseUrl + '/' + catSlug);
+                    loadCategoryContent(categoryBaseUrl + '/' + brandSlug);
                     return;
                 }
 
-                // Find selected category and subcategory
-                const selectedCat = categoriesData.find(cat => cat.slug === catSlug);
-                const selectedSub = selectedCat ? selectedCat.subs.find(sub => sub.slug === selectedSlug) : null;
+                // Fetch Level 1 categories via AJAX
+                $.get(apiUrls.tree, { catalog: selectedSlug, level: 1 }, function(data) {
+                    if (data && data.length > 0) {
+                        populateSelect($('#level1-select'), data, '@lang("Select Category")');
+                        $('#level1-step').removeClass('d-none');
+                    }
+                });
 
-                if (selectedSub && selectedSub.childs && selectedSub.childs.length > 0) {
-                    // Populate child categories
-                    selectedSub.childs.forEach(child => {
-                        $childcatSelect.append(
-                            `<option value="${child.slug}">${child.name}</option>`
-                        );
-                    });
-                    $childcatStep.removeClass('d-none');
-                }
-
-                // Load subcategory page via AJAX
-                loadCategoryContent(categoryBaseUrl + '/' + catSlug + '/' + selectedSlug);
+                loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + selectedSlug);
             });
 
-            // Child Category Change
-            $('#childcategory-select').on('change', function() {
-                const catSlug = $('#main-category-select').val();
-                const subcatSlug = $('#subcategory-select').val();
+            // Step 3: Level 1 Change - fetch Level 2 via AJAX
+            $('#level1-select').on('change', function() {
+                const brandSlug = $('#brand-select').val();
+                const catalogSlug = $('#catalog-select').val();
                 const selectedSlug = $(this).val();
+                resetStepsFrom('level2');
 
                 if (!selectedSlug) {
-                    // Load subcategory page via AJAX
-                    loadCategoryContent(categoryBaseUrl + '/' + catSlug + '/' + subcatSlug);
+                    loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug);
                     return;
                 }
 
-                // Load child category page via AJAX
-                loadCategoryContent(categoryBaseUrl + '/' + catSlug + '/' + subcatSlug + '/' + selectedSlug);
+                // Fetch Level 2 categories via AJAX
+                $.get(apiUrls.tree, { catalog: catalogSlug, parent: selectedSlug, level: 2 }, function(data) {
+                    if (data && data.length > 0) {
+                        populateSelect($('#level2-select'), data, '@lang("Select Subcategory")');
+                        $('#level2-step').removeClass('d-none');
+                    }
+                });
+
+                loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + selectedSlug);
+            });
+
+            // Step 4: Level 2 Change - fetch Level 3 via AJAX
+            $('#level2-select').on('change', function() {
+                const brandSlug = $('#brand-select').val();
+                const catalogSlug = $('#catalog-select').val();
+                const level1Slug = $('#level1-select').val();
+                const selectedSlug = $(this).val();
+                resetStepsFrom('level3');
+
+                if (!selectedSlug) {
+                    loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug);
+                    return;
+                }
+
+                // Fetch Level 3 categories via AJAX
+                $.get(apiUrls.tree, { catalog: catalogSlug, parent: selectedSlug, level: 3 }, function(data) {
+                    if (data && data.length > 0) {
+                        populateSelect($('#level3-select'), data, '@lang("Select Part Type")');
+                        $('#level3-step').removeClass('d-none');
+                    }
+                });
+
+                loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug + '/' + selectedSlug);
+            });
+
+            // Step 5: Level 3 Change
+            $('#level3-select').on('change', function() {
+                const brandSlug = $('#brand-select').val();
+                const catalogSlug = $('#catalog-select').val();
+                const level1Slug = $('#level1-select').val();
+                const level2Slug = $('#level2-select').val();
+                const selectedSlug = $(this).val();
+
+                if (!selectedSlug) {
+                    loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug + '/' + level2Slug);
+                    return;
+                }
+
+                loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug + '/' + level2Slug + '/' + selectedSlug);
             });
 
         })(jQuery);

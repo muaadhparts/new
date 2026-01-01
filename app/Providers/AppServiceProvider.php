@@ -74,10 +74,9 @@ class AppServiceProvider extends ServiceProvider
                 }));
             }
 
-            // Header data - cached and eager loaded
-            // Uses Brand → Catalog → TreeCategory hierarchy
+            // Header data - Brands only (catalogs loaded on demand via AJAX)
             $settings->with('categories', cache()->remember('header_categories', 3600, function () {
-                return Brand::with(['catalogs'])->where('status', 1)->get();
+                return Brand::where('status', 1)->orderBy('name')->get(['id', 'slug', 'name', 'name_ar', 'status']);
             }));
 
             $settings->with('pages', cache()->remember('header_pages', 3600, function () {

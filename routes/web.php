@@ -1808,6 +1808,10 @@ Route::group(['middleware' => 'maintenance'], function () {
     // - catalog = Catalog slug (e.g., "safari-patrol-1997")
     // - cat1/cat2/cat3 = TreeCategory slugs (levels 1, 2, 3)
     Route::get('/category/{category?}/{subcategory?}/{childcategory?}/{cat2?}/{cat3?}', 'Front\CatalogController@category')->name('front.category');
+
+    // AJAX APIs for category selector (lightweight on-demand loading)
+    Route::get('/api/category/catalogs', 'Front\CatalogController@getCatalogs')->name('front.api.catalogs');
+    Route::get('/api/category/tree', 'Front\CatalogController@getTreeCategories')->name('front.api.tree');
     // CATEGORY SECTION ENDS
 
     // TAG SECTION

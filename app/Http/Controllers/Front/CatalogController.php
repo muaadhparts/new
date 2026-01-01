@@ -200,6 +200,84 @@ class CatalogController extends FrontBaseController
         $subcategories = Subcategory::where('category_id', $category->id)->get();
         return $subcategories;
     }
+
+    // =========================================================
+    // AJAX API - جلب البيانات عند الطلب (لتخفيف الحمل)
+    // =========================================================
+
+    /**
+     * Get catalogs for a brand (AJAX)
+     */
+    public function getCatalogs(Request $request)
+    {
+        $brandSlug = $request->input('brand');
+        if (!$brandSlug) {
+            return response()->json([]);
+        }
+
+        $brand = \App\Models\Brand::where('slug', $brandSlug)->where('status', 1)->first();
+        if (!$brand) {
+            return response()->json([]);
+        }
+
+        $catalogs = \App\Models\Catalog::where('brand_id', $brand->id)
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'slug', 'name', 'name_ar']);
+
+        return response()->json($catalogs->map(fn($c) => [
+            'slug' => $c->slug,
+            'name' => $c->localized_name,
+        ]));
+    }
+
+    /**
+     * Get TreeCategories for a level (AJAX)
+     */
+    public function getTreeCategories(Request $request)
+    {
+        $catalogSlug = $request->input('catalog');
+        $parentSlug = $request->input('parent'); // null for level 1
+        $level = (int) $request->input('level', 1);
+
+        if (!$catalogSlug) {
+            return response()->json([]);
+        }
+
+        $catalog = \App\Models\Catalog::where('slug', $catalogSlug)->first();
+        if (!$catalog) {
+            return response()->json([]);
+        }
+
+        $query = \App\Models\TreeCategory::where('catalog_id', $catalog->id)
+            ->where('level', $level)
+            ->orderBy('label_en');
+
+        if ($level === 1) {
+            // Level 1: no parent filter
+        } else {
+            // Level 2+: need parent
+            if (!$parentSlug) {
+                return response()->json([]);
+            }
+            $parent = \App\Models\TreeCategory::where('catalog_id', $catalog->id)
+                ->where('slug', $parentSlug)
+                ->where('level', $level - 1)
+                ->first();
+            if (!$parent) {
+                return response()->json([]);
+            }
+            $query->where('parent_id', $parent->id);
+        }
+
+        $categories = $query->get(['id', 'slug', 'label_en', 'label_ar']);
+
+        return response()->json($categories->map(fn($c) => [
+            'slug' => $c->slug,
+            'name' => $c->localized_name,
+        ]));
+    }
+
     public function report(Request $request)
     {
 
