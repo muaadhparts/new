@@ -21,9 +21,9 @@
 
     if (isset($card) && $card instanceof \App\DataTransferObjects\CatalogItemCardDTO) {
         // === Source: CatalogItemCardDTO ===
-        $catalogItemId = $card->productId;
-        $merchantItemId = $card->merchantId;
-        $merchantUserId = $card->vendorId;
+        $catalogItemId = $card->catalogItemId;
+        $merchantItemId = $card->merchantItemId;
+        $merchantUserId = $card->merchantId;
         $catalogItemName = $card->productName;
         $catalogItemUrl = $card->detailsUrl;
         $photo = $card->photo;
@@ -32,7 +32,7 @@
         $brandLogo = $card->brandLogo ?? null;
         $qualityBrandName = $card->qualityBrandName;
         $qualityBrandLogo = $card->qualityBrandLogo ?? null;
-        $merchantName = $card->vendorName;
+        $merchantName = $card->merchantName;
         $offPercentage = $card->offPercentage;
         $inStock = $card->inStock;
         $stockQty = $card->stock;

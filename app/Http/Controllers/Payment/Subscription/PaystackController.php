@@ -65,7 +65,7 @@ class PaystackController extends SubscriptionBaseController
         if ($settings->is_smtp == 1) {
             $data = [
                 'to' => $user->email,
-                'type' => "vendor_accept",
+                'type' => "merchant_accept",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",
@@ -76,9 +76,9 @@ class PaystackController extends SubscriptionBaseController
             $mailer->sendAutoMail($data);
         } else {
             $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";
-            mail($user->email, 'Your Vendor Account Activated', 'Your Vendor Account Activated Successfully. Please Login to your account and build your own shop.', $headers);
+            mail($user->email, 'Your Merchant Account Activated', 'Your Merchant Account Activated Successfully. Please Login to your account and build your own shop.', $headers);
         }
 
-        return redirect()->route('user-dashboard')->with('success', __('Vendor Account Activated Successfully'));
+        return redirect()->route('user-dashboard')->with('success', __('Merchant Account Activated Successfully'));
     }
 }

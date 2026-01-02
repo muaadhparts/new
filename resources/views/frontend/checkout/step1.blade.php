@@ -42,7 +42,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor.step1.submit', $vendor_id) : route('front.checkout.step1.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant.step1.submit', $merchant_id) : route('front.checkout.step1.submit') }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow fadeInUp" data-wow-delay=".2s">
@@ -319,8 +319,8 @@
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
                 <input type="hidden" name="totalQty" value="{{ $totalQty }}">
-                <input type="hidden" name="vendor_shipping_id" value="{{ $vendor_shipping_id }}">
-                <input type="hidden" name="vendor_packing_id" value="{{ $vendor_packing_id }}">
+                <input type="hidden" name="merchant_shipping_id" value="{{ $merchant_shipping_id }}">
+                <input type="hidden" name="merchant_packing_id" value="{{ $merchant_packing_id }}">
                 <input type="hidden" name="currency_sign" value="{{ $curr->sign }}">
                 <input type="hidden" name="currency_name" value="{{ $curr->name }}">
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
@@ -688,14 +688,14 @@
 
     // Checkout type detection
     const isMerchantCheckout = {{ isset($is_merchant_checkout) && $is_merchant_checkout ? 'true' : 'false' }};
-    const checkoutVendorId = {{ isset($vendor_id) ? $vendor_id : 'null' }};
+    const checkoutMerchantId = {{ isset($merchant_id) ? $merchant_id : 'null' }};
 
     // Clear previous session and reset when modal opens
     $('#mapModal').on('show.bs.modal', function() {
         // Clear location_draft in backend (doesn't affect step1/step2/step3)
-        @if(isset($vendor_id) && $vendor_id)
+        @if(isset($merchant_id) && $merchant_id)
         $.ajax({
-            url: '{{ route("front.checkout.vendor.location.reset", ["vendorId" => $vendor_id]) }}',
+            url: '{{ route("front.checkout.merchant.location.reset", ["merchantId" => $merchant_id]) }}',
             method: 'POST',
             data: {
                 _token: $('meta[name="csrf-token"]').attr('content')
@@ -1012,7 +1012,7 @@
             data: {
                 latitude: selectedLat,
                 longitude: selectedLng,
-                vendor_id: checkoutVendorId,
+                merchant_id: checkoutMerchantId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {

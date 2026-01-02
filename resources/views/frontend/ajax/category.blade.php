@@ -73,11 +73,11 @@
                 </li>
                 @endif
 
-                {{-- Vendors --}}
-                @if(!empty($filterSummary['vendors']))
+                {{-- Merchants --}}
+                @if(!empty($filterSummary['merchants']))
                 <li>
-                    <span class="m-no-results-box__filter-label">@lang('Vendor'):</span>
-                    <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['vendors']) }}</span>
+                    <span class="m-no-results-box__filter-label">@lang('Merchant'):</span>
+                    <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['merchants']) }}</span>
                 </li>
                 @endif
 

@@ -66,7 +66,7 @@
                             @if ($digital == 0)
                             <!-- single payment input -->
                             <div class="gs-radio-wrapper payment" data-show="{{ $gt->showForm() }}"
-                                data-form="{{ $gt->showCheckoutLink($vendor_id ?? null) }}"
+                                data-form="{{ $gt->showCheckoutLink($merchant_id ?? null) }}"
                                 data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}">
                                 <input type="radio" id="pl{{ $gt->id }}" name="payment_1">
                                 <label class="icon-label" for="pl{{ $gt->id }}">
@@ -85,7 +85,7 @@
                             @endif
                             @else
                             <div class="gs-radio-wrapper payment" data-val="{{ $gt->keyword }}"
-                                data-show="{{ $gt->showForm() }}" data-form="{{ $gt->showCheckoutLink($vendor_id ?? null) }}"
+                                data-show="{{ $gt->showForm() }}" data-form="{{ $gt->showCheckoutLink($merchant_id ?? null) }}"
                                 data-href="{{ route('front.load.payment', ['slug1' => $gt->showKeyword(), 'slug2' => $gt->id]) }}">
                                 <input type="radio" id="pl{{ $gt->id }}" name="payment_1">
                                 <label class="icon-label" for="pl{{ $gt->id }}">
@@ -211,7 +211,7 @@
                                         </defs>
                                     </svg>
                                 </button>
-                                <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor.step2', $vendor_id) : route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
+                                <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant.step2', $merchant_id) : route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24"
                                         fill="none">
                                         <g clip-path="url(#clip0_489_34179)">
@@ -237,17 +237,17 @@
 
 
 
-            {{-- ✅ Vendor Info (for JavaScript only - NOT for form submission)
-                 POLICY: vendor_id comes from ROUTE, not from hidden inputs
+            {{-- ✅ Merchant Info (for JavaScript only - NOT for form submission)
+                 POLICY: merchant_id comes from ROUTE, not from hidden inputs
                  These are kept for discount code JS functionality only --}}
-            <input type="hidden" id="checkout-vendor-id" value="{{ $vendor_id ?? '' }}">
+            <input type="hidden" id="checkout-merchant-id" value="{{ $merchant_id ?? '' }}">
             <input type="hidden" id="is-merchant-checkout" value="{{ ($is_merchant_checkout ?? false) ? '1' : '0' }}">
 
             {{-- ✅ Basic Order Information --}}
             <input type="hidden" name="dp" value="{{ $digital }}">
             <input type="hidden" name="totalQty" value="{{ $totalQty }}">
-            <input type="hidden" name="vendor_shipping_id" value="{{ $vendor_shipping_id }}">
-            <input type="hidden" name="vendor_packing_id" value="{{ $vendor_packing_id }}">
+            <input type="hidden" name="merchant_shipping_id" value="{{ $merchant_shipping_id }}">
+            <input type="hidden" name="merchant_packing_id" value="{{ $merchant_packing_id }}">
 
             {{-- ✅ Currency Information --}}
             <input type="hidden" name="currency_sign" value="{{ $curr->sign }}">
@@ -467,14 +467,14 @@
     $(document).on("click", ".remove-discount-btn", function (e) {
         e.preventDefault();
 
-        var vendorId = $('#checkout-vendor-id').val();
+        var merchantId = $('#checkout-merchant-id').val();
         var isMerchantCheckout = $('#is-merchant-checkout').val() === '1';
 
-        console.log('Removing discount code:', { vendorId: vendorId, isMerchantCheckout: isMerchantCheckout });
+        console.log('Removing discount code:', { merchantId: merchantId, isMerchantCheckout: isMerchantCheckout });
 
         $.ajax({
             type: "POST",
-            url: "{{ isset($vendor_id) && $vendor_id ? route('front.checkout.vendor.discount-code.remove', ['vendorId' => $vendor_id]) : route('front.discount-code.remove') }}",
+            url: "{{ isset($merchant_id) && $merchant_id ? route('front.checkout.merchant.discount-code.remove', ['merchantId' => $merchant_id]) : route('front.discount-code.remove') }}",
             data: {
                 _token: '{{ csrf_token() }}'
             },

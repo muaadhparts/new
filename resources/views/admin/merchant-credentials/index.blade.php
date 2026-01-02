@@ -53,7 +53,7 @@
                                     <div class="col-md-4">
                                         <select name="vendor_id" class="form-control">
                                             <option value="">{{ __('All Vendors') }}</option>
-                                            @foreach($vendors as $vendor)
+                                            @foreach($merchants as $vendor)
                                                 <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>
                                                     {{ $vendor->shop_name ?: $vendor->name }}
                                                 </option>

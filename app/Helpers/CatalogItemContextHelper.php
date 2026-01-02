@@ -87,7 +87,7 @@ class CatalogItemContextHelper
 
         // حقن معلومات التاجر والسعر
         // CRITICAL: هذه القيم تُخزن في $attributes وتأخذ الأولوية على __get()
-        $catalogItem->vendor_user_id = $mp->user_id;
+        $catalogItem->merchant_user_id = $mp->user_id;
         $catalogItem->user_id = $mp->user_id;
         $catalogItem->merchant_item_id = $mp->id;
         $catalogItem->brand_quality_id = $mp->brand_quality_id; // مهم: لتمييز نفس المنتج بجودة مختلفة
@@ -169,7 +169,7 @@ class CatalogItemContextHelper
         return [
             'merchant_item_id' => $attributes['merchant_item_id'] ?? null,
             'user_id' => $attributes['user_id'] ?? null,
-            'vendor_user_id' => $attributes['vendor_user_id'] ?? null,
+            'merchant_user_id' => $attributes['merchant_user_id'] ?? null,
             'brand_quality_id' => $attributes['brand_quality_id'] ?? null,
             'price' => $attributes['price'] ?? null,
             'stock' => $attributes['stock'] ?? null,
@@ -185,7 +185,7 @@ class CatalogItemContextHelper
     public static function removeContext(CatalogItem $catalogItem): void
     {
         $contextKeys = [
-            'vendor_user_id',
+            'merchant_user_id',
             'merchant_item_id',
             'brand_quality_id',
             'price',

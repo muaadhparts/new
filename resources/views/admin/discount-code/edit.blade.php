@@ -61,7 +61,7 @@
                           <div class="col-lg-7">
                               <select name="user_id">
                                   <option value="">{{ __('Select Vendor') }}</option>
-                                  @foreach($vendors as $vendor)
+                                  @foreach($merchants as $vendor)
                                     <option value="{{ $vendor->id }}" {{ $data->user_id == $vendor->id ? 'selected' : '' }}>{{ $vendor->shop_name ?? $vendor->name }}</option>
                                   @endforeach
                               </select>

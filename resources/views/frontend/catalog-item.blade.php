@@ -35,16 +35,16 @@
                             if (!$merchant) {
                                 throw new \LogicException('Product detail page requires $merchant (MerchantItem) to be set');
                             }
-                            // Get vendor-specific galleries from $merchant
-                            $galleryVendorId = $merchant->user_id;
-                            $vendorGalleries = $productt->galleriesForVendor($galleryVendorId, 10);
+                            // Get merchant-specific galleries from $merchant
+                            $galleryMerchantId = $merchant->user_id;
+                            $merchantGalleries = $productt->galleriesForMerchant($galleryMerchantId, 10);
                         @endphp
                         <div class="product-main-slider">
                             <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
                                 data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 class="main-img" alt="gallery-img">
-                            @foreach ($vendorGalleries as $gal)
+                            @foreach ($merchantGalleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
                                     data-image="{{ asset('assets/images/galleries/' . $gal->photo) }}" class="main-img"
                                     alt="gallery-img">
@@ -56,7 +56,7 @@
                                 alt="Thumb Image"
                                 data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
                                 class="nav-img" alt="gallery-img">
-                            @foreach ($vendorGalleries as $gal)
+                            @foreach ($merchantGalleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
                                     data-image="{{ asset('assets/images/galleries/' . $gal->photo) }}" class="nav-img"
                                     alt="gallery-img">
@@ -338,7 +338,7 @@
                             value="{{ round($mpPrice * $curr->value, 2) }}">
                         <input type="hidden" id="catalog_item_id" value="{{ $productt->id }}">
                         <input type="hidden" id="merchant_item_id" value="{{ $merchant->id }}">
-                        <input type="hidden" id="vendor_user_id" value="{{ $merchant->user_id }}">
+                        <input type="hidden" id="merchant_user_id" value="{{ $merchant->user_id }}">
                         <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
                         <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
                         <input type="hidden" id="product_preordered" value="{{ $mpPreordered ? '1' : '0' }}" data-preordered="{{ $mpPreordered ? '1' : '0' }}">
@@ -564,7 +564,7 @@
                                 @if ($gs->is_contact_seller == 1)
                                     @if (Auth::check())
                                         <a class="m-btn m-btn--ghost" href="javascript:;"
-                                            data-bs-toggle="modal" data-bs-target="#vendorform">
+                                            data-bs-toggle="modal" data-bs-target="#merchantform">
                                             <i class="icofont-ui-chat"></i>
                                             {{ __('Contact Seller') }}
                                         </a>
@@ -842,13 +842,13 @@
     <!-- Related Products slider end -->
 
     <!-- More Products By Seller slider start -->
-    @if (isset($vendorListings) && $vendorListings->count() > 0)
+    @if (isset($merchantListings) && $merchantListings->count() > 0)
         <div class="gs-product-cards-slider-section more-products-by-seller  wow-replaced" data-wow-delay=".1s">
             <div class="gs-product-cards-slider-area more-products-by-seller">
                 <div class="container">
                     <h2 class="title text-center">@lang('More Products By Seller')</h2>
                     <div class="product-cards-slider">
-                        @foreach ($vendorListings as $merchantItem)
+                        @foreach ($merchantListings as $merchantItem)
                             @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
                         @endforeach
                     </div>
@@ -909,7 +909,7 @@
     {{-- MESSAGE MODAL ENDS --}}
 
 
-    <div class="modal gs-modal fade" id="vendorform" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
         <form action="{{ route('user-send-message') }}" id="emailreply" method="POST"
             class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
@@ -936,7 +936,7 @@
 
                     <input type="hidden" name="name" value="{{ Auth::user() ? Auth::user()->name : '' }}">
                     <input type="hidden" name="user_id" value="{{ Auth::user() ? Auth::user()->id : '' }}">
-                    <input type="hidden" name="vendor_id" value="{{ $merchant->user_id }}">
+                    <input type="hidden" name="merchant_id" value="{{ $merchant->user_id }}">
 
                 </div>
                 <!-- Select Pickup Point -->
@@ -1055,7 +1055,7 @@
                             toastr.error("Email Not Found");
                         else
                             toastr.success("Message Sent");
-                        $('#vendorform').modal('hide');
+                        $('#merchantform').modal('hide');
                     }
                 });
                 return false;

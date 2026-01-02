@@ -83,8 +83,9 @@ class EmailController extends AdminBaseController
 
         else if($request->type == 1)
         {
+        // Get all merchants
         $users = User::where('is_merchant','=','2')->get();
-        //Sending Email To Vendors        
+        // Sending Email To Merchants
         foreach($users as $user)
         {
             if($config->is_smtp == 1)

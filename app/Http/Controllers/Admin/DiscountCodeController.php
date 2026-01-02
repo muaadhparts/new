@@ -26,9 +26,10 @@ class DiscountCodeController extends AdminBaseController
                 return $price;
             })
             ->addColumn('vendor', function (DiscountCode $data) {
+                // Get merchant info for display
                 if ($data->user_id) {
-                    $vendor = User::find($data->user_id);
-                    return $vendor ? ($vendor->shop_name ?? $vendor->name) : '-';
+                    $merchant = User::find($data->user_id);
+                    return $merchant ? ($merchant->shop_name ?? $merchant->name) : '-';
                 }
                 return '-';
             })
@@ -58,7 +59,8 @@ class DiscountCodeController extends AdminBaseController
         $categories = collect(); // Category::where('status', 1)->get();
         $sub_categories = collect(); // Subcategory::where('status', 1)->get();
         $child_categories = collect(); // Childcategory::where('status', 1)->get();
-        $vendors = User::where('is_merchant', 2)->get();
+        // Get active merchants for vendor dropdown (passed to view as 'vendors' - do not rename)
+        $merchants = User::where('is_merchant', 2)->get();
         return view('admin.discount-code.create', compact('categories', 'sub_categories', 'child_categories', 'vendors'));
     }
 
@@ -106,7 +108,8 @@ class DiscountCodeController extends AdminBaseController
         $categories = collect(); // Category::where('status', 1)->get();
         $sub_categories = collect(); // Subcategory::where('status', 1)->get();
         $child_categories = collect(); // Childcategory::where('status', 1)->get();
-        $vendors = User::where('is_merchant', 2)->get();
+        // Get active merchants for vendor dropdown (passed to view as 'vendors' - do not rename)
+        $merchants = User::where('is_merchant', 2)->get();
         $data = DiscountCode::findOrFail($id);
         return view('admin.discount-code.edit', compact('data', 'categories', 'sub_categories', 'child_categories', 'vendors'));
     }

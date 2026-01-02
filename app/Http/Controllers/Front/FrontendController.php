@@ -59,7 +59,7 @@ class FrontendController extends FrontBaseController
     // HOME PAGE SECTION
     // ================================================================================================
     // Architecture: Section-based rendering controlled by HomePageTheme model
-    // All product data is vendor-only (is_merchant = 2)
+    // All product data is merchant-only (is_merchant = 2)
     // Each section loads data ONLY if enabled in the active theme
     // ================================================================================================
 
@@ -119,9 +119,9 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Featured/Popular Products (if enabled in theme)
+        // SECTION: Featured/Popular Items (if enabled in theme)
         // Returns MerchantItem objects - each represents a unique listing
-        // (catalog item + vendor + quality brand combination)
+        // (catalog item + merchant + quality brand combination)
         // ============================================================================
         if ($theme->show_featured_products) {
             $count = $theme->count_featured_products ?? 8;
@@ -142,7 +142,7 @@ class FrontendController extends FrontBaseController
 
         // ============================================================================
         // SECTION: Deal of the Day (if enabled in theme)
-        // Returns MerchantItem with active discount
+        // Returns MerchantItem with active discount (flash item)
         // ============================================================================
         if ($theme->show_deal_of_day) {
             $data['flash_merchant'] = Cache::remember('homepage_flash_merchant', 1800, function () {
@@ -162,7 +162,7 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Top Rated Products (if enabled in theme)
+        // SECTION: Top Rated Items (if enabled in theme)
         // Returns MerchantItem objects with top flag
         // ============================================================================
         if ($theme->show_top_rated) {
@@ -183,7 +183,7 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Big Save Products (if enabled in theme)
+        // SECTION: Big Save Items (if enabled in theme)
         // Returns MerchantItem objects with big flag
         // ============================================================================
         if ($theme->show_big_save) {
@@ -204,7 +204,7 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Trending Products (if enabled in theme)
+        // SECTION: Trending Items (if enabled in theme)
         // Returns MerchantItem objects with trending flag
         // ============================================================================
         if ($theme->show_trending) {
@@ -225,7 +225,7 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Best Selling Products (if enabled in theme)
+        // SECTION: Best Selling Items (if enabled in theme)
         // Returns MerchantItem objects with best flag
         // ============================================================================
         if ($theme->show_best_sellers) {
@@ -409,12 +409,16 @@ class FrontendController extends FrontBaseController
 
     // -------------------------------- AUTOSEARCH SECTION ----------------------------------------
 
+    /**
+     * Auto-search for catalog items (used in search suggestions).
+     * Only returns items that have at least one active merchant listing.
+     */
     public function autosearch($slug)
     {
         if (mb_strlen($slug, 'UTF-8') > 1) {
             $search = ' ' . $slug;
-            // Only return products that have at least one active merchant listing
-            $prods = CatalogItem::where(function($query) use ($search, $slug) {
+            // Only return catalog items that have at least one active merchant listing
+            $catalogItems = CatalogItem::where(function($query) use ($search, $slug) {
                     $query->where('name', 'like', '%' . $search . '%')
                           ->orWhere('name', 'like', $slug . '%');
                 })
@@ -424,7 +428,8 @@ class FrontendController extends FrontBaseController
                 ->orderby('id', 'desc')
                 ->take(10)
                 ->get();
-            return view('load.suggest', compact('prods', 'slug'));
+            // Note: 'prods' kept for backward compatibility in views
+            return view('load.suggest', ['prods' => $catalogItems, 'slug' => $slug]);
         }
         return "";
     }
@@ -531,7 +536,7 @@ class FrontendController extends FrontBaseController
 
     // -------------------------------- MAINTENANCE SECTION ----------------------------------------
 
-    // -------------------------------- VENDOR SUBSCRIPTION CHECK SECTION ----------------------------------------
+    // -------------------------------- MERCHANT SUBSCRIPTION CHECK SECTION ----------------------------------------
 
     public function subcheck()
     {
@@ -569,7 +574,7 @@ class FrontendController extends FrontBaseController
         }
     }
 
-    // -------------------------------- VENDOR SUBSCRIPTION CHECK SECTION ENDS ----------------------------------------
+    // -------------------------------- MERCHANT SUBSCRIPTION CHECK SECTION ENDS ----------------------------------------
 
     // -------------------------------- ORDER TRACK SECTION ----------------------------------------
 

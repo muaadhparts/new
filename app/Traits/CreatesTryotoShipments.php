@@ -28,7 +28,7 @@ trait CreatesTryotoShipments
      */
     protected function createOtoShipments(Purchase $purchase, array $input): void
     {
-        // Check shipping selection — supports array (multi-vendor) or single-value scenarios
+        // Check shipping selection — supports array (multi-merchant) or single-value scenarios
         $shippingInput = $input['shipping'] ?? $input['merchant_shipping_id'] ?? null;
         if (!$shippingInput) {
             return;
@@ -41,7 +41,7 @@ trait CreatesTryotoShipments
 
         $selections = is_array($shippingInput) ? $shippingInput : [0 => $shippingInput];
 
-        // System-level TryotoService for city resolution (no vendor credentials needed)
+        // System-level TryotoService for city resolution (no merchant credentials needed)
         $systemTryotoService = app(TryotoService::class);
 
         // Shipment destination: customer city
@@ -62,12 +62,12 @@ trait CreatesTryotoShipments
         }
 
         // Simple normalization to pass to PriceHelper::calculateShippingDimensions
-        $productsForDims = [];
+        $itemsForDims = [];
         foreach ($items as $ci) {
             $qty = (int)($ci['qty'] ?? $ci['quantity'] ?? 1);
             $item = $ci['item'] ?? $ci;
 
-            $productsForDims[] = [
+            $itemsForDims[] = [
                 'qty' => max(1, $qty),
                 'item' => [
                     'weight' => (float)($item['weight'] ?? 1),
@@ -75,12 +75,12 @@ trait CreatesTryotoShipments
                 ],
             ];
         }
-        if (!$productsForDims) {
+        if (!$itemsForDims) {
             // Minimum safe limit
-            $productsForDims = [['qty' => 1, 'item' => ['weight' => 1, 'size' => null]]];
+            $itemsForDims = [['qty' => 1, 'item' => ['weight' => 1, 'size' => null]]];
         }
 
-        $dims = PriceHelper::calculateShippingDimensions($productsForDims);
+        $dims = PriceHelper::calculateShippingDimensions($itemsForDims);
 
         $otoPayloads = [];
         foreach ($selections as $merchantId => $value) {

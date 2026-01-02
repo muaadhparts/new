@@ -42,14 +42,6 @@ trait HandlesMerchantCheckout
     }
 
     /**
-     * @deprecated Use getMerchantCheckoutData() instead
-     */
-    protected function getVendorCheckoutData()
-    {
-        return $this->getMerchantCheckoutData();
-    }
-
-    /**
      * Get step1 and step2 data for merchant checkout
      *
      * @param int $merchantId The merchant ID from route
@@ -72,7 +64,7 @@ trait HandlesMerchantCheckout
      *
      * @param mixed $cart Original cart
      * @param int $merchantId The merchant ID from route
-     * @return object Filtered cart with only this merchant's products
+     * @return object Filtered cart with only this merchant's items
      */
     protected function filterCartForMerchant($cart, $merchantId)
     {
@@ -85,12 +77,12 @@ trait HandlesMerchantCheckout
         $merchantCart->totalQty = 0;
         $merchantCart->totalPrice = 0;
 
-        foreach ($cart->items as $rowKey => $product) {
-            $productMerchantId = data_get($product, 'item.user_id') ?? data_get($product, 'item.merchant_user_id') ?? 0;
-            if ($productMerchantId == $merchantId) {
-                $merchantCart->items[$rowKey] = $product;
-                $merchantCart->totalQty += (int)($product['qty'] ?? 1);
-                $merchantCart->totalPrice += (float)($product['price'] ?? 0);
+        foreach ($cart->items as $rowKey => $cartItem) {
+            $itemMerchantId = data_get($cartItem, 'item.user_id') ?? data_get($cartItem, 'item.merchant_user_id') ?? 0;
+            if ($itemMerchantId == $merchantId) {
+                $merchantCart->items[$rowKey] = $cartItem;
+                $merchantCart->totalQty += (int)($cartItem['qty'] ?? 1);
+                $merchantCart->totalPrice += (float)($cartItem['price'] ?? 0);
             }
         }
 
@@ -98,20 +90,12 @@ trait HandlesMerchantCheckout
     }
 
     /**
-     * @deprecated Use filterCartForMerchant() instead
-     */
-    protected function filterCartForVendor($cart, $merchantId)
-    {
-        return $this->filterCartForMerchant($cart, $merchantId);
-    }
-
-    /**
-     * Remove merchant products from cart after successful order
+     * Remove merchant items from cart after successful order
      *
      * @param int $merchantId The merchant ID from route
      * @param mixed $originalCart Original cart before filtering
      */
-    protected function removeMerchantProductsFromCart($merchantId, $originalCart)
+    protected function removeMerchantItemsFromCart($merchantId, $originalCart)
     {
         if (!$merchantId) {
             // No merchant context - clear entire cart
@@ -130,13 +114,13 @@ trait HandlesMerchantCheckout
         $newCart->totalQty = 0;
         $newCart->totalPrice = 0;
 
-        // Keep products from other merchants
-        foreach ($fullCart->items as $rowKey => $product) {
-            $productMerchantId = data_get($product, 'item.user_id') ?? data_get($product, 'item.merchant_user_id') ?? 0;
-            if ($productMerchantId != $merchantId) {
-                $newCart->items[$rowKey] = $product;
-                $newCart->totalQty += (int)($product['qty'] ?? 1);
-                $newCart->totalPrice += (float)($product['price'] ?? 0);
+        // Keep items from other merchants
+        foreach ($fullCart->items as $rowKey => $cartItem) {
+            $itemMerchantId = data_get($cartItem, 'item.user_id') ?? data_get($cartItem, 'item.merchant_user_id') ?? 0;
+            if ($itemMerchantId != $merchantId) {
+                $newCart->items[$rowKey] = $cartItem;
+                $newCart->totalQty += (int)($cartItem['qty'] ?? 1);
+                $newCart->totalPrice += (float)($cartItem['price'] ?? 0);
             }
         }
 
@@ -155,14 +139,6 @@ trait HandlesMerchantCheckout
     }
 
     /**
-     * @deprecated Use removeMerchantProductsFromCart() instead
-     */
-    protected function removeVendorProductsFromCart($merchantId, $originalCart)
-    {
-        return $this->removeMerchantProductsFromCart($merchantId, $originalCart);
-    }
-
-    /**
      * Determine success URL based on remaining cart items
      *
      * @param int $merchantId The merchant ID from route
@@ -177,9 +153,9 @@ trait HandlesMerchantCheckout
 
         // Check if there will be remaining items after this order
         $hasRemainingItems = false;
-        foreach ($originalCart->items as $rowKey => $product) {
-            $productMerchantId = data_get($product, 'item.user_id') ?? data_get($product, 'item.merchant_user_id') ?? 0;
-            if ($productMerchantId != $merchantId) {
+        foreach ($originalCart->items as $rowKey => $cartItem) {
+            $itemMerchantId = data_get($cartItem, 'item.user_id') ?? data_get($cartItem, 'item.merchant_user_id') ?? 0;
+            if ($itemMerchantId != $merchantId) {
                 $hasRemainingItems = true;
                 break;
             }

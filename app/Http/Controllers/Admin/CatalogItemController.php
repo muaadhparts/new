@@ -453,11 +453,11 @@ class CatalogItemController extends AdminBaseController
         $basePrice = isset($input['price']) ? ($input['price'] / $sign->value) : 0;
         $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
-        // Store vendor-specific data before removing from input
+        // Store merchant-specific data before removing from input
         $merchantId = (int) ($request->input('user_id') ?? 0);
         $brandQualityId = $request->input('brand_quality_id') ?: null;
 
-        // Remove vendor-specific fields from catalog item table input
+        // Remove merchant-specific fields from catalog item table input
         unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['merchant_id']);
         if ($request->cross_products) {
             $input['cross_products'] = implode(',', $request->cross_products);
@@ -472,10 +472,10 @@ class CatalogItemController extends AdminBaseController
             $input['attributes'] = $jsonAttr;
         }
 
-        // Save base catalog item data (without vendor-specific fields)
+        // Save base catalog item data (without merchant-specific fields)
         $data->fill($input)->save();
 
-        // Create merchant_item entry for the vendor
+        // Create merchant_item entry for the merchant
         if ($merchantId > 0) {
             MerchantItem::create([
                 'catalog_item_id' => $data->id,
@@ -644,13 +644,13 @@ class CatalogItemController extends AdminBaseController
                         $convertedPrice = ($csvPrice / $sign->value);
                         $convertedPreviousPrice = ($csvPreviousPrice / $sign->value);
 
-                        // Save base catalog item data (without vendor-specific fields)
+                        // Save base catalog item data (without merchant-specific fields)
                         $data->fill($input)->save();
 
                         // Create merchant_item entry for imported catalog item (assume admin user_id = 1)
                         MerchantItem::create([
                             'catalog_item_id' => $data->id,
-                            'user_id' => 1, // Admin/default vendor
+                            'user_id' => 1, // Admin/default merchant
                             'product_type' => $csvProductType,
                             'price' => $convertedPrice,
                             'previous_price' => $convertedPreviousPrice,
@@ -682,8 +682,8 @@ class CatalogItemController extends AdminBaseController
         $data = $merchantItem->catalogItem;
         $sign = $this->curr;
 
-        // Get vendors list for dropdown (vendors + admins with ID=1)
-        $vendors = \App\Models\User::where('is_merchant', 1)->orWhere('id', 1)->get();
+        // Get merchants list for dropdown (merchants + admins with ID=1)
+        $merchants = \App\Models\User::where('is_merchant', 1)->orWhere('id', 1)->get();
 
         // Get quality brands for dropdown
         $qualityBrands = \App\Models\QualityBrand::all();

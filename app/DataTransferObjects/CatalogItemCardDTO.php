@@ -46,8 +46,8 @@ class CatalogItemCardDTO
     public string $favoriteUrl;
     public string $compareUrl;
 
-    // Vendor
-    public ?string $vendorName;
+    // Merchant
+    public ?string $merchantName;
 
     // Brand
     public ?string $brandName;
@@ -62,13 +62,6 @@ class CatalogItemCardDTO
     public string $stockClass;
     public string $stockBadgeClass;
 
-    // Backward compatibility aliases
-    public function __get($name)
-    {
-        // Map old names to new names for backward compatibility
-        if ($name === 'productId') return $this->catalogItemId;
-        return null;
-    }
 
     /**
      * Build DTO from MerchantItem with all pre-loaded relations
@@ -98,7 +91,6 @@ class CatalogItemCardDTO
         // MerchantItem data
         $dto->merchantItemId = $merchant->id;
         $dto->merchantId = $merchant->user_id;
-        $dto->vendorId = $merchant->user_id;
         $dto->price = (float) $merchant->price;
         $dto->priceFormatted = $merchant->showPrice();
         $dto->previousPrice = (float) ($merchant->previous_price ?? 0);
@@ -111,17 +103,17 @@ class CatalogItemCardDTO
 
         // Computed values
         $dto->inStock = $dto->stock > 0 || $dto->preordered;
-        $dto->hasVendor = $dto->vendorId > 0;
+        $dto->hasVendor = $dto->merchantId > 0;
         $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
-        $dto->detailsUrl = self::buildDetailsUrl($dto->productSlug, $dto->vendorId, $dto->merchantItemId);
+        $dto->detailsUrl = self::buildDetailsUrl($dto->productSlug, $dto->merchantId, $dto->merchantItemId);
 
         // Favorites
         $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantItemId);
         $dto->favoriteUrl = route('merchant.favorite.add', $dto->merchantItemId);
         $dto->compareUrl = route('merchant.compare.add', $dto->merchantItemId);
 
-        // Vendor (from eager-loaded relation) - localized
-        $dto->vendorName = $merchant->user ? getLocalizedShopName($merchant->user) : null;
+        // Merchant (from eager-loaded relation) - localized
+        $dto->merchantName = $merchant->user ? getLocalizedShopName($merchant->user) : null;
 
         // Brand (from eager-loaded relation)
         $dto->brandName = $catalogItem->brand?->localized_name;
@@ -168,7 +160,7 @@ class CatalogItemCardDTO
 
         // No merchant
         $dto->merchantItemId = null;
-        $dto->vendorId = null;
+        $dto->merchantId = null;
         $dto->price = 0;
         $dto->priceFormatted = $catalogItem->showPrice();
         $dto->previousPrice = 0;
@@ -188,8 +180,8 @@ class CatalogItemCardDTO
         $dto->favoriteUrl = route('user-favorite-add', $dto->catalogItemId);
         $dto->compareUrl = route('catalog-item.compare.add', $dto->catalogItemId);
 
-        // No vendor/brand info without merchant
-        $dto->vendorName = null;
+        // No merchant/brand info without merchant
+        $dto->merchantName = null;
         $dto->brandName = $catalogItem->brand?->localized_name;
         $dto->brandLogo = $catalogItem->brand?->photo_url;
         $dto->qualityBrandName = null;

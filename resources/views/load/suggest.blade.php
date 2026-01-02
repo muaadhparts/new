@@ -7,17 +7,17 @@
 
 		if ($isMerchantItem) {
 			$merchantItemId = $prod->id;
-			$vendorId = $prod->user_id;
+			$merchantId = $prod->user_id;
 			$productSlug = $prod->catalogItem->slug ?? $prod->slug;
 		} else {
 			$mp = $prod->merchantItems()->where('status', 1)->orderBy('price')->first();
 			$merchantItemId = $mp->id ?? null;
-			$vendorId = $mp->user_id ?? null;
+			$merchantId = $mp->user_id ?? null;
 			$productSlug = $prod->slug;
 		}
 
-		$productUrl = ($merchantItemId && $vendorId)
-			? route('front.catalog-item', ['slug' => $productSlug, 'merchant_id' => $vendorId, 'merchant_item_id' => $merchantItemId])
+		$productUrl = ($merchantItemId && $merchantId)
+			? route('front.catalog-item', ['slug' => $productSlug, 'merchant_id' => $merchantId, 'merchant_item_id' => $merchantItemId])
 			: 'javascript:;';
 	@endphp
 	<div class="docname">

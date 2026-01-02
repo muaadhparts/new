@@ -23,7 +23,7 @@
 
     $currentStep = $step ?? 1;
     $isDigital = $digital ?? false;
-    $vendorId = $vendor_id ?? Session::get('checkout_vendor_id');
+    $merchantId = $vendor_id ?? Session::get('checkout_vendor_id');
 
     // ========================================================================
     // USE CHECKOUT PRICE SERVICE FOR CURRENCY CONVERSION
@@ -36,7 +36,7 @@
         $currentStep,
         $step1 ?? null,
         $step2 ?? null,
-        $vendorId
+        $merchantId
     );
 
     // Extract values from service response
@@ -266,7 +266,7 @@
 <input type="hidden" id="price-subtotal-before-discount" value="{{ $subtotalBeforeDiscount }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
 <input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
-<input type="hidden" id="price-vendor-id" value="{{ $vendorId ?? '' }}">
+<input type="hidden" id="price-vendor-id" value="{{ $merchantId ?? '' }}">
 <input type="hidden" id="price-current-step" value="{{ $currentStep }}">
 
 <style>

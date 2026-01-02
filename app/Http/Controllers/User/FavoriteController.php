@@ -152,7 +152,7 @@ class FavoriteController extends UserBaseController
     /**
      * Legacy method for backward compatibility
      */
-    public function addLegacy(Request $request, $productId)
+    public function addLegacy(Request $request, $catalogItemId)
     {
         $user = $this->user;
         $data[0] = 0;
@@ -160,12 +160,12 @@ class FavoriteController extends UserBaseController
         $userId = $request->get('user');
 
         if ($userId) {
-            $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $productId)
+            $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
                 ->where('user_id', $userId)
                 ->where('status', 1)
                 ->first();
         } else {
-            $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $productId)
+            $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
                 ->where('status', 1)
                 ->orderBy('price')
                 ->first();
@@ -187,7 +187,7 @@ class FavoriteController extends UserBaseController
 
         $favorite = new Favorite();
         $favorite->user_id = $user->id;
-        $favorite->catalog_item_id = $productId;
+        $favorite->catalog_item_id = $catalogItemId;
         $favorite->merchant_item_id = $merchantItem->id;
         $favorite->save();
 

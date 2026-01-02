@@ -89,7 +89,7 @@
                                 <div class="category-step-selector">
                                     @php
                                         use App\Models\Catalog;
-                                        use App\Models\TreeCategory;
+                                        use App\Models\NewCategory;
 
                                         // Read URL segments
                                         $currentBrandSlug = Request::segment(2);
@@ -109,19 +109,19 @@
 
                                         // Load Level 1 ONLY for selected catalog
                                         $catalogLevel1 = $selectedCatalog
-                                            ? TreeCategory::where('catalog_id', $selectedCatalog->id)->where('level', 1)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
+                                            ? NewCategory::where('catalog_id', $selectedCatalog->id)->where('level', 1)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
                                             : collect();
                                         $selectedLevel1 = $currentLevel1Slug ? $catalogLevel1->firstWhere('slug', $currentLevel1Slug) : null;
 
                                         // Load Level 2 ONLY for selected Level 1
                                         $level1Level2 = $selectedLevel1
-                                            ? TreeCategory::where('parent_id', $selectedLevel1->id)->where('level', 2)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
+                                            ? NewCategory::where('parent_id', $selectedLevel1->id)->where('level', 2)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
                                             : collect();
                                         $selectedLevel2 = $currentLevel2Slug ? $level1Level2->firstWhere('slug', $currentLevel2Slug) : null;
 
                                         // Load Level 3 ONLY for selected Level 2
                                         $level2Level3 = $selectedLevel2
-                                            ? TreeCategory::where('parent_id', $selectedLevel2->id)->where('level', 3)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
+                                            ? NewCategory::where('parent_id', $selectedLevel2->id)->where('level', 3)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
                                             : collect();
                                         $selectedLevel3 = $currentLevel3Slug ? $level2Level3->firstWhere('slug', $currentLevel3Slug) : null;
                                     @endphp
@@ -154,7 +154,7 @@
                                         </select>
                                     </div>
 
-                                    {{-- Step 3: TreeCategory Level 1 --}}
+                                    {{-- Step 3: NewCategory Level 1 --}}
                                     <div class="step-selector-item mb-3 {{ $catalogLevel1->count() > 0 ? '' : 'd-none' }}" id="level1-step">
                                         <label class="step-label">@lang('Category')</label>
                                         <select class="form-select category-select" id="level1-select">
@@ -168,7 +168,7 @@
                                         </select>
                                     </div>
 
-                                    {{-- Step 4: TreeCategory Level 2 --}}
+                                    {{-- Step 4: NewCategory Level 2 --}}
                                     <div class="step-selector-item mb-3 {{ $level1Level2->count() > 0 ? '' : 'd-none' }}" id="level2-step">
                                         <label class="step-label">@lang('Subcategory')</label>
                                         <select class="form-select category-select" id="level2-select">
@@ -182,7 +182,7 @@
                                         </select>
                                     </div>
 
-                                    {{-- Step 5: TreeCategory Level 3 --}}
+                                    {{-- Step 5: NewCategory Level 3 --}}
                                     <div class="step-selector-item mb-3 {{ $level2Level3->count() > 0 ? '' : 'd-none' }}" id="level3-step">
                                         <label class="step-label">@lang('Part Type')</label>
                                         <select class="form-select category-select" id="level3-select">
@@ -329,21 +329,21 @@
 
                         {{-- <a href="{{ route('front.category') }}" class="template-btn dark-btn">Clear Filter</a> --}}
 
-                        <!-- Vendor Filter -->
-                        @if(isset($vendors) && $vendors->count() > 0)
+                        <!-- Merchant Filter -->
+                        @if(isset($merchants) && $merchants->count() > 0)
                         <div class="single-product-widget">
-                            <h5 class="widget-title">@lang('Vendor')</h5>
+                            <h5 class="widget-title">@lang('Merchant')</h5>
                             <div class="warranty-type m-filter-scroll-box">
                                 <ul>
-                                    @foreach ($vendors as $vendor)
+                                    @foreach ($merchants as $merchant)
                                         <li class="gs-checkbox-wrapper">
-                                            <input type="checkbox" class="attribute-input vendor-filter"
-                                                name="vendor[]"
-                                                {{ isset($_GET['vendor']) && in_array($vendor->user_id, (array)$_GET['vendor']) ? 'checked' : '' }}
-                                                id="vendor_{{ $vendor->user_id }}"
-                                                value="{{ $vendor->user_id }}">
+                                            <input type="checkbox" class="attribute-input merchant-filter"
+                                                name="merchant[]"
+                                                {{ isset($_GET['merchant']) && in_array($merchant->user_id, (array)$_GET['merchant']) ? 'checked' : '' }}
+                                                id="merchant_{{ $merchant->user_id }}"
+                                                value="{{ $merchant->user_id }}">
                                             <label class="icon-label"
-                                                for="vendor_{{ $vendor->user_id }}">
+                                                for="merchant_{{ $merchant->user_id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12"
                                                     height="12" viewBox="0 0 12 12" fill="none">
                                                     <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
@@ -351,7 +351,7 @@
                                                         stroke-linejoin="round" />
                                                 </svg>
                                             </label>
-                                            <label for="vendor_{{ $vendor->user_id }}">{{ getLocalizedShopName($vendor) }}</label>
+                                            <label for="merchant_{{ $merchant->user_id }}">{{ getLocalizedShopName($merchant) }}</label>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -479,10 +479,10 @@
                                             </li>
                                             @endif
 
-                                            @if(!empty($filterSummary['vendors']))
+                                            @if(!empty($filterSummary['merchants']))
                                             <li>
-                                                <span class="m-no-results-box__filter-label">@lang('Vendor'):</span>
-                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['vendors']) }}</span>
+                                                <span class="m-no-results-box__filter-label">@lang('Merchant'):</span>
+                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['merchants']) }}</span>
                                             </li>
                                             @endif
 
@@ -607,6 +607,15 @@
             let currentPage = parseInt($paginationContainer.data('current')) || 1;
             let lastPage = parseInt($paginationContainer.data('last')) || 1;
 
+            // Expose pagination state globally for cross-script access
+            window.categoryPagination = {
+                get currentPage() { return currentPage; },
+                set currentPage(val) { currentPage = val; },
+                get lastPage() { return lastPage; },
+                set lastPage(val) { lastPage = val; },
+                updateUI: null // Will be set after updatePaginationUI is defined
+            };
+
             // Persistent sort state - initialized from current value or URL
             // Update global variable too for cross-script access
             categoryPageSort = $('#sortby').val() || categoryPageSort;
@@ -622,7 +631,7 @@
                     params.set('page', page);
                 }
 
-                // All filter checkboxes (Brand Quality, Vendor, etc.)
+                // All filter checkboxes (Brand Quality, Merchant, etc.)
                 $(".attribute-input:checked").each(function() {
                     params.append($(this).attr('name'), $(this).val());
                 });
@@ -757,8 +766,11 @@
                 }
             }
 
+            // Expose updatePaginationUI for cross-script access
+            window.categoryPagination.updateUI = updatePaginationUI;
+
             // ========================================
-            // Filter Events (Brand Quality, Vendor)
+            // Filter Events (Brand Quality, Merchant)
             // ========================================
             $(".attribute-input").on('change', function() {
                 // Reset to page 1 when filter changes
@@ -930,8 +942,8 @@
                     params.set('sort', categoryPageSort);
                 }
 
-                $(".vendor-filter:checked").each(function() {
-                    params.append('vendor[]', $(this).val());
+                $(".merchant-filter:checked").each(function() {
+                    params.append('merchant[]', $(this).val());
                 });
 
                 $(".brand-quality-filter:checked").each(function() {
@@ -940,7 +952,7 @@
 
                 $(".attribute-input:checked").each(function() {
                     const name = $(this).attr('name');
-                    if (name !== 'vendor[]' && name !== 'brand_quality[]') {
+                    if (name !== 'merchant[]' && name !== 'brand_quality[]') {
                         params.append(name, $(this).val());
                     }
                 });
@@ -970,21 +982,38 @@
                         const $response = $('<div>').html(response);
                         const $ajaxContent = $response.find('#ajax-products-content');
                         const $paginationData = $response.find('#ajax-pagination-data');
-                        const $newPagination = $response.find('.m-pagination-simple');
 
                         if ($ajaxContent.length) {
                             $scrollContainer.html($ajaxContent.html());
                         }
 
-                        if ($newPagination.length && $paginationContainer.length) {
-                            $paginationContainer.replaceWith($newPagination);
-                        }
-
+                        // Update pagination from JSON data
                         if ($paginationData.length) {
                             try {
                                 const data = JSON.parse($paginationData.text());
                                 $totalProducts.html('@lang("Total Products Found:") ' + data.total);
-                            } catch(e) {}
+
+                                // Update global pagination state and refresh UI
+                                if (window.categoryPagination) {
+                                    window.categoryPagination.currentPage = data.currentPage || 1;
+                                    window.categoryPagination.lastPage = data.lastPage || 1;
+
+                                    // Update pagination data attributes
+                                    const $pag = $('.m-pagination-simple');
+                                    if ($pag.length) {
+                                        $pag.data('current', data.currentPage);
+                                        $pag.data('last', data.lastPage);
+                                        $pag.data('total', data.total);
+                                    }
+
+                                    // Refresh pagination UI
+                                    if (typeof window.categoryPagination.updateUI === 'function') {
+                                        window.categoryPagination.updateUI();
+                                    }
+                                }
+                            } catch(e) {
+                                console.error('Pagination parse error:', e);
+                            }
                         }
 
                         $scrollContainer.scrollTop(0);

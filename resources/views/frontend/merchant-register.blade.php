@@ -5,10 +5,10 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Vendor Register')</h2>
+                    <h2 class="breadcrumb-title">@lang('Merchant Register')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="#">@lang('Vendor Register')</a></li>
+                        <li><a href="#">@lang('Merchant Register')</a></li>
                     </ul>
                 </div>
             </div>

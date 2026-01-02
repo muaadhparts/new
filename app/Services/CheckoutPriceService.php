@@ -49,7 +49,7 @@ class CheckoutPriceService
     protected $currencySign;
     protected $currencyFormat;
     protected $merchantId;
-    protected $isVendorCheckout;
+    protected $isMerchantCheckout;
 
     public function __construct()
     {
@@ -149,17 +149,17 @@ class CheckoutPriceService
     }
 
     /**
-     * Set vendor context for vendor-specific checkout
+     * Set merchant context for merchant-specific checkout
      */
-    public function forVendor($merchantId)
+    public function forMerchant($merchantId)
     {
-        $this->vendorId = $merchantId;
-        $this->isVendorCheckout = true;
+        $this->merchantId = $merchantId;
+        $this->isMerchantCheckout = true;
         return $this;
     }
 
     /**
-     * Calculate products total for a vendor
+     * Calculate products total for a merchant
      * This is the RAW total without any discounts
      */
     public function calculateProductsTotal($merchantId = null)
@@ -171,10 +171,10 @@ class CheckoutPriceService
 
         $total = 0;
         foreach ($cart->items as $item) {
-            $itemVendorId = $this->getItemVendorId($item);
+            $itemMerchantId = $this->getItemMerchantId($item);
 
-            // If vendor specified, only count that vendor's products
-            if ($merchantId !== null && $itemVendorId != $merchantId) {
+            // If merchant specified, only count that merchant's products
+            if ($merchantId !== null && $itemMerchantId != $merchantId) {
                 continue;
             }
 
@@ -190,7 +190,7 @@ class CheckoutPriceService
     public function getDiscountAmount($merchantId = null)
     {
         if ($merchantId) {
-            return (float)Session::get('discount_code_vendor_' . $merchantId, 0);
+            return (float)Session::get('discount_code_merchant_' . $merchantId, 0);
         }
         return (float)Session::get('discount_code', 0);
     }
@@ -202,10 +202,10 @@ class CheckoutPriceService
     {
         if ($merchantId) {
             return [
-                'amount' => (float)Session::get('discount_code_vendor_' . $merchantId, 0),
-                'code' => Session::get('discount_code_value_vendor_' . $merchantId, ''),
-                'id' => Session::get('discount_code_id_vendor_' . $merchantId),
-                'percentage' => Session::get('discount_percentage_vendor_' . $merchantId, ''),
+                'amount' => (float)Session::get('discount_code_merchant_' . $merchantId, 0),
+                'code' => Session::get('discount_code_value_merchant_' . $merchantId, ''),
+                'id' => Session::get('discount_code_id_merchant_' . $merchantId),
+                'percentage' => Session::get('discount_percentage_merchant_' . $merchantId, ''),
             ];
         }
         return [
@@ -331,7 +331,7 @@ class CheckoutPriceService
             'total_with_tax' => $totalWithTax,         // Subtotal + Tax
 
             // For backward compatibility
-            'vendor_subtotal' => $productsTotal,
+            'merchant_subtotal' => $productsTotal,
         ];
     }
 
@@ -405,9 +405,9 @@ class CheckoutPriceService
         $freeDiscount = 0;
         $companies = [];
 
-        // Handle array format: shipping[vendor_id] = shipping_id or tryoto format
+        // Handle array format: shipping[merchant_id] = shipping_id or tryoto format
         if (is_array($shippingData)) {
-            foreach ($shippingData as $vid => $val) {
+            foreach ($shippingData as $mid => $val) {
                 if (is_string($val) && strpos($val, '#') !== false) {
                     // Tryoto format: id#company#price#...
                     $parts = explode('#', $val);
@@ -416,10 +416,10 @@ class CheckoutPriceService
                     $totalOriginal += $price;
 
                     // Check free_above for Tryoto
-                    $vendorTryoto = Shipping::where('user_id', $vid)
+                    $merchantTryoto = Shipping::where('user_id', $mid)
                         ->where('provider', 'tryoto')
                         ->first();
-                    $freeAbove = $vendorTryoto ? (float)$vendorTryoto->free_above : 0;
+                    $freeAbove = $merchantTryoto ? (float)$merchantTryoto->free_above : 0;
 
                     if ($freeAbove > 0 && $productsTotal >= $freeAbove) {
                         $isFree = true;
@@ -458,9 +458,9 @@ class CheckoutPriceService
     }
 
     /**
-     * Extract vendor ID from cart item
+     * Extract merchant ID from cart item
      */
-    protected function getItemVendorId($item)
+    protected function getItemMerchantId($item)
     {
         if (isset($item['user_id'])) {
             return (int)$item['user_id'];
@@ -468,10 +468,10 @@ class CheckoutPriceService
         if (isset($item['item'])) {
             $itemData = $item['item'];
             if (is_object($itemData)) {
-                return (int)($itemData->user_id ?? $itemData->vendor_user_id ?? 0);
+                return (int)($itemData->user_id ?? $itemData->merchant_user_id ?? 0);
             }
             if (is_array($itemData)) {
-                return (int)($itemData['user_id'] ?? $itemData['vendor_user_id'] ?? 0);
+                return (int)($itemData['user_id'] ?? $itemData['merchant_user_id'] ?? 0);
             }
         }
         return 0;

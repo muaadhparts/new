@@ -64,12 +64,12 @@
                         @if($adminInvoiceShipments->count() > 0)
                         <br><br>
                         <p><strong>{{ __('Shipment Info') }}</strong></p>
-                        @foreach($adminInvoiceShipments as $vendorId => $logs)
+                        @foreach($adminInvoiceShipments as $merchantId => $logs)
                             @php
                                 $latestLog = $logs->first();
-                                $vendor = App\Models\User::find($vendorId);
+                                $merchant = App\Models\User::find($merchantId);
                             @endphp
-                            <span><strong>{{ __('Vendor') }}:</strong> {{ $vendor->shop_name ?? $vendor->name ?? 'N/A' }}</span><br>
+                            <span><strong>{{ __('Merchant') }}:</strong> {{ $merchant->shop_name ?? $merchant->name ?? 'N/A' }}</span><br>
                             <span><strong>{{ __('Tracking') }}:</strong> {{ $latestLog->tracking_number }}</span><br>
                             <span><strong>{{ __('Company') }}:</strong> {{ $latestLog->company_name ?? 'N/A' }}</span><br>
                             <span><strong>{{ __('Status') }}:</strong> {{ ucfirst($latestLog->status) }}</span><br>

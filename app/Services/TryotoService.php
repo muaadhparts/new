@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\DB;
  *
  * الميزات:
  * - إدارة التوكن موحدة (تجديد تلقائي + retry)
- * - دعم credentials لكل تاجر (vendor_credentials)
+ * - دعم credentials لكل تاجر (merchant_credentials)
  * - إنشاء الشحنات
  * - تتبع الشحنات
  * - إلغاء الشحنات
@@ -87,14 +87,6 @@ class TryotoService
     {
         $this->merchantId = $merchantId;
         return $this;
-    }
-
-    /**
-     * @deprecated Use forMerchant() instead
-     */
-    public function forVendor(int $merchantId): self
-    {
-        return $this->forMerchant($merchantId);
     }
 
     /**
@@ -1240,14 +1232,6 @@ class TryotoService
     }
 
     /**
-     * @deprecated Use getMerchantShipments() instead
-     */
-    public function getVendorShipments(int $merchantId, ?string $status = null, int $limit = 50)
-    {
-        return $this->getMerchantShipments($merchantId, $status, $limit);
-    }
-
-    /**
      * Get shipping statistics for merchant
      *
      * @param int $merchantId
@@ -1277,14 +1261,6 @@ class TryotoService
                 ? round(($stats->delivered / $stats->total_shipments) * 100, 1)
                 : 0
         ];
-    }
-
-    /**
-     * @deprecated Use getMerchantStatistics() instead
-     */
-    public function getVendorStatistics(int $merchantId): array
-    {
-        return $this->getMerchantStatistics($merchantId);
     }
 
     /**

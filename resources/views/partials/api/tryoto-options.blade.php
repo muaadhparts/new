@@ -9,7 +9,7 @@
     $freeAboveValue = $freeAbove ?? 0;
     $merchantTotal = $merchantProductsTotal ?? $vendorProductsTotal ?? 0;
     $isFreeShipping = ($freeAboveValue > 0 && $merchantTotal >= $freeAboveValue);
-    $merchantUserIdValue = $merchantUserId ?? $vendorId ?? 0;
+    $merchantUserIdValue = $merchantUserId ?? $merchantId ?? 0;
 @endphp
 
 <div class="tryoto-options-container" data-merchant-user-id="{{ $merchantUserIdValue }}">
@@ -50,7 +50,7 @@
         <div class="tryoto-grid-body">
             @foreach($deliveryCompany as $index => $company)
                 @php
-                    $inputId = 'tryoto-shipping-' . ($vendorId ?? 0) . '-' . ($company['deliveryOptionId'] ?? $index);
+                    $inputId = 'tryoto-shipping-' . ($merchantId ?? 0) . '-' . ($company['deliveryOptionId'] ?? $index);
                     $value = ($company['deliveryOptionId'] ?? '') . '#' . ($company['deliveryCompanyName'] ?? '') . '#' . ($company['price'] ?? 0);
                     $price = (float)($company['price'] ?? 0);
                     $convertedPrice = round($price * $curr->value, 2);
@@ -61,8 +61,8 @@
                     <div class="tryoto-col tryoto-col--radio">
                         <input type="radio"
                                class="tryoto-radio shipping-option"
-                               ref="{{ $vendorId ?? 0 }}"
-                               data-vendor="{{ $vendorId ?? 0 }}"
+                               ref="{{ $merchantId ?? 0 }}"
+                               data-vendor="{{ $merchantId ?? 0 }}"
                                data-price="{{ $convertedPrice }}"
                                data-free-above="{{ $freeAboveValue }}"
                                data-view="{{ $convertedPrice }} {{ $curr->sign }}"
@@ -70,7 +70,7 @@
                                data-logo="{{ $company['logo'] ?? '' }}"
                                data-service="{{ $company['avgDeliveryTime'] ?? '' }}"
                                id="{{ $inputId }}"
-                               name="shipping[{{ $vendorId ?? 0 }}]"
+                               name="shipping[{{ $merchantId ?? 0 }}]"
                                value="{{ $value }}">
                         <span class="tryoto-radio-custom"></span>
                     </div>
@@ -533,7 +533,7 @@
     // Handle shipping option selection
     document.querySelectorAll('.tryoto-options-container .shipping-option').forEach(function(radio) {
         radio.addEventListener('change', function() {
-            var vendorId = this.dataset.vendor;
+            var merchantId = this.dataset.vendor;
             var price = this.dataset.price;
             var company = this.dataset.company;
             var service = this.dataset.service;
@@ -541,7 +541,7 @@
             // Dispatch custom event for parent to handle
             var event = new CustomEvent('shippingSelected', {
                 detail: {
-                    vendorId: vendorId,
+                    merchantId: merchantId,
                     price: price,
                     company: company,
                     service: service,
@@ -551,7 +551,7 @@
             document.dispatchEvent(event);
 
             // Update any shipping display elements
-            var displayEl = document.querySelector('[data-shipping-display="' + vendorId + '"]');
+            var displayEl = document.querySelector('[data-shipping-display="' + merchantId + '"]');
             if (displayEl) {
                 displayEl.textContent = this.dataset.view;
             }

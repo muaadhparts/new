@@ -24,9 +24,9 @@ class Cart extends Model
     /* ============================ أدوات مساعدة عامة ============================ */
 
     /**
-     * استخرج vendorId من العنصر (يُحقن مسبقًا داخل المنتج في الكنترولر).
+     * استخرج merchantUserId من العنصر (يُحقن مسبقًا داخل المنتج في الكنترولر).
      */
-    protected function vendorIdFromItem($item): int
+    protected function merchantUserIdFromItem($item): int
     {
         return (int)($item->vendor_user_id ?? $item->user_id ?? 0);
     }
@@ -39,14 +39,14 @@ class Cart extends Model
      */
     protected function makeKey($item, $size = '', $color = '', $values = '', $size_key = '')
     {
-        $vendor = $this->vendorIdFromItem($item);
+        $merchantUserId = $this->merchantUserIdFromItem($item);
         $merchantProductId = $item->merchant_product_id ?? 0;
         $cleanValues = is_string($values) ? str_replace([' ', ','], '', $values) : (string)$values;
         $dim = ($size_key !== '' && $size_key !== null) ? $size_key : $size;
 
         return implode(':', [
             $item->id,
-            'u' . $vendor,
+            'u' . $merchantUserId,
             'mp' . $merchantProductId,
             (string)$dim,
             (string)$color,
@@ -85,7 +85,7 @@ class Cart extends Model
     public function add($item, $id, $size, $color, $keys, $values)
     {
         $storedItem = [
-            'user_id'             => $this->vendorIdFromItem($item),
+            'user_id'             => $this->merchantUserIdFromItem($item),
             'merchant_product_id' => $item->merchant_product_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'                 => 0,
@@ -200,7 +200,7 @@ class Cart extends Model
         $color_cost = 0;
 
         $storedItem = [
-            'user_id'      => $this->vendorIdFromItem($item),
+            'user_id'      => $this->merchantUserIdFromItem($item),
             'merchant_product_id' => $item->merchant_product_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
@@ -337,7 +337,7 @@ class Cart extends Model
     public function adding($item, $id, $size_qty, $size_price, $step = 1)
     {
         $storedItem = [
-            'user_id'      => $this->vendorIdFromItem($item),
+            'user_id'      => $this->merchantUserIdFromItem($item),
             'merchant_product_id' => $item->merchant_product_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
@@ -398,7 +398,7 @@ class Cart extends Model
     public function reducing($item, $id, $size_qty, $size_price, $step = 1)
     {
         $storedItem = [
-            'user_id'      => $this->vendorIdFromItem($item),
+            'user_id'      => $this->merchantUserIdFromItem($item),
             'merchant_product_id' => $item->merchant_product_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,

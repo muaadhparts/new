@@ -37,7 +37,8 @@ class UserController extends AdminBaseController
                 '<option data-val="0" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>'.__("Block").'</option>'.
                 '<option data-val="1" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("UnBlock").'</option></select>';
 
-                                    $vendor = $data->is_merchant != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" >
+                                    // Build merchant toggle action link
+                                    $merchant = $data->is_merchant != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" >
                                     <i class="fas fa-users"></i> '.__("Make Vendor").'
                                     </a>' : '<a href="javascript:;">
                                     <i class="fas fa-users"></i> '.__("Vendor").'
@@ -46,7 +47,7 @@ class UserController extends AdminBaseController
                                             <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="deposit" data-href="' . route('admin-user-deposit',$data->id) . '" >
                                             <i class="fas fa-dollar-sign"></i> '.__("Manage Deposit").'
                                             </a>'
-                                            .$vendor.
+                                            .$merchant.
                                             '<a href="' . route('admin-user-show',$data->id) . '" >
                                             <i class="fas fa-eye"></i> '.__("Details").'
                                             </a>
@@ -308,38 +309,38 @@ class UserController extends AdminBaseController
         if($user->products->count() > 0)
         {
 
-// PRODUCT
-            foreach ($user->products as $prod) {
-                if($prod->galleries->count() > 0)
+// CATALOG ITEMS
+            foreach ($user->products as $catalogItem) {
+                if($catalogItem->galleries->count() > 0)
                 {
-                    foreach ($prod->galleries as $gal) {
+                    foreach ($catalogItem->galleries as $gal) {
                             if (file_exists(public_path().'/assets/images/galleries/'.$gal->photo)) {
                                 unlink(public_path().'/assets/images/galleries/'.$gal->photo);
                             }
                         $gal->delete();
                     }
                 }
-                if($prod->catalogReviews->count() > 0)
+                if($catalogItem->catalogReviews->count() > 0)
                 {
-                    foreach ($prod->catalogReviews as $gal) {
+                    foreach ($catalogItem->catalogReviews as $gal) {
                         $gal->delete();
                     }
                 }
-                if($prod->favorites->count() > 0)
+                if($catalogItem->favorites->count() > 0)
                 {
-                    foreach ($prod->favorites as $gal) {
+                    foreach ($catalogItem->favorites as $gal) {
                         $gal->delete();
                     }
                 }
-                if($prod->clicks->count() > 0)
+                if($catalogItem->clicks->count() > 0)
                 {
-                    foreach ($prod->clicks as $gal) {
+                    foreach ($catalogItem->clicks as $gal) {
                         $gal->delete();
                     }
                 }
-                if($prod->comments->count() > 0)
+                if($catalogItem->comments->count() > 0)
                 {
-                    foreach ($prod->comments as $gal) {
+                    foreach ($catalogItem->comments as $gal) {
                     if($gal->replies->count() > 0)
                     {
                         foreach ($gal->replies as $key) {
@@ -349,14 +350,14 @@ class UserController extends AdminBaseController
                         $gal->delete();
                     }
                 }
-                if (file_exists(public_path().'/assets/images/products/'.$prod->photo)) {
-                    unlink(public_path().'/assets/images/products/'.$prod->photo);
+                if (file_exists(public_path().'/assets/images/products/'.$catalogItem->photo)) {
+                    unlink(public_path().'/assets/images/products/'.$catalogItem->photo);
                 }
 
-                $prod->delete();
+                $catalogItem->delete();
             }
 
-// PRODUCT ENDS
+// CATALOG ITEMS ENDS
 
         }
 // OTHER SECTION 
@@ -570,7 +571,7 @@ class UserController extends AdminBaseController
         }
 
 
-        //*** GET Request
+        //*** GET Request - Set user as merchant
         public function vendor($id)
         {
             $data = User::findOrFail($id);
@@ -580,6 +581,7 @@ class UserController extends AdminBaseController
 
         }
 
+        // Set user as merchant with subscription
         public function setVendor(Request $request, $id)
         {
 
@@ -590,7 +592,7 @@ class UserController extends AdminBaseController
                 ];
 
             $validator = Validator::make($request->all(), $rules);
-            
+
             if ($validator->fails()) {
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
@@ -599,13 +601,13 @@ class UserController extends AdminBaseController
 
             // Logic Section
 
-            $user = User::findOrFail($id);    
+            $user = User::findOrFail($id);
             $subs = Subscription::findOrFail($request->subs_id);
             $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
             $user->is_merchant = 2;
             $user->date = date('Y-m-d', strtotime($today.' + '.$subs->days.' days'));
-            $user->mail_sent = 1;    
+            $user->mail_sent = 1;
             $user->update($input);
 
             $sub = new UserSubscription;
@@ -625,7 +627,7 @@ class UserController extends AdminBaseController
             $sub->save();
 
             $msg = __('Successfully Created Vendor');
-            return response()->json($msg); 
+            return response()->json($msg);
 
             // Logic Section Ends
 

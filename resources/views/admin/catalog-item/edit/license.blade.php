@@ -53,7 +53,7 @@
 											<div class="col-lg-12">
 												<select name="vendor_id" required="">
 													<option value="">{{ __('Select Vendor') }}</option>
-													@foreach ($vendors as $vendor)
+													@foreach ($merchants as $vendor)
 														<option value="{{ $vendor->id }}"
 															{{ $merchantItem->user_id == $vendor->id ? 'selected' : '' }}>
 															{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})

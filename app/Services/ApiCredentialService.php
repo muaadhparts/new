@@ -125,7 +125,7 @@ class ApiCredentialService
      *
      * POLICY:
      * - api_credentials: ONLY for Google Maps and DigitalOcean (system-level)
-     * - vendor_credentials: For Tryoto (shipping) and MyFatoorah (payment) per vendor
+     * - merchant_credentials: For Tryoto (shipping) and MyFatoorah (payment) per merchant
      * - NO Tryoto or payment credentials here!
      */
     public function importFromEnv(): array

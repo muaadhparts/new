@@ -94,6 +94,7 @@ class MuaadhSettingController extends AdminBaseController
         return view('admin.muaadhsetting.maintain');
     }
 
+    // Merchant color settings page
     public function vendor_color()
     {
         return view('admin.muaadhsetting.vendor_color');
@@ -183,6 +184,7 @@ class MuaadhSettingController extends AdminBaseController
                 $input['footer_logo'] = $name;
             }
 
+            // Handle catalog item page display options
             if (!empty($request->product_page)) {
                 $input['product_page'] = implode(',', $request->product_page);
             } else {
@@ -223,6 +225,7 @@ class MuaadhSettingController extends AdminBaseController
             $data = Muaadhsetting::findOrFail(1);
             $prev = $data->molly_key;
 
+            // Handle merchant shipping info setting
             if ($request->vendor_ship_info == "") {
                 $input['vendor_ship_info'] = 0;
             }

@@ -1748,7 +1748,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     // Structure: /category/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
     // - brand = Brand slug (e.g., "nissan")
     // - catalog = Catalog slug (e.g., "safari-patrol-1997")
-    // - cat1/cat2/cat3 = TreeCategory slugs (levels 1, 2, 3)
+    // - cat1/cat2/cat3 = NewCategory slugs (levels 1, 2, 3)
     Route::get('/category/{category?}/{subcategory?}/{childcategory?}/{cat2?}/{cat3?}', 'Front\CatalogController@category')->name('front.category');
 
     // AJAX APIs for category selector (lightweight on-demand loading)
@@ -1868,91 +1868,91 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ====================================================================
     // VENDOR CHECKOUT POLICY (STRICT)
     // ====================================================================
-    // ALL checkout operations MUST have explicit vendor_id in Route.
-    // NO session, NO POST, NO hidden inputs for vendor context.
-    // Cart is multi-vendor; Checkout is single-vendor per transaction.
+    // ALL checkout operations MUST have explicit merchant_id in Route.
+    // NO session, NO POST, NO hidden inputs for merchant context.
+    // Cart is multi-merchant; Checkout is single-merchant per transaction.
     // ====================================================================
 
-    // Vendor-specific checkout routes (with session preservation middleware)
-    Route::middleware(['preserve.session'])->prefix('checkout/vendor/{vendorId}')->group(function () {
+    // Merchant-specific checkout routes (with session preservation middleware)
+    Route::middleware(['preserve.session'])->prefix('checkout/merchant/{merchantId}')->group(function () {
         // Step 1: Address
-        Route::get('/', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.vendor');
-        Route::post('/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.vendor.step1.submit');
-        Route::get('/step1/submit', function($vendorId) {
-            return redirect()->route('front.checkout.vendor', $vendorId)->with('info', __('Please fill out the form and submit again.'));
+        Route::get('/', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.merchant');
+        Route::post('/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.merchant.step1.submit');
+        Route::get('/step1/submit', function($merchantId) {
+            return redirect()->route('front.checkout.merchant', $merchantId)->with('info', __('Please fill out the form and submit again.'));
         });
 
         // Step 2: Shipping
-        Route::get('/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.vendor.step2');
-        Route::post('/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.vendor.step2.submit');
-        Route::get('/step2/submit', function($vendorId) {
-            return redirect()->route('front.checkout.vendor.step2', $vendorId)->with('info', __('Please fill out the form and submit again.'));
+        Route::get('/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.merchant.step2');
+        Route::post('/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.merchant.step2.submit');
+        Route::get('/step2/submit', function($merchantId) {
+            return redirect()->route('front.checkout.merchant.step2', $merchantId)->with('info', __('Please fill out the form and submit again.'));
         });
 
         // Step 3: Payment
-        Route::get('/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.vendor.step3');
+        Route::get('/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.merchant.step3');
 
         // ================================================================
-        // PAYMENT ROUTES - All inside vendor context
+        // PAYMENT ROUTES - All inside merchant context
         // ================================================================
 
         // MyFatoorah
-        Route::post('/payment/myfatoorah', 'App\Http\Controllers\MyFatoorahController@index')->name('front.checkout.vendor.myfatoorah.submit');
+        Route::post('/payment/myfatoorah', 'App\Http\Controllers\MyFatoorahController@index')->name('front.checkout.merchant.myfatoorah.submit');
 
         // Cash On Delivery
-        Route::post('/payment/cod', 'Payment\Checkout\CashOnDeliveryController@store')->name('front.checkout.vendor.cod.submit');
+        Route::post('/payment/cod', 'Payment\Checkout\CashOnDeliveryController@store')->name('front.checkout.merchant.cod.submit');
 
         // Paypal
-        Route::post('/payment/paypal', 'Payment\Checkout\PaypalController@store')->name('front.checkout.vendor.paypal.submit');
+        Route::post('/payment/paypal', 'Payment\Checkout\PaypalController@store')->name('front.checkout.merchant.paypal.submit');
 
         // Stripe
-        Route::post('/payment/stripe', 'Payment\Checkout\StripeController@store')->name('front.checkout.vendor.stripe.submit');
+        Route::post('/payment/stripe', 'Payment\Checkout\StripeController@store')->name('front.checkout.merchant.stripe.submit');
 
         // Wallet
-        Route::post('/payment/wallet', 'Payment\Checkout\WalletPaymentController@store')->name('front.checkout.vendor.wallet.submit');
+        Route::post('/payment/wallet', 'Payment\Checkout\WalletPaymentController@store')->name('front.checkout.merchant.wallet.submit');
 
         // Manual
-        Route::post('/payment/manual', 'Payment\Checkout\ManualPaymentController@store')->name('front.checkout.vendor.manual.submit');
+        Route::post('/payment/manual', 'Payment\Checkout\ManualPaymentController@store')->name('front.checkout.merchant.manual.submit');
 
         // Instamojo
-        Route::post('/payment/instamojo', 'Payment\Checkout\InstamojoController@store')->name('front.checkout.vendor.instamojo.submit');
+        Route::post('/payment/instamojo', 'Payment\Checkout\InstamojoController@store')->name('front.checkout.merchant.instamojo.submit');
 
         // Paystack
-        Route::post('/payment/paystack', 'Payment\Checkout\PaystackController@store')->name('front.checkout.vendor.paystack.submit');
+        Route::post('/payment/paystack', 'Payment\Checkout\PaystackController@store')->name('front.checkout.merchant.paystack.submit');
 
         // PayTM
-        Route::post('/payment/paytm', 'Payment\Checkout\PaytmController@store')->name('front.checkout.vendor.paytm.submit');
+        Route::post('/payment/paytm', 'Payment\Checkout\PaytmController@store')->name('front.checkout.merchant.paytm.submit');
 
         // Mollie
-        Route::post('/payment/mollie', 'Payment\Checkout\MollieController@store')->name('front.checkout.vendor.mollie.submit');
+        Route::post('/payment/mollie', 'Payment\Checkout\MollieController@store')->name('front.checkout.merchant.mollie.submit');
 
         // RazorPay
-        Route::post('/payment/razorpay', 'Payment\Checkout\RazorpayController@store')->name('front.checkout.vendor.razorpay.submit');
+        Route::post('/payment/razorpay', 'Payment\Checkout\RazorpayController@store')->name('front.checkout.merchant.razorpay.submit');
 
         // Authorize.Net
-        Route::post('/payment/authorize', 'Payment\Checkout\AuthorizeController@store')->name('front.checkout.vendor.authorize.submit');
+        Route::post('/payment/authorize', 'Payment\Checkout\AuthorizeController@store')->name('front.checkout.merchant.authorize.submit');
 
         // Mercadopago
-        Route::post('/payment/mercadopago', 'Payment\Checkout\MercadopagoController@store')->name('front.checkout.vendor.mercadopago.submit');
+        Route::post('/payment/mercadopago', 'Payment\Checkout\MercadopagoController@store')->name('front.checkout.merchant.mercadopago.submit');
 
         // Flutter Wave
-        Route::post('/payment/flutterwave', 'Payment\Checkout\FlutterwaveController@store')->name('front.checkout.vendor.flutterwave.submit');
+        Route::post('/payment/flutterwave', 'Payment\Checkout\FlutterwaveController@store')->name('front.checkout.merchant.flutterwave.submit');
 
         // SSLCommerz
-        Route::post('/payment/ssl', 'Payment\Checkout\SslController@store')->name('front.checkout.vendor.ssl.submit');
+        Route::post('/payment/ssl', 'Payment\Checkout\SslController@store')->name('front.checkout.merchant.ssl.submit');
 
         // Voguepay
-        Route::post('/payment/voguepay', 'Payment\Checkout\VoguepayController@store')->name('front.checkout.vendor.voguepay.submit');
+        Route::post('/payment/voguepay', 'Payment\Checkout\VoguepayController@store')->name('front.checkout.merchant.voguepay.submit');
 
         // Location reset
-        Route::post('/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.vendor.location.reset');
+        Route::post('/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.merchant.location.reset');
 
-        // Discount Code (vendor-specific)
-        Route::get('/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.checkout.vendor.discount-code.check');
-        Route::post('/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.checkout.vendor.discount-code.remove');
+        // Discount Code (merchant-specific)
+        Route::get('/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.checkout.merchant.discount-code.check');
+        Route::post('/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.checkout.merchant.discount-code.remove');
 
         // Wallet check
-        Route::get('/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.checkout.vendor.wallet.check');
+        Route::get('/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.checkout.merchant.wallet.check');
     });
 
     // ====================================================================

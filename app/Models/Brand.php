@@ -38,11 +38,11 @@ class Brand extends Model
     }
 
     /**
-     * TreeCategories المرتبطة بالبراند
+     * NewCategories المرتبطة بالبراند
      */
-    public function treeCategories(): HasMany
+    public function newCategories(): HasMany
     {
-        return $this->hasMany(TreeCategory::class, 'brand_id');
+        return $this->hasMany(NewCategory::class, 'brand_id');
     }
 
 

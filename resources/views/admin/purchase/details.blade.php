@@ -385,13 +385,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($shipments as $vendorId => $vendorShipments)
+                                @foreach($shipments as $merchantId => $merchantShipments)
                                     @php
-                                        $latestShipment = $vendorShipments->first();
-                                        $vendor = App\Models\User::find($vendorId);
+                                        $latestShipment = $merchantShipments->first();
+                                        $merchant = App\Models\User::find($merchantId);
                                     @endphp
                                     <tr>
-                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Vendor #' . $vendorId }}</td>
+                                        <td>{{ $merchant->shop_name ?? $merchant->name ?? 'Merchant #' . $merchantId }}</td>
                                         <td>
                                             <span class="badge badge-info">{{ $latestShipment->company_name }}</span>
                                         </td>

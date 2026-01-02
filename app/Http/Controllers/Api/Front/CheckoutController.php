@@ -255,7 +255,7 @@ class CheckoutController extends Controller
             $this->decrementMerchantStockAndSizes($cart);
             // // dd('mp-stock decremented'); // اختباري
 
-            PurchaseHelper::vendor_purchase_check($cart, $purchase);
+            PurchaseHelper::merchant_purchase_check($cart, $purchase);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                 PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
@@ -624,18 +624,18 @@ class CheckoutController extends Controller
         // // dd(['items' => array_keys($cart->items ?? [])]); // اختباري
 
         foreach ($cart->items as $prod) {
-            $productId = (int)($prod['item']['id'] ?? 0);
-            $merchantId  = (int)($prod['item']['user_id'] ?? 0);
+            $catalogItemId = (int)($prod['item']['id'] ?? 0);
+            $merchantUserId  = (int)($prod['item']['user_id'] ?? 0);
             $qty       = (int)($prod['qty'] ?? 0);
             $sizeKey   = $prod['size_key'] ?? null;
             $sizeQty   = $prod['size_qty'] ?? null; // قد تم تمريره من العميل (قيمة جديدة/مباشرة)
 
-            if (!$productId || !$merchantId || $qty <= 0) {
+            if (!$catalogItemId || !$merchantUserId || $qty <= 0) {
                 continue;
             }
 
-            $mp = MerchantItem::where('catalog_item_id', $productId)
-                ->where('user_id', $merchantId)
+            $mp = MerchantItem::where('catalog_item_id', $catalogItemId)
+                ->where('user_id', $merchantUserId)
                 ->first();
 
             if (!$mp) {
@@ -670,18 +670,18 @@ class CheckoutController extends Controller
         }
 
         foreach ($cart->items as $prod) {
-            $productId = (int)($prod['item']['id'] ?? 0);
-            $merchantId  = (int)($prod['item']['user_id'] ?? 0);
+            $catalogItemId = (int)($prod['item']['id'] ?? 0);
+            $merchantUserId  = (int)($prod['item']['user_id'] ?? 0);
             $qty       = (int)($prod['qty'] ?? 0);
             $sizeKey   = $prod['size_key'] ?? null;
             $sizeQty   = $prod['size_qty'] ?? null;
 
-            if (!$productId || !$merchantId || $qty <= 0) {
+            if (!$catalogItemId || !$merchantUserId || $qty <= 0) {
                 continue;
             }
 
-            $mp = MerchantItem::where('catalog_item_id', $productId)
-                ->where('user_id', $merchantId)
+            $mp = MerchantItem::where('catalog_item_id', $catalogItemId)
+                ->where('user_id', $merchantUserId)
                 ->first();
 
             if (!$mp) {

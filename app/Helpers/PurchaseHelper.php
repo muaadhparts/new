@@ -196,11 +196,11 @@ class PurchaseHelper
                         $merchantItem->stock = $prod['stock'];
                         $merchantItem->update();
 
-                        // Send low stock notification for this vendor's listing
+                        // Send low stock notification for this merchant's listing
                         if ($merchantItem->stock <= 5) {
                             $catalogEvent = new CatalogEvent;
                             $catalogEvent->catalog_item_id = $merchantItem->catalog_item_id;
-                            $catalogEvent->user_id = $merchantItem->user_id; // Add vendor context
+                            $catalogEvent->user_id = $merchantItem->user_id; // Add merchant context
                             $catalogEvent->save();
                         }
                     }
@@ -210,7 +210,7 @@ class PurchaseHelper
         }
     }
 
-    public static function vendor_purchase_check($cart, $purchase)
+    public static function merchant_purchase_check($cart, $purchase)
     {
 
         try {

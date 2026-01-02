@@ -17,14 +17,14 @@ use Session;
  * Handles discount code application and removal for checkout.
  *
  * Key Features:
- * 1. Supports both regular checkout and vendor-specific checkout
+ * 1. Supports both regular checkout and merchant-specific checkout
  * 2. Validates discount code by: code, status, dates, usage limit, category
- * 3. Calculates discount only on eligible products (matching vendor & category)
+ * 3. Calculates discount only on eligible items (matching merchant & category)
  * 4. Stores discount code data in session with proper keys
  *
  * Session Keys:
  * - Regular Checkout: discount_code, discount_code_value, discount_code_id, discount_percentage, already
- * - Vendor Checkout:  discount_code_vendor_{id}, discount_code_value_vendor_{id}, etc.
+ * - Merchant Checkout:  discount_code_merchant_{id}, discount_code_value_merchant_{id}, etc.
  *
  * ============================================================================
  */
@@ -70,13 +70,13 @@ class DiscountCodeController extends FrontBaseController
             return response()->json(0);
         }
 
-        // Determine checkout type - vendorId from route (policy: no session fallback)
-        $checkoutVendorId = $merchantId ? (int)$merchantId : null;
-        $isVendorCheckout = !empty($checkoutVendorId);
+        // Determine checkout type - merchantId from route (policy: no session fallback)
+        $checkoutMerchantId = $merchantId ? (int)$merchantId : null;
+        $isMerchantCheckout = !empty($checkoutMerchantId);
 
-        // Validate discount code ownership for vendor checkout
-        if ($isVendorCheckout && $discountCode->user_id) {
-            if ((int)$discountCode->user_id !== (int)$checkoutVendorId) {
+        // Validate discount code ownership for merchant checkout
+        if ($isMerchantCheckout && $discountCode->user_id) {
+            if ((int)$discountCode->user_id !== (int)$checkoutMerchantId) {
                 return response()->json(0);
             }
         }
@@ -88,13 +88,13 @@ class DiscountCodeController extends FrontBaseController
         }
 
         // Check if already used in this session
-        $alreadyKey = $isVendorCheckout ? 'already_vendor_' . $checkoutVendorId : 'already';
+        $alreadyKey = $isMerchantCheckout ? 'already_merchant_' . $checkoutMerchantId : 'already';
         if (Session::get($alreadyKey) === $code) {
             return response()->json(2);
         }
 
         // Calculate eligible amount
-        $eligible = $this->calculateEligibleTotal($cart, $discountCode, $checkoutVendorId);
+        $eligible = $this->calculateEligibleTotal($cart, $discountCode, $checkoutMerchantId);
         if ($eligible['total'] <= 0) {
             return response()->json(0);
         }
@@ -114,8 +114,8 @@ class DiscountCodeController extends FrontBaseController
             $discountCode,
             $discountData['amount'],
             $discountData['percentage'],
-            $isVendorCheckout,
-            $checkoutVendorId
+            $isMerchantCheckout,
+            $checkoutMerchantId
         );
 
         // Convert prices before returning (single source of truth)
@@ -140,20 +140,20 @@ class DiscountCodeController extends FrontBaseController
      */
     public function removeDiscountCode(Request $request, $merchantId = null)
     {
-        // vendorId from route (policy: no session fallback)
-        $isVendorCheckout = !empty($merchantId);
+        // merchantId from route (policy: no session fallback)
+        $isMerchantCheckout = !empty($merchantId);
 
         // Get current discount amount before removing
         $discountAmount = 0;
-        if ($isVendorCheckout && $merchantId) {
-            $discountAmount = Session::get('discount_code_vendor_' . $merchantId, 0);
-            // Clear vendor-specific session keys
+        if ($isMerchantCheckout && $merchantId) {
+            $discountAmount = Session::get('discount_code_merchant_' . $merchantId, 0);
+            // Clear merchant-specific session keys
             Session::forget([
-                'already_vendor_' . $merchantId,
-                'discount_code_vendor_' . $merchantId,
-                'discount_code_value_vendor_' . $merchantId,
-                'discount_code_id_vendor_' . $merchantId,
-                'discount_percentage_vendor_' . $merchantId,
+                'already_merchant_' . $merchantId,
+                'discount_code_merchant_' . $merchantId,
+                'discount_code_value_merchant_' . $merchantId,
+                'discount_code_id_merchant_' . $merchantId,
+                'discount_percentage_merchant_' . $merchantId,
             ]);
         } else {
             $discountAmount = Session::get('discount_code', 0);
@@ -227,35 +227,35 @@ class DiscountCodeController extends FrontBaseController
     }
 
     /**
-     * Calculate eligible total (products matching vendor & category)
+     * Calculate eligible total (items matching merchant & category).
      */
-    private function calculateEligibleTotal($cart, $discountCode, $checkoutVendorId = null)
+    private function calculateEligibleTotal($cart, $discountCode, $checkoutMerchantId = null)
     {
         $eligibleTotal = 0;
         $eligibleItems = [];
 
         foreach ($cart->items as $key => $item) {
-            $itemVendorId = $this->getItemVendorId($item);
-            $productId = $this->getItemProductId($item);
+            $itemMerchantUserId = $this->getItemMerchantId($item);
+            $catalogItemId = $this->getItemCatalogItemId($item);
 
-            // Skip if vendor checkout and item doesn't belong to checkout vendor
-            if ($checkoutVendorId && $itemVendorId != (int)$checkoutVendorId) {
+            // Skip if merchant checkout and item doesn't belong to checkout merchant
+            if ($checkoutMerchantId && $itemMerchantUserId != (int)$checkoutMerchantId) {
                 continue;
             }
 
-            // Skip if discount code is vendor-specific and item doesn't belong to discount code vendor
-            if ($discountCode->user_id && $itemVendorId != (int)$discountCode->user_id) {
+            // Skip if discount code is merchant-specific and item doesn't belong to discount code merchant
+            if ($discountCode->user_id && $itemMerchantUserId != (int)$discountCode->user_id) {
                 continue;
             }
 
-            // Get product for category check
-            $catalogItem = CatalogItem::find($productId);
-            if (!$product) {
+            // Get catalog item for category check
+            $catalogItem = CatalogItem::find($catalogItemId);
+            if (!$catalogItem) {
                 continue;
             }
 
             // Check category match
-            if (!$this->productMatchesDiscountCodeCategory($product, $discountCode)) {
+            if (!$this->catalogItemMatchesDiscountCodeCategory($catalogItem, $discountCode)) {
                 continue;
             }
 
@@ -298,15 +298,15 @@ class DiscountCodeController extends FrontBaseController
     /**
      * Save discount code data to session
      */
-    private function saveDiscountCodeToSession($code, $discountCode, $discountAmount, $percentage, $isVendorCheckout, $merchantId)
+    private function saveDiscountCodeToSession($code, $discountCode, $discountAmount, $percentage, $isMerchantCheckout, $merchantId)
     {
-        if ($isVendorCheckout && $merchantId) {
-            // Vendor checkout - use vendor-specific keys
-            Session::put('already_vendor_' . $merchantId, $code);
-            Session::put('discount_code_vendor_' . $merchantId, $discountAmount);
-            Session::put('discount_code_value_vendor_' . $merchantId, $code);
-            Session::put('discount_code_id_vendor_' . $merchantId, $discountCode->id);
-            Session::put('discount_percentage_vendor_' . $merchantId, $percentage);
+        if ($isMerchantCheckout && $merchantId) {
+            // Merchant checkout - use merchant-specific keys
+            Session::put('already_merchant_' . $merchantId, $code);
+            Session::put('discount_code_merchant_' . $merchantId, $discountAmount);
+            Session::put('discount_code_value_merchant_' . $merchantId, $code);
+            Session::put('discount_code_id_merchant_' . $merchantId, $discountCode->id);
+            Session::put('discount_percentage_merchant_' . $merchantId, $percentage);
         } else {
             // Regular checkout - use standard keys
             Session::put('already', $code);
@@ -318,9 +318,9 @@ class DiscountCodeController extends FrontBaseController
     }
 
     /**
-     * Extract vendor_id from cart item
+     * Extract merchant_id from cart item
      */
-    private function getItemVendorId($item)
+    private function getItemMerchantId($item)
     {
         if (isset($item['user_id']) && $item['user_id']) {
             return (int)$item['user_id'];
@@ -329,10 +329,10 @@ class DiscountCodeController extends FrontBaseController
         if (isset($item['item'])) {
             $itemData = $item['item'];
             if (is_object($itemData)) {
-                return (int)($itemData->vendor_user_id ?? $itemData->user_id ?? 0);
+                return (int)($itemData->merchant_user_id ?? $itemData->user_id ?? 0);
             }
             if (is_array($itemData)) {
-                return (int)($itemData['vendor_user_id'] ?? $itemData['user_id'] ?? 0);
+                return (int)($itemData['merchant_user_id'] ?? $itemData['user_id'] ?? 0);
             }
         }
 
@@ -340,9 +340,9 @@ class DiscountCodeController extends FrontBaseController
     }
 
     /**
-     * Extract product_id from cart item
+     * Extract catalog_item_id from cart item
      */
-    private function getItemProductId($item)
+    private function getItemCatalogItemId($item)
     {
         if (isset($item['item'])) {
             $itemData = $item['item'];
@@ -357,14 +357,14 @@ class DiscountCodeController extends FrontBaseController
     }
 
     /**
-     * Check if product matches discount code category
+     * Check if catalog item matches discount code category
      * @deprecated Old category system removed - category_id/subcategory_id/childcategory_id no longer exist
      * Category-based discount codes are no longer supported
      */
-    private function productMatchesDiscountCodeCategory($product, $discountCode)
+    private function catalogItemMatchesDiscountCodeCategory($catalogItem, $discountCode)
     {
         // Old category columns removed from catalog_items
-        // Category-based discount codes not supported with new TreeCategory system
+        // Category-based discount codes not supported with new NewCategory system
         return false;
     }
 }

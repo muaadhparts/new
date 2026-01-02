@@ -59,7 +59,7 @@
 <script>
 (function() {
     const modalId = '{{ $modalId }}';
-    const vendorId = {{ $vendor_id }};
+    const merchantId = {{ $vendor_id }};
     const currSign = '{{ $curr->sign }}';
 
     @php
@@ -79,7 +79,7 @@
             return;
         }
 
-        const shippingRadios = modal.querySelectorAll('input.shipping[ref="' + vendorId + '"]');
+        const shippingRadios = modal.querySelectorAll('input.shipping[ref="' + merchantId + '"]');
 
         shippingRadios.forEach(function(radio) {
             radio.addEventListener('change', function() {
@@ -95,7 +95,7 @@
                 if (isFreeShipping) finalPrice = 0;
 
                 // Update shipping text display
-                const shippingText = document.getElementById('shipping_text' + vendorId);
+                const shippingText = document.getElementById('shipping_text' + merchantId);
                 if (shippingText) {
                     if (isFreeShipping) {
                         shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + title + ' (@lang("Free!"))</span>';
@@ -119,7 +119,7 @@
 
         // Trigger update when modal opens if already selected
         modal.addEventListener('shown.bs.modal', function() {
-            const checkedRadio = modal.querySelector('input.shipping[ref="' + vendorId + '"]:checked');
+            const checkedRadio = modal.querySelector('input.shipping[ref="' + merchantId + '"]:checked');
             if (checkedRadio) {
                 checkedRadio.dispatchEvent(new Event('change'));
             }

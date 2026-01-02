@@ -23,11 +23,11 @@ class CatalogItemDetailsController extends FrontBaseController
      * ==========================================================================
      * STRICT MERCHANT ITEM ROUTE
      * ==========================================================================
-     * /item/{slug}/store/{vendor_id}/merchant_items/{merchant_item_id}
+     * /item/{slug}/store/{merchant_id}/merchant_items/{merchant_item_id}
      *
      * SECURITY RULES:
      * 1. MerchantItem MUST exist and be active
-     * 2. vendor_id MUST match merchant_item.user_id (STRICT - no fallback)
+     * 2. merchant_id MUST match merchant_item.user_id (STRICT - no fallback)
      * 3. CatalogItem data is READONLY - price/stock/qty come ONLY from MerchantItem
      * 4. NO best_merchant_item or merchantItems()->first() allowed
      * ==========================================================================
@@ -62,22 +62,22 @@ class CatalogItemDetailsController extends FrontBaseController
         }
 
         // ======================================================================
-        // STEP 3: STRICT GUARD - Vendor ID MUST match (when provided)
+        // STEP 3: STRICT GUARD - Merchant ID MUST match (when provided)
         // ======================================================================
         if ($merchant_id !== null) {
             $merchant_id = (int) $merchant_id;
-            $actualVendorId = (int) $merchantItem->user_id;
+            $actualMerchantId = (int) $merchantItem->user_id;
 
-            if ($merchant_id !== $actualVendorId) {
+            if ($merchant_id !== $actualMerchantId) {
                 // Log security violation attempt
-                \Log::warning('CatalogItemDetails: vendor_id mismatch', [
-                    'requested_vendor_id' => $merchant_id,
-                    'actual_vendor_id' => $actualVendorId,
+                \Log::warning('CatalogItemDetails: merchant_id mismatch', [
+                    'requested_merchant_id' => $merchant_id,
+                    'actual_merchant_id' => $actualMerchantId,
                     'merchant_item_id' => $merchant_item_id,
                     'ip' => $request->ip(),
                 ]);
 
-                abort(403, 'Vendor ID does not match merchant item owner');
+                abort(403, 'Merchant ID does not match merchant item owner');
             }
         }
 
@@ -89,10 +89,10 @@ class CatalogItemDetailsController extends FrontBaseController
         }
 
         // ======================================================================
-        // STEP 5: STRICT GUARD - Vendor MUST be active (is_merchant = 2)
+        // STEP 5: STRICT GUARD - Merchant MUST be active (is_merchant = 2)
         // ======================================================================
         if (!$merchantItem->user || (int) $merchantItem->user->is_merchant !== 2) {
-            abort(404, 'Vendor is not active');
+            abort(404, 'Merchant is not active');
         }
 
         // ======================================================================
@@ -132,7 +132,7 @@ class CatalogItemDetailsController extends FrontBaseController
         }
 
         // ======================================================================
-        // STEP 9: Other sellers (same catalog item, different vendors)
+        // STEP 9: Other sellers (same catalog item, different merchants)
         // ======================================================================
         $otherSellers = MerchantItem::query()
             ->where('catalog_item_id', $productt->id)
@@ -144,9 +144,9 @@ class CatalogItemDetailsController extends FrontBaseController
             ->get();
 
         // ======================================================================
-        // STEP 10: Other listings from same vendor
+        // STEP 10: Other listings from same merchant
         // ======================================================================
-        $vendorListings = MerchantItem::query()
+        $merchantListings = MerchantItem::query()
             ->where('user_id', $merchantItem->user_id)
             ->where('status', 1)
             ->where('id', '<>', $merchantItem->id)
@@ -198,7 +198,7 @@ class CatalogItemDetailsController extends FrontBaseController
             'merchant',               // MerchantItem (AUTHORITATIVE - price/stock/qty)
             'merchantId',             // Verified merchant user ID
             'otherSellers',           // Alternative sellers
-            'vendorListings',         // More from this vendor
+            'merchantListings',         // More from this merchant
             'relatedMerchantItems',   // Related items (pre-loaded, optimized)
             'affilate_user',          // Affiliate tracking
             'gs'                      // General settings
@@ -300,39 +300,41 @@ class CatalogItemDetailsController extends FrontBaseController
 
     public function quickFragment(int $id)
     {
-        $product = CatalogItem::findOrFail($id);
+        $catalogItem = CatalogItem::findOrFail($id);
         $mp = null;
 
-        // البائع من ?user=
+        // Get merchant from ?user= query param
         $merchantId = (int) request()->query('user', 0);
         if ($merchantId > 0) {
             $mp = MerchantItem::with(['qualityBrand', 'user'])
-                ->where('catalog_item_id', $product->id)
+                ->where('catalog_item_id', $catalogItem->id)
                 ->where('user_id', $merchantId)
                 ->first();
 
             if ($mp) {
                 // Use CatalogItemContextHelper for consistency
-                CatalogItemContextHelper::apply($product, $mp);
+                CatalogItemContextHelper::apply($catalogItem, $mp);
             }
         }
 
-        // جلب البراند من المنتج
+        // Get brand from catalog item
         $brand = null;
-        if ($product->brand_id) {
-            $brand = \App\Models\Brand::find($product->brand_id);
+        if ($catalogItem->brand_id) {
+            $brand = \App\Models\Brand::find($catalogItem->brand_id);
         }
 
-        return response()->view('partials.catalog-item', compact('product', 'mp', 'brand'));
+        // Note: 'product' kept for backward compatibility in views
+        return response()->view('partials.catalog-item', ['product' => $catalogItem, 'mp' => $mp, 'brand' => $brand]);
     }
 
 
     public function catalogItemFragment(string $key)
     {
-        $product = CatalogItem::where('sku', $key)->first()
+        $catalogItem = CatalogItem::where('sku', $key)->first()
                 ?: CatalogItem::where('slug', $key)->firstOrFail();
 
-        return response()->view('partials.catalog-item', compact('product'));
+        // Note: 'product' kept for backward compatibility in views
+        return response()->view('partials.catalog-item', ['product' => $catalogItem]);
     }
 
     public function compatibilityFragment(string $key)
@@ -364,9 +366,10 @@ class CatalogItemDetailsController extends FrontBaseController
 
     public function quick($id)
     {
-        $product = CatalogItem::findOrFail($id);
+        $catalogItem = CatalogItem::findOrFail($id);
         $curr = $this->curr;
-        return view('load.quick', compact('product', 'curr'));
+        // Note: 'product' kept for backward compatibility in views
+        return view('load.quick', ['product' => $catalogItem, 'curr' => $curr]);
     }
 
     public function affCatalogItemRedirect($slug)
@@ -388,10 +391,13 @@ class CatalogItemDetailsController extends FrontBaseController
 
     // -------------------------------- CATALOG ITEM COMMENT SECTION ----------------------------------------
 
+    /**
+     * Submit a comment on a catalog item.
+     * Security: Only allow specific fields, set user_id from authenticated user.
+     */
     public function comment(Request $request)
     {
         $comment = new Comment;
-        // Security: Only allow specific fields, set user_id from authenticated user
         $comment->catalog_item_id = $request->input('catalog_item_id');
         $comment->merchant_item_id = $request->input('merchant_item_id');
         $comment->text = $request->input('text');
@@ -484,6 +490,10 @@ class CatalogItemDetailsController extends FrontBaseController
 
     // ------------------ CatalogReview SECTION --------------------
 
+    /**
+     * Submit a review for a catalog item.
+     * Only allows reviews from users who have purchased the item.
+     */
     public function reviewsubmit(Request $request)
     {
         $ck = 0;
@@ -491,8 +501,8 @@ class CatalogItemDetailsController extends FrontBaseController
 
         foreach ($purchases as $purchase) {
             $cart = json_decode($purchase->cart, true);
-            foreach ($cart['items'] as $item) {
-                if ($request->catalog_item_id == $item['item']['id']) { $ck = 1; break; }
+            foreach ($cart['items'] as $cartItem) {
+                if ($request->catalog_item_id == $cartItem['item']['id']) { $ck = 1; break; }
             }
         }
 
@@ -516,16 +526,24 @@ class CatalogItemDetailsController extends FrontBaseController
         return back()->with('unsuccess', __('You did not purchase this item.'));
     }
 
+    /**
+     * Load reviews for a catalog item.
+     */
     public function reviews($id)
     {
-        $productt = CatalogItem::find($id);
-        return view('load.reviews', compact('productt', 'id'));
+        $catalogItem = CatalogItem::find($id);
+        // Note: 'productt' kept for backward compatibility in views
+        return view('load.reviews', ['productt' => $catalogItem, 'id' => $id]);
     }
 
+    /**
+     * Load side reviews for a catalog item.
+     */
     public function sideReviews($id)
     {
-        $productt = CatalogItem::find($id);
-        return view('load.side-load', compact('productt'));
+        $catalogItem = CatalogItem::find($id);
+        // Note: 'productt' kept for backward compatibility in views
+        return view('load.side-load', ['productt' => $catalogItem]);
     }
 
     public function showCrossCatalogItem($id)

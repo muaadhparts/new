@@ -99,14 +99,6 @@ class ShippingCalculatorService
     }
 
     /**
-     * @deprecated Use getMerchantCity() instead
-     */
-    public static function getVendorCity(int $merchantId): ?array
-    {
-        return self::getMerchantCity($merchantId);
-    }
-
-    /**
      * جلب مدينة العميل (مدينة المستلم)
      *
      * المصدر: الخريطة فقط - city_id من session
@@ -138,13 +130,13 @@ class ShippingCalculatorService
      * تجهيز بيانات الشحن لإرسالها لـ Tryoto
      * بدون أي قيم ثابتة
      */
-    public static function prepareShippingRequest(array $vendorShippingData, array $customerData): array
+    public static function prepareShippingRequest(array $merchantShippingData, array $customerData): array
     {
         $errors = [];
 
-        $vendorCity = $vendorShippingData['vendor_city'] ?? null;
-        if (!$vendorCity) {
-            $errors[] = 'vendor_city_missing';
+        $merchantCity = $merchantShippingData['merchant_city'] ?? null;
+        if (!$merchantCity) {
+            $errors[] = 'merchant_city_missing';
         }
 
         $customerCity = $customerData['city_name'] ?? null;
@@ -152,12 +144,12 @@ class ShippingCalculatorService
             $errors[] = 'customer_city_missing';
         }
 
-        $chargeableWeight = $vendorShippingData['chargeable_weight'] ?? null;
+        $chargeableWeight = $merchantShippingData['chargeable_weight'] ?? null;
         if ($chargeableWeight === null) {
             $errors[] = 'chargeable_weight_missing';
         }
 
-        $dimensions = $vendorShippingData['dimensions'] ?? [];
+        $dimensions = $merchantShippingData['dimensions'] ?? [];
         $length = $dimensions['length'] ?? null;
         $width = $dimensions['width'] ?? null;
         $height = $dimensions['height'] ?? null;
@@ -177,7 +169,7 @@ class ShippingCalculatorService
         return [
             'valid' => true,
             'request_data' => [
-                'originCity' => $vendorCity,
+                'originCity' => $merchantCity,
                 'destinationCity' => $customerCity,
                 'weight' => $chargeableWeight,
                 'xlength' => $length,
@@ -186,10 +178,10 @@ class ShippingCalculatorService
                 'codAmount' => $customerData['cod_amount'] ?? 0,
             ],
             'meta' => [
-                'merchant_id' => $vendorShippingData['merchant_id'] ?? null,
-                'actual_weight' => $vendorShippingData['actual_weight'] ?? null,
-                'volumetric_weight' => $vendorShippingData['volumetric_weight'] ?? null,
-                'items_count' => $vendorShippingData['items_count'] ?? 0,
+                'merchant_id' => $merchantShippingData['merchant_id'] ?? null,
+                'actual_weight' => $merchantShippingData['actual_weight'] ?? null,
+                'volumetric_weight' => $merchantShippingData['volumetric_weight'] ?? null,
+                'items_count' => $merchantShippingData['items_count'] ?? 0,
             ],
         ];
     }
@@ -197,26 +189,26 @@ class ShippingCalculatorService
     /**
      * التحقق من اكتمال بيانات الشحن للتاجر
      */
-    public static function validateVendorShippingData(array $vendorShippingData): array
+    public static function validateMerchantShippingData(array $merchantShippingData): array
     {
         $errors = [];
         $warnings = [];
 
-        if (empty($vendorShippingData['vendor_city'])) {
+        if (empty($merchantShippingData['merchant_city'])) {
             $errors[] = [
-                'field' => 'vendor_city',
-                'message' => __('Vendor city is not set'),
+                'field' => 'merchant_city',
+                'message' => __('Merchant city is not set'),
             ];
         }
 
-        if ($vendorShippingData['actual_weight'] === null) {
+        if ($merchantShippingData['actual_weight'] === null) {
             $errors[] = [
                 'field' => 'weight',
                 'message' => __('Product weights are missing'),
             ];
         }
 
-        $dims = $vendorShippingData['dimensions'] ?? [];
+        $dims = $merchantShippingData['dimensions'] ?? [];
         if ($dims['length'] === null || $dims['width'] === null || $dims['height'] === null) {
             $errors[] = [
                 'field' => 'dimensions',
@@ -224,15 +216,15 @@ class ShippingCalculatorService
             ];
         }
 
-        if ($vendorShippingData['chargeable_weight'] === null) {
+        if ($merchantShippingData['chargeable_weight'] === null) {
             $errors[] = [
                 'field' => 'chargeable_weight',
                 'message' => __('Cannot calculate shipping weight'),
             ];
         }
 
-        if (!empty($vendorShippingData['missing_data'])) {
-            foreach ($vendorShippingData['missing_data'] as $missing) {
+        if (!empty($merchantShippingData['missing_data'])) {
+            foreach ($merchantShippingData['missing_data'] as $missing) {
                 $warnings[] = $missing;
             }
         }

@@ -6,7 +6,7 @@ use App\Models\Brand;
 use App\Models\Catalog;
 use App\Models\MerchantItem;
 use App\Models\QualityBrand;
-use App\Models\TreeCategory;
+use App\Models\NewCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Schema;
 
 /**
  * Centralized service for catalog item filtering logic
- * Uses: Brand → Catalog → TreeCategory hierarchy
+ * Uses: Brand → Catalog → NewCategory hierarchy
  * Filters via: sections → section_parts_{code} → parts_{code} → catalog_items
  */
 class CatalogItemFilterService
@@ -24,24 +24,24 @@ class CatalogItemFilterService
     ) {}
 
     /**
-     * Get filter sidebar data (vendors, brand qualities, categories)
+     * Get filter sidebar data (merchants, brand qualities, categories)
      * Now uses Brand → Catalog hierarchy
      */
     public function getFilterSidebarData(): array
     {
         return [
             // Brand has 'subs' accessor that returns catalogs
-            // Catalog has 'childs' accessor that returns TreeCategories Level 1
+            // Catalog has 'childs' accessor that returns NewCategories Level 1
             'categories' => Brand::with('catalogs')->where('status', 1)->get(),
-            'vendors' => $this->getActiveVendors(),
+            'merchants' => $this->getActiveMerchants(),
             'brand_qualities' => QualityBrand::active()->orderBy('name_en', 'asc')->get(),
         ];
     }
 
     /**
-     * Get active vendors with catalog items
+     * Get active merchants with catalog items
      */
-    public function getActiveVendors()
+    public function getActiveMerchants()
     {
         return MerchantItem::select('merchant_items.user_id')
             ->join('users', 'users.id', '=', 'merchant_items.user_id')
@@ -56,17 +56,17 @@ class CatalogItemFilterService
     /**
      * Get localized shop name
      */
-    private function getLocalizedShopName($vendor): string
+    private function getLocalizedShopName($merchant): string
     {
-        if (app()->getLocale() === 'ar' && !empty($vendor->shop_name_ar)) {
-            return $vendor->shop_name_ar;
+        if (app()->getLocale() === 'ar' && !empty($merchant->shop_name_ar)) {
+            return $merchant->shop_name_ar;
         }
-        return $vendor->shop_name ?? '';
+        return $merchant->shop_name ?? '';
     }
 
     /**
      * Resolve category hierarchy from slugs
-     * Now uses: Brand → Catalog → TreeCategory (3 levels)
+     * Now uses: Brand → Catalog → NewCategory (3 levels)
      */
     public function resolveCategoryHierarchy(
         ?string $catSlug,
@@ -77,9 +77,9 @@ class CatalogItemFilterService
     ): array {
         $cat = null;      // Brand
         $subcat = null;   // Catalog
-        $childcat = null; // TreeCategory Level 1
-        $cat2 = null;     // TreeCategory Level 2
-        $cat3 = null;     // TreeCategory Level 3
+        $childcat = null; // NewCategory Level 1
+        $cat2 = null;     // NewCategory Level 2
+        $cat3 = null;     // NewCategory Level 3
         $catalog = null;  // Reference for filtering
         $deepest = null;  // Deepest resolved category
 
@@ -99,9 +99,9 @@ class CatalogItemFilterService
             $subcat = $catalog; // For view compatibility
         }
 
-        // Level 3: Resolve TreeCategory Level 1
+        // Level 3: Resolve NewCategory Level 1
         if (!empty($childcatSlug) && $catalog) {
-            $childcat = TreeCategory::where('slug', $childcatSlug)
+            $childcat = NewCategory::where('slug', $childcatSlug)
                 ->where('catalog_id', $catalog->id)
                 ->where('level', 1)
                 ->first();
@@ -109,9 +109,9 @@ class CatalogItemFilterService
             if ($childcat) {
                 $deepest = $childcat;
 
-                // Level 4: TreeCategory Level 2
+                // Level 4: NewCategory Level 2
                 if (!empty($cat2Slug)) {
-                    $cat2 = TreeCategory::where('slug', $cat2Slug)
+                    $cat2 = NewCategory::where('slug', $cat2Slug)
                         ->where('catalog_id', $catalog->id)
                         ->where('parent_id', $childcat->id)
                         ->where('level', 2)
@@ -120,9 +120,9 @@ class CatalogItemFilterService
                     if ($cat2) {
                         $deepest = $cat2;
 
-                        // Level 5: TreeCategory Level 3
+                        // Level 5: NewCategory Level 3
                         if (!empty($cat3Slug)) {
-                            $cat3 = TreeCategory::where('slug', $cat3Slug)
+                            $cat3 = NewCategory::where('slug', $cat3Slug)
                                 ->where('catalog_id', $catalog->id)
                                 ->where('parent_id', $cat2->id)
                                 ->where('level', 3)
@@ -147,14 +147,14 @@ class CatalogItemFilterService
     {
         $sql = "
             WITH RECURSIVE category_tree AS (
-                SELECT id FROM treecategories
+                SELECT id FROM newcategories
                 WHERE id = ? AND catalog_id = ?
 
                 UNION ALL
 
-                SELECT tc.id FROM treecategories tc
-                INNER JOIN category_tree ct ON tc.parent_id = ct.id
-                WHERE tc.catalog_id = ?
+                SELECT nc.id FROM newcategories nc
+                INNER JOIN category_tree ct ON nc.parent_id = ct.id
+                WHERE nc.catalog_id = ?
             )
             SELECT id FROM category_tree
         ";
@@ -181,7 +181,7 @@ class CatalogItemFilterService
     }
 
     /**
-     * Apply fitment filter using TreeCategories → sections → parts tables
+     * Apply fitment filter using NewCategories → sections → parts tables
      */
     public function applyFitmentFilters(Builder $query, $cat, $subcat, $childcat, $catalog = null): void
     {
@@ -204,13 +204,13 @@ class CatalogItemFilterService
 
         $catalogCode = $catalogObj->code;
 
-        // Only Catalog selected (no TreeCategory)
+        // Only Catalog selected (no NewCategory)
         if (!$childcat) {
             $this->applyPartsTableFilter($query, $catalogCode, null);
             return;
         }
 
-        // TreeCategory selected → get all descendants
+        // NewCategory selected → get all descendants
         $categoryIds = $this->getDescendantIds($childcat->id, $catalogObj->id);
 
         if (empty($categoryIds)) {
@@ -248,7 +248,7 @@ class CatalogItemFilterService
                     ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
                     ->whereColumn('p.part_number', 'catalog_items.sku');
 
-                // section_parts.category_id links directly to treecategories (level 3 only)
+                // section_parts.category_id links directly to newcategories (level 3 only)
                 if ($categoryIds !== null) {
                     $exists->whereIn('sp.category_id', $categoryIds);
                 }
@@ -257,21 +257,21 @@ class CatalogItemFilterService
     }
 
     /**
-     * Apply vendor filter
+     * Apply merchant filter
      */
-    public function applyVendorFilter(Builder $query, Request $request): void
+    public function applyMerchantFilter(Builder $query, Request $request): void
     {
-        $vendorFilter = $this->normalizeArrayInput($request->vendor);
+        $merchantFilter = $this->normalizeArrayInput($request->merchant);
 
-        if (empty($vendorFilter) && $request->filled('user')) {
-            $vendorFilter = [(int) $request->user];
+        if (empty($merchantFilter) && $request->filled('user')) {
+            $merchantFilter = [(int) $request->user];
         }
-        if (empty($vendorFilter) && $request->filled('store')) {
-            $vendorFilter = [(int) $request->store];
+        if (empty($merchantFilter) && $request->filled('store')) {
+            $merchantFilter = [(int) $request->store];
         }
 
-        if (!empty($vendorFilter)) {
-            $query->whereIn('merchant_items.user_id', $vendorFilter);
+        if (!empty($merchantFilter)) {
+            $query->whereIn('merchant_items.user_id', $merchantFilter);
         }
     }
 
@@ -353,7 +353,7 @@ class CatalogItemFilterService
         $catalog = null
     ): void {
         $this->applyFitmentFilters($query, $cat, $subcat, $childcat, $catalog);
-        $this->applyVendorFilter($query, $request);
+        $this->applyMerchantFilter($query, $request);
         $this->applyBrandQualityFilter($query, $request);
         $this->applyPriceFilter(
             $query,
@@ -404,7 +404,7 @@ class CatalogItemFilterService
             $hierarchy['cat'],
             $hierarchy['subcat'],
             $deepestCategory,
-            $sidebarData['vendors'],
+            $sidebarData['merchants'],
             $sidebarData['brand_qualities']
         );
 
@@ -423,7 +423,7 @@ class CatalogItemFilterService
         $cat,
         $subcat,
         $childcat,
-        $allVendors,
+        $allMerchants,
         $allBrandQualities
     ): array {
         $summary = [
@@ -431,7 +431,7 @@ class CatalogItemFilterService
             'category' => null,
             'subcategory' => null,
             'childcategory' => null,
-            'vendors' => [],
+            'merchants' => [],
             'brandQualities' => [],
         ];
 
@@ -448,11 +448,11 @@ class CatalogItemFilterService
             $summary['hasFilters'] = true;
         }
 
-        $merchantIds = $this->normalizeArrayInput($request->vendor);
+        $merchantIds = $this->normalizeArrayInput($request->merchant);
         if (!empty($merchantIds)) {
-            foreach ($allVendors as $vendor) {
-                if (in_array($vendor->user_id, $merchantIds)) {
-                    $summary['vendors'][] = $this->getLocalizedShopName($vendor);
+            foreach ($allMerchants as $merchant) {
+                if (in_array($merchant->user_id, $merchantIds)) {
+                    $summary['merchants'][] = $this->getLocalizedShopName($merchant);
                 }
             }
             $summary['hasFilters'] = true;

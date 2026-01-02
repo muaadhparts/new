@@ -24,8 +24,8 @@ class ImportController extends AdminBaseController
     //*** JSON Request
     public function datatables()
     {
-        // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        // فقط العناصر من نوع affiliate (product_type is now on merchant_items)
+        // Query merchant items directly - each merchant item = independent row
+        // Only affiliate type items (product_type is now on merchant_items)
         $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('product_type', 'affiliate');
 
@@ -40,8 +40,8 @@ class ImportController extends AdminBaseController
                       ->orWhere('label_en', 'like', "%{$keyword}%");
                 });
             })
-            ->addColumn('photo', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
+            ->addColumn('photo', function (MerchantItem $mi) {
+                $catalogItem = $mi->catalogItem;
                 if (!$catalogItem) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
 
                 $photo = filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
@@ -49,69 +49,70 @@ class ImportController extends AdminBaseController
                     : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
-            ->addColumn('name', function (MerchantItem $mp) {
-                $product = $mp->product;
-                if (!$product) return __('N/A');
+            ->addColumn('name', function (MerchantItem $mi) {
+                $catalogItem = $mi->product;
+                if (!$catalogItem) return __('N/A');
 
-                $prodLink = route('front.catalog-item', [
-                    'slug' => $product->slug,
-                    'merchant_id' => $mp->user_id,
-                    'merchant_item_id' => $mp->id
+                $itemLink = route('front.catalog-item', [
+                    'slug' => $catalogItem->slug,
+                    'merchant_id' => $mi->user_id,
+                    'merchant_item_id' => $mi->id
                 ]);
 
-                $displayName = getLocalizedProductName($product);
-                $sku = $product->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $product->sku . '</small>' : '';
-                $condition = $mp->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $displayName = getLocalizedProductName($catalogItem);
+                $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
+                $condition = $mi->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
-                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
+                return '<a href="' . $itemLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
-            ->addColumn('brand', function (MerchantItem $mp) {
-                $product = $mp->product;
-                return $product && $product->brand ? getLocalizedBrandName($product->brand) : __('N/A');
+            ->addColumn('brand', function (MerchantItem $mi) {
+                $catalogItem = $mi->product;
+                return $catalogItem && $catalogItem->brand ? getLocalizedBrandName($catalogItem->brand) : __('N/A');
             })
-            ->addColumn('quality_brand', function (MerchantItem $mp) {
-                return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
+            ->addColumn('quality_brand', function (MerchantItem $mi) {
+                return $mi->qualityBrand ? getLocalizedQualityName($mi->qualityBrand) : __('N/A');
             })
-            ->addColumn('vendor', function (MerchantItem $mp) {
-                if (!$mp->user) return __('N/A');
-                $shopName = $mp->user->shop_name ?: $mp->user->name;
-                return '<a href="' . route('admin-vendor-show', $mp->user_id) . '" target="_blank">' . $shopName . '</a>';
+            ->addColumn('vendor', function (MerchantItem $mi) {
+                // Display merchant info
+                if (!$mi->user) return __('N/A');
+                $shopName = $mi->user->shop_name ?: $mi->user->name;
+                return '<a href="' . route('admin-vendor-show', $mi->user_id) . '" target="_blank">' . $shopName . '</a>';
             })
-            ->addColumn('price', function (MerchantItem $mp) {
+            ->addColumn('price', function (MerchantItem $mi) {
                 $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
 
-                $price = (float) $mp->price;
+                $price = (float) $mi->price;
                 $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
 
                 return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })
-            ->addColumn('stock', function (MerchantItem $mp) {
-                if ($mp->stock === null) return __('Unlimited');
-                if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
-                return $mp->stock;
+            ->addColumn('stock', function (MerchantItem $mi) {
+                if ($mi->stock === null) return __('Unlimited');
+                if ((int) $mi->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
+                return $mi->stock;
             })
-            ->addColumn('status', function (MerchantItem $mp) {
-                $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
-                $s = $mp->status == 1 ? 'selected' : '';
-                $ns = $mp->status == 0 ? 'selected' : '';
+            ->addColumn('status', function (MerchantItem $mi) {
+                $class = $mi->status == 1 ? 'drop-success' : 'drop-danger';
+                $s = $mi->status == 1 ? 'selected' : '';
+                $ns = $mi->status == 0 ? 'selected' : '';
 
                 return '<div class="action-list">
                     <select class="process select droplinks ' . $class . '">
-                        <option data-val="1" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
-                        <option data-val="0" value="' . route('admin-merchant-product-status', ['id' => $mp->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
+                        <option data-val="1" value="' . route('admin-merchant-product-status', ['id' => $mi->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
+                        <option data-val="0" value="' . route('admin-merchant-product-status', ['id' => $mi->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
                     </select>
                 </div>';
             })
-            ->addColumn('action', function (MerchantItem $mp) {
-                $product = $mp->product;
-                if (!$product) return '';
+            ->addColumn('action', function (MerchantItem $mi) {
+                $catalogItem = $mi->product;
+                if (!$catalogItem) return '';
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
-                        <a href="' . route('admin-import-edit', $product->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
-                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $product->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
-                        <a data-href="' . route('admin-prod-feature', $product->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
-                        <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete', $product->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
+                        <a href="' . route('admin-import-edit', $catalogItem->id) . '"><i class="fas fa-edit"></i> ' . __("Edit") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
+                        <a data-href="' . route('admin-prod-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
                     </div></div>';
             })
             ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
@@ -288,53 +289,52 @@ class ImportController extends AdminBaseController
         // لا نكتب price/previous_price/product_type إلى products
         unset($input['price'], $input['previous_price'], $input['stock'], $input['product_type']);
 
-        // Save Product (هوية فقط)
+        // Save catalog item (identity only)
         $data->fill($input)->save();
 
-        // Set SLug
+        // Set slug
         $catalogItem = CatalogItem::find($data->id);
-        if($prod->type != 'Physical'){
-            $prod->slug = Str::slug($data->name,'-').'-'.strtolower(Str::random(3).$data->id.Str::random(3));
+        if($catalogItem->type != 'Physical'){
+            $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower(Str::random(3).$data->id.Str::random(3));
         }
         else {
-            $prod->slug = Str::slug($data->name,'-').'-'.strtolower($data->sku);
+            $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower($data->sku);
         }
 
         // Thumbnail
-        $fimageData = public_path().'/assets/images/products/'.$prod->photo;
-        if(filter_var($prod->photo, FILTER_VALIDATE_URL)){
-            $fimageData = $prod->photo;
+        $fimageData = public_path().'/assets/images/products/'.$catalogItem->photo;
+        if(filter_var($catalogItem->photo, FILTER_VALIDATE_URL)){
+            $fimageData = $catalogItem->photo;
         }
 
-        // التحقق من وجود الصورة قبل إنشاء الـ thumbnail
+        // Check if image exists before creating thumbnail
         try {
-            if (!empty($prod->photo) && (filter_var($prod->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
+            if (!empty($catalogItem->photo) && (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
                 $img = Image::make($fimageData)->resize(285, 285);
                 $thumbnail = time().Str::random(8).'.jpg';
                 $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-                $prod->thumbnail = $thumbnail;
+                $catalogItem->thumbnail = $thumbnail;
             } else {
-                // استخدام صورة افتراضية
-                $prod->thumbnail = 'noimage.png';
+                // Use default image
+                $catalogItem->thumbnail = 'noimage.png';
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not create thumbnail for product: ' . $prod->id . ' - ' . $e->getMessage());
-            $prod->thumbnail = 'noimage.png';
+            \Log::warning('Could not create thumbnail for catalog item: ' . $catalogItem->id . ' - ' . $e->getMessage());
+            $catalogItem->thumbnail = 'noimage.png';
         }
-        $prod->update();
+        $catalogItem->update();
 
-        // إنشاء/تحديث عرض البائع (MerchantItem)
+        // Create/update merchant item
         $merchantId = (int) ($request->input('user_id') ?? $request->input('merchant_id') ?? 0);
-        // // dd(['vendorId' => $merchantId, 'product_id' => $prod->id]); // اختباري
         if ($merchantId <= 0) {
-            return response()->json(['errors' => ['vendor' => 'Vendor (user) is required']], 422);
+            return response()->json(['errors' => ['vendor' => 'Merchant (user) is required']], 422);
         }
 
-        // حسابات الأسعار للمخزن الأساسي
+        // Price calculations for base store
         $mpPrice         = (float) ($request->input('price', 0)) / $sign->value;
         $mpPreviousPrice = $request->filled('previous_price') ? ((float)$request->input('previous_price') / $sign->value) : null;
 
-        // المقاسات / الكميات / أسعار المقاسات (تحويل للقيمة الأساسية)
+        // Sizes / quantities / size prices (convert to base value)
         $mpSize      = null;
         $mpSizeQty   = null;
         $mpSizePrice = null;
@@ -357,7 +357,7 @@ class ImportController extends AdminBaseController
         }
 
         MerchantItem::updateOrCreate(
-            ['product_id' => $prod->id, 'user_id' => $merchantId],
+            ['product_id' => $catalogItem->id, 'user_id' => $merchantId],
             [
                 'product_type'        => 'affiliate',
                 'price'               => $mpPrice,
@@ -502,7 +502,7 @@ class ImportController extends AdminBaseController
             }
         }
 
-        // License (هوية فقط)
+        // License (identity only)
         if($data->type == "License")
         {
             if(!in_array(null, (array)$request->license) && !in_array(null, (array)$request->license_qty)) {
@@ -513,15 +513,15 @@ class ImportController extends AdminBaseController
                     $input['license'] = null;
                     $input['license_qty'] = null;
                 } else {
-                    $license     = explode(',,', (string)$prod->license);
-                    $license_qty = explode(',',  (string)$prod->license_qty);
+                    $license     = explode(',,', (string)$catalogItem->license);
+                    $license_qty = explode(',',  (string)$catalogItem->license_qty);
                     $input['license'] = implode(',,', $license);
                     $input['license_qty'] = implode(',', $license_qty);
                 }
             }
         }
 
-        // Features (هوية) - colors moved to merchant_products
+        // Features (identity) - colors moved to merchant_items
         if(!in_array(null, (array)$request->features)) {
             $input['features'] = implode(',', str_replace(',',' ', $request->features));
         } else {
@@ -540,14 +540,14 @@ class ImportController extends AdminBaseController
             $input['tags'] = null;
         }
 
-        // لا نكتب price/previous_price/stock إلى products
+        // Don't write price/previous_price/stock to catalog_items
         unset($input['price'], $input['previous_price'], $input['stock']);
 
         $data->slug = Str::slug($data->name,'-').'-'.strtolower($data->sku);
         $data->update($input);
         //-- Logic Section Ends
 
-        // تحديث الـ Thumbnail
+        // Update Thumbnail
         if($data->photo != null && !empty($data->thumbnail))
         {
             $oldThumb = public_path().'/assets/images/thumbnails/'.$data->thumbnail;
@@ -556,31 +556,31 @@ class ImportController extends AdminBaseController
             }
         }
 
-        $fimageData = public_path().'/assets/images/products/'.$prod->photo;
-        if(filter_var($prod->photo, FILTER_VALIDATE_URL)){
-            $fimageData = $prod->photo;
+        $fimageData = public_path().'/assets/images/products/'.$catalogItem->photo;
+        if(filter_var($catalogItem->photo, FILTER_VALIDATE_URL)){
+            $fimageData = $catalogItem->photo;
         }
 
-        // التحقق من وجود الصورة قبل إنشاء الـ thumbnail
+        // Check if image exists before creating thumbnail
         try {
-            if (!empty($prod->photo) && (filter_var($prod->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
+            if (!empty($catalogItem->photo) && (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) || file_exists($fimageData))) {
                 $img = Image::make($fimageData)->resize(285, 285);
                 $thumbnail = time().Str::random(8).'.jpg';
                 $img->save(public_path().'/assets/images/thumbnails/'.$thumbnail);
-                $prod->thumbnail = $thumbnail;
+                $catalogItem->thumbnail = $thumbnail;
             } else {
-                $prod->thumbnail = 'noimage.png';
+                $catalogItem->thumbnail = 'noimage.png';
             }
         } catch (\Exception $e) {
-            \Log::warning('Could not create thumbnail for product: ' . $prod->id . ' - ' . $e->getMessage());
-            $prod->thumbnail = 'noimage.png';
+            \Log::warning('Could not create thumbnail for catalog item: ' . $catalogItem->id . ' - ' . $e->getMessage());
+            $catalogItem->thumbnail = 'noimage.png';
         }
-        $prod->update();
+        $catalogItem->update();
 
-        // تحديث/إنشاء سجل MerchantItem
+        // Update/create MerchantItem record
         $merchantId = (int) ($request->input('user_id') ?? $request->input('merchant_id') ?? 0);
         if ($merchantId <= 0) {
-            return response()->json(['errors' => ['vendor' => 'Vendor (user) is required']], 422);
+            return response()->json(['errors' => ['vendor' => 'Merchant (user) is required']], 422);
         }
 
         $mpPrice         = $request->filled('price') ? ((float)$request->input('price') / $sign->value) : 0.0;
@@ -607,7 +607,7 @@ class ImportController extends AdminBaseController
         }
 
         MerchantItem::updateOrCreate(
-            ['product_id' => $prod->id, 'user_id' => $merchantId],
+            ['product_id' => $catalogItem->id, 'user_id' => $merchantId],
             [
                 'product_type'        => 'affiliate',
                 'price'               => $mpPrice,
@@ -629,7 +629,7 @@ class ImportController extends AdminBaseController
         );
 
         //--- Redirect Section
-        $msg = __('Product Updated Successfully.').'<a href="'.route('admin-import-index').'">'.__("View Product Lists.").'</a>';
+        $msg = __('Product Updated Successfully.').'<a href="'.route('admin-import-index').'">'.__("View Catalog Item Lists.").'</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }

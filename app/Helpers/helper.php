@@ -15,8 +15,8 @@ function getMerchantDisplayName($merchantItem)
         return '';
     }
 
-    $vendor = $merchantItem->user;
-    $displayName = $vendor->shop_name ?: $vendor->name;
+    $merchant = $merchantItem->user;
+    $displayName = $merchant->shop_name ?: $merchant->name;
 
     // Add brand quality if available
     if ($merchantItem->qualityBrand) {
@@ -169,22 +169,22 @@ if (! function_exists('getLocalizedCategoryName')) {
 }
 
 /**
- * Get localized shop name from vendor/user object
+ * Get localized shop name from merchant/user object
  * Handles both User model and query result objects
  */
 if (! function_exists('getLocalizedShopName')) {
-    function getLocalizedShopName($vendor): string
+    function getLocalizedShopName($merchant): string
     {
-        if (!$vendor) return '';
+        if (!$merchant) return '';
 
         $isAr = app()->getLocale() === 'ar';
 
-        if (is_array($vendor)) {
-            $shopNameAr = trim($vendor['shop_name_ar'] ?? '');
-            $shopName = trim($vendor['shop_name'] ?? '');
-        } elseif (is_object($vendor)) {
-            $shopNameAr = trim($vendor->shop_name_ar ?? '');
-            $shopName = trim($vendor->shop_name ?? '');
+        if (is_array($merchant)) {
+            $shopNameAr = trim($merchant['shop_name_ar'] ?? '');
+            $shopName = trim($merchant['shop_name'] ?? '');
+        } elseif (is_object($merchant)) {
+            $shopNameAr = trim($merchant->shop_name_ar ?? '');
+            $shopName = trim($merchant->shop_name ?? '');
         } else {
             return '';
         }
@@ -192,45 +192,45 @@ if (! function_exists('getLocalizedShopName')) {
         if ($isAr && $shopNameAr !== '') {
             return $shopNameAr;
         }
-        return $shopName !== '' ? $shopName : __('Unknown Vendor');
+        return $shopName !== '' ? $shopName : __('Unknown Merchant');
     }
 }
 
 /**
- * Get vendor/store name from cart product or MerchantItem
+ * Get merchant/store name from cart item or MerchantItem
  * Now with localization support
  */
-if (! function_exists('getVendorName')) {
-    function getVendorName($product): string
+if (! function_exists('getMerchantName')) {
+    function getMerchantName($item): string
     {
-        if (!$product) return '';
+        if (!$item) return '';
 
         $isAr = app()->getLocale() === 'ar';
 
         // From cart array
-        if (is_array($product)) {
-            if ($isAr && !empty($product['shop_name_ar'])) {
-                return $product['shop_name_ar'];
+        if (is_array($item)) {
+            if ($isAr && !empty($item['shop_name_ar'])) {
+                return $item['shop_name_ar'];
             }
-            return $product['vendor_name'] ?? $product['shop_name'] ?? '';
+            return $item['merchant_name'] ?? $item['shop_name'] ?? '';
         }
 
         // From MerchantItem or similar object
-        if (is_object($product)) {
-            if (isset($product->user) && $product->user) {
-                if ($isAr && !empty($product->user->shop_name_ar)) {
-                    return $product->user->shop_name_ar;
+        if (is_object($item)) {
+            if (isset($item->user) && $item->user) {
+                if ($isAr && !empty($item->user->shop_name_ar)) {
+                    return $item->user->shop_name_ar;
                 }
-                return $product->user->shop_name ?? $product->user->name ?? '';
+                return $item->user->shop_name ?? $item->user->name ?? '';
             }
-            if ($isAr && isset($product->shop_name_ar) && !empty($product->shop_name_ar)) {
-                return $product->shop_name_ar;
+            if ($isAr && isset($item->shop_name_ar) && !empty($item->shop_name_ar)) {
+                return $item->shop_name_ar;
             }
-            if (isset($product->vendor_name)) {
-                return $product->vendor_name;
+            if (isset($item->merchant_name)) {
+                return $item->merchant_name;
             }
-            if (isset($product->shop_name)) {
-                return $product->shop_name;
+            if (isset($item->shop_name)) {
+                return $item->shop_name;
             }
         }
 

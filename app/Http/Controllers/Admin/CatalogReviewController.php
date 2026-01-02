@@ -19,21 +19,21 @@ class CatalogReviewController extends AdminBaseController
 	                            ->addColumn('product', function(CatalogReview $data) {
 									$name = $data->catalogItem ? getLocalizedProductName($data->catalogItem, 50) : __('N/A');
 
-									// الرابط للمنتج
+									// Build link to catalog item
 									if ($data->merchantItem && $data->merchantItem->id && $data->catalogItem) {
-										$prodLink = route('front.catalog-item', [
+										$itemLink = route('front.catalog-item', [
 											'slug' => $data->catalogItem->slug,
 											'merchant_id' => $data->merchantItem->user_id,
 											'merchant_item_id' => $data->merchantItem->id
 										]);
 									} elseif ($data->catalogItem && $data->catalogItem->sku) {
-										$prodLink = route('search.result', $data->catalogItem->sku);
+										$itemLink = route('search.result', $data->catalogItem->sku);
 									} else {
-										$prodLink = '#';
+										$itemLink = '#';
 									}
 
-	                                $product = '<a href="'.$prodLink.'" target="_blank">'.$name.'</a>';
-	                                return $product;
+	                                $item = '<a href="'.$itemLink.'" target="_blank">'.$name.'</a>';
+	                                return $item;
 	                            })
 								->addColumn('brand', function (CatalogReview $data) {
 									return $data->catalogItem && $data->catalogItem->brand ? getLocalizedBrandName($data->catalogItem->brand) : __('N/A');
@@ -44,6 +44,7 @@ class CatalogReviewController extends AdminBaseController
 										: __('N/A');
 								})
 								->addColumn('vendor', function (CatalogReview $data) {
+									// Display merchant info
 									if ($data->merchantItem && $data->merchantItem->user) {
 										$shopName = $data->merchantItem->user->shop_name ?: $data->merchantItem->user->name;
 										return '<a href="' . route('admin-vendor-show', $data->merchantItem->user_id) . '" target="_blank">' . $shopName . '</a>';

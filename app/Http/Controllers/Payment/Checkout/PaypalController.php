@@ -61,18 +61,18 @@ class PaypalController extends CheckoutBaseControlller
     public function store(Request $request)
     {
         // ====================================================================
-        // VENDOR CHECKOUT: Get vendor-specific session data
+        // MERCHANT CHECKOUT: Get merchant-specific session data
         // ====================================================================
         $merchantData = $this->getMerchantCheckoutData();
         $merchantId = $merchantData['merchant_id'];
         $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
-        // Get steps from vendor sessions ONLY
+        // Get steps from merchant sessions ONLY
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
 
-        // Validate vendor checkout data exists
+        // Validate merchant checkout data exists
         if (!$step1 || !$step2) {
             return redirect()->route('front.cart')->with('unsuccess', __('Checkout session expired. Please start checkout again.'));
         }
@@ -142,13 +142,13 @@ class PaypalController extends CheckoutBaseControlller
     public function notify(Request $request)
     {
         // ====================================================================
-        // VENDOR CHECKOUT: Get vendor-specific session data
+        // MERCHANT CHECKOUT: Get merchant-specific session data
         // ====================================================================
         $merchantData = $this->getMerchantCheckoutData();
         $merchantId = $merchantData['merchant_id'];
         $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
-        // Get steps from vendor sessions ONLY
+        // Get steps from merchant sessions ONLY
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -160,10 +160,10 @@ class PaypalController extends CheckoutBaseControlller
         $input = Session::get('input_data');
         $input = array_merge($step1, $step2, $input);
 
-        // Get cart and filter for vendor
+        // Get cart and filter for merchant
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
 
         $success_url = $this->getSuccessUrl($merchantId, $originalCart);
         $cancel_url = route('front.payment.cancle');
@@ -188,7 +188,7 @@ class PaypalController extends CheckoutBaseControlller
 
             PurchaseHelper::license_check($cart); // For License Checking
 
-            // Serialize cart for order (using filtered vendor cart)
+            // Serialize cart for order (using filtered merchant cart)
             $new_cart = [];
             $new_cart['totalQty'] = $cart->totalQty;
             $new_cart['totalPrice'] = $cart->totalPrice;
@@ -212,7 +212,7 @@ class PaypalController extends CheckoutBaseControlller
             $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
             $input['payment_status'] = "Completed";
 
-            // Get tax data from vendor step2 (already calculated and saved)
+            // Get tax data from merchant step2 (already calculated and saved)
             $input['tax'] = $step2['tax_amount'] ?? 0;
             $input['tax_location'] = $step2['tax_location'] ?? '';
 
@@ -252,15 +252,15 @@ class PaypalController extends CheckoutBaseControlller
 
             PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
             PurchaseHelper::stock_check($cart); // For Stock Checking
-            PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+            PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
             Session::put('temporder', $purchase);
             Session::put('tempcart', $cart);
 
             // ====================================================================
-            // VENDOR CHECKOUT: Remove only vendor's products from cart
+            // MERCHANT CHECKOUT: Remove only merchant's items from cart
             // ====================================================================
-            $this->removeVendorProductsFromCart($merchantId, $originalCart);
+            $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                 PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

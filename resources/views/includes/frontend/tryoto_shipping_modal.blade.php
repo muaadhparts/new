@@ -32,18 +32,18 @@
 <script>
 (function() {
     const modalId = '{{ $modalId }}';
-    const vendorId = {{ $vendor_id }};
-    const containerId = 'tryoto-options-container-' + vendorId;
+    const merchantId = {{ $vendor_id }};
+    const containerId = 'tryoto-options-container-' + merchantId;
     let optionsLoaded = false;
 
     // دالة لتحديث نص الشحن
     function updateTryotoShippingDisplay(selectedRadio) {
         if (typeof updateVendorShippingText === 'function') {
-            updateVendorShippingText(vendorId);
+            updateVendorShippingText(merchantId);
         } else {
             if (!selectedRadio) return;
 
-            const shippingText = document.getElementById('shipping_text' + vendorId);
+            const shippingText = document.getElementById('shipping_text' + merchantId);
             const logo = selectedRadio.getAttribute('data-logo') || '';
             const service = selectedRadio.getAttribute('data-service') || '';
             const companyName = selectedRadio.getAttribute('data-company') || selectedRadio.getAttribute('data-form') || '';
@@ -88,7 +88,7 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                vendor_id: vendorId
+                vendor_id: merchantId
             })
         })
         .then(response => response.json())
@@ -144,7 +144,7 @@
             // Get vendor products total
             let vendorTotal = 0;
             if (typeof window.getVendorTotal === 'function') {
-                vendorTotal = window.getVendorTotal(vendorId);
+                vendorTotal = window.getVendorTotal(merchantId);
             } else {
                 vendorTotal = parseFloat(document.getElementById('ttotal')?.value) || 0;
             }
@@ -182,7 +182,7 @@
 
         // تحديث العرض عند فتح Modal
         modal.addEventListener('shown.bs.modal', function() {
-            const selectedRadio = modal.querySelector('input[type="radio"][name="shipping[' + vendorId + ']"]:checked');
+            const selectedRadio = modal.querySelector('input[type="radio"][name="shipping[' + merchantId + ']"]:checked');
             if (selectedRadio) {
                 updateTryotoShippingDisplay(selectedRadio);
             }
@@ -197,7 +197,7 @@
     }
 
     // Make function globally accessible
-    window['updateTryotoShippingDisplay_' + vendorId] = updateTryotoShippingDisplay;
-    window['loadTryotoOptions_' + vendorId] = loadTryotoOptions;
+    window['updateTryotoShippingDisplay_' + merchantId] = updateTryotoShippingDisplay;
+    window['loadTryotoOptions_' + merchantId] = loadTryotoOptions;
 })();
 </script>

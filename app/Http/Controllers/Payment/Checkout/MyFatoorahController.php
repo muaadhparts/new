@@ -52,10 +52,10 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     /**
      * Initiate MyFatoorah Configuration
-     * Note: mfConfig is set dynamically per-vendor in store() method
+     * Note: mfConfig is set dynamically per-merchant in store() method
      *
      * MARKETPLACE POLICY: No default system credentials.
-     * Each vendor MUST have their own MyFatoorah credentials.
+     * Each merchant MUST have their own MyFatoorah credentials.
      */
     public function __construct(
         MerchantCredentialService $merchantCredentialService
@@ -63,37 +63,37 @@ class MyFatoorahController extends CheckoutBaseControlller {
         parent::__construct();
         $this->merchantCredentialService = $merchantCredentialService;
 
-        // No default config - MUST use getVendorMfConfig() per vendor
+        // No default config - MUST use getMerchantMfConfig() per merchant
         $this->mfConfig = [];
     }
 
     /**
-     * Get MyFatoorah config for specific vendor
+     * Get MyFatoorah config for specific merchant
      *
      * MARKETPLACE POLICY:
-     * - Vendor MUST have their own payment credentials
+     * - Merchant MUST have their own payment credentials
      * - NO FALLBACK to system credentials for payment
-     * - Each vendor is financially responsible for their own transactions
-     * - Uses vendor's own test_mode and country settings
+     * - Each merchant is financially responsible for their own transactions
+     * - Uses merchant's own test_mode and country settings
      *
      * @param int $merchantId
      * @return array
-     * @throws \Exception If vendor doesn't have payment credentials configured
+     * @throws \Exception If merchant doesn't have payment credentials configured
      */
-    protected function getVendorMfConfig(int $merchantId): array
+    protected function getMerchantMfConfig(int $merchantId): array
     {
-        // Get vendor-specific API key - NO FALLBACK
+        // Get merchant-specific API key - NO FALLBACK
         $apiKey = $this->merchantCredentialService->getMyFatoorahKeyStrict($merchantId);
 
         if (empty($apiKey)) {
             throw new \Exception(
-                "MyFatoorah payment credentials not configured for vendor #{$merchantId}. " .
-                "Each vendor must have their own payment credentials. " .
-                "Configure via Admin Panel > Vendor Credentials or Vendor Dashboard."
+                "MyFatoorah payment credentials not configured for merchant #{$merchantId}. " .
+                "Each merchant must have their own payment credentials. " .
+                "Configure via Admin Panel > Merchant Credentials or Merchant Dashboard."
             );
         }
 
-        // Get vendor's gateway settings (test_mode, country)
+        // Get merchant's gateway settings (test_mode, country)
         $gateway = \DB::table('payment_gateways')
             ->where('user_id', $merchantId)
             ->where('keyword', 'myfatoorah')
@@ -101,7 +101,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         $gatewayInfo = $gateway ? json_decode($gateway->information, true) : [];
 
-        // Use vendor settings, fallback to system config
+        // Use merchant settings, fallback to system config
         $isTest = isset($gatewayInfo['sandbox_check']) ? (bool)$gatewayInfo['sandbox_check'] : config('myfatoorah.test_mode');
         $countryCode = $gatewayInfo['country'] ?? config('myfatoorah.country_iso');
 
@@ -119,11 +119,11 @@ class MyFatoorahController extends CheckoutBaseControlller {
     public function store(Request $request)
     {
         // ====================================================================
-        // VENDOR ID RESOLUTION (Priority: POST > Session)
-        // FIX: Read vendor_id from form POST first, then fall back to session
-        // This prevents vendor_id loss when session expires or user navigates
+        // MERCHANT ID RESOLUTION (Priority: POST > Session)
+        // FIX: Read merchant_id from form POST first, then fall back to session
+        // This prevents merchant_id loss when session expires or user navigates
         // ====================================================================
-        $merchantIdFromPost = $request->input('checkout_vendor_id');
+        $merchantIdFromPost = $request->input('checkout_merchant_id');
         $isMerchantCheckoutFromPost = $request->input('is_merchant_checkout') === '1';
 
         // Get from session as fallback
@@ -134,38 +134,38 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $merchantId = !empty($merchantIdFromPost) ? (int)$merchantIdFromPost : $merchantIdFromSession;
         $isMerchantCheckout = $isMerchantCheckoutFromPost || $merchantData['is_merchant_checkout'];
 
-        // If we got vendor_id from POST but not in session, restore it to session for later use
+        // If we got merchant_id from POST but not in session, restore it to session for later use
         if ($merchantId && !$merchantIdFromSession) {
-            Session::put('checkout_vendor_id', $merchantId);
-            \Log::info('MyFatoorah store: Restored vendor_id to session from POST', [
+            Session::put('checkout_merchant_id', $merchantId);
+            \Log::info('MyFatoorah store: Restored merchant_id to session from POST', [
                 'merchant_id' => $merchantId
             ]);
         }
 
-        // POLICY: Vendor ID is REQUIRED for all payment operations
-        // MyFatoorah credentials are ONLY in vendor_credentials table
+        // POLICY: Merchant ID is REQUIRED for all payment operations
+        // MyFatoorah credentials are ONLY in merchant_credentials table
         if (!$merchantId) {
-            \Log::error('MyFatoorah store: No vendor_id found in POST or session', [
+            \Log::error('MyFatoorah store: No merchant_id found in POST or session', [
                 'user_id' => \Auth::id(),
-                'post_vendor_id' => $merchantIdFromPost,
-                'session_vendor_id' => $merchantIdFromSession,
-                'session_data' => $vendorData
+                'post_merchant_id' => $merchantIdFromPost,
+                'session_merchant_id' => $merchantIdFromSession,
+                'session_data' => $merchantData
             ]);
             return redirect()->route('front.cart')->with('unsuccess', __('خطأ في جلسة الدفع. يرجى إعادة المحاولة من السلة.'));
         }
 
-        // Get vendor-specific MyFatoorah config - NO FALLBACK
+        // Get merchant-specific MyFatoorah config - NO FALLBACK
         try {
-            $this->mfConfig = $this->getVendorMfConfig($merchantId);
+            $this->mfConfig = $this->getMerchantMfConfig($merchantId);
         } catch (\Exception $e) {
-            \Log::error('MyFatoorah store: Vendor credentials not configured', [
+            \Log::error('MyFatoorah store: Merchant credentials not configured', [
                 'merchant_id' => $merchantId,
                 'error' => $e->getMessage()
             ]);
             return redirect()->route('front.cart')->with('unsuccess', __('عذراً، لم يتم إعداد بوابة الدفع لهذا التاجر بعد. يرجى التواصل مع التاجر.'));
         }
 
-        // Get steps from vendor sessions ONLY
+        // Get steps from merchant sessions ONLY
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -182,7 +182,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
         PurchaseHelper::license_check($cart);
 
         $cartData = [
@@ -203,7 +203,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input['pay_amount'] = $orderTotal;
         $input['purchase_number'] = Str::random(4) . time();
 
-        // Get tax data from vendor step2 (already fetched at method start)
+        // Get tax data from merchant step2 (already fetched at method start)
         $input['tax'] = $step2['tax_amount'] ?? 0;
         $input['tax_location'] = $step2['tax_location'] ?? '';
         $input['user_id'] = Auth::id();
@@ -237,7 +237,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // Update Purchase Details
         PurchaseHelper::size_qty_check($cart);
         PurchaseHelper::stock_check($cart);
-        PurchaseHelper::vendor_purchase_check($cart, $purchase);
+        PurchaseHelper::merchant_purchase_check($cart, $purchase);
 
         // Clear Session and Prepare for Next Purchase
         $this->clearPurchaseSession($purchase, $cart, $merchantId, $originalCart);
@@ -303,8 +303,8 @@ class MyFatoorahController extends CheckoutBaseControlller {
         Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
-        // Remove only vendor's products from cart
-        $this->removeVendorProductsFromCart($merchantId, $originalCart);
+        // Remove only merchant's items from cart
+        $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id && $purchase->wallet_price) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price);

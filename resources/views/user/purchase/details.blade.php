@@ -316,14 +316,14 @@
                         @if($shipments->count() > 0)
                             <div class="address-item w-100">
                                 <h5><i class="fas fa-shipping-fast"></i> @lang('Shipment Tracking')</h5>
-                                @foreach($shipments as $vendorId => $vendorShipments)
+                                @foreach($shipments as $merchantId => $merchantShipments)
                                     @php
-                                        $latestShipment = $vendorShipments->first();
-                                        $vendor = App\Models\User::find($vendorId);
+                                        $latestShipment = $merchantShipments->first();
+                                        $merchant = App\Models\User::find($merchantId);
                                     @endphp
                                     <div class="shipment-item mb-3 p-3 border rounded">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <strong>{{ $vendor ? getLocalizedShopName($vendor) : 'Vendor' }}</strong>
+                                            <strong>{{ $merchant ? getLocalizedShopName($merchant) : 'Merchant' }}</strong>
                                             <span class="badge
                                                 @if($latestShipment->status == 'delivered') bg-success
                                                 @elseif($latestShipment->status == 'in_transit') bg-primary

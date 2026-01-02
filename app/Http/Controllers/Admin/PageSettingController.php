@@ -159,7 +159,7 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Toggle deal status for a merchant product
+     * Toggle deal status for a merchant item
      */
     public function toggleDeal(\Illuminate\Http\Request $request)
     {
@@ -172,10 +172,10 @@ class PageSettingController extends AdminBaseController
 
             $isDiscount = filter_var($request->is_discount, FILTER_VALIDATE_BOOLEAN);
 
-            $mp = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
-            $mp->is_discount = $isDiscount ? 1 : 0;
-            $mp->discount_date = $isDiscount ? ($request->discount_date ?? now()->addDays(7)->format('Y-m-d')) : null;
-            $mp->save();
+            $merchantItem = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
+            $merchantItem->is_discount = $isDiscount ? 1 : 0;
+            $merchantItem->discount_date = $isDiscount ? ($request->discount_date ?? now()->addDays(7)->format('Y-m-d')) : null;
+            $merchantItem->save();
 
             // Clear homepage cache
             \Illuminate\Support\Facades\Cache::forget('homepage_flash_merchant');
@@ -193,13 +193,13 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Search products for deal selection (Step 1: Find products)
+     * Search catalog items for deal selection (Step 1: Find items)
      */
     public function searchDealProducts(\Illuminate\Http\Request $request)
     {
         $search = $request->get('q', '');
 
-        // Search products first
+        // Search catalog items
         $catalogItems = \App\Models\CatalogItem::where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
@@ -259,27 +259,27 @@ class PageSettingController extends AdminBaseController
                 'qualityBrand'
             ])
             ->get()
-            ->map(function($mp) use ($catalogItem) {
+            ->map(function($mi) use ($catalogItem) {
                 return [
-                    'id' => $mp->id,
+                    'id' => $mi->id,
                     // CatalogItem Brand (Toyota, Nissan, etc.)
                     'brand_name' => $catalogItem->brand?->localized_name,
                     'brand_logo' => $catalogItem->brand?->photo_url,
                     // Quality Brand (OEM, Aftermarket, etc.)
-                    'quality_brand_id' => $mp->quality_brand_id,
-                    'quality_brand' => $mp->qualityBrand?->localized_name,
-                    'quality_brand_logo' => $mp->qualityBrand?->logo_url,
-                    // Vendor
-                    'merchant_id' => $mp->user_id,
+                    'quality_brand_id' => $mi->quality_brand_id,
+                    'quality_brand' => $mi->qualityBrand?->localized_name,
+                    'quality_brand_logo' => $mi->qualityBrand?->logo_url,
+                    // Merchant
+                    'merchant_id' => $mi->user_id,
                     'merchant_name' => app()->getLocale() == 'ar'
-                        ? ($mp->user->shop_name_ar ?: $mp->user->shop_name)
-                        : $mp->user->shop_name,
+                        ? ($mi->user->shop_name_ar ?: $mi->user->shop_name)
+                        : $mi->user->shop_name,
                     // Pricing
-                    'price' => $mp->price,
-                    'previous_price' => $mp->previous_price,
-                    'stock' => $mp->stock,
-                    'is_discount' => $mp->is_discount,
-                    'discount_date' => $mp->discount_date,
+                    'price' => $mi->price,
+                    'previous_price' => $mi->previous_price,
+                    'stock' => $mi->stock,
+                    'is_discount' => $mi->is_discount,
+                    'discount_date' => $mi->discount_date,
                 ];
             });
 
@@ -377,7 +377,7 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Toggle best seller status for a merchant product
+     * Toggle best seller status for a merchant item
      */
     public function toggleBestSellers(\Illuminate\Http\Request $request)
     {
@@ -389,9 +389,9 @@ class PageSettingController extends AdminBaseController
 
             $isBest = filter_var($request->best, FILTER_VALIDATE_BOOLEAN);
 
-            $mp = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
-            $mp->best = $isBest ? 1 : 0;
-            $mp->save();
+            $merchantItem = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
+            $merchantItem->best = $isBest ? 1 : 0;
+            $merchantItem->save();
 
             // Clear homepage cache
             \Illuminate\Support\Facades\Cache::forget('homepage_best_merchants');
@@ -409,7 +409,7 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Search products for best sellers selection
+     * Search catalog items for best sellers selection
      */
     public function searchBestSellersProducts(\Illuminate\Http\Request $request)
     {
@@ -462,7 +462,7 @@ class PageSettingController extends AdminBaseController
         $catalogItemId = $request->get('product_id') ?? $request->get('catalog_item_id');
         $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
 
-        $merchants = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
+        $merchantItems = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
@@ -470,26 +470,26 @@ class PageSettingController extends AdminBaseController
                 'qualityBrand'
             ])
             ->get()
-            ->map(function($mp) use ($catalogItem) {
+            ->map(function($mi) use ($catalogItem) {
                 return [
-                    'id' => $mp->id,
+                    'id' => $mi->id,
                     'brand_name' => $catalogItem->brand?->localized_name,
                     'brand_logo' => $catalogItem->brand?->photo_url,
-                    'quality_brand_id' => $mp->quality_brand_id,
-                    'quality_brand' => $mp->qualityBrand?->localized_name,
-                    'quality_brand_logo' => $mp->qualityBrand?->logo_url,
-                    'merchant_id' => $mp->user_id,
+                    'quality_brand_id' => $mi->quality_brand_id,
+                    'quality_brand' => $mi->qualityBrand?->localized_name,
+                    'quality_brand_logo' => $mi->qualityBrand?->logo_url,
+                    'merchant_id' => $mi->user_id,
                     'merchant_name' => app()->getLocale() == 'ar'
-                        ? ($mp->user->shop_name_ar ?: $mp->user->shop_name)
-                        : $mp->user->shop_name,
-                    'price' => $mp->price,
-                    'previous_price' => $mp->previous_price,
-                    'stock' => $mp->stock,
-                    'best' => $mp->best,
+                        ? ($mi->user->shop_name_ar ?: $mi->user->shop_name)
+                        : $mi->user->shop_name,
+                    'price' => $mi->price,
+                    'previous_price' => $mi->previous_price,
+                    'stock' => $mi->stock,
+                    'best' => $mi->best,
                 ];
             });
 
-        return response()->json($merchants);
+        return response()->json($merchantItems);
     }
 
     // =========================================================================
@@ -497,7 +497,7 @@ class PageSettingController extends AdminBaseController
     // =========================================================================
 
     /**
-     * Generic method to get catalog items by flag
+     * Generic method to get merchant items by flag
      */
     private function getProductsByFlag($flag)
     {
@@ -525,9 +525,9 @@ class PageSettingController extends AdminBaseController
             ]);
 
             $isEnabled = filter_var($request->flag, FILTER_VALIDATE_BOOLEAN);
-            $mp = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
-            $mp->$flag = $isEnabled ? 1 : 0;
-            $mp->save();
+            $merchantItem = \App\Models\MerchantItem::findOrFail($request->merchant_item_id);
+            $merchantItem->$flag = $isEnabled ? 1 : 0;
+            $merchantItem->save();
 
             \Illuminate\Support\Facades\Cache::forget($cacheKey);
 
@@ -538,7 +538,7 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Generic search catalog items
+     * Generic search catalog items for homepage sections
      */
     private function searchProducts($search)
     {
@@ -560,7 +560,7 @@ class PageSettingController extends AdminBaseController
     }
 
     /**
-     * Generic get merchants for catalog item
+     * Generic get merchant items for catalog item
      */
     private function getMerchants($catalogItemId, $flag)
     {
@@ -570,18 +570,18 @@ class PageSettingController extends AdminBaseController
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand'])
             ->get()
-            ->map(function($mp) use ($catalogItem, $flag) {
+            ->map(function($mi) use ($catalogItem, $flag) {
                 return [
-                    'id' => $mp->id,
+                    'id' => $mi->id,
                     'brand_name' => $catalogItem->brand?->localized_name,
                     'brand_logo' => $catalogItem->brand?->photo_url,
-                    'quality_brand' => $mp->qualityBrand?->localized_name,
-                    'quality_brand_logo' => $mp->qualityBrand?->logo_url,
-                    'vendor_name' => app()->getLocale() == 'ar' ? ($mp->user->shop_name_ar ?: $mp->user->shop_name) : $mp->user->shop_name,
-                    'price' => $mp->price,
-                    'previous_price' => $mp->previous_price,
-                    'stock' => $mp->stock,
-                    'is_flagged' => $mp->$flag == 1,
+                    'quality_brand' => $mi->qualityBrand?->localized_name,
+                    'quality_brand_logo' => $mi->qualityBrand?->logo_url,
+                    'merchant_name' => app()->getLocale() == 'ar' ? ($mi->user->shop_name_ar ?: $mi->user->shop_name) : $mi->user->shop_name,
+                    'price' => $mi->price,
+                    'previous_price' => $mi->previous_price,
+                    'stock' => $mi->stock,
+                    'is_flagged' => $mi->$flag == 1,
                 ];
             });
     }

@@ -47,7 +47,7 @@ class CheckoutBaseControlller extends Controller
 
     /**
      * Prepare order data using total from step3 (no recalculation)
-     * Ensures vendor isolation and correct total handling
+     * Ensures merchant isolation and correct total handling
      *
      * @param array $input Request input data
      * @param \App\Models\Cart $cart Cart object
@@ -67,12 +67,12 @@ class CheckoutBaseControlller extends Controller
             $originalShippingMethod = $input['shipping'];
         }
 
-        // تحضير vendor_ids من السلة
+        // تحضير merchant_ids من السلة
         $merchant_ids = [];
         foreach ($cart->items as $item) {
-            $vid = $item['item']['user_id'] ?? 0;
-            if (!in_array($vid, $merchant_ids)) {
-                $merchant_ids[] = $vid;
+            $merchantId = $item['item']['user_id'] ?? 0;
+            if (!in_array($merchantId, $merchant_ids)) {
+                $merchant_ids[] = $merchantId;
             }
         }
         $input['merchant_ids'] = json_encode($merchant_ids);
@@ -145,9 +145,9 @@ class CheckoutBaseControlller extends Controller
      * Parses Tryoto format: "deliveryOptionId#companyName#price"
      *
      * @param array $step2Data Step2 session data
-     * @param int|null $merchantId Vendor ID for vendor-specific checkout
-     * @param bool $isMerchantCheckout Whether this is vendor-specific checkout
-     * @return string JSON encoded shipping choices per vendor
+     * @param int|null $merchantId Merchant ID for merchant-specific checkout
+     * @param bool $isMerchantCheckout Whether this is merchant-specific checkout
+     * @return string JSON encoded shipping choices per merchant
      */
     protected function extractCustomerShippingChoice($step2Data, $merchantId = null, $isMerchantCheckout = false)
     {
@@ -161,9 +161,9 @@ class CheckoutBaseControlller extends Controller
         $originalShippingCost = $step2Data['original_shipping_cost'] ?? 0;
         $freeShippingDiscount = $step2Data['free_shipping_discount'] ?? 0;
 
-        // For vendor checkout, the shipping might be stored directly
+        // For merchant checkout, the shipping might be stored directly
         if ($isMerchantCheckout && $merchantId) {
-            // Check if shipping is stored as vendor_id => value
+            // Check if shipping is stored as merchant_id => value
             if (isset($shippingSelections[$merchantId])) {
                 $shippingValue = $shippingSelections[$merchantId];
             } elseif (!is_array($shippingSelections)) {
@@ -174,7 +174,7 @@ class CheckoutBaseControlller extends Controller
         }
 
         if (!is_array($shippingSelections)) {
-            // If single value, try to use it with vendorId
+            // If single value, try to use it with merchantId
             if ($merchantId && !empty($shippingSelections)) {
                 $shippingSelections = [$merchantId => $shippingSelections];
             } else {
@@ -182,7 +182,7 @@ class CheckoutBaseControlller extends Controller
             }
         }
 
-        foreach ($shippingSelections as $vid => $shippingValue) {
+        foreach ($shippingSelections as $mid => $shippingValue) {
             if (empty($shippingValue)) continue;
 
             // Check if it's Tryoto format: "deliveryOptionId#companyName#price"
@@ -192,17 +192,17 @@ class CheckoutBaseControlller extends Controller
                 if (count($parts) >= 3) {
                     $originalPrice = (float) $parts[2];
 
-                    // ✅ Check if this vendor qualifies for free shipping
-                    $vendorFreeShipping = $this->checkVendorFreeShipping($vid, $originalPrice);
+                    // ✅ Check if this merchant qualifies for free shipping
+                    $merchantFreeShipping = $this->checkMerchantFreeShipping($mid, $originalPrice);
 
-                    $choices[$vid] = [
+                    $choices[$mid] = [
                         'provider' => 'tryoto',
                         'delivery_option_id' => $parts[0],
                         'company_name' => $parts[1],
-                        'price' => $vendorFreeShipping['is_free'] ? 0 : $originalPrice,
+                        'price' => $merchantFreeShipping['is_free'] ? 0 : $originalPrice,
                         'original_price' => $originalPrice,
-                        'is_free_shipping' => $vendorFreeShipping['is_free'],
-                        'free_shipping_reason' => $vendorFreeShipping['reason'] ?? null,
+                        'is_free_shipping' => $merchantFreeShipping['is_free'],
+                        'free_shipping_reason' => $merchantFreeShipping['reason'] ?? null,
                         'selected_at' => now()->toIso8601String(),
                     ];
                 }
@@ -213,17 +213,17 @@ class CheckoutBaseControlller extends Controller
                 if ($shipping) {
                     $originalPrice = (float) ($shipping->price ?? 0);
 
-                    // ✅ Check if this vendor qualifies for free shipping
-                    $vendorFreeShipping = $this->checkVendorFreeShipping($vid, $originalPrice, $shippingValue);
+                    // ✅ Check if this merchant qualifies for free shipping
+                    $merchantFreeShipping = $this->checkMerchantFreeShipping($mid, $originalPrice, $shippingValue);
 
-                    $choices[$vid] = [
+                    $choices[$mid] = [
                         'provider' => $shipping->provider ?? 'manual',
                         'shipping_id' => (int) $shippingValue,
                         'title' => $shipping->title ?? '',
-                        'price' => $vendorFreeShipping['is_free'] ? 0 : $originalPrice,
+                        'price' => $merchantFreeShipping['is_free'] ? 0 : $originalPrice,
                         'original_price' => $originalPrice,
-                        'is_free_shipping' => $vendorFreeShipping['is_free'],
-                        'free_shipping_reason' => $vendorFreeShipping['reason'] ?? null,
+                        'is_free_shipping' => $merchantFreeShipping['is_free'],
+                        'free_shipping_reason' => $merchantFreeShipping['reason'] ?? null,
                         'selected_at' => now()->toIso8601String(),
                     ];
                 }
@@ -235,14 +235,14 @@ class CheckoutBaseControlller extends Controller
     }
 
     /**
-     * Check if vendor qualifies for free shipping based on free_above threshold
+     * Check if merchant qualifies for free shipping based on free_above threshold
      *
-     * @param int $merchantId Vendor ID
+     * @param int $merchantId Merchant ID
      * @param float $shippingPrice Original shipping price
      * @param int|null $shippingId Shipping method ID (for manual/debts)
      * @return array ['is_free' => bool, 'reason' => string|null]
      */
-    protected function checkVendorFreeShipping($merchantId, $shippingPrice, $shippingId = null)
+    protected function checkMerchantFreeShipping($merchantId, $shippingPrice, $shippingId = null)
     {
         // Get cart from session
         $cart = Session::get('cart');
@@ -250,12 +250,12 @@ class CheckoutBaseControlller extends Controller
             return ['is_free' => false, 'reason' => null];
         }
 
-        // Calculate vendor's products total
-        $vendorProductsTotal = 0;
+        // Calculate merchant's items total
+        $merchantItemsTotal = 0;
         foreach ($cart->items as $item) {
-            $itemVendorId = $item['item']['user_id'] ?? $item['item']['vendor_user_id'] ?? 0;
-            if ($itemVendorId == $merchantId) {
-                $vendorProductsTotal += (float)($item['price'] ?? 0);
+            $itemMerchantId = $item['item']['user_id'] ?? $item['item']['merchant_user_id'] ?? 0;
+            if ($itemMerchantId == $merchantId) {
+                $merchantItemsTotal += (float)($item['price'] ?? 0);
             }
         }
 
@@ -265,19 +265,19 @@ class CheckoutBaseControlller extends Controller
             $shipping = \DB::table('shippings')->find($shippingId);
             $freeAbove = (float)($shipping->free_above ?? 0);
         } else {
-            // For Tryoto, check vendor's Tryoto shipping entry
-            $vendorTryotoShipping = \DB::table('shippings')
+            // For Tryoto, check merchant's Tryoto shipping entry
+            $merchantTryotoShipping = \DB::table('shippings')
                 ->where('user_id', $merchantId)
                 ->where('provider', 'tryoto')
                 ->first();
-            $freeAbove = (float)($vendorTryotoShipping->free_above ?? 0);
+            $freeAbove = (float)($merchantTryotoShipping->free_above ?? 0);
         }
 
         // Check if qualifies for free shipping
-        if ($freeAbove > 0 && $vendorProductsTotal >= $freeAbove) {
+        if ($freeAbove > 0 && $merchantItemsTotal >= $freeAbove) {
             return [
                 'is_free' => true,
-                'reason' => "Order total ({$vendorProductsTotal}) exceeds free shipping threshold ({$freeAbove})"
+                'reason' => "Order total ({$merchantItemsTotal}) exceeds free shipping threshold ({$freeAbove})"
             ];
         }
 

@@ -13,7 +13,7 @@
  * 1. Unified endpoint: POST /cart/unified
  * 2. Strict validation - fails on missing required fields
  * 3. All data from MerchantItem - no CatalogItem fallback
- * 4. Groups cart products by vendor_id
+ * 4. Groups cart items by merchant_id
  * 5. Backward compatible: accepts both merchant_item_id and merchant_product_id
  *
  * @version 3.1 - Unified System with merchant_item_id naming
@@ -58,7 +58,7 @@ class CartController extends FrontBaseController
      * - color: string (optional)
      *
      * Optional payload:
-     * - vendor_id: int (validated against mp.user_id)
+     * - merchant_id: int (validated against mp.user_id)
      * - size_price: float
      * - color_price: float
      */
@@ -155,13 +155,13 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
-        // Guard: Vendor must be active (is_merchant = 2)
+        // Guard: Merchant must be active (is_merchant = 2)
         if (!$mp->user || (int) $mp->user->is_merchant !== 2) {
             return response()->json([
                 'success' => false,
                 'status' => 'error',
-                'message' => __('Vendor is not active'),
-                'error_code' => 'VENDOR_INACTIVE',
+                'message' => __('Merchant is not active'),
+                'error_code' => 'MERCHANT_INACTIVE',
             ], 400);
         }
 
@@ -178,8 +178,8 @@ class CartController extends FrontBaseController
                 return response()->json([
                     'success' => false,
                     'status' => 'error',
-                    'message' => __('Invalid vendor'),
-                    'error_code' => 'VENDOR_MISMATCH',
+                    'message' => __('Invalid merchant'),
+                    'error_code' => 'MERCHANT_MISMATCH',
                 ], 403);
             }
         }
@@ -336,12 +336,12 @@ class CartController extends FrontBaseController
         }
 
         // ==========================================
-        // STEP 7: BUILD PRODUCT WITH CONTEXT
+        // STEP 7: BUILD CATALOG ITEM WITH MERCHANT CONTEXT
         // ==========================================
         try {
-            $prod = CatalogItemContextHelper::createWithContext($mp);
+            $catalogItem = CatalogItemContextHelper::createWithContext($mp);
         } catch (\Exception $e) {
-            // Return stock if product creation fails
+            // Return stock if catalog item creation fails
             if (!($preordered && $effStock <= 0)) {
                 $this->returnStock($mpId, $qty, $size, $cartKey);
             }
@@ -349,16 +349,16 @@ class CartController extends FrontBaseController
                 'success' => false,
                 'status' => 'error',
                 'message' => __('Product not found'),
-                'error_code' => 'PRODUCT_CREATE_FAILED',
+                'error_code' => 'CATALOG_ITEM_CREATE_FAILED',
             ], 500);
         }
 
         // Apply size/color prices
         if ($sizePrice > 0) {
-            $prod->price += $sizePrice;
+            $catalogItem->price += $sizePrice;
         }
         if ($colorPrice > 0) {
-            $prod->price += $colorPrice;
+            $catalogItem->price += $colorPrice;
         }
 
         // ==========================================
@@ -371,10 +371,10 @@ class CartController extends FrontBaseController
         $cart = new Cart($oldCart);
 
         if ($qty == 1) {
-            $cart->add($prod, $mpId, $size, $color, $keys, $values);
+            $cart->add($catalogItem, $mpId, $size, $color, $keys, $values);
         } else {
             $cart->addnum(
-                $prod, $mpId, $qty, $size, $color,
+                $catalogItem, $mpId, $qty, $size, $color,
                 '', $sizePrice, $colorPrice, '',
                 $keys, $values, $request->input('affilate_user', '0')
             );
@@ -532,10 +532,10 @@ class CartController extends FrontBaseController
         });
     }
 
-    /* ===================== New Merchant-Product-Based Methods ===================== */
+    /* ===================== New Merchant-Item-Based Methods ===================== */
 
     /**
-     * Add merchant product to cart (New standardized method)
+     * Add merchant item to cart (New standardized method)
      */
     public function addMerchantCart($merchantProductId)
     {
@@ -573,11 +573,11 @@ class CartController extends FrontBaseController
         // CRITICAL: استخدام CatalogItemContextHelper لإنشاء CatalogItem مع سياق merchant
         // Helper يضمن:
         // - CatalogItem instance جديد تماماً (لا يوجد Eloquent caching)
-        // - حقن السعر الصحيح من MerchantItem::vendorSizePrice()
-        // - كل combination من (product_id, user_id, brand_quality_id) مستقل
+        // - حقن السعر الصحيح من MerchantItem::merchantSizePrice()
+        // - كل combination من (catalog_item_id, user_id, brand_quality_id) مستقل
         // - القيم المحقونة لها الأولوية على CatalogItem::__get() magic methods
         try {
-            $prod = CatalogItemContextHelper::createWithContext($mp);
+            $catalogItem = CatalogItemContextHelper::createWithContext($mp);
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'msg' => __('Product not found')], 404);
         }
@@ -615,10 +615,10 @@ class CartController extends FrontBaseController
 
         // إضافة الكمية للسلة (المخزون محجوز مسبقاً)
         if ($qty == 1) {
-            $cart->add($prod, $merchantProductId, $size, $color, $keys, $values);
+            $cart->add($catalogItem, $merchantProductId, $size, $color, $keys, $values);
         } else {
             $cart->addnum(
-                $prod, $merchantProductId, $qty, $size, $color,
+                $catalogItem, $merchantProductId, $qty, $size, $color,
                 '', 0, 0, '',
                 $keys, $values, request('affilate_user', '0')
             );
@@ -638,7 +638,7 @@ class CartController extends FrontBaseController
     }
 
     /**
-     * Quick add merchant product to cart
+     * Quick add merchant item to cart
      */
     public function quickAddMerchantCart($merchantProductId)
     {
@@ -665,47 +665,51 @@ class CartController extends FrontBaseController
 
         $oldCart    = Session::get('cart');
         $cart       = new Cart($oldCart);
-        $products   = $cart->items;
+        $items      = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
 
-        // تجميع المنتجات حسب التاجر
-        $productsByVendor = $this->groupProductsByVendor($products);
+        // تجميع العناصر حسب التاجر (Group items by merchant)
+        $itemsByMerchant = $this->groupItemsByMerchant($items);
 
         if ($request->ajax()) {
             // استخدام cart-page-v2 المحسّن (N+1 FIX)
-            return view('frontend.ajax.cart-page-v2', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+            // Note: 'products' kept for backward compatibility in views
+            return view('frontend.ajax.cart-page-v2', ['products' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'productsByMerchant' => $itemsByMerchant]);
         }
-        return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+        return view('frontend.cart', ['products' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'productsByMerchant' => $itemsByMerchant]);
     }
 
     /**
-     * تجميع منتجات السلة حسب التاجر
+     * تجميع عناصر السلة حسب التاجر (Group cart items by merchant)
      * يستخدم MerchantCartService للحصول على بيانات كاملة لكل تاجر
      * بما في ذلك الوزن والأبعاد وخصم الجملة
+     *
+     * @param array $items Cart items array
+     * @return array Items grouped by merchant_id
      */
-    private function groupProductsByVendor(array $products): array
+    private function groupItemsByMerchant(array $items): array
     {
         $grouped = [];
 
-        foreach ($products as $rowKey => $product) {
-            // استخراج vendor_id باستخدام نفس منطق MerchantCartService
-            $merchantId = $product['user_id']
-                ?? data_get($product, 'item.user_id')
-                ?? data_get($product, 'item.vendor_user_id')
+        foreach ($items as $rowKey => $cartItem) {
+            // استخراج merchant_id باستخدام نفس منطق MerchantCartService
+            $merchantId = $cartItem['user_id']
+                ?? data_get($cartItem, 'item.user_id')
+                ?? data_get($cartItem, 'item.merchant_user_id')
                 ?? 0;
 
             if (!isset($grouped[$merchantId])) {
                 // جلب مدينة التاجر باستخدام ShippingCalculatorService
-                $vendorCityData = ShippingCalculatorService::getVendorCity($merchantId);
+                $merchantCityData = ShippingCalculatorService::getMerchantCity($merchantId);
                 $merchant = \App\Models\User::find($merchantId);
 
                 $grouped[$merchantId] = [
                     'merchant_id' => $merchantId,
                     'merchant_name' => $merchant ? ($merchant->shop_name ?? $merchant->name) : null,
-                    'merchant_city' => $vendorCityData['city_name'] ?? null,
-                    'merchant_city_id' => $vendorCityData['city_id'] ?? null,
-                    'products' => [],
+                    'merchant_city' => $merchantCityData['city_name'] ?? null,
+                    'merchant_city_id' => $merchantCityData['city_id'] ?? null,
+                    'items' => [],
                     'total' => 0,
                     'count' => 0,
                     'total_weight' => 0,
@@ -713,17 +717,17 @@ class CartController extends FrontBaseController
                 ];
             }
 
-            // حساب خصم الجملة والأبعاد لكل منتج
+            // حساب خصم الجملة والأبعاد لكل عنصر
             // Backward compatible: check both merchant_item_id (new) and merchant_product_id (legacy)
-            $mpId = $product['merchant_item_id']
-                ?? $product['merchant_product_id']
-                ?? data_get($product, 'item.merchant_item_id')
-                ?? data_get($product, 'item.merchant_product_id')
+            $mpId = $cartItem['merchant_item_id']
+                ?? $cartItem['merchant_product_id']
+                ?? data_get($cartItem, 'item.merchant_item_id')
+                ?? data_get($cartItem, 'item.merchant_product_id')
                 ?? 0;
-            $qty = (int)($product['qty'] ?? 1);
-            $sizeVal = $product['size'] ?? '';
+            $qty = (int)($cartItem['qty'] ?? 1);
+            $sizeVal = $cartItem['size'] ?? '';
             $size = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
-            $colorVal = $product['color'] ?? '';
+            $colorVal = $cartItem['color'] ?? '';
             $color = is_array($colorVal) ? ($colorVal[0] ?? '') : (string)$colorVal;
 
             // استخدام MerchantCartService لحساب خصم الجملة
@@ -748,15 +752,15 @@ class CartController extends FrontBaseController
                 ];
             }
 
-            // إضافة البيانات المحسوبة للمنتج
-            $product['bulk_discount'] = $bulkDiscount;
-            $product['dimensions'] = $dimensions;
-            $product['row_weight'] = $dimensions && $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
-            $product['reservation'] = $reservationData;
+            // إضافة البيانات المحسوبة للعنصر
+            $cartItem['bulk_discount'] = $bulkDiscount;
+            $cartItem['dimensions'] = $dimensions;
+            $cartItem['row_weight'] = $dimensions && $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
+            $cartItem['reservation'] = $reservationData;
 
-            $grouped[$merchantId]['products'][$rowKey] = $product;
-            $grouped[$merchantId]['total'] += (float)($product['price'] ?? 0);
-            $grouped[$merchantId]['count'] += (int)($product['qty'] ?? 1);
+            $grouped[$merchantId]['items'][$rowKey] = $cartItem;
+            $grouped[$merchantId]['total'] += (float)($cartItem['price'] ?? 0);
+            $grouped[$merchantId]['count'] += (int)($cartItem['qty'] ?? 1);
 
             // تجميع الوزن الكلي
             if ($dimensions && $dimensions['weight']) {
@@ -766,7 +770,7 @@ class CartController extends FrontBaseController
 
         // بناء بيانات الشحن لكل تاجر باستخدام MerchantCartService
         foreach ($grouped as $merchantId => &$merchantData) {
-            $shippingData = MerchantCartService::calculateMerchantShipping($merchantId, $products);
+            $shippingData = MerchantCartService::calculateMerchantShipping($merchantId, $items);
             $merchantData['shipping_data'] = $shippingData;
             $merchantData['has_complete_data'] = $shippingData['has_complete_data'];
             $merchantData['missing_data'] = $shippingData['missing_data'];
@@ -785,15 +789,16 @@ class CartController extends FrontBaseController
         }
         $oldCart    = Session::get('cart');
         $cart       = new Cart($oldCart);
-        $products   = $cart->items;
+        $items      = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
 
-        // تجميع المنتجات حسب التاجر
-        $productsByVendor = $this->groupProductsByVendor($products);
+        // تجميع العناصر حسب التاجر (Group items by merchant)
+        $itemsByMerchant = $this->groupItemsByMerchant($items);
 
         // استخدام cart-page-v2 المحسّن (N+1 FIX)
-        return view('frontend.ajax.cart-page-v2', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+        // Note: 'products' kept for backward compatibility in views
+        return view('frontend.ajax.cart-page-v2', ['products' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'productsByMerchant' => $itemsByMerchant]);
     }
 
     /* ===================== Utilities ===================== */
@@ -807,19 +812,19 @@ class CartController extends FrontBaseController
         // مسح الجلسات الأساسية
         Session::forget(['step1', 'step2', 'step3']);
 
-        // مسح جلسات التجار المحددين (vendor_step1_*, vendor_step2_*)
+        // مسح جلسات التجار المحددين (merchant_step1_*, merchant_step2_*)
         $allSessionKeys = array_keys(Session::all());
         foreach ($allSessionKeys as $key) {
-            if (str_starts_with($key, 'vendor_step1_') ||
-                str_starts_with($key, 'vendor_step2_') ||
-                str_starts_with($key, 'discount_code_vendor_')) {
+            if (str_starts_with($key, 'merchant_step1_') ||
+                str_starts_with($key, 'merchant_step2_') ||
+                str_starts_with($key, 'discount_code_merchant_')) {
                 Session::forget($key);
             }
         }
 
         // مسح الجلسات الأخرى المتعلقة بالـ checkout
         Session::forget([
-            'checkout_vendor_id',
+            'checkout_merchant_id',
             'selectedLocation',
             'shipping_selection',
         ]);
@@ -869,10 +874,15 @@ class CartController extends FrontBaseController
     }
     // داخل CartController
 
-    /** هويّة العنصر فقط من catalog_items (بدون ألوان) */
+    /**
+     * Fetch CatalogItem identity only (without colors).
+     * Note: Colors moved to merchant_items (color_all, color_price)
+     *
+     * @param int $id CatalogItem ID
+     * @return CatalogItem|null
+     */
     private function fetchIdentity(int $id): ?CatalogItem
     {
-        // ملاحظة: تم نقل الألوان إلى merchant_products (color_all, color_price)
         return CatalogItem::query()->select([
             'id','slug','sku','name','photo',
             'weight','type','file','link','measure','attributes','cross_products',
@@ -897,10 +907,10 @@ class CartController extends FrontBaseController
     }
 
     /**
-     * استخراج vendor_id من صف السلة
+     * استخراج merchant_id من صف السلة
      * يدعم الـ object و array
      */
-    private function extractVendorIdFromRow(array $row): int
+    private function extractMerchantIdFromRow(array $row): int
     {
         // الأولوية للـ user_id في المستوى الأول
         if (isset($row['user_id']) && $row['user_id']) {
@@ -911,10 +921,10 @@ class CartController extends FrontBaseController
         $item = $row['item'] ?? null;
         if ($item) {
             if (is_object($item)) {
-                return (int) ($item->user_id ?? $item->vendor_user_id ?? 0);
+                return (int) ($item->user_id ?? $item->merchant_user_id ?? 0);
             }
             if (is_array($item)) {
-                return (int) ($item['user_id'] ?? $item['vendor_user_id'] ?? 0);
+                return (int) ($item['user_id'] ?? $item['merchant_user_id'] ?? 0);
             }
         }
 
@@ -961,16 +971,16 @@ class CartController extends FrontBaseController
         $cart->totalPrice = $totalPrice;
     }
 
-    private function findRowKeyInCart(Cart $cart, int $productId, ?int $merchantId, ?string $sizeKey, ?string $size, ?string $color, ?string $values): ?string
+    private function findRowKeyInCart(Cart $cart, int $catalogItemId, ?int $merchantId, ?string $sizeKey, ?string $size, ?string $color, ?string $values): ?string
     {
         $valuesNorm = is_string($values) ? str_replace([' ', ','], '', $values) : null;
         foreach ((array)$cart->items as $k => $row) {
             $rowItem = $row['item'] ?? null;
             if (!$rowItem) continue;
-            if ((int)($rowItem->id ?? 0) !== $productId) continue;
+            if ((int)($rowItem->id ?? 0) !== $catalogItemId) continue;
             if ($merchantId !== null) {
-                $rowVendor = (int)($rowItem->vendor_user_id ?? $rowItem->user_id ?? 0);
-                if ($rowVendor !== $merchantId) continue;
+                $rowMerchant = (int)($rowItem->merchant_user_id ?? $rowItem->user_id ?? 0);
+                if ($rowMerchant !== $merchantId) continue;
             }
             if ($sizeKey !== null && $sizeKey !== '') {
                 if ((string)($row['size_key'] ?? '') !== (string)$sizeKey) continue;
@@ -1059,7 +1069,7 @@ class CartController extends FrontBaseController
 
         $mp = MerchantItem::where('id', $mpId)->first();
         if (!$mp || (int)$mp->status !== 1) {
-            return response()->json(['status'=>'error','msg'=>'Vendor listing invalid'], 400);
+            return response()->json(['status'=>'error','msg'=>'Merchant listing invalid'], 400);
         }
 
         // حجز المخزون ذرياً مع المقاس
@@ -1146,18 +1156,18 @@ class CartController extends FrontBaseController
         $size_qty   = request('size_qty');
         $size_price = (float) request('size_price', 0);
 
-        // السلة والعنصر الحالي
+        // السلة والعنصر الحالي (Cart and current item)
         $oldCart = \Session::has('cart') ? \Session::get('cart') : null;
 
         if (!$oldCart || !isset($oldCart->items[$itemid])) {
             return 0;
         }
 
-        // المنتج (هوية فقط)
-        $prod = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
-        if (!$prod) { return 0; }
+        // CatalogItem (identity only)
+        $catalogItem = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
+        if (!$catalogItem) { return 0; }
 
-        // معلومات الصف من السلة (Vendor-aware)
+        // معلومات الصف من السلة (Merchant-aware)
         $row  = $oldCart->items[$itemid];
         $item = $row['item'] ?? null;
 
@@ -1168,7 +1178,7 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+vendor_id)
+        // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+merchant_id)
         $mp = MerchantItem::find($mpId);
         if (!$mp || (int)$mp->status !== 1) {
             \Log::warning('addbyone: MerchantItem not found or inactive', ['mp_id' => $mpId]);
@@ -1221,27 +1231,27 @@ class CartController extends FrontBaseController
         // حساب خصم الجملة الجديد باستخدام MerchantCartService
         $bulkDiscount = MerchantCartService::calculateBulkDiscount($mp->id, $newQty);
 
-        // حقن سياق البائع داخل كائن المنتج
-        $prod->user_id             = $merchantId;
-        $prod->vendor_user_id      = $merchantId;
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = $effStock;
+        // حقن سياق البائع داخل كائن CatalogItem (Inject merchant context into CatalogItem)
+        $catalogItem->user_id             = $merchantId;
+        $catalogItem->merchant_user_id    = $merchantId;
+        $catalogItem->merchant_product_id = $mp->id;
+        $catalogItem->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
+        $catalogItem->previous_price      = $mp->previous_price;
+        $catalogItem->stock               = $effStock;
 
         // تمرير مقاسات البائع
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
+        $catalogItem->setAttribute('size',       $mp->size);
+        $catalogItem->setAttribute('size_qty',   $mp->size_qty);
+        $catalogItem->setAttribute('size_price', $mp->size_price);
 
         // إضافة أسعار الخصائص المفعّلة
-        if (!empty($prod->attributes)) {
-            $attrArr = json_decode($prod->attributes, true);
+        if (!empty($catalogItem->attributes)) {
+            $attrArr = json_decode($catalogItem->attributes, true);
             if (!empty($attrArr)) {
                 foreach ($attrArr as $attrKey => $attrVal) {
                     if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
                         foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                            $prod->price += $attrVal['prices'][$optionKey];
+                            $catalogItem->price += $attrVal['prices'][$optionKey];
                             break;
                         }
                     }
@@ -1251,7 +1261,7 @@ class CartController extends FrontBaseController
 
         // الزيادة بمقدار الخطوة (minQty للأطقم)
         $cart = new Cart($oldCart);
-        $cart->adding($prod, $itemid, $size_qty, $size_price, $minQty);
+        $cart->adding($catalogItem, $itemid, $size_qty, $size_price, $minQty);
 
         // تطبيق خصم الجملة المحسوب
         if ($bulkDiscount['has_discount']) {
@@ -1305,8 +1315,8 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        $prod = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
-        if (!$prod) { return 0; }
+        $catalogItem = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
+        if (!$catalogItem) { return 0; }
 
         $row  = $oldCart->items[$itemid];
 
@@ -1317,7 +1327,7 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+vendor_id)
+        // جلب عرض البائع مباشرة بـ ID (NO QUERY by product_id+merchant_id)
         $mp = MerchantItem::find($mpId);
         if (!$mp || (int)$mp->status !== 1) {
             \Log::warning('reducebyone: MerchantItem not found or inactive', ['mp_id' => $mpId]);
@@ -1358,27 +1368,27 @@ class CartController extends FrontBaseController
         // حساب خصم الجملة الجديد باستخدام MerchantCartService
         $bulkDiscount = MerchantCartService::calculateBulkDiscount($mp->id, $newQty);
 
-        // حقن سياق البائع
-        $prod->user_id             = $merchantId;
-        $prod->vendor_user_id      = $merchantId;
-        $prod->merchant_product_id = $mp->id;
-        $prod->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
-        $prod->previous_price      = $mp->previous_price;
-        $prod->stock               = (int)($mp->stock ?? 0);
-        $prod->minimum_qty         = $minQty;
-        $prod->preordered          = (int)($mp->preordered ?? 0);
-        $prod->setAttribute('size',       $mp->size);
-        $prod->setAttribute('size_qty',   $mp->size_qty);
-        $prod->setAttribute('size_price', $mp->size_price);
+        // حقن سياق البائع (Inject merchant context)
+        $catalogItem->user_id             = $merchantId;
+        $catalogItem->merchant_user_id    = $merchantId;
+        $catalogItem->merchant_product_id = $mp->id;
+        $catalogItem->price               = $bulkDiscount['discounted_price']; // استخدام السعر بعد خصم الجملة
+        $catalogItem->previous_price      = $mp->previous_price;
+        $catalogItem->stock               = (int)($mp->stock ?? 0);
+        $catalogItem->minimum_qty         = $minQty;
+        $catalogItem->preordered          = (int)($mp->preordered ?? 0);
+        $catalogItem->setAttribute('size',       $mp->size);
+        $catalogItem->setAttribute('size_qty',   $mp->size_qty);
+        $catalogItem->setAttribute('size_price', $mp->size_price);
 
-        // خصائص المنتج
-        if (!empty($prod->attributes)) {
-            $attrArr = json_decode($prod->attributes, true);
+        // CatalogItem attributes
+        if (!empty($catalogItem->attributes)) {
+            $attrArr = json_decode($catalogItem->attributes, true);
             if (!empty($attrArr)) {
                 foreach ($attrArr as $attrKey => $attrVal) {
                     if (is_array($attrVal) && array_key_exists("details_status", $attrVal) && $attrVal['details_status'] == 1) {
                         foreach ($attrVal['values'] as $optionKey => $optionVal) {
-                            $prod->price += $attrVal['prices'][$optionKey];
+                            $catalogItem->price += $attrVal['prices'][$optionKey];
                             break;
                         }
                     }
@@ -1387,7 +1397,7 @@ class CartController extends FrontBaseController
         }
 
         $cart = new Cart($oldCart);
-        $cart->reducing($prod, $itemid, $size_qty, $size_price, $minQty);
+        $cart->reducing($catalogItem, $itemid, $size_qty, $size_price, $minQty);
 
         // تطبيق خصم الجملة المحسوب
         if ($bulkDiscount['has_discount']) {
@@ -1447,16 +1457,16 @@ class CartController extends FrontBaseController
 
         $rowKey = $request->input('row', $id);
         if (!is_array($cart->items) || !array_key_exists($rowKey, $cart->items)) {
-            $productId = (int) $id;
+            $catalogItemId = (int) $id;
             $merchantId  = $request->has('user') ? (int)$request->input('user') : null;
             $sizeKey   = $request->input('size_key');
             $size      = $request->input('size');
             $color     = $request->input('color');
             $values    = $request->input('values');
-            $rowKey = $this->findRowKeyInCart($cart, $productId, $merchantId, $sizeKey, $size, $color, $values);
+            $rowKey = $this->findRowKeyInCart($cart, $catalogItemId, $merchantId, $sizeKey, $size, $color, $values);
             if (!$rowKey) {
                 foreach ((array)$cart->items as $k => $row) {
-                    if ((int)($row['item']->id ?? 0) === $productId) { $rowKey = $k; break; }
+                    if ((int)($row['item']->id ?? 0) === $catalogItemId) { $rowKey = $k; break; }
                 }
             }
         }
@@ -1494,17 +1504,17 @@ class CartController extends FrontBaseController
             $newTotal = $cart->totalPrice ?? 0;
             $itemCount = count($cart->items ?? []);
 
-            // Group by vendor for updated counts
-            $vendorCounts = [];
-            $vendorTotals = [];
+            // Group by merchant for updated counts
+            $merchantCounts = [];
+            $merchantTotals = [];
             foreach ((array)($cart->items ?? []) as $item) {
                 $vid = $item['user_id'] ?? ($item['item']->user_id ?? 0);
-                if (!isset($vendorCounts[$vid])) {
-                    $vendorCounts[$vid] = 0;
-                    $vendorTotals[$vid] = 0;
+                if (!isset($merchantCounts[$vid])) {
+                    $merchantCounts[$vid] = 0;
+                    $merchantTotals[$vid] = 0;
                 }
-                $vendorCounts[$vid]++;
-                $vendorTotals[$vid] += ($item['price'] ?? 0);
+                $merchantCounts[$vid]++;
+                $merchantTotals[$vid] += ($item['price'] ?? 0);
             }
 
             return response()->json([
@@ -1513,8 +1523,8 @@ class CartController extends FrontBaseController
                 'message' => $removed ? __('Item has been removed from cart.') : __('Item not found in cart.'),
                 'total' => $newTotal,
                 'itemCount' => $itemCount,
-                'vendorCounts' => $vendorCounts,
-                'vendorTotals' => $vendorTotals
+                'merchantCounts' => $merchantCounts,
+                'merchantTotals' => $merchantTotals
             ]);
         }
 
@@ -1831,7 +1841,7 @@ class CartController extends FrontBaseController
     }
 
     /**
-     * V2: صفحة السلة (view)
+     * V2: Cart page view
      */
     public function v2CartPage(Request $request)
     {
@@ -1839,21 +1849,22 @@ class CartController extends FrontBaseController
             return view('frontend.cart');
         }
 
-        // مسح بيانات كود الخصم القديمة
+        // مسح بيانات كود الخصم القديمة (Clear old discount code data)
         foreach (['already', 'discount_code', 'discount_total', 'discount_total1', 'discount_percentage'] as $k) {
             if (Session::has($k)) Session::forget($k);
         }
 
         $cart = CartHelper::getCart();
-        $products = $cart['items'];
+        $items = $cart['items'];
         $totalPrice = $cart['totalPrice'];
         $mainTotal = $totalPrice;
-        $productsByVendor = CartHelper::groupByVendor();
+        $itemsByMerchant = CartHelper::groupByMerchant();
 
         if ($request->ajax()) {
-            return view('frontend.ajax.cart-page-v2', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+            // Note: 'products' and 'productsByMerchant' kept for backward compatibility in views
+            return view('frontend.ajax.cart-page-v2', ['products' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'productsByMerchant' => $itemsByMerchant]);
         }
 
-        return view('frontend.cart', compact('products', 'totalPrice', 'mainTotal', 'productsByVendor'));
+        return view('frontend.cart', ['products' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'productsByMerchant' => $itemsByMerchant]);
     }
 }

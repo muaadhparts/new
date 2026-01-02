@@ -146,12 +146,12 @@ class GeneratePagesJson extends Command
         }
 
         // Vendors
-        $vendors = DB::table('users')
+        $merchants = DB::table('users')
             ->where('is_merchant', 1)
             ->where('status', 1)
             ->limit(2)
             ->pluck('id');
-        foreach ($vendors as $id) {
+        foreach ($merchants as $id) {
             $pages[] = [
                 'name' => "Vendor: {$id}",
                 'path' => "/vendor/{$id}",

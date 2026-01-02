@@ -33,8 +33,8 @@ class ShipmentController extends AdminBaseController
         // Get admin statistics
         $stats = $this->tryotoService->getAdminStatistics();
 
-        // Get all vendors for filter dropdown
-        $vendors = User::where('is_merchant', 2)
+        // Get all merchants for filter dropdown
+        $merchants = User::where('is_merchant', 2)
             ->select('id', 'shop_name', 'name')
             ->orderBy('shop_name')
             ->get();
@@ -323,8 +323,8 @@ class ShipmentController extends AdminBaseController
             ->get()
             ->groupBy('company_name');
 
-        // Get vendors for filter
-        $vendors = User::where('is_merchant', 2)
+        // Get merchants for filter
+        $merchants = User::where('is_merchant', 2)
             ->select('id', 'shop_name', 'name')
             ->orderBy('shop_name')
             ->get();

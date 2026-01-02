@@ -21,10 +21,11 @@ class PurchaseCreateController extends AdminBaseController
 {
     public function create(Request $request)
     {
+        // Handle pre-selected catalog items from request
         if ($request->products) {
             $selectd_products = $request->products;
-            foreach ($selectd_products as $product) {
-                $products[] = CatalogItem::findOrFail($product);
+            foreach ($selectd_products as $itemId) {
+                $products[] = CatalogItem::findOrFail($itemId);
             }
         } else {
             $selectd_products = [];
@@ -39,7 +40,7 @@ class PurchaseCreateController extends AdminBaseController
 
     public function datatables()
     {
-        // Query merchant products directly - each merchant product = independent row
+        // Query merchant items directly - each merchant item = independent row
         $datas = \App\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
@@ -47,13 +48,13 @@ class PurchaseCreateController extends AdminBaseController
             });
 
         return Datatables::of($datas)
-            ->addColumn('name', function (\App\Models\MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
+            ->addColumn('name', function (\App\Models\MerchantItem $mi) {
+                $catalogItem = $mi->catalogItem;
                 if (!$catalogItem) return __('N/A');
 
-                // Price from merchant_products with commission
+                // Price from merchant_items with commission
                 $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => \DB::table('muaadhsettings')->first());
-                $price = (float) $mp->price;
+                $price = (float) $mi->price;
                 $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
                 $finalPrice = $base * $this->curr->value;
 
@@ -63,21 +64,21 @@ class PurchaseCreateController extends AdminBaseController
                 $img = '<img src="' . $photoUrl . '" alt="Image" class="img-thumbnail" width="100"> <br>';
                 $name = getLocalizedProductName($catalogItem, 50);
 
-                // Vendor info
-                $vendorInfo = $mp->user ? '<span class="badge badge-info">' . ($mp->user->shop_name ?: $mp->user->name) . '</span>' : '';
+                // Merchant info
+                $merchantInfo = $mi->user ? '<span class="badge badge-info">' . ($mi->user->shop_name ?: $mi->user->name) . '</span>' : '';
 
-                // Product condition (new/used)
-                $condition = $mp->product_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                // Item condition (new/used)
+                $condition = $mi->product_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
                 // Stock
-                $stock = $mp->stock === null ? __('Unlimited') : (($mp->stock > 0) ? $mp->stock : '<span class="text-danger">' . __('Out Of Stock') . '</span>');
+                $stock = $mi->stock === null ? __('Unlimited') : (($mi->stock > 0) ? $mi->stock : '<span class="text-danger">' . __('Out Of Stock') . '</span>');
 
-                return $img . $name . $condition . '<br>' . $vendorInfo . '<br><small>' . __("Price") . ': ' . number_format($finalPrice, 2) . ' ' . $this->curr->sign . '</small><br><small>' . __("Stock") . ': ' . $stock . '</small>';
+                return $img . $name . $condition . '<br>' . $merchantInfo . '<br><small>' . __("Price") . ': ' . number_format($finalPrice, 2) . ' ' . $this->curr->sign . '</small><br><small>' . __("Stock") . ': ' . $stock . '</small>';
             })
 
-            ->addColumn('action', function (\App\Models\MerchantItem $mp) {
-                // Use merchant_product_id instead of catalog_item_id
-                return '<div class="action-list"><a href="javascript:;" class="purchase_product_add" data-bs-toggle="modal" class="add-btn-small pl-2" data-bs-target="#add-product" data-href="' . $mp->id . '" data-catalog-item-id="' . $mp->catalog_item_id . '"> <i class="fas fa-plus"></i></a></div>';
+            ->addColumn('action', function (\App\Models\MerchantItem $mi) {
+                // Use merchant_item_id instead of catalog_item_id
+                return '<div class="action-list"><a href="javascript:;" class="purchase_product_add" data-bs-toggle="modal" class="add-btn-small pl-2" data-bs-target="#add-product" data-href="' . $mi->id . '" data-catalog-item-id="' . $mi->catalog_item_id . '"> <i class="fas fa-plus"></i></a></div>';
             })
 
             ->rawColumns(['name', 'action'])
@@ -112,15 +113,15 @@ class PurchaseCreateController extends AdminBaseController
 
     public function removePurchaseProduct($product_id)
     {
-        $products = Session::get('purchase_products');
-        foreach ($products as $key => $product) {
-            if ($product == $product_id) {
-                unset($products[$key]);
+        $items = Session::get('purchase_products');
+        foreach ($items as $key => $item) {
+            if ($item == $product_id) {
+                unset($items[$key]);
             }
         }
         $sign = $this->curr;
-        if ($products) {
-            Session::put('purchase_products', $products);
+        if ($items) {
+            Session::put('purchase_products', $items);
         } else {
             Session::forget('purchase_products');
         }
@@ -129,6 +130,7 @@ class PurchaseCreateController extends AdminBaseController
     }
 
 
+    // Show catalog item details for adding to purchase
     public function product_show($id)
     {
         $data['productt'] = CatalogItem::find($id);
@@ -157,43 +159,43 @@ class PurchaseCreateController extends AdminBaseController
 
         $size_price = ($size_price / $curr->value);
         $color_price = ($color_price / $curr->value);
-        $prod = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'measure', 'attributes']);
-        if ($prod->type != 'Physical') {
+        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'measure', 'attributes']);
+        if ($catalogItem->type != 'Physical') {
             $qty = 1;
         }
 
-        // Get the first active merchant product for this product
-        $merchantProduct = $prod->merchantProducts()
+        // Get the first active merchant item for this catalog item
+        $merchantItem = $catalogItem->merchantProducts()
             ->where('status', 1)
             ->orderBy('price')
             ->first();
 
-        if ($merchantProduct) {
-            $prc = $merchantProduct->price + $this->gs->fixed_commission + ($merchantProduct->price / 100) * $this->gs->percentage_commission;
-            $prod->price = round($prc, 2);
-            // Use merchant product data
-            $prod->stock = $merchantProduct->stock;
-            $prod->size = $merchantProduct->size;
-            $prod->size_qty = $merchantProduct->size_qty;
-            $prod->size_price = $merchantProduct->size_price;
-            $prod->color = $merchantProduct->color;
-            $prod->minimum_qty = $merchantProduct->minimum_qty;
-            $prod->stock_check = $merchantProduct->stock_check;
-            $prod->color_all = $merchantProduct->color_all;
+        if ($merchantItem) {
+            $prc = $merchantItem->price + $this->gs->fixed_commission + ($merchantItem->price / 100) * $this->gs->percentage_commission;
+            $catalogItem->price = round($prc, 2);
+            // Use merchant item data
+            $catalogItem->stock = $merchantItem->stock;
+            $catalogItem->size = $merchantItem->size;
+            $catalogItem->size_qty = $merchantItem->size_qty;
+            $catalogItem->size_price = $merchantItem->size_price;
+            $catalogItem->color = $merchantItem->color;
+            $catalogItem->minimum_qty = $merchantItem->minimum_qty;
+            $catalogItem->stock_check = $merchantItem->stock_check;
+            $catalogItem->color_all = $merchantItem->color_all;
         } else {
-            // Fallback if no merchant product found
-            $prod->price = 0;
-            $prod->stock = 0;
+            // Fallback if no merchant item found
+            $catalogItem->price = 0;
+            $catalogItem->stock = 0;
         }
         if (!empty($prices)) {
             foreach (explode(',',$prices) as $data) {
-                $prod->price += ($data / $curr->value);
+                $catalogItem->price += ($data / $curr->value);
             }
         }
 
-        if (!empty($prod->license_qty)) {
+        if (!empty($catalogItem->license_qty)) {
             $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
+            foreach ($catalogItem->license_qty as $ttl => $dtl) {
                 if ($dtl < 1) {
                     $lcheck = 0;
                 } else {
@@ -208,22 +210,22 @@ class PurchaseCreateController extends AdminBaseController
 
 
         if (empty($size)) {
-            if (!empty($prod->size)) {
-                $size = trim($prod->size[0]);
+            if (!empty($catalogItem->size)) {
+                $size = trim($catalogItem->size[0]);
             }
             $size = str_replace(' ', '-', $size);
         }
 
-        if ($size_qty == '0' && $prod->stock_check == 1) {
+        if ($size_qty == '0' && $catalogItem->stock_check == 1) {
 
             return 0;
         }
 
         if (empty($color)) {
-            // Get color from vendor colors (merchant_products.color_all)
-            $vendorColors = $prod->getVendorColors();
-            if (!empty($vendorColors)) {
-                $color = $vendorColors[0];
+            // Get color from merchant colors (merchant_items.color_all)
+            $merchantColors = $catalogItem->getVendorColors();
+            if (!empty($merchantColors)) {
+                $color = $merchantColors[0];
             }
         }
 
@@ -234,7 +236,7 @@ class PurchaseCreateController extends AdminBaseController
 
 
 
-        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
+        $cart->addnum($catalogItem, $catalogItem->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
 
         if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
             return view('admin.purchase.create.product_add_table');
@@ -243,7 +245,7 @@ class PurchaseCreateController extends AdminBaseController
 
             return view('admin.purchase.create.product_add_table');
         }
-        if ($prod->stock_check == 1) {
+        if ($catalogItem->stock_check == 1) {
             if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
                 if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] > $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['size_qty']) {
                     return view('admin.purchase.create.product_add_table');
@@ -363,7 +365,7 @@ class PurchaseCreateController extends AdminBaseController
 
         PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
         PurchaseHelper::stock_check($cart); // For Stock Checking
-        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+        PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
         Session::forget('admin_cart');
         Session::forget('purchase_address');

@@ -31,9 +31,9 @@ class SearchResultsController extends Controller
 
         // Merge all catalog items
         $allCatalogItems = $prods->merge($alternatives);
-        $productIds = $allCatalogItems->pluck('id')->toArray();
+        $catalogItemIds = $allCatalogItems->pluck('id')->toArray();
 
-        if (empty($productIds)) {
+        if (empty($catalogItemIds)) {
             return view('frontend.search-results', [
                 'sku' => $sku,
                 'cards' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, self::PER_PAGE),
@@ -46,11 +46,11 @@ class SearchResultsController extends Controller
             ]);
         }
 
-        $prodIds = $prods->pluck('id')->toArray();
-        $altIds = $alternatives->pluck('id')->toArray();
+        $mainCatalogItemIds = $prods->pluck('id')->toArray();
+        $altCatalogItemIds = $alternatives->pluck('id')->toArray();
 
         // Query 1: Get available filters (lightweight - no eager loading needed)
-        $filtersQuery = MerchantItem::whereIn('catalog_item_id', $productIds)
+        $filtersQuery = MerchantItem::whereIn('catalog_item_id', $catalogItemIds)
             ->where('status', 1)
             ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar']);
 
@@ -60,7 +60,7 @@ class SearchResultsController extends Controller
 
         // Query 2: Main products - PAGINATED (only 12 DTOs built)
         $mainPaginator = $this->loadMerchantItemsPaginated(
-            $prodIds,
+            $mainCatalogItemIds,
             $storeFilter,
             $qualityFilter,
             $sortBy,
@@ -72,8 +72,8 @@ class SearchResultsController extends Controller
 
         // Query 3: Alternative products - Limited to 12 (no pagination, just limit)
         $alternativeCards = collect();
-        if (!empty($altIds)) {
-            $altMerchants = $this->loadMerchantItemsLimited($altIds, $storeFilter, $qualityFilter, $sortBy, 12);
+        if (!empty($altCatalogItemIds)) {
+            $altMerchants = $this->loadMerchantItemsLimited($altCatalogItemIds, $storeFilter, $qualityFilter, $sortBy, 12);
             $alternativeCards = $this->cardBuilder->buildCardsFromMerchants($altMerchants);
         }
 
@@ -117,13 +117,13 @@ class SearchResultsController extends Controller
      * Sorting is done in the query, not after
      */
     private function loadMerchantItemsPaginated(
-        array $productIds,
+        array $catalogItemIds,
         string $storeFilter,
         string $qualityFilter,
         string $sortBy,
         int $perPage
     ) {
-        $query = MerchantItem::whereIn('catalog_item_id', $productIds)
+        $query = MerchantItem::whereIn('catalog_item_id', $catalogItemIds)
             ->where('status', 1);
 
         // Apply eager loading
@@ -149,13 +149,13 @@ class SearchResultsController extends Controller
      * Load merchant items with LIMIT (for alternatives)
      */
     private function loadMerchantItemsLimited(
-        array $productIds,
+        array $catalogItemIds,
         string $storeFilter,
         string $qualityFilter,
         string $sortBy,
         int $limit
     ) {
-        $query = MerchantItem::whereIn('catalog_item_id', $productIds)
+        $query = MerchantItem::whereIn('catalog_item_id', $catalogItemIds)
             ->where('status', 1);
 
         // Apply eager loading

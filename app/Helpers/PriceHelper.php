@@ -243,7 +243,7 @@ class PriceHelper
     public static function getOrderTotal($input, $cart)
     {
         try {
-            // اجمع vendor_ids من محتوى السلة
+            // اجمع merchant_ids من محتوى السلة
             $merchant_ids = [];
             foreach ($cart->items as $item) {
                 if (!in_array($item['item']['user_id'], $merchant_ids)) {
@@ -320,7 +320,7 @@ class PriceHelper
                 }
 
                 if (is_array($shippingData)) {
-                    foreach ($shippingData as $vendorKey => $val) {
+                    foreach ($shippingData as $merchantKey => $val) {
                         // Tryoto: "deliveryOptionId#Company#price"
                         if (is_string($val) && strpos($val, '#') !== false) {
                             $parts = explode('#', $val);
@@ -493,7 +493,7 @@ class PriceHelper
         }
 
         try {
-            // vendor_ids من السلة
+            // merchant_ids من السلة
             $merchant_ids = [];
             foreach ($cart->items as $item) {
                 if (!in_array($item['item']['user_id'], $merchant_ids)) {

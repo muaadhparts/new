@@ -217,7 +217,7 @@ class CartHelper
                 'type' => $product->type ?? 'Physical',
 
                 // معلومات التاجر
-                'vendor_name' => getLocalizedShopName($mp->user),
+                'merchant_name' => getLocalizedShopName($mp->user),
                 'shop_name_ar' => $mp->user->shop_name_ar ?? '',
                 'brand_name' => $mp->qualityBrand->brand->name ?? '',
                 'quality_name' => $mp->qualityBrand->name ?? '',
@@ -398,7 +398,7 @@ class CartHelper
      *
      * @return array
      */
-    public static function groupByVendor(): array
+    public static function groupByMerchant(): array
     {
         $cart = self::getCart();
         $grouped = [];

@@ -70,17 +70,17 @@ class VerificationController extends AdminBaseController
     {
         $data[0] = 0;
         $id = $_GET['id'];
-        $prod1 = Verification::findOrFail($id);
-        $prod = explode(',', $prod1->attachments);
-        if(count($prod))
+        $verification = Verification::findOrFail($id);
+        $attachments = explode(',', $verification->attachments);
+        if(count($attachments))
         {
             $data[0] = 1;
-            $data[1] = $prod;
-            $data[2] = $prod1->text;
-            $data[3] = ''.route('admin-vr-st',['id1' => $prod1->id, 'id2' => 'Verified']).'';
-            $data[4] = ''.route('admin-vr-st',['id1' => $prod1->id, 'id2' => 'Declined']).'';
+            $data[1] = $attachments;
+            $data[2] = $verification->text;
+            $data[3] = ''.route('admin-vr-st',['id1' => $verification->id, 'id2' => 'Verified']).'';
+            $data[4] = ''.route('admin-vr-st',['id1' => $verification->id, 'id2' => 'Declined']).'';
         }
-        return response()->json($data);              
+        return response()->json($data);
     }  
 
 

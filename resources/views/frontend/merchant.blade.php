@@ -5,10 +5,10 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Vednor Shop')</h2>
+                    <h2 class="breadcrumb-title">@lang('Merchant Shop')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="javascript:;">@lang('Vednor Shop :') </a></li>
+                        <li><a href="javascript:;">@lang('Merchant Shop :') </a></li>
                     </ul>
                 </div>
             </div>
@@ -21,10 +21,10 @@
             <div class="row">
                 <div class="col-12 col-lg-4 col-xl-3 mt-40 mt-lg-0">
                     <div class="gs-product-sidebar-wrapper">
-                        <div class="single-product-widget contact-vendor-wrapper">
-                            <h5 class="widget-title">@lang('Contact Vendor')</h5>
+                        <div class="single-product-widget contact-merchant-wrapper">
+                            <h5 class="widget-title">@lang('Contact Merchant')</h5>
                             <div class="img-wrapper">
-                                <img src="{{ asset('assets/images/users/' . $merchant->photo) }}" alt="vendor img">
+                                <img src="{{ asset('assets/images/users/' . $merchant->photo) }}" alt="merchant img">
                             </div>
                             <ul>
                                 <li><span><b>@lang('Store Name:') </b>{{ getLocalizedShopName($merchant) }}</span></li>
@@ -38,7 +38,7 @@
                             <form action="{{ route('user-contact') }}" method="POST">
                                 @csrf 
                                 <input type="hidden" name="user_id" value="{{auth()->id()}}">
-                                <div class="vendor-input-wrapper">
+                                <div class="merchant-input-wrapper">
                                    
                                     <div class="input-wrapper">
                                         <input class="input-cls" id="email" name="email" type="email"

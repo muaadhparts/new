@@ -48,8 +48,8 @@
 
 <script>
 (function() {
-    const vendorId = {{ $vendor_id }};
-    const modalId = 'vendor_package' + vendorId;
+    const merchantId = {{ $vendor_id }};
+    const modalId = 'vendor_package' + merchantId;
     const currSign = '{{ $curr->sign }}';
 
     function initPackagingModal() {
@@ -59,7 +59,7 @@
             return;
         }
 
-        const packingRadios = modal.querySelectorAll('input.packing[ref="' + vendorId + '"]');
+        const packingRadios = modal.querySelectorAll('input.packing[ref="' + merchantId + '"]');
 
         packingRadios.forEach(function(radio) {
             radio.addEventListener('change', function() {
@@ -69,7 +69,7 @@
                 const title = this.getAttribute('data-form');
 
                 // Update packing text display
-                const packingText = document.getElementById('packing_text' + vendorId);
+                const packingText = document.getElementById('packing_text' + merchantId);
                 if (packingText) {
                     packingText.textContent = title + ': ' + currSign + price.toFixed(2);
                 }
@@ -89,7 +89,7 @@
 
         // Trigger update when modal opens if already selected
         modal.addEventListener('shown.bs.modal', function() {
-            const checked = modal.querySelector('input.packing[ref="' + vendorId + '"]:checked');
+            const checked = modal.querySelector('input.packing[ref="' + merchantId + '"]:checked');
             if (checked) {
                 checked.dispatchEvent(new Event('change'));
             }

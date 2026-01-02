@@ -54,7 +54,7 @@ class ManualPaymentController extends CheckoutBaseControlller
 
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
         PurchaseHelper::license_check($cart); // For License Checking
 
         $new_cart = [];
@@ -77,7 +77,7 @@ class ManualPaymentController extends CheckoutBaseControlller
         $input['purchase_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
 
-        // Get tax data from vendor step2
+        // Get tax data from merchant step2
         $input['tax'] = $step2['tax_amount'] ?? 0;
         $input['tax_location'] = $step2['tax_location'] ?? '';
 
@@ -130,13 +130,13 @@ class ManualPaymentController extends CheckoutBaseControlller
 
         PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
         PurchaseHelper::stock_check($cart); // For Stock Checking
-        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+        PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
         Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
-        // Remove only vendor's products from cart
-        $this->removeVendorProductsFromCart($merchantId, $originalCart);
+        // Remove only merchant's items from cart
+        $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

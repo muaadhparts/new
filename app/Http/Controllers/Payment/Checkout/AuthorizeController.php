@@ -33,7 +33,7 @@ class AuthorizeController extends CheckoutBaseControlller
         $merchantId = $merchantData['merchant_id'];
         $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
-        // Get steps from vendor sessions
+        // Get steps from merchant sessions
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -62,7 +62,7 @@ class AuthorizeController extends CheckoutBaseControlller
         $item_number = Str::random(4) . time();
         $item_amount = $total;
 
-        // Get cart and filter for vendor
+        // Get cart and filter for merchant
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
         $success_url = $this->getSuccessUrl($merchantId, $originalCart);
@@ -133,8 +133,8 @@ class AuthorizeController extends CheckoutBaseControlller
 
                     if ($tresponse != null && $tresponse->getMessages() != null) {
 
-                        // Filter cart for vendor
-                        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+                        // Filter cart for merchant
+                        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
                         PurchaseHelper::license_check($cart); // For License Checking
                         $new_cart = [];
                         $new_cart['totalQty'] = $cart->totalQty;
@@ -211,13 +211,13 @@ class AuthorizeController extends CheckoutBaseControlller
 
                         PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
                         PurchaseHelper::stock_check($cart); // For Stock Checking
-                        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+                        PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
                         Session::put('temporder', $purchase);
                         Session::put('tempcart', $cart);
 
-                        // Remove only vendor's products from cart
-                        $this->removeVendorProductsFromCart($merchantId, $originalCart);
+                        // Remove only merchant's items from cart
+                        $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
                         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

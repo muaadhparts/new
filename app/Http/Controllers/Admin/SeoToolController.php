@@ -47,8 +47,8 @@ class SeoToolController extends AdminBaseController
     {
         $expDate = Carbon::now()->subDays($id);
 
-        // Group by merchant_item_id for vendor-specific tracking
-        $productss = CatalogItemClick::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])
+        // Group by merchant_item_id for merchant-specific tracking
+        $items = CatalogItemClick::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])
             ->whereDate('date', '>', $expDate)
             ->get()
             ->groupBy(function ($item) {
@@ -57,6 +57,8 @@ class SeoToolController extends AdminBaseController
             });
 
         $val = $id;
+        // Note: 'productss' variable name kept for view compatibility
+        $productss = $items;
         return view('admin.seotool.popular', compact('val', 'productss'));
     }  
 

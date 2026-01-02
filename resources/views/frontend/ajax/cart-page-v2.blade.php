@@ -2,7 +2,7 @@
     =====================================================================
     CART PAGE V2 - Modern Design
     =====================================================================
-    Uses $productsByVendor passed from CartController.
+    Uses $productsByMerchant passed from CartController.
     - Responsive card-based layout
     - RTL support
     =====================================================================
@@ -13,7 +13,7 @@
     use App\Models\CatalogItem;
 
     // Use variables passed from CartController::cart()
-    // $productsByVendor, $products, $totalPrice are already available
+    // $productsByMerchant, $products, $totalPrice are already available
 
     $currValue = $curr->value ?? 1;
     $currSign = $curr->sign ?? '$';
@@ -27,7 +27,7 @@
 
 <div class="m-cart">
     <div class="container">
-        @if (empty($products) || empty($productsByVendor))
+        @if (empty($products) || empty($productsByMerchant))
             {{-- Empty Cart --}}
             <div class="m-cart__empty">
                 <div class="m-cart__empty-icon">
@@ -41,21 +41,21 @@
                 </a>
             </div>
         @else
-            @foreach ($productsByVendor as $vendorId => $vendorGroup)
-            <div class="m-cart__merchant" data-merchant-user-id="{{ $vendorId }}">
-                {{-- Vendor Header --}}
-                <div class="m-cart__vendor-header">
-                    <div class="m-cart__vendor-info">
+            @foreach ($productsByMerchant as $merchantId => $merchantGroup)
+            <div class="m-cart__merchant" data-merchant-user-id="{{ $merchantId }}">
+                {{-- Merchant Header --}}
+                <div class="m-cart__merchant-header">
+                    <div class="m-cart__merchant-info">
                         <i class="fas fa-store"></i>
-                        <span class="m-cart__vendor-name">{{ $vendorGroup['vendor_name'] ?? __('Vendor') }}</span>
-                        <span class="m-cart__vendor-count">{{ $vendorGroup['count'] ?? 0 }} @lang('Items')</span>
+                        <span class="m-cart__merchant-name">{{ $merchantGroup['merchant_name'] ?? __('Merchant') }}</span>
+                        <span class="m-cart__merchant-count">{{ $merchantGroup['count'] ?? 0 }} @lang('Items')</span>
                     </div>
                 </div>
 
                 <div class="m-cart__body">
                     {{-- Products List --}}
                     <div class="m-cart__items">
-                        @foreach ($vendorGroup['products'] as $rowKey => $product)
+                        @foreach ($merchantGroup['products'] as $rowKey => $product)
                             @php
                                 $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', (string)$rowKey);
 
@@ -68,12 +68,12 @@
                                 $itemPhoto = data_get($product, 'item.photo');
                                 $photoUrl = $itemPhoto ? Storage::url($itemPhoto) : asset('assets/images/noimage.png');
 
-                                $itemVendorId = $product['user_id'] ?? data_get($product, 'item.user_id') ?? 0;
+                                $itemMerchantId = $product['user_id'] ?? data_get($product, 'item.user_id') ?? 0;
                                 $itemMpId = $product['merchant_item_id'] ?? data_get($product, 'item.merchant_item_id') ?? 0;
-                                $hasAllParams = $itemSlug && $itemVendorId && $itemMpId;
+                                $hasAllParams = $itemSlug && $itemMerchantId && $itemMpId;
 
                                 $productUrl = $hasAllParams
-                                    ? route('front.catalog-item', ['slug' => $itemSlug, 'merchant_id' => $itemVendorId, 'merchant_item_id' => $itemMpId])
+                                    ? route('front.catalog-item', ['slug' => $itemSlug, 'merchant_id' => $itemMerchantId, 'merchant_item_id' => $itemMpId])
                                     : '#';
 
                                 $itemPrice = $product['item_price'] ?? 0;
@@ -257,7 +257,7 @@
                                        data-url="{{ route('cart.remove', $rowKey) }}"
                                        data-row-key="{{ $rowKey }}"
                                        data-dom-key="{{ $domKey }}"
-                                       data-merchant-user-id="{{ $vendorId }}"
+                                       data-merchant-user-id="{{ $merchantId }}"
                                        title="@lang('Remove')">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
@@ -269,40 +269,40 @@
                     {{-- Cart Summary --}}
                     <div class="m-cart__summary">
                         @php
-                            $vendorDiscount = 0;
-                            $vendorTotal = $vendorGroup['total'] ?? 0;
-                            foreach ($vendorGroup['products'] as $product) {
+                            $merchantDiscount = 0;
+                            $merchantTotal = $merchantGroup['total'] ?? 0;
+                            foreach ($merchantGroup['products'] as $product) {
                                 if (!empty($product['discount'])) {
                                     $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
                                     $tdiscount = ($total_itemprice * (float)$product['discount']) / 100;
-                                    $vendorDiscount += $tdiscount;
+                                    $merchantDiscount += $tdiscount;
                                 }
                             }
-                            $vendorSubtotal = $vendorTotal + $vendorDiscount;
+                            $merchantSubtotal = $merchantTotal + $merchantDiscount;
                         @endphp
 
                         <h5 class="m-cart__summary-title">@lang('Order Summary')</h5>
 
                         <div class="m-cart__summary-row">
-                            <span>@lang('Subtotal') ({{ $vendorGroup['count'] ?? 0 }})</span>
-                            <span>{{ $showPrice($vendorSubtotal) }}</span>
+                            <span>@lang('Subtotal') ({{ $merchantGroup['count'] ?? 0 }})</span>
+                            <span>{{ $showPrice($merchantSubtotal) }}</span>
                         </div>
 
-                        @if($vendorDiscount > 0)
+                        @if($merchantDiscount > 0)
                         <div class="m-cart__summary-row m-cart__summary-row--discount">
                             <span>@lang('Discount')</span>
-                            <span>- {{ $showPrice($vendorDiscount) }}</span>
+                            <span>- {{ $showPrice($merchantDiscount) }}</span>
                         </div>
                         @endif
 
                         <div class="m-cart__summary-row m-cart__summary-row--total">
                             <span>@lang('Total')</span>
-                            <span class="total-cart-price">{{ $showPrice($vendorTotal) }}</span>
+                            <span class="total-cart-price">{{ $showPrice($merchantTotal) }}</span>
                         </div>
 
                         <div class="m-cart__summary-actions">
                             @auth
-                                <a href="{{ route('front.checkout.vendor', $vendorId) }}" class="m-btn m-btn--primary m-btn--block">
+                                <a href="{{ route('front.checkout.merchant', $merchantId) }}" class="m-btn m-btn--primary m-btn--block">
                                     <i class="fas fa-lock"></i>
                                     @lang('Checkout')
                                 </a>
@@ -351,9 +351,9 @@ jQuery(document).ready(function($) {
         var $btn = $(this);
         var url = $btn.data('url');
         var domKey = $btn.data('dom-key');
-        var vendorId = $btn.data('vendor-id');
+        var merchantId = $btn.data('merchant-id');
         var $item = $('#cart-row-' + domKey);
-        var $vendor = $btn.closest('.m-cart__vendor');
+        var $merchantEl = $btn.closest('.m-cart__merchant');
 
         if (!url) {
             console.error('Cart remove: No URL found');
@@ -380,11 +380,11 @@ jQuery(document).ready(function($) {
                     $item.slideUp(300, function() {
                         $(this).remove();
 
-                        // Check if vendor has any items left
-                        var vendorItemsCount = resp.vendorCounts ? (resp.vendorCounts[vendorId] || 0) : 0;
-                        if (vendorItemsCount === 0) {
-                            // Remove entire vendor section
-                            $vendor.slideUp(300, function() {
+                        // Check if merchant has any items left
+                        var merchantItemsCount = resp.merchantCounts ? (resp.merchantCounts[merchantId] || 0) : 0;
+                        if (merchantItemsCount === 0) {
+                            // Remove entire merchant section
+                            $merchantEl.slideUp(300, function() {
                                 $(this).remove();
 
                                 // Check if cart is now empty
@@ -393,13 +393,13 @@ jQuery(document).ready(function($) {
                                 }
                             });
                         } else {
-                            // Update vendor count and total
-                            $vendor.find('.m-cart__vendor-count').text(vendorItemsCount + ' {{ __("Items") }}');
-                            var vendorTotal = resp.vendorTotals ? (resp.vendorTotals[vendorId] || 0) : 0;
-                            $vendor.find('.total-cart-price').text(formatPrice(vendorTotal));
+                            // Update merchant count and total
+                            $merchantEl.find('.m-cart__merchant-count').text(merchantItemsCount + ' {{ __("Items") }}');
+                            var merchantTotal = resp.merchantTotals ? (resp.merchantTotals[merchantId] || 0) : 0;
+                            $merchantEl.find('.total-cart-price').text(formatPrice(merchantTotal));
 
                             // Update summary subtotal (items count)
-                            $vendor.find('.m-cart__summary-row:first span:first').text('{{ __("Subtotal") }} (' + vendorItemsCount + ')');
+                            $merchantEl.find('.m-cart__summary-row:first span:first').text('{{ __("Subtotal") }} (' + merchantItemsCount + ')');
                         }
                     });
 
@@ -485,7 +485,7 @@ jQuery(document).ready(function($) {
                 }
                 $qtyInput.val(resp[1]);
                 $('#prc' + domKey).html(resp[2]);
-                $wrapper.closest('.m-cart__vendor').find('.total-cart-price').html(resp[0]);
+                $wrapper.closest('.m-cart__merchant').find('.total-cart-price').html(resp[0]);
 
                 // Update stock value from server response
                 if (resp.stock !== undefined) {
@@ -542,7 +542,7 @@ jQuery(document).ready(function($) {
                 }
                 $qtyInput.val(resp[1]);
                 $('#prc' + domKey).html(resp[2]);
-                $wrapper.closest('.m-cart__vendor').find('.total-cart-price').html(resp[0]);
+                $wrapper.closest('.m-cart__merchant').find('.total-cart-price').html(resp[0]);
 
                 // Update stock value from server response
                 if (resp.stock !== undefined) {

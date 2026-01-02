@@ -43,7 +43,7 @@ class FlutterwaveController extends CheckoutBaseControlller
         $merchantId = $merchantData['merchant_id'];
         $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
-        // Get steps from vendor sessions
+        // Get steps from merchant sessions
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -143,7 +143,7 @@ class FlutterwaveController extends CheckoutBaseControlller
         $merchantId = $merchantData['merchant_id'];
         $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
-        // Get steps from vendor sessions
+        // Get steps from merchant sessions
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -156,7 +156,7 @@ class FlutterwaveController extends CheckoutBaseControlller
 
         $order_data = Session::get('order_data');
 
-        // Get cart and filter for vendor
+        // Get cart and filter for merchant
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
         $success_url = $this->getSuccessUrl($merchantId, $originalCart);
@@ -203,8 +203,8 @@ class FlutterwaveController extends CheckoutBaseControlller
 
                     if (($chargeResponsecode == "00" || $chargeResponsecode == "0") && ($paymentStatus == "successful")) {
 
-                        // Filter cart for vendor if vendor checkout
-                        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+                        // Filter cart for merchant checkout
+                        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
                         PurchaseHelper::license_check($cart); // For License Checking
 
                         $new_cart = [];
@@ -281,13 +281,13 @@ class FlutterwaveController extends CheckoutBaseControlller
 
                         PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
                         PurchaseHelper::stock_check($cart); // For Stock Checking
-                        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+                        PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
                         Session::put('temporder', $purchase);
                         Session::put('tempcart', $cart);
 
-                        // Remove only vendor's products from cart
-                        $this->removeVendorProductsFromCart($merchantId, $originalCart);
+                        // Remove only merchant's items from cart
+                        $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
                         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

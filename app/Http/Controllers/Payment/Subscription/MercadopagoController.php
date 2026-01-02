@@ -102,7 +102,7 @@ class MercadopagoController extends SubscriptionBaseController
 
             $data = [
                 'to' => $user->email,
-                'type' => "vendor_accept",
+                'type' => "merchant_accept",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",

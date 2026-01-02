@@ -34,7 +34,7 @@ class DashboardController extends AdminBaseController
         $data['products'] = CatalogItem::count();
         $data['blogs'] = Blog::count();
 
-        // جلب أحدث العناصر من merchant_items (العناصر النشطة فقط)
+        // Get latest merchant items (active only)
         $data['pproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
@@ -46,7 +46,7 @@ class DashboardController extends AdminBaseController
 
         $data['rpurchases'] = Purchase::latest('id')->take(5)->get();
 
-        // جلب العناصر الشائعة من merchant_items (حسب views من catalog_items)
+        // Get popular merchant items (by views from catalog_items)
         $data['poproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
@@ -54,15 +54,15 @@ class DashboardController extends AdminBaseController
             })
             ->take(5)
             ->get()
-            ->sortByDesc(function($mp) {
-                return $mp->catalogItem->views ?? 0;
+            ->sortByDesc(function($mi) {
+                return $mi->catalogItem->views ?? 0;
             });
 
         $data['rusers'] = User::latest('id')->take(5)->get();
         $data['referrals'] = Counter::where('type', 'referral')->latest('total_count')->take(5)->get();
         $data['browsers'] = Counter::where('type', 'browser')->latest('total_count')->take(5)->get();
 
-        // التحقق من حالة التفعيل
+        // Check activation status
         $data['activation_notify'] = "";
         $license = License::getActiveLicense();
         if (!$license) {

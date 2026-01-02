@@ -31,7 +31,7 @@ class SslController extends CheckoutBaseControlller
         $merchantId = $merchantData['merchant_id'];
         $isMerchantCheckout = $merchantData['is_merchant_checkout'];
 
-        // Get steps from vendor sessions
+        // Get steps from merchant sessions
         $steps = $this->getCheckoutSteps($merchantId, $isMerchantCheckout);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -67,10 +67,10 @@ class SslController extends CheckoutBaseControlller
         $cancel_url = route('front.payment.cancle');
         $notify_url = route('front.ssl.notify');
 
-        // Get cart and filter for vendor
+        // Get cart and filter for merchant
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
 
         PurchaseHelper::license_check($cart); // For License Checking
         $new_cart = [];
@@ -212,7 +212,7 @@ class SslController extends CheckoutBaseControlller
         // Get cart and filter for merchant
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
-        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
 
         $success_url = $this->getSuccessUrl($merchantId, $originalCart);
         $cancel_url = route('front.payment.cancle');
@@ -255,13 +255,13 @@ class SslController extends CheckoutBaseControlller
 
             PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
             PurchaseHelper::stock_check($cart); // For Stock Checking
-            PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+            PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
             Session::put('temporder', $purchase);
             Session::put('tempcart', $cart);
 
-            // Remove only vendor's products from cart
-            $this->removeVendorProductsFromCart($merchantId, $originalCart);
+            // Remove only merchant's items from cart
+            $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
                 PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

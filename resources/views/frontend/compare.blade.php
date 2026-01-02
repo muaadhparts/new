@@ -323,9 +323,9 @@
                             @endforeach
                         </tr>
 
-                        {{-- Vendor Row --}}
+                        {{-- Merchant Row --}}
                         <tr>
-                            <td><h6 class="td-title">@lang('Vendor')</h6></td>
+                            <td><h6 class="td-title">@lang('Merchant')</h6></td>
                             @foreach ($processedProducts as $mpId => $product)
                                 <td>
                                     <span class="table-value">{{ $product['merchant_item'] && $product['merchant_item']->user ? getLocalizedShopName($product['merchant_item']->user) : __('N/A') }}</span>

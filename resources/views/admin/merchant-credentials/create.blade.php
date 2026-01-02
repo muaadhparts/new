@@ -44,7 +44,7 @@
                                 <div class="col-lg-7">
                                     <select name="user_id" id="user_id" class="form-control" required>
                                         <option value="">{{ __('Select Vendor') }}</option>
-                                        @foreach($vendors as $vendor)
+                                        @foreach($merchants as $vendor)
                                             <option value="{{ $vendor->id }}" {{ old('user_id') == $vendor->id ? 'selected' : '' }}>
                                                 {{ $vendor->shop_name ?: $vendor->name }} (ID: {{ $vendor->id }})
                                             </option>

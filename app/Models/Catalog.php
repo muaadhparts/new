@@ -27,11 +27,11 @@ class Catalog extends Model
     // =========================================================
 
     /**
-     * Alias: childs → treeCategories Level 1 (للتوافق مع $subcategory->childs)
+     * Alias: childs → newCategories Level 1 (للتوافق مع $subcategory->childs)
      */
     public function getChildsAttribute()
     {
-        return $this->treeCategories()
+        return $this->newCategories()
             ->where('level', 1)
             ->orderBy('label_en')
             ->get();
@@ -99,11 +99,11 @@ class Catalog extends Model
     }
 
     /**
-     * 🔗 TreeCategories المرتبطة بالكتالوج
+     * 🔗 NewCategories المرتبطة بالكتالوج
      */
-    public function treeCategories(): HasMany
+    public function newCategories(): HasMany
     {
-        return $this->hasMany(TreeCategory::class, 'catalog_id');
+        return $this->hasMany(NewCategory::class, 'catalog_id');
     }
 
     /**
@@ -111,7 +111,7 @@ class Catalog extends Model
      */
     public function rootCategories(): HasMany
     {
-        return $this->hasMany(TreeCategory::class, 'catalog_id')
+        return $this->hasMany(NewCategory::class, 'catalog_id')
                     ->where('level', 1);
     }
 

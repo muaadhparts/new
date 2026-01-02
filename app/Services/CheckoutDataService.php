@@ -16,38 +16,38 @@ use Illuminate\Support\Collection;
  * N+1 queries inside Blade templates.
  *
  * Performance Impact:
- * - Before: 3-5 queries per vendor (Shipping, Package, User) = O(n) queries
+ * - Before: 3-5 queries per merchant (Shipping, Package, User) = O(n) queries
  * - After: 3 bulk queries total = O(1) queries
  */
 class CheckoutDataService
 {
     /**
-     * Pre-load all vendor data needed for checkout step2
+     * Pre-load all merchant data needed for checkout step2
      *
-     * @param array $products Cart products array
-     * @return array Structured data for all vendors
+     * @param array $cartItems Cart items array
+     * @return array Structured data for all merchants
      */
-    public static function loadVendorData(array $products): array
+    public static function loadMerchantData(array $cartItems): array
     {
-        // Extract unique vendor IDs from products
-        $merchantIds = collect($products)
+        // Extract unique merchant IDs from cart items
+        $merchantIds = collect($cartItems)
             ->pluck('user_id')
             ->unique()
             ->filter()
             ->values()
             ->toArray();
 
-        // Handle case where vendor_id = 0 (admin products)
-        $hasAdminProducts = in_array(0, $merchantIds) || empty($merchantIds);
+        // Handle case where merchant_id = 0 (admin items)
+        $hasAdminItems = in_array(0, $merchantIds) || empty($merchantIds);
 
-        // Remove 0 from vendor IDs for User query
+        // Remove 0 from merchant IDs for User query
         $merchantIds = array_filter($merchantIds, fn($id) => $id > 0);
 
         // Bulk load all data
-        $vendors = self::loadVendors($merchantIds);
-        $shippingByVendor = self::loadShipping($merchantIds, $hasAdminProducts);
-        $packagingByVendor = self::loadPackaging($merchantIds);
-        $admin = $hasAdminProducts ? Admin::find(1) : null;
+        $merchants = self::loadMerchants($merchantIds);
+        $shippingByMerchant = self::loadShipping($merchantIds, $hasAdminItems);
+        $packagingByMerchant = self::loadPackaging($merchantIds);
+        $admin = $hasAdminItems ? Admin::find(1) : null;
 
         // Provider labels (static)
         $providerLabels = [
@@ -60,21 +60,21 @@ class CheckoutDataService
         $result = [];
 
         foreach ($merchantIds as $merchantId) {
-            $shipping = $shippingByVendor[$merchantId] ?? collect();
+            $shipping = $shippingByMerchant[$merchantId] ?? collect();
             $result[$merchantId] = [
-                'vendor' => $vendors[$merchantId] ?? null,
+                'merchant' => $merchants[$merchantId] ?? null,
                 'shipping' => $shipping,
-                'packaging' => $packagingByVendor[$merchantId] ?? collect(),
+                'packaging' => $packagingByMerchant[$merchantId] ?? collect(),
                 'grouped_shipping' => $shipping->groupBy('provider'),
                 'provider_labels' => $providerLabels,
             ];
         }
 
         // Add admin data if needed
-        if ($hasAdminProducts) {
-            $adminShipping = $shippingByVendor[0] ?? collect();
+        if ($hasAdminItems) {
+            $adminShipping = $shippingByMerchant[0] ?? collect();
             $result[0] = [
-                'vendor' => $admin,
+                'merchant' => $admin,
                 'shipping' => $adminShipping,
                 'packaging' => collect(), // No global packaging
                 'grouped_shipping' => $adminShipping->groupBy('provider'),
@@ -86,9 +86,9 @@ class CheckoutDataService
     }
 
     /**
-     * Bulk load vendors by IDs
+     * Bulk load merchants by IDs
      */
-    private static function loadVendors(array $merchantIds): Collection
+    private static function loadMerchants(array $merchantIds): Collection
     {
         if (empty($merchantIds)) {
             return collect();
@@ -100,29 +100,29 @@ class CheckoutDataService
     }
 
     /**
-     * Bulk load shipping for all vendors
+     * Bulk load shipping for all merchants
      * ✅ FIX: Returns Collection grouped by user_id (not array)
      */
     private static function loadShipping(array $merchantIds, bool $includeAdmin = false): Collection
     {
-        $allVendorIds = $merchantIds;
+        $allMerchantIds = $merchantIds;
         if ($includeAdmin) {
-            $allVendorIds[] = 0;
+            $allMerchantIds[] = 0;
         }
 
-        if (empty($allVendorIds)) {
+        if (empty($allMerchantIds)) {
             return collect();
         }
 
-        // Load all shipping records for all vendors at once
-        $allShipping = Shipping::whereIn('user_id', $allVendorIds)->get();
+        // Load all shipping records for all merchants at once
+        $allShipping = Shipping::whereIn('user_id', $allMerchantIds)->get();
 
         // Group by user_id - returns Collection of Collections
         return $allShipping->groupBy('user_id');
     }
 
     /**
-     * Bulk load packaging for all vendors
+     * Bulk load packaging for all merchants
      * ✅ FIX: Returns Collection grouped by user_id
      */
     private static function loadPackaging(array $merchantIds): Collection
@@ -166,16 +166,16 @@ class CheckoutDataService
     }
 
     /**
-     * Group products by vendor ID
+     * Group cart items by merchant ID
      *
-     * @param array $products
+     * @param array $cartItems
      * @return array
      */
-    public static function groupProductsByVendor(array $products): array
+    public static function groupItemsByMerchant(array $cartItems): array
     {
         $result = [];
 
-        foreach ($products as $key => $item) {
+        foreach ($cartItems as $key => $item) {
             $userId = $item['user_id'] ?? 0;
             if (!isset($result[$userId])) {
                 $result[$userId] = [];
@@ -187,16 +187,16 @@ class CheckoutDataService
     }
 
     /**
-     * Calculate vendor products total
+     * Calculate merchant items total
      *
-     * @param array $vendorProducts
+     * @param array $merchantItems
      * @return float
      */
-    public static function calculateVendorTotal(array $vendorProducts): float
+    public static function calculateMerchantTotal(array $merchantItems): float
     {
         $total = 0;
-        foreach ($vendorProducts as $product) {
-            $total += $product['price'] ?? 0;
+        foreach ($merchantItems as $item) {
+            $total += $item['price'] ?? 0;
         }
         return $total;
     }

@@ -33,28 +33,28 @@ class AlternativeService
             return collect();
         }
 
-        $productId = $baseData->product_id;
+        $catalogItemId = $baseData->product_id;
         $groupId = $baseData->group_id;
 
-        // ✅ جمع جميع product_ids في استعلام واحد
-        $productIds = collect([$productId]);
+        // ✅ جمع جميع catalog_item_ids في استعلام واحد
+        $catalogItemIds = collect([$catalogItemId]);
 
         if ($groupId) {
-            // جلب product_ids للبدائل
-            $alternativeProductIds = DB::table('sku_alternatives as sa')
+            // جلب catalog_item_ids للبدائل
+            $alternativeCatalogItemIds = DB::table('sku_alternatives as sa')
                 ->join('catalog_items as p', 'p.sku', '=', 'sa.sku')
                 ->where('sa.group_id', $groupId)
                 ->when(!$includeSelf, fn($q) => $q->where('sa.sku', '<>', $sku))
                 ->pluck('p.id');
 
-            $productIds = $productIds->merge($alternativeProductIds)->unique();
+            $catalogItemIds = $catalogItemIds->merge($alternativeCatalogItemIds)->unique();
         }
 
         // ✅ استعلام واحد لجميع merchant_items باستخدام JOIN
         $listings = MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
-            ->whereIn('merchant_items.catalog_item_id', $productIds->toArray())
+            ->whereIn('merchant_items.catalog_item_id', $catalogItemIds->toArray())
             ->where('merchant_items.status', 1)
             ->with([
                 'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
@@ -78,7 +78,7 @@ class AlternativeService
 
         // إزالة المنتج الأصلي إذا لم يكن includeSelf
         if (!$includeSelf) {
-            $listings = $listings->filter(fn($mp) => $mp->catalog_item_id != $productId);
+            $listings = $listings->filter(fn($mp) => $mp->catalog_item_id != $catalogItemId);
         }
 
         return $this->sortByPriority($listings);
@@ -89,13 +89,13 @@ class AlternativeService
      *
      * ✅ محسّن: استخدام JOIN بدلاً من whereHas
      */
-    protected function fetchSameProductVariants(int $productId, bool $includeSelf): Collection
+    protected function fetchSameProductVariants(int $catalogItemId, bool $includeSelf): Collection
     {
         return MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
             ->where('merchant_items.status', 1)
-            ->where('merchant_items.catalog_item_id', $productId)
+            ->where('merchant_items.catalog_item_id', $catalogItemId)
             ->with([
                 'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),

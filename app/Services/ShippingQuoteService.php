@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Cache;
 /**
  * ShippingQuoteService - Quote Only
  *
- * Single function: getProductQuote(vendorId, weight, cityId)
- * Uses same logic as Checkout (origin vendor → destination customer)
+ * Single function: getProductQuote(merchantId, weight, cityId)
+ * Uses same logic as Checkout (origin merchant → destination customer)
  * NO shipment creation, NO COD, NO storage
  */
 class ShippingQuoteService
@@ -28,7 +28,7 @@ class ShippingQuoteService
     /**
      * Get shipping quote for a product
      *
-     * @param int $merchantId Vendor user_id
+     * @param int $merchantId Merchant user_id
      * @param float $weight Product weight in kg
      * @param int|null $cityId Destination city (uses session if null)
      * @return array Quote result
@@ -46,8 +46,8 @@ class ShippingQuoteService
             ];
         }
 
-        // 2. Get origin city (vendor's city)
-        $originCity = $this->getVendorCity($merchantId);
+        // 2. Get origin city (merchant's city)
+        $originCity = $this->getMerchantCity($merchantId);
 
         if (!$originCity) {
             return [
@@ -111,7 +111,7 @@ class ShippingQuoteService
 
         try {
             $result = $this->tryotoService
-                ->forVendor($merchantId)
+                ->forMerchant($merchantId)
                 ->getDeliveryOptions($originCity, $destinationCity, $weight, 0, []);
 
             if (!$result['success']) {
@@ -244,25 +244,25 @@ class ShippingQuoteService
     }
 
     /**
-     * Get vendor's origin city name
+     * Get merchant's origin city name
      */
-    protected function getVendorCity(int $merchantId): ?string
+    protected function getMerchantCity(int $merchantId): ?string
     {
-        $vendor = DB::table('users')
+        $merchant = DB::table('users')
             ->select('city')
             ->where('id', $merchantId)
             ->first();
 
-        if (!$vendor || empty($vendor->city)) {
+        if (!$merchant || empty($merchant->city)) {
             return null;
         }
 
         // If city is an ID, get the name
-        if (is_numeric($vendor->city)) {
-            return $this->getCityName((int) $vendor->city);
+        if (is_numeric($merchant->city)) {
+            return $this->getCityName((int) $merchant->city);
         }
 
-        return $vendor->city;
+        return $merchant->city;
     }
 
     /**

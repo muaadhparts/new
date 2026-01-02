@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Session;
 
 class CompareController extends FrontBaseController
 {
+    /**
+     * Display the compare page with items.
+     */
     public function compare()
     {
         if (!Session::has('compare')) {
@@ -18,13 +21,14 @@ class CompareController extends FrontBaseController
 
         $oldCompare = Session::get('compare');
         $compare = new Compare($oldCompare);
-        $products = $compare->getItemsWithProducts();
+        $compareItems = $compare->getItemsWithProducts();
 
-        return view('frontend.compare', compact('products'));
+        // Note: 'products' kept for backward compatibility in views
+        return view('frontend.compare', ['products' => $compareItems]);
     }
 
     /**
-     * Add merchant product to comparison (New standardized method)
+     * Add merchant item to comparison (New standardized method).
      */
     public function addMerchantCompare($merchantProductId)
     {
@@ -32,7 +36,7 @@ class CompareController extends FrontBaseController
     }
 
     /**
-     * Remove merchant product from comparison (New standardized method)
+     * Remove merchant item from comparison (New standardized method).
      */
     public function removeMerchantCompare(Request $request, $merchantProductId)
     {
@@ -71,8 +75,8 @@ class CompareController extends FrontBaseController
     }
 
     /**
-     * Add merchant product to comparison
-     * Expects merchant_product_id as parameter
+     * Add merchant item to comparison.
+     * Expects merchant_product_id (merchant_item_id) as parameter.
      */
     public function addcompare($merchantProductId)
     {
@@ -95,29 +99,29 @@ class CompareController extends FrontBaseController
     }
 
     /**
-     * Legacy method for backward compatibility
-     * Converts product_id to merchant_product_id
-     * Can optionally accept user parameter to specify vendor
+     * Legacy method for backward compatibility.
+     * Converts catalog_item_id to merchant_item_id.
+     * Can optionally accept user parameter to specify merchant.
      */
-    public function addcompareLegacy(Request $request, $productId)
+    public function addcompareLegacy(Request $request, $catalogItemId)
     {
         $data[0] = 0;
-        $catalogItem = CatalogItem::findOrFail($productId);
+        $catalogItem = CatalogItem::findOrFail($catalogItemId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
         $userId = $request->get('user');
 
-        // If user parameter is provided, find specific merchant item for that vendor
+        // If user parameter is provided, find specific merchant item for that merchant
         if ($userId) {
             $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
-                ->where('catalog_item_id', $productId)
+                ->where('catalog_item_id', $catalogItemId)
                 ->where('user_id', $userId)
                 ->where('status', 1)
                 ->first();
         } else {
             // Fallback: find the first active merchant item
             $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
-                ->where('catalog_item_id', $productId)
+                ->where('catalog_item_id', $catalogItemId)
                 ->where('status', 1)
                 ->orderBy('price')
                 ->first();
@@ -125,7 +129,7 @@ class CompareController extends FrontBaseController
 
         if (!$merchantItem) {
             $data[0] = 1;
-            $data['error'] = __('Product not available from any vendor.');
+            $data['error'] = __('Product not available from any merchant.');
             return response()->json($data);
         }
 

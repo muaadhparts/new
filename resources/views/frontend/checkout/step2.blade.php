@@ -46,7 +46,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor.step2.submit', $vendor_id) : route('front.checkout.step2.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant.step2.submit', $merchant_id) : route('front.checkout.step2.submit') }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow-replaced" data-wow-delay=".2s">
@@ -55,7 +55,7 @@
                             <div class="single-addres">
                                 <div class="title-wrapper d-flex justify-content-between">
                                     <h5>@lang('Billing Address')</h5>
-                                    <a class="edit-btn" href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}">@lang('Edit')</a>
+                                    <a class="edit-btn" href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant', $merchant_id) : route('front.cart') }}">@lang('Edit')</a>
                                 </div>
 
                                 <ul>
@@ -131,30 +131,30 @@
                             $is_Digital = 1;
                         @endphp
 
-                        @foreach ($resultArray as $vendor_id => $array_product)
+                        @foreach ($resultArray as $loop_merchant_id => $array_product)
                             @php
                                 // ✅ N+1 FIX: Use pre-loaded data from CheckoutDataService
-                                $vendorInfo = $vendorData[$vendor_id] ?? null;
-                                $shipping = isset($vendorInfo['shipping']) ? collect($vendorInfo['shipping']) : collect();
-                                $packaging = $vendorInfo['packaging'] ?? collect();
-                                $vendor = $vendorInfo['vendor'] ?? null;
-                                $groupedShipping = $vendorInfo['grouped_shipping'] ?? collect();
-                                $providerLabels = $vendorInfo['provider_labels'] ?? [
+                                $merchantInfo = $merchantData[$loop_merchant_id] ?? null;
+                                $shipping = isset($merchantInfo['shipping']) ? collect($merchantInfo['shipping']) : collect();
+                                $packaging = $merchantInfo['packaging'] ?? collect();
+                                $merchantUser = $merchantInfo['merchant'] ?? null;
+                                $groupedShipping = $merchantInfo['grouped_shipping'] ?? collect();
+                                $providerLabels = $merchantInfo['provider_labels'] ?? [
                                     'manual' => __('Manual Shipping'),
                                     'debts' => __('Debts Shipping'),
                                     'tryoto' => __('Smart Shipping (Tryoto)'),
                                 ];
 
-                                // ✅ Calculate vendor's products total for free shipping check
-                                $vendorProductsTotal = 0;
+                                // ✅ Calculate merchant's products total for free shipping check
+                                $merchantProductsTotal = 0;
                                 foreach ($array_product as $product) {
-                                    $vendorProductsTotal += $product['price'] ?? 0;
+                                    $merchantProductsTotal += $product['price'] ?? 0;
                                 }
-                                $vendorProductsTotalConverted = round($vendorProductsTotal * $curr->value, 2);
+                                $merchantProductsTotalConverted = round($merchantProductsTotal * $curr->value, 2);
 
                             @endphp
-                            {{-- ✅ Hidden element for vendor's products total (for JavaScript) --}}
-                            <input type="hidden" data-vendor-products-total="{{ $vendor_id }}" data-amount="{{ $vendorProductsTotalConverted }}" />
+                            {{-- ✅ Hidden element for merchant's products total (for JavaScript) --}}
+                            <input type="hidden" data-merchant-products-total="{{ $loop_merchant_id }}" data-amount="{{ $merchantProductsTotalConverted }}" />
 
                             <div class="product-infos-wrapper wow-replaced" data-wow-delay=".2s">
                                 <!-- shop-info-wrapper -->
@@ -260,15 +260,15 @@
                                         <ul>
                                             <li>
                                                 <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ getLocalizedShopName($vendor) }}</span>
+                                                <span>{{ getLocalizedShopName($merchantUser) }}</span>
                                             </li>
                                             <li>
                                                 <span><b>@lang('Shop Phone :')</b></span>
-                                                <span>{{ $vendor->phone }}</span>
+                                                <span>{{ $merchantUser->phone }}</span>
                                             </li>
                                             <li>
                                                 <span><b>@lang('Shop Address:')</b></span>
-                                                <span>{{ $vendor->address }}</span>
+                                                <span>{{ $merchantUser->address }}</span>
                                             </li>
                                             <li>
 
@@ -276,20 +276,20 @@
                                         </ul>
 
 
-                                        {{-- Tax Display for this Vendor --}}
-                                        @if(isset($step1->vendor_tax_data[$vendor_id]))
+                                        {{-- Tax Display for this Merchant --}}
+                                        @if(isset($step1->merchant_tax_data[$merchant_id]))
                                             @php
-                                                $vendorTax = $step1->vendor_tax_data[$vendor_id];
-                                                $vendorTaxRate = $vendorTax['tax_rate'] ?? 0;
-                                                $vendorTaxAmount = $vendorTax['tax_amount'] ?? 0;
+                                                $merchantTax = $step1->merchant_tax_data[$merchant_id];
+                                                $merchantTaxRate = $merchantTax['tax_rate'] ?? 0;
+                                                $merchantTaxAmount = $merchantTax['tax_amount'] ?? 0;
                                             @endphp
-                                            @if($vendorTaxRate > 0)
+                                            @if($merchantTaxRate > 0)
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4 align-items-center">
                                                 <span class="label mr-2">
-                                                    <b>{{ __('Tax') }} ({{ $vendorTaxRate }}%):</b>
+                                                    <b>{{ __('Tax') }} ({{ $merchantTaxRate }}%):</b>
                                                 </span>
                                                 <span class="fw-bold text-success">
-                                                    {{ App\Models\CatalogItem::convertPrice($vendorTaxAmount) }}
+                                                    {{ App\Models\CatalogItem::convertPrice($merchantTaxAmount) }}
                                                 </span>
                                                 @if(isset($step1->tax_location))
                                                 <small class="text-muted ms-2">({{ $step1->tax_location }})</small>
@@ -303,11 +303,11 @@
                                                 <span class="label mr-2">
                                                     <b>{{ __('Packageing :') }}</b>
                                                 </span>
-                                                <p id="packing_text{{ $vendor_id }}">
+                                                <p id="packing_text{{ $merchant_id }}">
                                                     @lang('Not Selected')
                                                 </p>
                                                 <button type="button" class="template-btn sm-btn" data-bs-toggle="modal"
-                                                    data-bs-target="#vendor_package{{ $vendor_id }}">
+                                                    data-bs-target="#merchant_package{{ $merchant_id }}">
                                                     {{ __('Select Package') }}
                                                 </button>
                                             </div>
@@ -322,7 +322,7 @@
                                                 @foreach($groupedShipping as $provider => $methods)
                                                     @php
                                                         $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
-                                                        $modalId = "vendor_{$provider}_shipping_{$vendor_id}";
+                                                        $modalId = "merchant_{$provider}_shipping_{$merchant_id}";
                                                     @endphp
 
                                                     <button type="button" class="template-btn sm-btn"
@@ -333,7 +333,7 @@
                                                 @endforeach
 
                                                 {{-- Display selected shipping --}}
-                                                <p id="shipping_text{{ $vendor_id }}" class="ms-auto mb-0">
+                                                <p id="shipping_text{{ $merchant_id }}" class="ms-auto mb-0">
                                                     @lang('Not Selected')
                                                 </p>
                                             </div>
@@ -342,7 +342,7 @@
                                             @foreach($groupedShipping as $provider => $methods)
                                                 @php
                                                     $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
-                                                    $modalId = "vendor_{$provider}_shipping_{$vendor_id}";
+                                                    $modalId = "merchant_{$provider}_shipping_{$merchant_id}";
                                                 @endphp
 
                                                 @if($provider === 'tryoto')
@@ -350,7 +350,7 @@
                                                     @include('includes.frontend.tryoto_shipping_modal', [
                                                         'modalId' => $modalId,
                                                         'providerLabel' => $providerLabel,
-                                                        'vendor_id' => $vendor_id,
+                                                        'merchant_id' => $merchant_id,
                                                         'array_product' => $array_product,
                                                         'curr' => $curr,
                                                         'gs' => $gs,
@@ -362,16 +362,16 @@
                                                         'provider' => $provider,
                                                         'providerLabel' => $providerLabel,
                                                         'methods' => $methods,
-                                                        'vendor_id' => $vendor_id,
+                                                        'merchant_id' => $merchant_id,
                                                         'array_product' => $array_product,
                                                         'curr' => $curr,
                                                     ])
                                                 @endif
                                             @endforeach
                                             @if($packaging->isNotEmpty())
-                                                @include('includes.frontend.vendor_packaging', [
+                                                @include('includes.frontend.merchant_packaging', [
                                                     'packaging' => $packaging,
-                                                    'vendor_id' => $vendor_id,
+                                                    'merchant_id' => $merchant_id,
                                                 ])
                                             @endif
                                         @endif
@@ -381,15 +381,15 @@
                                         <ul>
                                             <li>
                                                 <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ getLocalizedShopName($vendor) }}</span>
+                                                <span>{{ getLocalizedShopName($merchantUser) }}</span>
                                             </li>
                                             <li>
                                                 <span><b>@lang('Shop Phone :')</b></span>
-                                                <span>{{ $vendor->phone }}</span>
+                                                <span>{{ $merchantUser->phone }}</span>
                                             </li>
                                             <li>
                                                 <span><b>@lang('Shop Address:')</b></span>
-                                                <span>{{ $vendor->address }}</span>
+                                                <span>{{ $merchantUser->address }}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -520,7 +520,7 @@
                                             </defs>
                                         </svg>
                                     </button>
-                                    <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.vendor', $vendor_id) : route('front.cart') }}" class="template-btn dark-outline w-100">
+                                    <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant', $merchant_id) : route('front.cart') }}" class="template-btn dark-outline w-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
                                             viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34179)">
@@ -556,8 +556,8 @@
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
                 <input type="hidden" name="totalQty" value="{{ $totalQty }}">
-                <input type="hidden" name="vendor_shipping_id" value="{{ $vendor_shipping_id }}">
-                <input type="hidden" name="vendor_packing_id" value="{{ $vendor_packing_id }}">
+                <input type="hidden" name="merchant_shipping_id" value="{{ $merchant_shipping_id }}">
+                <input type="hidden" name="merchant_packing_id" value="{{ $merchant_packing_id }}">
                 <input type="hidden" name="currency_sign" value="{{ $curr->sign }}">
                 <input type="hidden" name="currency_name" value="{{ $curr->name }}">
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
@@ -648,35 +648,35 @@
             @if(isset($step2) && $step2)
                 @if(isset($step2->saved_shipping_selections) && is_array($step2->saved_shipping_selections))
                     // Restore shipping selections
-                    @foreach($step2->saved_shipping_selections as $vendorId => $shippingValue)
-                        // Find and check the radio for this vendor
-                        const shippingRadio{{ $vendorId }} = $('input.shipping[name="shipping[{{ $vendorId }}]"][value="{{ $shippingValue }}"]');
-                        if (shippingRadio{{ $vendorId }}.length > 0) {
-                            shippingRadio{{ $vendorId }}.prop('checked', true);
-                            console.log('✅ تم استرجاع shipping للـ vendor {{ $vendorId }}');
+                    @foreach($step2->saved_shipping_selections as $merchantId => $shippingValue)
+                        // Find and check the radio for this merchant
+                        const shippingRadio{{ $merchantId }} = $('input.shipping[name="shipping[{{ $merchantId }}]"][value="{{ $shippingValue }}"]');
+                        if (shippingRadio{{ $merchantId }}.length > 0) {
+                            shippingRadio{{ $merchantId }}.prop('checked', true);
+                            console.log('✅ تم استرجاع shipping للـ merchant {{ $merchantId }}');
                         }
                     @endforeach
                 @endif
 
                 @if(isset($step2->saved_packing_selections) && is_array($step2->saved_packing_selections))
                     // Restore packing selections
-                    @foreach($step2->saved_packing_selections as $vendorId => $packingValue)
-                        const packingRadio{{ $vendorId }} = $('input.packing[name="packeging[{{ $vendorId }}]"][value="{{ $packingValue }}"]');
-                        if (packingRadio{{ $vendorId }}.length > 0) {
-                            packingRadio{{ $vendorId }}.prop('checked', true);
-                            console.log('✅ تم استرجاع packing للـ vendor {{ $vendorId }}');
+                    @foreach($step2->saved_packing_selections as $merchantId => $packingValue)
+                        const packingRadio{{ $merchantId }} = $('input.packing[name="packeging[{{ $merchantId }}]"][value="{{ $packingValue }}"]');
+                        if (packingRadio{{ $merchantId }}.length > 0) {
+                            packingRadio{{ $merchantId }}.prop('checked', true);
+                            console.log('✅ تم استرجاع packing للـ merchant {{ $merchantId }}');
                         }
                     @endforeach
                 @endif
 
                 // Display saved shipping text
                 @if(isset($step2->shipping_company))
-                    $('#shipping_text{{ $vendor_id ?? 0 }}').html('{{ $step2->shipping_company }}');
+                    $('#shipping_text{{ $merchant_id ?? 0 }}').html('{{ $step2->shipping_company }}');
                 @endif
 
                 // Display saved packing text
                 @if(isset($step2->packing_company))
-                    $('#packing_text{{ $vendor_id ?? 0 }}').html('{{ $step2->packing_company }}');
+                    $('#packing_text{{ $merchant_id ?? 0 }}').html('{{ $step2->packing_company }}');
                 @endif
             @endif
 
@@ -686,6 +686,7 @@
             // ✅ Tax is already calculated in Step 1 and stored in session
             // NO need to call tax_submit API again - it overwrites correct values!
             // The tax values are already loaded from $step1 in checkout-price-summary.blade.php
+            // ✅ Merchant checkout uses merchant_id instead of vendor_id
 
             let is_state = $('#is_state').val();
             if (is_state == 1) {
@@ -771,8 +772,8 @@
             updateFinalTotal();
 
             $('#multi_packaging_id').val($(this).val());
-            // ✅ Update vendor_packing_id for vendor checkout
-            $('input[name="vendor_packing_id"]').val($(this).val());
+            // ✅ Update merchant_packing_id for merchant checkout
+            $('input[name="merchant_packing_id"]').val($(this).val());
         })
 
 
@@ -792,16 +793,16 @@
             checkedShipping.each(function() {
                 const originalPrice = parseFloat($(this).attr('data-price')) || 0;
                 const freeAbove = parseFloat($(this).attr('data-free-above')) || 0;
-                const vendorId = $(this).attr('ref') || $(this).attr('name')?.match(/\[(\d+)\]/)?.[1];
-                const vendorTotal = getVendorTotal(vendorId);
+                const merchantId = $(this).attr('ref') || $(this).attr('name')?.match(/\[(\d+)\]/)?.[1];
+                const merchantTotal = getMerchantTotal(merchantId);
 
                 originalShipping += originalPrice;
 
                 // ✅ تطبيق منطق free_above
-                if (freeAbove > 0 && vendorTotal >= freeAbove) {
+                if (freeAbove > 0 && merchantTotal >= freeAbove) {
                     // الشحن مجاني - لا نضيف للـ mship
                     isFreeShipping = true;
-                    console.log('🎁 Free shipping for vendor', vendorId, '- Total:', vendorTotal, '>= FreeAbove:', freeAbove);
+                    console.log('🎁 Free shipping for merchant', merchantId, '- Total:', merchantTotal, '>= FreeAbove:', freeAbove);
                 } else {
                     mship += originalPrice;
                 }
@@ -815,11 +816,11 @@
             console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Free:', isFreeShipping);
         }
 
-        // Helper function to get vendor's products total (converted to current currency)
-        window.getVendorTotal = function getVendorTotal(vendorId) {
-            const vendorTotalEl = $('[data-vendor-products-total="' + vendorId + '"]');
-            if (vendorTotalEl.length > 0) {
-                return parseFloat(vendorTotalEl.attr('data-amount')) || 0;
+        // Helper function to get merchant's products total (converted to current currency)
+        window.getMerchantTotal = function getMerchantTotal(merchantId) {
+            const merchantTotalEl = $('[data-merchant-products-total="' + merchantId + '"]');
+            if (merchantTotalEl.length > 0) {
+                return parseFloat(merchantTotalEl.attr('data-amount')) || 0;
             }
             // Fallback: use total cart
             return parseFloat($('#ttotal').val()) || 0;

@@ -10,17 +10,17 @@
  * Key Features:
  * 1. Uses HandlesMerchantCheckout trait for merchant isolation
  * 2. Detects if checkout is merchant-specific via checkout_merchant_id session
- * 3. Filters cart to process ONLY merchant's products
- * 4. Creates order with ONLY merchant's products
- * 5. Removes ONLY merchant's products from cart after order
+ * 3. Filters cart to process ONLY merchant's items
+ * 4. Creates order with ONLY merchant's items
+ * 5. Removes ONLY merchant's items from cart after order
  * 6. Redirects to /carts if other merchants remain, else to success page
  *
  * Multi-Merchant Logic Flow:
  * 1. getMerchantCheckoutData() - Checks if merchant checkout
  * 2. getCheckoutSteps() - Gets merchant_step1_{id} and merchant_step2_{id}
  * 3. filterCartForMerchant() - Filters cart items
- * 4. Order creation - Uses only filtered products
- * 5. removeMerchantProductsFromCart() - Removes merchant products only
+ * 4. Order creation - Uses only filtered items
+ * 5. removeMerchantItemsFromCart() - Removes merchant items only
  * 6. getSuccessUrl() - Determines redirect based on remaining items
  *
  * Modified: 2025-01-XX for Multi-Merchant Checkout System
@@ -48,27 +48,27 @@ class CashOnDeliveryController extends CheckoutBaseControlller
     use CreatesTryotoShipments, HandlesMerchantCheckout, SavesCustomerShippingChoice;
 
     /**
-     * Process COD payment for single vendor or complete cart
+     * Process COD payment for single merchant or complete cart
      *
-     * MULTI-VENDOR LOGIC:
-     * 1. Detects vendor checkout via checkout_vendor_id session
-     * 2. Loads vendor-specific session data (vendor_step1_{id}, vendor_step2_{id})
-     * 3. Filters cart to include ONLY this vendor's products
-     * 4. Creates order with filtered products only
-     * 5. Removes only this vendor's products from cart
-     * 6. Redirects to /carts if other vendors remain
+     * MULTI-MERCHANT LOGIC:
+     * 1. Detects merchant checkout via checkout_merchant_id session
+     * 2. Loads merchant-specific session data (merchant_step1_{id}, merchant_step2_{id})
+     * 3. Filters cart to include ONLY this merchant's items
+     * 4. Creates order with filtered items only
+     * 5. Removes only this merchant's items from cart
+     * 6. Redirects to /carts if other merchants remain
      *
      * @param Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     /**
-     * POLICY: vendor_id comes from ROUTE only
-     * Route: /checkout/vendor/{vendorId}/payment/cod
+     * POLICY: merchant_id comes from ROUTE only
+     * Route: /checkout/merchant/{merchantId}/payment/cod
      */
     public function store(Request $request, $merchantId)
     {
         // ====================================================================
-        // STRICT POLICY: vendor_id FROM ROUTE ONLY
+        // STRICT POLICY: merchant_id FROM ROUTE ONLY
         // No session, no POST, no fallback - fail immediately if missing
         // ====================================================================
         $merchantId = (int)$merchantId;
@@ -80,7 +80,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         $input = $request->all();
 
-        // Load step data from vendor-specific session
+        // Load step data from merchant-specific session
         $steps = $this->getCheckoutSteps($merchantId);
         $step1 = $steps['step1'];
         $step2 = $steps['step2'];
@@ -106,9 +106,9 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $oldCart = Session::get('cart');
         $originalCart = new Cart($oldCart);
 
-        // CRITICAL: Filter cart to include ONLY this vendor's products
-        // vendor_id comes from route, so we ALWAYS filter
-        $cart = $this->filterCartForVendor($originalCart, $merchantId);
+        // CRITICAL: Filter cart to include ONLY this merchant's items
+        // merchant_id comes from route, so we ALWAYS filter
+        $cart = $this->filterCartForMerchant($originalCart, $merchantId);
 
         PurchaseHelper::license_check($cart); // For License Checking
         $t_cart = $cart;
@@ -124,7 +124,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // بدلاً من إعادة الحساب باستخدام PriceHelper::getOrderTotal
         $orderTotal = (float) ($input['total'] ?? 0) / $this->curr->value;
 
-        // Prepare vendor IDs from cart
+        // Prepare merchant IDs from cart
         $merchant_ids = [];
         foreach ($cart->items as $item) {
             if (!in_array($item['item']['user_id'], $merchant_ids)) {
@@ -143,8 +143,8 @@ class CashOnDeliveryController extends CheckoutBaseControlller
             $originalShippingMethod = $input['shipping'];
         }
 
-        // VENDOR CHECKOUT ONLY (regular checkout is disabled)
-        // vendor_id comes from route, so this is ALWAYS vendor checkout
+        // MERCHANT CHECKOUT ONLY (regular checkout is disabled)
+        // merchant_id comes from route, so this is ALWAYS merchant checkout
         $input['shipping_title'] = '';
         $input['packing_title'] = '';
         $input['shipping_cost'] = 0;
@@ -227,7 +227,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $purchase = new Purchase;
 
         // Determine redirect URL:
-        // - If other vendors remain in cart: Redirect to /carts
+        // - If other merchants remain in cart: Redirect to /carts
         // - If cart is now empty: Redirect to success page
         $success_url = $this->getSuccessUrl($merchantId, $oldCart);
         $input['user_id'] = Auth::check() ? Auth::user()->id : null;
@@ -295,15 +295,15 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         PurchaseHelper::size_qty_check($cart); // For Size Quantiy Checking
         PurchaseHelper::stock_check($cart); // For Stock Checking
-        PurchaseHelper::vendor_purchase_check($cart, $purchase); // For Vendor Purchase Checking
+        PurchaseHelper::merchant_purchase_check($cart, $purchase); // For Merchant Purchase Checking
 
         Session::put('temporder', $purchase);
         Session::put('tempcart', $cart);
 
-        // CRITICAL: Remove ONLY this merchant's products from cart
-        // Other merchants' products remain for separate checkout
+        // CRITICAL: Remove ONLY this merchant's items from cart
+        // Other merchants' items remain for separate checkout
         // Uses HandlesMerchantCheckout trait method
-        $this->removeMerchantProductsFromCart($merchantId, $oldCart);
+        $this->removeMerchantItemsFromCart($merchantId, $oldCart);
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
             PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions

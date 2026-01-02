@@ -207,7 +207,7 @@ class RazorpayController extends SubscriptionBaseController
 
             $maildata = [
                 'to' => $user->email,
-                'type' => "vendor_accept",
+                'type' => "merchant_accept",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",
@@ -217,7 +217,7 @@ class RazorpayController extends SubscriptionBaseController
             $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
 
-            return redirect()->route('user-dashboard')->with('success', __('Vendor Account Activated Successfully'));
+            return redirect()->route('user-dashboard')->with('success', __('Merchant Account Activated Successfully'));
         } else {
             $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
             $order_id = $razorpayOrder['receipt'];

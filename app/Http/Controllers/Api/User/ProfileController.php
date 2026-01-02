@@ -173,19 +173,19 @@ class ProfileController extends Controller
         try {
             $user = Auth::guard('api')->user();
             $favorites = FavoriteSeller::where('user_id', '=', $user->id)->get();
-            $vendors = array();
+            $merchants = array();
             foreach ($favorites as $key => $favorite) {
                 $seller = User::find($favorite->merchant_id);
                 if ($seller) {
-                    $vendors[$key]['id'] = $favorite->id;
-                    $vendors[$key]['shop_id'] = $seller->id;
-                    $vendors[$key]['shop_name'] = $seller->shop_name;
-                    $vendors[$key]['owner_name'] = $seller->owner_name;
-                    $vendors[$key]['shop_address'] = $seller->shop_address;
-                    $vendors[$key]['shop_link'] = route('front.vendor', str_replace(' ', '-', ($seller->shop_name)));
+                    $merchants[$key]['id'] = $favorite->id;
+                    $merchants[$key]['shop_id'] = $seller->id;
+                    $merchants[$key]['shop_name'] = $seller->shop_name;
+                    $merchants[$key]['owner_name'] = $seller->owner_name;
+                    $merchants[$key]['shop_address'] = $seller->shop_address;
+                    $merchants[$key]['shop_link'] = route('front.vendor', str_replace(' ', '-', ($seller->shop_name)));
                 }
             }
-            return response()->json(['status' => true, 'data' => $vendors, 'error' => []]);
+            return response()->json(['status' => true, 'data' => $merchants, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => $e->getMessage()]);
         }

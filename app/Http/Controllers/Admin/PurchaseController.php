@@ -166,8 +166,8 @@ class PurchaseController extends AdminBaseController
                     if ($data->merchant_ids) {
                         $merchant_ids = json_decode($data->merchant_ids, true);
 
-                        foreach ($merchant_ids as $vendor) {
-                            $deliveryRider = DeliveryRider::where('purchase_id', $data->id)->where('merchant_id', $vendor)->first();
+                        foreach ($merchant_ids as $mid) {
+                            $deliveryRider = DeliveryRider::where('purchase_id', $data->id)->where('merchant_id', $mid)->first();
                             if ($deliveryRider) {
                                 $rider = Rider::findOrFail($deliveryRider->rider_id);
                                 $service_area = RiderServiceArea::findOrFail($deliveryRider->service_area_id);
@@ -331,12 +331,12 @@ class PurchaseController extends AdminBaseController
             ->first();
 
         $data = array();
-        if (!$merchantProduct || !$merchantProduct->catalogItem) {
+        if (!$merchantItem || !$merchantItem->catalogItem) {
             $data[0] = false;
             $data[1] = __('No Product Found');
         } else {
             $data[0] = true;
-            $data[1] = $merchantProduct->product->id;
+            $data[1] = $merchantItem->product->id;
         }
         return response()->json($data);
     }
@@ -372,9 +372,9 @@ class PurchaseController extends AdminBaseController
         // Get product with merchant data
         $product = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
 
-        // Get vendor-specific data from merchant_products
+        // Get merchant-specific data from merchant_items
         $merchantId = (int) ($_GET['merchant_id'] ?? 0);
-        $merchantProduct = null;
+        $merchantItem = null;
         if ($merchantId > 0) {
             $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $id)
                 ->where('user_id', $merchantId)
@@ -382,21 +382,21 @@ class PurchaseController extends AdminBaseController
                 ->first();
         }
 
-        if (!$merchantProduct) {
+        if (!$merchantItem) {
             return redirect()->back()->with('unsuccess', __('Product not available from this vendor.'));
         }
 
         // Create a combined product object with merchant data
         $prod = (object) array_merge($product->toArray(), [
-            'user_id' => $merchantProduct->user_id,
-            'price' => $merchantProduct->price,
-            'stock' => $merchantProduct->stock,
-            'size' => $merchantProduct->size ? explode(',', $merchantProduct->size) : null,
-            'size_qty' => $merchantProduct->size_qty ? explode(',', $merchantProduct->size_qty) : null,
-            'size_price' => $merchantProduct->size_price ? explode(',', $merchantProduct->size_price) : null,
-            'minimum_qty' => $merchantProduct->minimum_qty,
-            'whole_sell_qty' => $merchantProduct->whole_sell_qty,
-            'whole_sell_discount' => $merchantProduct->whole_sell_discount
+            'user_id' => $merchantItem->user_id,
+            'price' => $merchantItem->price,
+            'stock' => $merchantItem->stock,
+            'size' => $merchantItem->size ? explode(',', $merchantItem->size) : null,
+            'size_qty' => $merchantItem->size_qty ? explode(',', $merchantItem->size_qty) : null,
+            'size_price' => $merchantItem->size_price ? explode(',', $merchantItem->size_price) : null,
+            'minimum_qty' => $merchantItem->minimum_qty,
+            'whole_sell_qty' => $merchantItem->whole_sell_qty,
+            'whole_sell_discount' => $merchantItem->whole_sell_discount
         ]);
 
         if ($prod->user_id != 0) {
@@ -434,10 +434,10 @@ class PurchaseController extends AdminBaseController
         }
 
         if (empty($color)) {
-            // Get color from vendor colors (merchant_products.color_all)
-            $vendorColors = $prod->getVendorColors();
-            if (!empty($vendorColors)) {
-                $color = $vendorColors[0];
+            // Get color from merchant colors (merchant_items.color_all)
+            $merchantColors = $prod->getMerchantColors();
+            if (!empty($merchantColors)) {
+                $color = $merchantColors[0];
             }
         }
 
@@ -557,9 +557,9 @@ class PurchaseController extends AdminBaseController
         // Get product with merchant data
         $product = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
 
-        // Get vendor-specific data from merchant_products
+        // Get merchant-specific data from merchant_items
         $merchantId = (int) ($_GET['merchant_id'] ?? 0);
-        $merchantProduct = null;
+        $merchantItem = null;
         if ($merchantId > 0) {
             $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $id)
                 ->where('user_id', $merchantId)
@@ -567,21 +567,21 @@ class PurchaseController extends AdminBaseController
                 ->first();
         }
 
-        if (!$merchantProduct) {
+        if (!$merchantItem) {
             return redirect()->back()->with('unsuccess', __('Product not available from this vendor.'));
         }
 
         // Create a combined product object with merchant data
         $prod = (object) array_merge($product->toArray(), [
-            'user_id' => $merchantProduct->user_id,
-            'price' => $merchantProduct->price,
-            'stock' => $merchantProduct->stock,
-            'size' => $merchantProduct->size ? explode(',', $merchantProduct->size) : null,
-            'size_qty' => $merchantProduct->size_qty ? explode(',', $merchantProduct->size_qty) : null,
-            'size_price' => $merchantProduct->size_price ? explode(',', $merchantProduct->size_price) : null,
-            'minimum_qty' => $merchantProduct->minimum_qty,
-            'whole_sell_qty' => $merchantProduct->whole_sell_qty,
-            'whole_sell_discount' => $merchantProduct->whole_sell_discount
+            'user_id' => $merchantItem->user_id,
+            'price' => $merchantItem->price,
+            'stock' => $merchantItem->stock,
+            'size' => $merchantItem->size ? explode(',', $merchantItem->size) : null,
+            'size_qty' => $merchantItem->size_qty ? explode(',', $merchantItem->size_qty) : null,
+            'size_price' => $merchantItem->size_price ? explode(',', $merchantItem->size_price) : null,
+            'minimum_qty' => $merchantItem->minimum_qty,
+            'whole_sell_qty' => $merchantItem->whole_sell_qty,
+            'whole_sell_discount' => $merchantItem->whole_sell_discount
         ]);
 
         if ($prod->user_id != 0) {
@@ -618,10 +618,10 @@ class PurchaseController extends AdminBaseController
         }
 
         if (empty($color)) {
-            // Get color from vendor colors (merchant_products.color_all)
-            $vendorColors = $prod->getVendorColors();
-            if (!empty($vendorColors)) {
-                $color = $vendorColors[0];
+            // Get color from merchant colors (merchant_items.color_all)
+            $merchantColors = $prod->getMerchantColors();
+            if (!empty($merchantColors)) {
+                $color = $merchantColors[0];
             }
         }
         $color = str_replace('#', '', $color);

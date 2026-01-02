@@ -1460,7 +1460,7 @@ table.dataTable thead .sorting_desc_disabled::after {
                                                             $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
                                                         @endphp
                                                         @if(is_array($shippingTitles))
-                                                            @foreach($shippingTitles as $vendorId => $shippingId)
+                                                            @foreach($shippingTitles as $merchantId => $shippingId)
                                                                 @php
                                                                     $shipping = \App\Models\Shipping::find($shippingId);
                                                                 @endphp

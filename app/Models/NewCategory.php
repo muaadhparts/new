@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * NewCategory Model - الشجرة الموحدة للفئات
+ *
+ * الهيكل: Brand → Catalog → NewCategory (3 مستويات)
+ * يحل محل: categories, subcategories, childcategories, treecategories
+ */
 class NewCategory extends Model
 {
     protected $table = 'newcategories';
@@ -16,12 +22,57 @@ class NewCategory extends Model
         'label_en', 'label_ar', 'catalog_id',
         'brand_id', 'level', 'parent_id',
         'thumbnail', 'images',
-        'spec_key', 'parents_key'
+        'spec_key', 'parents_key', 'path', 'keywords'
     ];
+
+    protected $appends = ['localized_name', 'name'];
 
     public function setSlugAttribute($value)
     {
         $this->attributes['slug'] = str_replace(' ', '-', $value);
+    }
+
+    // =========================================================
+    // ACCESSORS - للتوافق مع Views
+    // =========================================================
+
+    /**
+     * Localized name - الاسم حسب اللغة
+     */
+    public function getLocalizedNameAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $nameAr = trim((string)($this->label_ar ?? ''));
+        $nameEn = trim((string)($this->label_en ?? ''));
+
+        if ($isAr) {
+            return $nameAr !== '' ? $nameAr : $nameEn;
+        }
+        return $nameEn !== '' ? $nameEn : $nameAr;
+    }
+
+    /**
+     * Name accessor - alias for label_en
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->label_en ?? '';
+    }
+
+    /**
+     * Status accessor - always active
+     */
+    public function getStatusAttribute(): int
+    {
+        return 1;
+    }
+
+    /**
+     * Alias: childs للتوافق مع الكود القديم
+     */
+    public function getChildsAttribute()
+    {
+        return $this->children()->orderBy('label_en')->get();
     }
 
     /**
@@ -91,5 +142,41 @@ class NewCategory extends Model
     public function specGroups()
     {
         return $this->hasMany(\App\Models\CategorySpecGroup::class, 'category_id');
+    }
+
+    // =========================================================
+    // SCOPES - للاستعلامات
+    // =========================================================
+
+    /**
+     * الفئات من مستوى معين
+     */
+    public function scopeLevel($query, int $level)
+    {
+        return $query->where('level', $level);
+    }
+
+    /**
+     * الفئات الجذرية (المستوى الأول)
+     */
+    public function scopeRoots($query)
+    {
+        return $query->whereNull('parent_id')->orWhere('level', 1);
+    }
+
+    /**
+     * فئات كتالوج معين
+     */
+    public function scopeForCatalog($query, int $catalogId)
+    {
+        return $query->where('catalog_id', $catalogId);
+    }
+
+    /**
+     * فئات براند معين
+     */
+    public function scopeForBrand($query, int $brandId)
+    {
+        return $query->where('brand_id', $brandId);
     }
 }

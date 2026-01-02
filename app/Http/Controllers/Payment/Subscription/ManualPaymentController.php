@@ -43,7 +43,7 @@ class ManualPaymentController extends SubscriptionBaseController
 
             $data = [
                 'to' => $user->email,
-                'type' => "vendor_accept",
+                'type' => "merchant_accept",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",
@@ -53,6 +53,6 @@ class ManualPaymentController extends SubscriptionBaseController
             $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);        
 
-        return redirect()->route('user-dashboard')->with('success',__('Vendor Account Activated Successfully'));
+        return redirect()->route('user-dashboard')->with('success',__('Merchant Account Activated Successfully'));
     }   
 }
