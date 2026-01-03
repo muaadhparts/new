@@ -48,6 +48,9 @@ class FrontBaseController extends Controller
             }
          
             view()->share('langg', $this->language);
+            view()->share('gs', $this->gs);
+            view()->share('ps', $this->ps);
+            view()->share('curr', $this->curr);
             App::setlocale($this->language->name);
 
 

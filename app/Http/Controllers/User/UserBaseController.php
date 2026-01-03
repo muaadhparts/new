@@ -49,7 +49,11 @@ class UserBaseController extends Controller
             else {
                 $this->curr = DB::table('currencies')->where('is_default','=',1)->first();
             }
-    
+
+            // Share common variables with views
+            view()->share('gs', $this->gs);
+            view()->share('curr', $this->curr);
+
             return $next($request);
         });
     }

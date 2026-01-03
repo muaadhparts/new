@@ -39,7 +39,8 @@
       "Bash(findstr:*)",
       "Bash(composer dump-autoload:*)",
       "WebFetch(domain:oldnew.test)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(git add:*)"
     ]
   }
 }

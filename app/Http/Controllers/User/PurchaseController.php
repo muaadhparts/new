@@ -28,8 +28,17 @@ class PurchaseController extends UserBaseController
         $user = $this->user;
         $purchase = $user->purchases()->where('purchase_number','=',$id)->first();
         $datas = array('Pending','Processing','On Delivery','Completed');
-        return view('load.track-load',compact('purchase','datas'));
 
+        // Load shipment logs for tracking display
+        $shipmentLogs = collect();
+        if ($purchase) {
+            $shipmentLogs = \App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
+                ->orderBy('status_date', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+        }
+
+        return view('load.track-load', compact('purchase', 'datas', 'shipmentLogs'));
     }
 
 
