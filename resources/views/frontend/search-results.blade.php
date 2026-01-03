@@ -10,7 +10,7 @@
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                     <li><a href="javascript:;">@lang('Search')</a></li>
-                    <li><a href="javascript:;">{{ $sku }}</a></li>
+                    <li><a href="javascript:;">{{ $part_number }}</a></li>
                 </ul>
             </div>
         </div>
@@ -44,7 +44,7 @@
                         </h4>
                         <p class="muaadh-search-results-query mb-0">
                             <i class="fas fa-search me-1"></i>
-                            @lang('Query') : <strong>{{ $sku }}</strong>
+                            @lang('Query') : <strong>{{ $part_number }}</strong>
                             @if($cards->total() > 12)
                                 <span class="text-muted ms-2">
                                     (@lang('Page') {{ $cards->currentPage() }} @lang('of') {{ $cards->lastPage() }})
@@ -83,7 +83,7 @@
                             <div class="card-body py-5">
                                 <i class="fas fa-search fa-3x text-muted mb-3"></i>
                                 <h4 class="text-muted">@lang('No CatalogItem Found')</h4>
-                                <p class="text-muted mb-0">@lang('Try searching with a different SKU or keyword')</p>
+                                <p class="text-muted mb-0">@lang('Try searching with a different PART_NUMBER or keyword')</p>
                             </div>
                         </div>
                     </div>

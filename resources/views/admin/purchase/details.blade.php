@@ -567,7 +567,7 @@
                                         }
                                         @endphp
                                         <a target="_blank" href="{{ $detailsCatalogItemUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
-                                        <br><small class="text-muted">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                        <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                         @php
                                         $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
                                             ? App\Models\User::find($catalogItem['item']['user_id'])

@@ -57,7 +57,7 @@
                     <!-- CatalogItem SkU -->
                     <div class="input-label-wrapper">
                         <label>@lang('CatalogItem SkU*')</label>
-                        <input type="text" class="form-control" name="sku" placeholder="@lang('Enter CatalogItem SKU')"
+                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter CatalogItem PART_NUMBER')"
                             value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
                     </div>
                     {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}

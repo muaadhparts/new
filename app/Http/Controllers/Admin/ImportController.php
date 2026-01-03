@@ -35,7 +35,7 @@ class ImportController extends AdminBaseController
             ->filterColumn('name', function ($query, $keyword) {
                 $query->whereHas('catalogItem', function($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%")
-                      ->orWhere('sku', 'like', "%{$keyword}%")
+                      ->orWhere('part_number', 'like', "%{$keyword}%")
                       ->orWhere('label_ar', 'like', "%{$keyword}%")
                       ->orWhere('label_en', 'like', "%{$keyword}%");
                 });
@@ -60,10 +60,10 @@ class ImportController extends AdminBaseController
                 ]);
 
                 $displayName = getLocalizedCatalogItemName($catalogItem);
-                $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
+                $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';
                 $condition = $mi->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
-                return '<a href="' . $itemLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
+                return '<a href="' . $itemLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mi) {
                 $catalogItem = $mi->catalogItem;
@@ -226,7 +226,7 @@ class ImportController extends AdminBaseController
         if($request->type == "Physical")
         {
             //--- Validation Section
-            $rules = ['sku' => 'min:8|unique:catalogItems'];
+            $rules = ['part_number' => 'min:8|unique:catalogItems'];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -298,7 +298,7 @@ class ImportController extends AdminBaseController
             $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower(Str::random(3).$data->id.Str::random(3));
         }
         else {
-            $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower($data->sku);
+            $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower($data->part_number);
         }
 
         // Thumbnail
@@ -454,7 +454,7 @@ class ImportController extends AdminBaseController
         if($data->type == "Physical")
         {
             //--- Validation Section
-            $rules = ['sku' => 'min:8|unique:catalogItems,sku,'.$id];
+            $rules = ['part_number' => 'min:8|unique:catalogItems,part_number,'.$id];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -543,7 +543,7 @@ class ImportController extends AdminBaseController
         // Don't write price/previous_price/stock to catalog_items
         unset($input['price'], $input['previous_price'], $input['stock']);
 
-        $data->slug = Str::slug($data->name,'-').'-'.strtolower($data->sku);
+        $data->slug = Str::slug($data->name,'-').'-'.strtolower($data->part_number);
         $data->update($input);
         //-- Logic Section Ends
 

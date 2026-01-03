@@ -37,7 +37,7 @@
                             <p class="text-muted small mt-1">@lang('CatalogItem Main Image')</p>
                         </div>
                         <h6>{{ $data->name }}</h6>
-                        <p><strong>@lang('SKU'):</strong> {{ $data->sku }}</p>
+                        <p><strong>@lang('PART_NUMBER'):</strong> {{ $data->part_number }}</p>
                         <p><strong>@lang('Type'):</strong> {{ $data->type }}</p>
                         <p><strong>@lang('Weight'):</strong> {{ $data->weight }} kg</p>
                         @if($data->size)

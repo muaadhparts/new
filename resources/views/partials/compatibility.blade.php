@@ -2,7 +2,7 @@
 
 <div class="p-3">
     <h5 class="mb-3">@lang('labels.fits')</h5>
-    <div id="compatibility-container-{{ $sku }}" class="compatibility-container">
+    <div id="compatibility-container-{{ $part_number }}" class="compatibility-container">
         <div class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -13,10 +13,10 @@
 
 <script>
 (function() {
-    const sku = '{{ $sku }}';
-    const container = document.getElementById('compatibility-container-' + sku);
+    const part_number = '{{ $part_number }}';
+    const container = document.getElementById('compatibility-container-' + part_number);
 
-    fetch('/api/catalogItem/compatibility/' + encodeURIComponent(sku) + '/html')
+    fetch('/api/catalogItem/compatibility/' + encodeURIComponent(part_number) + '/html')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.html) {

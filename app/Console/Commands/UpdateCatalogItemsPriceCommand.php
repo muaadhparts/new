@@ -43,7 +43,7 @@ class UpdateCatalogItemsPriceCommand extends Command
                 SUM(CASE WHEN ROUND(s.cost_price * ?, 2) <> mp.price THEN 1 ELSE 0 END) AS needs_update
             FROM merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            JOIN stock_all s ON p.sku = s.part_number
+            JOIN stock_all s ON p.part_number = s.part_number
             WHERE mp.user_id = ?
         ", [$margin, $userId]);
 
@@ -57,7 +57,7 @@ class UpdateCatalogItemsPriceCommand extends Command
         $affected = DB::update("
             UPDATE merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            JOIN stock_all s ON p.sku = s.part_number
+            JOIN stock_all s ON p.part_number = s.part_number
             SET mp.price = ROUND(s.cost_price * ?, 2)
             WHERE mp.user_id = ?
               AND ROUND(s.cost_price * ?, 2) <> mp.price
@@ -75,7 +75,7 @@ class UpdateCatalogItemsPriceCommand extends Command
                 SUM(CASE WHEN ROUND(s.cost_price * ?, 2) <> mp.price THEN 1 ELSE 0 END) AS remaining
             FROM merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            JOIN stock_all s ON p.sku = s.part_number
+            JOIN stock_all s ON p.part_number = s.part_number
             WHERE mp.user_id = ?
         ", [$margin, $userId]);
 

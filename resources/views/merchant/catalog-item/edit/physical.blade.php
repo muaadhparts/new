@@ -59,8 +59,8 @@
                     <!-- CatalogItem SkU -->
                     <div class="input-label-wrapper">
                         <label>@lang('CatalogItem SkU*')</label>
-                        <input type="text" class="form-control" name="sku" placeholder="@lang('Enter CatalogItem SKU')"
-                            value="{{ $data->sku }}">
+                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter CatalogItem PART_NUMBER')"
+                            value="{{ $data->part_number }}">
                     </div>
                     {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
 

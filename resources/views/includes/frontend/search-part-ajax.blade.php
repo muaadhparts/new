@@ -59,7 +59,7 @@
         if (!autoSearch) {
             // عند الضغط على البحث، اذهب لصفحة النتائج مباشرة
             if (currentResults.length > 0) {
-                window.location.href = '{{ url("result") }}/' + encodeURIComponent(currentResults[0].sku);
+                window.location.href = '{{ url("result") }}/' + encodeURIComponent(currentResults[0].part_number);
                 return;
             }
         }
@@ -102,7 +102,7 @@
                     <i class="fas fa-cube"></i>
                 </div>
                 <div class="muaadh-suggestion-content">
-                    <div class="muaadh-suggestion-sku">${escapeHtml(result.sku)}</div>
+                    <div class="muaadh-suggestion-part_number">${escapeHtml(result.part_number)}</div>
                     <div class="muaadh-suggestion-label">${escapeHtml(getLocalizedLabel(result))}</div>
                 </div>
                 <div class="muaadh-suggestion-arrow">
@@ -111,7 +111,7 @@
             `;
 
             item.addEventListener('click', function() {
-                window.location.href = '{{ url("result") }}/' + encodeURIComponent(result.sku);
+                window.location.href = '{{ url("result") }}/' + encodeURIComponent(result.part_number);
             });
 
             suggestionsList.appendChild(item);

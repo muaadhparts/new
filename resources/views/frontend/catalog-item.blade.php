@@ -100,13 +100,13 @@
                                     ({{ $catalogItem->catalog_reviews_count ?? 0 }} @lang('Reviews'))</span>
                             </div>
 
-                            {{-- Catalog Item Info: SKU, Brand, Quality Brand, Merchant, Stock --}}
+                            {{-- Catalog Item Info: PART_NUMBER, Brand, Quality Brand, Merchant, Stock --}}
                             {{-- $merchant is AUTHORITATIVE for stock info --}}
                             <x-catalog-item-info
                                 :catalog-item="$catalogItem"
                                 :mp="$merchant"
                                 display-mode="badges"
-                                :show-sku="true"
+                                :show-part_number="true"
                                 :show-brand="true"
                                 :show-quality-brand="true"
                                 :show-merchant="true"
@@ -120,7 +120,7 @@
 
                         @if (
                             $catalogItem->ship != null ||
-                                $catalogItem->sku != null ||
+                                $catalogItem->part_number != null ||
                                 $catalogItem->platform != null ||
                                 $catalogItem->region != null ||
                                 $catalogItem->licence_type != null)
@@ -153,10 +153,10 @@
                                             <span>{{ $catalogItem->ship }}</span>
                                         </li>
                                     @endif
-                                    @if ($catalogItem->sku != null)
+                                    @if ($catalogItem->part_number != null)
                                         <li>
-                                            <span><b>@lang('CatalogItem SKU :') </b></span>
-                                            <span>{{ $catalogItem->sku }} </span>
+                                            <span><b>@lang('CatalogItem PART_NUMBER :') </b></span>
+                                            <span>{{ $catalogItem->part_number }} </span>
                                         </li>
                                     @endif
 

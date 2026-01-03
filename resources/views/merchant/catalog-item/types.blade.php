@@ -38,12 +38,12 @@
                 <i class="fas fa-info-circle fa-3x text-primary mb-3"></i>
                 <h4 class="mb-3">@lang('New CatalogItem Addition System')</h4>
                 <p class="text-muted mb-4">
-                    @lang('To add a catalogItem, you need to search for it by SKU/Part Number from the catalog.')
+                    @lang('To add a catalogItem, you need to search for it by PART_NUMBER/Part Number from the catalog.')
                     <br>
                     @lang('You can then set your own price, stock, and other offer details.')
                 </p>
                 <a href="{{ route('merchant-catalog-item-add') }}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-plus me-2"></i>@lang('Add CatalogItem by SKU')
+                    <i class="fas fa-plus me-2"></i>@lang('Add CatalogItem by PART_NUMBER')
                 </a>
             </div>
         </div>

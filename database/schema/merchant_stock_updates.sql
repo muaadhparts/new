@@ -1,0 +1,26 @@
+-- Schema for table: merchant_stock_updates
+-- Exported: 2026-01-03 04:17:45
+
+DROP TABLE IF EXISTS `merchant_stock_updates`;
+
+CREATE TABLE `merchant_stock_updates` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int unsigned NOT NULL COMMENT 'Vendor user ID',
+  `file_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Uploaded file name',
+  `file_path` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Uploaded file path',
+  `update_type` enum('manual','automatic') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manual',
+  `status` enum('pending','processing','completed','failed') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `total_rows` int NOT NULL DEFAULT '0',
+  `updated_rows` int NOT NULL DEFAULT '0',
+  `failed_rows` int NOT NULL DEFAULT '0',
+  `error_log` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `started_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `vendor_stock_updates_user_id_index` (`user_id`),
+  KEY `vendor_stock_updates_status_index` (`status`),
+  KEY `vendor_stock_updates_update_type_index` (`update_type`),
+  CONSTRAINT `vendor_stock_updates_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

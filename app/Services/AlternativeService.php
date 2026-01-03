@@ -15,17 +15,17 @@ use Illuminate\Support\Facades\DB;
 class AlternativeService
 {
     /**
-     * جلب البدائل لـ SKU معين
+     * جلب البدائل لـ PART_NUMBER معين
      * يجلب البدائل من sku_alternatives + جميع العروض المختلفة لنفس المنتج
      *
      * ✅ محسّن: استعلام واحد مجمع
      */
-    public function getAlternatives(string $sku, bool $includeSelf = false): Collection
+    public function getAlternatives(string $part_number, bool $includeSelf = false): Collection
     {
         // ✅ استعلام واحد لجلب المنتج و group_id
         $baseData = DB::table('catalog_items as p')
-            ->leftJoin('sku_alternatives as sa', 'sa.sku', '=', 'p.sku')
-            ->where('p.sku', $sku)
+            ->leftJoin('sku_alternatives as sa', 'sa.part_number', '=', 'p.part_number')
+            ->where('p.part_number', $part_number)
             ->select('p.id as catalog_item_id', 'sa.group_id')
             ->first();
 
@@ -42,9 +42,9 @@ class AlternativeService
         if ($groupId) {
             // جلب catalog_item_ids للبدائل
             $alternativeCatalogItemIds = DB::table('sku_alternatives as sa')
-                ->join('catalog_items as p', 'p.sku', '=', 'sa.sku')
+                ->join('catalog_items as p', 'p.part_number', '=', 'sa.part_number')
                 ->where('sa.group_id', $groupId)
-                ->when(!$includeSelf, fn($q) => $q->where('sa.sku', '<>', $sku))
+                ->when(!$includeSelf, fn($q) => $q->where('sa.part_number', '<>', $part_number))
                 ->pluck('p.id');
 
             $catalogItemIds = $catalogItemIds->merge($alternativeCatalogItemIds)->unique();
@@ -57,7 +57,7 @@ class AlternativeService
             ->whereIn('merchant_items.catalog_item_id', $catalogItemIds->toArray())
             ->where('merchant_items.status', 1)
             ->with([
-                'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
@@ -97,7 +97,7 @@ class AlternativeService
             ->where('merchant_items.status', 1)
             ->where('merchant_items.catalog_item_id', $catalogItemId)
             ->with([
-                'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
@@ -128,7 +128,7 @@ class AlternativeService
 
         // ✅ جلب catalog_item_ids أولاً
         $catalogItemIds = DB::table('catalog_items')
-            ->whereIn('sku', $skus)
+            ->whereIn('part_number', $skus)
             ->pluck('id')
             ->toArray();
 
@@ -140,7 +140,7 @@ class AlternativeService
             ->whereIn('merchant_items.catalog_item_id', $catalogItemIds)
             ->where('merchant_items.status', 1)
             ->with([
-                'catalogItem' => fn($q) => $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
+                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
                     ->with('brand:id,name,name_ar,photo'),
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
@@ -181,16 +181,16 @@ class AlternativeService
      *
      * ✅ محسّن: استعلام مباشر مع limit
      */
-    public function hasAlternatives(string $sku): bool
+    public function hasAlternatives(string $part_number): bool
     {
-        $groupId = SkuAlternative::where('sku', $sku)->value('group_id');
+        $groupId = SkuAlternative::where('part_number', $part_number)->value('group_id');
 
         if (!$groupId) {
             return false;
         }
 
         return SkuAlternative::where('group_id', $groupId)
-            ->where('sku', '<>', $sku)
+            ->where('part_number', '<>', $part_number)
             ->limit(1)
             ->exists();
     }
@@ -200,16 +200,16 @@ class AlternativeService
      *
      * ✅ محسّن: استخدام value بدلاً من first
      */
-    public function countAlternatives(string $sku): int
+    public function countAlternatives(string $part_number): int
     {
-        $groupId = SkuAlternative::where('sku', $sku)->value('group_id');
+        $groupId = SkuAlternative::where('part_number', $part_number)->value('group_id');
 
         if (!$groupId) {
             return 0;
         }
 
         return SkuAlternative::where('group_id', $groupId)
-            ->where('sku', '<>', $sku)
+            ->where('part_number', '<>', $part_number)
             ->count();
     }
 
@@ -218,17 +218,17 @@ class AlternativeService
      *
      * ✅ محسّن: استخدام value
      */
-    public function getAlternativeSkus(string $sku): array
+    public function getAlternativeSkus(string $part_number): array
     {
-        $groupId = SkuAlternative::where('sku', $sku)->value('group_id');
+        $groupId = SkuAlternative::where('part_number', $part_number)->value('group_id');
 
         if (!$groupId) {
             return [];
         }
 
         return SkuAlternative::where('group_id', $groupId)
-            ->where('sku', '<>', $sku)
-            ->pluck('sku')
+            ->where('part_number', '<>', $part_number)
+            ->pluck('part_number')
             ->toArray();
     }
 }

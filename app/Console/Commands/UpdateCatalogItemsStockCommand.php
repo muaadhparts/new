@@ -37,7 +37,7 @@ class UpdateCatalogItemsStockCommand extends Command
                 SUM(CASE WHEN s.part_number IS NULL THEN 1 ELSE 0 END) AS missing_in_stock_all
             FROM merchant_items mp
             JOIN catalog_items p ON p.id = mp.catalog_item_id
-            LEFT JOIN stock_all s ON s.part_number = p.sku
+            LEFT JOIN stock_all s ON s.part_number = p.part_number
             WHERE mp.user_id = ?
         ", [$userId]);
 
@@ -58,7 +58,7 @@ class UpdateCatalogItemsStockCommand extends Command
         $affected = DB::update("
             UPDATE merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all s ON s.part_number = p.sku
+            LEFT JOIN stock_all s ON s.part_number = p.part_number
             SET mp.stock = COALESCE(s.qty, 0)
             WHERE mp.user_id = ?
               AND COALESCE(s.qty,0) <> COALESCE(mp.stock,0)
@@ -72,7 +72,7 @@ class UpdateCatalogItemsStockCommand extends Command
                 SELECT COUNT(*) as count
                 FROM merchant_items mp
                 JOIN catalog_items p ON mp.catalog_item_id = p.id
-                LEFT JOIN stock_all s ON s.part_number = p.sku
+                LEFT JOIN stock_all s ON s.part_number = p.part_number
                 WHERE mp.user_id = ?
                   AND s.part_number IS NULL
                   AND mp.stock = 0
@@ -91,7 +91,7 @@ class UpdateCatalogItemsStockCommand extends Command
                 SUM(CASE WHEN s.part_number IS NOT NULL AND COALESCE(s.qty,0) <> COALESCE(mp.stock,0) THEN 1 ELSE 0 END) AS remaining
             FROM merchant_items mp
             JOIN catalog_items p ON p.id = mp.catalog_item_id
-            LEFT JOIN stock_all s ON s.part_number = p.sku
+            LEFT JOIN stock_all s ON s.part_number = p.part_number
             WHERE mp.user_id = ?
         ", [$userId]);
 

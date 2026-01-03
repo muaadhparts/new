@@ -32,12 +32,12 @@
                                             <div class="row">
                                                 <div class="col-lg-4">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('SKU') }} *</h4>
+                                                        <h4 class="heading">{{ __('PART_NUMBER') }} *</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-7">
-                                                    <input type="text" class="form-control" name="sku"
-                                                        placeholder="{{ __('Enter CatalogItem Sku') }}" required=""
+                                                    <input type="text" class="form-control" name="part_number"
+                                                        placeholder="{{ __('Enter CatalogItem Part_Number') }}" required=""
                                                         value="">
                                                 </div>
                                             </div>

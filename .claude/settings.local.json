@@ -40,7 +40,8 @@
       "Bash(composer dump-autoload:*)",
       "WebFetch(domain:oldnew.test)",
       "Bash(cd:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\")"
     ]
   }
 }

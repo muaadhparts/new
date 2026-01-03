@@ -138,14 +138,14 @@ class NewCategoryTreeService
         $query = MerchantItem::query()
             ->select([
                 'merchant_items.*',
-                'catalog_items.sku',
+                'catalog_items.part_number',
                 'catalog_items.name as catalog_item_name',
                 'catalog_items.label_ar as catalog_item_name_ar', // catalog_items uses label_ar not name_ar
                 'catalog_items.slug as catalog_item_slug',
                 'catalog_items.photo',
                 'catalog_items.thumbnail',
-                DB::raw("(SELECT label_en FROM {$partsTable} WHERE part_number = catalog_items.sku LIMIT 1) as part_label_en"),
-                DB::raw("(SELECT label_ar FROM {$partsTable} WHERE part_number = catalog_items.sku LIMIT 1) as part_label_ar"),
+                DB::raw("(SELECT label_en FROM {$partsTable} WHERE part_number = catalog_items.part_number LIMIT 1) as part_label_en"),
+                DB::raw("(SELECT label_ar FROM {$partsTable} WHERE part_number = catalog_items.part_number LIMIT 1) as part_label_ar"),
             ])
             ->with(['catalogItem', 'user', 'qualityBrand']) // Eager load relationships for view
             ->join('catalog_items', 'catalog_items.id', '=', 'merchant_items.catalog_item_id')
@@ -154,14 +154,14 @@ class NewCategoryTreeService
                     ->from("{$partsTable} as p")
                     ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
                     ->join('sections as s', 's.id', '=', 'sp.section_id')
-                    ->whereColumn('p.part_number', 'catalog_items.sku')
+                    ->whereColumn('p.part_number', 'catalog_items.part_number')
                     ->whereIn('s.category_id', $categoryIds);
             })
             ->where('merchant_items.status', 1)
             ->where('merchant_items.stock', '>=', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->distinct('catalog_items.sku')
-            ->orderBy('catalog_items.sku');
+            ->distinct('catalog_items.part_number')
+            ->orderBy('catalog_items.part_number');
 
         return $query->paginate($perPage, ['*'], 'page', $page);
     }
@@ -412,12 +412,12 @@ class NewCategoryTreeService
                     ->from("{$partsTable} as p")
                     ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
                     ->join('sections as s', 's.id', '=', 'sp.section_id')
-                    ->whereColumn('p.part_number', 'catalog_items.sku')
+                    ->whereColumn('p.part_number', 'catalog_items.part_number')
                     ->whereIn('s.category_id', $descendantIds);
             })
             ->where('merchant_items.status', 1)
             ->where('merchant_items.stock', '>=', 1)
-            ->distinct('catalog_items.sku')
-            ->count('catalog_items.sku');
+            ->distinct('catalog_items.part_number')
+            ->count('catalog_items.part_number');
     }
 }

@@ -406,7 +406,7 @@
                                                 href="{{ $merchantOrderProductUrl }}">
                                                 {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                             </a>
-                                            <br><small class="text-muted">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                            <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                         @endif
 
 

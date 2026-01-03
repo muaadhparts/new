@@ -60,11 +60,11 @@
 								<div class="row">
 									<div class="col-lg-12">
 										<div class="left-area">
-											<h4 class="heading">{{ __('CatalogItem Sku') }}* </h4>
+											<h4 class="heading">{{ __('CatalogItem Part_Number') }}* </h4>
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="form-control" placeholder="{{ __('Enter CatalogItem Sku') }}" name="sku" required="" value="{{ $data->sku }}">
+										<input type="text" class="form-control" placeholder="{{ __('Enter CatalogItem Part_Number') }}" name="part_number" required="" value="{{ $data->part_number }}">
 									</div>
 								</div>
 

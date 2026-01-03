@@ -330,7 +330,7 @@ class CatalogItemDetailsController extends FrontBaseController
 
     public function catalogItemFragment(string $key)
     {
-        $catalogItem = CatalogItem::where('sku', $key)->first()
+        $catalogItem = CatalogItem::where('part_number', $key)->first()
                 ?: CatalogItem::where('slug', $key)->firstOrFail();
 
         // Note: 'catalogItem' kept for backward compatibility in views
@@ -339,14 +339,14 @@ class CatalogItemDetailsController extends FrontBaseController
 
     public function compatibilityFragment(string $key)
     {
-        $sku = $key;
-        return response()->view('partials.compatibility', compact('sku'));
+        $part_number = $key;
+        return response()->view('partials.compatibility', compact('part_number'));
     }
 
     public function alternativeFragment(string $key)
     {
-        $sku = $key;
-        return response()->view('partials.alternative', compact('sku'));
+        $part_number = $key;
+        return response()->view('partials.alternative', compact('part_number'));
     }
 
     public function report(Request $request)

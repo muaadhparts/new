@@ -17,12 +17,12 @@ class CompatibilityService
      *
      * ✅ محسّن: استعلام محسّن مع select محدد
      */
-    public function getCompatibleCatalogs(string $sku): Collection
+    public function getCompatibleCatalogs(string $part_number): Collection
     {
         // ✅ استخدام فهرس part_number مباشرة
         $parts = DB::table('parts_index as pi')
             ->join('catalogs as c', 'c.code', '=', 'pi.catalog_code')
-            ->where('pi.part_number', $sku)
+            ->where('pi.part_number', $part_number)
             ->select(
                 'pi.catalog_code',
                 'c.label_en',
@@ -34,9 +34,9 @@ class CompatibilityService
 
         $isArabic = app()->getLocale() === 'ar';
 
-        return $parts->map(function ($part) use ($sku, $isArabic) {
+        return $parts->map(function ($part) use ($part_number, $isArabic) {
             return (object)[
-                'part_number'   => $sku,
+                'part_number'   => $part_number,
                 'catalog_code'  => $part->catalog_code,
                 'label'         => $isArabic ? $part->label_ar : $part->label_en,
                 'label_en'      => $part->label_en,
@@ -52,10 +52,10 @@ class CompatibilityService
      *
      * ✅ محسّن: استخدام فهرس مركب (part_number, catalog_code)
      */
-    public function isCompatibleWith(string $sku, string $catalogCode): bool
+    public function isCompatibleWith(string $part_number, string $catalogCode): bool
     {
         return DB::table('parts_index')
-            ->where('part_number', $sku)
+            ->where('part_number', $part_number)
             ->where('catalog_code', $catalogCode)
             ->limit(1)
             ->exists();
@@ -66,10 +66,10 @@ class CompatibilityService
      *
      * ✅ محسّن: COUNT DISTINCT على catalog_code فقط
      */
-    public function countCompatibleCatalogs(string $sku): int
+    public function countCompatibleCatalogs(string $part_number): int
     {
         return (int) DB::table('parts_index')
-            ->where('part_number', $sku)
+            ->where('part_number', $part_number)
             ->distinct()
             ->count('catalog_code');
     }
@@ -79,10 +79,10 @@ class CompatibilityService
      *
      * ✅ محسّن: استعلام خفيف مع distinct
      */
-    public function getCompatibleCatalogCodes(string $sku): array
+    public function getCompatibleCatalogCodes(string $part_number): array
     {
         return DB::table('parts_index')
-            ->where('part_number', $sku)
+            ->where('part_number', $part_number)
             ->distinct()
             ->pluck('catalog_code')
             ->toArray();
@@ -93,14 +93,14 @@ class CompatibilityService
      *
      * ✅ محسّن: JOIN محسّن مع select محدد
      */
-    public function getDetailedCompatibility(string $sku): Collection
+    public function getDetailedCompatibility(string $part_number): Collection
     {
         $isArabic = app()->getLocale() === 'ar';
 
         return DB::table('parts_index as pi')
             ->join('catalogs as c', 'c.code', '=', 'pi.catalog_code')
             ->leftJoin('brands as b', 'b.id', '=', 'c.brand_id')
-            ->where('pi.part_number', $sku)
+            ->where('pi.part_number', $part_number)
             ->select(
                 'pi.catalog_code',
                 'c.label_en as catalog_label_en',
@@ -111,9 +111,9 @@ class CompatibilityService
                 'b.logo as brand_logo'
             )
             ->get()
-            ->map(function ($item) use ($sku, $isArabic) {
+            ->map(function ($item) use ($part_number, $isArabic) {
                 return (object)[
-                    'part_number'     => $sku,
+                    'part_number'     => $part_number,
                     'catalog_code'    => $item->catalog_code,
                     'catalog_label'   => $isArabic ? $item->catalog_label_ar : $item->catalog_label_en,
                     'brand_name'      => $item->brand_name,

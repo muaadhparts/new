@@ -143,9 +143,9 @@ window.i18n = {
 
 window.ILL_ROUTES = {
   quick:        "{{ route('modal.quickview',    ['id' => 0]) }}".replace(/0$/, ''),
-  catalogItem:  "{{ route('modal.catalog-item', ['key' => 'SKU']) }}".replace(/SKU$/, ''),
-  alternative:  "{{ route('modal.alternative',  ['key' => 'SKU']) }}".replace(/SKU$/, ''),
-  compatibility:"{{ route('modal.compatibility',['key' => 'SKU']) }}".replace(/SKU$/, '')
+  catalogItem:  "{{ route('modal.catalog-item', ['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, ''),
+  alternative:  "{{ route('modal.alternative',  ['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, ''),
+  compatibility:"{{ route('modal.compatibility',['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, '')
 };
 </script>
 

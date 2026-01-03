@@ -58,7 +58,7 @@ class CatalogItemDetailsResource extends JsonResource
       'user_id'       => $mp ? $mp->user_id : ($this->user_id ?? 0), // إبقاء الحقل للتوافق، لكن يُفضّل اعتماد merchant.user_id
       'title'         => $this->name,
       'slug'          => $this->slug,
-      'sku'           => $this->sku,
+      'part_number'           => $this->part_number,
       'type'          => $this->type,
       'attributes'    => $this->attributes ? json_decode($this->attributes, true) : null,
 

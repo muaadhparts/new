@@ -1,11 +1,11 @@
 {{--
     Unified Catalog Item Info Component
-    Displays: SKU, Brand, Quality Brand, Merchant, Stock
+    Displays: PART_NUMBER, Brand, Quality Brand, Merchant, Stock
 
     Usage Examples:
     <x-catalog-item-info :catalog-item="$catalogItem" />
     <x-catalog-item-info :catalog-item="$catalogItem" :mp="$merchantItem" display-mode="badges" />
-    <x-catalog-item-info :catalog-item="$catalogItem" display-mode="list" :show-sku="true" />
+    <x-catalog-item-info :catalog-item="$catalogItem" display-mode="list" :show-part_number="true" />
 --}}
 
 @props([
@@ -37,7 +37,7 @@
     // Extract all display values (using localized names)
     // NO FALLBACK - if $mp is null, merchant-specific fields will be null
     // NOTE: All relationships MUST be eager loaded by Controller before passing to view
-    $sku = $catalogItem->sku ?? null;
+    $part_number = $catalogItem->part_number ?? null;
     $brandName = $catalogItem->brand?->localized_name;
     $brandLogo = $catalogItem->brand?->photo_url;
     $qualityBrand = $mp?->qualityBrand;
@@ -65,9 +65,9 @@
 @if($displayMode === 'badges')
     {{-- Badge Display Mode - Best for catalog item details pages --}}
     <div class="catalog-item-info-badges d-flex flex-wrap gap-2 mb-2">
-        @if($showSku && $sku)
+        @if($showSku && $part_number)
             <span class="badge bg-secondary text-white">
-                <i class="fas fa-barcode me-1"></i>{{ $sku }}
+                <i class="fas fa-barcode me-1"></i>{{ $part_number }}
             </span>
         @endif
 
@@ -109,9 +109,9 @@
 @elseif($displayMode === 'list')
     {{-- List Display Mode - Best for detailed list views --}}
     <ul class="catalog-item-info-list list-unstyled mb-2">
-        @if($showSku && $sku)
+        @if($showSku && $part_number)
             <li class="small text-muted">
-                <strong>{{ __('SKU') }}:</strong> <span class="font-monospace">{{ $sku }}</span>
+                <strong>{{ __('PART_NUMBER') }}:</strong> <span class="font-monospace">{{ $part_number }}</span>
             </li>
         @endif
 
@@ -153,10 +153,10 @@
     <div class="catalog-item-info-modal mb-3">
         <table class="table table-sm table-borderless mb-0">
             <tbody>
-                @if($showSku && $sku)
+                @if($showSku && $part_number)
                     <tr>
-                        <td class="text-muted" style="width: 100px;"><i class="fas fa-barcode me-1"></i>{{ __('SKU') }}</td>
-                        <td><code>{{ $sku }}</code></td>
+                        <td class="text-muted" style="width: 100px;"><i class="fas fa-barcode me-1"></i>{{ __('PART_NUMBER') }}</td>
+                        <td><code>{{ $part_number }}</code></td>
                     </tr>
                 @endif
 
@@ -204,9 +204,9 @@
 @elseif($displayMode === 'compact')
     {{-- Compact Display Mode - Best for modern catalog item cards --}}
     <div class="catalog-item-info-compact">
-        @if($showSku && $sku)
+        @if($showSku && $part_number)
             <span class="catalog-item-info-compact__item catalog-item-info-compact__sku">
-                {{ $sku }}
+                {{ $part_number }}
             </span>
         @endif
 
@@ -229,9 +229,9 @@
 @else
     {{-- Inline Display Mode (Default) - Best for compact catalog item cards --}}
     <div class="catalog-item-info-inline small text-muted mb-1">
-        @if($showSku && $sku)
+        @if($showSku && $part_number)
             <span class="me-2">
-                <i class="fas fa-barcode me-1"></i><span class="font-monospace">{{ $sku }}</span>
+                <i class="fas fa-barcode me-1"></i><span class="font-monospace">{{ $part_number }}</span>
             </span>
         @endif
 

@@ -328,13 +328,13 @@ class PurchaseController extends AdminBaseController
 
     public function catalogItem_submit(Request $request)
     {
-        $sku = $request->sku;
+        $part_number = $request->part_number;
         $merchantId = $request->merchant_id;
 
         // Find catalogItem through merchant_items relationship
         $merchantItem = \App\Models\MerchantItem::where('user_id', $merchantId)
-            ->whereHas('catalogItem', function($query) use ($sku) {
-                $query->where('sku', $sku)->where('status', 1);
+            ->whereHas('catalogItem', function($query) use ($part_number) {
+                $query->where('part_number', $part_number)->where('status', 1);
             })
             ->with('catalogItem')
             ->where('status', 1)

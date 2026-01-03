@@ -72,7 +72,7 @@
             <div class="catalog-quickview-image">
                 @if($mainPhoto)
                     <img src="{{ $mainPhoto }}"
-                         alt="{{ $catalogItem->name ?? $catalogItem->sku }}"
+                         alt="{{ $catalogItem->name ?? $catalogItem->part_number }}"
                          class="catalog-quickview-main-img"
                          loading="lazy">
                 @endif
@@ -131,11 +131,11 @@
             <div class="catalog-quickview-info">
                 <table class="catalog-info-table">
                     <tbody>
-                        {{-- SKU --}}
-                        @if($catalogItem->sku)
+                        {{-- PART_NUMBER --}}
+                        @if($catalogItem->part_number)
                             <tr>
-                                <td class="catalog-info-label"><i class="fas fa-barcode"></i> @lang('SKU')</td>
-                                <td class="catalog-info-value"><code>{{ $catalogItem->sku }}</code></td>
+                                <td class="catalog-info-label"><i class="fas fa-barcode"></i> @lang('PART_NUMBER')</td>
+                                <td class="catalog-info-value"><code>{{ $catalogItem->part_number }}</code></td>
                             </tr>
                         @endif
 
@@ -265,7 +265,7 @@
                 <div class="mt-3">
                     <x-shipping-quote-button
                         :merchant-user-id="$merchantUserId"
-                        :catalog-item-name="$catalogItem->name ?? $catalogItem->sku"
+                        :catalog-item-name="$catalogItem->name ?? $catalogItem->part_number"
                         class="w-100"
                     />
                 </div>

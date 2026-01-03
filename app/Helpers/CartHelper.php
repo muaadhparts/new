@@ -212,7 +212,7 @@ class CartHelper
                 'name' => $catalogItem->name ?? '',
                 'name_ar' => $catalogItem->name_ar ?? '',
                 'slug' => $catalogItem->slug ?? '',
-                'sku' => $catalogItem->sku ?? '',
+                'part_number' => $catalogItem->part_number ?? '',
                 'photo' => $catalogItem->photo ?? '',
                 'type' => $catalogItem->type ?? 'Physical',
 

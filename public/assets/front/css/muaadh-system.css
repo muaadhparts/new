@@ -3790,7 +3790,7 @@ select option {
     margin-bottom: 4px;
 }
 
-.m-cart__item-sku {
+.m-cart__item-part_number {
     font-size: 11px;
     font-family: monospace;
     color: var(--text-muted, var(--theme-text-muted, #6b7280));

@@ -37,7 +37,7 @@ class CatalogItemController extends AdminBaseController
             ->filterColumn('name', function ($query, $keyword) {
                 $query->whereHas('catalogItem', function($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%")
-                      ->orWhere('sku', 'like', "%{$keyword}%")
+                      ->orWhere('part_number', 'like', "%{$keyword}%")
                       ->orWhere('label_ar', 'like', "%{$keyword}%")
                       ->orWhere('label_en', 'like', "%{$keyword}%");
                 });
@@ -62,10 +62,10 @@ class CatalogItemController extends AdminBaseController
                 ]);
 
                 $displayName = getLocalizedCatalogItemName($catalogItem);
-                $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
+                $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';
                 $condition = $mp->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
-                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mp) {
                 $catalogItem = $mp->catalogItem;
@@ -147,7 +147,7 @@ class CatalogItemController extends AdminBaseController
             ->filterColumn('name', function ($query, $keyword) {
                 $query->whereHas('catalogItem', function($q) use ($keyword) {
                     $q->where('name', 'like', "%{$keyword}%")
-                      ->orWhere('sku', 'like', "%{$keyword}%")
+                      ->orWhere('part_number', 'like', "%{$keyword}%")
                       ->orWhere('label_ar', 'like', "%{$keyword}%")
                       ->orWhere('label_en', 'like', "%{$keyword}%");
                 });
@@ -172,10 +172,10 @@ class CatalogItemController extends AdminBaseController
                 ]);
 
                 $displayName = getLocalizedCatalogItemName($catalogItem);
-                $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
+                $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';
                 $condition = $mp->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
-                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mp) {
                 $catalogItem = $mp->catalogItem;
@@ -377,7 +377,7 @@ class CatalogItemController extends AdminBaseController
         $input['photo'] = $image_name;
 
         if ($request->type == "Physical" || $request->type == "Listing") {
-            $rules = ['sku' => 'min:8|unique:catalog_items'];
+            $rules = ['part_number' => 'min:8|unique:catalog_items'];
 
             $validator = Validator::make($request->all(), $rules);
 
@@ -483,7 +483,7 @@ class CatalogItemController extends AdminBaseController
         if ($catalogItem->type != 'Physical' || $request->type != "Listing") {
             $catalogItem->slug = Str::slug($data->name, '-') . '-' . strtolower(Str::random(3) . $data->id . Str::random(3));
         } else {
-            $catalogItem->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
+            $catalogItem->slug = Str::slug($data->name, '-') . '-' . strtolower($data->part_number);
         }
 
         // Set Thumbnail
@@ -560,7 +560,7 @@ class CatalogItemController extends AdminBaseController
 
             if ($i != 1) {
 
-                if (!CatalogItem::where('sku', $line[0])->exists()) {
+                if (!CatalogItem::where('part_number', $line[0])->exists()) {
                     //--- Validation Section Ends
 
                     //--- Logic Section
@@ -568,7 +568,7 @@ class CatalogItemController extends AdminBaseController
                     $sign = Currency::where('is_default', '=', 1)->first();
 
                     $input['type'] = 'Physical';
-                    $input['sku'] = $line[0];
+                    $input['part_number'] = $line[0];
 
                     // Old category system removed - now using TreeCategories
                     // category_id, subcategory_id, childcategory_id no longer used
@@ -593,7 +593,7 @@ class CatalogItemController extends AdminBaseController
                         $csvItemType = $line[19] ?? 'normal';
                         // affiliate_link moved to merchant_items
                         $csvAffiliateLink = $line[20] ?? null;
-                        $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['sku']);
+                        $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['part_number']);
 
                         $image_url = $line[5];
 
@@ -726,7 +726,7 @@ class CatalogItemController extends AdminBaseController
         // Check Physical
         if ($data->type == "Physical" || $data->type == "Listing") {
             //--- Validation Section
-            $rules = ['sku' => 'min:8|unique:catalog_items,sku,' . $data->id];
+            $rules = ['part_number' => 'min:8|unique:catalog_items,part_number,' . $data->id];
 
             $validator = Validator::make($request->all(), $rules);
 
@@ -845,7 +845,7 @@ class CatalogItemController extends AdminBaseController
         if ($request->cross_products) {
             $input['cross_products'] = implode(',', $request->cross_products);
         }
-        $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
+        $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->part_number);
 
         $data->update($input);
 

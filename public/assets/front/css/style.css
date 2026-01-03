@@ -14936,7 +14936,7 @@ div[id*='zoom_container'] .landmarks .lable div {
     min-width: 0;
 }
 
-.muaadh-suggestion-sku {
+.muaadh-suggestion-part_number {
     font-weight: 700;
     color: var(--theme-text-primary, var(--muaadh-dark));
     margin-bottom: 3px;
@@ -16212,7 +16212,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 /* Table column widths */
 .muaadh-cart-th-image { width: 70px; text-align: center; }
-.muaadh-cart-th-sku { width: 110px; text-align: center; }
+.muaadh-cart-th-part_number { width: 110px; text-align: center; }
 .muaadh-cart-th-brand { width: 100px; text-align: center; }
 .muaadh-cart-th-quality { width: 100px; text-align: center; }
 .muaadh-cart-th-price { width: 100px; text-align: center; }
@@ -16244,9 +16244,9 @@ div[id*='zoom_container'] .landmarks .lable div {
     color: var(--theme-primary);
 }
 
-/* SKU Code */
+/* PART_NUMBER Code */
 .cart-page-v2 code,
-.muaadh-vendor-cart-section .cart-sku code {
+.muaadh-vendor-cart-section .cart-part_number code {
     background: var(--theme-bg-light, #f1f3f4);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;

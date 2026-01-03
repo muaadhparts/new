@@ -31,14 +31,14 @@
     <!-- Search CatalogItem Section -->
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-search me-2"></i>@lang('Search CatalogItem by SKU / Part Number')</h5>
+            <h5 class="mb-0"><i class="fas fa-search me-2"></i>@lang('Search CatalogItem by PART_NUMBER / Part Number')</h5>
         </div>
         <div class="card-body">
             <div class="row align-items-end">
                 <div class="col-md-8">
-                    <label class="form-label">@lang('Enter CatalogItem SKU / Part Number')</label>
+                    <label class="form-label">@lang('Enter CatalogItem PART_NUMBER / Part Number')</label>
                     <input type="text" class="form-control form-control-lg" id="search_sku"
-                           placeholder="@lang('Enter SKU or Part Number and press Enter or click Search')">
+                           placeholder="@lang('Enter PART_NUMBER or Part Number and press Enter or click Search')">
                 </div>
                 <div class="col-md-4">
                     <button type="button" class="btn btn-primary btn-lg w-100" id="search_btn">
@@ -72,7 +72,7 @@
                             <h6 id="item_name" class="text-center mb-3"></h6>
                             <table class="table table-sm">
                                 <tr>
-                                    <th>@lang('SKU'):</th>
+                                    <th>@lang('PART_NUMBER'):</th>
                                     <td id="item_sku"></td>
                                 </tr>
                                 <tr>
@@ -305,16 +305,16 @@ document.addEventListener('DOMContentLoaded', function() {
     searchBtn.addEventListener('click', searchCatalogItem);
 
     function searchCatalogItem() {
-        const sku = searchInput.value.trim();
-        if (!sku) {
-            searchResult.innerHTML = '<div class="alert alert-warning">@lang("Please enter a SKU or Part Number")</div>';
+        const part_number = searchInput.value.trim();
+        if (!part_number) {
+            searchResult.innerHTML = '<div class="alert alert-warning">@lang("Please enter a PART_NUMBER or Part Number")</div>';
             return;
         }
 
         searchResult.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>@lang("Searching...")</div>';
         itemFormSection.style.display = 'none';
 
-        fetch('{{ route("merchant-catalog-item-search-sku") }}?sku=' + encodeURIComponent(sku))
+        fetch('{{ route("merchant-catalog-item-search-part_number") }}?part_number=' + encodeURIComponent(part_number))
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
@@ -335,7 +335,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Fill catalogItem info
                     document.getElementById('catalog_item_id').value = catalogItem.id;
                     document.getElementById('item_name').textContent = catalogItem.name;
-                    document.getElementById('item_sku').textContent = catalogItem.sku;
+                    document.getElementById('item_sku').textContent = catalogItem.part_number;
                     document.getElementById('item_brand').textContent = catalogItem.brand || '@lang("N/A")';
                     document.getElementById('item_type').textContent = catalogItem.type;
 

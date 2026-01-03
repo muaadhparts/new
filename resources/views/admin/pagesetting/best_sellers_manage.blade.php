@@ -88,7 +88,7 @@
                                         </td>
                                         <td>
                                             <strong>{{ $catalogItemName }}</strong>
-                                            <br><small class="text-muted">SKU: {{ $mp->catalogItem->sku }}</small>
+                                            <br><small class="text-muted">PART_NUMBER: {{ $mp->catalogItem->part_number }}</small>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-2">
@@ -165,8 +165,8 @@
                 {{-- Step 1: Search Products --}}
                 <div id="step1-search">
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Search by SKU or CatalogItem Name') }}</label>
-                        <input type="text" id="bestProductSearch" class="form-control" placeholder="{{ __('Enter SKU or catalogItem name...') }}">
+                        <label class="form-label">{{ __('Search by PART_NUMBER or CatalogItem Name') }}</label>
+                        <input type="text" id="bestProductSearch" class="form-control" placeholder="{{ __('Enter PART_NUMBER or catalogItem name...') }}">
                     </div>
 
                     <div id="searchResults" class="mt-3">
@@ -268,13 +268,13 @@ $(document).ready(function() {
                         <a href="javascript:;" class="list-group-item list-group-item-action d-flex align-items-center select-catalogItem"
                            data-id="${catalogItem.catalog_item_id}"
                            data-name="${catalogItem.name}"
-                           data-sku="${catalogItem.sku}"
+                           data-part_number="${catalogItem.part_number}"
                            data-photo="${catalogItem.photo}">
                             <img src="${catalogItem.photo}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;" class="me-3"
                                  onerror="this.src='{{ asset('assets/images/noimage.png') }}'">
                             <div class="flex-grow-1">
                                 <strong>${catalogItem.name}</strong><br>
-                                <small class="text-muted">SKU: ${catalogItem.sku}</small>
+                                <small class="text-muted">PART_NUMBER: ${catalogItem.part_number}</small>
                             </div>
                             <div class="text-end">
                                 <span class="badge bg-info">${catalogItem.merchants_count} {{ __("merchants") }}</span>
@@ -293,11 +293,11 @@ $(document).ready(function() {
     $(document).on('click', '.select-catalogItem', function() {
         selectedCatalogItemId = $(this).data('id');
         const name = $(this).data('name');
-        const sku = $(this).data('sku');
+        const part_number = $(this).data('part_number');
         selectedCatalogItemPhoto = $(this).data('photo');
 
         $('#selectedCatalogItemName').text(name);
-        $('#selectedCatalogItemSku').text('SKU: ' + sku);
+        $('#selectedCatalogItemSku').text('PART_NUMBER: ' + part_number);
         $('#selectedCatalogItemImg').attr('src', selectedCatalogItemPhoto);
 
         $('#step1-search').hide();

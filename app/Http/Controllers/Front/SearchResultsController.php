@@ -17,7 +17,7 @@ class SearchResultsController extends Controller
         private CatalogItemCardDataBuilder $cardBuilder
     ) {}
 
-    public function show(Request $request, $sku)
+    public function show(Request $request, $part_number)
     {
         // Get filters from request
         $storeFilter = $request->get('store', 'all');
@@ -26,8 +26,8 @@ class SearchResultsController extends Controller
         $page = $request->get('page', 1);
 
         // Get main catalog items and alternatives
-        $prods = CatalogItem::where('sku', $sku)->get();
-        $alternatives = $this->getAlternatives($sku);
+        $prods = CatalogItem::where('part_number', $part_number)->get();
+        $alternatives = $this->getAlternatives($part_number);
 
         // Merge all catalog items
         $allCatalogItems = $prods->merge($alternatives);
@@ -35,7 +35,7 @@ class SearchResultsController extends Controller
 
         if (empty($catalogItemIds)) {
             return view('frontend.search-results', [
-                'sku' => $sku,
+                'part_number' => $part_number,
                 'cards' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, self::PER_PAGE),
                 'alternativeCards' => collect(),
                 'availableStores' => collect(),
@@ -78,7 +78,7 @@ class SearchResultsController extends Controller
         }
 
         return view('frontend.search-results', [
-            'sku' => $sku,
+            'part_number' => $part_number,
             'cards' => $cards, // LengthAwarePaginator with DTOs
             'alternativeCards' => $alternativeCards,
             'availableStores' => $availableStores,
@@ -90,26 +90,26 @@ class SearchResultsController extends Controller
     }
 
     /**
-     * Get alternative catalogItems for a SKU
+     * Get alternative catalogItems for a PART_NUMBER
      */
-    private function getAlternatives(string $sku): \Illuminate\Support\Collection
+    private function getAlternatives(string $part_number): \Illuminate\Support\Collection
     {
-        $skuAlternative = SkuAlternative::where('sku', $sku)->first();
+        $skuAlternative = SkuAlternative::where('part_number', $part_number)->first();
 
         if (!$skuAlternative || !$skuAlternative->group_id) {
             return collect();
         }
 
         $alternativeSkus = SkuAlternative::where('group_id', $skuAlternative->group_id)
-            ->where('sku', '<>', $sku)
-            ->pluck('sku')
+            ->where('part_number', '<>', $part_number)
+            ->pluck('part_number')
             ->toArray();
 
         if (empty($alternativeSkus)) {
             return collect();
         }
 
-        return CatalogItem::whereIn('sku', $alternativeSkus)->get();
+        return CatalogItem::whereIn('part_number', $alternativeSkus)->get();
     }
 
     /**
@@ -183,10 +183,10 @@ class SearchResultsController extends Controller
     {
         match ($sortBy) {
             'sku_asc' => $query->join('catalog_items', 'merchant_items.catalog_item_id', '=', 'catalog_items.id')
-                               ->orderBy('catalog_items.sku', 'asc')
+                               ->orderBy('catalog_items.part_number', 'asc')
                                ->select('merchant_items.*'),
             'sku_desc' => $query->join('catalog_items', 'merchant_items.catalog_item_id', '=', 'catalog_items.id')
-                                ->orderBy('catalog_items.sku', 'desc')
+                                ->orderBy('catalog_items.part_number', 'desc')
                                 ->select('merchant_items.*'),
             'price_asc' => $query->orderBy('price', 'asc'),
             'price_desc' => $query->orderBy('price', 'desc'),

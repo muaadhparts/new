@@ -4,7 +4,7 @@
     'item' => null, // for cart items format
     'merchantUserId' => null,
     'merchantItemId' => null,
-    'showSku' => false, // SKU يعرض في catalog-item-info component
+    'showSku' => false, // PART_NUMBER يعرض في catalog-item-info component
     'target' => '_self',
     'class' => '',
     'nameClass' => '',
@@ -23,7 +23,7 @@
     // Extract data based on format
     if (isset($itemData['item'])) {
         // Cart item format: $item['item']['name']
-        $sku = $itemData['item']['sku'] ?? '';
+        $part_number = $itemData['item']['part_number'] ?? '';
         $slug = $itemData['item']['slug'] ?? '';
         $userId = $merchantUserId ?? $itemData['item']['user_id'] ?? $itemData['user_id'] ?? 0;
         // For merchant_item_id: prioritize explicit prop, then try to infer
@@ -38,7 +38,7 @@
         $displayName = getLocalizedCatalogItemName($itemData['item']);
     } else {
         // Direct catalog item object format: $catalogItem->name
-        $sku = $itemData->sku ?? $itemData['sku'] ?? '';
+        $part_number = $itemData->part_number ?? $itemData['part_number'] ?? '';
         $slug = $itemData->slug ?? $itemData['slug'] ?? '';
         $userId = $merchantUserId ?? $itemData->user_id ?? $itemData['user_id'] ?? 0;
         // For merchant_item_id: prioritize explicit prop
@@ -57,8 +57,8 @@
         $displayName = getLocalizedCatalogItemName($itemData);
     }
 
-    // SKU display
-    $displaySku = !empty($sku) ? $sku : '-';
+    // PART_NUMBER display
+    $displaySku = !empty($part_number) ? $part_number : '-';
 
     // Determine which route to use
     $shouldUseSearchRoute = $useSearchRoute;
@@ -67,7 +67,7 @@
         $currentRouteName = request()->route() ? request()->route()->getName() : '';
         $currentPath = request()->path();
 
-        // Use search route (result/{sku}) for admin pages EXCEPT purchases/invoices
+        // Use search route (result/{part_number}) for admin pages EXCEPT purchases/invoices
         $isAdminPage = str_starts_with($currentPath, 'admin/');
         $isAdminPurchaseOrInvoice = $isAdminPage && (
             str_contains($currentPath, '/purchase') ||
@@ -91,9 +91,9 @@
     }
 
     // Route generation
-    if ($shouldUseSearchRoute && !empty($sku)) {
-        // Use search route: result/{sku}
-        $catalogItemRoute = route('search.result', $sku);
+    if ($shouldUseSearchRoute && !empty($part_number)) {
+        // Use search route: result/{part_number}
+        $catalogItemRoute = route('search.result', $part_number);
     } else {
         // Use catalog item details route
         $catalogItemRoute = !empty($slug) && $userId && $mpId
@@ -116,10 +116,10 @@
         <small class="{{ $skuClass }}">
             @if(!empty($slug))
                 <a href="{{ $catalogItemRoute }}" target="{{ $target }}">
-                    @lang('SKU'): {{ $displaySku }}
+                    @lang('PART_NUMBER'): {{ $displaySku }}
                 </a>
             @else
-                @lang('SKU'): {{ $displaySku }}
+                @lang('PART_NUMBER'): {{ $displaySku }}
             @endif
         </small>
     @endif

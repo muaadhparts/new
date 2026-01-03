@@ -48,7 +48,7 @@
                             @endphp
 
                             <tr class="{{ $highlight ? 'row-available' : 'row-unavailable' }}">
-                                <td><code class="fw-bold text-dark">{{ $catalogItem->sku }}</code></td>
+                                <td><code class="fw-bold text-dark">{{ $catalogItem->part_number }}</code></td>
                                 <td class="text-truncate" style="max-width: 200px;">{{ getLocalizedCatalogItemName($catalogItem) }}</td>
                                 <td>
                                     @if($catalogItem->brand)
@@ -139,7 +139,7 @@
 
                 <div class="catalog-card {{ $highlight ? 'card-available' : 'card-unavailable' }}">
                     <div class="catalog-card-header">
-                        <code class="fw-bold">{{ $catalogItem->sku }}</code>
+                        <code class="fw-bold">{{ $catalogItem->part_number }}</code>
                         @if($inStock)
                             <span class="catalog-badge catalog-badge-success">{{ $mp->stock }} @lang('In Stock')</span>
                         @elseif($preordered)

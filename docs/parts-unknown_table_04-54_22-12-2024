@@ -1,4 +1,4 @@
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('10102CD7M0', '[\"10102CD7M1\"]'),
 ('10101AC327', '[\"A0101AC385\", \"10101AC329\", \"10101AC326\"]'),
 ('10101AC329', '[\"A0101AC385\", \"10101AC326\"]'),
@@ -499,7 +499,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('1643942L00', '[\"1643942L0A\", \"1643942L0A\", \"1643942L0B\"]'),
 ('1643942L0A', '[\"1643942L0B\", \"1643942L00\"]'),
 ('18002AM818', '[\"18002AM81E\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('20020AM660', '[\"20020AM66C\", \"20020AM662\"]'),
 ('20020AM662', '[\"20020AM66C\", \"20020AM660\"]'),
 ('20020AM66C', '[\"20020AM662\", \"20020AM660\"]'),
@@ -1000,7 +1000,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3140790X06', '[\"314071XJ1B\"]'),
 ('314071XJ0C', '[\"3140790X08\"]'),
 ('3140790X08', '[\"314071XJ0C\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('314351XJ0B', '[\"3143590X09\"]'),
 ('3143590X09', '[\"314351XJ0B\"]'),
 ('3140790X02', '[\"3140790X04\", \"3140790X0A\"]'),
@@ -1501,7 +1501,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('64120CD000', '[\"64120CD010\"]'),
 ('64121CD000', '[\"64121CD010\"]'),
 ('64150CD000', '[\"64150CD020\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('64180CD000', '[\"64180CD010\"]'),
 ('64180CD010', '[\"64180CD000\"]'),
 ('64151CD000', '[\"64151CD020\"]'),
@@ -2002,7 +2002,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('371200P000', '[\"371200P00A\"]'),
 ('371710P000', '[\"371717S00A\", \"371710P00A\"]'),
 ('3752141L85', '[\"375216P025\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3812013210', '[3812013260, 3812013201, \"381201321A\"]'),
 ('38154P6017', '[\"38154G2317\"]'),
 ('38154P6018', '[\"38154B4018\"]'),
@@ -2503,7 +2503,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3131531X07', '[\"3131531X01\"]'),
 ('3135321X00', '[\"3135321X01\"]'),
 ('3140831X13', '[\"3140831X61\", \"3140831X03\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3140931X02', '[\"3140931X01\"]'),
 ('3142031X07', '[\"3142031X05\", \"3142031X02\"]'),
 ('3145531X01', '[\"3145531X02\"]'),
@@ -3004,7 +3004,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('132013Z00A', '[\"132013Z001\", \"132013Z000\"]'),
 ('132017S000', '[\"132015W301\", \"NA1440\", \"132019FP0A\", \"NA1440SET4PCS\"]'),
 ('132023Z000', '[\"132023Z11A\", \"132026N20A\", \"132026N200\", \"ENS5518A\", \"132026N200\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('132027S000', '[\"NB1440\", \"132029FP0A\", \"132027S01A\", \"NB1440SET4PCS\"]'),
 ('132027Y000', '[\"132028J10A\", \"132028J110\", \"132028J100\"]'),
 ('132037Y000', '[\"13203EA20B\", \"13203EA20A\"]'),
@@ -3505,7 +3505,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('089155381A', '[\"089154381A\", \"089155361A\"]'),
 ('34935ZB600', '[\"349358J000\"]'),
 ('3270180X00', '[\"3270180X01\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3270180X01', '[\"3270180X00\"]'),
 ('3810180X0A', '[\"3810181X04\"]'),
 ('3810181X04', '[\"3810180X0A\"]'),
@@ -4006,7 +4006,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('132019HP0A', '[\"13201JA10A\", \"132019N00A\"]'),
 ('132019N00A', '[\"132019HP0A\", \"13201JA10A\"]'),
 ('13201JA00A', '[\"13201JA01A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('13201JA10A', '[\"132019HP0A\", \"132019N00A\"]'),
 ('132029N00A', '[\"132029PA0A\", \"13202JA10A\"]'),
 ('132029PA0A', '[\"132029N00A\", \"13202JA10A\"]'),
@@ -4507,7 +4507,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('C97417Y010', '[\"C97417Y01J\"]'),
 ('C97417Y01J', '[\"C97417Y010\"]'),
 ('C9741JA00A', '[\"C9741JA00J\", \"0415CU20\", \"C9741JA00J\", \"397418J025\", \"397418J025\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('C9741JA10A', '[\"C9741JA10J\"]'),
 ('39774JA00A', '[\"39774JA01A\", \"39774JA02A\", \"AS356220\"]'),
 ('39774JA01A', '[\"39774JA02A\", \"AS356220\", \"39774JA00A\"]'),
@@ -5008,7 +5008,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('226931MR0A', '[\"226933RC0A\"]'),
 ('226933RC0A', '[\"226931MR0A\"]'),
 ('23731JA00C', '[\"23731JA00B\", \"23731JA00A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('23731JA11C', '[\"23731JA11D\"]'),
 ('231003TA1B', '[\"2310M3TA1BRW\", \"231003TA1BRE\"]'),
 ('231009HU0A', '[\"2310M9HU0ARW\", \"231009HU0ARE\"]'),
@@ -5509,7 +5509,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('11124P6500', '[\"11124V0100\"]'),
 ('1112869200', '[\"11128U8000\", \"111286920A\"]'),
 ('30411U0600', '[\"30411W3400\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('30411VC200', '[\"30411WG00A\"]'),
 ('30411WG00A', '[\"30411VC200\"]'),
 ('1227906J00', '[\"1227906J01\"]'),
@@ -6010,7 +6010,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('20620T8001', '[\"20620T8000\"]'),
 ('2064134T00', '[\"2064001A61\"]'),
 ('081208601A', '[\"0812086010\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('206515L300', '[\"NEXB011\"]'),
 ('206920T000', '[\"20310J6500\"]'),
 ('206928H30A', '[\"206928H300\"]'),
@@ -6511,7 +6511,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('391001KB0A', '[\"NI093\"]'),
 ('392111KA5B', '[\"0210F15\"]'),
 ('39241CG027', '[\"0217PC11X\", \"C9BDACG02H\", \"C9BDACG027\", \"39241CG026\", \"39241CG025\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('C92414GB0A', '[\"C9BDA4GB0H\", \"C9BDA4GB0A\"]'),
 ('C9B41JA02A', '[\"C9BDAJA02H\", \"C9BDAJA02A\"]'),
 ('397416N227', '[\"0215071T\", \"C97D16N200\", \"C9GDA6N20H\", \"C9G416N20H\", \"C9GDA6N22H\", \"C97416N20H\", \"C9GDA6N20K\", \"C9G416N20J\", \"C97416N20J\", \"C9GDA6N225\", \"C97416N200\", \"397416N225\"]'),
@@ -7012,7 +7012,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('1302142L01', '[\"1302142L11\"]'),
 ('3220230000', '[\"32202B950A\", \"32202B9500\", \"322027F401\"]'),
 ('1203058S00', '[\"1203058S01\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('1203058S01', '[\"1203058S00\"]'),
 ('1220742L10', '[\"MS1203GP075\", \"MS1203GP025\", \"MS1203GP100\", \"MS1203GPSTD\"]'),
 ('1226142L00', '[\"12209V7202\"]'),
@@ -7513,7 +7513,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3157041X07', '[\"3157041X69\", \"3157042X01\", \"3157042X14\"]'),
 ('3157042X00', '[\"3157041X04\"]'),
 ('3157042X01', '[\"3157041X07\", \"3157041X69\", \"3157042X14\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3157042X14', '[\"3157041X69\", \"3157042X01\", \"3157041X07\"]'),
 ('3157141X01', '[\"3157141X06\"]'),
 ('3158441X01', '[\"3158441X02\"]'),
@@ -8014,7 +8014,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('7977771L65', '[\"7977771L00\"]'),
 ('7975571L00', '[\"7975571L65\"]'),
 ('7975571L65', '[\"7975571L00\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('7975171L60', '[\"7975271L00\"]'),
 ('7975271L00', '[\"7975171L60\"]'),
 ('8010071L35', '[\"8010075L35\"]'),
@@ -8515,7 +8515,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3010092S02', '[\"301002Y92A\", \"C01006E600\", \"NS11\", \"NSD052U\", \"NS11\", \"C010M24086\", \"3010092S01\", \"301006E609\", \"301006E604\", \"3010059S08\", \"3010059S00\", \"301002Y920\", \"301002Y910\", \"301002Y904\", \"3010021P00\"]'),
 ('302106E600', '[\"302106E602\", \"NSC21\", \"3021085E01\"]'),
 ('3021085E00', '[\"302106E602\", \"NSC21\", \"3021085E01\", \"302106E600\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3021085E01', '[\"302106E602\", \"NSC21\", \"302106E600\"]'),
 ('3061051E01', '[\"3061009L00\", \"3061051E02\", \"3061051E03\"]'),
 ('3061051E02', '[\"3061051E01\", \"3061009L00\", \"3061028L01\", \"3061051E03\"]'),
@@ -9016,7 +9016,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('848106E100', '[\"8481096E00\"]'),
 ('0128100691', '[\"0128100401\", \"0128101071\"]'),
 ('8760351E02', '[\"8760371L03\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('9603085E25', '[\"9603085E94\"]'),
 ('J63016E410', '[\"J63016E505\", \"J63016E305\"]'),
 ('J63016E505', '[\"J63016E305\", \"J63016E410\"]'),
@@ -9517,7 +9517,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('2561044U00', '[\"2561044U10\"]'),
 ('2561044U10', '[\"2561044U00\"]'),
 ('2562044U00', '[\"2562044U10\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('2562044U10', '[\"2562044U00\"]'),
 ('28268C9924', '[\"2826840U20\"]'),
 ('285562L725', '[\"285562L726\"]'),
@@ -10018,7 +10018,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('K851M40U67', '[\"K851040U17\"]'),
 ('K851M4L901', '[\"K851M4L911\"]'),
 ('K851M4L903', '[\"K851M4L913\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('480800M000', '[\"480800M00A\", \"4808065Y00\", \"480800M001\"]'),
 ('480800M001', '[\"480800M00A\", \"4808065Y00\", \"480800M000\"]'),
 ('4911040U15', '[\"4911040U1B\", \"V7011\", \"4911040U1A\"]'),
@@ -10519,7 +10519,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('9601751U00', '[\"9601751U01\", \"9601751U04\", \"9601751U02\", \"9601751U05\"]'),
 ('9601751U01', '[\"9601751U00\", \"9601751U04\", \"9601751U02\", \"9601751U05\"]'),
 ('9601751U02', '[\"9601751U00\", \"9601751U04\", \"9601751U01\", \"9601751U05\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('9601751U04', '[\"9601751U00\", \"9601751U02\", \"9601751U01\", \"9601751U05\"]'),
 ('9601751U05', '[\"9601751U00\", \"9601751U02\", \"9601751U01\", \"9601751U04\"]'),
 ('0155309621', '[\"0155304641\"]'),
@@ -11020,7 +11020,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('289402Y010', '[\"B746189910\"]'),
 ('301002Y000', '[\"301002Y004\"]'),
 ('301002Y900', '[\"301002Y92A\", \"C01006E600\", \"301002Y920\", \"301002Y904\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('301002Y904', '[\"301002Y92A\", \"C01006E600\", \"3010092S02\", \"301006E609\", \"301002Y920\", \"301002Y900\"]'),
 ('301002Y910', '[\"301002Y92A\", \"C01006E600\", \"30100V7108\", \"30100V7107\", \"30100V7101\", \"30100P9594\", \"3010092S02\", \"301002Y904\", \"301006E609\", \"301006E604\", \"3010059S08\", \"3010059S00\", \"301002Y920\", \"C010M24086\", \"3010092S01\", \"ISD104US\", \"3010021P00\"]'),
 ('301002Y920', '[\"301002Y92A\", \"C01006E600\", \"30100V7108\", \"30100V7107\", \"30100V7101\", \"30100P9594\", \"3010092S02\", \"301002Y900\", \"301006E609\", \"301006E604\", \"3010059S08\", \"3010059S00\", \"301002Y910\", \"301002Y904\", \"C010M24086\", \"3010092S01\", \"ISD104US\", \"3010021P00\"]'),
@@ -11521,7 +11521,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('403002Y627', '[\"403002Y629\"]'),
 ('403002Y525', '[\"403002Y526\"]'),
 ('403002Y526', '[\"403002Y525\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('870662Y001', '[\"87066EA120\", \"870667S000\"]'),
 ('403004U007', '[\"40300AU007\"]'),
 ('40300AU007', '[\"403004U007\"]'),
@@ -12022,7 +12022,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('120109N01B', '[\"120109N01C\"]'),
 ('120109N01C', '[\"120109N01B\"]'),
 ('120109N02B', '[\"120109N02C\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('120109N02C', '[\"120109N02B\"]'),
 ('12201JA10B', '[\"12200JA11B\", \"12200JA10B\"]'),
 ('130209N01A', '[\"130209N02A\"]'),
@@ -12523,7 +12523,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('769224RA0D', '[\"769229DJ1A\", \"769229DJ0A\", \"769224RA1C\"]'),
 ('769224RA1C', '[\"769229DJ1A\", \"769229DJ0A\", \"769224RA0D\"]'),
 ('769229DJ0A', '[\"769229DJ1A\", \"769224RA0D\", \"769224RA1C\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('769229DJ1A', '[\"769224RA0D\", \"769229DJ0A\", \"769224RA1C\"]'),
 ('769244RA1C', '[\"769249DJ0A\"]'),
 ('769249DJ0A', '[\"769244RA1C\"]'),
@@ -13024,7 +13024,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('14004VJ201', '[\"14004VJ200\"]'),
 ('140647B00A', '[\"140647B000\"]'),
 ('14064AW00A', '[\"14064AW000\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('14064N420A', '[\"14064N4200\", \"1406458Y00\"]'),
 ('140362B500', '[\"1403653F01\"]'),
 ('16590VJ205', '[\"16590VJ201\"]'),
@@ -13525,7 +13525,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('1709985G00', '[1709921002]'),
 ('17099A0600', '[1709921002, \"1709985G00\"]'),
 ('0812082033', '[\"081208201F\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('0822383010', '[\"0822382510\"]'),
 ('1720201J00', '[\"1720261G00\"]'),
 ('1725189910', '[1725179920, 1725189920, 1725189915, 1725179910]'),
@@ -14026,7 +14026,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('9260056G00', '[\"9260056G02\"]'),
 ('92600V6301', '[\"92600V6303\", \"9260017C02\"]'),
 ('92600V6302', '[\"92600V6303\", \"9260017C02\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('92600V6303', '[\"9260017C02\"]'),
 ('9266001G00', '[\"9266001G01\"]'),
 ('9266001G01', '[\"9266001G00\"]'),
@@ -14527,7 +14527,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('8067092G01', '[\"8067055G03\"]'),
 ('7271201G00', '[\"G271215G10\"]'),
 ('7271201G61', '[\"7271201G00\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('7276201G00', '[\"7276292G10\", \"7276292G20\", \"7276292G05\"]'),
 ('7276292G10', '[\"7276201G00\", \"7276292G20\", \"7276292G05\"]'),
 ('7276292G11', '[\"7276292G15\", \"7276201G01\"]'),
@@ -15028,7 +15028,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3813282100', '[\"381258217A\"]'),
 ('3813382100', '[\"381258218A\"]'),
 ('3813482100', '[\"381258219A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3813582100', '[\"381258210B\"]'),
 ('3813682100', '[\"381258211B\"]'),
 ('3813782100', '[\"381258212B\"]'),
@@ -15529,7 +15529,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('313408S01A', '[\"313408S010\"]'),
 ('314057S110', '[\"314057S11A\"]'),
 ('314057S11A', '[\"314057S110\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('31431EA300', '[\"314310W410\"]'),
 ('331398S010', '[\"331397S120\"]'),
 ('33139EA30A', '[\"32203CG000\"]'),
@@ -16030,7 +16030,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('68499ZS00A', '[\"684999BH0A\"]'),
 ('68499ZS10A', '[\"684999BH1A\"]'),
 ('281769BH0C', '[\"28176EA00C\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('28176EA00C', '[\"281769BH0C\"]'),
 ('28176ZS00A', '[\"281769BH0A\"]'),
 ('281779BH0C', '[\"28177EA002\"]'),
@@ -16531,7 +16531,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('288003JA1A', '[\"288003JA2A\", \"288003JA0A\"]'),
 ('288003JA2A', '[\"288003JA0A\"]'),
 ('289103JA0B', '[\"289103JA0A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('289153JA0A', '[\"289153JA0C\", \"289153JA0B\"]'),
 ('289153JA0C', '[\"289153JA0B\", \"289153JA0A\"]'),
 ('289709NA0B', '[\"289703JA2A\"]'),
@@ -17032,7 +17032,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('995013JA0B', '[\"995013JA0A\"]'),
 ('998103KA0A', '[\"998103KA1A\"]'),
 ('998103KA1A', '[\"998103KA0A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('806013TA1A', '[\"H06013TA1A\", \"H06013TA0A\"]'),
 ('101025W7A0', '[\"101025W7A6\"]'),
 ('101025W9M2', '[\"101025W9M7\"]'),
@@ -17533,7 +17533,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('288903W400', '[\"B8890Z550R\", \"288903W40A\", \"288905M501\"]'),
 ('2889040U01', '[\"288903W40A\"]'),
 ('288901E300', '[\"2889084M05\", \"28890VB005\", \"2889084M00\", \"2889061S05\", \"2889061S00\", \"288905F000\", \"2889040U10\", \"2889035V05\", \"2889035V00\", \"288901M200\", \"288901E310\", \"288901E301\", \"288905F020\", \"2889044U10\", \"28890VB005\", \"28890VB010\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('288901E301', '[\"2889084M05\", \"28890VB005\", \"2889084M00\", \"2889061S05\", \"2889061S00\", \"288905F000\", \"2889035V05\", \"2889035V00\", \"288901M200\", \"288901E310\", \"288901E300\", \"288905F020\", \"2889044U10\", \"28890VB005\", \"28890VB010\"]'),
 ('288903W405', '[\"B8890Z525R\", \"288903W41A\"]'),
 ('2889579915', '[\"288953W400\"]'),
@@ -18034,7 +18034,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('638100W302', '[\"638100W303\"]'),
 ('638100W303', '[\"638100W302\"]'),
 ('638102W304', '[\"638102W308\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('638102W308', '[\"638102W304\"]'),
 ('638103W400', '[\"638103W406\", \"F38102W301\", \"638103W415\"]'),
 ('638103W406', '[\"638103W400\", \"F38102W301\", \"638103W415\"]'),
@@ -18535,7 +18535,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('826065W602', '[\"826065W603\", \"826065W604\", \"826065W600\"]'),
 ('826065W603', '[\"826065W602\", \"826065W604\", \"826065W600\"]'),
 ('826065W604', '[\"826065W602\", \"826065W603\", \"826065W600\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('826070W000', '[\"826073W42A\", \"826073W420\"]'),
 ('826073W420', '[\"826073W402\", \"826073W42A\", \"826070W000\"]'),
 ('826075W600', '[\"826075W603\", \"826075W604\", \"826075W602\"]'),
@@ -19036,7 +19036,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('30620CD00A', '[\"30620CD010\"]'),
 ('30620EA000', '[\"30620EA00A\", \"30620EA00A\", \"FO2090\"]'),
 ('30620EA00A', '[\"0280R51\", \"30620EA000\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('30620EA200', '[\"30620EA20A\"]'),
 ('30621EA000', '[\"3062169F29\"]'),
 ('4112845P0A', '[\"4112845P00\"]'),
@@ -19537,7 +19537,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('21503VB001', '[\"21503VB000\"]'),
 ('21503VC20A', '[\"21503VC200\"]'),
 ('21710VC20B', '[\"21710VC20A\", \"21710VC200\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('21481VB000', '[\"B1481VB00C\", \"21481VB00C\", \"21481VC200\"]'),
 ('21481VB00B', '[\"B1481VB00C\", \"21481VB00C\", \"21481VB000\"]'),
 ('21481VB00C', '[\"B1481VB00C\", \"21481VB000\"]'),
@@ -20038,7 +20038,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3815101J1C', '[\"3815101J61\"]'),
 ('3815101J2C', '[\"3815101J62\"]'),
 ('3815101J3C', '[\"3815101J63\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3815101J5C', '[\"3815101J65\"]'),
 ('3815101J6C', '[\"3815101J66\"]'),
 ('3815101J7B', '[\"3815101J17\"]'),
@@ -20539,7 +20539,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('805538990B', '[8055389907]'),
 ('806062J00A', '[\"80606VB000\", \"806062J000\"]'),
 ('806063J100', '[\"806063J10A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('806063J10A', '[\"806063J100\"]'),
 ('80606VB000', '[\"806062J00A\", \"806062J000\"]'),
 ('806072J00A', '[\"80607VB000\", \"806072J000\"]'),
@@ -21040,7 +21040,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('265505M427', '[\"21519F4R6U\"]'),
 ('265505M528', '[\"21519F4R6U\", \"265505M52A\"]'),
 ('265506N625', '[\"11A037016B\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('265508N725', '[\"11A037A16B\", \"21519H1RUE\"]'),
 ('265545M528', '[\"265545M52A\"]'),
 ('265555M427', '[\"21519F4L6U\"]'),
@@ -21541,7 +21541,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('620754M540', '[\"620758M660\", \"620758M662\", \"620758M664\", \"620758M665\", \"62075BM400\", \"620758M661\"]'),
 ('620758M660', '[\"620754M540\", \"620758M662\", \"620758M664\", \"620758M665\", \"620758M661\"]'),
 ('620758M661', '[\"620754M540\", \"620758M660\", \"620758M662\", \"620758M664\", \"620758M665\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('620758M662', '[\"620754M540\", \"620758M660\", \"620758M664\", \"620758M665\", \"620758M661\"]'),
 ('620758M664', '[\"620754M540\", \"620758M660\", \"620758M662\", \"620758M665\", \"620758M661\"]'),
 ('620758M665', '[\"620754M540\", \"620758M660\", \"620758M662\", \"620758M664\", \"620758M661\"]'),
@@ -22042,7 +22042,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('12033EE000', '[\"12033EE50A\", \"341773F075\", \"341773F025\", \"341773FSTD\", \"341773F0025\", \"341773F0050\", \"341773F0075\", \"SWN30196ZZ0050\", \"SWN30196ZZ075\", \"SWN30196025\", \"SWN30196STD\", \"SWN30196ZZ050\", \"341773F050\", \"341773F100\"]'),
 ('12033EN20A', '[\"12033EN20B\", \"12033EN200\", \"12033CK80A\"]'),
 ('A2033EN20C', '[\"A2033EN20D\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('121003RC0A', '[\"12100EN20A\", \"12100EN200\"]'),
 ('12100EE000', '[\"1210A5RB0A\", \"1210A5RB0A\", \"121001HC0A\"]'),
 ('12100EN200', '[\"121003RC0A\", \"12100EN20A\"]'),
@@ -22543,7 +22543,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('200205W300', '[\"200205W310\"]'),
 ('200205W500', '[\"200205W510\"]'),
 ('20606D4200', '[\"2060654A00\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('201005W014', '[\"201005W015\", \"201005W012\", \"201005W01E\", \"201005W301\"]'),
 ('201005W301', '[\"201005W015\", \"201005W014\", \"201005W01E\", \"201005W012\"]'),
 ('203504W020', '[\"203504W01A\"]'),
@@ -23044,7 +23044,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3813882100', '[\"381258213B\"]'),
 ('3813982100', '[\"381258214B\"]'),
 ('3812013201', '[3812013260, \"38140V7000\", \"381201321A\", 3812013202, \"38120G2301\", 3812013210, \"381201320A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3812013202', '[3812013260, \"38140V7000\", 3812013201, \"38120G2301\", \"381201320A\"]'),
 ('3815101J00', '[\"3815101J2A\", \"3815101J02\", \"3815101J01\"]'),
 ('3815101J01', '[\"3815101J2A\", \"3815101J02\", \"3815101J00\"]'),
@@ -23545,7 +23545,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('904606W560', '[\"904601W301\"]'),
 ('904583W400', '[\"904580W002\"]'),
 ('903360W000', '[\"903360W00A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('0128100711', '[\"0128100331\"]'),
 ('6089501A01', '[\"26320G5100\"]'),
 ('905025W300', '[\"905025W30B\", \"905025W301\", \"905021W302\"]'),
@@ -24046,7 +24046,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('90450JD01B', '[\"90450JD01C\"]'),
 ('90450JD01C', '[\"90450JD01B\"]'),
 ('90458JD01B', '[\"90458JD01C\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('90812BR00H', '[\"90812JD00H\"]'),
 ('90812JD00H', '[\"90812BR00H\"]'),
 ('90502AV70A', '[\"90502EY12D\", \"90502EY11D\", \"90502EY10A\", \"90502EY10D\", \"90502AV70B\"]'),
@@ -24547,7 +24547,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('250603ST0A', '[\"250604FN0A\"]'),
 ('250604FN0A', '[\"250603ST0A\"]'),
 ('206951HJ5D', '[\"206951HJ5A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('206951HJ6C', '[\"206951HJ6E\", \"206951HJ6A\"]'),
 ('206951HJ6E', '[\"206951HJ6C\", \"206951HJ6A\"]'),
 ('110603RC0C', '[\"110604BB1C\", \"110604BB0C\"]'),
@@ -25048,7 +25048,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('969103SF2A', '[\"969103SF0A\"]'),
 ('969103SF2B', '[\"969103SF0B\"]'),
 ('969133SF2A', '[\"969133SF3A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('969133SF2B', '[\"969133SF3B\"]'),
 ('969133SF3B', '[\"969133SF2B\"]'),
 ('969203SF0A', '[\"969203SF2A\"]'),
@@ -25549,7 +25549,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3153631X05', '[\"3153631X21\"]'),
 ('3153631X03', '[\"3153631X18\"]'),
 ('3153732X18', '[\"3153732X00\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3153732X19', '[\"315373MX2B\"]'),
 ('3153732X20', '[\"3153731X00\", \"3153732X02\", \"3153731X13\"]'),
 ('3153732X21', '[\"3153732X03\", \"3153731X03\"]'),
@@ -26050,7 +26050,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('2556095F0A', '[\"2526095F0A\"]'),
 ('K98102M301', '[\"K98102M326\"]'),
 ('H060050J02', '[\"H060050J00\", \"8060050J25\", \"8060050J26\", \"8060150J26\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('H06009M100', '[\"H06009M125\", \"H06019M100\"]'),
 ('8059050J00', '[\"8059001L00\", \"8059001E01\"]'),
 ('KEY0000079', '[\"KEY0000118\", \"KEY0000074\"]'),
@@ -26551,7 +26551,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3166690X00', '[\"3166690X0C\", \"316663SX0A\"]'),
 ('3166690X0C', '[\"316663SX0A\", \"3166690X00\"]'),
 ('3198190X0A', '[\"3198190X00\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('479001BB1A', '[\"479001BB1B\"]'),
 ('479001BB1B', '[\"479001BB1A\"]'),
 ('479101NF0B', '[\"479101NF0C\", \"479101WW0A\", \"47910JK500\"]'),
@@ -27052,7 +27052,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('13270C8600', '[\"13270C8610\"]'),
 ('13270C8610', '[\"13270C8600\"]'),
 ('13270Y7000', '[\"13270Y7010\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('14875A8600', '[\"14875Y7004\", \"14875Y7003\"]'),
 ('1525503W50', '[\"15255C8000\"]'),
 ('1525585500', '[1525585030]'),
@@ -27553,7 +27553,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('28860C6000', '[\"28810C6001\", \"28840C6001\"]'),
 ('28860C6001', '[\"28860C6000\"]'),
 ('28826W1000', '[\"26388P0100\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('27440M7900', '[\"2893001W10\", \"27440M7970\"]'),
 ('2893080W00', '[\"2893051L60\", \"B893030A00\", \"2893115G02\", \"2893151L60\", \"2893101G02\"]'),
 ('28910C8300', '[\"28910C8301\"]'),
@@ -28054,7 +28054,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('82100C7800', '[\"82100C6600\", \"82100C9500\"]'),
 ('82100C9400', '[\"82100C6600\", \"82100C9500\"]'),
 ('82101C7800', '[\"82101C9500\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('82101C9400', '[\"82101C9500\"]'),
 ('82262C6601', '[\"H2262C6601\"]'),
 ('80420B5000', '[\"80420J1701\"]'),
@@ -28555,7 +28555,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('21200B8202', '[\"W5471B\", \"ZI54765\", \"W5471B\", \"W54765\", \"W54765B\", \"21200F3160\"]'),
 ('21200G3100', '[2120078512, \"W5482\"]'),
 ('21200H7800', '[2120078512, \"ZB5482\", \"ZI5482\", \"W5482\", \"W5482B\", \"W5482B\", \"21200P7901\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('21200P6500', '[\"W5471B\", \"W5471B\", \"W5488\", \"21200V0206\"]'),
 ('21200P7500', '[\"W5488\", \"21200V0206\"]'),
 ('2120996001', '[\"WV5488\", \"WV5488\", \"ZB5488\"]'),
@@ -29056,7 +29056,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('118235ZM0A', '[\"118231LA0C\"]'),
 ('118235ZM0B', '[\"118235ZM1B\"]'),
 ('118235ZM1B', '[\"118235ZM0B\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('11826ZE01C', '[\"11826ZE01A\", \"118267S000\"]'),
 ('11826ZE00C', '[\"11826ZE00A\", \"11826ZE00B\", \"118267S010\"]'),
 ('11826ZE01D', '[\"11826ZE01E\", \"11826ZE01B\", \"118267S005\"]'),
@@ -29557,7 +29557,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('260601LB3A', '[\"260601LB3B\"]'),
 ('260601LB3B', '[\"260601LB3A\"]'),
 ('260603ZD0A', '[\"260603ZD0B\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('260603ZD0B', '[\"260603ZD0A\"]'),
 ('260606JF0A', '[\"260606JF0B\"]'),
 ('260606JF0B', '[\"260606JF0A\", \"260606JF0D\", \"260606JF0C\"]'),
@@ -30058,7 +30058,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('440391LA6B', '[\"440391LA6A\"]'),
 ('360101LA0A', '[\"360105ZP0A\"]'),
 ('360105ZP0A', '[\"360101LA0A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3601150Y0A', '[\"3601171L00\", \"3601150Y00\"]'),
 ('364021LA0A', '[\"364021LA1A\"]'),
 ('364021LA1A', '[\"364021LA0A\"]'),
@@ -30559,7 +30559,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('210228H70A', '[\"210228H700\"]'),
 ('1524117F0A', '[\"1524117F00\"]'),
 ('21307EQ69D', '[\"21307EQ601\", \"21307AU400\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('213132J602', '[\"213132J60A\"]'),
 ('214108H900', '[\"21410EQ30B\", \"21410EQ30A\"]'),
 ('21410EQ30B', '[\"21410EQ30A\", \"214108H900\"]'),
@@ -31060,7 +31060,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('16600EZ30A', '[\"16600EZ30B\"]'),
 ('16600EZ30B', '[\"16600EZ30A\"]'),
 ('175201LA0C', '[\"17520EZ30A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('17520EZ30A', '[\"175201LA0C\"]'),
 ('165001LK0E', '[\"165001LK0F\"]'),
 ('165001LK0F', '[\"165001LK0E\"]'),
@@ -31561,7 +31561,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('364064M40A', '[\"364064M400\"]'),
 ('38100EA38B', '[\"38100EA380\"]'),
 ('381027S000', '[\"3810210V00\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3815440P00', '[\"3815640P9E\"]'),
 ('4326201P1A', '[\"4326201P10\"]'),
 ('38220EB320', '[\"38220EB31A\", \"38220EB31B\", \"38220EB310\"]'),
@@ -32062,7 +32062,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('828171LA0B', '[\"828171LA0C\"]'),
 ('828171LA0C', '[\"828171LA0B\"]'),
 ('828181LA0B', '[\"828181LA0C\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('828181LA0C', '[\"828181LA0B\"]'),
 ('828191LA0B', '[\"828191LA0C\"]'),
 ('828191LA0C', '[\"828191LA0B\"]'),
@@ -32563,7 +32563,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('20010VD210', '[\"20010VC01A\"]'),
 ('20711VC300', '[\"20711VC30C\", \"20711VC30B\", \"20711VC30A\"]'),
 ('2073230J00', '[\"2073230J0A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('2073230J0A', '[\"2073230J00\"]'),
 ('47420VG104', '[\"47420VG10A\"]'),
 ('11060V7201', '[\"11060V7202\"]'),
@@ -33064,7 +33064,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('32113CD70A', '[\"32113CD000\", \"N2387\"]'),
 ('402024KJ1A', '[\"402024KJ1C\"]'),
 ('402024KJ1C', '[\"402024KJ1A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('402024KJ3B', '[\"402024KJ3A\"]'),
 ('545004KH1A', '[\"545004KH4A\"]'),
 ('545004KH2A', '[\"545004KH4A\", \"545004KH1A\"]'),
@@ -33565,7 +33565,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('1720210G00', '[\"1720205G00\"]'),
 ('1720215G00', '[\"1720205G00\"]'),
 ('1720220G00', '[\"1720220G10\", \"1720220G20\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('1720220G10', '[\"1720220G20\"]'),
 ('1720220G20', '[\"1720220G10\"]'),
 ('1720256G10', '[\"1720220G10\", \"1720220G20\"]'),
@@ -34066,7 +34066,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('5621035G26', '[\"E620035G26\", 443240, \"5621035G25\", \"5621031G25\", \"5620035G26\", \"5620035G25\", \"5621035GX5\"]'),
 ('56210S3886', '[\"5621010G27\"]'),
 ('4106011P86', '[\"GDB367\", \"SP1127\", \"D106MS2825\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('4106031E85', '[\"B1N003\", \"41060V5789\", \"GDB318\", \"4106031E94\", \"4106031EX8\", \"4106031E86\", \"4106031E88\", \"4106011P85\", \"4106025N25\", \"4106011P29\", \"410600H090\", \"4106009W25\", \"4106032E93\", \"41060D4690\"]'),
 ('4106031E86', '[\"B1N003\", \"GDB318\", \"D106MA1986\", \"D106MS2885\", \"4106031EX8\", \"41060V5789\", \"4106031E88\", \"4106031E94\", \"4106011P85\", \"4106025N25\", \"4106011P29\", \"410600H090\", \"4106009W25\", \"4106032E93\", \"41060D4690\"]'),
 ('41060V6794', '[\"B1N003\", \"41060V5789\", \"SP1030\", \"4106031E94\", \"4106031EX8\", \"4106031E86\", \"4106031E88\", \"4106011P85\", \"4106025N25\", \"4106011P29\", \"410600H090\", \"4106009W25\", \"4106032E93\", \"41060D4690\"]'),
@@ -34567,7 +34567,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('44080EG025', '[\"D408MEG02J\"]'),
 ('44120AL525', '[\"0275FX35R\", \"D4ABMEG50C\", \"D4120CL70B\", \"D4120EG50C\", \"AY620NS031\"]'),
 ('44126AL500', '[\"0276Z50R\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('44140JA01A', '[\"0274J10UPR\", \"441408J100\"]'),
 ('441408J100', '[\"44140JA01A\", \"0274J10UPR\"]'),
 ('44141JA01A', '[\"0274J10LOWR\", \"441418J100\"]'),
@@ -35068,7 +35068,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('78850AM80C', '[\"78850AM80E\", \"78850AM80A\", \"78850AM80B\", \"78850AM800\"]'),
 ('78850AM80D', '[\"78850AM80E\"]'),
 ('78850AM80E', '[\"78850AM80D\", \"78850AM80C\", \"78850AM80A\", \"78850AM80B\", \"78850AM800\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('846564GA0A', '[\"84656AM800\"]'),
 ('849023GY1A', '[\"849021ES0A\"]'),
 ('849921EA0A', '[\"849921ES0A\"]'),
@@ -35569,7 +35569,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('54050JK51A', '[\"54050JK50A\"]'),
 ('543201EA0B', '[\"54320JK00C\", \"54320JK00A\"]'),
 ('544C41EA1A', '[\"544651EA1B\", \"544C4JK000\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('43018JK000', '[\"43018JK00B\"]'),
 ('43018JK00B', '[\"43018JK000\"]'),
 ('55152JK00A', '[\"55152JK01A\", \"NAB245\"]'),
@@ -36070,7 +36070,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('769151LA0B', '[\"769151LZ0B\"]'),
 ('769151LZ0A', '[\"769151LA0A\"]'),
 ('769151LZ0B', '[\"769151LA0B\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('769141LA0A', '[\"769141LA1A\", \"769141LZ0A\"]'),
 ('769141LA1A', '[\"769141LZ0A\", \"769141LA0A\"]'),
 ('769141LZ0A', '[\"769141LA1A\", \"769141LA0A\"]'),
@@ -36571,7 +36571,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('1010135J25', '[\"JFS00489R\", \"1010135J27\"]'),
 ('1010151N28', '[\"1010151N89\"]'),
 ('1010151N89', '[\"101011Y125\", \"A010151N88\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('1104203J25', '[\"1104203J26\", \"EH9490\"]'),
 ('1104203J26', '[\"11042VB525\", \"1104203J25\"]'),
 ('1104206J25', '[\"1104206J27\"]'),
@@ -37072,7 +37072,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('3050101J60', '[\"3050101J00\"]'),
 ('3050101J70', '[\"3050101J10\"]'),
 ('30502V6200', '[\"RCT4068A2RSE\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('3053701T00', '[\"305370T000\"]'),
 ('32006K2421', '[\"32006M8060\"]'),
 ('3211101J00', '[\"3211101J01\"]'),
@@ -37573,7 +37573,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('6387532J06', '[\"6387532J05\", \"6387532J03\", \"6387532J02\", \"6387532J00\", \"638750Y103\", \"638750Y105\"]'),
 ('6385105J85', '[\"6385105J90\"]'),
 ('6385105J90', '[\"6385105J85\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('6381426J00', '[\"9384626J00\"]'),
 ('788720Y003', '[\"7887232J00\", \"7887232J01\", \"788720Y005\"]'),
 ('788720Y005', '[\"7887232J00\", \"7887232J01\", \"788720Y003\"]'),
@@ -38074,7 +38074,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('24835VD200', '[\"24835VD20A\"]'),
 ('24835VD20A', '[\"24835VD200\"]'),
 ('24820VD50D', '[\"24814VD503\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('24814VB000', '[\"24814VB400\", \"24814VB060\"]'),
 ('24814VB060', '[\"24814VB000\", \"24814VB400\"]'),
 ('24814VB400', '[\"24814VB000\", \"24814VB060\"]'),
@@ -38575,7 +38575,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('25994ZC10A', '[\"25994ZC001\"]'),
 ('25994ZC13A', '[\"25994ZC015\"]'),
 ('25994ZF10C', '[\"25994ZF003\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('25994ZC001', '[\"25994ZC10A\"]'),
 ('25994ZC009', '[\"25994ZC10B\"]'),
 ('25994ZC010', '[\"25994ZC10C\"]'),
@@ -39076,7 +39076,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('681089GA0A', '[\"681089GA1A\", \"68108ZQ00A\"]'),
 ('68108ZQ00A', '[\"681089GA1A\", \"681089GA0A\"]'),
 ('985157S700', '[\"98515ZC08A\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('98515ZC08A', '[\"985157S700\"]'),
 ('683107S603', '[\"683109GA6D\"]'),
 ('683109FD1A', '[\"68310ZR10A\"]'),
@@ -39577,7 +39577,7 @@ INSERT INTO `parts` (`sku`, `alternative`) VALUES
 ('4320073R05', '[\"4320086R12\", \"0282Y11A42R\", \"4320073R08\"]'),
 ('4320073R08', '[\"43200WE205\", \"4320086R12\", \"0282Y11A42R\"]'),
 ('4322206R01', '[\"4322250J00\", \"4322206R61\"]');
-INSERT INTO `parts` (`sku`, `alternative`) VALUES
+INSERT INTO `parts` (`part_number`, `alternative`) VALUES
 ('4323450A06', '[\"4323450A05\", \"4323450A01\"]'),
 ('130345T102', '[\"130345T101\"]'),
 ('1466558N00', '[\"1466558N0A\"]'),

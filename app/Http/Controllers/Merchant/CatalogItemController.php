@@ -62,28 +62,28 @@ class CatalogItemController extends MerchantBaseController
         return view('merchant.catalog-item.create.add', compact('sign'));
     }
 
-    //*** GET Request - SEARCH CATALOG ITEM BY SKU (AJAX)
+    //*** GET Request - SEARCH CATALOG ITEM BY PART_NUMBER (AJAX)
     public function searchSku(Request $request)
     {
         $user = $this->user;
-        $sku = trim($request->input('sku'));
+        $part_number = trim($request->input('part_number'));
 
-        if (empty($sku)) {
+        if (empty($part_number)) {
             return response()->json([
                 'success' => false,
-                'message' => __('Please enter a SKU or Part Number')
+                'message' => __('Please enter a PART_NUMBER or Part Number')
             ]);
         }
 
-        // Search for catalog item by SKU
-        $catalogItem = CatalogItem::where('sku', $sku)
+        // Search for catalog item by PART_NUMBER
+        $catalogItem = CatalogItem::where('part_number', $part_number)
             ->with(['brand', 'category'])
             ->first();
 
         if (!$catalogItem) {
             return response()->json([
                 'success' => false,
-                'message' => __('Catalog item with SKU "') . $sku . __('" not found in catalog.')
+                'message' => __('Catalog item with PART_NUMBER "') . $part_number . __('" not found in catalog.')
             ]);
         }
 
@@ -100,7 +100,7 @@ class CatalogItemController extends MerchantBaseController
                 'catalog_item' => [
                     'id' => $catalogItem->id,
                     'name' => $catalogItem->name,
-                    'sku' => $catalogItem->sku,
+                    'part_number' => $catalogItem->part_number,
                 ]
             ]);
         }
@@ -121,7 +121,7 @@ class CatalogItemController extends MerchantBaseController
             'catalog_item' => [
                 'id' => $catalogItem->id,
                 'name' => $catalogItem->name,
-                'sku' => $catalogItem->sku,
+                'part_number' => $catalogItem->part_number,
                 'type' => $catalogItem->type,
                 'brand' => $catalogItem->brand ? $catalogItem->brand->name : null,
                 'photo' => $photoUrl,
@@ -312,14 +312,14 @@ class CatalogItemController extends MerchantBaseController
                     $partNumber = trim($line[0] ?? '');
 
                     if (empty($partNumber)) {
-                        $log .= "<br>" . __('Row') . " {$i}: " . __('Missing part number (SKU)') . "<br>";
+                        $log .= "<br>" . __('Row') . " {$i}: " . __('Missing part number (PART_NUMBER)') . "<br>";
                         $errorCount++;
                         $i++;
                         continue;
                     }
 
-                    // 1. Find existing catalog item by part_number (sku)
-                    $catalogItem = CatalogItem::where('sku', $partNumber)->first();
+                    // 1. Find existing catalog item by part_number (part_number)
+                    $catalogItem = CatalogItem::where('part_number', $partNumber)->first();
 
                     if (!$catalogItem) {
                         $log .= "<br>" . __('Row') . " {$i}: " . __('Catalog item with part number') . " '{$partNumber}' " . __('not found in catalog') . "<br>";
@@ -612,8 +612,8 @@ class CatalogItemController extends MerchantBaseController
             $sign = $this->curr;
             $partNumber = trim($request->part_number);
 
-            // 1. Search for catalog item by part_number (sku)
-            $catalogItem = CatalogItem::where('sku', $partNumber)->first();
+            // 1. Search for catalog item by part_number (part_number)
+            $catalogItem = CatalogItem::where('part_number', $partNumber)->first();
 
             if (!$catalogItem) {
                 return back()->with('unsuccess', __('Catalog item with part number "' . $partNumber . '" not found in catalog.'));
@@ -745,7 +745,7 @@ class CatalogItemController extends MerchantBaseController
         }
 
         if ($data->type == "Physical") {
-            $rules = ['sku' => 'min:8|unique:catalog_items,sku,' . $id];
+            $rules = ['part_number' => 'min:8|unique:catalog_items,part_number,' . $id];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -808,7 +808,7 @@ class CatalogItemController extends MerchantBaseController
 
         unset($input['price'], $input['previous_price'], $input['stock']);
 
-        $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->sku);
+        $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->part_number);
         $data->update($input);
 
         // Update merchant item

@@ -246,7 +246,7 @@ class CatalogItemFilterService
                 $exists->selectRaw(1)
                     ->from("{$partsTable} as p")
                     ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
-                    ->whereColumn('p.part_number', 'catalog_items.sku');
+                    ->whereColumn('p.part_number', 'catalog_items.part_number');
 
                 // section_parts.category_id links directly to newcategories (level 3 only)
                 if ($categoryIds !== null) {
@@ -308,7 +308,7 @@ class CatalogItemFilterService
         if (!empty($search)) {
             $query->whereHas('catalogItem', fn($pq) =>
                 $pq->where('name', 'like', '%' . $search . '%')
-                   ->orWhere('sku', 'like', $search . '%')
+                   ->orWhere('part_number', 'like', $search . '%')
             );
         }
     }
@@ -334,8 +334,8 @@ class CatalogItemFilterService
             'date_asc' => $query->oldest('merchant_items.id'),
             'price_asc' => $query->orderBy('merchant_items.price', 'asc'),
             'price_desc' => $query->orderBy('merchant_items.price', 'desc'),
-            'sku_asc' => $query->orderBy('catalog_items.sku', 'asc'),
-            'sku_desc' => $query->orderBy('catalog_items.sku', 'desc'),
+            'sku_asc' => $query->orderBy('catalog_items.part_number', 'asc'),
+            'sku_desc' => $query->orderBy('catalog_items.part_number', 'desc'),
             default => $query->latest('merchant_items.id'),
         };
     }

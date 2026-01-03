@@ -241,7 +241,7 @@
           if(it==null) return '';
           if(typeof it==='string') return it.trim();
           if(kind==='subs'){
-            const cand = it.part_number ?? it.number ?? it.sku ?? it.code ?? it.alt ?? it.key ?? '';
+            const cand = it.part_number ?? it.number ?? it.part_number ?? it.code ?? it.alt ?? it.key ?? '';
             return String(cand).trim();
           }else{ // fits
             const model  = it.model ?? it.name ?? it.vehicle ?? '';
@@ -288,14 +288,14 @@
       const qvBtn=(p.store_id||p.quick_view)
         ? `<button type="button" class="btn btn-sm btn-outline-primary quick-view mt-1"
              data-id="${p.store_id||''}"
-             data-sku="${escapeHtml(p.part_number||'')}"
+             data-part_number="${escapeHtml(p.part_number||'')}"
              data-url="${escapeHtml(p.quick_view||'')}"
              data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
              ${escapeHtml(t('labels.quick_view'))}
            </button>`
         : '';
       const partLink=`<a href="javascript:;" class="text-decoration-none text-primary fw-bold part-link"
-                         data-sku="${escapeHtml(p.part_number||'')}"
+                         data-part_number="${escapeHtml(p.part_number||'')}"
                          data-id="${p.store_id||''}"
                          data-url="${escapeHtml(p.quick_view||'')}"
                          data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
@@ -308,10 +308,10 @@
       const fitsList = normListFromAny(p.fits ?? p.compatible ?? p.vehicles ?? p.fitVehicles, 'fits');
 
       const subsMore = p.part_number
-        ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline alt-link" data-sku="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>`
+        ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline alt-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>`
         : '';
       const fitsMore = p.part_number
-        ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline fits-link" data-sku="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>`
+        ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline fits-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>`
         : '';
 
       const subsCell = `${renderBadges(subsList)}${subsMore}`;
@@ -366,12 +366,12 @@
 
           const qvBtn=(p.store_id||p.quick_view)?`<button type="button" class="btn btn-sm btn-outline-primary quick-view mt-2"
                  data-id="${p.store_id||''}"
-                 data-sku="${escapeHtml(p.part_number||'')}"
+                 data-part_number="${escapeHtml(p.part_number||'')}"
                  data-url="${escapeHtml(p.quick_view||'')}"
                  data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
                  ${escapeHtml(t('labels.quick_view'))}</button>`:'';
           const partLink=`<a href="javascript:;" class="text-decoration-none text-primary part-link"
-                          data-sku="${escapeHtml(p.part_number||'')}"
+                          data-part_number="${escapeHtml(p.part_number||'')}"
                           data-id="${p.store_id||''}"
                           data-url="${escapeHtml(p.quick_view||'')}"
                           data-user="${escapeHtml(p.user_id || p.merchant_id || '')}">
@@ -379,8 +379,8 @@
 
           const subsList = normListFromAny(p.substitutions ?? p.alternatives ?? p.alt ?? p.subs, 'subs');
           const fitsList = normListFromAny(p.fits ?? p.compatible ?? p.vehicles ?? p.fitVehicles, 'fits');
-          const subsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline alt-link" data-sku="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>` : '';
-          const fitsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline fits-link" data-sku="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>` : '';
+          const subsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline alt-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>` : '';
+          const fitsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline fits-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>` : '';
 
           return `<div class="card shadow-sm mb-3"><div class="card-body text-center">
               <h6 class="card-title">${partLink}</h6>
@@ -741,7 +741,7 @@
   }
 
   /* ========================= Inline Sub-Views (each pushes a new state) ========================= */
-  function openQuickInline(id, url, sku, user) {
+  function openQuickInline(id, url, part_number, user) {
     const base  = window.ILL_ROUTES?.quick || '/modal/quickview/';  // ✅ fallback محدّث
     const title = t('catalog.quickview.title');
     let finalUrl = (url && typeof url === 'string') ? url : (id ? (base + id) : null);
@@ -751,7 +751,7 @@
       finalUrl += (finalUrl.indexOf('?') === -1 ? '?' : '&') + 'user=' + encodeURIComponent(user);
     }
 
-    if (!finalUrl && sku) { return openProductInline(sku); }
+    if (!finalUrl && part_number) { return openProductInline(part_number); }
     return loadIntoModal(finalUrl, title);
   }
   function openProductInline(key) {
@@ -759,15 +759,15 @@
     const title = t('catalog.product_modal.title');
     return loadIntoModal(base + encodeURIComponent(key), title);
   }
-  function openAlternativeInline(sku) {
+  function openAlternativeInline(part_number) {
     const base  = window.ILL_ROUTES?.alternative || '/modal/alternative/';
     const title = t('catalog.alternative_modal.title');
-    return loadIntoModal(base + encodeURIComponent(sku), title);
+    return loadIntoModal(base + encodeURIComponent(part_number), title);
   }
-  function openCompatibilityInline(sku) {
+  function openCompatibilityInline(part_number) {
     const base  = window.ILL_ROUTES?.compatibility || '/modal/compatibility/';
     const title = t('catalog.compatibility_modal.title');
-    return loadIntoModal(base + encodeURIComponent(sku), title);
+    return loadIntoModal(base + encodeURIComponent(part_number), title);
   }
 
   /* ========================= Dynamic Events ========================= */
@@ -809,7 +809,7 @@
       e.preventDefault();
 
       const $inAlt = $(this).closest('.ill-alt').length > 0;
-      const sku    = $(this).data('sku');
+      const part_number    = $(this).data('part_number');
       const id     = $(this).data('id');
       let   url    = $(this).data('url');
       const user   = $(this).data('user');
@@ -819,8 +819,8 @@
         url += (url.indexOf('?') === -1 ? '?' : '&') + 'user=' + encodeURIComponent(user);
       }
 
-      if (!$inAlt && sku) { openAlternativeInline(sku); return; }
-      openQuickInline(id, url, sku, user);
+      if (!$inAlt && part_number) { openAlternativeInline(part_number); return; }
+      openQuickInline(id, url, part_number, user);
     });
 
     /* زر "عرض سريع" */
@@ -828,31 +828,31 @@
       e.preventDefault();
 
       const $inAlt = $(this).closest('.ill-alt').length > 0;
-      const sku    = $(this).data('sku');
+      const part_number    = $(this).data('part_number');
       const id     = $(this).data('id');
       let   url    = $(this).data('url');
       const user   = $(this).data('user');
 
-      if (!$inAlt && sku) { openAlternativeInline(sku); return; }
+      if (!$inAlt && part_number) { openAlternativeInline(part_number); return; }
 
       // ضمّن user في رابط المودال إذا لم يكن موجودًا
       if (user && url && url.indexOf('user=') === -1) {
         url += (url.indexOf('?') === -1 ? '?' : '&') + 'user=' + encodeURIComponent(user);
       }
 
-      openQuickInline(id, url, sku, user);
+      openQuickInline(id, url, part_number, user);
     });
 
     /* رابط البدائل */
     $(document).off('click.ill_alt').on('click.ill_alt', '.alt-link', function (e) {
       e.preventDefault();
-      openAlternativeInline($(this).data('sku'));
+      openAlternativeInline($(this).data('part_number'));
     });
 
     /* رابط المركبات المناسبة */
     $(document).off('click.ill_fits').on('click.ill_fits', '.fits-link', function (e) {
       e.preventDefault();
-      openCompatibilityInline($(this).data('sku'));
+      openCompatibilityInline($(this).data('part_number'));
     });
 
     /* ============== أزرار الكمية في Alternatives و Quick View ============== */

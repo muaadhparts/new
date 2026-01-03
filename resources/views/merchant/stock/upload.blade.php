@@ -70,7 +70,7 @@
                                 <li>الحد الأقصى لحجم الملف: 10 ميجابايت</li>
                                 <li>يجب أن يحتوي الملف على الأعمدة التالية بالترتيب:
                                     <ul>
-                                        <li><strong>SKU</strong> (مطلوب): رقم المنتج</li>
+                                        <li><strong>PART_NUMBER</strong> (مطلوب): رقم المنتج</li>
                                         <li><strong>CatalogItem Name</strong> (اختياري): اسم المنتج</li>
                                         <li><strong>Stock</strong> (مطلوب): الكمية المتوفرة</li>
                                         <li><strong>Price</strong> (اختياري): السعر</li>
@@ -132,7 +132,7 @@
                             <table class="table table-sm table-bordered">
                                 <thead>
                                     <tr>
-                                        <th>SKU</th>
+                                        <th>PART_NUMBER</th>
                                         <th>CatalogItem Name</th>
                                         <th>Stock</th>
                                         <th>Price</th>
@@ -141,14 +141,14 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td>SAMPLE-SKU-001</td>
+                                        <td>SAMPLE-PART_NUMBER-001</td>
                                         <td>Sample CatalogItem Name</td>
                                         <td>100</td>
                                         <td>50.00</td>
                                         <td>60.00</td>
                                     </tr>
                                     <tr>
-                                        <td>SAMPLE-SKU-002</td>
+                                        <td>SAMPLE-PART_NUMBER-002</td>
                                         <td>Another Sample CatalogItem</td>
                                         <td>50</td>
                                         <td>75.50</td>

@@ -1,0 +1,47 @@
+-- Schema for table: catalog_items
+-- Exported: 2026-01-03 04:17:45
+
+DROP TABLE IF EXISTS `catalog_items`;
+
+CREATE TABLE `catalog_items` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `brand_id` int NOT NULL DEFAULT '2',
+  `part_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `parent_category` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `label_en` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `label_ar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `attributes` text COLLATE utf8mb4_unicode_ci,
+  `name` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `slug` text COLLATE utf8mb4_unicode_ci,
+  `photo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'LargePNG/SVG/noimage.png',
+  `thumbnail` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SmallPNG/SVG/noimage.png',
+  `file` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `weight` decimal(10,2) DEFAULT '1.00',
+  `views` int unsigned NOT NULL DEFAULT '0',
+  `tags` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `is_meta` tinyint NOT NULL DEFAULT '0',
+  `meta_tag` text COLLATE utf8mb4_unicode_ci,
+  `meta_description` text COLLATE utf8mb4_unicode_ci,
+  `youtube` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `type` enum('Physical','Digital','License','Listing') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `link` text COLLATE utf8mb4_unicode_ci,
+  `platform` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `region` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `measure` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `hot` tinyint unsigned NOT NULL DEFAULT '0',
+  `latest` tinyint unsigned NOT NULL DEFAULT '0',
+  `sale` tinyint NOT NULL DEFAULT '0',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `is_catalog` tinyint NOT NULL DEFAULT '0',
+  `catalog_id` int NOT NULL DEFAULT '0',
+  `cross_items` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `length` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `height` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `width` decimal(10,2) DEFAULT NULL COMMENT 'Product width in cm for volumetric weight calculation',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_sku` (`part_number`),
+  KEY `idx_catalog_items_sku` (`part_number`),
+  FULLTEXT KEY `name` (`name`),
+  FULLTEXT KEY `attributes` (`attributes`)
+) ENGINE=InnoDB AUTO_INCREMENT=679167 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

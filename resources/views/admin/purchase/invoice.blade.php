@@ -149,7 +149,7 @@
                                                 @else
                                                 <a href="javascript:;">{{ getLocalizedCatalogItemName($catalogItem['item']) }}</a>
                                                 @endif
-                                                <br><small class="text-muted">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                                <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                             </td>
                                             <td width="20%">
                                                 @if(isset($catalogItem['merchant_name']))

@@ -27,7 +27,7 @@
         $catalogItemName = $card->catalogItemName;
         $catalogItemUrl = $card->detailsUrl;
         $photo = $card->photo;
-        $sku = $card->sku;
+        $part_number = $card->part_number;
         $brandName = $card->brandName;
         $brandLogo = $card->brandLogo ?? null;
         $qualityBrandName = $card->qualityBrandName;
@@ -83,7 +83,7 @@
             ? (filter_var($mainPhoto, FILTER_VALIDATE_URL) ? $mainPhoto : Storage::url($mainPhoto))
             : $defaultImage;
 
-        $sku = $actualCatalogItem->sku ?? null;
+        $part_number = $actualCatalogItem->part_number ?? null;
         $brandName = $actualCatalogItem->brand?->localized_name;
         $brandLogo = $actualCatalogItem->brand?->photo_url;
         $qualityBrandName = $merchantItem?->qualityBrand?->localized_name;
@@ -171,9 +171,9 @@
 
             {{-- Catalog Item Info Badges --}}
             <div class="catalogItem-card__info-badges">
-                @if($sku)
+                @if($part_number)
                     <span class="badge bg-light text-dark">
-                        <i class="fas fa-barcode me-1"></i>{{ $sku }}
+                        <i class="fas fa-barcode me-1"></i>{{ $part_number }}
                     </span>
                 @endif
                 @if($brandName)
@@ -320,8 +320,8 @@
 
             {{-- Catalog Item Info --}}
             <div class="catalogItem-card__info">
-                @if($sku)
-                    <span class="catalogItem-card__sku">{{ $sku }}</span>
+                @if($part_number)
+                    <span class="catalogItem-card__sku">{{ $part_number }}</span>
                 @endif
                 @if($brandName)
                     <span class="catalogItem-card__brand">

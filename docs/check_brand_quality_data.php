@@ -41,7 +41,7 @@ if ($nullCount > 0) {
         ->join('users', 'users.id', '=', 'merchant_products.user_id')
         ->whereNull('merchant_products.brand_quality_id')
         ->where('merchant_products.status', 1)
-        ->select('merchant_products.id as mp_id', 'products.name', 'products.sku',
+        ->select('merchant_products.id as mp_id', 'products.name', 'products.part_number',
                  'users.shop_name', 'merchant_products.price')
         ->limit(10)
         ->get();
@@ -52,7 +52,7 @@ if ($nullCount > 0) {
         $shopName = $s->shop_name ?: 'Unknown';
         echo "\n┌─ MP ID: {$s->mp_id}\n";
         echo "│  ├─ Product: {$s->name}\n";
-        echo "│  ├─ SKU: {$s->sku}\n";
+        echo "│  ├─ PART_NUMBER: {$s->part_number}\n";
         echo "│  ├─ Vendor: {$shopName}\n";
         echo "│  └─ Price: " . number_format($s->price, 2) . " SAR\n";
     }
@@ -83,7 +83,7 @@ $duplicates = DB::select("
         mp1.product_id,
         mp1.user_id,
         p.name,
-        p.sku,
+        p.part_number,
         u.shop_name,
         COUNT(DISTINCT mp1.brand_quality_id) as brand_count,
         COUNT(*) as total_listings
@@ -91,7 +91,7 @@ $duplicates = DB::select("
     JOIN products p ON p.id = mp1.product_id
     JOIN users u ON u.id = mp1.user_id
     WHERE mp1.status = 1
-    GROUP BY mp1.product_id, mp1.user_id, p.name, p.sku, u.shop_name
+    GROUP BY mp1.product_id, mp1.user_id, p.name, p.part_number, u.shop_name
     HAVING COUNT(*) > 1
     LIMIT 10
 ");
@@ -100,7 +100,7 @@ if (count($duplicates) > 0) {
     echo "✅ وُجد " . count($duplicates) . " منتج متكرر عند نفس التاجر\n\n";
 
     foreach ($duplicates as $dup) {
-        echo "┌─ المنتج: {$dup->name} (SKU: {$dup->sku})\n";
+        echo "┌─ المنتج: {$dup->name} (PART_NUMBER: {$dup->part_number})\n";
         echo "│  ├─ التاجر: {$dup->shop_name}\n";
         echo "│  ├─ عدد Brands مختلفة: {$dup->brand_count}\n";
         echo "│  └─ إجمالي Listings: {$dup->total_listings}\n\n";

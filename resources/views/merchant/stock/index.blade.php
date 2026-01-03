@@ -66,18 +66,18 @@
                 <div class="row">
                     <div class="col-md-6">
                         <h6>التحديث اليدوي:</h6>
-                        <p>قم برفع ملف CSV يحتوي على معلومات المخزون (SKU, اسم المنتج, الكمية, السعر)</p>
+                        <p>قم برفع ملف CSV يحتوي على معلومات المخزون (PART_NUMBER, اسم المنتج, الكمية, السعر)</p>
                         <ul>
                             <li>صيغة الملف المقبولة: CSV, TXT, XLSX, XLS</li>
                             <li>الحد الأقصى لحجم الملف: 10 ميجابايت</li>
-                            <li>تنسيق البيانات: SKU, CatalogItem Name, Stock, Price, Previous Price</li>
+                            <li>تنسيق البيانات: PART_NUMBER, CatalogItem Name, Stock, Price, Previous Price</li>
                         </ul>
                     </div>
                     <div class="col-md-6">
                         <h6>التحديث التلقائي:</h6>
                         <p>يقوم بتحديث المخزون تلقائياً من قاعدة البيانات الرئيسية (stock_all)</p>
                         <ul>
-                            <li>يتم المطابقة بناءً على SKU المنتج</li>
+                            <li>يتم المطابقة بناءً على PART_NUMBER المنتج</li>
                             <li>يتم تحديث الكميات المتاحة فقط</li>
                             <li>سريع وآمن</li>
                         </ul>

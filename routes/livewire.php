@@ -45,4 +45,4 @@ Route::prefix('catlogs')
     });
 
 // Search Results (Controller-based)
-Route::get('result/{sku}', [\App\Http\Controllers\Front\SearchResultsController::class, 'show'])->name('search.result');
+Route::get('result/{part_number}', [\App\Http\Controllers\Front\SearchResultsController::class, 'show'])->name('search.result');

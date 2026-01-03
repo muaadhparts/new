@@ -32,7 +32,7 @@
             "name": "{{ $catalogItem->name }}",
             "image": "{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}",
             "description": "{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}",
-            "sku": "{{ $catalogItem->sku }}",
+            "part_number": "{{ $catalogItem->part_number }}",
             "offers": {
                 "@type": "Offer",
                 "url": "{{ route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}",

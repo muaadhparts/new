@@ -53,8 +53,8 @@
     white-space: normal;
 }
 
-.order-table-enhanced th.col-sku,
-.order-table-enhanced td.col-sku {
+.order-table-enhanced th.col-part_number,
+.order-table-enhanced td.col-part_number {
     min-width: 100px;
     font-family: 'Courier New', monospace;
     font-size: 12px;
@@ -180,7 +180,7 @@
     letter-spacing: 0.3px;
 }
 
-.badge-sku {
+.badge-part_number {
     background: #e8f4f8;
     color: #0277bd;
     font-family: 'Courier New', monospace;

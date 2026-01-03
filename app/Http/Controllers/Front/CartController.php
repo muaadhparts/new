@@ -881,7 +881,7 @@ class CartController extends FrontBaseController
     private function fetchIdentity(int $id): ?CatalogItem
     {
         return CatalogItem::query()->select([
-            'id','slug','sku','name','photo',
+            'id','slug','part_number','name','photo',
             'weight','type','file','link','measure','attributes','cross_products',
         ])->find($id);
     }

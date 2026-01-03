@@ -62,7 +62,7 @@
                                     @endphp
                                     <tr id="row-{{ $mp->id }}">
                                         <td><img src="{{ $photo }}" alt="" style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #eee;"></td>
-                                        <td><strong>{{ $catalogItemName }}</strong><br><small class="text-muted">SKU: {{ $mp->catalogItem->sku }}</small></td>
+                                        <td><strong>{{ $catalogItemName }}</strong><br><small class="text-muted">PART_NUMBER: {{ $mp->catalogItem->part_number }}</small></td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-2">
                                                 @if($brandName)<span class="badge bg-primary d-inline-flex align-items-center gap-1">@if($brandLogo)<img src="{{ $brandLogo }}" alt="" style="width: 16px; height: 16px; object-fit: contain;">@endif {{ $brandName }}</span>@endif
@@ -98,8 +98,8 @@
             <div class="modal-body">
                 <div id="step1-search">
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Search by SKU or CatalogItem Name') }}</label>
-                        <input type="text" id="catalogItemSearch" class="form-control" placeholder="{{ __('Enter SKU or catalogItem name...') }}">
+                        <label class="form-label">{{ __('Search by PART_NUMBER or CatalogItem Name') }}</label>
+                        <input type="text" id="catalogItemSearch" class="form-control" placeholder="{{ __('Enter PART_NUMBER or catalogItem name...') }}">
                     </div>
                     <div id="searchResults" class="mt-3"><p class="text-muted">{{ __('Start typing to search...') }}</p></div>
                 </div>
@@ -144,9 +144,9 @@ $(document).ready(function() {
                 if (data.length === 0) { $('#searchResults').html('<p class="text-muted">{{ __("No catalogItems found") }}</p>'); return; }
                 let html = '<div class="list-group">';
                 data.forEach(function(p) {
-                    html += `<a href="javascript:;" class="list-group-item list-group-item-action d-flex align-items-center select-catalogItem" data-id="${p.catalog_item_id}" data-name="${p.name}" data-sku="${p.sku}" data-photo="${p.photo}">
+                    html += `<a href="javascript:;" class="list-group-item list-group-item-action d-flex align-items-center select-catalogItem" data-id="${p.catalog_item_id}" data-name="${p.name}" data-part_number="${p.part_number}" data-photo="${p.photo}">
                         <img src="${p.photo}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;" class="me-3" onerror="this.src='{{ asset('assets/images/noimage.png') }}'">
-                        <div class="flex-grow-1"><strong>${p.name}</strong><br><small class="text-muted">SKU: ${p.sku}</small></div>
+                        <div class="flex-grow-1"><strong>${p.name}</strong><br><small class="text-muted">PART_NUMBER: ${p.part_number}</small></div>
                         <div class="text-end"><span class="badge bg-info">${p.merchants_count} {{ __("merchants") }}</span><i class="fas fa-chevron-right ms-2"></i></div></a>`;
                 });
                 $('#searchResults').html(html + '</div>');
@@ -157,7 +157,7 @@ $(document).ready(function() {
     $(document).on('click', '.select-catalogItem', function() {
         selectedCatalogItemId = $(this).data('id');
         $('#selectedCatalogItemName').text($(this).data('name'));
-        $('#selectedCatalogItemSku').text('SKU: ' + $(this).data('sku'));
+        $('#selectedCatalogItemSku').text('PART_NUMBER: ' + $(this).data('part_number'));
         $('#selectedCatalogItemImg').attr('src', $(this).data('photo'));
         $('#step1-search').hide(); $('#step2-merchants').show();
         $('#merchantsList').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');

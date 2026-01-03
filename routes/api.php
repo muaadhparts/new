@@ -29,13 +29,13 @@ Route::prefix('specs')->middleware(['web'])->group(function () {
 // --------------------- CATALOG ITEM API ROUTES ---------------------
 Route::prefix('catalog-item')->middleware(['web'])->group(function () {
     // Alternatives
-    Route::get('/alternatives/{sku}', [CatalogItemApiController::class, 'getAlternatives'])->name('api.catalog-item.alternatives');
-    Route::get('/alternatives/{sku}/related', [CatalogItemApiController::class, 'getAlternativeRelatedCatalogItems'])->name('api.catalog-item.alternatives.related');
-    Route::get('/alternatives/{sku}/html', [CatalogItemApiController::class, 'getAlternativesHtml'])->name('api.catalog-item.alternatives.html');
+    Route::get('/alternatives/{part_number}', [CatalogItemApiController::class, 'getAlternatives'])->name('api.catalog-item.alternatives');
+    Route::get('/alternatives/{part_number}/related', [CatalogItemApiController::class, 'getAlternativeRelatedCatalogItems'])->name('api.catalog-item.alternatives.related');
+    Route::get('/alternatives/{part_number}/html', [CatalogItemApiController::class, 'getAlternativesHtml'])->name('api.catalog-item.alternatives.html');
 
     // Compatibility
-    Route::get('/compatibility/{sku}', [CatalogItemApiController::class, 'getCompatibility'])->name('api.catalog-item.compatibility');
-    Route::get('/compatibility/{sku}/html', [CatalogItemApiController::class, 'getCompatibilityHtml'])->name('api.catalog-item.compatibility.html');
+    Route::get('/compatibility/{part_number}', [CatalogItemApiController::class, 'getCompatibility'])->name('api.catalog-item.compatibility');
+    Route::get('/compatibility/{part_number}/html', [CatalogItemApiController::class, 'getCompatibilityHtml'])->name('api.catalog-item.compatibility.html');
 });
 // --------------------- CATALOG ITEM API ROUTES END ---------------------
 

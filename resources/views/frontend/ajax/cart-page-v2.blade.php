@@ -64,7 +64,7 @@
                                 $displayName = app()->getLocale() == 'ar' && !empty($itemNameAr) ? $itemNameAr : $itemName;
 
                                 $itemSlug = data_get($catalogItem, 'item.slug');
-                                $itemSku = data_get($catalogItem, 'item.sku');
+                                $itemSku = data_get($catalogItem, 'item.part_number');
                                 $itemPhoto = data_get($catalogItem, 'item.photo');
                                 $photoUrl = $itemPhoto ? Storage::url($itemPhoto) : asset('assets/images/noimage.png');
 
@@ -143,7 +143,7 @@
 
                                     <div class="m-cart__item-meta">
                                         @if($itemSku)
-                                            <span class="m-cart__item-sku">{{ $itemSku }}</span>
+                                            <span class="m-cart__item-part_number">{{ $itemSku }}</span>
                                         @endif
                                         @if($brandName)
                                             <span class="m-cart__item-brand">

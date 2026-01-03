@@ -139,7 +139,7 @@ html {
                                         <tr>
                                             <td width="50%">
                                                 {{ getLocalizedCatalogItemName($catalogItem['item']) }}
-                                                <br><small>SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                                <br><small>PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                             </td>
 
                                             <td>

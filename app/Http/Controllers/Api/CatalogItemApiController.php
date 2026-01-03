@@ -23,17 +23,17 @@ class CatalogItemApiController extends Controller
     }
 
     /**
-     * Get alternatives for a SKU
+     * Get alternatives for a PART_NUMBER
      */
-    public function getAlternatives(Request $request, string $sku)
+    public function getAlternatives(Request $request, string $part_number)
     {
         $includeSelf = $request->boolean('include_self', false);
 
-        $alternatives = $this->alternativeService->getAlternatives($sku, $includeSelf);
+        $alternatives = $this->alternativeService->getAlternatives($part_number, $includeSelf);
 
         return response()->json([
             'success' => true,
-            'sku' => $sku,
+            'part_number' => $part_number,
             'alternatives' => $alternatives,
             'count' => $alternatives->count(),
         ]);
@@ -42,15 +42,15 @@ class CatalogItemApiController extends Controller
     /**
      * Get alternative related catalog items (merchant items for alternatives)
      */
-    public function getAlternativeRelatedCatalogItems(Request $request, string $sku)
+    public function getAlternativeRelatedCatalogItems(Request $request, string $part_number)
     {
-        // 1) Get the base SKU record
-        $skuAlternative = SkuAlternative::where('sku', $sku)->first();
+        // 1) Get the base PART_NUMBER record
+        $skuAlternative = SkuAlternative::where('part_number', $part_number)->first();
 
         if (!$skuAlternative || !$skuAlternative->group_id) {
             return response()->json([
                 'success' => true,
-                'sku' => $sku,
+                'part_number' => $part_number,
                 'alternatives' => [],
                 'count' => 0,
             ]);
@@ -58,14 +58,14 @@ class CatalogItemApiController extends Controller
 
         // 2) Get all SKUs in the same group (excluding self)
         $alternativeSkus = SkuAlternative::where('group_id', $skuAlternative->group_id)
-            ->where('sku', '<>', $sku)
-            ->pluck('sku')
+            ->where('part_number', '<>', $part_number)
+            ->pluck('part_number')
             ->toArray();
 
         if (empty($alternativeSkus)) {
             return response()->json([
                 'success' => true,
-                'sku' => $sku,
+                'part_number' => $part_number,
                 'alternatives' => [],
                 'count' => 0,
             ]);
@@ -74,13 +74,13 @@ class CatalogItemApiController extends Controller
         // 3) Get merchant items for these SKUs
         $listings = MerchantItem::with([
                 'catalogItem' => function ($q) {
-                    $q->select('id', 'sku', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id');
+                    $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id');
                 },
                 'user:id,is_merchant',
             ])
             ->where('status', 1)
             ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
-            ->whereHas('catalogItem', fn($q) => $q->whereIn('sku', $alternativeSkus))
+            ->whereHas('catalogItem', fn($q) => $q->whereIn('part_number', $alternativeSkus))
             ->get();
 
         // 4) Sort: in stock with price > 0 first, then by price ascending
@@ -92,22 +92,22 @@ class CatalogItemApiController extends Controller
 
         return response()->json([
             'success' => true,
-            'sku' => $sku,
+            'part_number' => $part_number,
             'alternatives' => $sorted,
             'count' => $sorted->count(),
         ]);
     }
 
     /**
-     * Get compatibility (catalogs) for a SKU
+     * Get compatibility (catalogs) for a PART_NUMBER
      */
-    public function getCompatibility(Request $request, string $sku)
+    public function getCompatibility(Request $request, string $part_number)
     {
-        $results = $this->compatibilityService->getCompatibleCatalogs($sku);
+        $results = $this->compatibilityService->getCompatibleCatalogs($part_number);
 
         return response()->json([
             'success' => true,
-            'sku' => $sku,
+            'part_number' => $part_number,
             'catalogs' => $results,
             'count' => count($results),
         ]);
@@ -116,14 +116,14 @@ class CatalogItemApiController extends Controller
     /**
      * Render alternatives partial HTML
      */
-    public function getAlternativesHtml(Request $request, string $sku)
+    public function getAlternativesHtml(Request $request, string $part_number)
     {
         $includeSelf = $request->boolean('include_self', false);
-        $alternatives = $this->alternativeService->getAlternatives($sku, $includeSelf);
+        $alternatives = $this->alternativeService->getAlternatives($part_number, $includeSelf);
 
         $html = view('partials.api.alternatives', [
             'alternatives' => $alternatives,
-            'sku' => $sku,
+            'part_number' => $part_number,
         ])->render();
 
         return response()->json([
@@ -135,10 +135,10 @@ class CatalogItemApiController extends Controller
     /**
      * Render compatibility partial HTML
      */
-    public function getCompatibilityHtml(Request $request, string $sku)
+    public function getCompatibilityHtml(Request $request, string $part_number)
     {
         $displayMode = $request->get('display_mode', 'tabs');
-        $results = $this->compatibilityService->getCompatibleCatalogs($sku);
+        $results = $this->compatibilityService->getCompatibleCatalogs($part_number);
 
         $viewName = $displayMode === 'tabs'
             ? 'partials.api.compatibility-tabs'
@@ -146,7 +146,7 @@ class CatalogItemApiController extends Controller
 
         $html = view($viewName, [
             'results' => $results,
-            'sku' => $sku,
+            'part_number' => $part_number,
         ])->render();
 
         return response()->json([

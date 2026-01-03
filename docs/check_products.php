@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 echo "=== جلب بيانات المنتجين ===\n\n";
 
 // المنتج الأول
-$product1 = DB::table('products')->where('sku', '260603AU0B')->first();
+$product1 = DB::table('products')->where('part_number', '260603AU0B')->first();
 echo "Product 1 (260603AU0B) from products:\n";
 if ($product1) {
     print_r($product1);
@@ -17,7 +17,7 @@ if ($product1) {
 }
 
 // المنتج الثاني
-$product2 = DB::table('products')->whereRaw('LOWER(sku) = ?', ['1520831u0b'])->first();
+$product2 = DB::table('products')->whereRaw('LOWER(part_number) = ?', ['1520831u0b'])->first();
 echo "\n\nProduct 2 (1520831u0b) from products:\n";
 if ($product2) {
     print_r($product2);

@@ -116,11 +116,11 @@
 								<div class="row">
 									<div class="col-lg-12">
 										<div class="left-area">
-											<h4 class="heading">{{ __('CatalogItem Sku') }}* </h4>
+											<h4 class="heading">{{ __('CatalogItem Part_Number') }}* </h4>
 										</div>
 									</div>
 									<div class="col-lg-12">
-										<input type="text" class="form-control" placeholder="{{ __('Enter CatalogItem Sku') }}" name="sku" required="" value="{{ Str::random(3).substr(time(), 6,8).Str::random(3) }}">
+										<input type="text" class="form-control" placeholder="{{ __('Enter CatalogItem Part_Number') }}" name="part_number" required="" value="{{ Str::random(3).substr(time(), 6,8).Str::random(3) }}">
 									</div>
 								</div>
 

@@ -128,7 +128,7 @@ Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('fron
 
 Route::prefix('modal')->name('modal.')->group(function () {
     Route::get('/catalog-item/id/{catalogItem}',   [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.id');
-    Route::get('/catalog-item/sku/{sku}',      [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.sku');
+    Route::get('/catalog-item/part_number/{part_number}',      [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.part_number');
     Route::get('/compatibility/{key}',    [CatalogItemDetailsController::class, 'compatibilityFragment'])->name('compatibility');
     Route::get('/alternative/{key}',      [CatalogItemDetailsController::class, 'alternativeFragment'])->name('alternative');
     Route::get('/quickview/{id}',         [CatalogItemDetailsController::class, 'quickFragment'])->name('quickview');
@@ -1152,7 +1152,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             // CREATE SECTION
             Route::get('/catalog-items/add', 'Merchant\CatalogItemController@add')->name('merchant-catalog-item-add');
-            Route::get('/catalog-items/search-sku', 'Merchant\CatalogItemController@searchSku')->name('merchant-catalog-item-search-sku');
+            Route::get('/catalog-items/search-part_number', 'Merchant\CatalogItemController@searchSku')->name('merchant-catalog-item-search-part_number');
             Route::post('/catalog-items/store-offer', 'Merchant\CatalogItemController@storeOffer')->name('merchant-catalog-item-store-offer');
             Route::put('/catalog-items/update-offer/{merchantItemId}', 'Merchant\CatalogItemController@updateOffer')->name('merchant-catalog-item-update-offer');
             Route::get('/catalog-items/types', 'Merchant\CatalogItemController@types')->name('merchant-catalog-item-types');

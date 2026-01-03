@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 echo "=== تحديث بيانات تجريبية للمنتجين ===\n\n";
 
 // المنتج الأول 260603AU0B
-$product1 = DB::table('products')->where('sku', '260603AU0B')->first();
+$product1 = DB::table('products')->where('part_number', '260603AU0B')->first();
 if ($product1) {
     echo "تحديث المنتج 1 (260603AU0B)...\n";
 
@@ -41,7 +41,7 @@ if ($product1) {
 }
 
 // المنتج الثاني 1520831u0b (قد يكون بحروف كبيرة أو صغيرة)
-$product2 = DB::table('products')->whereRaw('LOWER(sku) = ?', ['1520831u0b'])->first();
+$product2 = DB::table('products')->whereRaw('LOWER(part_number) = ?', ['1520831u0b'])->first();
 if ($product2) {
     echo "\nتحديث المنتج 2 (1520831u0b)...\n";
 

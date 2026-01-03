@@ -126,11 +126,11 @@ class SearchApiController extends Controller
      */
     protected function searchByPartQuery(string $query): array
     {
-        $sku = $this->cleanInput($query);
+        $part_number = $this->cleanInput($query);
 
         // البحث بالرقم (prefix-only)
-        $results = CatalogItem::where('sku', 'like', "{$sku}%")
-            ->select('id', 'sku', 'label_en', 'label_ar')
+        $results = CatalogItem::where('part_number', 'like', "{$part_number}%")
+            ->select('id', 'part_number', 'label_en', 'label_ar')
             ->limit(50)
             ->get();
 
@@ -169,7 +169,7 @@ class SearchApiController extends Controller
                         });
                     }
                 })
-                ->select('id', 'sku', 'label_en', 'label_ar')
+                ->select('id', 'part_number', 'label_en', 'label_ar')
                 ->limit(50)
                 ->get();
 

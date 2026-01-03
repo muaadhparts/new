@@ -353,12 +353,12 @@
                             @endforeach
                         </tr>
 
-                        {{-- SKU Row --}}
+                        {{-- PART_NUMBER Row --}}
                         <tr>
-                            <td><h6 class="td-title">@lang('SKU')</h6></td>
+                            <td><h6 class="td-title">@lang('PART_NUMBER')</h6></td>
                             @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <span class="table-value" style="font-family: monospace;">{{ $catalogItem['item']->sku ?? __('N/A') }}</span>
+                                    <span class="table-value" style="font-family: monospace;">{{ $catalogItem['item']->part_number ?? __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>

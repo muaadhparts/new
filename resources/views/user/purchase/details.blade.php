@@ -398,7 +398,7 @@
                                                         {{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}
                                                     </a>
                                                 </b>
-                                                <small class="text-muted d-block">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                                <small class="text-muted d-block">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                                 @if(isset($catalogItem['merchant_name']))
                                                 <small class="d-block"><strong>{{ __('Merchant') }}:</strong> {{ $catalogItem['merchant_name'] }}</small>
                                                 @endif

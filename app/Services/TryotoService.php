@@ -663,7 +663,7 @@ class TryotoService
                 'taxAmount' => 0,
                 'quantity' => $qty,
                 'serialnumber' => '',
-                'sku' => $itemData['sku'] ?? null,
+                'part_number' => $itemData['part_number'] ?? null,
                 'image' => $itemData['photo'] ?? '',
             ];
         }

@@ -23,8 +23,8 @@
         ? ($item->part_label_ar ?: $item->part_label_en ?: $name)
         : ($item->part_label_en ?: $name);
 
-    // SKU - prefer joined column
-    $sku = $item->sku ?? ($catalogItem ? $catalogItem->sku : '');
+    // PART_NUMBER - prefer joined column
+    $part_number = $item->part_number ?? ($catalogItem ? $catalogItem->part_number : '');
 
     // Slug - prefer joined column
     $slug = $item->catalog_item_slug ?? ($catalogItem ? $catalogItem->slug : null);
@@ -88,8 +88,8 @@
             <div class="m-catalogItem-card__content">
                 <div class="m-catalogItem-card__header">
                     <a href="{{ $itemUrl }}" class="m-catalogItem-card__title">{{ Str::limit($partLabel, 60) }}</a>
-                    @if($sku)
-                        <span class="m-catalogItem-card__sku">{{ $sku }}</span>
+                    @if($part_number)
+                        <span class="m-catalogItem-card__sku">{{ $part_number }}</span>
                     @endif
                 </div>
                 <div class="m-catalogItem-card__meta">
@@ -141,8 +141,8 @@
             </div>
             <div class="m-catalogItem-card__content">
                 <a href="{{ $itemUrl }}" class="m-catalogItem-card__title">{{ Str::limit($partLabel, 40) }}</a>
-                @if($sku)
-                    <span class="m-catalogItem-card__sku">{{ $sku }}</span>
+                @if($part_number)
+                    <span class="m-catalogItem-card__sku">{{ $part_number }}</span>
                 @endif
                 @if($qualityName)
                     <span class="m-catalogItem-card__quality">{{ $qualityName }}</span>

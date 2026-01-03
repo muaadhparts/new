@@ -26,8 +26,8 @@ class CatalogReviewController extends AdminBaseController
 											'merchant_id' => $data->merchantItem->user_id,
 											'merchant_item_id' => $data->merchantItem->id
 										]);
-									} elseif ($data->catalogItem && $data->catalogItem->sku) {
-										$itemLink = route('search.result', $data->catalogItem->sku);
+									} elseif ($data->catalogItem && $data->catalogItem->part_number) {
+										$itemLink = route('search.result', $data->catalogItem->part_number);
 									} else {
 										$itemLink = '#';
 									}

@@ -147,7 +147,7 @@ class PageSettingController extends AdminBaseController
             ->where('discount_date', '>=', date('Y-m-d'))
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number,brand_id',
                 'catalogItem.brand', // CatalogItem brand (Toyota, Nissan, etc.)
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand' // Quality brand (OEM, Aftermarket, etc.)
@@ -204,7 +204,7 @@ class PageSettingController extends AdminBaseController
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
                   ->orWhere('label_ar', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('part_number', 'like', "%{$search}%");
             })
             ->whereHas('merchantItems', function($q) {
                 $q->where('status', 1)
@@ -232,7 +232,7 @@ class PageSettingController extends AdminBaseController
                 return [
                     'catalog_item_id' => $catalogItem->id,
                     'name' => $name,
-                    'sku' => $catalogItem->sku,
+                    'part_number' => $catalogItem->part_number,
                     'photo' => $photo,
                     'merchants_count' => $catalogItem->merchant_items_count,
                 ];
@@ -365,7 +365,7 @@ class PageSettingController extends AdminBaseController
         $bestCatalogItems = \App\Models\MerchantItem::where('best', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number,brand_id',
                 'catalogItem.brand',
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
@@ -419,7 +419,7 @@ class PageSettingController extends AdminBaseController
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
                   ->orWhere('label_ar', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('part_number', 'like', "%{$search}%");
             })
             ->whereHas('merchantItems', function($q) {
                 $q->where('status', 1)
@@ -445,7 +445,7 @@ class PageSettingController extends AdminBaseController
                 return [
                     'catalog_item_id' => $catalogItem->id,
                     'name' => $name,
-                    'sku' => $catalogItem->sku,
+                    'part_number' => $catalogItem->part_number,
                     'photo' => $photo,
                     'merchants_count' => $catalogItem->merchant_items_count,
                 ];
@@ -504,7 +504,7 @@ class PageSettingController extends AdminBaseController
         return \App\Models\MerchantItem::where($flag, 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number,brand_id',
                 'catalogItem.brand',
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
@@ -546,7 +546,7 @@ class PageSettingController extends AdminBaseController
                 $q->where('name', 'like', "%{$search}%")
                   ->orWhere('label_en', 'like', "%{$search}%")
                   ->orWhere('label_ar', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                  ->orWhere('part_number', 'like', "%{$search}%");
             })
             ->whereHas('merchantItems', fn($q) => $q->where('status', 1)->whereHas('user', fn($u) => $u->where('is_merchant', 2)))
             ->withCount(['merchantItems' => fn($q) => $q->where('status', 1)->whereHas('user', fn($u) => $u->where('is_merchant', 2))])
@@ -555,7 +555,7 @@ class PageSettingController extends AdminBaseController
             ->map(function($catalogItem) {
                 $name = app()->getLocale() == 'ar' ? ($catalogItem->label_ar ?: $catalogItem->label_en ?: $catalogItem->name) : ($catalogItem->label_en ?: $catalogItem->name);
                 $photo = $catalogItem->photo ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : \Illuminate\Support\Facades\Storage::url($catalogItem->photo)) : asset('assets/images/noimage.png');
-                return ['catalog_item_id' => $catalogItem->id, 'name' => $name, 'sku' => $catalogItem->sku, 'photo' => $photo, 'merchants_count' => $catalogItem->merchant_items_count];
+                return ['catalog_item_id' => $catalogItem->id, 'name' => $name, 'part_number' => $catalogItem->part_number, 'photo' => $photo, 'merchants_count' => $catalogItem->merchant_items_count];
             });
     }
 

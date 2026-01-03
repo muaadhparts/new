@@ -2,7 +2,7 @@
 
 <div class="p-3">
     <h5 class="mb-3">@lang('labels.substitutions')</h5>
-    <div id="alternatives-container-{{ $sku }}" class="alternatives-container">
+    <div id="alternatives-container-{{ $part_number }}" class="alternatives-container">
         <div class="text-center py-4">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -13,10 +13,10 @@
 
 <script>
 (function() {
-    const sku = '{{ $sku }}';
-    const container = document.getElementById('alternatives-container-' + sku);
+    const part_number = '{{ $part_number }}';
+    const container = document.getElementById('alternatives-container-' + part_number);
 
-    fetch('/api/catalogItem/alternatives/' + encodeURIComponent(sku) + '/html')
+    fetch('/api/catalogItem/alternatives/' + encodeURIComponent(part_number) + '/html')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.html) {

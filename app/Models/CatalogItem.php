@@ -18,7 +18,7 @@ class CatalogItem extends Model
      * merchant-specific data is stored on MerchantItem.
      */
     protected $fillable = [
-        'brand_id', 'sku',
+        'brand_id', 'part_number',
         'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight',
         'length', 'width', 'height', 'status',
         'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',

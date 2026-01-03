@@ -480,7 +480,7 @@ class CheckoutController extends Controller
 
             // هوية العنصر فقط
             $cartItem = CatalogItem::where('id', '=', $id)->first([
-                'id','slug','name','photo','color','sku','weight','type','file','link','measure','attributes','color_all','color_price'
+                'id','slug','name','photo','color','part_number','weight','type','file','link','measure','attributes','color_all','color_price'
             ]);
             if (!$cartItem) {
                 return false;

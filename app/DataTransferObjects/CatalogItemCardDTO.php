@@ -18,7 +18,7 @@ class CatalogItemCardDTO
     public int $catalogItemId;
     public string $catalogItemName;
     public string $catalogItemSlug;
-    public ?string $sku;
+    public ?string $part_number;
     public string $photo;
     public string $type;
     public string $itemType;
@@ -78,7 +78,7 @@ class CatalogItemCardDTO
         $dto->catalogItemId = $catalogItem->id;
         $dto->catalogItemName = $catalogItem->showName();
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
-        $dto->sku = $catalogItem->sku;
+        $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
         $dto->type = $catalogItem->type ?? 'Physical';
         // item_type is now on merchant_items, not catalog_items
@@ -148,7 +148,7 @@ class CatalogItemCardDTO
         $dto->catalogItemId = $catalogItem->id;
         $dto->catalogItemName = $catalogItem->showName();
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
-        $dto->sku = $catalogItem->sku;
+        $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
         $dto->type = $catalogItem->type ?? 'Physical';
         // item_type is now on merchant_items - no type without merchant

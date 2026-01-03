@@ -79,26 +79,26 @@ class StockManagementController extends Controller
         $format = $request->get('format', 'csv'); // csv or excel
 
         try {
-            // Get all merchant items for this merchant with catalog item SKU
+            // Get all merchant items for this merchant with catalog item PART_NUMBER
             $merchantItems = MerchantItem::where('user_id', $userId)
                 ->where('status', 1)
-                ->with('catalogItem:id,sku,name')
+                ->with('catalogItem:id,part_number,name')
                 ->get();
 
             $filename = 'stock_export_' . $userId . '_' . date('Y-m-d_His') . '.' . $format;
             $filepath = 'stock_exports/' . $filename;
 
             // Create CSV content
-            $csvContent = "SKU,Catalog Item Name,Current Stock,Price,Previous Price\n";
+            $csvContent = "PART_NUMBER,Catalog Item Name,Current Stock,Price,Previous Price\n";
 
             foreach ($merchantItems as $mp) {
-                $sku = $mp->catalogItem->sku ?? '';
+                $part_number = $mp->catalogItem->part_number ?? '';
                 $name = str_replace('"', '""', $mp->catalogItem->name ?? ''); // Escape quotes
                 $stock = $mp->stock ?? 0;
                 $price = $mp->price ?? 0;
                 $previousPrice = $mp->previous_price ?? 0;
 
-                $csvContent .= "\"{$sku}\",\"{$name}\",{$stock},{$price},{$previousPrice}\n";
+                $csvContent .= "\"{$part_number}\",\"{$name}\",{$stock},{$price},{$previousPrice}\n";
             }
 
             // Save to storage
@@ -196,14 +196,14 @@ class StockManagementController extends Controller
                 $totalRows++;
 
                 try {
-                    // Expected format: SKU, CatalogItem Name (optional), Stock, Price (optional), Previous Price (optional)
-                    $sku = trim($row[0] ?? '');
+                    // Expected format: PART_NUMBER, CatalogItem Name (optional), Stock, Price (optional), Previous Price (optional)
+                    $part_number = trim($row[0] ?? '');
                     $newStock = isset($row[2]) ? (int) $row[2] : null;
                     $newPrice = isset($row[3]) && $row[3] !== '' ? (float) $row[3] : null;
                     $newPreviousPrice = isset($row[4]) && $row[4] !== '' ? (float) $row[4] : null;
 
-                    if (empty($sku)) {
-                        $errors[] = "Row {$totalRows}: SKU is empty";
+                    if (empty($part_number)) {
+                        $errors[] = "Row {$totalRows}: PART_NUMBER is empty";
                         $failedRows++;
                         continue;
                     }
@@ -214,11 +214,11 @@ class StockManagementController extends Controller
                         continue;
                     }
 
-                    // Find catalog item by SKU
-                    $catalogItem = CatalogItem::where('sku', $sku)->first();
+                    // Find catalog item by PART_NUMBER
+                    $catalogItem = CatalogItem::where('part_number', $part_number)->first();
 
                     if (!$catalogItem) {
-                        $errors[] = "Row {$totalRows}: Catalog item not found for SKU: {$sku}";
+                        $errors[] = "Row {$totalRows}: Catalog item not found for PART_NUMBER: {$part_number}";
                         $failedRows++;
                         continue;
                     }
@@ -229,7 +229,7 @@ class StockManagementController extends Controller
                         ->first();
 
                     if (!$merchantItem) {
-                        $errors[] = "Row {$totalRows}: Merchant item not found for SKU: {$sku}";
+                        $errors[] = "Row {$totalRows}: Merchant item not found for PART_NUMBER: {$part_number}";
                         $failedRows++;
                         continue;
                     }
@@ -476,9 +476,9 @@ class StockManagementController extends Controller
      */
     public function downloadTemplate()
     {
-        $csvContent = "SKU,Catalog Item Name,Stock,Price,Previous Price\n";
-        $csvContent .= "SAMPLE-SKU-001,Sample Catalog Item Name,100,50.00,60.00\n";
-        $csvContent .= "SAMPLE-SKU-002,Another Sample Catalog Item,50,75.50,80.00\n";
+        $csvContent = "PART_NUMBER,Catalog Item Name,Stock,Price,Previous Price\n";
+        $csvContent .= "SAMPLE-PART_NUMBER-001,Sample Catalog Item Name,100,50.00,60.00\n";
+        $csvContent .= "SAMPLE-PART_NUMBER-002,Another Sample Catalog Item,50,75.50,80.00\n";
 
         $filename = 'stock_template.csv';
 

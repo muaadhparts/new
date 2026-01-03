@@ -450,11 +450,11 @@
 
               @endif
 
-              @if( $catalogItem->sku != null )
+              @if( $catalogItem->part_number != null )
 
               <div class="catalogItem-id">
-                {{ __('CatalogItem SKU:') }}
-                <span>{{ $catalogItem->sku }}</span>
+                {{ __('CatalogItem PART_NUMBER:') }}
+                <span>{{ $catalogItem->part_number }}</span>
               </div>
 
               @endif
