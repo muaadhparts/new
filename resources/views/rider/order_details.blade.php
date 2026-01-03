@@ -6,7 +6,7 @@
                 <!-- sidebar -->
                 @include('includes.rider.sidebar')
                 @php
-                    $order = $data->purchase;
+                    $purchase = $data->purchase;
                 @endphp
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
@@ -25,12 +25,12 @@
 
                         @if ($data->status == 'pending')
                             <a class="template-btn green-btn"
-                                href="{{ route('rider-order-delivery-accept', $data->id) }}">@lang('Accept')</a>
+                                href="{{ route('rider-purchase-delivery-accept', $data->id) }}">@lang('Accept')</a>
                             <a class="template-btn red-btn"
-                                href="{{ route('rider-order-delivery-reject', $data->id) }}">@lang('Reject')</a>
+                                href="{{ route('rider-purchase-delivery-reject', $data->id) }}">@lang('Reject')</a>
                         @elseif($data->status == 'accepted')
                             <a class="template-btn green-btn"
-                                href="{{ route('rider-order-delivery-complete', $data->id) }}">@lang('Make Delivered')</a>
+                                href="{{ route('rider-purchase-delivery-complete', $data->id) }}">@lang('Make Delivered')</a>
                         @elseif($data->status == 'rejected')
                             <button class="template-btn red-btn">@lang('Rejected')</button>
                         @else
@@ -48,24 +48,24 @@
                                 <div class="delivery-address-info">
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Name:') </span>
-                                        <span class="info-content">{{ $order->customer_name }}</span>
+                                        <span class="info-content">{{ $purchase->customer_name }}</span>
                                     </div>
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Email:') </span>
-                                        <span class="info-content">{{ $order->customer_email }}</span>
+                                        <span class="info-content">{{ $purchase->customer_email }}</span>
                                     </div>
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Phone:') </span>
-                                        <span class="info-content">{{ $order->customer_phone }}</span>
+                                        <span class="info-content">{{ $purchase->customer_phone }}</span>
                                     </div>
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('City:') </span>
-                                        <span class="info-content">{{ $order->customer_address }}</span>
+                                        <span class="info-content">{{ $purchase->customer_address }}</span>
                                     </div>
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Address:') </span>
                                         <span
-                                            class="info-content">{{ $order->customer_city }}-{{ $order->customer_zip }}</span>
+                                            class="info-content">{{ $purchase->customer_city }}-{{ $purchase->customer_zip }}</span>
                                     </div>
 
                                 </div>
@@ -123,7 +123,7 @@
                                     @php
                                         $extra_price = 0;
                                     @endphp
-                                    @foreach (json_decode($order->cart, true)['items'] as $catalogItem)
+                                    @foreach (json_decode($purchase->cart, true)['items'] as $catalogItem)
                                         @if ($catalogItem['user_id'] == $data->merchant_id)
                                             <tr>
                                                 <td data-label="{{ __('ID#') }}">
@@ -179,12 +179,12 @@
 
                             @php
 
-                               $order_shipping = json_decode($order->merchant_shipping_id, true) ?? [];
-                                $order_package = json_decode($order->merchant_packing_id, true) ?? [];
+                               $purchase_shipping = json_decode($purchase->merchant_shipping_id, true) ?? [];
+                                $purchase_package = json_decode($purchase->merchant_packing_id, true) ?? [];
 
                                 // Retrieve merchant-specific shipping and packing IDs, defaulting to null if not found
-                                $merchant_shipping_id = $order_shipping[$data->merchant_id] ?? null;
-                                $merchant_package_id = $order_package[$data->merchant_id] ?? null;
+                                $merchant_shipping_id = $purchase_shipping[$data->merchant_id] ?? null;
+                                $merchant_package_id = $purchase_package[$data->merchant_id] ?? null;
                                 
                                 // Retrieve the Shipping and Package models, or null if not found
                                 $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
@@ -201,11 +201,11 @@
                             <strong>
 
                                 @lang('Collection Amount from Customer') :
-                                @if ($order->method == 'Cash On Delivery')
+                                @if ($purchase->method == 'Cash On Delivery')
                                     {{ \PriceHelper::showAdminCurrencyPrice(
-                                        ($order->merchantPurchases->where('user_id', $data->merchant_id)->sum('price') + $extra_price) *
+                                        ($purchase->merchantPurchases->where('user_id', $data->merchant_id)->sum('price') + $extra_price) *
                                             $data->purchase->currency_value,
-                                        $order->currency_sign,
+                                        $purchase->currency_sign,
                                     ) }}
                                 @else
                                     {{ __('N/A') }}

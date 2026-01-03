@@ -55,14 +55,14 @@ class RazorpayController extends DepositBaseController
         $item_number = "RZP".Str::random(4).time();
 
 
-        $orderData = [
+        $purchaseData = [
             'receipt'         => $item_number,
             'amount'          => $item_amount * 100, // 2000 rupees in paise
             'currency'        => 'INR',
             'payment_capture' => 1 // auto capture
         ];
         
-        $razorpayOrder = $this->api->order->create($orderData);
+        $razorpayOrder = $this->api->order->create($purchaseData);
         
         $razorpayOrderId = $razorpayOrder['id'];
         
@@ -81,7 +81,7 @@ class RazorpayController extends DepositBaseController
                     $deposit->method = 'Razorpay';
                     $deposit->save();
 
-                    $displayAmount = $amount = $orderData['amount'];
+                    $displayAmount = $amount = $purchaseData['amount'];
                     
                     if ($this->displayCurrency !== 'INR')
                     {

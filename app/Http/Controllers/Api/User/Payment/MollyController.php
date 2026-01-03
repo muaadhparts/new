@@ -24,8 +24,8 @@ class MollyController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number', $deposit_number)->first();
-        $curr = Currency::where('name', '=', $order->currency_code)->first();
+        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $curr = Currency::where('name', '=', $purchase->currency_code)->first();
 
         $available_currency = array(
             'AED',
@@ -67,22 +67,22 @@ class MollyController extends Controller
 
         $settings = Muaadhsetting::findOrFail(1);
 
-        $item_amount = round($order->pay_amount / $curr->value, 2);
+        $item_amount = round($purchase->pay_amount / $curr->value, 2);
 
-        $order['item_name'] = $settings->title . " Deposit";
-        $order['item_amount'] = $item_amount;
+        $purchase['item_name'] = $settings->title . " Deposit";
+        $purchase['item_amount'] = $item_amount;
 
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => $curr->name,
-                'value' => '' . sprintf('%0.2f', $order['amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
+                'value' => '' . sprintf('%0.2f', $purchase['amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
             'description' => $settings->title . " Deposit",
             'redirectUrl' => route('api.user.deposit.molly.notify'),
         ]);
 
         Session::put('payment_id', $payment->id);
-        Session::put('molly_data', $order->id);
+        Session::put('molly_data', $purchase->id);
         Session::put('paypal_data', $input);
         $payment = Mollie::api()->payments()->get($payment->id);
 
@@ -92,33 +92,33 @@ class MollyController extends Controller
     public function notify(Request $request)
     {
 
-        $order = Deposit::findOrFail(Session::get('molly_data'));
+        $purchase = Deposit::findOrFail(Session::get('molly_data'));
   
-        $cancel_url = route('user.deposit.send', $order->deposit_number);
+        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
         $payment = Mollie::api()->payments()->get(Session::get('payment_id'));
 
         if ($payment->status == 'paid') {
 
-            $user = \App\Models\User::findOrFail($order->user_id);
-            $user->balance = $user->balance + ($order->amount);
+            $user = \App\Models\User::findOrFail($purchase->user_id);
+            $user->balance = $user->balance + ($purchase->amount);
             $user->save();
-            $order['txnid'] = $payment->id;
-            $order['method'] = 'Molly';
-            $order['status'] = 1;
-            $order->update();
+            $purchase['txnid'] = $payment->id;
+            $purchase['method'] = 'Molly';
+            $purchase['status'] = 1;
+            $purchase->update();
 
             // store in transaction table
-            if ($order->status == 1) {
+            if ($purchase->status == 1) {
                 $transaction = new Transaction;
                 $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $order->user_id;
-                $transaction->amount = $order->amount;
-                $transaction->user_id = $order->user_id;
-                $transaction->currency_sign = $order->currency;
-                $transaction->currency_code = $order->currency_code;
-                $transaction->currency_value = $order->currency_value;
-                $transaction->method = $order->method;
-                $transaction->txnid = $order->txnid;
+                $transaction->user_id = $purchase->user_id;
+                $transaction->amount = $purchase->amount;
+                $transaction->user_id = $purchase->user_id;
+                $transaction->currency_sign = $purchase->currency;
+                $transaction->currency_code = $purchase->currency_code;
+                $transaction->currency_value = $purchase->currency_value;
+                $transaction->method = $purchase->method;
+                $transaction->txnid = $purchase->txnid;
                 $transaction->details = 'Payment Deposit';
                 $transaction->type = 'plus';
                 $transaction->save();

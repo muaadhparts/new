@@ -2,22 +2,22 @@
 
 @section('content')  
 
-<input type="hidden" id="headerdata" value="{{ __('ORDER') }}">
+<input type="hidden" id="headerdata" value="{{ __('PURCHASE') }}">
 
                     <div class="content-area">
                         <div class="mr-breadcrumb">
                             <div class="row">
                                 <div class="col-lg-12">
-                                        <h4 class="heading">{{ __('Processing Orders') }}</h4>
+                                        <h4 class="heading">{{ __('Processing Purchases') }}</h4>
                                         <ul class="links">
                                             <li>
                                                 <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
                                             </li>
                                             <li>
-                                                <a href="javascript:;">{{ __('Orders') }}</a>
+                                                <a href="javascript:;">{{ __('Purchases') }}</a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('admin-orders-all') }}?status=processing">{{ __('Processing Orders') }}</a>
+                                                <a href="{{ route('admin-purchases-all') }}?status=processing">{{ __('Processing Purchases') }}</a>
                                             </li>
                                         </ul>
                                 </div>
@@ -34,7 +34,7 @@
                                                     <thead>
                                                         <tr>
                                                             <th>{{ __('Customer Email') }}</th>
-                                                            <th>{{ __('Order Number') }}</th>
+                                                            <th>{{ __('Purchase Number') }}</th>
                                                             <th>{{ __('Merchant') }}</th>
                                                             <th>{{ __('Total Qty') }}</th>
                                                             <th>{{ __('Total Cost') }}</th>
@@ -67,7 +67,7 @@
 
       <!-- Modal body -->
       <div class="modal-body">
-        <p class="text-center">{{ __("You are about to update the order's Status.") }}</p>
+        <p class="text-center">{{ __("You are about to update the purchase's Status.") }}</p>
         <p class="text-center">{{ __('Do you want to proceed?') }}</p>
       </div>
 

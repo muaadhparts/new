@@ -32,8 +32,8 @@ class RazorpayController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number', $deposit_number)->first();
-        $curr = Currency::where('name', '=', $order->currency_code)->first();
+        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Razorpay.');
         }
@@ -43,27 +43,27 @@ class RazorpayController extends Controller
 
         $settings = Muaadhsetting::findOrFail(1);
 
-        $item_amount = $order->amount * $curr->value;
+        $item_amount = $purchase->amount * $curr->value;
 
         $item_name = $settings->title . " Deposit";
 
-        $orderData = [
-            'receipt' => $order->deposit_number,
+        $purchaseData = [
+            'receipt' => $purchase->deposit_number,
             'amount' => round($item_amount) * 100, // 2000 rupees in paise
             'currency' => 'INR',
             'payment_capture' => 1, // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($orderData);
+        $razorpayOrder = $this->api->order->create($purchaseData);
 
         $razorpayOrderId = $razorpayOrder['id'];
 
         session(['razorpay_order_id' => $razorpayOrderId]);
 
-        $order['method'] = $request->method;
-        $order->update();
+        $purchase['method'] = $request->method;
+        $purchase->update();
 
-        $displayAmount = $amount = $orderData['amount'];
+        $displayAmount = $amount = $purchaseData['amount'];
 
         if ($this->displayCurrency !== 'INR') {
             $url = "https://api.fixer.io/latest?symbols=$this->displayCurrency&base=INR";
@@ -90,7 +90,7 @@ class RazorpayController extends Controller
             ],
             "notes" => [
                 "address" => $request->address,
-                "merchant_deposit_id" => $order->deposit_number,
+                "merchant_deposit_id" => $purchase->deposit_number,
             ],
             "theme" => [
                 "color" => "{{$settings->colors}}",
@@ -114,9 +114,9 @@ class RazorpayController extends Controller
     {
         $success = true;
         $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
-        $order_id = $razorpayOrder['receipt'];
-        $order = Deposit::where('deposit_number', $order_id)->first();
-        $cancel_url = route('user.deposit.send', $order->deposit_number);
+        $purchase_id = $razorpayOrder['receipt'];
+        $purchase = Deposit::where('deposit_number', $purchase_id)->first();
+        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
 
         $error = "Payment Failed";
 
@@ -145,30 +145,30 @@ class RazorpayController extends Controller
 
             $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
 
-            $order_id = $razorpayOrder['receipt'];
+            $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
-            $order = Deposit::where('deposit_number', $order_id)->first();
+            $purchase = Deposit::where('deposit_number', $purchase_id)->first();
 
-            $user = \App\Models\User::findOrFail($order->user_id);
-            $user->balance = $user->balance + ($order->amount);
+            $user = \App\Models\User::findOrFail($purchase->user_id);
+            $user->balance = $user->balance + ($purchase->amount);
             $user->save();
 
-            if (isset($order)) {
-                $order['txnid'] = $transaction_id;
-                $order['status'] = 1;
-                $order->update();
+            if (isset($purchase)) {
+                $purchase['txnid'] = $transaction_id;
+                $purchase['status'] = 1;
+                $purchase->update();
 
-                if ($order->status == 1) {
+                if ($purchase->status == 1) {
                     $transaction = new \App\Models\Transaction;
                     $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                    $transaction->user_id = $order->user_id;
-                    $transaction->amount = $order->amount;
-                    $transaction->user_id = $order->user_id;
-                    $transaction->currency_sign = $order->currency;
-                    $transaction->currency_code = $order->currency_code;
-                    $transaction->currency_value = $order->currency_value;
-                    $transaction->method = $order->method;
-                    $transaction->txnid = $order->txnid;
+                    $transaction->user_id = $purchase->user_id;
+                    $transaction->amount = $purchase->amount;
+                    $transaction->user_id = $purchase->user_id;
+                    $transaction->currency_sign = $purchase->currency;
+                    $transaction->currency_code = $purchase->currency_code;
+                    $transaction->currency_value = $purchase->currency_value;
+                    $transaction->method = $purchase->method;
+                    $transaction->txnid = $purchase->txnid;
                     $transaction->details = 'Payment Deposit';
                     $transaction->type = 'plus';
                     $transaction->save();

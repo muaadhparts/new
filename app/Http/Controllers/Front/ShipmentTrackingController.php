@@ -24,7 +24,7 @@ class ShipmentTrackingController extends Controller
     public function index(Request $request)
     {
         $trackingNumber = $request->get('tracking');
-        $orderNumber = $request->get('order');
+        $purchaseNumber = $request->get('order');
         $shipment = null;
         $history = collect();
         $purchase = null;
@@ -48,9 +48,9 @@ class ShipmentTrackingController extends Controller
                     // Merge live events if available
                 }
             }
-        } elseif ($orderNumber) {
+        } elseif ($purchaseNumber) {
             // Search by order number
-            $purchase = Purchase::where('purchase_number', $orderNumber)->first();
+            $purchase = Purchase::where('purchase_number', $purchaseNumber)->first();
 
             if ($purchase) {
                 $shipment = ShipmentStatusLog::where('purchase_id', $purchase->id)

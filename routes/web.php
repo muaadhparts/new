@@ -224,7 +224,7 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN PURCHASE SECTION ------------
 
-    Route::group(['middleware' => 'permissions:orders'], function () {
+    Route::group(['middleware' => 'permissions:purchases'], function () {
 
         Route::get('/purchases/datatables/{slug}', 'Admin\PurchaseController@datatables')->name('admin-purchase-datatables'); //JSON REQUEST
         Route::get('/purchases', 'Admin\PurchaseController@purchases')->name('admin-purchases-all');
@@ -275,7 +275,7 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN SHIPMENTS SECTION ------------
 
-    Route::group(['middleware' => 'permissions:orders'], function () {
+    Route::group(['middleware' => 'permissions:purchases'], function () {
         Route::get('/shipments', 'Admin\ShipmentController@index')->name('admin.shipments.index');
         Route::get('/shipments/show/{tracking}', 'Admin\ShipmentController@show')->name('admin.shipments.show');
         Route::get('/shipments/refresh/{tracking}', 'Admin\ShipmentController@refresh')->name('admin.shipments.refresh');
@@ -1706,7 +1706,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/currency/{id}', 'Front\FrontendController@currency')->name('front.currency');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');
-    Route::get('/order/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
+    Route::get('/purchase/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
 
     // SHIPMENT TRACKING SECTION
     Route::get('/tracking', 'Front\ShipmentTrackingController@index')->name('front.tracking');

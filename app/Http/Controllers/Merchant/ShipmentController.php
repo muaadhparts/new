@@ -173,7 +173,7 @@ class ShipmentController extends MerchantBaseController
             // Headers
             fputcsv($file, [
                 'Tracking Number',
-                'Order Number',
+                'Purchase Number',
                 'Customer',
                 'Company',
                 'Status',

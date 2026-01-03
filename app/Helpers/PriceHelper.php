@@ -106,7 +106,7 @@ class PriceHelper
         return $name;
     }
 
-//     public static function getOrderTotal($input, $cart)
+//     public static function getPurchaseTotal($input, $cart)
 //     {
 //         try {
 //             $merchant_ids = [];
@@ -240,7 +240,7 @@ class PriceHelper
 //             ];
 //         }
 //     }
-    public static function getOrderTotal($input, $cart)
+    public static function getPurchaseTotal($input, $cart)
     {
         try {
             // اجمع merchant_ids من محتوى السلة
@@ -395,7 +395,7 @@ class PriceHelper
         }
     }
 
-    // public static function getOrderTotalAmount($input, $cart)
+    // public static function getPurchaseTotalAmount($input, $cart)
     // {
 
     //     if (Session::has('currency')) {
@@ -479,7 +479,7 @@ class PriceHelper
     //         ];
     //     }
     // }
-    public static function getOrderTotalAmount($input, $cart)
+    public static function getPurchaseTotalAmount($input, $cart)
     {
         // العملة
         if (Session::has('currency')) {

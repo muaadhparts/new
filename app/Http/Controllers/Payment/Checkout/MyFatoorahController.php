@@ -198,9 +198,9 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
         $prepared = $this->prepareOrderData($input, $cart);
         $input = $prepared['input'];
-        $orderTotal = $prepared['order_total'];
+        $purchaseTotal = $prepared['order_total'];
 
-        $input['pay_amount'] = $orderTotal;
+        $input['pay_amount'] = $purchaseTotal;
         $input['purchase_number'] = Str::random(4) . time();
 
         // Get tax data from merchant step2 (already fetched at method start)
@@ -249,20 +249,20 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
 //        dd($purchase);
             //You can get the data using the purchase object in your system
-            $orderId = $purchase->purchase_number ?: 147;
-            $order2   = $this->getOrderData($purchase);
-//            dd($order ,$order2);
+            $purchaseId = $purchase->purchase_number ?: 147;
+            $purchase2   = $this->getOrderData($purchase);
+//            dd($purchase ,$purchase2);
             //You can replace this variable with customer Id in your system
             $customerId = request('customerId');
-//            dd($order ,'checkout');
+//            dd($purchase ,'checkout');
             //You can use the user defined field if you want to save card
             $userDefinedField = config('myfatoorah.save_card') && $customerId ? "CK-$customerId" : '';
 
             //Get the enabled gateways at your MyFatoorah acount to be displayed on checkout page
             $mfObj          = new MyFatoorahPaymentEmbedded($this->mfConfig);
-            $paymentMethods = $mfObj->getCheckoutGateways($order2['total'], $order2['currency'], config('myfatoorah.register_apple_pay'));
+            $paymentMethods = $mfObj->getCheckoutGateways($purchase2['total'], $purchase2['currency'], config('myfatoorah.register_apple_pay'));
 
-//            dd($paymentMethods ,$order2);
+//            dd($paymentMethods ,$purchase2);
             if (empty($paymentMethods['all'])) {
                 throw new Exception('noPaymentGateways');
             }
@@ -326,7 +326,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         ];
 
 
-        (new MuaadhMailer())->sendAutoOrderMail($customerData, $purchase->id);
+        (new MuaadhMailer())->sendAutoPurchaseMail($customerData, $purchase->id);
 
         // Email to Admin
         $adminData = [
@@ -352,11 +352,11 @@ class MyFatoorahController extends CheckoutBaseControlller {
             $paymentId = request('pmid') ?: 0;
             $sessionId = request('sid') ?: null;
 
-            $orderId  = request('oid') ?: 147;
-            $curlData = $this->getPayLoadData($orderId);
+            $purchaseId  = request('oid') ?: 147;
+            $curlData = $this->getPayLoadData($purchaseId);
 
             $mfObj   = new MyFatoorahPayment($this->mfConfig);
-            $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $orderId, $sessionId);
+            $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $purchaseId, $sessionId);
 
             return redirect($payment['invoiceURL']);
         } catch (Exception $ex) {
@@ -371,27 +371,27 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * Example on how to map order data to MyFatoorah
      * You can get the data using the order object in your system
      * 
-     * @param int|string $orderId
+     * @param int|string $purchaseId
      * 
      * @return array
      */
-    private function getPayLoadData($orderId = null) {
+    private function getPayLoadData($purchaseId = null) {
         $callbackURL = route('myfatoorah.callback');
 
         //You can get the data using the order object in your system
-        $order = $this->getTestOrderData($orderId);
+        $purchase = $this->getTestOrderData($purchaseId);
 
         return [
             'CustomerName'       => 'FName LName',
-            'InvoiceValue'       => $order['total'],
-            'DisplayCurrencyIso' => $order['currency'],
+            'InvoiceValue'       => $purchase['total'],
+            'DisplayCurrencyIso' => $purchase['currency'],
             'CustomerEmail'      => 'test@test.com',
             'CallBackUrl'        => $callbackURL,
             'ErrorUrl'           => $callbackURL,
             'MobileCountryCode'  => '+966',
             'CustomerMobile'     => '12345678',
             'Language'           => 'en',
-            'CustomerReference'  => $orderId,
+            'CustomerReference'  => $purchaseId,
             'SourceInfo'         => 'Laravel ' . app()::VERSION . ' - MyFatoorah Package ' . MYFATOORAH_LARAVEL_PACKAGE_VERSION
         ];
     }
@@ -434,20 +434,20 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
 //        dd($purchase);
             //You can get the data using the purchase object in your system
-            $orderId = $purchase->purchase_number ?: 147;
-            $order2   = $this->getOrderData($purchase);
-//            dd($purchase ,$order2);
+            $purchaseId = $purchase->purchase_number ?: 147;
+            $purchase2   = $this->getOrderData($purchase);
+//            dd($purchase ,$purchase2);
             //You can replace this variable with customer Id in your system
             $customerId = request('customerId');
-//            dd($order ,'checkout');
+//            dd($purchase ,'checkout');
             //You can use the user defined field if you want to save card
             $userDefinedField = config('myfatoorah.save_card') && $customerId ? "CK-$customerId" : '';
 
             //Get the enabled gateways at your MyFatoorah acount to be displayed on checkout page
             $mfObj          = new MyFatoorahPaymentEmbedded($this->mfConfig);
-            $paymentMethods = $mfObj->getCheckoutGateways($order2['total'], $order2['currency'], config('myfatoorah.register_apple_pay'));
+            $paymentMethods = $mfObj->getCheckoutGateways($purchase2['total'], $purchase2['currency'], config('myfatoorah.register_apple_pay'));
 
-//            dd($paymentMethods ,$order2);
+//            dd($paymentMethods ,$purchase2);
             if (empty($paymentMethods['all'])) {
                 throw new Exception('noPaymentGateways');
             }
@@ -513,7 +513,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 //-----------------------------------------------------------------------------------------------------------------------------------------
     private function changeTransactionStatus($inputData) {
         //1. Check if orderId is valid on your system.
-        $orderId = $inputData['CustomerReference'];
+        $purchaseId = $inputData['CustomerReference'];
 
         //2. Get MyFatoorah invoice id
         $invoiceId = $inputData['InvoiceId'];
@@ -538,7 +538,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
 
 //-----------------------------------------------------------------------------------------------------------------------------------------
-    private function getTestOrderData($orderId) {
+    private function getTestOrderData($purchaseId) {
         return [
             'total'    => 1,
             'currency' => 'SAR'

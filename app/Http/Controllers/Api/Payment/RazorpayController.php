@@ -54,14 +54,14 @@ class RazorpayController extends Controller
 
         $item_name = $settings->title . " Purchase";
 
-        $orderData = [
+        $purchaseData = [
             'receipt' => $purchase->purchase_number,
             'amount' => round($item_amount) * 100, // 2000 rupees in paise
             'currency' => 'INR',
             'payment_capture' => 1, // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($orderData);
+        $razorpayOrder = $this->api->order->create($purchaseData);
 
         $razorpayOrderId = $razorpayOrder['id'];
 
@@ -71,7 +71,7 @@ class RazorpayController extends Controller
         $purchase['pay_amount'] = round($item_amount / $curr->value, 2);
         $purchase->update();
 
-        $displayAmount = $amount = $orderData['amount'];
+        $displayAmount = $amount = $purchaseData['amount'];
 
         if ($this->displayCurrency !== 'INR') {
             $url = "https://api.fixer.io/latest?symbols=$this->displayCurrency&base=INR";

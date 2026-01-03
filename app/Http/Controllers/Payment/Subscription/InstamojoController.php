@@ -111,24 +111,24 @@ public function notify(Request $request){
 
         if($sub['pay_id'] == $data['payment_request_id']){
 
-            $order = new UserSubscription;
-            $order->user_id = $sub['user_id'];
-            $order->subscription_id = $sub['subscription_id'];
-            $order->title = $sub['title'];
-            $order->currency_sign = $this ->curr->sign;
-            $order->currency_code = $this->curr->name;
-            $order->currency_value = $this->curr->value;
-            $order->price = $sub['price'];
-            $order->days = $sub['days'];
-            $order->allowed_products = $sub['allowed_products'];
-            $order->details = $sub['details'];
-            $order->method = $sub['method'];
-            $order->txnid = $data['payment_id'];
-            $order->status = 1;
+            $purchase = new UserSubscription;
+            $purchase->user_id = $sub['user_id'];
+            $purchase->subscription_id = $sub['subscription_id'];
+            $purchase->title = $sub['title'];
+            $purchase->currency_sign = $this ->curr->sign;
+            $purchase->currency_code = $this->curr->name;
+            $purchase->currency_value = $this->curr->value;
+            $purchase->price = $sub['price'];
+            $purchase->days = $sub['days'];
+            $purchase->allowed_products = $sub['allowed_products'];
+            $purchase->details = $sub['details'];
+            $purchase->method = $sub['method'];
+            $purchase->txnid = $data['payment_id'];
+            $purchase->status = 1;
 
-        $user = User::findOrFail($order->user_id);
+        $user = User::findOrFail($purchase->user_id);
         $package = $user->subscribes()->where('status',1)->orderBy('id','desc')->first();
-        $subs = Subscription::findOrFail($order->subscription_id);
+        $subs = Subscription::findOrFail($purchase->subscription_id);
 
         $today = Carbon::now()->format('Y-m-d');
 
@@ -136,7 +136,7 @@ public function notify(Request $request){
 
         if(!empty($package))
         {
-            if($package->subscription_id == $order->subscription_id)
+            if($package->subscription_id == $purchase->subscription_id)
             {
                 $newday = strtotime($today);
                 $lastday = strtotime($user->date);
@@ -158,7 +158,7 @@ public function notify(Request $request){
 
         $input['mail_sent'] = 1;
         $user->update($input);
-        $order->save();
+        $purchase->save();
 
             $maildata = [
                 'to' => $user->email,

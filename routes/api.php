@@ -204,7 +204,7 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/faqs', 'Api\Front\FrontendController@faqs');
     Route::get('/blogs', 'Api\Front\FrontendController@blogs');
     Route::get('/pages', 'Api\Front\FrontendController@pages');
-    Route::get('/ordertrack','Api\Front\FrontendController@ordertrack');
+    Route::get('/purchasetrack','Api\Front\FrontendController@purchasetrack');
     Route::post('/contactmail', 'Api\Front\FrontendController@contactmail');
 
     //------------ Frontend Controller Ends ------------
@@ -244,7 +244,7 @@ Route::group(['prefix' => 'front'], function () {
    
     Route::get('/get-shipping-packaging','Api\Front\CheckoutController@getShippingPackaging');
     Route::get('/merchant/wise/shipping-packaging','Api\Front\CheckoutController@MerchantWisegetShippingPackaging');
-    Route::get('/order/details','Api\Front\CheckoutController@orderDetails');
+    Route::get('/purchase/details','Api\Front\CheckoutController@purchaseDetails');
     Route::get('/get/discount-code','Api\Front\CheckoutController@getDiscountCode');
     Route::post('/checkout/update/{id}','Api\Front\CheckoutController@update');
     Route::get('/checkout/delete/{id}','Api\Front\CheckoutController@delete');

@@ -121,8 +121,8 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام المبلغ القادم من step3 مباشرة (المبلغ الصحيح المحسوب مسبقاً)
-        // بدلاً من إعادة الحساب باستخدام PriceHelper::getOrderTotal
-        $orderTotal = (float) ($input['total'] ?? 0) / $this->curr->value;
+        // بدلاً من إعادة الحساب باستخدام PriceHelper::getPurchaseTotal
+        $purchaseTotal = (float) ($input['total'] ?? 0) / $this->curr->value;
 
         // Prepare merchant IDs from cart
         $merchant_ids = [];
@@ -233,7 +233,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $input['user_id'] = Auth::check() ? Auth::user()->id : null;
         $input['cart'] = $new_cart;
         $input['affilate_users'] = $affilate_users;
-        $input['pay_amount'] = $orderTotal;
+        $input['pay_amount'] = $purchaseTotal;
         $input['purchase_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
 
@@ -322,7 +322,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         ];
 
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data, $purchase->id);
+        $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
         //Sending Email To Admin
         $data = [

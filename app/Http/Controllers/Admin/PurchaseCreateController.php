@@ -388,7 +388,7 @@ class PurchaseCreateController extends AdminBaseController
         ];
 
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data, $purchase->id);
+        $mailer->sendAutoPurchaseMail($data, $purchase->id);
         $ps = Pagesetting::first();
         //Sending Email To Admin
         $data = [

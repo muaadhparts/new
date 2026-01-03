@@ -21,16 +21,16 @@ class PaytmController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number', $deposit_number)->first();
-        $curr = Currency::where('name', '=', $order->currency_code)->first();
+        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Paytm.');
         }
         $input = $request->all();
         $settings = Muaadhsetting::findOrFail(1);
-        $item_amount = round($order->amount * $order->currency_value,2);
+        $item_amount = round($purchase->amount * $purchase->currency_value,2);
 
-        $data_for_request = $this->handlePaytmRequest($order->deposit_number, $item_amount);
+        $data_for_request = $this->handlePaytmRequest($purchase->deposit_number, $item_amount);
         $paytm_txn_url = 'https://securegw-stage.paytm.in/theia/processTransaction';
         $paramList = $data_for_request['paramList'];
         $checkSum = $data_for_request['checkSum'];
@@ -43,7 +43,7 @@ class PaytmController extends Controller
         return $data->convertAutoData();
     }
 
-    public function handlePaytmRequest($order_id, $amount)
+    public function handlePaytmRequest($purchase_id, $amount)
     {
 		$paydata = $this->getPaymentData();
         // Load all functions of encdec_paytm.php and config-paytm.php
@@ -53,8 +53,8 @@ class PaytmController extends Controller
         $paramList = array();
         // Create an array having all required parameters for creating checksum.
         $paramList["MID"] = $paydata['merchant'];
-        $paramList["ORDER_ID"] = $order_id;
-        $paramList["CUST_ID"] = $order_id;
+        $paramList["ORDER_ID"] = $purchase_id;
+        $paramList["CUST_ID"] = $purchase_id;
         $paramList["INDUSTRY_TYPE_ID"] = $paydata['industry'];
         $paramList["CHANNEL_ID"] = 'WEB';
         $paramList["TXN_AMOUNT"] = $amount;
@@ -358,34 +358,34 @@ class PaytmController extends Controller
     public function paytmCallback(Request $request)
     {
 
-        $order_id = $request['ORDERID'];
-        $order = Deposit::where('deposit_number', $order_id)->first();
+        $purchase_id = $request['ORDERID'];
+        $purchase = Deposit::where('deposit_number', $purchase_id)->first();
 
 		
-        $cancel_url = route('user.deposit.send', $order->deposit_number);
+        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
         if ('TXN_SUCCESS' === $request['STATUS']) {
-            $user = \App\Models\User::findOrFail($order->user_id);
-            $user->balance = $user->balance + ($order->amount);
+            $user = \App\Models\User::findOrFail($purchase->user_id);
+            $user->balance = $user->balance + ($purchase->amount);
             $user->save();
 
             $transaction_id = $request['TXNID'];
-            if (isset($order)) {
-                $order->txnid = $transaction_id;
-                $order->status = 1;
-                $order->method = 'Paytm';
-                $order->update();
+            if (isset($purchase)) {
+                $purchase->txnid = $transaction_id;
+                $purchase->status = 1;
+                $purchase->method = 'Paytm';
+                $purchase->update();
 
-                if ($order->status == 1) {
+                if ($purchase->status == 1) {
                     $transaction = new \App\Models\Transaction;
                     $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                    $transaction->user_id = $order->user_id;
-                    $transaction->amount = $order->amount;
-                    $transaction->user_id = $order->user_id;
-                    $transaction->currency_sign = $order->currency;
-                    $transaction->currency_code = $order->currency_code;
-                    $transaction->currency_value = $order->currency_value;
-                    $transaction->method = $order->method;
-                    $transaction->txnid = $order->txnid;
+                    $transaction->user_id = $purchase->user_id;
+                    $transaction->amount = $purchase->amount;
+                    $transaction->user_id = $purchase->user_id;
+                    $transaction->currency_sign = $purchase->currency;
+                    $transaction->currency_code = $purchase->currency_code;
+                    $transaction->currency_value = $purchase->currency_value;
+                    $transaction->method = $purchase->method;
+                    $transaction->txnid = $purchase->txnid;
                     $transaction->details = 'Payment Deposit';
                     $transaction->type = 'plus';
                     $transaction->save();

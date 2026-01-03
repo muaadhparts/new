@@ -63,14 +63,14 @@ class RazorpayController extends SubscriptionBaseController
         $cancel_url = route('user.payment.cancle');
         $notify_url = route('user.razorpay.notify');
 
-        $orderData = [
+        $purchaseData = [
             'receipt'         => $item_number,
             'amount'          => $item_amount * 100, // 2000 rupees in paise
             'currency'        => 'INR',
             'payment_capture' => 1 // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($orderData);
+        $razorpayOrder = $this->api->order->create($purchaseData);
 
         $razorpayOrderId = $razorpayOrder['id'];
 
@@ -93,7 +93,7 @@ class RazorpayController extends SubscriptionBaseController
         $sub->method = 'Razorpay';
         $sub->save();
 
-        $displayAmount = $amount = $orderData['amount'];
+        $displayAmount = $amount = $purchaseData['amount'];
 
         if ($this->displayCurrency !== 'INR') {
             $url = "https://api.fixer.io/latest?symbols=$this->displayCurrency&base=INR";
@@ -168,17 +168,17 @@ class RazorpayController extends SubscriptionBaseController
 
             $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
 
-            $order_id = $razorpayOrder['receipt'];
+            $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
 
 
 
-            $order = UserSubscription::where('user_id', '=', Session::get('item_number'))
+            $purchase = UserSubscription::where('user_id', '=', Session::get('item_number'))
                 ->orderBy('created_at', 'desc')->first();
 
-            $user = User::findOrFail($order->user_id);
+            $user = User::findOrFail($purchase->user_id);
             $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
-            $subs = Subscription::findOrFail($order->subscription_id);
+            $subs = Subscription::findOrFail($purchase->subscription_id);
 
             $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
@@ -203,7 +203,7 @@ class RazorpayController extends SubscriptionBaseController
 
             $data['txnid'] = $transaction_id;
             $data['status'] = 1;
-            $order->update($data);
+            $purchase->update($data);
 
             $maildata = [
                 'to' => $user->email,
@@ -220,8 +220,8 @@ class RazorpayController extends SubscriptionBaseController
             return redirect()->route('user-dashboard')->with('success', __('Merchant Account Activated Successfully'));
         } else {
             $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
-            $order_id = $razorpayOrder['receipt'];
-            $payment = UserSubscription::where('user_id', '=', $order_id)
+            $purchase_id = $razorpayOrder['receipt'];
+            $payment = UserSubscription::where('user_id', '=', $purchase_id)
                 ->orderBy('created_at', 'desc')->first();
             $payment->delete();
         }

@@ -45,9 +45,9 @@ class MollieController extends SubscriptionBaseController
 
 
      $notify_url = route('user.molly.notify');
-     $order['item_name'] = $subs->title." Plan";
-     $order['item_number'] = Str::random(4).time();
-     $order['item_amount'] = $item_amount;
+     $purchase['item_name'] = $subs->title." Plan";
+     $purchase['item_number'] = Str::random(4).time();
+     $purchase['item_amount'] = $item_amount;
 
      $sub['user_id'] = $user->id;
      $sub['subscription_id'] = $subs->id;
@@ -65,16 +65,16 @@ class MollieController extends SubscriptionBaseController
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => $curr->name,
-                'value' => ''.sprintf('%0.2f', $order['item_amount']).'', // You must send the correct number of decimals, thus we enforce the use of strings
+                'value' => ''.sprintf('%0.2f', $purchase['item_amount']).'', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
-            'description' => $order['item_name'] ,
+            'description' => $purchase['item_name'] ,
             'redirectUrl' => $notify_url,
             ]);
 
         Session::put('payment_id',$payment->id);
         Session::put('molly_data',$sub);
         Session::put('user_data',$input);
-        Session::put('order_data',$order);
+        Session::put('order_data',$purchase);
 
         $payment = Mollie::api()->payments()->get($payment->id);
 
@@ -87,7 +87,7 @@ public function notify(Request $request){
 
         $sub = Session::get('molly_data');
         $input = Session::get('user_data');
-        $order = Session::get('order_data');
+        $purchase = Session::get('order_data');
 
         $success_url = route('user.payment.return');
         $cancel_url = route('user.payment.cancle');
@@ -96,30 +96,30 @@ public function notify(Request $request){
 
         if($payment->status == 'paid'){
 
-            $order = new UserSubscription;
-            $order->user_id = $sub['user_id'];
-            $order->subscription_id = $sub['subscription_id'];
-            $order->title = $sub['title'];
-            $order->currency_sign = $this ->curr->sign;
-            $order->currency_code = $this->curr->name;
-            $order->currency_value = $this->curr->value;
-            $order->price = $sub['price'];
-            $order->days = $sub['days'];
-            $order->allowed_products = $sub['allowed_products'];
-            $order->details = $sub['details'];
-            $order->method = $sub['method'];
-            $order->txnid = $payment->id;
-            $order->status = 1;
+            $purchase = new UserSubscription;
+            $purchase->user_id = $sub['user_id'];
+            $purchase->subscription_id = $sub['subscription_id'];
+            $purchase->title = $sub['title'];
+            $purchase->currency_sign = $this ->curr->sign;
+            $purchase->currency_code = $this->curr->name;
+            $purchase->currency_value = $this->curr->value;
+            $purchase->price = $sub['price'];
+            $purchase->days = $sub['days'];
+            $purchase->allowed_products = $sub['allowed_products'];
+            $purchase->details = $sub['details'];
+            $purchase->method = $sub['method'];
+            $purchase->txnid = $payment->id;
+            $purchase->status = 1;
 
-            $user = User::findOrFail($order->user_id);
+            $user = User::findOrFail($purchase->user_id);
             $package = $user->subscribes()->where('status',1)->orderBy('id','desc')->first();
-            $subs = Subscription::findOrFail($order->subscription_id);
+            $subs = Subscription::findOrFail($purchase->subscription_id);
 
             $today = Carbon::now()->format('Y-m-d');
             $user->is_merchant = 2;
             if(!empty($package))
             {
-                if($package->subscription_id == $order->subscription_id)
+                if($package->subscription_id == $purchase->subscription_id)
                 {
                     $newday = strtotime($today);
                     $lastday = strtotime($user->date);
@@ -142,7 +142,7 @@ public function notify(Request $request){
 
             $input['mail_sent'] = 1;
             $user->update($input);
-            $order->save();
+            $purchase->save();
 
             $maildata = [
                 'to' => $user->email,

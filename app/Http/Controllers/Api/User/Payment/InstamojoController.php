@@ -23,8 +23,8 @@ class InstamojoController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number', $deposit_number)->firstOrFail();
-        $curr = Currency::where('name', '=', $order->currency_code)->firstOrFail();
+        $purchase = Deposit::where('deposit_number', $deposit_number)->firstOrFail();
+        $curr = Currency::where('name', '=', $purchase->currency_code)->firstOrFail();
 
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Instamojo.');
@@ -32,10 +32,10 @@ class InstamojoController extends Controller
 
     
         $settings = Muaadhsetting::findOrFail(1);
-        $item_name = $settings->title . " Order";
-        $user_email = User::findOrFail($order->user_id)->email;
+        $item_name = $settings->title . " Purchase";
+        $user_email = User::findOrFail($purchase->user_id)->email;
 
-        $item_amount = round($order->amount * $order->currency_value,2);
+        $item_amount = round($purchase->amount * $purchase->currency_value,2);
 
         $notify_url = action('Api\User\Payment\InstamojoController@notify');
 
@@ -58,23 +58,23 @@ class InstamojoController extends Controller
             ));
 
             $redirect_url = $response['longurl'];
-            $order['flutter_id'] = $response['id'];
-            $order['amount'] = round($item_amount / $order->currency_value, 2);
-            $order['method'] = $request->method;
-            $order->update();
+            $purchase['flutter_id'] = $response['id'];
+            $purchase['amount'] = round($item_amount / $purchase->currency_value, 2);
+            $purchase['method'] = $request->method;
+            $purchase->update();
 
             // store in transaction table
-            if ($order->status == 1) {
+            if ($purchase->status == 1) {
                 $transaction = new Transaction;
                 $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $order->user_id;
-                $transaction->amount = $order->amount;
-                $transaction->user_id = $order->user_id;
-                $transaction->currency_sign = $order->currency;
-                $transaction->currency_code = $order->currency_code;
-                $transaction->currency_value = $order->currency_value;
-                $transaction->method = $order->method;
-                $transaction->txnid = $order->txnid;
+                $transaction->user_id = $purchase->user_id;
+                $transaction->amount = $purchase->amount;
+                $transaction->user_id = $purchase->user_id;
+                $transaction->currency_sign = $purchase->currency;
+                $transaction->currency_code = $purchase->currency_code;
+                $transaction->currency_value = $purchase->currency_value;
+                $transaction->method = $purchase->method;
+                $transaction->txnid = $purchase->txnid;
                 $transaction->details = 'Payment Deposit';
                 $transaction->type = 'plus';
                 $transaction->save();
@@ -92,17 +92,17 @@ class InstamojoController extends Controller
 
         $data = $request->all();
 
-        $order = Deposit::where('flutter_id', '=', $data['payment_request_id'])->first();
+        $purchase = Deposit::where('flutter_id', '=', $data['payment_request_id'])->first();
 
-        $cancel_url = route('user.deposit.send', $order->deposit_number);
-        $user = \App\Models\User::findOrFail($order->user_id);
-        $user->balance = $user->balance + ($order->amount);
+        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
+        $user = \App\Models\User::findOrFail($purchase->user_id);
+        $user->balance = $user->balance + ($purchase->amount);
         $user->save();
 
-        if (isset($order)) {
-            $order['txnid'] = $data['payment_id'];
-            $order['status'] = 1;
-            $order->update();
+        if (isset($purchase)) {
+            $purchase['txnid'] = $data['payment_id'];
+            $purchase['status'] = 1;
+            $purchase->update();
             return redirect(route('user.success', 1));
         }
         return $cancel_url;

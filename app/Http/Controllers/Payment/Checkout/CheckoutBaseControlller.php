@@ -56,7 +56,7 @@ class CheckoutBaseControlller extends Controller
     protected function prepareOrderData($input, $cart)
     {
         // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
-        $orderTotal = (float)($input['total'] ?? 0) / $this->curr->value;
+        $purchaseTotal = (float)($input['total'] ?? 0) / $this->curr->value;
 
         // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
         $step1 = Session::get('step1', []);
@@ -136,7 +136,7 @@ class CheckoutBaseControlller extends Controller
 
         return [
             'input' => $input,
-            'order_total' => $orderTotal,
+            'order_total' => $purchaseTotal,
         ];
     }
 
@@ -277,7 +277,7 @@ class CheckoutBaseControlller extends Controller
         if ($freeAbove > 0 && $merchantItemsTotal >= $freeAbove) {
             return [
                 'is_free' => true,
-                'reason' => "Order total ({$merchantItemsTotal}) exceeds free shipping threshold ({$freeAbove})"
+                'reason' => "Purchase total ({$merchantItemsTotal}) exceeds free shipping threshold ({$freeAbove})"
             ];
         }
 

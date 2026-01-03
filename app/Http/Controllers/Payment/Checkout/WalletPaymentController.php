@@ -63,14 +63,14 @@ class WalletPaymentController extends CheckoutBaseControlller
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
         $prepared = $this->prepareOrderData($input, $cart);
         $input = $prepared['input'];
-        $orderTotal = $prepared['order_total'];
+        $purchaseTotal = $prepared['order_total'];
 
         $purchase = new Purchase;
         $success_url = route('front.payment.return');
         $input['user_id'] = Auth::check() ? Auth::user()->id : null;
         $input['affilate_users'] = $affilate_users;
         $input['cart'] = $new_cart;
-        $input['pay_amount'] = $orderTotal / $this->curr->value;
+        $input['pay_amount'] = $purchaseTotal / $this->curr->value;
         $input['purchase_number'] = Str::random(4) . time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
         $input['method'] = "Wallet";
@@ -139,7 +139,7 @@ class WalletPaymentController extends CheckoutBaseControlller
 
         // Wallet Payment Logic
         $user = Auth::user();
-        $user->balance = $user->balance - $orderTotal;
+        $user->balance = $user->balance - $purchaseTotal;
         $user->save();
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
@@ -159,7 +159,7 @@ class WalletPaymentController extends CheckoutBaseControlller
         ];
 
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data, $purchase->id);
+        $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
         //Sending Email To Admin
         $data = [

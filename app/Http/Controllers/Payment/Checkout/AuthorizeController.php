@@ -58,7 +58,7 @@ class AuthorizeController extends CheckoutBaseControlller
             return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
-        $item_name = $this->gs->title . " Order";
+        $item_name = $this->gs->title . " Purchase";
         $item_number = Str::random(4) . time();
         $item_amount = $total;
 
@@ -99,15 +99,15 @@ class AuthorizeController extends CheckoutBaseControlller
             $paymentOne->setCreditCard($creditCard);
 
             // Create order information
-            $orderr = new AnetAPI\OrderType();
-            $orderr->setInvoiceNumber($item_number);
-            $orderr->setDescription($item_name);
+            $purchaser = new AnetAPI\OrderType();
+            $purchaser->setInvoiceNumber($item_number);
+            $purchaser->setDescription($item_name);
 
             // Create a TransactionRequestType object and add the previous objects to it
             $transactionRequestType = new AnetAPI\TransactionRequestType();
             $transactionRequestType->setTransactionType("authCaptureTransaction");
             $transactionRequestType->setAmount($item_amount);
-            $transactionRequestType->setOrder($orderr);
+            $transactionRequestType->setOrder($purchaser);
             $transactionRequestType->setPayment($paymentOne);
             // Assemble the complete transaction request
             $requestt = new AnetAPI\CreateTransactionRequest();
@@ -147,13 +147,13 @@ class AuthorizeController extends CheckoutBaseControlller
                         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
                         $prepared = $this->prepareOrderData($input, $cart);
                         $input = $prepared['input'];
-                        $orderTotal = $prepared['order_total'];
+                        $purchaseTotal = $prepared['order_total'];
 
                         $purchase = new Purchase;
                         $input['cart'] = $new_cart;
                         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
                         $input['affilate_users'] = $affilate_users;
-                        $input['pay_amount'] = $orderTotal;
+                        $input['pay_amount'] = $purchaseTotal;
                         $input['purchase_number'] = $item_number;
                         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
                         $input['payment_status'] = "Completed";
@@ -236,7 +236,7 @@ class AuthorizeController extends CheckoutBaseControlller
                         ];
 
                         $mailer = new MuaadhMailer();
-                        $mailer->sendAutoOrderMail($data, $purchase->id);
+                        $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
                         //Sending Email To Admin
                         $data = [

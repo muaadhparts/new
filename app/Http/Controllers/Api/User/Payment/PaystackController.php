@@ -18,30 +18,30 @@ class PaystackController extends Controller
          
          
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number',$deposit_number)->first();
+        $purchase = Deposit::where('deposit_number',$deposit_number)->first();
    
-        $item_amount = $order->pay_amount ;
-        $order['txnid'] = $request->ref_id;
-        $order->status = 1;
-        $order->amount = round($item_amount / $order->currency_value, 2);
-        $order->method = "Paystack";
-        $order->update();
+        $item_amount = $purchase->pay_amount ;
+        $purchase['txnid'] = $request->ref_id;
+        $purchase->status = 1;
+        $purchase->amount = round($item_amount / $purchase->currency_value, 2);
+        $purchase->method = "Paystack";
+        $purchase->update();
 
-        $user = \App\Models\User::findOrFail($order->user_id);
-        $user->balance = $user->balance + ($order->amount);
+        $user = \App\Models\User::findOrFail($purchase->user_id);
+        $user->balance = $user->balance + ($purchase->amount);
         $user->save();
 
-    if ($order->status == 1) {
+    if ($purchase->status == 1) {
             $transaction = new \App\Models\Transaction;
             $transaction->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-            $transaction->user_id = $order->user_id;
-            $transaction->amount = $order->amount;
-            $transaction->user_id = $order->user_id;
-            $transaction->currency_sign = $order->currency;
-            $transaction->currency_code = $order->currency_code;
-            $transaction->currency_value= $order->currency_value;
-            $transaction->method = $order->method;
-            $transaction->txnid = $order->txnid;
+            $transaction->user_id = $purchase->user_id;
+            $transaction->amount = $purchase->amount;
+            $transaction->user_id = $purchase->user_id;
+            $transaction->currency_sign = $purchase->currency;
+            $transaction->currency_code = $purchase->currency_code;
+            $transaction->currency_value= $purchase->currency_value;
+            $transaction->method = $purchase->method;
+            $transaction->txnid = $purchase->txnid;
             $transaction->details = 'Payment Deposit';
             $transaction->type = 'plus';
             $transaction->save();

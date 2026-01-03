@@ -412,7 +412,7 @@ class FrontendController extends Controller
 
     // Display Purchase Tracks
 
-    public function ordertrack(Request $request)
+    public function purchasetrack(Request $request)
     {
         try {
             $rules = [

@@ -188,7 +188,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             // إعداد بيانات الفاتورة
             $paymentId = request('pmid') ?: 0;
             $sessionId = request('sid') ?: null;
-            $orderId = request('oid') ?: null;
+            $purchaseId = request('oid') ?: null;
 
             $curlData = [
                 "NotificationOption" => "ALL",
@@ -206,7 +206,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             ];
 
             $mfObj = new MyFatoorahPayment($this->mfConfig);
-            $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $orderId, $sessionId);
+            $payment = $mfObj->getInvoiceURL($curlData, $paymentId, $purchaseId, $sessionId);
 
             Log::debug('MyFatoorah Invoice Created', [
                 'invoice_url' => $payment['invoiceURL'],
@@ -327,7 +327,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام المبلغ المحفوظ من input_data بدلاً من إعادة الحساب
-        $orderTotal = (float)($input['total'] ?? 0);
+        $purchaseTotal = (float)($input['total'] ?? 0);
 
         // استخراج بيانات الشحن والتغليف من input_data
         if ($this->gs->multiple_shipping == 0) {
@@ -413,7 +413,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input['cart'] = $new_cart;
         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
         $input['affilate_users'] = $affilate_users;
-        $input['pay_amount'] = $orderTotal;
+        $input['pay_amount'] = $purchaseTotal;
         $input['purchase_number'] = Str::random(4) . time();
         $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
         $input['payment_status'] = "Completed";
@@ -503,7 +503,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             'onumber' => $purchase->purchase_number,
         ];
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data, $purchase->id);
+        $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
         //Sending Email To Admin
         $data = [
@@ -527,7 +527,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
      * Example on how to map order data to MyFatoorah
      * You can get the data using the order object in your system
      * 
-     * @param int|string $orderId
+     * @param int|string $purchaseId
      * 
      * @return array
      */
@@ -570,8 +570,8 @@ class MyFatoorahController extends CheckoutBaseControlller {
     public function checkout() {
         try {
             //You can get the data using the order object in your system
-            $orderId = request('oid') ?: 147;
-            $order   = $this->getTestOrderData($orderId);
+            $purchaseId = request('oid') ?: 147;
+            $purchase   = $this->getTestOrderData($purchaseId);
 
             //You can replace this variable with customer Id in your system
             $customerId = request('customerId');
@@ -581,7 +581,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
             //Get the enabled gateways at your MyFatoorah acount to be displayed on checkout page
             $mfObj          = new MyFatoorahPaymentEmbedded($this->mfConfig);
-            $paymentMethods = $mfObj->getCheckoutGateways($order['total'], $order['currency'], config('myfatoorah.register_apple_pay'));
+            $paymentMethods = $mfObj->getCheckoutGateways($purchase['total'], $purchase['currency'], config('myfatoorah.register_apple_pay'));
 
             if (empty($paymentMethods['all'])) {
                 throw new Exception('noPaymentGateways');
@@ -648,7 +648,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 //-----------------------------------------------------------------------------------------------------------------------------------------
     private function changeTransactionStatus($inputData) {
         //1. Check if orderId is valid on your system.
-        $orderId = $inputData['CustomerReference'];
+        $purchaseId = $inputData['CustomerReference'];
 
         //2. Get MyFatoorah invoice id
         $invoiceId = $inputData['InvoiceId'];

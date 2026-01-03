@@ -63,7 +63,7 @@ class PaytmController extends DepositBaseController
 
 	public function notify( Request $request ) {
 
-		$order_id = $request['ORDERID'];
+		$purchase_id = $request['ORDERID'];
 
      
 

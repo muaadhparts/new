@@ -1,9 +1,9 @@
-@if($order->status == 'pending')
+@if($purchase->status == 'pending')
 
     <ul class="process-steps">
         <li class="active">
             <div class="icon">1</div>
-            <div class="title">{{ __('Order Placed') }}</div>
+            <div class="title">{{ __('Purchase Placed') }}</div>
         </li>
         <li class="">
             <div class="icon">2</div>
@@ -19,12 +19,12 @@
         </li>
     </ul>
 
-@elseif($order->status == 'processing')
+@elseif($purchase->status == 'processing')
 
     <ul class="process-steps">
         <li class="active">
             <div class="icon">1</div>
-            <div class="title">{{__('Order Placed')}}</div>
+            <div class="title">{{__('Purchase Placed')}}</div>
         </li>
         <li class="active">
             <div class="icon">2</div>
@@ -41,13 +41,13 @@
     </ul>
 
 
-@elseif($order->status == 'on delivery')
+@elseif($purchase->status == 'on delivery')
 
 
     <ul class="process-steps">
         <li class="active">
             <div class="icon">1</div>
-            <div class="title">{{__('Order Placed')}}</div>
+            <div class="title">{{__('Purchase Placed')}}</div>
         </li>
         <li class="active">
             <div class="icon">2</div>
@@ -63,12 +63,12 @@
         </li>
     </ul>
 
-@elseif($order->status == 'completed')
+@elseif($purchase->status == 'completed')
 
     <ul class="process-steps">
         <li class="active">
             <div class="icon">1</div>
-            <div class="title">{{__('Order Placed')}}</div>
+            <div class="title">{{__('Purchase Placed')}}</div>
         </li>
         <li class="active">
             <div class="icon">2</div>

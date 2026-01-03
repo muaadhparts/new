@@ -8,10 +8,10 @@
     <ul>
       <li class=""><a class="{{ Request::url() == route('rider-dashboard') ? 'active' : '' }}"
           href="{{ route('rider-dashboard') }}">@lang('Dashboard')</a></li>
-      <li class=""><a class="{{ Request::url() == route('rider-orders') ? 'active' : '' }}"
-          href="{{ route('rider-orders') }}">{{ __('Pending Order') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('rider-orders') . '?type=complete' ? 'active' : '' }}"
-          href="{{ route('rider-orders') . '?type=complete' }}">{{ __('Complete Order') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('rider-purchases') ? 'active' : '' }}"
+          href="{{ route('rider-purchases') }}">{{ __('Pending Purchase') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('rider-purchases') . '?type=complete' ? 'active' : '' }}"
+          href="{{ route('rider-purchases') . '?type=complete' }}">{{ __('Complete Purchase') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('rider-service-area') ? 'active' : '' }}"
           href="{{ route('rider-service-area') }}">{{ __('Service Area') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('rider-profile') ? 'active' : '' }}"

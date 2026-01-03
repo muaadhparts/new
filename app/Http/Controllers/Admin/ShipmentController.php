@@ -183,7 +183,7 @@ class ShipmentController extends AdminBaseController
             // Headers
             fputcsv($file, [
                 'Tracking Number',
-                'Order Number',
+                'Purchase Number',
                 'Customer',
                 'Merchant',
                 'Company',

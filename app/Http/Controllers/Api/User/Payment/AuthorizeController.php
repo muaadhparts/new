@@ -26,9 +26,9 @@ class AuthorizeController extends Controller
         $settings = Muaadhsetting::findOrFail(1);
         $item_name = $settings->title . " Deposit";
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number', $deposit_number)->first();
+        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
 
-        $item_amount = $order->amount;
+        $item_amount = $purchase->amount;
 
         $validator = Validator::make($request->all(), [
             'cardNumber' => 'required',
@@ -62,15 +62,15 @@ class AuthorizeController extends Controller
             $paymentOne->setCreditCard($creditCard);
 
             // Create order information
-            $orders = new AnetAPI\OrderType();
-            $orders->setInvoiceNumber($deposit_number);
-            $orders->setDescription($item_name);
+            $purchases = new AnetAPI\OrderType();
+            $purchases->setInvoiceNumber($deposit_number);
+            $purchases->setDescription($item_name);
 
             // Create a TransactionRequestType object and add the previous objects to it
             $transactionRequestType = new AnetAPI\TransactionRequestType();
             $transactionRequestType->setTransactionType("authCaptureTransaction");
             $transactionRequestType->setAmount($item_amount);
-            $transactionRequestType->setOrder($orders);
+            $transactionRequestType->setOrder($purchases);
             $transactionRequestType->setPayment($paymentOne);
             // Assemble the complete transaction request
             $requestt = new AnetAPI\CreateTransactionRequest();
@@ -95,27 +95,27 @@ class AuthorizeController extends Controller
                 if ($tresponse->getresponseCode() == 1) {
 
 
-                    $user = \App\Models\User::findOrFail($order->user_id);
-                    $user->balance = $user->balance + ($order->amount);
+                    $user = \App\Models\User::findOrFail($purchase->user_id);
+                    $user->balance = $user->balance + ($purchase->amount);
                     $user->save();
 
-                    $order['method'] = $request->method;
-                    $order['txnid'] = $tresponse->getTransId();
-                    $order['status'] = 1;
-                    $order->update();
+                    $purchase['method'] = $request->method;
+                    $purchase['txnid'] = $tresponse->getTransId();
+                    $purchase['status'] = 1;
+                    $purchase->update();
 
                     // store in transaction table
-                    if ($order->status == 1) {
+                    if ($purchase->status == 1) {
                         $transaction = new Transaction;
                         $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                        $transaction->user_id = $order->user_id;
-                        $transaction->amount = $order->amount;
-                        $transaction->user_id = $order->user_id;
-                        $transaction->currency_sign = $order->currency;
-                        $transaction->currency_code = $order->currency_code;
-                        $transaction->currency_value = $order->currency_value;
-                        $transaction->method = $order->method;
-                        $transaction->txnid = $order->txnid;
+                        $transaction->user_id = $purchase->user_id;
+                        $transaction->amount = $purchase->amount;
+                        $transaction->user_id = $purchase->user_id;
+                        $transaction->currency_sign = $purchase->currency;
+                        $transaction->currency_code = $purchase->currency_code;
+                        $transaction->currency_value = $purchase->currency_value;
+                        $transaction->method = $purchase->method;
+                        $transaction->txnid = $purchase->txnid;
                         $transaction->details = 'Payment Deposit';
                         $transaction->type = 'plus';
                         $transaction->save();

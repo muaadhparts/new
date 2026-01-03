@@ -64,7 +64,7 @@ class PaystackController extends CheckoutBaseControlller
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
         $prepared = $this->prepareOrderData($input, $cart);
         $input = $prepared['input'];
-        $orderTotal = $prepared['order_total'];
+        $purchaseTotal = $prepared['order_total'];
 
 
 
@@ -73,7 +73,7 @@ class PaystackController extends CheckoutBaseControlller
         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
         $input['cart'] = $new_cart;
         $input['affilate_users'] = $affilate_users;
-        $input['pay_amount'] = $orderTotal;
+        $input['pay_amount'] = $purchaseTotal;
         $input['purchase_number'] = Str::random(4).time();
         $input['wallet_price'] = $request->wallet_price / $this->curr->value;
         $input['payment_status'] = "Completed";
@@ -157,7 +157,7 @@ class PaystackController extends CheckoutBaseControlller
         ];
 
         $mailer = new MuaadhMailer();
-        $mailer->sendAutoOrderMail($data,$purchase->id);
+        $mailer->sendAutoPurchaseMail($data,$purchase->id);
 
         //Sending Email To Admin
         $data = [

@@ -36,10 +36,10 @@ class FlutterWaveController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number',$deposit_number)->first();
-        $curr = Currency::where('name','=',$order->currency_code)->first();
+        $purchase = Deposit::where('deposit_number',$deposit_number)->first();
+        $curr = Currency::where('name','=',$purchase->currency_code)->first();
         $settings = Muaadhsetting::findOrFail(1);
-        $item_amount = $order->amount * $order->currency_value;
+        $item_amount = $purchase->amount * $purchase->currency_value;
 
    
                 $available_currency = array(
@@ -55,8 +55,8 @@ class FlutterWaveController extends Controller
                     return redirect()->back()->with('unsuccess','Invalid Currency For Flutter Wave.');
                     }
 
-            $order['method'] = $request->method;
-            $order->update();
+            $purchase['method'] = $request->method;
+            $purchase->update();
                    
 
         // SET CURL
@@ -64,7 +64,7 @@ class FlutterWaveController extends Controller
         $curl = curl_init();
 
         $currency = $curr->name;
-        $txref = $order->deposit_number; // ensure you generate unique references per transaction.
+        $txref = $purchase->deposit_number; // ensure you generate unique references per transaction.
         $PBFPubKey = $this->public_key; // get your public key from the dashboard.
         $redirect_url = action('Api\User\Payment\FlutterWaveController@notify');
         $payment_plan = ""; // this is only required for recurring payments.
@@ -76,7 +76,7 @@ class FlutterWaveController extends Controller
           CURLOPT_CUSTOMREQUEST => "POST",
           CURLOPT_POSTFIELDS => json_encode([
             'amount' => $item_amount,
-            'customer_email' => User::findOrFail($order->user_id)->email,
+            'customer_email' => User::findOrFail($purchase->user_id)->email,
             'currency' => $currency,
             'txref' => $txref,
             'PBFPubKey' => $PBFPubKey,
@@ -147,25 +147,25 @@ class FlutterWaveController extends Controller
     
             if (($chargeResponsecode == "00" || $chargeResponsecode == "0") && ($paymentStatus == "successful")) {
 
-            $order = Deposit::where('deposit_number',$resp['data']['txref'])->first();
-            $order['txnid'] = $txn;
-            $order['status'] = 1;
-            $user = \App\Models\User::findOrFail($order->user_id);
-            $user->balance = $user->balance + ($order->amount);
+            $purchase = Deposit::where('deposit_number',$resp['data']['txref'])->first();
+            $purchase['txnid'] = $txn;
+            $purchase['status'] = 1;
+            $user = \App\Models\User::findOrFail($purchase->user_id);
+            $user->balance = $user->balance + ($purchase->amount);
             $user->save();
-            $order->update();
+            $purchase->update();
                               // store in transaction table
-                    if ($order->status == 1) {
+                    if ($purchase->status == 1) {
                         $transaction = new Transaction;
                         $transaction->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-                        $transaction->user_id = $order->user_id;
-                        $transaction->amount = $order->amount;
-                        $transaction->user_id = $order->user_id;
-                        $transaction->currency_sign = $order->currency;
-                        $transaction->currency_code = $order->currency_code;
-                        $transaction->currency_value= $order->currency_value;
-                        $transaction->method = $order->method;
-                        $transaction->txnid = $order->txnid;
+                        $transaction->user_id = $purchase->user_id;
+                        $transaction->amount = $purchase->amount;
+                        $transaction->user_id = $purchase->user_id;
+                        $transaction->currency_sign = $purchase->currency;
+                        $transaction->currency_code = $purchase->currency_code;
+                        $transaction->currency_value= $purchase->currency_value;
+                        $transaction->method = $purchase->method;
+                        $transaction->txnid = $purchase->txnid;
                         $transaction->details = 'Payment Deposit';
                         $transaction->type = 'plus';
                         $transaction->save();

@@ -611,11 +611,11 @@ class DeliveryController extends MerchantBaseController
     /**
      * عرض سجل الشحنات للتاجر
      */
-    public function shipmentHistory($orderId)
+    public function shipmentHistory($purchaseId)
     {
         $merchantId = $this->user->id;
 
-        $logs = ShipmentStatusLog::where('purchase_id', $orderId)
+        $logs = ShipmentStatusLog::where('purchase_id', $purchaseId)
             ->where('merchant_id', $merchantId)
             ->orderBy('status_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -710,11 +710,11 @@ class DeliveryController extends MerchantBaseController
     /**
      * الحصول على حالة الشحنة للطلب
      */
-    public function getOrderShipmentStatus($orderId)
+    public function getOrderShipmentStatus($purchaseId)
     {
         $merchantId = $this->user->id;
 
-        $latestStatus = ShipmentStatusLog::where('purchase_id', $orderId)
+        $latestStatus = ShipmentStatusLog::where('purchase_id', $purchaseId)
             ->where('merchant_id', $merchantId)
             ->orderBy('status_date', 'desc')
             ->orderBy('created_at', 'desc')

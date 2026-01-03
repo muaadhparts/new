@@ -58,22 +58,22 @@ class MollieController extends CheckoutBaseControlller
             return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
-        $order['item_name'] = $this->gs->title . " Order";
-        $order['item_number'] = Str::random(4) . time();
-        $order['item_amount'] = $total;
+        $purchase['item_name'] = $this->gs->title . " Purchase";
+        $purchase['item_number'] = Str::random(4) . time();
+        $purchase['item_amount'] = $total;
         $notify_url = route('front.molly.notify');
 
         $payment = Mollie::api()->payments()->create([
             'amount' => [
                 'currency' => $this->curr->name,
-                'value' => '' . sprintf('%0.2f', $order['item_amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
+                'value' => '' . sprintf('%0.2f', $purchase['item_amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
-            'description' => $order['item_name'],
+            'description' => $purchase['item_name'],
             'redirectUrl' => $notify_url,
         ]);
         /** add payment ID to session **/
         Session::put('input_data', $input);
-        Session::put('order_data', $order);
+        Session::put('order_data', $purchase);
         Session::put('order_payment_id', $payment->id);
 
         $payment = Mollie::api()->payments()->get($payment->id);
@@ -96,7 +96,7 @@ class MollieController extends CheckoutBaseControlller
         }
 
         $input = Session::get('input_data');
-        $order_data = Session::get('order_data');
+        $purchase_data = Session::get('order_data');
         $cancel_url = route('front.payment.cancle');
         $input_data = $request->all();
         /** Get the payment ID before session clear **/
@@ -121,14 +121,14 @@ class MollieController extends CheckoutBaseControlller
             // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
             $prepared = $this->prepareOrderData($input, $cart);
             $input = $prepared['input'];
-            $orderTotal = $prepared['order_total'];
+            $purchaseTotal = $prepared['order_total'];
 
             $purchase = new Purchase;
             $input['cart'] = $new_cart;
             $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
             $input['affilate_users'] = $affilate_users;
-            $input['pay_amount'] = $orderTotal;
-            $input['purchase_number'] = $order_data['item_number'];
+            $input['pay_amount'] = $purchaseTotal;
+            $input['purchase_number'] = $purchase_data['item_number'];
             $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
             $input['payment_status'] = "Completed";
             $input['txnid'] = $payment->id;
@@ -211,7 +211,7 @@ class MollieController extends CheckoutBaseControlller
             ];
 
             $mailer = new MuaadhMailer();
-            $mailer->sendAutoOrderMail($data, $purchase->id);
+            $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
             //Sending Email To Admin
             $data = [

@@ -41,20 +41,20 @@
 
                             </thead>
                             <tbody>
-                                @forelse ($purchases as $order)
+                                @forelse ($purchases as $purchase)
                                     <tr>
                                         <td data-label="{{ __('#Order') }}">
-                                            {{ $order->purchase->purchase_number }}
+                                            {{ $purchase->purchase->purchase_number }}
                                         </td>
                                         <td data-label="{{ __('Service Area') }}">
                                             <p>
-                                                {{ $order->purchase->customer_city }}
+                                                {{ $purchase->purchase->customer_city }}
                                             </p>
                                         </td>
 
                                         <td data-label="{{ __('Pickup Point') }}">
                                             <p>
-                                                {{ $order->pickup->location }}
+                                                {{ $purchase->pickup->location }}
                                             </p>
                                         </td>
 
@@ -62,12 +62,12 @@
 
                                             @php
 
-                                                $order_shipping = json_decode($order->purchase->merchant_shipping_id, true) ?? [];
-                                                $order_package = json_decode($order->purchase->merchant_packing_id, true) ?? [];
+                                                $purchase_shipping = json_decode($purchase->purchase->merchant_shipping_id, true) ?? [];
+                                                $purchase_package = json_decode($purchase->purchase->merchant_packing_id, true) ?? [];
 
                                                 // Retrieve merchant-specific shipping and packing IDs
-                                                $merchant_shipping_id = $order_shipping[$order->merchant_id] ?? null;
-                                                $merchant_package_id = $order_package[$order->merchant_id] ?? null;
+                                                $merchant_shipping_id = $purchase_shipping[$purchase->merchant_id] ?? null;
+                                                $merchant_package_id = $purchase_package[$purchase->merchant_id] ?? null;
 
                                                 // Retrieve Shipping model or set to null if not found
                                                 $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
@@ -84,21 +84,21 @@
                                             @endphp
 
                                             {{ \PriceHelper::showAdminCurrencyPrice(
-                                                ($order->purchase->merchantPurchases->where('user_id', $order->merchant_id)->sum('price') + $extra_price) *
-                                                    $order->purchase->currency_value,
-                                                $order->currency_sign,
+                                                ($purchase->purchase->merchantPurchases->where('user_id', $purchase->merchant_id)->sum('price') + $extra_price) *
+                                                    $purchase->purchase->currency_value,
+                                                $purchase->currency_sign,
                                             ) }}
                                         </td>
                                         <td data-label="{{ __('Order Status') }}">
                                             <div class="">
                                                 <span
-                                                    class="px-3 py-2 md-btn rounded {{ $order->status == 'pending' ? 'bg-pending' : 'bg-complete' }} mx-auto">{{ ucwords($order->status) }}
+                                                    class="px-3 py-2 md-btn rounded {{ $purchase->status == 'pending' ? 'bg-pending' : 'bg-complete' }} mx-auto">{{ ucwords($purchase->status) }}
                                                 </span>
                                             </div>
                                         </td>
                                         <td data-label="{{ __('View') }}">
 
-                                            <a href="{{ route('rider-order-details', $order->id) }}" class="view-btn">
+                                            <a href="{{ route('rider-purchase-details', $purchase->id) }}" class="view-btn">
                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <g clip-path="url(#clip0_548_165891)">

@@ -19,19 +19,19 @@ class SslController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $order = Deposit::where('deposit_number', $deposit_number)->first();
-        $curr = Currency::where('name', '=', $order->currency_code)->first();
+        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "BDT") {
             return redirect()->back()->with('unsuccess', 'Please Select BDT Currency For Sslcommerz .');
         }
 
-        $item_amount = $order->amount * $order->currency_value;
+        $item_amount = $purchase->amount * $purchase->currency_value;
         $txnid = "SSLCZ_TXN_" . uniqid();
-        $order->amount = round($item_amount / $order->currency_value, 2);
-        $order['method'] = $request->method;
-        $order['txnid'] = $txnid;
+        $purchase->amount = round($item_amount / $purchase->currency_value, 2);
+        $purchase['method'] = $request->method;
+        $purchase['txnid'] = $txnid;
 
-        $order->update();
+        $purchase->update();
         $paydata = $data->convertAutoData();
 
         $post_data = array();
@@ -41,18 +41,18 @@ class SslController extends Controller
         $post_data['currency'] = $curr->name;
         $post_data['tran_id'] = $txnid;
         $post_data['success_url'] = action('Api\User\Payment\SslController@notify');
-        $post_data['fail_url'] = route('user.deposit.send', $order->deposit_number);
-        $post_data['cancel_url'] = route('user.deposit.send', $order->deposit_number);
+        $post_data['fail_url'] = route('user.deposit.send', $purchase->deposit_number);
+        $post_data['cancel_url'] = route('user.deposit.send', $purchase->deposit_number);
         # $post_data['multi_card_name'] = "mastercard,visacard,amexcard";  # DISABLE TO DISPLAY ALL AVAILABLE
 
         # CUSTOMER INFORMATION
-        // $post_data['cus_name'] = $order['customer_name'];
-        // $post_data['cus_email'] = $order['customer_email'];
-        // $post_data['cus_add1'] = $order['customer_address'];
-        // $post_data['cus_city'] = $order['customer_city'];
+        // $post_data['cus_name'] = $purchase['customer_name'];
+        // $post_data['cus_email'] = $purchase['customer_email'];
+        // $post_data['cus_add1'] = $purchase['customer_address'];
+        // $post_data['cus_city'] = $purchase['customer_city'];
         // $post_data['cus_state'] = '';
-        // $post_data['cus_postcode'] = $order['customer_zip'];
-        // $post_data['cus_country'] = $order['customer_country'];
+        // $post_data['cus_postcode'] = $purchase['customer_zip'];
+        // $post_data['cus_country'] = $purchase['customer_country'];
         // $post_data['cus_phone'] = '';
         // $post_data['cus_fax'] = '';
 
@@ -105,26 +105,26 @@ class SslController extends Controller
     {
 
         $input = $request->all();
-        $order = Deposit::where('txnid', $input['tran_id'])->first();
-        $user = \App\Models\User::findOrFail($order->user_id);
-        $user->balance = $user->balance + ($order->amount);
+        $purchase = Deposit::where('txnid', $input['tran_id'])->first();
+        $user = \App\Models\User::findOrFail($purchase->user_id);
+        $user->balance = $user->balance + ($purchase->amount);
         $user->save();
         if ($input['status'] == 'VALID') {
-            $order->method = 'Stripe';
-            $order->status = 1;
-            $order->update();
+            $purchase->method = 'Stripe';
+            $purchase->status = 1;
+            $purchase->update();
 
-            if ($order->status == 1) {
+            if ($purchase->status == 1) {
                 $transaction = new \App\Models\Transaction;
                 $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $order->user_id;
-                $transaction->amount = $order->amount;
-                $transaction->user_id = $order->user_id;
-                $transaction->currency_sign = $order->currency;
-                $transaction->currency_code = $order->currency_code;
-                $transaction->currency_value = $order->currency_value;
-                $transaction->method = $order->method;
-                $transaction->txnid = $order->txnid;
+                $transaction->user_id = $purchase->user_id;
+                $transaction->amount = $purchase->amount;
+                $transaction->user_id = $purchase->user_id;
+                $transaction->currency_sign = $purchase->currency;
+                $transaction->currency_code = $purchase->currency_code;
+                $transaction->currency_value = $purchase->currency_value;
+                $transaction->method = $purchase->method;
+                $transaction->txnid = $purchase->txnid;
                 $transaction->details = 'Payment Deposit';
                 $transaction->type = 'plus';
                 $transaction->save();

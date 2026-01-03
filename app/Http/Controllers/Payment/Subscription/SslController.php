@@ -44,9 +44,9 @@ class SslController extends SubscriptionBaseController
         
 
      
-        $order['item_name'] = $subs->title." Plan";
-        $order['item_number'] = Str::random(4).time();
-        $order['item_amount'] = $item_amount ;
+        $purchase['item_name'] = $subs->title." Plan";
+        $purchase['item_number'] = Str::random(4).time();
+        $purchase['item_amount'] = $item_amount ;
 
 
         $sub = new UserSubscription;
@@ -70,7 +70,7 @@ class SslController extends SubscriptionBaseController
 
         $post_data['store_id'] = $paydata['store_id'];
         $post_data['store_passwd'] = $paydata['store_password'];
-        $post_data['total_amount'] = $order['item_amount'];
+        $post_data['total_amount'] = $purchase['item_amount'];
         $post_data['currency'] = $subs->currency_code;
         $post_data['tran_id'] = $txnid;
         $post_data['success_url'] = route('user.ssl.notify');

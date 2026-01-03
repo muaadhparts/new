@@ -52,10 +52,11 @@
 									  <thead>
 										 <tr>
 											<th width="5%">{{ __('#') }}</th>
-											<th width="25%">{{ __('Order Number') }}</th>
-											<th width="20%">{{ __('Txn ID') }}</th>
-											<th width="20%">{{ __('Tax') }}</th>
-											<th width="20%">{{ __('Tax Location') }}</th>
+											<th width="20%">{{ __('Order Number') }}</th>
+											<th width="20%">{{ __('Merchant') }}</th>
+											<th width="15%">{{ __('Txn ID') }}</th>
+											<th width="15%">{{ __('Commission') }}</th>
+											<th width="15%">{{ __('Tax Location') }}</th>
 											<th width="10%">{{ __('Created At') }}</th>
 										 </tr>
 									  </thead>
@@ -69,10 +70,13 @@
 											   </a>
 											</td>
 											<td>
+											   {{ $purchase->merchantPurchases->map(fn($mp) => $mp->user?->shop_name ?? $mp->user?->name ?? __('Unknown'))->unique()->implode(', ') ?: __('N/A') }}
+											</td>
+											<td>
 											   {{$purchase->txnId}}
 											</td>
 											<td>
-											   {{$purchase->currency_sign}}{{round($purchase->tax * $purchase->currency_value,2)}}
+											   {{$purchase->currency_sign}}{{round($purchase->commission * $purchase->currency_value,2)}}
 											</td>
 											<td>
 											   {{$purchase->tax_location}}

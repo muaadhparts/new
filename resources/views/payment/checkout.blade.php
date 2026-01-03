@@ -56,7 +56,7 @@
 														aria-orientation="vertical">
 														@foreach($gateways as $gt)
 															@if($gt->type == 'manual')
-																@if($order->dp == 0)
+																@if($purchase->dp == 0)
 																	<a class="nav-link payment " data-val=""
 																		data-show="{{$gt->showForm()}}"
 																		data-form="{{ $gt->showApiCheckoutLink() }}"
@@ -133,7 +133,7 @@
 														<div class="tab-content" id="v-pills-tabContent">
 															@foreach($gateways as $gt)
 																@if($gt->type == 'manual')
-																	@if($order->dp == 0)
+																	@if($purchase->dp == 0)
 																		<div class="tab-pane fade" id="v-pills-tab{{ $gt->id }}"
 																			role="tabpanel"
 																			aria-labelledby="v-pills-tab{{ $gt->id }}-tab">
@@ -155,7 +155,7 @@
 											<div class="col-lg-12 mt-3">
 												<div class="bottom-area">
 													<input type="hidden"
-														value="{{ $order->pay_amount * $order->currency_value }}"
+														value="{{ $purchase->pay_amount * $purchase->currency_value }}"
 														id="grandTotal">
 													<button type="submit" id="final-btn"
 														class="m-btn m-btn--primary m-btn--lg">{{__('Checkout')}}</button>
@@ -166,9 +166,9 @@
 								</div>
 							</div>
 						</div>
-						<input type="hidden" id="preamount" value="{{ $order->pay_amount * $order->currency_value }}">
-						<input type="hidden" name="purchase_number" value="{{ $order->purchase_number }}">
-						<input type="hidden" name="email" value="{{ $order->customer_email }}">
+						<input type="hidden" id="preamount" value="{{ $purchase->pay_amount * $purchase->currency_value }}">
+						<input type="hidden" name="purchase_number" value="{{ $purchase->purchase_number }}">
+						<input type="hidden" name="email" value="{{ $purchase->customer_email }}">
 						<input type="hidden" name="ref_id" id="ref_id" value="">
 					</form>
 				</div>
@@ -182,11 +182,11 @@
 								</p>
 								<p>
 									@if($gs->currency_format == 0)
-																	<span id="total-cost">{{ $order->currency_sign }}<span class="total_price"> {{
-										$order->pay_amount * $order->currency_value }}</span></span>
+																	<span id="total-cost">{{ $purchase->currency_sign }}<span class="total_price"> {{
+										$purchase->pay_amount * $purchase->currency_value }}</span></span>
 									@else
-																	<span id="total-cost"> <span class="total_price"> {{ $order->pay_amount *
-										$order->currency_value }}</span>{{ $order->currency_sign }}</span>
+																	<span id="total-cost"> <span class="total_price"> {{ $purchase->pay_amount *
+										$purchase->currency_value }}</span>{{ $purchase->currency_sign }}</span>
 									@endif
 								</p>
 							</div>
@@ -221,7 +221,7 @@
 		$($('a.payment:first').attr('href')).addClass('active').addClass('show');
 	</script>
 	@php
-		$curr = App\Models\Currency::where('sign', '=', $order->currency_sign)->firstOrFail();
+		$curr = App\Models\Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
 	@endphp
 
 	<script type="text/javascript">

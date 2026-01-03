@@ -53,7 +53,7 @@ class PaytmController extends Controller
         return $data->convertAutoData();
     }
 
-    public function handlePaytmRequest($order_id, $amount)
+    public function handlePaytmRequest($purchase_id, $amount)
     {
         $paydata = $this->getPaymentData();
 
@@ -64,8 +64,8 @@ class PaytmController extends Controller
         $paramList = array();
         // Create an array having all required parameters for creating checksum.
         $paramList["MID"] = $paydata['merchant'];
-        $paramList["ORDER_ID"] = $order_id;
-        $paramList["CUST_ID"] = $order_id;
+        $paramList["ORDER_ID"] = $purchase_id;
+        $paramList["CUST_ID"] = $purchase_id;
         $paramList["INDUSTRY_TYPE_ID"] = $paydata['industry'];
         $paramList["CHANNEL_ID"] = 'WEB';
         $paramList["TXN_AMOUNT"] = $amount;

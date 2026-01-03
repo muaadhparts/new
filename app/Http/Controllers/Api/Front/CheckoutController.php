@@ -133,19 +133,19 @@ class CheckoutController extends Controller
             }
 
             $t_cart = new Cart($cart);
-            $orderCalculate = PriceHelper::getOrderTotal($input, $t_cart);
+            $purchaseCalculate = PriceHelper::getPurchaseTotal($input, $t_cart);
 
-            if (isset($orderCalculate['success']) && $orderCalculate['success'] == false) {
-                return redirect()->back()->with('unsuccess', $orderCalculate['message']);
+            if (isset($purchaseCalculate['success']) && $purchaseCalculate['success'] == false) {
+                return redirect()->back()->with('unsuccess', $purchaseCalculate['message']);
             }
 
             if ($gs->multiple_shipping == 0) {
-                $orderTotal          = $orderCalculate['total_amount'];
-                $shipping            = $orderCalculate['shipping'];
-                $packeing            = $orderCalculate['packeing'];
-                $merchant_shipping_ids = $orderCalculate['merchant_shipping_ids'];
-                $merchant_packing_ids  = $orderCalculate['merchant_packing_ids'];
-                $merchant_ids          = $orderCalculate['merchant_ids'];
+                $purchaseTotal          = $purchaseCalculate['total_amount'];
+                $shipping            = $purchaseCalculate['shipping'];
+                $packeing            = $purchaseCalculate['packeing'];
+                $merchant_shipping_ids = $purchaseCalculate['merchant_shipping_ids'];
+                $merchant_packing_ids  = $purchaseCalculate['merchant_packing_ids'];
+                $merchant_ids          = $purchaseCalculate['merchant_ids'];
 
                 $input['shipping_title']     = @$shipping->title;
                 $input['merchant_shipping_id'] = @$shipping->id;
@@ -158,14 +158,14 @@ class CheckoutController extends Controller
                 $input['merchant_ids']         = $merchant_ids;
             } else {
                 // multi shipping
-                $orderTotal          = $orderCalculate['total_amount'];
-                $shipping            = $orderCalculate['shipping'];
-                $packeing            = $orderCalculate['packeing'];
-                $merchant_shipping_ids = $orderCalculate['merchant_shipping_ids'];
-                $merchant_packing_ids  = $orderCalculate['merchant_packing_ids'];
-                $merchant_ids          = $orderCalculate['merchant_ids'];
-                $shipping_cost       = $orderCalculate['shipping_cost'];
-                $packing_cost        = $orderCalculate['packing_cost'];
+                $purchaseTotal          = $purchaseCalculate['total_amount'];
+                $shipping            = $purchaseCalculate['shipping'];
+                $packeing            = $purchaseCalculate['packeing'];
+                $merchant_shipping_ids = $purchaseCalculate['merchant_shipping_ids'];
+                $merchant_packing_ids  = $purchaseCalculate['merchant_packing_ids'];
+                $merchant_ids          = $purchaseCalculate['merchant_ids'];
+                $shipping_cost       = $purchaseCalculate['shipping_cost'];
+                $packing_cost        = $purchaseCalculate['packing_cost'];
 
                 $input['shipping_title']     = $merchant_shipping_ids;
                 $input['merchant_shipping_id'] = $merchant_shipping_ids;
@@ -188,7 +188,7 @@ class CheckoutController extends Controller
             $input['currency_name']  = $curr->name;
             $input['currency_sign']  = $curr->sign;
             $input['currency_value'] = $curr->value;
-            $input['pay_amount']     = $orderTotal / $curr->value;
+            $input['pay_amount']     = $purchaseTotal / $curr->value;
             $input['purchase_number']   = Str::random(4) . time();
             $input['wallet_price']   = ($request->wallet_price ?? 0) / $curr->value;
 
@@ -273,7 +273,7 @@ class CheckoutController extends Controller
                 'onumber' => $purchase->purchase_number,
             ];
             $mailer = new MuaadhMailer();
-            $mailer->sendAutoOrderMail($data, $purchase->id);
+            $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
             // Email للأدمن
             $ps = Pagesetting::find(1);
@@ -425,7 +425,7 @@ class CheckoutController extends Controller
     }
 
     //*** GET Request
-    public function orderDetails(Request $request)
+    public function purchaseDetails(Request $request)
     {
         try {
             if ($request->has('purchase_number')) {

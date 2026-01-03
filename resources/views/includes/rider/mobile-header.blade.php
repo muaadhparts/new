@@ -28,26 +28,26 @@
             <span>@lang('Dashboard')</span>
         </a>
     </li>
-    <li class="{{ Request::routeIs('rider-orders') && !Request::query('type') ? 'active' : '' }}">
-        <a href="{{ route('rider-orders') }}">
+    <li class="{{ Request::routeIs('rider-purchases') && !Request::query('type') ? 'active' : '' }}">
+        <a href="{{ route('rider-purchases') }}">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M9 12C12.309 12 15 9.309 15 6C15 2.691 12.309 0 9 0C5.691 0 3 2.691 3 6C3 9.309 5.691 12 9 12ZM9 2C11.206 2 13 3.794 13 6C13 8.206 11.206 10 9 10C6.794 10 5 8.206 5 6C5 3.794 6.794 2 9 2ZM21 19H23V24H12V19H14V22H21V19ZM5 14H9.692L8.769 16H5C3.346 16 2 17.346 2 19V24H0V19C0 16.243 2.243 14 5 14ZM24 16C24 17.105 23.169 18 22.143 18H21.524C20.498 18 19.667 17.105 19.667 16C19.667 17.105 18.836 18 17.81 18H17.191C16.165 18 15.334 17.105 15.334 16C15.334 17.105 14.503 18 13.477 18H12.858C11.832 18 11.001 17.105 11.001 16L12.239 13H22.763L24 16Z"
                     fill="#1F0300" />
             </svg>
     
-            <span>@lang('Pending Order')</span>
+            <span>@lang('Pending Purchase')</span>
         </a>
     </li>
-    <li class="{{ Request::fullUrlIs(route('rider-orders') . '?type=complete') ? 'active' : '' }}">
-        <a href="{{ route('rider-orders') }}?type=complete">
+    <li class="{{ Request::fullUrlIs(route('rider-purchases') . '?type=complete') ? 'active' : '' }}">
+        <a href="{{ route('rider-purchases') }}?type=complete">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path
                     d="M15.0004 8V5C15.0004 2.79086 13.2095 1 11.0004 1C8.79123 1 7.00037 2.79086 7.00037 5V8M2.59237 9.35196L1.99237 15.752C1.82178 17.5717 1.73648 18.4815 2.03842 19.1843C2.30367 19.8016 2.76849 20.3121 3.35839 20.6338C4.0299 21 4.94374 21 6.77142 21H15.2293C17.057 21 17.9708 21 18.6423 20.6338C19.2322 20.3121 19.6971 19.8016 19.9623 19.1843C20.2643 18.4815 20.179 17.5717 20.0084 15.752L19.4084 9.35197C19.2643 7.81535 19.1923 7.04704 18.8467 6.46616C18.5424 5.95458 18.0927 5.54511 17.555 5.28984C16.9444 5 16.1727 5 14.6293 5L7.37142 5C5.82806 5 5.05638 5 4.44579 5.28984C3.90803 5.54511 3.45838 5.95458 3.15403 6.46616C2.80846 7.04704 2.73643 7.81534 2.59237 9.35196Z"
                     stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
     
-            <span>@lang('Complete Order')</span>
+            <span>@lang('Complete Purchase')</span>
         </a>
     </li>
     <li class="{{ Request::url() == route('rider-service-area') ? 'active' : '' }}">

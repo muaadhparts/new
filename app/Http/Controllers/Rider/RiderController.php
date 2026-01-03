@@ -181,7 +181,7 @@ class RiderController extends RiderBaseController
             ->first();
 
         if (!$data) {
-            return redirect()->route('rider-orders')->with('unsuccess', __('Order not found'));
+            return redirect()->route('rider-purchases')->with('unsuccess', __('Purchase not found'));
         }
 
         return view('rider.order_details', compact('data'));
@@ -192,7 +192,7 @@ class RiderController extends RiderBaseController
         $data = DeliveryRider::where('rider_id', $this->rider->id)->where('id', $id)->first();
         $data->status = 'accepted';
         $data->save();
-        return back()->with('success', __('Successfully accepted this order'));
+        return back()->with('success', __('Successfully accepted this purchase'));
     }
 
     public function orderReject($id)
@@ -200,7 +200,7 @@ class RiderController extends RiderBaseController
         $data = DeliveryRider::where('rider_id', $this->rider->id)->where('id', $id)->first();
         $data->status = 'rejected';
         $data->save();
-        return back()->with('success', __('Successfully rejected this order'));
+        return back()->with('success', __('Successfully rejected this purchase'));
     }
 
     public function orderComplete($id)
@@ -208,6 +208,6 @@ class RiderController extends RiderBaseController
         $data = DeliveryRider::where('rider_id', $this->rider->id)->where('id', $id)->first();
         $data->status = 'delivered';
         $data->save();
-        return back()->with('success', __('Successfully Delivered this order'));
+        return back()->with('success', __('Successfully Delivered this purchase'));
     }
 }

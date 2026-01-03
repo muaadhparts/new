@@ -59,9 +59,9 @@ class InstamojoController extends CheckoutBaseControlller
             return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
-        $order['item_name'] = $this->gs->title . " Order";
-        $order['item_number'] = Str::random(4) . time();
-        $order['item_amount'] = $total;
+        $purchase['item_name'] = $this->gs->title . " Purchase";
+        $purchase['item_number'] = Str::random(4) . time();
+        $purchase['item_amount'] = $total;
         $cancel_url = route('front.payment.cancle');
         $notify_url = route('front.instamojo.notify');
 
@@ -77,7 +77,7 @@ class InstamojoController extends CheckoutBaseControlller
 
         try {
             $response = $api->paymentRequestCreate(array(
-                "purpose" => $order['item_name'],
+                "purpose" => $purchase['item_name'],
                 "amount" => $total,
                 "send_email" => true,
                 "email" => $request->customer_email,
@@ -86,7 +86,7 @@ class InstamojoController extends CheckoutBaseControlller
             $redirect_url = $response['longurl'];
             /** add payment ID to session **/
             Session::put('input_data', $input);
-            Session::put('order_data', $order);
+            Session::put('order_data', $purchase);
             Session::put('order_payment_id', $response['id']);
 
             return redirect($redirect_url);
@@ -110,7 +110,7 @@ class InstamojoController extends CheckoutBaseControlller
         }
 
         $input = Session::get('input_data');
-        $order_data = Session::get('order_data');
+        $purchase_data = Session::get('order_data');
         $cancel_url = route('front.payment.cancle');
         $input_data = $request->all();
 
@@ -140,14 +140,14 @@ class InstamojoController extends CheckoutBaseControlller
             // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
             $prepared = $this->prepareOrderData($input, $cart);
             $input = $prepared['input'];
-            $orderTotal = $prepared['order_total'];
+            $purchaseTotal = $prepared['order_total'];
 
             $purchase = new Purchase;
             $input['cart'] = $new_cart;
             $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
             $input['affilate_users'] = $affilate_users;
-            $input['pay_amount'] = $orderTotal;
-            $input['purchase_number'] = $order_data['item_number'];
+            $input['pay_amount'] = $purchaseTotal;
+            $input['purchase_number'] = $purchase_data['item_number'];
             $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
             $input['payment_status'] = "Completed";
             $input['txnid'] = $input_data['payment_id'];
@@ -228,7 +228,7 @@ class InstamojoController extends CheckoutBaseControlller
             ];
 
             $mailer = new MuaadhMailer();
-            $mailer->sendAutoOrderMail($data, $purchase->id);
+            $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
             //Sending Email To Admin
             $data = [

@@ -1322,7 +1322,7 @@ table.dataTable thead .sorting_desc_disabled::after {
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="logo">
+                           <img src="{{ asset('assets/images/'.$gs\->invoice_logo) }}" alt="logo">
                         </div>
                     </div>
                 </div>
@@ -1333,33 +1333,33 @@ table.dataTable thead .sorting_desc_disabled::after {
                     <div class="invoice__orderDetails">
 
                         <p><strong>{{ __('Order Details') }} </strong></p>
-                        <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $order->id) }}</span><br>
-                        <span><strong>{{ __('Order Date') }} :</strong> {{ date('d-M-Y',strtotime($order->created_at)) }}</span><br>
-                        <span><strong>{{  __('Order ID')}} :</strong> {{ $order->purchase_number }}</span><br>
-                        @if($order->dp == 0)
+                        <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $purchase\->id) }}</span><br>
+                        <span><strong>{{ __('Order Date') }} :</strong> {{ date('d-M-Y',strtotime($purchase\->created_at)) }}</span><br>
+                        <span><strong>{{  __('Order ID')}} :</strong> {{ $purchase\->purchase_number }}</span><br>
+                        @if($purchase\->dp == 0)
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
-                            @if($order->shipping == "pickup")
+                            @if($purchase\->shipping == "pickup")
                             {{ __('Pick Up') }}
                             @else
                             {{ __('Ship To Address') }}
                             @endif
                         </span><br>
                         @endif
-                        <span> <strong>{{ __('Payment Method') }} :</strong> {{$order->method}}</span><br>
-                        <span><strong>{{ __('Payment Status') }} :</strong> {{ $order->payment_status == 'Pending' ? "Unpaid":"Paid" }}</span>
+                        <span> <strong>{{ __('Payment Method') }} :</strong> {{$purchase\->method}}</span><br>
+                        <span><strong>{{ __('Payment Status') }} :</strong> {{ $purchase\->payment_status == 'Pending' ? "Unpaid":"Paid" }}</span>
                     </div>
                 </div>
             </div>
 
             <div class="invoice__metaInfo" style="width: 50%">
-                @if($order->dp == 0)
+                @if($purchase\->dp == 0)
                 <div class="col-lg-6">
                         <div class="invoice__orderDetails">
                             <p><strong>{{ __('Shipping Details') }}</strong></p>
-                           <span><strong>{{ __('Customer Name') }}</strong>: {{ $order->customer_name }}</span><br>
-                           <span><strong>{{ __('Address') }}</strong>: {{ $order->customer_address }}</span><br>
-                           <span><strong>{{ __('City') }}</strong>: {{ $order->customer_city }}</span><br>
-                           <span><strong>{{ __('Country') }}</strong>: {{ $order->customer_country }}</span>
+                           <span><strong>{{ __('Customer Name') }}</strong>: {{ $purchase\->customer_name }}</span><br>
+                           <span><strong>{{ __('Address') }}</strong>: {{ $purchase\->customer_address }}</span><br>
+                           <span><strong>{{ __('City') }}</strong>: {{ $purchase\->customer_city }}</span><br>
+                           <span><strong>{{ __('Country') }}</strong>: {{ $purchase\->customer_country }}</span>
                         </div>
                 </div>
                 @endif
@@ -1370,10 +1370,10 @@ table.dataTable thead .sorting_desc_disabled::after {
                 <div class="col-lg-6">
                         <div class="invoice__orderDetails">
                             <p><strong>{{ __('Billing Details') }}</strong></p>
-                            <span><strong>{{ __('Customer Name') }}</strong>: {{ $order->customer_name}}</span><br>
-                            <span><strong>{{ __('Address') }}</strong>: {{ $order->customer_address }}</span><br>
-                            <span><strong>{{ __('City') }}</strong>: {{ $order->customer_city }}</span><br>
-                            <span><strong>{{ __('Country') }}</strong>: {{ $order->customer_country }}</span>
+                            <span><strong>{{ __('Customer Name') }}</strong>: {{ $purchase\->customer_name}}</span><br>
+                            <span><strong>{{ __('Address') }}</strong>: {{ $purchase\->customer_address }}</span><br>
+                            <span><strong>{{ __('City') }}</strong>: {{ $purchase\->customer_city }}</span><br>
+                            <span><strong>{{ __('Country') }}</strong>: {{ $purchase\->customer_country }}</span>
                         </div>
                 </div>
             </div>
@@ -1427,17 +1427,17 @@ table.dataTable thead .sorting_desc_disabled::after {
                                                 </p>
                                                 @endif
                                                 <p>
-                                                    {{ __('Price') }} : {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['item_price'] * $order->currency_value),$order->currency_sign) }}
+                                                    {{ __('Price') }} : {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['item_price'] * $purchase\->currency_value),$purchase\->currency_sign) }}
                                                 </p>
                                                <p>
                                                 {{ __('Qty') }} : {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
                                                </p>
                                             </td>
 
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] * $order->currency_value),$order->currency_sign) }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] * $purchase\->currency_value),$purchase\->currency_sign) }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
                                             @php
-                                            $subtotal += round($catalogItem['price'] * $order->currency_value, 2);
+                                            $subtotal += round($catalogItem['price'] * $purchase\->currency_value, 2);
                                             @endphp
 
                                         </tr>
@@ -1447,71 +1447,71 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         <tr class="semi-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Subtotal') }}</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($subtotal,$order->currency_sign) }}</td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($subtotal,$purchase\->currency_sign) }}</td>
 
                                         </tr>
-                                        @if($order->shipping_cost != 0)
+                                        @if($purchase\->shipping_cost != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td>
                                                 <strong>
-                                                    @if($order->shipping_title)
+                                                    @if($purchase\->shipping_title)
                                                         @php
-                                                            $shippingTitles = is_string($order->shipping_title) ? json_decode($order->shipping_title, true) : $order->shipping_title;
+                                                            $shippingTitles = is_string($purchase\->shipping_title) ? json_decode($purchase\->shipping_title, true) : $purchase\->shipping_title;
                                                         @endphp
                                                         @if(is_array($shippingTitles))
                                                             @foreach($shippingTitles as $merchantId => $shippingId)
                                                                 @php
                                                                     $shipping = \App\Models\Shipping::find($shippingId);
                                                                 @endphp
-                                                                {{ $shipping ? $shipping->title : __('Shipping') }}
-                                                                @if(!$loop->last), @endif
+                                                                {{ $shipping ? $shipping\->title : __('Shipping') }}
+                                                                @if(!$loop\->last), @endif
                                                             @endforeach
                                                         @else
-                                                            {{ $order->shipping_title }}
+                                                            {{ $purchase\->shipping_title }}
                                                         @endif
                                                     @else
                                                         {{ __('Shipping Cost') }}
                                                     @endif
-                                                    ({{$order->currency_sign}})
+                                                    ({{$purchase\->currency_sign}})
                                                 </strong>
                                             </td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost,$order->currency_sign) }}</td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase\->shipping_cost,$purchase\->currency_sign) }}</td>
                                         </tr>
                                         @endif
 
-                                        @if($order->packing_cost != 0)
+                                        @if($purchase\->packing_cost != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('Packaging Cost') }}({{$order->currency_sign}})</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->packing_cost,$order->currency_sign) }}</td>
+                                            <td><strong>{{ __('Packaging Cost') }}({{$purchase\->currency_sign}})</strong></td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase\->packing_cost,$purchase\->currency_sign) }}</td>
                                         </tr>
                                         @endif
 
-                                        @if($order->tax != 0)
+                                        @if($purchase\->tax != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('TAX') }}({{$order->currency_sign}})</strong></td>
+                                            <td><strong>{{ __('TAX') }}({{$purchase\->currency_sign}})</strong></td>
 
                                             @php
-                                            $tax = ($subtotal / 100) * $order->tax;
+                                            $tax = ($subtotal / 100) * $purchase\->tax;
                                             @endphp
 
-                                            <td>{{  \PriceHelper::showOrderCurrencyPrice($tax,$order->currency_sign)  }}</td>
+                                            <td>{{  \PriceHelper::showOrderCurrencyPrice($tax,$purchase\->currency_sign)  }}</td>
                                         </tr>
 
                                         @endif
-                                        @if($order->discount_amount != null)
+                                        @if($purchase\->discount_amount != null)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('Discount Amount') }}({{$order->currency_sign}})</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($order->discount_amount,$order->currency_sign) }}</td>
+                                            <td><strong>{{ __('Discount Amount') }}({{$purchase\->currency_sign}})</strong></td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase\->discount_amount,$purchase\->currency_sign) }}</td>
                                         </tr>
                                         @endif
                                         <tr class="final-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Total') }}</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($order->pay_amount + $order->wallet_price)  * $order->currency_value),$order->currency_sign) }}</td>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($purchase\->pay_amount + $purchase\->wallet_price)  * $purchase\->currency_value),$purchase\->currency_sign) }}</td>
                                         </tr>
 
                                     </tbody>
@@ -1522,6 +1522,6 @@ table.dataTable thead .sorting_desc_disabled::after {
                     </div>
                 </div>
         </div>
-<!-- ./wrapper -->
+<!-- ./wrapper -\->
 </body>
 </html>

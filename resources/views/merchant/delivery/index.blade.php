@@ -99,8 +99,8 @@
                                 $customerChoice = $data->getCustomerShippingChoice($merchantId);
 
                                 // Calculate price
-                                $order = $data;
-                                $price = $order->merchantPurchases()->where('user_id', $merchantId)->sum('price');
+                                $purchase = $data;
+                                $price = $purchase->merchantPurchases()->where('user_id', $merchantId)->sum('price');
                             @endphp
                             <tr>
                                 <!-- Purchase Number -->

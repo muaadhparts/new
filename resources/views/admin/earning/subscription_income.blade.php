@@ -52,33 +52,35 @@
 									  <thead>
 										 <tr>
 											<th width="5%">{{ __('#') }}</th>
-											<th width="25%">{{ __('Order Number') }}</th>
-											<th width="20%">{{ __('Txn ID') }}</th>
-											<th width="20%">{{ __('Tax') }}</th>
-											<th width="20%">{{ __('Tax Location') }}</th>
+											<th width="20%">{{ __('Merchant') }}</th>
+											<th width="25%">{{ __('Subscription') }}</th>
+											<th width="15%">{{ __('Txn ID') }}</th>
+											<th width="15%">{{ __('Price') }}</th>
+											<th width="10%">{{ __('Method') }}</th>
 											<th width="10%">{{ __('Created At') }}</th>
 										 </tr>
 									  </thead>
 									  <tbody>
-										 @foreach ($orders as $key => $order)
+										 @foreach ($subscriptions as $key => $subscription)
 										 <tr>
 											<td>{{$key+1}}</td>
 											<td>
-											   <a  href="{{route('admin-purchase-invoice',$order->id)}}">
-											   {{$order->purchase_number}}
-											   </a>
+											   {{ $subscription->user?->shop_name ?? $subscription->user?->name ?? __('N/A') }}
 											</td>
 											<td>
-											   {{$order->txnId}}
+											   {{ $subscription->title ?? __('N/A') }}
 											</td>
 											<td>
-											   {{$order->currency_sign}}{{round($order->tax * $order->currency_value,2)}}
+											   {{ $subscription->txnid ?? __('N/A') }}
 											</td>
 											<td>
-											   {{$order->tax_location}}
+											   {{ $subscription->currency_sign ?? $currency->sign ?? '' }}{{ number_format($subscription->price, 2) }}
 											</td>
 											<td>
-											   {{$order->created_at->format('d-m-Y')}}
+											   {{ ucfirst($subscription->method ?? 'N/A') }}
+											</td>
+											<td>
+											   {{$subscription->created_at->format('d-m-Y')}}
 											</td>
 										 </tr>
 										 @endforeach

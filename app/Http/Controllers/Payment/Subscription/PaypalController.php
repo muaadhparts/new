@@ -70,9 +70,9 @@ class PaypalController extends SubscriptionBaseController
         $sub['details'] = $subs->details;
         $sub['method'] = 'Paypal';
 
-        $order['item_name'] = $subs->title . " Plan";
-        $order['item_number'] = Str::random(4) . time();
-        $order['item_amount'] = $item_amount;
+        $purchase['item_name'] = $subs->title . " Plan";
+        $purchase['item_number'] = Str::random(4) . time();
+        $purchase['item_amount'] = $item_amount;
         $cancel_url = route('user.payment.cancle');
         $notify_url = route('user.paypal.notify');
 
@@ -125,29 +125,29 @@ class PaypalController extends SubscriptionBaseController
 
         if ($response->isSuccessful()) {
 
-            $order = new UserSubscription;
-            $order->user_id = $paypal_data['user_id'];
-            $order->subscription_id = $paypal_data['subscription_id'];
-            $order->title = $paypal_data['title'];
-            $order->currency_sign = $this->curr->sign;
-            $order->currency_code = $this->curr->name;
-            $order->currency_value = $this->curr->value;
-            $order->price = $paypal_data['price'];
-            $order->days = $paypal_data['days'];
-            $order->allowed_products = $paypal_data['allowed_products'];
-            $order->details = $paypal_data['details'];
-            $order->method = $paypal_data['method'];
-            $order->txnid = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
-            $order->status = 1;
+            $purchase = new UserSubscription;
+            $purchase->user_id = $paypal_data['user_id'];
+            $purchase->subscription_id = $paypal_data['subscription_id'];
+            $purchase->title = $paypal_data['title'];
+            $purchase->currency_sign = $this->curr->sign;
+            $purchase->currency_code = $this->curr->name;
+            $purchase->currency_value = $this->curr->value;
+            $purchase->price = $paypal_data['price'];
+            $purchase->days = $paypal_data['days'];
+            $purchase->allowed_products = $paypal_data['allowed_products'];
+            $purchase->details = $paypal_data['details'];
+            $purchase->method = $paypal_data['method'];
+            $purchase->txnid = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
+            $purchase->status = 1;
 
-            $user = User::findOrFail($order->user_id);
+            $user = User::findOrFail($purchase->user_id);
             $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
-            $subs = Subscription::findOrFail($order->subscription_id);
+            $subs = Subscription::findOrFail($purchase->subscription_id);
 
             $today = Carbon::now()->format('Y-m-d');
             $user->is_merchant = 2;
             if (!empty($package)) {
-                if ($package->subscription_id == $order->subscription_id) {
+                if ($package->subscription_id == $purchase->subscription_id) {
                     $newday = strtotime($today);
                     $lastday = strtotime($user->date);
                     $secs = $lastday - $newday;
@@ -164,7 +164,7 @@ class PaypalController extends SubscriptionBaseController
 
             $input['mail_sent'] = 1;
             $user->update($input);
-            $order->save();
+            $purchase->save();
 
             $maildata = [
                 'to' => $user->email,

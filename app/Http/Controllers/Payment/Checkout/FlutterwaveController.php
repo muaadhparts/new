@@ -73,24 +73,24 @@ class FlutterwaveController extends CheckoutBaseControlller
             return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
-        $order['item_name'] = $this->gs->title . " Order";
-        $order['item_number'] = Str::random(4) . time();
-        $order['item_amount'] = $total;
+        $purchase['item_name'] = $this->gs->title . " Purchase";
+        $purchase['item_number'] = Str::random(4) . time();
+        $purchase['item_amount'] = $total;
         $cancel_url = route('front.payment.cancle');
         $notify_url = route('front.flutter.notify');
 
         Session::put('input_data', $input);
-        Session::put('order_data', $order);
-        Session::put('order_payment_id', $order['item_number']);
+        Session::put('order_data', $purchase);
+        Session::put('order_payment_id', $purchase['item_number']);
 
         // SET CURL
 
         $curl = curl_init();
 
         $customer_email = $request->customer_email;
-        $amount = $order['item_amount'];
+        $amount = $purchase['item_amount'];
         $currency = $this->curr->name;
-        $txref = $order['item_number']; // ensure you generate unique references per transaction.
+        $txref = $purchase['item_number']; // ensure you generate unique references per transaction.
         $PBFPubKey = $this->public_key; // get your public key from the dashboard.
         $redirect_url = $notify_url;
         $payment_plan = ""; // this is only required for recurring payments.
@@ -154,7 +154,7 @@ class FlutterwaveController extends CheckoutBaseControlller
             return redirect()->route('front.cart')->with('success', __('Payment Cancelled!'));
         }
 
-        $order_data = Session::get('order_data');
+        $purchase_data = Session::get('order_data');
 
         // Get cart and filter for merchant
         $oldCart = Session::get('cart');
@@ -218,14 +218,14 @@ class FlutterwaveController extends CheckoutBaseControlller
                         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
                         $prepared = $this->prepareOrderData($input, $cart);
                         $input = $prepared['input'];
-                        $orderTotal = $prepared['order_total'];
+                        $purchaseTotal = $prepared['order_total'];
 
                         $purchase = new Purchase;
                         $input['cart'] = $new_cart;
                         $input['user_id'] = Auth::check() ? Auth::user()->id : NULL;
                         $input['affilate_users'] = $affilate_users;
-                        $input['pay_amount'] = $orderTotal;
-                        $input['purchase_number'] = $order_data['item_number'];
+                        $input['pay_amount'] = $purchaseTotal;
+                        $input['purchase_number'] = $purchase_data['item_number'];
                         $input['wallet_price'] = $input['wallet_price'] / $this->curr->value;
                         $input['payment_status'] = "Completed";
                         $input['txnid'] = $resp['data']['txid'];
@@ -306,7 +306,7 @@ class FlutterwaveController extends CheckoutBaseControlller
                         ];
 
                         $mailer = new MuaadhMailer();
-                        $mailer->sendAutoOrderMail($data, $purchase->id);
+                        $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
                         //Sending Email To Admin
                         $data = [

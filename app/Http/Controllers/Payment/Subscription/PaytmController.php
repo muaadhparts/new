@@ -79,25 +79,25 @@ class PaytmController extends SubscriptionBaseController
 
 
 		$input = $request->all();
-		$order_id = $request['ORDERID'];
+		$purchase_id = $request['ORDERID'];
 
-        if(file_exists(storage_path().'/paytm/'.$order_id.'.json')){
-            $data_results = file_get_contents(storage_path().'/paytm/'.$order_id.'.json');
+        if(file_exists(storage_path().'/paytm/'.$purchase_id.'.json')){
+            $data_results = file_get_contents(storage_path().'/paytm/'.$purchase_id.'.json');
             $lang = json_decode($data_results, true);
             foreach($lang as $key => $lan){
                 Session::put(''.$key,$lan);
             }
-            unlink(storage_path().'/paytm/'.$order_id.'.json');
+            unlink(storage_path().'/paytm/'.$purchase_id.'.json');
         }
 
 		if ( 'TXN_SUCCESS' === $request['STATUS'] ) {
 			$transaction_id = $request['TXNID'];
-        $order = UserSubscription::where('user_id','=',Session::get('item_number'))
+        $purchase = UserSubscription::where('user_id','=',Session::get('item_number'))
             ->orderBy('created_at','desc')->first();
 
-        $user = User::findOrFail($order->user_id);
+        $user = User::findOrFail($purchase->user_id);
         $package = $user->subscribes()->where('status',1)->orderBy('id','desc')->first();
-        $subs = Subscription::findOrFail($order->subscription_id);
+        $subs = Subscription::findOrFail($purchase->subscription_id);
 
         $today = Carbon::now()->format('Y-m-d');
         $input = $request->all();
@@ -127,7 +127,7 @@ class PaytmController extends SubscriptionBaseController
 
         $data['txnid'] = $transaction_id;
         $data['status'] = 1;
-        $order->update($data);
+        $purchase->update($data);
             $maildata = [
                 'to' => $user->email,
                 'type' => "merchant_accept",
@@ -144,9 +144,9 @@ class PaytmController extends SubscriptionBaseController
 
 		} else if( 'TXN_FAILURE' === $request['STATUS'] ){
             //return view( 'payment-failed' );
-        $order = UserSubscription::where('user_id','=',Session::get('item_number'))
+        $purchase = UserSubscription::where('user_id','=',Session::get('item_number'))
             ->orderBy('created_at','desc')->first();
-            $order->delete();
+            $purchase->delete();
             return redirect(route('user.payment.cancle'));
 		}
     }

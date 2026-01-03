@@ -104,29 +104,29 @@ class StripeController extends SubscriptionBaseController
 
         if ($response->status == 'complete') {
 
-            $order = new UserSubscription;
-            $order->user_id = $subdata['user_id'];
-            $order->subscription_id = $subdata['subscription_id'];
-            $order->title = $subdata['title'];
-            $order->currency_sign = $this->curr->sign;
-            $order->currency_code = $this->curr->name;
-            $order->currency_value = $this->curr->value;
-            $order->price = $subdata['price'];
-            $order->days = $subdata['days'];
-            $order->allowed_products = $subdata['allowed_products'];
-            $order->details = $subdata['details'];
-            $order->method = $subdata['method'];
-            $order->txnid = $response->payment_intent;
-            $order->status = 1;
+            $purchase = new UserSubscription;
+            $purchase->user_id = $subdata['user_id'];
+            $purchase->subscription_id = $subdata['subscription_id'];
+            $purchase->title = $subdata['title'];
+            $purchase->currency_sign = $this->curr->sign;
+            $purchase->currency_code = $this->curr->name;
+            $purchase->currency_value = $this->curr->value;
+            $purchase->price = $subdata['price'];
+            $purchase->days = $subdata['days'];
+            $purchase->allowed_products = $subdata['allowed_products'];
+            $purchase->details = $subdata['details'];
+            $purchase->method = $subdata['method'];
+            $purchase->txnid = $response->payment_intent;
+            $purchase->status = 1;
 
-            $user = User::findOrFail($order->user_id);
+            $user = User::findOrFail($purchase->user_id);
             $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
-            $subs = Subscription::findOrFail($order->subscription_id);
+            $subs = Subscription::findOrFail($purchase->subscription_id);
 
             $today = Carbon::now()->format('Y-m-d');
             $user->is_merchant = 2;
             if (!empty($package)) {
-                if ($package->subscription_id == $order->subscription_id) {
+                if ($package->subscription_id == $purchase->subscription_id) {
                     $newday = strtotime($today);
                     $lastday = strtotime($user->date);
                     $secs = $lastday - $newday;
@@ -142,7 +142,7 @@ class StripeController extends SubscriptionBaseController
 
             $input['mail_sent'] = 1;
             $user->update($input);
-            $order->save();
+            $purchase->save();
 
             $maildata = [
                 'to' => $user->email,

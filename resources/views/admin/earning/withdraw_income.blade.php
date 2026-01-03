@@ -51,33 +51,31 @@
 									  <thead>
 										 <tr>
 											<th width="5%">{{ __('#') }}</th>
-											<th width="25%">{{ __('Order Number') }}</th>
-											<th width="20%">{{ __('Txn ID') }}</th>
-											<th width="20%">{{ __('Tax') }}</th>
-											<th width="20%">{{ __('Tax Location') }}</th>
-											<th width="10%">{{ __('Created At') }}</th>
+											<th width="25%">{{ __('Merchant') }}</th>
+											<th width="15%">{{ __('Method') }}</th>
+											<th width="20%">{{ __('Amount') }}</th>
+											<th width="20%">{{ __('Fee') }}</th>
+											<th width="15%">{{ __('Created At') }}</th>
 										 </tr>
 									  </thead>
 									  <tbody>
-										 @foreach ($orders as $key => $order)
+										 @foreach ($withdraws as $key => $withdraw)
 										 <tr>
 											<td>{{$key+1}}</td>
 											<td>
-											   <a  href="{{route('admin-purchase-invoice',$order->id)}}">
-											   {{$order->purchase_number}}
-											   </a>
+											   {{ $withdraw->user?->shop_name ?? $withdraw->user?->name ?? __('N/A') }}
 											</td>
 											<td>
-											   {{$order->txnId}}
+											   {{ ucfirst($withdraw->method ?? 'N/A') }}
 											</td>
 											<td>
-											   {{$order->currency_sign}}{{round($order->tax * $order->currency_value,2)}}
+											   {{ $currency->sign ?? '' }}{{ number_format($withdraw->amount, 2) }}
 											</td>
 											<td>
-											   {{$order->tax_location}}
+											   {{ $currency->sign ?? '' }}{{ number_format($withdraw->fee, 2) }}
 											</td>
 											<td>
-											   {{$order->created_at->format('d-m-Y')}}
+											   {{$withdraw->created_at->format('d-m-Y')}}
 											</td>
 										 </tr>
 										 @endforeach

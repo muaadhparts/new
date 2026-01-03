@@ -77,15 +77,15 @@ class AuthorizeController extends SubscriptionBaseController
             $paymentOne->setCreditCard($creditCard);
         
             // Create order information
-            $order = new AnetAPI\OrderType();
-            $order->setInvoiceNumber($item_number);
-            $order->setDescription($item_name);
+            $purchase = new AnetAPI\OrderType();
+            $purchase->setInvoiceNumber($item_number);
+            $purchase->setDescription($item_name);
 
             // Create a TransactionRequestType object and add the previous objects to it
             $transactionRequestType = new AnetAPI\TransactionRequestType();
             $transactionRequestType->setTransactionType("authCaptureTransaction"); 
             $transactionRequestType->setAmount($item_amount);
-            $transactionRequestType->setOrder($order);
+            $transactionRequestType->setOrder($purchase);
             $transactionRequestType->setPayment($paymentOne);
             // Assemble the complete transaction request
             $requestt = new AnetAPI\CreateTransactionRequest();
