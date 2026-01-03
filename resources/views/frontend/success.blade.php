@@ -64,13 +64,13 @@
                     @endif
                 </div>
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
-                    <h4>@lang('Order#') {{ $order->purchase_number }}</h4>
-                    <p>@lang('Order Date') {{ date('d-M-Y', strtotime($order->created_at)) }}</p>
+                    <h4>@lang('Order#') {{ $purchase->purchase_number }}</h4>
+                    <p>@lang('Order Date') {{ date('d-M-Y', strtotime($purchase->created_at)) }}</p>
                 </div>
                 <div class="row order-details-area wow-replaced" data-wow-delay=".1s">
 
 
-                    @if ($order->dp == 1)
+                    @if ($purchase->dp == 1)
                         <div class="col-lg-6 col-md-6 col-sm-12">
                             <h5>@lang('Shipping Address')</h5>
                             <div class="name d-flex gap-12">
@@ -83,7 +83,7 @@
                                         d="M11.9999 12C14.4851 12 16.4999 9.98528 16.4999 7.5C16.4999 5.01472 14.4851 3 11.9999 3C9.51457 3 7.49985 5.01472 7.49985 7.5C7.49985 9.98528 9.51457 12 11.9999 12Z"
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_name }}</p>
+                                <p>{{ $purchase->customer_name }}</p>
                             </div>
                             <div class="address d-flex gap-12">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -95,7 +95,7 @@
                                         d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_address }} {{ $order->customer_city }}-{{ $order->customer_zip }}</p>
+                                <p>{{ $purchase->customer_address }} {{ $purchase->customer_city }}-{{ $purchase->customer_zip }}</p>
                             </div>
                             <div class="contact-number d-flex gap-12">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -104,7 +104,7 @@
                                         d="M8.38028 8.85335C9.07627 10.303 10.0251 11.6616 11.2266 12.8632C12.4282 14.0648 13.7869 15.0136 15.2365 15.7096C15.3612 15.7694 15.4235 15.7994 15.5024 15.8224C15.7828 15.9041 16.127 15.8454 16.3644 15.6754C16.4313 15.6275 16.4884 15.5704 16.6027 15.4561C16.9523 15.1064 17.1271 14.9316 17.3029 14.8174C17.9658 14.3864 18.8204 14.3864 19.4833 14.8174C19.6591 14.9316 19.8339 15.1064 20.1835 15.4561L20.3783 15.6509C20.9098 16.1824 21.1755 16.4481 21.3198 16.7335C21.6069 17.301 21.6069 17.9713 21.3198 18.5389C21.1755 18.8242 20.9098 19.09 20.3783 19.6214L20.2207 19.779C19.6911 20.3087 19.4263 20.5735 19.0662 20.7757C18.6667 21.0001 18.0462 21.1615 17.588 21.1601C17.1751 21.1589 16.8928 21.0788 16.3284 20.9186C13.295 20.0576 10.4326 18.4332 8.04466 16.0452C5.65668 13.6572 4.03221 10.7948 3.17124 7.76144C3.01103 7.19699 2.93092 6.91477 2.9297 6.50182C2.92833 6.0436 3.08969 5.42311 3.31411 5.0236C3.51636 4.66357 3.78117 4.39876 4.3108 3.86913L4.46843 3.7115C4.99987 3.18006 5.2656 2.91433 5.55098 2.76999C6.11854 2.48292 6.7888 2.48292 7.35636 2.76999C7.64174 2.91433 7.90747 3.18006 8.43891 3.7115L8.63378 3.90637C8.98338 4.25597 9.15819 4.43078 9.27247 4.60655C9.70347 5.26945 9.70347 6.12403 9.27247 6.78692C9.15819 6.96269 8.98338 7.1375 8.63378 7.4871C8.51947 7.60142 8.46231 7.65857 8.41447 7.72538C8.24446 7.96281 8.18576 8.30707 8.26748 8.58743C8.29048 8.66632 8.32041 8.72866 8.38028 8.85335Z"
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_phone }}</p>
+                                <p>{{ $purchase->customer_phone }}</p>
                             </div>
                             <div class="mail d-flex gap-12">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
@@ -113,14 +113,14 @@
                                         d="M2 7L10.1649 12.7154C10.8261 13.1783 11.1567 13.4097 11.5163 13.4993C11.8339 13.5785 12.1661 13.5785 12.4837 13.4993C12.8433 13.4097 13.1739 13.1783 13.8351 12.7154L22 7M6.8 20H17.2C18.8802 20 19.7202 20 20.362 19.673C20.9265 19.3854 21.3854 18.9265 21.673 18.362C22 17.7202 22 16.8802 22 15.2V8.8C22 7.11984 22 6.27976 21.673 5.63803C21.3854 5.07354 20.9265 4.6146 20.362 4.32698C19.7202 4 18.8802 4 17.2 4H6.8C5.11984 4 4.27976 4 3.63803 4.32698C3.07354 4.6146 2.6146 5.07354 2.32698 5.63803C2 6.27976 2 7.11984 2 8.8V15.2C2 16.8802 2 17.7202 2.32698 18.362C2.6146 18.9265 3.07354 19.3854 3.63803 19.673C4.27976 20 5.11984 20 6.8 20Z"
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_email }}</p>
+                                <p>{{ $purchase->customer_email }}</p>
                             </div>
                         </div>
                     @else
-                        @if ($order->shipping == 'shipto')
+                        @if ($purchase->shipping == 'shipto')
                             <div class="col-lg-6 col-md-6 col-sm-12">
                                 <h5>
-                                    @if ($order->dp == 0)
+                                    @if ($purchase->dp == 0)
                                     @lang('Shipping Address')
                                     @else
                                     @lang('User Information')
@@ -140,7 +140,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->customer_name }}
+                                    <p>{{ $purchase->customer_name }}
                                     </p>
                                 </div>
                                 <div class="address d-flex gap-12">
@@ -155,8 +155,8 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->customer_address }}<br>
-                                        {{ $order->customer_city }}-{{ $order->customer_zip }}
+                                    <p>{{ $purchase->customer_address }}<br>
+                                        {{ $purchase->customer_city }}-{{ $purchase->customer_zip }}
                                     </p>
                                 </div>
                                 <div class="contact-number d-flex gap-12">
@@ -167,7 +167,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->customer_phone }}
+                                    <p>{{ $purchase->customer_phone }}
                                     </p>
                                 </div>
                                 <div class="mail d-flex gap-12">
@@ -178,7 +178,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->customer_email }}
+                                    <p>{{ $purchase->customer_email }}
                                     </p>
                                 </div>
                             </div>
@@ -198,7 +198,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <p>{{ $order->pickup_location }}</p>
+                                    <p>{{ $purchase->pickup_location }}</p>
                                 </div>
 
                             </div>
@@ -209,7 +209,7 @@
 
 
 
-                    @if ($order->dp == 0)
+                    @if ($purchase->dp == 0)
                         <div class="col-lg-6 col-md-6 col-sm-12">
                             <h5>@lang('Billing Address')</h5>
                             <div class="name d-flex gap-12">
@@ -224,7 +224,7 @@
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_name }}</p>
+                                <p>{{ $purchase->customer_name }}</p>
                             </div>
                             <div class="address d-flex gap-12">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -238,8 +238,8 @@
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_address }}
-                                    {{ $order->customer_city }}-{{ $order->customer_zip }}</p>
+                                <p>{{ $purchase->customer_address }}
+                                    {{ $purchase->customer_city }}-{{ $purchase->customer_zip }}</p>
                             </div>
                             <div class="contact-number d-flex gap-12">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -249,7 +249,7 @@
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_phone }}</p>
+                                <p>{{ $purchase->customer_phone }}</p>
                             </div>
                             <div class="mail d-flex gap-12">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -259,7 +259,7 @@
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-                                <p>{{ $order->customer_email }}</p>
+                                <p>{{ $purchase->customer_email }}</p>
                             </div>
                         </div>
                     @endif
@@ -271,29 +271,29 @@
                         <div class="payment-information">
 
                             @if ($gs->multiple_shipping == 0)
-                                @if ($order->shipping_cost != 0)
-                                    <p>{{ $order->shipping_title }}:
-                                        {{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost, $order->currency_sign) }}
+                                @if ($purchase->shipping_cost != 0)
+                                    <p>{{ $purchase->shipping_title }}:
+                                        {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost, $purchase->currency_sign) }}
                                     </p>
                                 @endif
 
 
-                                @if ($order->packing_cost != 0)
-                                    <p>{{ $order->packing_title }}:
-                                        {{ \PriceHelper::showOrderCurrencyPrice($order->packing_cost, $order->currency_sign) }}
+                                @if ($purchase->packing_cost != 0)
+                                    <p>{{ $purchase->packing_title }}:
+                                        {{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost, $purchase->currency_sign) }}
                                     </p>
                                 @endif
                             @else
-                                @if ($order->shipping_cost != 0)
+                                @if ($purchase->shipping_cost != 0)
                                     <p>{{ __('Shipping Cost') }}:
-                                        {{ \PriceHelper::showOrderCurrencyPrice($order->shipping_cost * $order->currency_value, $order->currency_sign) }}
+                                        {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost * $purchase->currency_value, $purchase->currency_sign) }}
                                     </p>
                                 @endif
 
 
-                                @if ($order->packing_cost != 0)
+                                @if ($purchase->packing_cost != 0)
                                     <p>{{ __('Packing Cost') }}:
-                                        {{ \PriceHelper::showOrderCurrencyPrice($order->packing_cost * $order->currency_value, $order->currency_sign) }}
+                                        {{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost * $purchase->currency_value, $purchase->currency_sign) }}
                                     </p>
                                 @endif
                             @endif
@@ -302,34 +302,34 @@
 
 
                             <p>@lang('Tax :')
-                                {{ \PriceHelper::showOrderCurrencyPrice($order->tax / $order->currency_value, $order->currency_sign) }}
+                                {{ \PriceHelper::showOrderCurrencyPrice($purchase->tax / $purchase->currency_value, $purchase->currency_sign) }}
                             </p>
                             <p>@lang('Paid Amount:')
 
-                                @if ($order->method != 'Wallet')
+                                @if ($purchase->method != 'Wallet')
                                     {{ \PriceHelper::showOrderCurrencyPrice(
-                                        ($order->pay_amount + $order->wallet_price) * $order->currency_value,
-                                        $order->currency_sign,
+                                        ($purchase->pay_amount + $purchase->wallet_price) * $purchase->currency_value,
+                                        $purchase->currency_sign,
                                     ) }}
                                 @else
-                                    {{ \PriceHelper::showOrderCurrencyPrice($order->wallet_price * $order->currency_value, $order->currency_sign) }}
+                                    {{ \PriceHelper::showOrderCurrencyPrice($purchase->wallet_price * $purchase->currency_value, $purchase->currency_sign) }}
                                 @endif
                             </p>
                             <p>@lang('Payment Method:')
-                                {{ $order->method }}
-                                @if ($order->method != 'Cash On Delivery' && $order->method != 'Wallet')
+                                {{ $purchase->method }}
+                                @if ($purchase->method != 'Cash On Delivery' && $purchase->method != 'Wallet')
                                     <br>
-                                    {{ __('Transaction ID:') }} {{ $order->txnid }}
+                                    {{ __('Transaction ID:') }} {{ $purchase->txnid }}
                                 @endif
                             </p>
                         </div>
                     </div>
-                    @if ($order->dp == 0)
+                    @if ($purchase->dp == 0)
                         <div class="col-lg-6 col-md-6 col-sm-12">
                             <h5>@lang('Shipping Method')</h5>
                             <div class="payment-information">
 
-                                @if ($order->shipping == 'shipto')
+                                @if ($purchase->shipping == 'shipto')
                                     <p>{{ __('Ship To Address') }}</p>
                                 @else
                                     <p>{{ __('Pick Up') }}</p>
@@ -393,18 +393,18 @@
                                             @endif
 
                                             <p class="d-lg-none d-table-cell"><span>@lang('Unit Price:')</span>
-                                                {{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $order->currency_value) }}
+                                                {{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value) }}
                                             </p>
-                                            <p class="d-lg-none"><span>@lang('Total Price:')</span>{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $order->currency_value) }}
+                                            <p class="d-lg-none"><span>@lang('Total Price:')</span>{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
                                                 <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                             </p>
 
                                         </td>
                                         <td class="d-none d-lg-table-cell">
-                                            {{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $order->currency_value) }}
+                                            {{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value) }}
                                         </td>
                                         <td class="d-none d-lg-table-cell">
-                                            {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $order->currency_value) }}
+                                            {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
                                             <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                         </td>
                                     </tr>

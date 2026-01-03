@@ -191,8 +191,8 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Order Info -->
-            @if($order)
+            <!-- Purchase Info -->
+            @if($purchase)
             <div class="card mb-4">
                 <div class="card-header bg-white">
                     <h5 class="mb-0"><i class="fas fa-shopping-cart mr-2"></i>{{ __('Order Information') }}</h5>
@@ -202,36 +202,36 @@
                         <tr>
                             <td class="text-muted">{{ __('Order Number') }}</td>
                             <td class="text-right font-weight-bold">
-                                <a href="{{ route('admin-purchase-show', $order->id) }}">
-                                    {{ $order->purchase_number }}
+                                <a href="{{ route('admin-purchase-show', $purchase->id) }}">
+                                    {{ $purchase->purchase_number }}
                                 </a>
                             </td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Customer') }}</td>
-                            <td class="text-right">{{ $order->customer_name ?? 'N/A' }}</td>
+                            <td class="text-right">{{ $purchase->customer_name ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Phone') }}</td>
-                            <td class="text-right">{{ $order->customer_phone ?? 'N/A' }}</td>
+                            <td class="text-right">{{ $purchase->customer_phone ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Amount') }}</td>
                             <td class="text-right font-weight-bold text-success">
-                                {{ $order->currency_sign }}{{ number_format($order->pay_amount, 2) }}
+                                {{ $purchase->currency_sign }}{{ number_format($purchase->pay_amount, 2) }}
                             </td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Status') }}</td>
                             <td class="text-right">
-                                <span class="badge badge-{{ $order->status == 'completed' ? 'success' : ($order->status == 'pending' ? 'warning' : 'info') }}">
-                                    {{ ucfirst($order->status) }}
+                                <span class="badge badge-{{ $purchase->status == 'completed' ? 'success' : ($purchase->status == 'pending' ? 'warning' : 'info') }}">
+                                    {{ ucfirst($purchase->status) }}
                                 </span>
                             </td>
                         </tr>
                     </table>
                     <hr>
-                    <a href="{{ route('admin-purchase-show', $order->id) }}" class="btn btn-outline-primary btn-sm btn-block">
+                    <a href="{{ route('admin-purchase-show', $purchase->id) }}" class="btn btn-outline-primary btn-sm btn-block">
                         <i class="fas fa-eye mr-1"></i> {{ __('View Order') }}
                     </a>
                 </div>

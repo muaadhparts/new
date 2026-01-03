@@ -58,25 +58,25 @@
             </tr>
          </thead>
          <tbody>
-            @foreach ($orders as $key => $order)
+            @foreach ($purchases as $key => $purchase)
             <tr>
                <td>{{$key+1}}</td>
                <td>
-                  <a  href="{{route('admin-purchase-invoice',$order->id)}}">
-                  {{$order->purchase_number}}
+                  <a  href="{{route('admin-purchase-invoice',$purchase->id)}}">
+                  {{$purchase->purchase_number}}
                   </a>
                </td>
                <td>
-                  {{$order->txnId}}
+                  {{$purchase->txnId}}
                </td>
                <td>
-                  {{$order->currency_sign}}{{round($order->tax * $order->currency_value,2)}}
+                  {{$purchase->currency_sign}}{{round($purchase->tax * $purchase->currency_value,2)}}
                </td>
                <td>
-                  {{$order->tax_location}}
+                  {{$purchase->tax_location}}
                </td>
                <td>
-                  {{$order->created_at->format('d-m-Y')}}
+                  {{$purchase->created_at->format('d-m-Y')}}
                </td>
             </tr>
             @endforeach
