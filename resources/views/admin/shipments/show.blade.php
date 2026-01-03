@@ -195,12 +195,12 @@
             @if($purchase)
             <div class="card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-shopping-cart mr-2"></i>{{ __('Order Information') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart mr-2"></i>{{ __('Purchase Information') }}</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm table-borderless mb-0">
                         <tr>
-                            <td class="text-muted">{{ __('Order Number') }}</td>
+                            <td class="text-muted">{{ __('Purchase Number') }}</td>
                             <td class="text-right font-weight-bold">
                                 <a href="{{ route('admin-purchase-show', $purchase->id) }}">
                                     {{ $purchase->purchase_number }}
@@ -232,7 +232,7 @@
                     </table>
                     <hr>
                     <a href="{{ route('admin-purchase-show', $purchase->id) }}" class="btn btn-outline-primary btn-sm btn-block">
-                        <i class="fas fa-eye mr-1"></i> {{ __('View Order') }}
+                        <i class="fas fa-eye mr-1"></i> {{ __('View Purchase') }}
                     </a>
                 </div>
             </div>

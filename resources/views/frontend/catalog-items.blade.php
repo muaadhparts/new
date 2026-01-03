@@ -50,12 +50,12 @@
                 flex-direction: column;
             }
             .gs-blog-wrapper .row.catalogItems-layout .sidebar-column {
-                order: 1;
+                purchase: 1;
                 margin-top: 0;
                 margin-bottom: 20px;
             }
             .gs-blog-wrapper .row.catalogItems-layout .catalogItems-column {
-                order: 2;
+                purchase: 2;
             }
         }
     </style>

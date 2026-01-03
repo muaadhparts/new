@@ -83,7 +83,7 @@
                                 </a>
                                 <a href="{{ route('user-purchases') }}" class="muaadh-action-menu-item">
                                     <i class="fas fa-shopping-bag"></i>
-                                    <span>@lang('My Orders')</span>
+                                    <span>@lang('My Purchases')</span>
                                 </a>
                                 <a href="{{ route('user-profile') }}" class="muaadh-action-menu-item">
                                     <i class="fas fa-cog"></i>

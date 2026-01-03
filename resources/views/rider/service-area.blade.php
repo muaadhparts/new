@@ -19,7 +19,7 @@
                             href="{{ route('rider-service-area-create') }}">@lang('Add New Service Area')</a>
                     </div>
 
-                    <!--  order status steps -->
+                    <!--  purchase status steps -->
 
                     <div class="user-table table-responsive position-relative">
 

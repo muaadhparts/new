@@ -37,13 +37,13 @@
 			<div class="row">
 
 
-				<div class="col-lg-8 order-last order-lg-first">
+				<div class="col-lg-8 purchase-last purchase-lg-first">
 					<form action="" method="POST" class="checkoutform">
 						@include('includes.form-success')
 						@include('includes.form-error')
 						{{ csrf_field() }}
 						<div class="checkout-area">
-							<div class="order-box">
+							<div class="purchase-box">
 								<div class="content-box">
 									<div class="content">
 										<div class="payment-information">
@@ -174,11 +174,11 @@
 				</div>
 				<div class="col-lg-4">
 					<div class="right-area">
-						<div class="order-box">
+						<div class="purchase-box">
 							<h4 class="title">{{ $langg->lang127 }}</h4>
 							<div class="total-price">
 								<p>
-									@lang('Total Order Amount')
+									@lang('Total Purchase Amount')
 								</p>
 								<p>
 									@if($gs->currency_format == 0)

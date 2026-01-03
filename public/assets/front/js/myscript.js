@@ -138,7 +138,7 @@
 
   // CatalogItem Add Qty - uses minimum_qty as step (for bundles)
   $(document).on("click", ".qtplus", function () {
-    var $tselector = $("#order-qty");
+    var $tselector = $("#purchase-qty");
     var stock = $("#stock").val();
     var minQty = parseInt($("#product_minimum_qty").val()) || 1; // Step size
     var preordered = parseInt($("#product_preordered").val()) || 0;
@@ -169,7 +169,7 @@
 
   // CatalogItem Minus Qty - uses minimum_qty as step (for bundles)
   $(document).on("click", ".qtminus", function () {
-    var $tselector = $("#order-qty");
+    var $tselector = $("#purchase-qty");
     var total = parseInt($($tselector).val()) || 1;
 
     // الحصول على الحد الأدنى للكمية (وهو أيضاً الخطوة)
@@ -424,11 +424,11 @@
 
     // Reset quantity to minimum when size changes (new stock might be lower)
     var minQty = parseInt($("#product_minimum_qty").val()) || 1;
-    var currentQty = parseInt($("#order-qty").val()) || minQty;
+    var currentQty = parseInt($("#purchase-qty").val()) || minQty;
 
     // If current qty exceeds new stock, reset to minimum
     if (qty > 0 && currentQty > qty) {
-      $("#order-qty").val(minQty);
+      $("#purchase-qty").val(minQty);
     }
 
     updateProductPrice();

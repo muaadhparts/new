@@ -267,38 +267,38 @@ a.clear {
 }
 
 /*  Starting of new view details area  */
-.order-table-wrap {
+.purchase-table-wrap {
   background: #fff;
   padding: 30px 30px 30px;
 }
 
-.order-table-wrap .mr-table {
+.purchase-table-wrap .mr-table {
   padding: 0px;
   margin-top: 20px;
   text-align: center;
 }
-.order-table-wrap .mr-table .title {
+.purchase-table-wrap .mr-table .title {
   font-weight: 600;
   font-size: 19px;
   display: inline-block;
 }
 
-.order-table-wrap .table > tbody > tr > td,
-.order-table-wrap .table > tbody > tr > th {
+.purchase-table-wrap .table > tbody > tr > td,
+.purchase-table-wrap .table > tbody > tr > th {
   border-top: none;
 }
 
-.order-table-wrap .table > tbody > tr.tr-head {
+.purchase-table-wrap .table > tbody > tr.tr-head {
   position: relative;
 }
 
-.order-table-wrap .table > tbody > tr > th.order-th {
+.purchase-table-wrap .table > tbody > tr > th.purchase-th {
   font-size: 20px;
   padding-bottom: 10px;
 }
 
-.order-table-wrap .table td,
-.order-table-wrap .table th {
+.purchase-table-wrap .table td,
+.purchase-table-wrap .table th {
   padding: 0.5rem;
 }
 
@@ -309,13 +309,13 @@ a.clear {
 .btn.sendEmail:hover {
   background: #2d3274;
 }
-/* Order Invoice Area Start */
+/* Purchase Invoice Area Start */
 .invoice_table .mr-table .table tr,
-.order-details-table .table tr {
+.purchase-details-table .table tr {
   text-align: left;
 }
 
-/* Order Invoice Area Start */
+/* Purchase Invoice Area Start */
 .invoice_table .table > tfoot > tr > td {
   font-size: 15px;
   font-weight: 700;
@@ -456,16 +456,16 @@ a.add-btn:hover {
   background-color: rgba(255, 255, 255, 0.15);
 }
 
-.order-table-wrap .special-box .table td,
-.order-table-wrap .special-box .table th {
+.purchase-table-wrap .special-box .table td,
+.purchase-table-wrap .special-box .table th {
   padding: 3px 0px !important;
   border: 0px;
 }
 
 /* Special-box Box Area End */
 
-/* Products Order Area Start */
-.order-table-wrap .mr-table .title {
+/* Products Purchase Area Start */
+.purchase-table-wrap .mr-table .title {
   background: #eaeaf1;
   display: block;
   width: 100%;
@@ -473,15 +473,15 @@ a.add-btn:hover {
   text-align: left;
   margin-bottom: 0px;
 }
-.order-details-table .mr-table {
+.purchase-details-table .mr-table {
   box-shadow: 0px 1px 6px 0px rgba(208, 208, 208, 0.61);
   padding-bottom: 5px;
 }
-.order-details-table .mr-table .table thead th {
+.purchase-details-table .mr-table .table thead th {
   border: none;
 }
 
-/* Products Order Area End */
+/* Products Purchase Area End */
 
 /* Customar Details Area Start */
 .catalogItem-description .user-image {
@@ -518,12 +518,12 @@ a.add-btn:hover {
   border-bottom: 1px dashed #ddd;
   padding: 6px 0px;
 }
-.catalogItem-description .order-details-table .table td,
-.catalogItem-description .order-details-table .table th {
+.catalogItem-description .purchase-details-table .table td,
+.catalogItem-description .purchase-details-table .table th {
   border: 0px;
   padding: 6px 15px;
 }
-.customar-details-area .order-table-wrap {
+.customar-details-area .purchase-table-wrap {
   padding-top: 0px;
 }
 .customar-details-area .catalogItem-description .body-area .row {

@@ -50,7 +50,7 @@
          <thead>
             <tr>
                <th width="5%">{{ __('#') }}</th>
-               <th width="20%">{{ __('Order Number') }}</th>
+               <th width="20%">{{ __('Purchase Number') }}</th>
                <th width="20%">{{ __('Merchant') }}</th>
                <th width="15%">{{ __('Txn ID') }}</th>
                <th width="15%">{{ __('Tax') }}</th>

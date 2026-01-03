@@ -305,7 +305,7 @@ class MerchantCartService
             return [
                 'valid' => false,
                 'error' => 'min_order',
-                'message' => __('Minimum order amount is') . ' ' . $discountCode->min_order,
+                'message' => __('Minimum purchase amount is') . ' ' . $discountCode->min_order,
             ];
         }
 

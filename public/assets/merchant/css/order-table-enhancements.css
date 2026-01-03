@@ -1,9 +1,9 @@
 /* ======================================
-   Vendor Order Table Enhancements - Responsive & Tooltips
+   Vendor Purchase Table Enhancements - Responsive & Tooltips
    ====================================== */
 
 /* === Responsive Table Wrapper === */
-.merchant-order-table-responsive {
+.merchant-purchase-table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
@@ -11,13 +11,13 @@
 }
 
 /* === Table Base Styles === */
-.merchant-order-table-enhanced {
+.merchant-purchase-table-enhanced {
     min-width: 100%;
     white-space: nowrap;
     margin-bottom: 0;
 }
 
-.merchant-order-table-enhanced thead th {
+.merchant-purchase-table-enhanced thead th {
     background: #f8f9fa;
     font-weight: 600;
     font-size: 13px;
@@ -26,14 +26,14 @@
     vertical-align: middle;
 }
 
-.merchant-order-table-enhanced tbody td {
+.merchant-purchase-table-enhanced tbody td {
     padding: 12px 10px !important;
     font-size: 13px;
     vertical-align: middle;
     border-bottom: 1px solid #f0f0f0;
 }
 
-.merchant-order-table-enhanced tbody tr:hover {
+.merchant-purchase-table-enhanced tbody tr:hover {
     background-color: #f8f9fa;
     transition: background-color 0.2s ease;
 }
@@ -122,23 +122,23 @@
 /* === Responsive Breakpoints === */
 
 @media (max-width: 1199px) {
-    .merchant-order-table-enhanced {
+    .merchant-purchase-table-enhanced {
         font-size: 12px;
     }
 }
 
 @media (max-width: 991px) {
-    .merchant-order-table-responsive {
+    .merchant-purchase-table-responsive {
         border: 1px solid #dee2e6;
         border-radius: 8px;
     }
 
-    .merchant-order-table-enhanced {
+    .merchant-purchase-table-enhanced {
         font-size: 11px;
     }
 
     /* Add scroll indicator */
-    .merchant-order-table-responsive::after {
+    .merchant-purchase-table-responsive::after {
         content: "← Scroll →";
         display: block;
         text-align: center;
@@ -152,12 +152,12 @@
 }
 
 @media (max-width: 767px) {
-    .merchant-order-table-enhanced {
+    .merchant-purchase-table-enhanced {
         font-size: 10px;
     }
 
-    .merchant-order-table-enhanced thead th,
-    .merchant-order-table-enhanced tbody td {
+    .merchant-purchase-table-enhanced thead th,
+    .merchant-purchase-table-enhanced tbody td {
         padding: 8px 5px !important;
     }
 

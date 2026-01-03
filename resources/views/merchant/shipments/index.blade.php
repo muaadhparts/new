@@ -124,7 +124,7 @@
                     <thead class="table-light">
                         <tr>
                             <th>@lang('Tracking Number')</th>
-                            <th>@lang('Order')</th>
+                            <th>@lang('Purchase')</th>
                             <th>@lang('Customer')</th>
                             <th>@lang('Company')</th>
                             <th>@lang('Status')</th>

@@ -20,7 +20,7 @@
                             @csrf
                             <div class="edit-profile-area">
                                 <div class="row">
-                                    <div class="col-lg-8 col-12 order-2 order-lg-1">
+                                    <div class="col-lg-8 col-12 purchase-2 purchase-lg-1">
                                         <div class="multi-form-wrapper gap-4">
                                             <div class="single-form-wrapper">
                                                 <div class="form-group">

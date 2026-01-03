@@ -340,7 +340,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
     /**
      * Redirect to MyFatoorah Invoice URL
-     * Provide the index method with the order id and (payment method id or session id)
+     * Provide the index method with the purchase id and (payment method id or session id)
      *
      * @return Response
      */
@@ -368,8 +368,8 @@ class MyFatoorahController extends CheckoutBaseControlller {
 //-----------------------------------------------------------------------------------------------------------------------------------------
 
     /**
-     * Example on how to map order data to MyFatoorah
-     * You can get the data using the order object in your system
+     * Example on how to map purchase data to MyFatoorah
+     * You can get the data using the purchase object in your system
      * 
      * @param int|string $purchaseId
      * 
@@ -378,7 +378,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
     private function getPayLoadData($purchaseId = null) {
         $callbackURL = route('myfatoorah.callback');
 
-        //You can get the data using the order object in your system
+        //You can get the data using the purchase object in your system
         $purchase = $this->getTestOrderData($purchaseId);
 
         return [
@@ -518,7 +518,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         //2. Get MyFatoorah invoice id
         $invoiceId = $inputData['InvoiceId'];
 
-        //3. Check order status at MyFatoorah side
+        //3. Check purchase status at MyFatoorah side
         if ($inputData['TransactionStatus'] == 'SUCCESS') {
             $status = 'Paid';
             $error  = '';
@@ -532,7 +532,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
         $message = $this->getTestMessage($status, $error);
 
-        //4. Update order transaction status on your system
+        //4. Update purchase transaction status on your system
         return ['IsSuccess' => true, 'Message' => $message, 'Data' => $inputData];
     }
 

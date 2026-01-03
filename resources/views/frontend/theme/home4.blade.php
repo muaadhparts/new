@@ -4,7 +4,7 @@ HOME PAGE - Section-Based Architecture (Theme System)
 ================================================================================
 Each section is controlled by the active HomePageTheme ($theme->*)
 All catalogItem data is merchant-only (is_merchant = 2)
-Sections are rendered based on theme settings and order
+Sections are rendered based on theme settings and purchase
 ================================================================================
 --}}
 

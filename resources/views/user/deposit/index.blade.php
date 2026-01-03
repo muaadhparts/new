@@ -20,7 +20,7 @@
 
                 </div>
 
-                <!--  order status steps -->
+                <!--  purchase status steps -->
 
                 <div class="user-table table-responsive position-relative">
 

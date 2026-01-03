@@ -230,7 +230,7 @@
                                         </a>
                                     @else
                                         <button type="button" class="btn btn-sm btn-primary mb-1 assignShippingBtn"
-                                            data-order-id="{{ $data->id }}"
+                                            data-purchase-id="{{ $data->id }}"
                                             data-customer-city="{{ $data->customer_city }}"
                                             data-customer-choice='@json($customerChoice)'
                                             data-bs-toggle="modal" data-bs-target="#shippingModal">
@@ -277,7 +277,7 @@
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <strong>@lang('Free Shipping Purchase!')</strong>
                         <br>
-                        <span>@lang('The customer received free shipping on this order. You are responsible for paying the shipping cost.')</span>
+                        <span>@lang('The customer received free shipping on this purchase. You are responsible for paying the shipping cost.')</span>
                         <br>
                         <small class="text-muted">
                             @lang('Original shipping price:'): <strong id="originalShippingPrice"></strong>
@@ -460,7 +460,7 @@
 
     // Open shipping modal
     $(document).on('click', '.assignShippingBtn', function() {
-        const orderId = $(this).data('order-id');
+        const orderId = $(this).data('purchase-id');
         const customerCity = $(this).data('customer-city');
         currentCustomerChoice = $(this).data('customer-choice');
 
@@ -518,7 +518,7 @@
                         $('#shippingCompanySelect').after('<a href="{{ route("merchant-profile") }}" class="btn btn-sm btn-link">@lang("Go to Settings")</a>');
                     }
                 } else if (response.error_code === 'CUSTOMER_CITY_MISSING') {
-                    toastr.warning('@lang("Customer city not specified in order")');
+                    toastr.warning('@lang("Customer city not specified in purchase")');
                 } else if (response.error_code === 'TRYOTO_NOT_CONFIGURED') {
                     toastr.error('@lang("Smart Shipping is not configured. Contact admin.")');
                 } else if (response.error) {

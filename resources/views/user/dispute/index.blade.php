@@ -112,8 +112,8 @@
                 <!-- Select Rider -->
                 <div class="input-label-wrapper w-100">
 
-                    <input type="text" class="form-control  border px-3 mb-4" name="order"
-                        placeholder="@lang('Order Number')" required="">
+                    <input type="text" class="form-control  border px-3 mb-4" name="purchase"
+                        placeholder="@lang('Purchasease Number')" required="">
 
                     <input type="text" class="form-control  border px-3 mb-4" name="subject"
                         placeholder="@lang('Subject')" required="">

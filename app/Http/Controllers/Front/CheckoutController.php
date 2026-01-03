@@ -35,7 +35,7 @@
  *    - If no items for merchant: Redirect to cart
  *
  * Flow:
- * Cart → /checkout/merchant/{id} → Step1 → Step2 → Step3 → Payment → Order
+ * Cart → /checkout/merchant/{id} → Step1 → Step2 → Step3 → Payment → Purchase
  *
  * Terminology:
  * - "item" or "cartItem" refers to an item in the cart
@@ -522,7 +522,7 @@ class CheckoutController extends FrontBaseController
                 'country_name' => $locationDraft['country_name'] ?? null,
                 'city_name' => $locationDraft['city_name'] ?? null,
                 'state_name' => $locationDraft['state_name'] ?? null,
-                // Order table fields
+                // Purchase table fields
                 'customer_country' => $locationDraft['country_name'] ?? null,
                 'customer_city' => $locationDraft['city_name'] ?? null,
                 'customer_state' => $locationDraft['state_name'] ?? null,
@@ -1278,7 +1278,7 @@ class CheckoutController extends FrontBaseController
                 'country_name' => $locationDraft['country_name'] ?? null,
                 'city_name' => $locationDraft['city_name'] ?? null,
                 'state_name' => $locationDraft['state_name'] ?? null,
-                // Order table fields
+                // Purchase table fields
                 'customer_country' => $locationDraft['country_name'] ?? null,
                 'customer_city' => $locationDraft['city_name'] ?? null,
                 'customer_state' => $locationDraft['state_name'] ?? null,

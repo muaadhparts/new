@@ -668,7 +668,7 @@ class TryotoService
             ];
         }
 
-        // Generate unique order ID for Tryoto
+        // Generate unique purchase ID for Tryoto
         $tryotoOrderId = $purchase->purchase_number . '-M' . $merchantId . '-' . time();
 
         // Build createOrder payload - using real data only
@@ -869,7 +869,7 @@ class TryotoService
                 ]);
 
                 // Notify merchant
-                $this->notifyMerchant($log->merchant_id, $log->order, 'shipment_cancelled', $trackingNumber);
+                $this->notifyMerchant($log->merchant_id, $log->purchase, 'shipment_cancelled', $trackingNumber);
             }
 
             return ['success' => true, 'message' => 'Shipment cancelled successfully'];
@@ -879,7 +879,7 @@ class TryotoService
     }
 
     /**
-     * Get order details from Tryoto
+     * Get purchase details from Tryoto
      *
      * @param string $orderId
      * @return array
@@ -974,7 +974,7 @@ class TryotoService
                 'raw_data' => $details['raw'],
             ]);
 
-            $this->notifyMerchant($shipment->merchant_id, $shipment->order, 'tracking_assigned', $newTrackingNumber);
+            $this->notifyMerchant($shipment->merchant_id, $shipment->purchase, 'tracking_assigned', $newTrackingNumber);
 
             $details['tracking_updated'] = true;
             $details['old_tracking'] = $trackingNumber;

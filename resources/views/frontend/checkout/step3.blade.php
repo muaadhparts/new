@@ -243,7 +243,7 @@
             <input type="hidden" id="checkout-merchant-id" value="{{ $merchant_id ?? '' }}">
             <input type="hidden" id="is-merchant-checkout" value="{{ ($is_merchant_checkout ?? false) ? '1' : '0' }}">
 
-            {{-- ✅ Basic Order Information --}}
+            {{-- ✅ Basic Purchase Information --}}
             <input type="hidden" name="dp" value="{{ $digital }}">
             <input type="hidden" name="totalQty" value="{{ $totalQty }}">
             <input type="hidden" name="merchant_shipping_id" value="{{ $merchant_shipping_id }}">
@@ -375,7 +375,7 @@
     }
 
     $(document).ready(function () {
-        // Populate tax hidden fields from session for order submission
+        // Populate tax hidden fields from session for purchase submission
         @if(isset($step1) && isset($step1->tax_rate))
             $('#input_tax').val('{{ $step1->tax_amount ?? 0 }}');
             $('#input_tax_type').val('{{ $step1->tax_rate ?? 0 }}');

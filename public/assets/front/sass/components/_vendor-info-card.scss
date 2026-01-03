@@ -17,16 +17,16 @@
     &.pending-commision {
       border-left: 4px solid var(--action-info);
     }
-    &.total-order {
+    &.total-purchase {
       border-left: 4px solid var(--action-danger);
     }
-    &.order-delivered {
+    &.purchase-delivered {
       border-left: 4px solid var(--action-success);
     }
-    &.order-processing {
+    &.purchase-processing {
       border-left: 4px solid var(--action-info);
     }
-    &.order-pending {
+    &.purchase-pending {
       border-left: 4px solid var(--action-warning);
     }
     @include screen-1920 {

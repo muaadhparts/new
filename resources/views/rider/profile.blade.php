@@ -13,7 +13,7 @@
                             @csrf
                             <div class="edit-profile-area">
                                 <div class="row">
-                                    <div class="col-lg-8 col-12 order-2 order-lg-1">
+                                    <div class="col-lg-8 col-12 purchase-2 purchase-lg-1">
                                         <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
                                             <div class="single-form-wrapper flex-grow-1">
                                                 <div class="form-group">
@@ -109,7 +109,7 @@
                                         @lang('Update Profile Information')
                                         </button>
                                     </div>
-                                    <div class="col-lg-4 col-12 order-1 order-lg-2">
+                                    <div class="col-lg-4 col-12 purchase-1 purchase-lg-2">
                                         <div class="profile-img">
                                             @if ($user->is_provider == 1)
                                                 <img src="{{ $user->photo ? asset($user->photo) : asset('assets/images/' . $gs->user_image) }}"

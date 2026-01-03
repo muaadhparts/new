@@ -12,7 +12,7 @@
  * - Reads from merchant_step1_{id} and merchant_step2_{id} ONLY
  * - NO fallback to regular checkout sessions (step1/step2)
  * - Filters cart to process only merchant's catalogItems
- * - Removes only merchant's catalogItems from cart after order
+ * - Removes only merchant's catalogItems from cart after purchase
  *
  * Modified: 2025-01-19 for Merchant Checkout System
  * ====================================================================
@@ -188,7 +188,7 @@ class PaypalController extends CheckoutBaseControlller
 
             PurchaseHelper::license_check($cart); // For License Checking
 
-            // Serialize cart for order (using filtered merchant cart)
+            // Serialize cart for purchase (using filtered merchant cart)
             $new_cart = [];
             $new_cart['totalQty'] = $cart->totalQty;
             $new_cart['totalPrice'] = $cart->totalPrice;

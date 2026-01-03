@@ -319,7 +319,7 @@
                                     <button class="action-btn qtminus" type="button">-</button>
 
                                     {{-- minimum_qty from $merchant --}}
-                                    <input class="qty-input qttotal" type="text" readonly id="order-qty"
+                                    <input class="qty-input qttotal" type="text" readonly id="purchase-qty"
                                         value="{{ $mpMinQty }}">
 
                                     <input class="qty-input" type="hidden" id="affilate_user"
@@ -351,7 +351,7 @@
                                     data-merchant-item-id="{{ $merchant->id }}"
                                     data-merchant-user-id="{{ $merchant->user_id }}"
                                     data-min-qty="{{ $mpMinQty }}"
-                                    data-qty-input="#order-qty">
+                                    data-qty-input="#purchase-qty">
                                     @lang('add to cart')
                                 </button>
                             </div>
@@ -360,7 +360,7 @@
                                     data-merchant-item-id="{{ $merchant->id }}"
                                     data-merchant-user-id="{{ $merchant->user_id }}"
                                     data-min-qty="{{ $mpMinQty }}"
-                                    data-qty-input="#order-qty"
+                                    data-qty-input="#purchase-qty"
                                     data-redirect="/cart">
                                     @lang('buy now')
                                 </button>

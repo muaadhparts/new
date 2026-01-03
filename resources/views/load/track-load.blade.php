@@ -1,9 +1,9 @@
 @if (isset($purchase))
 
-    {{-- معلومات الطلب --}}
-    <div class="track-order-info mb-4">
-        <h4>@lang('Order Information')</h4>
-        <p><strong>@lang('Order Number'):</strong> {{ $purchase->purchase_number }}</p>
+    {{-- معلومات المشتراة --}}
+    <div class="track-purchase-info mb-4">
+        <h4>@lang('Purchase Information')</h4>
+        <p><strong>@lang('Purchase Number'):</strong> {{ $purchase->purchase_number }}</p>
         <p><strong>@lang('Status'):</strong> <span class="badge bg-primary">{{ ucwords($purchase->status) }}</span></p>
         <p><strong>@lang('Date'):</strong> {{ date('d M Y', strtotime($purchase->created_at)) }}</p>
     </div>
@@ -72,9 +72,9 @@
         </div>
     @endif
 
-    {{-- Order Timeline --}}
-    <div class="order-timeline">
-        <h4 class="track-section-title mb-4">@lang('Order Timeline')</h4>
+    {{-- Purchase Timeline --}}
+    <div class="purchase-timeline">
+        <h4 class="track-section-title mb-4">@lang('Purchase Timeline')</h4>
         <div class="wrapper">
             <ul class="stepprogress">
                 @foreach ($purchase->timelines as $track)
@@ -91,7 +91,7 @@
 @else
     <div class="text-center py-5">
         <i class="fas fa-search track-empty-icon"></i>
-        <h3 class="track-empty-title">{{ __('No Order Found.') }}</h3>
-        <p class="track-empty-text">{{ __('Please check your order number or tracking number and try again.') }}</p>
+        <h3 class="track-empty-title">{{ __('No Purchase Found.') }}</h3>
+        <p class="track-empty-text">{{ __('Please check your purchase number or tracking number and try again.') }}</p>
     </div>
 @endif

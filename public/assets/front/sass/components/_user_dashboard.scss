@@ -350,7 +350,7 @@
     }
   }
 
-  .order-catalogItems-header {
+  .purchase-catalogItems-header {
     @include screen-768 {
       margin-bottom: 10px;
     }
@@ -634,15 +634,15 @@
   }
 }
 
-.gs-order-track-section {
-  .gs-order-track-title {
+.gs-purchase-track-section {
+  .gs-purchase-track-title {
     p {
       margin-top: 12px;
       font-size: 18px;
     }
   }
 
-  .order-track-area {
+  .purchase-track-area {
     border: 1px solid $text-color-100;
     padding: 40px;
     max-width: 768px;
@@ -650,7 +650,7 @@
     margin-right: auto;
     margin-top: 60px;
 
-    .order-track-title {
+    .purchase-track-title {
       background-color: $text-color-50;
       margin-bottom: 8px;
 
@@ -714,17 +714,17 @@
   }
 
   @include screen-768 {
-    .gs-order-track-title {
+    .gs-purchase-track-title {
       p {
         font-size: 14px;
       }
     }
 
-    .order-track-area {
+    .purchase-track-area {
       padding: 20px;
       margin-top: 20px;
 
-      .order-track-title {
+      .purchase-track-title {
         h4 {
           padding: 29px 20px;
           font-size: 20px;

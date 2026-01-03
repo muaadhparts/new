@@ -39,10 +39,10 @@
         <!-- breadcrumb end -->
 
         <!-- Purchase info cards start  -->
-        <div class="gs-order-info-cards-wrapper row gy-4 row-cols-1 row-cols-md-2 row-cols-xxl-3">
+        <div class="gs-purchase-info-cards-wrapper row gy-4 row-cols-1 row-cols-md-2 row-cols-xxl-3">
             <!-- Purchase Details Card  -->
             <div class="col">
-                <div class="order-info-card order-details-card ">
+                <div class="purchase-info-card purchase-details-card ">
                     <div class="d-flex justify-content-between gap-4">
 
                         <h5 class="title">@lang('Purchase Details')
@@ -114,7 +114,7 @@
             </div>
             <!-- Billing Details Card  -->
             <div class="col">
-                <div class="order-info-card billing-details-card">
+                <div class="purchase-info-card billing-details-card">
                     <h5 class="title">@lang('Billing Details')</h5>
                     <ul class="info-list">
                         <li class="info-list-item">
@@ -150,7 +150,7 @@
             @if ($purchase->dp == 0)
                 <!-- Shipping Address Card  -->
                 <div class="col">
-                    <div class="order-info-card shipping-address-card">
+                    <div class="purchase-info-card shipping-address-card">
                         <h5 class="title">@lang('Shipping Address')</h5>
                         <ul class="info-list">
 
@@ -212,7 +212,7 @@
 
             @if ($shipment || $delivery || $customerChoice)
                 <div class="col">
-                    <div class="order-info-card">
+                    <div class="purchase-info-card">
                         <h5 class="title">
                             <i class="fas fa-truck"></i> @lang('Shipping Status')
                         </h5>
@@ -319,7 +319,7 @@
         <!-- Purchase info cards end  -->
 
         <!-- Table area start  -->
-        <div class="merchant-table-wrapper order-details-table-wrapper">
+        <div class="merchant-table-wrapper purchase-details-table-wrapper">
             <h4 class="table-title">@lang('Items Purchased')</h4>
             <div class="user-table table-responsive  position-relative">
                 <table  class="gs-data-table w-100">

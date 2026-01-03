@@ -23,7 +23,7 @@ controllers = [
 
 base_path = r'C:\Users\hp\Herd\new\app\Http\Controllers\Payment\Checkout'
 
-# Pattern to match the old code that calculates order total
+# Pattern to match the old code that calculates purchase total
 old_pattern = re.compile(
     r'\$orderCalculate\s*=\s*PriceHelper::getOrderTotal.*?'
     r'(?:if\s*\(\$this->gs->multiple_shipping\s*==\s*0\).*?'

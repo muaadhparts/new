@@ -1592,12 +1592,12 @@ table button.approve:hover,
    ======================================== */
 [dir="rtl"] .muaadh-topbar-left,
 [dir="rtl"] .header-left {
-    order: 2;
+    purchase: 2;
 }
 
 [dir="rtl"] .muaadh-topbar-right,
 [dir="rtl"] .header-right {
-    order: 1;
+    purchase: 1;
 }
 
 [dir="rtl"] .muaadh-search button,

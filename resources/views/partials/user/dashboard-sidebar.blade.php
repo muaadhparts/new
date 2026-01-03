@@ -24,7 +24,7 @@
       <li class=""><a class="{{ Request::url() == route('user-wwt-index') ? 'active' : '' }}"
           href="{{route('user-wwt-index')}}">{{ __('Withdraw') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-purchase-track') ? 'active' : '' }}"
-          href="{{route('user-purchase-track')}}">{{ __('Order Tracking') }}</a></li>
+          href="{{route('user-purchase-track')}}">{{ __('Purchase Tracking') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-favorites') ? 'active' : '' }}"
           href="{{route('user-favorites')}}">{{ __('Favourite Sellers') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-messages') ? 'active' : '' }}"

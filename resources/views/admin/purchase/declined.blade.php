@@ -75,7 +75,7 @@
       <!-- Modal footer -->
       <div class="modal-footer justify-content-center">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Cancel') }}</button>
-            <a class="btn btn-success btn-ok order-btn">{{ __('Proceed') }}</a>
+            <a class="btn btn-success btn-ok purchase-btn">{{ __('Proceed') }}</a>
       </div>
 
     </div>

@@ -77,7 +77,7 @@
 
 
                     </div>
-                    <div class="col-lg-5 col-xl-4 order-0 order-lg-1">
+                    <div class="col-lg-5 col-xl-4 purchase-0 purchase-lg-1">
                         <div class="summary-box">
                             <h4 class="form-title">@lang('PRICE DETAILS')</h4>
 

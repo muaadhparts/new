@@ -572,7 +572,7 @@ table.dataTable thead .sorting_desc_disabled::after {
 /* Ending of Dashboard Products area */
 
 /* Starting of Dashboard Orders area */
-.order-header-right {
+.purchase-header-right {
     display: inline-block;
     float: right;
     margin-top: 8px;
@@ -623,16 +623,16 @@ table.dataTable thead .sorting_desc_disabled::after {
 .website-content-lower-form {padding: 20px 20px 0px 20px;}
 /* Ending of Dashboard Website Contents area */
 
-/* Starting of Dashboard Website Order view Details area */
-.table-responsive.order-details-table {padding: 20px;}
+/* Starting of Dashboard Website Purchase view Details area */
+.table-responsive.purchase-details-table {padding: 20px;}
 .o-pending {
     color: #FFFFFF;
     background-color: #985f0d;
 }
-.add-product_btn.order-details {
+.add-product_btn.purchase-details {
     margin: 5px 15px 25px 15px;
 }
-/* Ending of Dashboard Website Order view Details area */
+/* Ending of Dashboard Website Purchase view Details area */
 
 /* Starting of Dashboard home Top refference & pie chart area */
 #chartContainer, #chartContainer-topReference, #chartContainer-os {
@@ -983,14 +983,14 @@ table.dataTable thead .sorting_desc_disabled::after {
 /*  Ending of Invoice area  */
 
 /*  Starting of new view details area  */
-.order-table-wrap {padding: 20px;}
-.order-table-wrap .table>tbody>tr>td, 
-.order-table-wrap .table>tbody>tr>th
+.purchase-table-wrap {padding: 20px;}
+.purchase-table-wrap .table>tbody>tr>td, 
+.purchase-table-wrap .table>tbody>tr>th
  {border-top: none;}
-.order-table-wrap .table>tbody>tr.tr-head {
+.purchase-table-wrap .table>tbody>tr.tr-head {
     position: relative;
 }
-.order-table-wrap .table>tbody>tr.tr-head:after {
+.purchase-table-wrap .table>tbody>tr.tr-head:after {
     position: absolute;
     content: "";
     left: 20px;
@@ -1000,9 +1000,9 @@ table.dataTable thead .sorting_desc_disabled::after {
     background-color: transparent;
     border-bottom: 2px solid #0165cbc2;
 }
-.order-table-wrap .table>tbody>tr>th.order-th {font-size: 22px;}
-.order-table-wrap .table td,
-.order-table-wrap .table th {padding: 0.50rem;}
+.purchase-table-wrap .table>tbody>tr>th.purchase-th {font-size: 22px;}
+.purchase-table-wrap .table td,
+.purchase-table-wrap .table th {padding: 0.50rem;}
 /*  Ending of new view details area  */
 
 .form-horizontal label span {

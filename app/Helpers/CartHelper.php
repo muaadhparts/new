@@ -134,7 +134,7 @@ class CartHelper
         if ($minQty < 1) $minQty = 1;
 
         if ($qty < $minQty) {
-            return ['success' => false, 'message' => __('Minimum order quantity is') . ' ' . $minQty, 'cart' => null];
+            return ['success' => false, 'message' => __('Minimum purchase quantity is') . ' ' . $minQty, 'cart' => null];
         }
 
         // تحديد المقاس الافتراضي إذا لم يُحدد

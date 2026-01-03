@@ -47,7 +47,7 @@
                         </defs>
                     </svg>
                     <h3>@lang('THANK YOU FOR YOUR PURCHASE')</h3>
-                    <h5>@lang("We'll email you an order confirmation with details and tracking info")</h5>
+                    <h5>@lang("We'll email you an purchase confirmation with details and tracking info")</h5>
 
                     {{-- زر العودة: للسلة إذا فيها منتجات، أو للرئيسية إذا فارغة --}}
                     @php
@@ -64,10 +64,10 @@
                     @endif
                 </div>
                 <div class=" success-invoice-body wow-replaced" data-wow-delay=".1s">
-                    <h4>@lang('Order#') {{ $purchase->purchase_number }}</h4>
-                    <p>@lang('Order Date') {{ date('d-M-Y', strtotime($purchase->created_at)) }}</p>
+                    <h4>@lang('Purchase#') {{ $purchase->purchase_number }}</h4>
+                    <p>@lang('Purchase Date') {{ date('d-M-Y', strtotime($purchase->created_at)) }}</p>
                 </div>
-                <div class="row order-details-area wow-replaced" data-wow-delay=".1s">
+                <div class="row purchase-details-area wow-replaced" data-wow-delay=".1s">
 
 
                     @if ($purchase->dp == 1)
@@ -424,7 +424,7 @@
     // مسح بيانات الموقع المحفوظة بعد نجاح الطلب
     // ============================================
     $(document).ready(function() {
-        // Clear checkout location data from localStorage after successful order
+        // Clear checkout location data from localStorage after successful purchase
         if (localStorage.getItem('selectedLocation')) {
             localStorage.removeItem('selectedLocation');
             console.log('✅ تم مسح بيانات الموقع المحفوظة بعد نجاح الطلب');

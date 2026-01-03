@@ -16,14 +16,14 @@
 
                         <h3 class="ud-page-title">
                             @if (request()->input('type') == 'complete')
-                                {{ __('Complete Orders') }}
+                                {{ __('Complete Purchases') }}
                             @else
-                                {{ __('Pending Orders') }}
+                                {{ __('Pending Purchases') }}
                             @endif
                         </h3>
                     </div>
 
-                    <!--  order status steps -->
+                    <!--  purchase status steps -->
 
                     <div class="user-table table-responsive position-relative">
 
@@ -31,11 +31,11 @@
                             <thead>
                                 <tr>
 
-                                    <th>{{ __('#Order') }}</th>
+                                    <th>{{ __('#Purchase') }}</th>
                                     <th>{{ __('Service Area') }}</th>
                                     <th>{{ __('Pickup Point') }}</th>
-                                    <th>{{ __('Order Total') }}</th>
-                                    <th>{{ __('Order Status') }}</th>
+                                    <th>{{ __('Purchase Total') }}</th>
+                                    <th>{{ __('Purchase Status') }}</th>
                                     <th>{{ __('View') }}</th>
                                 </tr>
 
@@ -43,7 +43,7 @@
                             <tbody>
                                 @forelse ($purchases as $purchase)
                                     <tr>
-                                        <td data-label="{{ __('#Order') }}">
+                                        <td data-label="{{ __('#Purchase') }}">
                                             {{ $purchase->purchase->purchase_number }}
                                         </td>
                                         <td data-label="{{ __('Service Area') }}">
@@ -58,7 +58,7 @@
                                             </p>
                                         </td>
 
-                                        <td data-label="{{ __('Order Total') }}">
+                                        <td data-label="{{ __('Purchase Total') }}">
 
                                             @php
 
@@ -89,7 +89,7 @@
                                                 $purchase->currency_sign,
                                             ) }}
                                         </td>
-                                        <td data-label="{{ __('Order Status') }}">
+                                        <td data-label="{{ __('Purchase Status') }}">
                                             <div class="">
                                                 <span
                                                     class="px-3 py-2 md-btn rounded {{ $purchase->status == 'pending' ? 'bg-pending' : 'bg-complete' }} mx-auto">{{ ucwords($purchase->status) }}
@@ -118,7 +118,7 @@
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6">{{ __('No orders found') }}</td>
+                                        <td colspan="6">{{ __('No purchases found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>

@@ -16,7 +16,7 @@
                         <div>
                             <h6 class="mt-5 ms-3">
                                 @if ($conv->purchase_number != null)
-                                    {{ __('Order Number:') }} {{ $conv->purchase_number }}
+                                    {{ __('Purchasease Number:') }} {{ $conv->purchase_number }}
                                 @endif
                             </h6>
 

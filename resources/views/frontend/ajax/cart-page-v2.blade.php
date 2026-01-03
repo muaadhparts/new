@@ -281,7 +281,7 @@
                             $merchantSubtotal = $merchantTotal + $merchantDiscount;
                         @endphp
 
-                        <h5 class="m-cart__summary-title">@lang('Order Summary')</h5>
+                        <h5 class="m-cart__summary-title">@lang('Purchase Summary')</h5>
 
                         <div class="m-cart__summary-row">
                             <span>@lang('Subtotal') ({{ $merchantGroup['count'] ?? 0 }})</span>
@@ -518,7 +518,7 @@ jQuery(document).ready(function($) {
 
         // Check minimum limit - show elegant message
         if (currentQty <= minQty) {
-            showQtyHint($wrapper, '{{ __("Minimum order") }}: ' + minQty, 'min');
+            showQtyHint($wrapper, '{{ __("Minimum purchase") }}: ' + minQty, 'min');
             return;
         }
 
@@ -537,7 +537,7 @@ jQuery(document).ready(function($) {
             success: function(resp) {
                 if (resp === 0 || resp === '0') {
                     // Server rejected - show min limit message
-                    showQtyHint($wrapper, '{{ __("Minimum order") }}: ' + minQty, 'min');
+                    showQtyHint($wrapper, '{{ __("Minimum purchase") }}: ' + minQty, 'min');
                     return;
                 }
                 $qtyInput.val(resp[1]);

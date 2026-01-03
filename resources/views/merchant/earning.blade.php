@@ -63,11 +63,11 @@
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
-                                <th>{{ __('Order Number') }}</th>
+                                <th>{{ __('Purchase Number') }}</th>
                                 <th>{{ __('Total Earning') }}</th>
                                 <th>{{ __('Payment Method') }}</th>
                                 <th>{{ __('Txn Id') }}</th>
-                                <th>{{ __('Order Date') }}</th>
+                                <th>{{ __('Purchase Date') }}</th>
                             </tr>
                         </thead>
                         <tbody>

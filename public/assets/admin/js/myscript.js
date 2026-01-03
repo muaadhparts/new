@@ -293,7 +293,7 @@
       $("#muaadhtable").DataTable().ajax.reload();
     });
 
-    $(document).on("change", ".order-droplinks", function (e) {
+    $(document).on("change", ".purchase-droplinks", function (e) {
       bootstrap.Modal.getOrCreateInstance(document.getElementById('confirm-delete2')).show();
       $("#confirm-delete2").find(".btn-ok").attr("href", $(this).val());
     });
@@ -755,9 +755,9 @@
           $(".alert-danger").hide();
           $(".alert-success").show();
           $(".alert-success p").html(data[0]);
-          $(".nice-select.process.select.order-droplinks").attr(
+          $(".nice-select.process.select.purchase-droplinks").attr(
             "class",
-            "nice-select process select order-droplinks " + data[1]
+            "nice-select process select purchase-droplinks " + data[1]
           );
         },
       });
@@ -1012,7 +1012,7 @@
         success: function (data) {
           $("#user-notf-count").html(data["user_count"]);
           $("#conv-notf-count").html(data["conv_count"]);
-          $("#order-notf-count").html(data["order_count"]);
+          $("#purchase-notf-count").html(data["order_count"]);
           $("#catalogItem-notf-count").html(data["product_count"]);
         },
       });
@@ -1038,13 +1038,13 @@
   // ORDER NOTIFICATION
 
   $(document).on("click", "#notf_order", function () {
-    $("#order-notf-count").html("0");
-    $("#order-notf-show").load($("#order-notf-show").data("href"));
+    $("#purchase-notf-count").html("0");
+    $("#purchase-notf-show").load($("#purchase-notf-show").data("href"));
   });
 
-  $(document).on("click", "#order-notf-clear", function () {
+  $(document).on("click", "#purchase-notf-clear", function () {
     $(this).parent().parent().trigger("click");
-    $.get($("#order-notf-clear").data("href"));
+    $.get($("#purchase-notf-clear").data("href"));
   });
 
   // ORDER NOTIFICATION ENDS
@@ -1087,7 +1087,7 @@
     var token = $(this).find("input[name=_token]").val();
     var type = $(this).find("input[name=type]").val();
     var subject = $(this).find("input[name=subject]").val();
-    var order = $(this).find("input[name=order_number]").val();
+    var purchase = $(this).find("input[name=order_number]").val();
     var message = $(this).find("textarea[name=message]").val();
     var to = $(this).find("input[name=to]").val();
     $("#eml1").prop("disabled", true);
@@ -1101,7 +1101,7 @@
         _token: token,
         subject: subject,
         message: message,
-        order: order,
+        purchase: purchase,
         to: to,
         type: type,
       },
@@ -1135,7 +1135,7 @@
     $("#emlsub").prop("disabled", true);
     $.ajax({
       type: "post",
-      url: mainurl + "/admin/order/email",
+      url: mainurl + "/admin/purchase/email",
       data: {
         _token: token,
         subject: subject,

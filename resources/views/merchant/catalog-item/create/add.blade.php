@@ -153,9 +153,9 @@
                                 <!-- Minimum Quantity -->
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">@lang('Minimum Order Quantity')</label>
+                                        <label class="form-label">@lang('Minimum Purchase Quantity')</label>
                                         <input type="number" class="form-control" name="minimum_qty"
-                                               placeholder="@lang('Optional - minimum qty per order')">
+                                               placeholder="@lang('Optional - minimum qty per purchase')">
                                     </div>
                                 </div>
 

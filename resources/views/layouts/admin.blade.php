@@ -150,7 +150,7 @@
 								<li class="bell-area">
 									<a id="notf_order" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-newspaper"></i>
-										<span id="order-notf-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
+										<span id="purchase-notf-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper" data-href="{{ route('purchase-notf-show') }}"

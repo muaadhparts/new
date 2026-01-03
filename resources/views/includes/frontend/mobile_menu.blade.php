@@ -281,7 +281,7 @@
                     </a>
                     <a href="{{ route('user-purchases') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-shopping-bag"></i>
-                        <span>@lang('My Orders')</span>
+                        <span>@lang('My Purchases')</span>
                     </a>
                     <a href="{{ route('user-favorites') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-heart"></i>

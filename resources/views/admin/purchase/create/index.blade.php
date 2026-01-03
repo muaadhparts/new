@@ -41,7 +41,7 @@
                     <div class="mr-table allproduct">
                       @include('alerts.admin.form-success') 
                       <div class="table-responsive" style="height: 100vh">
-                          <table id="order-muaadhtable"   class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                          <table id="purchase-muaadhtable"   class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                               <tr>
                                 <th >{{ __('CatalogItem') }}</th>
@@ -111,7 +111,7 @@
   (function($) {
 		"use strict";
     $('#sidebarCollapse').click();
-		var table = $('#order-muaadhtable').DataTable({
+		var table = $('#purchase-muaadhtable').DataTable({
         ordering: false,
         processing: true,
         serverSide: true,

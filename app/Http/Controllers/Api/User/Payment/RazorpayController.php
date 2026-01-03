@@ -54,7 +54,7 @@ class RazorpayController extends Controller
             'payment_capture' => 1, // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($purchaseData);
+        $razorpayOrder = $this->api->purchase->create($purchaseData);
 
         $razorpayOrderId = $razorpayOrder['id'];
 
@@ -113,7 +113,7 @@ class RazorpayController extends Controller
     public function razorCallback(Request $request)
     {
         $success = true;
-        $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
+        $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
         $purchase_id = $razorpayOrder['receipt'];
         $purchase = Deposit::where('deposit_number', $purchase_id)->first();
         $cancel_url = route('user.deposit.send', $purchase->deposit_number);
@@ -125,7 +125,7 @@ class RazorpayController extends Controller
 
             try
             {
-                // Please note that the razorpay order ID must
+                // Please note that the razorpay purchase ID must
                 // come from a trusted source (session here, but
                 // could be database or something else)
                 $attributes = array(
@@ -143,7 +143,7 @@ class RazorpayController extends Controller
 
         if ($success === true) {
 
-            $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
+            $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
 
             $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];

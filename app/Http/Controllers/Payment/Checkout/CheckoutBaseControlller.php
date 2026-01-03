@@ -46,12 +46,12 @@ class CheckoutBaseControlller extends Controller
     }
 
     /**
-     * Prepare order data using total from step3 (no recalculation)
+     * Prepare purchase data using total from step3 (no recalculation)
      * Ensures merchant isolation and correct total handling
      *
      * @param array $input Request input data
      * @param \App\Models\Cart $cart Cart object
-     * @return array Prepared order data
+     * @return array Prepared purchase data
      */
     protected function prepareOrderData($input, $cart)
     {

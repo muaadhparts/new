@@ -40,7 +40,7 @@
                                         <small class="d-block">{{ $data->subtitle }}</small>
                                         @if(($data->free_above ?? 0) > 0)
                                             <small class="text-success d-block free-shipping-hint">
-                                                @lang('Free shipping if order above') {{ $curr->sign }}{{ round($data->free_above * $curr->value, 2) }}
+                                                @lang('Free shipping if purchase above') {{ $curr->sign }}{{ round($data->free_above * $curr->value, 2) }}
                                             </small>
                                         @endif
                                     </label>

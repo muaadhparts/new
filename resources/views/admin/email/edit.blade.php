@@ -27,8 +27,8 @@
                                                 <td>{customer_name}</td>
                                             </tr>
                                             <tr>
-                                                <td>{{ __('Order Amount') }}</td>
-                                                <td>{order_amount}</td>
+                                                <td>{{ __('Purchase Amount') }}</td>
+                                                <td>{purchase_amount}</td>
                                             </tr>
                                             <tr>
                                                 <td>{{ __('Admin Name') }}</td>
@@ -43,8 +43,8 @@
                                                 <td>{website_title}</td>
                                             </tr>
                                             <tr>
-                                                <td>{{ __('Order Number') }}</td>
-                                                <td>{order_number}</td>
+                                                <td>{{ __('Purchase Number') }}</td>
+                                                <td>{purchase_number}</td>
                                             </tr>
 
                                             </tbody>

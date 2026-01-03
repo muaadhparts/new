@@ -10,7 +10,7 @@ require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-use App\Models\Order;
+use App\Models\Purchase;
 use App\Models\VendorOrder;
 use Illuminate\Support\Facades\DB;
 
@@ -63,26 +63,26 @@ echo "2️⃣  فحص إنشاء الطلب في قاعدة البيانات\n";
 echo str_repeat("─", 79) . "\n";
 
 // Get recent orders for analysis
-$recentOrders = Order::orderBy('id', 'desc')->take(20)->get();
+$recentOrders = Purchase::orderBy('id', 'desc')->take(20)->get();
 
 $singleVendorCount = 0;
 $multiVendorCount = 0;
 $invalidOrders = [];
 
-foreach ($recentOrders as $order) {
-    $vendorIds = json_decode($order->vendor_ids, true);
+foreach ($recentOrders as $purchase) {
+    $vendorIds = json_decode($purchase->vendor_ids, true);
 
     if (!is_array($vendorIds)) {
-        $invalidOrders[] = "Order #{$order->id}: vendor_ids is not valid JSON";
+        $invalidOrders[] = "Purchase #{$purchase->id}: vendor_ids is not valid JSON";
         continue;
     }
 
     if (count($vendorIds) === 1) {
         $singleVendorCount++;
 
-        // Check order items match vendor
-        if ($order->cart) {
-            $cart = json_decode($order->cart, true);
+        // Check purchase items match vendor
+        if ($purchase->cart) {
+            $cart = json_decode($purchase->cart, true);
             if (isset($cart['items'])) {
                 $cartVendors = [];
                 foreach ($cart['items'] as $item) {
@@ -99,18 +99,18 @@ foreach ($recentOrders as $order) {
                 sort($cartVendorsInt);
 
                 if ($vendorIdsInt !== $cartVendorsInt) {
-                    $errors[] = "Order #{$order->id}: vendor_ids mismatch with cart vendors";
+                    $errors[] = "Purchase #{$purchase->id}: vendor_ids mismatch with cart vendors";
                 }
             }
         }
     } else {
         $multiVendorCount++;
         // Check if this is recent (post-fix)
-        $orderDate = $order->created_at;
+        $orderDate = $purchase->created_at;
         $fixDate = \Carbon\Carbon::parse('2025-10-20 12:00:00');
 
         if ($orderDate->gt($fixDate)) {
-            $errors[] = "Order #{$order->id}: Multi-vendor order created AFTER fix date ({$orderDate})";
+            $errors[] = "Purchase #{$purchase->id}: Multi-vendor purchase created AFTER fix date ({$orderDate})";
         }
     }
 }
@@ -135,14 +135,14 @@ echo "\n   📦 فحص VendorOrders:\n";
 echo "   إجمالي: $vendorOrdersCount\n";
 
 foreach ($recentVendorOrders as $vo) {
-    $mainOrder = Order::find($vo->order_id);
+    $mainOrder = Purchase::find($vo->order_id);
     if ($mainOrder) {
         $vendorIds = json_decode($mainOrder->vendor_ids, true);
         if (is_array($vendorIds) && in_array($vo->user_id, $vendorIds)) {
-            echo "   ✅ VendorOrder #{$vo->id} → Order #{$vo->order_id} (Vendor: {$vo->user_id})\n";
+            echo "   ✅ VendorOrder #{$vo->id} → Purchase #{$vo->order_id} (Vendor: {$vo->user_id})\n";
         } else {
             echo "   ❌ VendorOrder #{$vo->id} vendor mismatch\n";
-            $errors[] = "VendorOrder #{$vo->id}: vendor_id {$vo->user_id} not in main order vendor_ids";
+            $errors[] = "VendorOrder #{$vo->id}: vendor_id {$vo->user_id} not in main purchase vendor_ids";
         }
     }
 }
@@ -157,7 +157,7 @@ echo str_repeat("─", 79) . "\n";
 
 // Check email templates
 $emailPaths = [
-    'resources/views/email/order/*.blade.php',
+    'resources/views/email/purchase/*.blade.php',
     'resources/views/email/*.blade.php',
     'resources/views/vendor/email/*.blade.php'
 ];
@@ -188,9 +188,9 @@ if (file_exists(__DIR__ . '/app/Classes/MuaadhMailer.php')) {
 
 // Check invoice views
 $invoiceViews = [
-    'resources/views/user/order/invoice.blade.php',
-    'resources/views/admin/order/invoice.blade.php',
-    'resources/views/vendor/order/invoice.blade.php'
+    'resources/views/user/purchase/invoice.blade.php',
+    'resources/views/admin/purchase/invoice.blade.php',
+    'resources/views/vendor/purchase/invoice.blade.php'
 ];
 
 foreach ($invoiceViews as $view) {
@@ -229,7 +229,7 @@ foreach ($webhookControllers as $name => $path) {
 
     // Check for webhook/notify/callback methods
     $hasWebhook = preg_match('/function\s+(webhook|notify|callback)/i', $content);
-    $hasOrderDuplication = preg_match('/Order.*create.*Order.*create/is', $content);
+    $hasOrderDuplication = preg_match('/Purchase.*create.*Purchase.*create/is', $content);
     $hasVendorCheck = strpos($content, 'vendor_id') !== false || strpos($content, 'vendor_ids') !== false;
 
     echo "   📡 {$name}:\n";
@@ -241,8 +241,8 @@ foreach ($webhookControllers as $name => $path) {
     }
 
     if ($hasOrderDuplication) {
-        echo "      ⚠️  تحذير: قد يوجد Order->create متعدد (خطر تكرار الطلب)\n";
-        $warnings[] = "{$name}: Potential duplicate order creation";
+        echo "      ⚠️  تحذير: قد يوجد Purchase->create متعدد (خطر تكرار الطلب)\n";
+        $warnings[] = "{$name}: Potential duplicate purchase creation";
     }
 
     if ($hasVendorCheck) {

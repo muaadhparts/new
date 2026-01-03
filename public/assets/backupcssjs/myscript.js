@@ -35,7 +35,7 @@
 
   // CatalogItem Add Qty
   $(document).on("click", ".qtplus", function () {
-    var $tselector = $("#order-qty");
+    var $tselector = $("#purchase-qty");
     var stock = $("#stock").val();
     var total = $($tselector).val();
     if (stock != "") {
@@ -53,7 +53,7 @@
 
   // CatalogItem Minus Qty
   $(document).on("click", ".qtminus", function () {
-    var $tselector = $("#order-qty");
+    var $tselector = $("#purchase-qty");
     var total = $($tselector).val();
     if (total > 1) {
       total--;
@@ -246,7 +246,7 @@
 
     // get all the input values
     pid = $("#catalog_item_id").val();
-    qty = $("#order-qty").val();
+    qty = $("#purchase-qty").val();
     size_key = $(".cart_size input:checked").val();
     size = $(".cart_size input:checked").attr("data-key");
     size_qty = $(".cart_size input:checked").attr("data-qty");
@@ -330,7 +330,7 @@
 
     // get all the input values
     pid = $("#catalog_item_id").val();
-    qty = $("#order-qty").val();
+    qty = $("#purchase-qty").val();
     size_key = $(".cart_size input:checked").val();
     size = $(".cart_size input:checked").attr("data-key");
     size_qty = $(".cart_size input:checked").attr("data-qty");

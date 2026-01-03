@@ -165,7 +165,7 @@ class MessageController extends UserBaseController
     {
 
         if ($request->type == 'Dispute') {
-            $purchase = Purchase::where('purchase_number', $request->order)->exists();
+            $purchase = Purchase::where('purchase_number', $request->purchase)->exists();
             if (!$purchase) {
                 return back()->with('unsuccess', 'Purchase Number Not Found');
             }
@@ -205,7 +205,7 @@ class MessageController extends UserBaseController
             $thread->subject = $subject;
             $thread->user_id = $user->id;
             $thread->message = $request->message;
-            $thread->purchase_number = $request->order;
+            $thread->purchase_number = $request->purchase;
             $thread->type = $request->type;
             $thread->save();
             $notification = new CatalogEvent;

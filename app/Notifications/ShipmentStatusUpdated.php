@@ -52,7 +52,7 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
                 return $message->line(__('Location') . ': ' . $this->shipmentLog->location);
             })
             ->action(__('Track Shipment'), route('front.tracking', ['tracking' => $this->shipmentLog->tracking_number]))
-            ->line(__('Thank you for your order!'));
+            ->line(__('Thank you for your purchase!'));
     }
 
     /**
@@ -98,7 +98,7 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
     protected function getMessageByStatus(): string
     {
         return match($this->shipmentLog->status) {
-            'created' => __('Your order has been shipped and a tracking number has been assigned.'),
+            'created' => __('Your purchase has been shipped and a tracking number has been assigned.'),
             'picked_up' => __('Your shipment has been picked up from the warehouse and is being processed.'),
             'in_transit' => __('Your package is currently in transit to your delivery address.'),
             'out_for_delivery' => __('Great news! Your package is out for delivery and will arrive today.'),

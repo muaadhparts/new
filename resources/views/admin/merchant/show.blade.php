@@ -110,8 +110,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="order-table-wrap">
-                                                <div class="order-details-table">
+                                            <div class="purchase-table-wrap">
+                                                <div class="purchase-details-table">
                                                     <div class="mr-table">
                                                         <h4 class="title">{{ __("Items Added") }}</h4>
                                                         <div class="table-responsive">

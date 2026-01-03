@@ -247,7 +247,7 @@
                                                 <ul class="list">
                                                     <li>
                                                         <input class="checkclick1" name="minimum_qty_check" type="checkbox" id="check111" value="1" {{$data->minimum_qty != null ? "checked":""}}>
-                                                        <label for="check111">{{ __('Allow Minimum Order Qty') }}</label>
+                                                        <label for="check111">{{ __('Allow Minimum Purchase Qty') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -257,12 +257,12 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Minimum Order Qty') }}* </h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Minimum Purchase Qty') }}* </h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
                                                     <input type="number" class="form-control" min="1"
-                                                        placeholder="{{ __('Minimum Order Qty') }}" name="minimum_qty" value="{{  $data->minimum_qty == null ? '' : $data->minimum_qty  }}">
+                                                        placeholder="{{ __('Minimum Purchase Qty') }}" name="minimum_qty" value="{{  $data->minimum_qty == null ? '' : $data->minimum_qty  }}">
                                                 </div>
                                             </div>
                                         </div>

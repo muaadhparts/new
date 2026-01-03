@@ -249,7 +249,7 @@
                 {data: 'created_at', name: 'created_at'},
                 {data: 'action', name: 'action', orderable: false, searchable: false}
             ],
-            order: [[0, 'desc']],
+            purchase: [[0, 'desc']],
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json'
             }

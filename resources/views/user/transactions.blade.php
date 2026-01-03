@@ -17,7 +17,7 @@
                     <h3 class="ud-page-title">@lang('Transactions')</h3>
                 </div>
 
-                <!--  order status steps -->
+                <!--  purchase status steps -->
 
                 <div class="user-table table-responsive position-relative">
 

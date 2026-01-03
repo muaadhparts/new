@@ -26,7 +26,7 @@ class HomePageTheme extends Model
         'show_blogs',
         'show_services',
         'show_newsletter',
-        // Section Order
+        // Section Purchase
         'order_slider',
         'order_brands',
         'order_categories',
@@ -122,23 +122,23 @@ class HomePageTheme extends Model
     public function getOrderedSections()
     {
         $sections = [
-            'slider' => ['show' => $this->show_slider, 'order' => $this->order_slider],
-            'brands' => ['show' => $this->show_brands, 'order' => $this->order_brands, 'title' => $this->title_brands],
-            'categories' => ['show' => $this->show_categories, 'order' => $this->order_categories, 'title' => $this->title_categories],
-            'arrival' => ['show' => $this->show_arrival, 'order' => $this->order_arrival, 'title' => $this->title_arrival],
-            'featured_products' => ['show' => $this->show_featured_products, 'order' => $this->order_featured_products, 'title' => $this->title_featured_products, 'count' => $this->count_featured_products],
-            'deal_of_day' => ['show' => $this->show_deal_of_day, 'order' => $this->order_deal_of_day, 'title' => $this->title_deal_of_day],
-            'top_rated' => ['show' => $this->show_top_rated, 'order' => $this->order_top_rated, 'title' => $this->title_top_rated, 'count' => $this->count_top_rated],
-            'big_save' => ['show' => $this->show_big_save, 'order' => $this->order_big_save, 'title' => $this->title_big_save, 'count' => $this->count_big_save],
-            'trending' => ['show' => $this->show_trending, 'order' => $this->order_trending, 'title' => $this->title_trending, 'count' => $this->count_trending],
-            'best_sellers' => ['show' => $this->show_best_sellers, 'order' => $this->order_best_sellers, 'title' => $this->title_best_sellers, 'count' => $this->count_best_sellers],
-            'blogs' => ['show' => $this->show_blogs, 'order' => $this->order_blogs, 'title' => $this->title_blogs, 'count' => $this->count_blogs],
-            'services' => ['show' => $this->show_services, 'order' => $this->order_services],
-            'newsletter' => ['show' => $this->show_newsletter, 'order' => $this->order_newsletter],
+            'slider' => ['show' => $this->show_slider, 'purchase' => $this->order_slider],
+            'brands' => ['show' => $this->show_brands, 'purchase' => $this->order_brands, 'title' => $this->title_brands],
+            'categories' => ['show' => $this->show_categories, 'purchase' => $this->order_categories, 'title' => $this->title_categories],
+            'arrival' => ['show' => $this->show_arrival, 'purchase' => $this->order_arrival, 'title' => $this->title_arrival],
+            'featured_products' => ['show' => $this->show_featured_products, 'purchase' => $this->order_featured_products, 'title' => $this->title_featured_products, 'count' => $this->count_featured_products],
+            'deal_of_day' => ['show' => $this->show_deal_of_day, 'purchase' => $this->order_deal_of_day, 'title' => $this->title_deal_of_day],
+            'top_rated' => ['show' => $this->show_top_rated, 'purchase' => $this->order_top_rated, 'title' => $this->title_top_rated, 'count' => $this->count_top_rated],
+            'big_save' => ['show' => $this->show_big_save, 'purchase' => $this->order_big_save, 'title' => $this->title_big_save, 'count' => $this->count_big_save],
+            'trending' => ['show' => $this->show_trending, 'purchase' => $this->order_trending, 'title' => $this->title_trending, 'count' => $this->count_trending],
+            'best_sellers' => ['show' => $this->show_best_sellers, 'purchase' => $this->order_best_sellers, 'title' => $this->title_best_sellers, 'count' => $this->count_best_sellers],
+            'blogs' => ['show' => $this->show_blogs, 'purchase' => $this->order_blogs, 'title' => $this->title_blogs, 'count' => $this->count_blogs],
+            'services' => ['show' => $this->show_services, 'purchase' => $this->order_services],
+            'newsletter' => ['show' => $this->show_newsletter, 'purchase' => $this->order_newsletter],
         ];
 
-        // Sort by order and filter only visible sections
-        uasort($sections, fn($a, $b) => $a['order'] <=> $b['order']);
+        // Sort by purchase and filter only visible sections
+        uasort($sections, fn($a, $b) => $a['purchase'] <=> $b['purchase']);
 
         return $sections;
     }

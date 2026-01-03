@@ -186,16 +186,16 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-            <!-- Order Info -->
+            <!-- Purchase Info -->
             @if($purchase)
             <div class="card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>@lang('Order Information')</h5>
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>@lang('Purchase Information')</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm table-borderless mb-0">
                         <tr>
-                            <td class="text-muted">@lang('Order Number')</td>
+                            <td class="text-muted">@lang('Purchase Number')</td>
                             <td class="text-end fw-bold">
                                 <a href="{{ route('merchant-purchase-show', $purchase->purchase_number) }}">
                                     {{ $purchase->purchase_number }}
@@ -217,7 +217,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-muted">@lang('Order Status')</td>
+                            <td class="text-muted">@lang('Purchase Status')</td>
                             <td class="text-end">
                                 <span class="badge bg-{{ $purchase->status == 'completed' ? 'success' : ($purchase->status == 'pending' ? 'warning' : 'info') }}">
                                     {{ ucfirst($purchase->status) }}
@@ -227,7 +227,7 @@
                     </table>
                     <hr>
                     <a href="{{ route('merchant-purchase-show', $purchase->purchase_number) }}" class="btn btn-outline-primary btn-sm w-100">
-                        <i class="fas fa-eye me-1"></i> @lang('View Order Details')
+                        <i class="fas fa-eye me-1"></i> @lang('View Purchase Details')
                     </a>
                 </div>
             </div>

@@ -134,7 +134,7 @@
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">{{ __('Search') }}</label>
-                    <input type="text" name="search" class="form-control" placeholder="{{ __('Tracking/Order #') }}" value="{{ $search }}">
+                    <input type="text" name="search" class="form-control" placeholder="{{ __('Tracking/Purchase #') }}" value="{{ $search }}">
                 </div>
                 <div class="col-md-2 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
@@ -159,7 +159,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Tracking Number') }}</th>
-                                    <th>{{ __('Order') }}</th>
+                                    <th>{{ __('Purchase') }}</th>
                                     <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Customer') }}</th>
                                     <th>{{ __('Company') }}</th>
@@ -191,16 +191,16 @@
                                             </a>
                                         </td>
                                         <td>
-                                            @if($shipment->order)
-                                                <a href="{{ route('admin-purchase-show', $shipment->order->id) }}">
-                                                    {{ $shipment->order->purchase_number }}
+                                            @if($shipment->purchase)
+                                                <a href="{{ route('admin-purchase-show', $shipment->purchase->id) }}">
+                                                    {{ $shipment->purchase->purchase_number }}
                                                 </a>
                                             @else
                                                 N/A
                                             @endif
                                         </td>
                                         <td>{{ $shipment->merchant->shop_name ?? 'N/A' }}</td>
-                                        <td>{{ $shipment->order->customer_name ?? 'N/A' }}</td>
+                                        <td>{{ $shipment->purchase->customer_name ?? 'N/A' }}</td>
                                         <td>{{ $shipment->company_name }}</td>
                                         <td>
                                             <span class="badge badge-{{ $color }}">

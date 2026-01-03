@@ -16,31 +16,31 @@ echo "=== PAYMENT FLOW VERIFICATION ===\n\n";
 echo "1️⃣  CHECKING RECENT ORDERS\n";
 echo str_repeat("-", 80) . "\n";
 
-$orders = App\Models\Order::orderBy('id', 'desc')->take(10)->get();
+$orders = App\Models\Purchase::orderBy('id', 'desc')->take(10)->get();
 
 if ($orders->isEmpty()) {
     echo "❌ No orders found\n";
 } else {
-    foreach ($orders as $order) {
-        $vendorIds = json_decode($order->vendor_ids, true);
+    foreach ($orders as $purchase) {
+        $vendorIds = json_decode($purchase->vendor_ids, true);
         $vendorCount = is_array($vendorIds) ? count($vendorIds) : 0;
 
         $status = $vendorCount === 1 ? "✅" : "⚠️ ";
 
         echo sprintf(
-            "%s Order #%d | %s | Amount: %.2f %s | Vendors: %s | Method: %s\n",
+            "%s Purchase #%d | %s | Amount: %.2f %s | Vendors: %s | Method: %s\n",
             $status,
-            $order->id,
-            $order->order_number,
-            $order->pay_amount ?? 0,
-            $order->currency_sign ?? '',
-            $order->vendor_ids ?? 'NULL',
-            $order->method ?? 'N/A'
+            $purchase->id,
+            $purchase->order_number,
+            $purchase->pay_amount ?? 0,
+            $purchase->currency_sign ?? '',
+            $purchase->vendor_ids ?? 'NULL',
+            $purchase->method ?? 'N/A'
         );
 
         // Decode and verify cart matches vendor_ids
-        if ($order->cart) {
-            $cart = json_decode($order->cart, true);
+        if ($purchase->cart) {
+            $cart = json_decode($purchase->cart, true);
             if (isset($cart['items'])) {
                 $cartVendors = [];
                 foreach ($cart['items'] as $item) {
@@ -110,12 +110,12 @@ foreach ($controllers as $controller) {
 echo "\n3️⃣  MULTI-VENDOR ORDER CHECK\n";
 echo str_repeat("-", 80) . "\n";
 
-$multiVendorOrders = App\Models\Order::whereNotNull('vendor_ids')
+$multiVendorOrders = App\Models\Purchase::whereNotNull('vendor_ids')
     ->where('vendor_ids', '!=', '')
     ->where('vendor_ids', '!=', '[]')
     ->get()
-    ->filter(function($order) {
-        $vendors = json_decode($order->vendor_ids, true);
+    ->filter(function($purchase) {
+        $vendors = json_decode($purchase->vendor_ids, true);
         return is_array($vendors) && count($vendors) > 1;
     });
 
@@ -123,14 +123,14 @@ if ($multiVendorOrders->isEmpty()) {
     echo "✅ No multi-vendor orders found (All orders have single vendor)\n";
 } else {
     echo "⚠️  Found " . $multiVendorOrders->count() . " multi-vendor orders:\n";
-    foreach ($multiVendorOrders as $order) {
-        $vendors = json_decode($order->vendor_ids, true);
+    foreach ($multiVendorOrders as $purchase) {
+        $vendors = json_decode($purchase->vendor_ids, true);
         echo sprintf(
-            "   Order #%d | %s | Vendors: %s | Date: %s\n",
-            $order->id,
-            $order->order_number,
+            "   Purchase #%d | %s | Vendors: %s | Date: %s\n",
+            $purchase->id,
+            $purchase->order_number,
             implode(', ', $vendors),
-            $order->created_at->format('Y-m-d H:i:s')
+            $purchase->created_at->format('Y-m-d H:i:s')
         );
     }
 }
@@ -139,8 +139,8 @@ if ($multiVendorOrders->isEmpty()) {
 echo "\n4️⃣  SUMMARY STATISTICS\n";
 echo str_repeat("-", 80) . "\n";
 
-$totalOrders = App\Models\Order::count();
-$ordersWithVendors = App\Models\Order::whereNotNull('vendor_ids')
+$totalOrders = App\Models\Purchase::count();
+$ordersWithVendors = App\Models\Purchase::whereNotNull('vendor_ids')
     ->where('vendor_ids', '!=', '')
     ->where('vendor_ids', '!=', '[]')
     ->count();
@@ -148,12 +148,12 @@ $ordersWithVendors = App\Models\Order::whereNotNull('vendor_ids')
 echo "Total Orders: $totalOrders\n";
 echo "Orders with vendor_ids: $ordersWithVendors\n";
 
-$singleVendorCount = App\Models\Order::whereNotNull('vendor_ids')
+$singleVendorCount = App\Models\Purchase::whereNotNull('vendor_ids')
     ->where('vendor_ids', '!=', '')
     ->where('vendor_ids', '!=', '[]')
     ->get()
-    ->filter(function($order) {
-        $vendors = json_decode($order->vendor_ids, true);
+    ->filter(function($purchase) {
+        $vendors = json_decode($purchase->vendor_ids, true);
         return is_array($vendors) && count($vendors) === 1;
     })
     ->count();

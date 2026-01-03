@@ -267,7 +267,7 @@
     <div class="header-sticky bg-white py-10">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-xxl-2 col-xl-2 col-lg-3 col-6 order-lg-1">
+                <div class="col-xxl-2 col-xl-2 col-lg-3 col-6 purchase-lg-1">
                     <div class="d-flex align-items-center h-100 md-py-10">
                         <div class="nav-leftpush-overlay">
                             <nav class="navbar navbar-expand-lg nav-general nav-primary-hover">
@@ -360,7 +360,7 @@
                                 src="{{asset('assets/images/'.$gs->logo)}}" alt="Image not found !"></a>
                     </div>
                 </div>
-                <div class="col-xxl-3 col-xl-4 col-lg-3 col-6 order-lg-3">
+                <div class="col-xxl-3 col-xl-4 col-lg-3 col-6 purchase-lg-3">
                     <div class="margin-right-1 d-flex align-items-center justify-content-end h-100 md-py-10">
                         <div class="sign-in position-relative font-general my-account-dropdown">
                             <a href="my-account.html"
@@ -433,7 +433,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-xxl-7 col-xl-6 col-lg-6 col-12 order-lg-2">
+                <div class="col-xxl-7 col-xl-6 col-lg-6 col-12 purchase-lg-2">
                     <div class="catalogItem-search-one">
 
                         <form id="searchForm" class="search-form form-inline search-pill-shape"

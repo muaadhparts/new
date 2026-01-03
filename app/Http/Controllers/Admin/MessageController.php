@@ -151,7 +151,7 @@ class MessageController extends AdminBaseController
             $thread->subject = $subject;
             $thread->user_id = $user->id;
             $thread->message = $request->message;
-            $thread->purchase_number = $request->order;
+            $thread->purchase_number = $request->purchase;
             $thread->type = $request->type;
             $thread->save();
             $msg = new SupportMessage();

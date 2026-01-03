@@ -144,7 +144,7 @@
                     <span class="qtplus">
                       <i class="fas fa-plus"></i>
                     </span>
-                    <input class="qttotal" type="text" id="order-qty" value="{{ $item['qty'] }}">
+                    <input class="qttotal" type="text" id="purchase-qty" value="{{ $item['qty'] }}">
                     <span class="qtminus">
                       <i class="fas fa-minus"></i>
                     </span>
@@ -378,7 +378,7 @@
 
       }
 
-     window.location = mainurl+"/admin/order/updatecart/"+order_id+"?id="+pid+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices+"&item_id="+item_id;
+     window.location = mainurl+"/admin/purchase/updatecart/"+order_id+"?id="+pid+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices+"&item_id="+item_id;
  
      });
 

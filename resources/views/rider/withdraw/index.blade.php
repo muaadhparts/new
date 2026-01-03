@@ -18,7 +18,7 @@
                                 class="fas fa-plus"></i> @lang('Withdraw Now')</a>
                     </div>
 
-                    <!--  order status steps -->
+                    <!--  purchase status steps -->
 
                     <div class="user-table table-responsive position-relative">
 

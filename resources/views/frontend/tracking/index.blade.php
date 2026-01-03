@@ -11,7 +11,7 @@
                         <i class="fas fa-shipping-fast me-2"></i>
                         @lang('Track Your Shipment')
                     </h2>
-                    <p class="text-muted mb-4">@lang('Enter your tracking number or order number to track your shipment')</p>
+                    <p class="text-muted mb-4">@lang('Enter your tracking number or purchase number to track your shipment')</p>
 
                     <form action="{{ route('front.tracking') }}" method="GET" class="tracking-form">
                         <div class="row g-3 justify-content-center">
@@ -29,8 +29,8 @@
                             <div class="col-md-4">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-receipt"></i></span>
-                                    <input type="text" name="order" class="form-control form-control-lg"
-                                           placeholder="@lang('Order Number')"
+                                    <input type="text" name="purchase" class="form-control form-control-lg"
+                                           placeholder="@lang('Purchase Number')"
                                            value="{{ $orderNumber ?? '' }}">
                                 </div>
                             </div>
@@ -113,11 +113,11 @@
 
                                 @if($purchase)
                                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                    <small class="text-muted d-block">@lang('Order Number')</small>
+                                    <small class="text-muted d-block">@lang('Purchase Number')</small>
                                     <p class="fw-bold mb-2">{{ $purchase->purchase_number }}</p>
                                     @if(Auth::check() && Auth::id() == $purchase->user_id)
                                         <a href="{{ route('user-purchase', $purchase->id) }}" class="btn btn-outline-primary btn-sm">
-                                            <i class="fas fa-eye me-1"></i> @lang('View Order')
+                                            <i class="fas fa-eye me-1"></i> @lang('View Purchase')
                                         </a>
                                     @endif
                                 </div>
@@ -224,7 +224,7 @@
                     <div class="alert alert-warning text-center">
                         <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
                         <h5>@lang('Shipment Not Found')</h5>
-                        <p class="mb-0">@lang('Please check your tracking number or order number and try again.')</p>
+                        <p class="mb-0">@lang('Please check your tracking number or purchase number and try again.')</p>
                     </div>
                 </div>
             </div>

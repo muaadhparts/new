@@ -22,7 +22,7 @@
         </div>
     </div>
 
-    <div class="order-table-wrap">
+    <div class="purchase-table-wrap">
         @include('alerts.admin.form-both')
         @include('alerts.form-success')
         <div class="row">
@@ -458,7 +458,7 @@
         @endphp
 
         <div class="row">
-            <div class="col-lg-12 order-details-table">
+            <div class="col-lg-12 purchase-details-table">
 
                 @foreach($resultArray as $key1 => $catalogItem)
 
@@ -1073,7 +1073,7 @@ $(document).on('submit','#show-catalogItem',function(e){
        success:function(data)
        {
         if(data[0]){
-            $('#catalogItem-show').html('').load(mainurl+"/admin/order/catalogItem-show/"+data[1],function(response, status, xhr){
+            $('#catalogItem-show').html('').load(mainurl+"/admin/purchase/catalogItem-show/"+data[1],function(response, status, xhr){
                 if(status == "success")
                 {
                     if(admin_loader == 1)

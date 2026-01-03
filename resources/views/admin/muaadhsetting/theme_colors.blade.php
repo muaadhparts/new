@@ -1995,7 +1995,7 @@
                         <!-- Z-Index Layers -->
                         <div class="theme-section">
                             <h4 class="theme-section-title"><i class="fas fa-layer-group"></i> {{ __('Z-Index Layers') }}</h4>
-                            <p class="theme-section-desc">{{ __('Control stacking order of UI elements') }}</p>
+                            <p class="theme-section-desc">{{ __('Control stacking purchase of UI elements') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">

@@ -70,7 +70,7 @@ class RazorpayController extends SubscriptionBaseController
             'payment_capture' => 1 // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($purchaseData);
+        $razorpayOrder = $this->api->purchase->create($purchaseData);
 
         $razorpayOrderId = $razorpayOrder['id'];
 
@@ -166,7 +166,7 @@ class RazorpayController extends SubscriptionBaseController
 
         if ($success === true) {
 
-            $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
+            $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
 
             $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
@@ -219,7 +219,7 @@ class RazorpayController extends SubscriptionBaseController
 
             return redirect()->route('user-dashboard')->with('success', __('Merchant Account Activated Successfully'));
         } else {
-            $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
+            $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
             $purchase_id = $razorpayOrder['receipt'];
             $payment = UserSubscription::where('user_id', '=', $purchase_id)
                 ->orderBy('created_at', 'desc')->first();

@@ -149,9 +149,9 @@
             @endphp
             @forelse ($notifications as $data)
             <li>
-                <span class="sm-info-1">@lang('Order has been placed')</span>
+                <span class="sm-info-1">@lang('Purchase has been placed')</span>
                 <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}"
-                    class="sm-info-2 link">@lang('Order ID:')
+                    class="sm-info-2 link">@lang('Purchase ID:')
                     {{ $data->purchase_number }} @lang('has been placed')</a>
                 <span class="sm-info-2">{{ Carbon\Carbon::parse($data->created_at)->diffForHumans() }}</span>
 

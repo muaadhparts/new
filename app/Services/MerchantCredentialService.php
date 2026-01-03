@@ -92,7 +92,7 @@ class MerchantCredentialService
      * - Merchant MUST have their own payment credentials
      * - NO FALLBACK to system credentials for financial operations
      *
-     * Search order:
+     * Search purchase:
      * 1. merchant_credentials table (new encrypted storage)
      * 2. payment_gateways.information JSON (legacy storage)
      *

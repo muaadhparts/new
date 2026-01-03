@@ -1232,7 +1232,7 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
     return {
       before(directive22) {
         if (!directiveHandlers[directive22]) {
-          console.warn(String.raw`Cannot find directive \`${directive22}\`. \`${name}\` will use the default order of execution`);
+          console.warn(String.raw`Cannot find directive \`${directive22}\`. \`${name}\` will use the default purchase of execution`);
           return;
         }
         const pos = directiveOrder.indexOf(directive22);

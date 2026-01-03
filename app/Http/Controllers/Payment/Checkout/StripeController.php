@@ -135,7 +135,7 @@ class StripeController extends CheckoutBaseControlller
 
             PurchaseHelper::license_check($cart); // For License Checking
 
-            // Serialize filtered merchant cart for order
+            // Serialize filtered merchant cart for purchase
             $new_cart = [];
             $new_cart['totalQty'] = $cart->totalQty;
             $new_cart['totalPrice'] = $cart->totalPrice;

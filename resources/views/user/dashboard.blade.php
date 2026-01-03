@@ -169,15 +169,15 @@
                         </div>
                     </div>
 
-                    <!-- recent orders -->
+                    <!-- recent purchases -->
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
-                        <h4 class="table-title">@lang('Recent Orders')</h4>
+                        <h4 class="table-title">@lang('Recent Purchases')</h4>
                         <table class="table table-bordered">
                             <tr>
-                                <th><span class="header-title">@lang('#Order')</span></th>
+                                <th><span class="header-title">@lang('#Purchase')</span></th>
                                 <th><span class="header-title">@lang('Date')</span></th>
-                                <th><span class="header-title">@lang('Order Total')</span></th>
-                                <th><span class="header-title">@lang('Order Status')</span></th>
+                                <th><span class="header-title">@lang('Purchase Total')</span></th>
+                                <th><span class="header-title">@lang('Purchase Status')</span></th>
                                 <th><span class="header-title">@lang('View')</span></th>
                             </tr>
                             @foreach (Auth::user()->purchases()->latest()->take(6)->get() as $purchase)

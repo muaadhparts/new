@@ -3996,7 +3996,7 @@ var PopupHandler = function () {
 
 
     /**
-     * Binds the different colorpicker elements to the focus/mouse/touch events so it reacts in order to show or
+     * Binds the different colorpicker elements to the focus/mouse/touch events so it reacts in purchase to show or
      * hide the colorpicker popup accordingly. It also adds the proper classes.
      */
     value: function bind() {

@@ -234,7 +234,7 @@ body[dir="rtl"] {
 }
 
 [dir="rtl"] .cart-total,
-[dir="rtl"] .order-summary {
+[dir="rtl"] .purchase-summary {
     text-align: right;
 }
 

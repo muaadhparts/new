@@ -654,13 +654,13 @@
             for (const sel of containers) {
                 const container = btn.closest(sel);
                 if (container) {
-                    const input = container.querySelector('.modal-qty-input, .ill-qty, .qttotal, #order-qty');
+                    const input = container.querySelector('.modal-qty-input, .ill-qty, .qttotal, #purchase-qty');
                     if (input) return input;
                 }
             }
 
-            // 2. Fallback to global order-qty
-            return document.getElementById('order-qty');
+            // 2. Fallback to global purchase-qty
+            return document.getElementById('purchase-qty');
         }
     };
 

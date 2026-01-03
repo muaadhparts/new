@@ -90,7 +90,7 @@ trait HandlesMerchantCheckout
     }
 
     /**
-     * Remove merchant items from cart after successful order
+     * Remove merchant items from cart after successful purchase
      *
      * @param int $merchantId The merchant ID from route
      * @param mixed $originalCart Original cart before filtering
@@ -151,7 +151,7 @@ trait HandlesMerchantCheckout
             return route('front.payment.return');
         }
 
-        // Check if there will be remaining items after this order
+        // Check if there will be remaining items after this purchase
         $hasRemainingItems = false;
         foreach ($originalCart->items as $rowKey => $cartItem) {
             $itemMerchantId = data_get($cartItem, 'item.user_id') ?? data_get($cartItem, 'item.merchant_user_id') ?? 0;

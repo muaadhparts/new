@@ -7,7 +7,7 @@
     <div class="row">
         <div class="col-lg-12">
             @if($conv->purchase_number != null)
-            <h4 class="heading">{{ __('Order Number') }}: {{$conv->purchase_number}}</h4>
+            <h4 class="heading">{{ __('Purchase Number') }}: {{$conv->purchase_number}}</h4>
             @endif
             <h4 class="heading">{{ __('Conversation with') }} {{$conv->user->name}} <a class="add-btn" href="{{ url()->previous() }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
                 <ul class="links">
@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<div class="order-table-wrap support-ticket-wrapper ">
+<div class="purchase-table-wrap support-ticket-wrapper ">
                         <div class="panel panel-primary">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                         @include('alerts.admin.form-both')  

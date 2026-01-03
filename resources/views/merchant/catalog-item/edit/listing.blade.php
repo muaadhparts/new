@@ -56,10 +56,10 @@
                         <input type="text" class="form-control" name="name" placeholder="@lang('Enter CatalogItem Name') "
                             value="{{ $data->name }}">
                     </div>
-                    <!-- CatalogItem SkU -->
+                    <!-- CatalogItem Part Number -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem SkU*')</label>
-                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter CatalogItem PART_NUMBER')"
+                        <label>@lang('CatalogItem Part Number*')</label>
+                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter CatalogItem Part Number')"
                             value="{{ $data->part_number }}">
                     </div>
                     {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
@@ -138,26 +138,26 @@
 
 
 
-                    <!-- Allow Minimum Order Qty Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_minimum-order" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_minimum-order">
-                        <input type="checkbox" {{ $data->minimum_qty != null ? 'checked' : '' }} id="allow-minimum-order"
+                    <!-- Allow Minimum Purchase Qty Checkbox -->
+                    <div class="gs-checkbox-wrapper" aria-controls="show_minimum-purchase" role="region"
+                        data-bs-toggle="collapse" data-bs-target="#show_minimum-purchase">
+                        <input type="checkbox" {{ $data->minimum_qty != null ? 'checked' : '' }} id="allow-minimum-purchase"
                             name="minimum_qty_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-minimum-order">
+                        <label class="icon-label check-box-label" for="allow-minimum-purchase">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-minimum-order">@lang('Allow Minimum Order
+                        <label class="check-box-label" for="allow-minimum-purchase">@lang('Allow Minimum Purchase
                                                                                                                                                                             Qty')</label>
                     </div>
-                    <!-- CatalogItem Minimum Order Qty -->
+                    <!-- CatalogItem Minimum Purchase Qty -->
                     <div class="input-label-wrapper collapse {{ $data->minimum_qty != null ? 'show' : '' }}"
-                        id="show_minimum-order">
-                        <label>@lang('CatalogItem Minimum Order Qty*')</label>
-                        <input type="text" class="form-control" name="minimum_qty" placeholder="@lang('Minimum Order Qty') "
+                        id="show_minimum-purchase">
+                        <label>@lang('CatalogItem Minimum Purchase Qty*')</label>
+                        <input type="text" class="form-control" name="minimum_qty" placeholder="@lang('Minimum Purchase Qty') "
                             value="{{ $data->minimum_qty }}">
                     </div>
 

@@ -6,34 +6,34 @@ $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
 echo "=== Recent Orders Check ===\n\n";
 
-$orders = App\Models\Order::orderBy('id', 'desc')->take(10)->get();
+$orders = App\Models\Purchase::orderBy('id', 'desc')->take(10)->get();
 
 if ($orders->isEmpty()) {
     echo "No orders found in database.\n";
 } else {
-    foreach ($orders as $order) {
+    foreach ($orders as $purchase) {
         echo sprintf(
-            "Order #%d | %s | Vendor IDs: %s | Amount: %.2f %s | Method: %s | Date: %s\n",
-            $order->id,
-            $order->order_number,
-            $order->vendor_ids ?? 'NULL',
-            $order->pay_amount ?? 0,
-            $order->currency_sign ?? '',
-            $order->method ?? 'N/A',
-            $order->created_at->format('Y-m-d H:i:s')
+            "Purchase #%d | %s | Vendor IDs: %s | Amount: %.2f %s | Method: %s | Date: %s\n",
+            $purchase->id,
+            $purchase->order_number,
+            $purchase->vendor_ids ?? 'NULL',
+            $purchase->pay_amount ?? 0,
+            $purchase->currency_sign ?? '',
+            $purchase->method ?? 'N/A',
+            $purchase->created_at->format('Y-m-d H:i:s')
         );
 
         // Decode vendor_ids to check content
-        if ($order->vendor_ids) {
-            $vendorIds = json_decode($order->vendor_ids, true);
+        if ($purchase->vendor_ids) {
+            $vendorIds = json_decode($purchase->vendor_ids, true);
             if (is_array($vendorIds) && !empty($vendorIds)) {
                 echo "  └─ Decoded Vendors: " . implode(', ', $vendorIds) . "\n";
             }
         }
 
         // Check cart content
-        if ($order->cart) {
-            $cart = json_decode($order->cart, true);
+        if ($purchase->cart) {
+            $cart = json_decode($purchase->cart, true);
             if (isset($cart['items'])) {
                 $vendorsInCart = [];
                 foreach ($cart['items'] as $item) {

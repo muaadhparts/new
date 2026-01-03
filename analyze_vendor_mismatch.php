@@ -9,28 +9,28 @@ require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-use App\Models\Order;
+use App\Models\Purchase;
 
 echo "\n=== تحليل أخطاء vendor_ids mismatch ===\n\n";
 
 $orderIds = [42, 41, 40, 28, 27, 26, 25, 24];
 
 foreach ($orderIds as $orderId) {
-    $order = Order::find($orderId);
+    $purchase = Purchase::find($orderId);
 
-    if (!$order) {
-        echo "Order #$orderId: غير موجود\n\n";
+    if (!$purchase) {
+        echo "Purchase #$orderId: غير موجود\n\n";
         continue;
     }
 
-    echo "Order #$orderId | {$order->order_number}\n";
-    echo "Created: {$order->created_at}\n";
-    echo "Method: {$order->method}\n";
+    echo "Purchase #$orderId | {$purchase->order_number}\n";
+    echo "Created: {$purchase->created_at}\n";
+    echo "Method: {$purchase->method}\n";
 
     // Check vendor_ids field
-    echo "vendor_ids (RAW): {$order->vendor_ids}\n";
+    echo "vendor_ids (RAW): {$purchase->vendor_ids}\n";
 
-    $vendorIds = json_decode($order->vendor_ids, true);
+    $vendorIds = json_decode($purchase->vendor_ids, true);
 
     if (is_array($vendorIds)) {
         echo "vendor_ids (Decoded): [" . implode(', ', $vendorIds) . "]\n";
@@ -40,8 +40,8 @@ foreach ($orderIds as $orderId) {
     }
 
     // Check cart vendors
-    if ($order->cart) {
-        $cart = json_decode($order->cart, true);
+    if ($purchase->cart) {
+        $cart = json_decode($purchase->cart, true);
 
         if (isset($cart['items'])) {
             $cartVendors = [];

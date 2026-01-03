@@ -262,7 +262,7 @@ class CartController extends FrontBaseController
             return response()->json([
                 'success' => false,
                 'status' => 'error',
-                'message' => __('Minimum order quantity is') . ' ' . $minQty,
+                'message' => __('Minimum purchase quantity is') . ' ' . $minQty,
                 'error_code' => 'BELOW_MIN_QTY',
                 'min_qty' => $minQty,
             ], 400);
@@ -548,7 +548,7 @@ class CartController extends FrontBaseController
         if ($mp->minimum_qty && $qty < (int)$mp->minimum_qty) {
             return response()->json([
                 'status' => 'error',
-                'msg' => __('Minimum order quantity is') . ' ' . $mp->minimum_qty
+                'msg' => __('Minimum purchase quantity is') . ' ' . $mp->minimum_qty
             ], 400);
         }
 

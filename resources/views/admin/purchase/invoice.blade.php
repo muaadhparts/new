@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-    <div class="order-table-wrap">
+    <div class="purchase-table-wrap">
         <div class="invoice-wrap">
             <div class="invoice__title">
                 <div class="row">

@@ -220,63 +220,63 @@
                                 </div>
                             </div>
 
-                            {{-- Section Order --}}
+                            {{-- Section Purchase --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('Sections Order') }}</h3>
+                                    <h3 class="panel-title">{{ __('Sections Purchase') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Slider Order') }}</label>
+                                            <label class="control-label">{{ __('Slider Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_slider" value="1" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Brands Order') }}</label>
+                                            <label class="control-label">{{ __('Brands Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_brands" value="2" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Categories Order') }}</label>
+                                            <label class="control-label">{{ __('Categories Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_categories" value="3" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Arrival Order') }}</label>
+                                            <label class="control-label">{{ __('Arrival Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_arrival" value="4" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Featured CatalogItems Order') }}</label>
+                                            <label class="control-label">{{ __('Featured CatalogItems Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_featured_products" value="5" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Deal of Day Order') }}</label>
+                                            <label class="control-label">{{ __('Deal of Day Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_deal_of_day" value="6" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Top Rated Order') }}</label>
+                                            <label class="control-label">{{ __('Top Rated Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_top_rated" value="7" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Big Save Order') }}</label>
+                                            <label class="control-label">{{ __('Big Save Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_big_save" value="8" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Trending Order') }}</label>
+                                            <label class="control-label">{{ __('Trending Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_trending" value="9" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Best Sellers Order') }}</label>
+                                            <label class="control-label">{{ __('Best Sellers Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_best_sellers" value="10" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Blogs Order') }}</label>
+                                            <label class="control-label">{{ __('Blogs Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_blogs" value="11" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Services Order') }}</label>
+                                            <label class="control-label">{{ __('Services Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_services" value="12" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Newsletter Order') }}</label>
+                                            <label class="control-label">{{ __('Newsletter Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_newsletter" value="13" min="1">
                                         </div>
                                     </div>

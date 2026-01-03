@@ -74,21 +74,21 @@
                         </div>
                     </div>
 
-                    <!-- recent orders -->
-                    <h4 class="table-title mt-4">@lang('Recent Orders')</h4>
+                    <!-- recent purchases -->
+                    <h4 class="table-title mt-4">@lang('Recent Purchases')</h4>
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <table class="table table-bordered">
                             <tr>
-                                <th><span class="header-title">{{ __('#Order') }}</span></th>
+                                <th><span class="header-title">{{ __('#Purchase') }}</span></th>
                                 <th><span class="header-title">{{ __('Service Area') }}</span></th>
                                 <th><span class="header-title">{{ __('Pickup Point') }}</span></th>
-                                <th><span class="header-title">{{ __('Order Total') }}</span></th>
-                                <th><span class="header-title">{{ __('Order Status') }}</span></th>
+                                <th><span class="header-title">{{ __('Purchase Total') }}</span></th>
+                                <th><span class="header-title">{{ __('Purchase Status') }}</span></th>
                                 <th><span class="header-title">{{ __('View') }}</span></th>
                             </tr>
                             @forelse ($purchases as $purchase)
                                 <tr>
-                                    <td data-label="{{ __('#Order') }}">
+                                    <td data-label="{{ __('#Purchase') }}">
                                         {{ $purchase->purchase->purchase_number }}
                                     </td>
                                     <td data-label="{{ __('Service Area') }}">
@@ -103,7 +103,7 @@
                                         </p>
                                     </td>
 
-                                    <td data-label="{{ __('Order Total') }}">
+                                    <td data-label="{{ __('Purchase Total') }}">
 
                                         @php
 
@@ -134,7 +134,7 @@
                                             $purchase->currency_sign,
                                         ) }}
                                     </td>
-                                    <td data-label="{{ __('Order Status') }}">
+                                    <td data-label="{{ __('Purchase Status') }}">
                                         <div class="">
                                             <span
                                                 class="px-3 py-2 md-btn rounded {{ $purchase->status == 'pending' ? 'bg-pending' : 'bg-complete' }} mx-auto">{{ ucwords($purchase->status) }}

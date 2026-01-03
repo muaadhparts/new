@@ -431,7 +431,7 @@ div.dt-container {
     color: $text-color-950;
   }
 
-  .dt-column-order {
+  .dt-column-purchase {
     display: none;
   }
 
@@ -579,17 +579,17 @@ div.dt-container {
   padding: 0px;
 }
 
-.order-delivery-table-wrapper,
+.purchase-delivery-table-wrapper,
 .all-orders-table-wrapper,
 .catalogItem-catalogs-table-wrapper,
-.order-details-table-wrapper {
+.purchase-details-table-wrapper {
   .dt-search {
     right: 0;
   }
 }
 
-.order-delivery-table-wrapper,
-.order-details-table-wrapper {
+.purchase-delivery-table-wrapper,
+.purchase-details-table-wrapper {
   td {
     vertical-align: top;
   }

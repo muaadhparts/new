@@ -33,7 +33,7 @@
                             <tr>
                               <th>{{ __('Name') }}</th>
                               <th>{{ __('Subject') }}</th>
-                              <th>{{ __('Order Number') }}</th>
+                              <th>{{ __('Purchase Number') }}</th>
                               <th>{{ __('Date') }}</th>
                               <th>{{ __('Actions') }}</th>
                             </tr>

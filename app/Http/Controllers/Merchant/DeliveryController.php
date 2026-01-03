@@ -460,7 +460,7 @@ class DeliveryController extends MerchantBaseController
         $messages = [
             'TOKEN_ERROR' => __('Shipping service authentication failed. Please try again.'),
             'AUTH_ERROR' => __('Shipping service authentication failed. Please try again.'),
-            'INCOMPLETE_DATA' => __('Missing shipping information. Please check order details.'),
+            'INCOMPLETE_DATA' => __('Missing shipping information. Please check purchase details.'),
             'API_ERROR' => __('Shipping service temporarily unavailable.'),
             'EXCEPTION' => __('Shipping service temporarily unavailable. Please try again later.'),
         ];

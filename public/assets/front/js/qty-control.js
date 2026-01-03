@@ -37,7 +37,7 @@
         selectors: {
             plus: ['.qty-plus', '.qtplus', '.modal-plus', '.modal-qtplus', '.quantity-up'],
             minus: ['.qty-minus', '.qtminus', '.modal-minus', '.modal-qtminus', '.quantity-down'],
-            input: ['.qty-input', '.qttotal', '.modal-total', '.modal-qty-input', '.m-cart__qty-input', '.ill-qty', '#order-qty']
+            input: ['.qty-input', '.qttotal', '.modal-total', '.modal-qty-input', '.m-cart__qty-input', '.ill-qty', '#purchase-qty']
         },
         containers: ['.qty-control', '.m-cart__qty-control', '.qty', '.add-qty-wrapper', '.multiple-item-price']
     };

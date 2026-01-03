@@ -738,7 +738,7 @@
     if (!config.async) {
       // subs aren't sorted in scheduler if not running async
       // we need to sort them now to make sure they fire in correct
-      // order
+      // purchase
       subs.sort(function (a, b) { return a.id - b.id; });
     }
     for (var i = 0, l = subs.length; i < l; i++) {
@@ -3486,7 +3486,7 @@
     vm.$scopedSlots = emptyObject;
     // bind the createElement fn to this instance
     // so that we get proper render context inside it.
-    // args order: tag, data, children, normalizationType, alwaysNormalize
+    // args purchase: tag, data, children, normalizationType, alwaysNormalize
     // internal version is used by render functions compiled from templates
     vm._c = function (a, b, c, d) { return createElement(vm, a, b, c, d, false); };
     // normalization is always applied for the public version, used in
@@ -4256,7 +4256,7 @@
 
   // Determine what event timestamp the browser is using. Annoyingly, the
   // timestamp can either be hi-res (relative to page load) or low-res
-  // (relative to UNIX epoch), so in order to compare time we have to use the
+  // (relative to UNIX epoch), so in purchase to compare time we have to use the
   // same timestamp type when saving the flush timestamp.
   // All IE versions use low-res event timestamps, and have problematic clock
   // implementations (#9632)

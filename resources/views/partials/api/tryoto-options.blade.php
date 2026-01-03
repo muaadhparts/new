@@ -22,7 +22,7 @@
             </div>
             <div class="tryoto-free-alert__content">
                 <strong>@lang('Free Shipping!')</strong>
-                <span>@lang('Your order qualifies for free shipping (above') {{ $curr->sign }}{{ number_format($freeAboveValue, 2) }})</span>
+                <span>@lang('Your purchase qualifies for free shipping (above') {{ $curr->sign }}{{ number_format($freeAboveValue, 2) }})</span>
             </div>
         </div>
     @elseif($freeAboveValue > 0)
@@ -32,7 +32,7 @@
             </div>
             <div class="tryoto-free-alert__content">
                 <strong>@lang('Free shipping on orders above') {{ $curr->sign }}{{ number_format($freeAboveValue, 2) }}</strong>
-                <span>@lang('Your current order'): {{ $curr->sign }}{{ number_format($merchantTotal, 2) }}</span>
+                <span>@lang('Your current purchase'): {{ $curr->sign }}{{ number_format($merchantTotal, 2) }}</span>
             </div>
         </div>
     @endif

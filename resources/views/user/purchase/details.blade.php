@@ -354,7 +354,7 @@
 
                     </div>
 
-                    <h4 class="order-catalogItems-header d-flex align-items-center justify-content-center mb-24 wow-replaced"
+                    <h4 class="purchase-catalogItems-header d-flex align-items-center justify-content-center mb-24 wow-replaced"
                         data-wow-delay=".1s">@lang('Purchased Items:')
                     </h4>
 

@@ -61,7 +61,7 @@ class AuthorizeController extends Controller
             $paymentOne = new AnetAPI\PaymentType();
             $paymentOne->setCreditCard($creditCard);
 
-            // Create order information
+            // Create purchase information
             $purchases = new AnetAPI\OrderType();
             $purchases->setInvoiceNumber($deposit_number);
             $purchases->setDescription($item_name);

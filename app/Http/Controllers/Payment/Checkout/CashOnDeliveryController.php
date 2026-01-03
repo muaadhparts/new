@@ -11,15 +11,15 @@
  * 1. Uses HandlesMerchantCheckout trait for merchant isolation
  * 2. Detects if checkout is merchant-specific via checkout_merchant_id session
  * 3. Filters cart to process ONLY merchant's items
- * 4. Creates order with ONLY merchant's items
- * 5. Removes ONLY merchant's items from cart after order
+ * 4. Creates purchase with ONLY merchant's items
+ * 5. Removes ONLY merchant's items from cart after purchase
  * 6. Redirects to /carts if other merchants remain, else to success page
  *
  * Multi-Merchant Logic Flow:
  * 1. getMerchantCheckoutData() - Checks if merchant checkout
  * 2. getCheckoutSteps() - Gets merchant_step1_{id} and merchant_step2_{id}
  * 3. filterCartForMerchant() - Filters cart items
- * 4. Order creation - Uses only filtered items
+ * 4. Purchase creation - Uses only filtered items
  * 5. removeMerchantItemsFromCart() - Removes merchant items only
  * 6. getSuccessUrl() - Determines redirect based on remaining items
  *
@@ -54,7 +54,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
      * 1. Detects merchant checkout via checkout_merchant_id session
      * 2. Loads merchant-specific session data (merchant_step1_{id}, merchant_step2_{id})
      * 3. Filters cart to include ONLY this merchant's items
-     * 4. Creates order with filtered items only
+     * 4. Creates purchase with filtered items only
      * 5. Removes only this merchant's items from cart
      * 6. Redirects to /carts if other merchants remain
      *

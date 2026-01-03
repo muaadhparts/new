@@ -392,7 +392,7 @@ button[type="submit"]:hover {
 .mr-table,
 .add-catalogItem-content,
 .catalogItem-description,
-.order-content,
+.purchase-content,
 .settings-content,
 .vendor-content {
     background-color: var(--color-white) !important;
@@ -478,7 +478,7 @@ button[type="submit"]:hover {
 [class*="badge-"],
 [class*="label-"],
 /* Status badges */
-.order-status,
+.purchase-status,
 .catalogItem-status,
 .payment-status,
 .user-status {

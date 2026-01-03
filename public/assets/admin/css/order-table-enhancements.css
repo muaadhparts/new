@@ -1,21 +1,21 @@
 /* ======================================
-   Order Table Enhancements - Responsive & Tooltips
+   Purchase Table Enhancements - Responsive & Tooltips
    ====================================== */
 
 /* === Responsive Table Wrapper === */
-.order-table-responsive {
+.purchase-table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
 }
 
 /* === Table Base Styles === */
-.order-table-enhanced {
+.purchase-table-enhanced {
     min-width: 100%;
     white-space: nowrap;
 }
 
-.order-table-enhanced thead th {
+.purchase-table-enhanced thead th {
     background: #f8f9fa;
     font-weight: 600;
     font-size: 13px;
@@ -27,80 +27,80 @@
     vertical-align: middle;
 }
 
-.order-table-enhanced tbody td {
+.purchase-table-enhanced tbody td {
     padding: 10px 8px !important;
     font-size: 13px;
     vertical-align: middle;
     border-bottom: 1px solid #f0f0f0;
 }
 
-.order-table-enhanced tbody tr:hover {
+.purchase-table-enhanced tbody tr:hover {
     background-color: #f8f9fa;
     transition: background-color 0.2s ease;
 }
 
 /* === Column Specific Widths === */
-.order-table-enhanced th.col-id,
-.order-table-enhanced td.col-id {
+.purchase-table-enhanced th.col-id,
+.purchase-table-enhanced td.col-id {
     width: 60px;
     min-width: 60px;
 }
 
-.order-table-enhanced th.col-title,
-.order-table-enhanced td.col-title {
+.purchase-table-enhanced th.col-title,
+.purchase-table-enhanced td.col-title {
     min-width: 180px;
     max-width: 250px;
     white-space: normal;
 }
 
-.order-table-enhanced th.col-part_number,
-.order-table-enhanced td.col-part_number {
+.purchase-table-enhanced th.col-part_number,
+.purchase-table-enhanced td.col-part_number {
     min-width: 100px;
     font-family: 'Courier New', monospace;
     font-size: 12px;
 }
 
-.order-table-enhanced th.col-brand,
-.order-table-enhanced td.col-brand,
-.order-table-enhanced th.col-manufacturer,
-.order-table-enhanced td.col-manufacturer {
+.purchase-table-enhanced th.col-brand,
+.purchase-table-enhanced td.col-brand,
+.purchase-table-enhanced th.col-manufacturer,
+.purchase-table-enhanced td.col-manufacturer {
     min-width: 120px;
     max-width: 180px;
 }
 
-.order-table-enhanced th.col-shop,
-.order-table-enhanced td.col-shop {
+.purchase-table-enhanced th.col-shop,
+.purchase-table-enhanced td.col-shop {
     min-width: 140px;
     max-width: 200px;
 }
 
-.order-table-enhanced th.col-size,
-.order-table-enhanced td.col-size,
-.order-table-enhanced th.col-color,
-.order-table-enhanced td.col-color {
+.purchase-table-enhanced th.col-size,
+.purchase-table-enhanced td.col-size,
+.purchase-table-enhanced th.col-color,
+.purchase-table-enhanced td.col-color {
     min-width: 80px;
     text-align: center;
 }
 
-.order-table-enhanced th.col-price,
-.order-table-enhanced td.col-price,
-.order-table-enhanced th.col-qty,
-.order-table-enhanced td.col-qty,
-.order-table-enhanced th.col-discount,
-.order-table-enhanced td.col-discount,
-.order-table-enhanced th.col-total,
-.order-table-enhanced td.col-total {
+.purchase-table-enhanced th.col-price,
+.purchase-table-enhanced td.col-price,
+.purchase-table-enhanced th.col-qty,
+.purchase-table-enhanced td.col-qty,
+.purchase-table-enhanced th.col-discount,
+.purchase-table-enhanced td.col-discount,
+.purchase-table-enhanced th.col-total,
+.purchase-table-enhanced td.col-total {
     min-width: 90px;
     text-align: right;
 }
 
-.order-table-enhanced th.col-status,
-.order-table-enhanced td.col-status {
+.purchase-table-enhanced th.col-status,
+.purchase-table-enhanced td.col-status {
     min-width: 100px;
 }
 
-.order-table-enhanced th.col-action,
-.order-table-enhanced td.col-action {
+.purchase-table-enhanced th.col-action,
+.purchase-table-enhanced td.col-action {
     min-width: 120px;
     text-align: center;
 }
@@ -190,56 +190,56 @@
 
 /* Large Desktop (1400px+) */
 @media (min-width: 1400px) {
-    .order-table-enhanced th,
-    .order-table-enhanced td {
+    .purchase-table-enhanced th,
+    .purchase-table-enhanced td {
         padding: 12px 10px !important;
     }
 }
 
 /* Desktop (1200px - 1399px) */
 @media (max-width: 1399px) {
-    .order-table-enhanced {
+    .purchase-table-enhanced {
         font-size: 12px;
     }
 
-    .order-table-enhanced th,
-    .order-table-enhanced td {
+    .purchase-table-enhanced th,
+    .purchase-table-enhanced td {
         padding: 10px 6px !important;
     }
 }
 
 /* Tablet Landscape (992px - 1199px) */
 @media (max-width: 1199px) {
-    .order-table-enhanced {
+    .purchase-table-enhanced {
         font-size: 11px;
     }
 
-    .order-table-enhanced th.col-title,
-    .order-table-enhanced td.col-title {
+    .purchase-table-enhanced th.col-title,
+    .purchase-table-enhanced td.col-title {
         max-width: 180px;
     }
 
-    .order-table-enhanced th.col-brand,
-    .order-table-enhanced td.col-brand,
-    .order-table-enhanced th.col-manufacturer,
-    .order-table-enhanced td.col-manufacturer {
+    .purchase-table-enhanced th.col-brand,
+    .purchase-table-enhanced td.col-brand,
+    .purchase-table-enhanced th.col-manufacturer,
+    .purchase-table-enhanced td.col-manufacturer {
         max-width: 140px;
     }
 }
 
 /* Tablet Portrait (768px - 991px) */
 @media (max-width: 991px) {
-    .order-table-responsive {
+    .purchase-table-responsive {
         border: 1px solid #dee2e6;
         border-radius: 8px;
     }
 
-    .order-table-enhanced {
+    .purchase-table-enhanced {
         font-size: 11px;
     }
 
     /* Add scroll indicator */
-    .order-table-responsive::after {
+    .purchase-table-responsive::after {
         content: "← Scroll →";
         display: block;
         text-align: center;
@@ -254,17 +254,17 @@
 
 /* Mobile Large (576px - 767px) */
 @media (max-width: 767px) {
-    .order-table-enhanced {
+    .purchase-table-enhanced {
         font-size: 10px;
     }
 
-    .order-table-enhanced th,
-    .order-table-enhanced td {
+    .purchase-table-enhanced th,
+    .purchase-table-enhanced td {
         padding: 8px 5px !important;
     }
 
-    .order-table-enhanced th.col-title,
-    .order-table-enhanced td.col-title {
+    .purchase-table-enhanced th.col-title,
+    .purchase-table-enhanced td.col-title {
         min-width: 140px;
         max-width: 160px;
     }
@@ -272,32 +272,32 @@
 
 /* Mobile (max 575px) */
 @media (max-width: 575px) {
-    .order-table-enhanced {
+    .purchase-table-enhanced {
         font-size: 9px;
     }
 
-    .order-table-enhanced th,
-    .order-table-enhanced td {
+    .purchase-table-enhanced th,
+    .purchase-table-enhanced td {
         padding: 6px 4px !important;
     }
 
     /* Reduce column widths for mobile */
-    .order-table-enhanced th.col-id,
-    .order-table-enhanced td.col-id {
+    .purchase-table-enhanced th.col-id,
+    .purchase-table-enhanced td.col-id {
         width: 50px;
         min-width: 50px;
     }
 
-    .order-table-enhanced th.col-title,
-    .order-table-enhanced td.col-title {
+    .purchase-table-enhanced th.col-title,
+    .purchase-table-enhanced td.col-title {
         min-width: 120px;
         max-width: 140px;
     }
 
-    .order-table-enhanced th.col-brand,
-    .order-table-enhanced td.col-brand,
-    .order-table-enhanced th.col-manufacturer,
-    .order-table-enhanced td.col-manufacturer {
+    .purchase-table-enhanced th.col-brand,
+    .purchase-table-enhanced td.col-brand,
+    .purchase-table-enhanced th.col-manufacturer,
+    .purchase-table-enhanced td.col-manufacturer {
         min-width: 100px;
         max-width: 120px;
     }
@@ -309,8 +309,8 @@
 }
 
 /* === Sticky First Column (Optional - for better UX) === */
-.order-table-enhanced.sticky-first-col tbody td:first-child,
-.order-table-enhanced.sticky-first-col thead th:first-child {
+.purchase-table-enhanced.sticky-first-col tbody td:first-child,
+.purchase-table-enhanced.sticky-first-col thead th:first-child {
     position: sticky;
     left: 0;
     background: #fff;
@@ -318,18 +318,18 @@
     box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
 }
 
-.order-table-enhanced.sticky-first-col thead th:first-child {
+.purchase-table-enhanced.sticky-first-col thead th:first-child {
     z-index: 15;
     background: #f8f9fa;
 }
 
 /* === Loading State === */
-.order-table-enhanced.loading {
+.purchase-table-enhanced.loading {
     opacity: 0.6;
     pointer-events: none;
 }
 
-.order-table-enhanced.loading::after {
+.purchase-table-enhanced.loading::after {
     content: "";
     position: absolute;
     top: 50%;
@@ -350,16 +350,16 @@
 
 /* === Print Styles === */
 @media print {
-    .order-table-responsive {
+    .purchase-table-responsive {
         overflow: visible !important;
     }
 
-    .order-table-enhanced {
+    .purchase-table-enhanced {
         font-size: 10px;
     }
 
-    .order-table-enhanced th,
-    .order-table-enhanced td {
+    .purchase-table-enhanced th,
+    .purchase-table-enhanced td {
         padding: 6px 4px !important;
     }
 
@@ -367,34 +367,34 @@
         display: none !important;
     }
 
-    .order-table-enhanced tbody tr:nth-child(even) {
+    .purchase-table-enhanced tbody tr:nth-child(even) {
         background-color: #f9f9f9;
     }
 }
 
 /* === Accessibility === */
-.order-table-enhanced th {
+.purchase-table-enhanced th {
     outline: none;
 }
 
-.order-table-enhanced tbody tr:focus-within {
+.purchase-table-enhanced tbody tr:focus-within {
     outline: 2px solid #2d3274;
     outline-offset: -2px;
 }
 
 /* === Dark Mode Support (Optional) === */
 @media (prefers-color-scheme: dark) {
-    .order-table-enhanced thead th {
+    .purchase-table-enhanced thead th {
         background: #2d3274;
         color: #fff;
         border-bottom-color: #495057;
     }
 
-    .order-table-enhanced tbody td {
+    .purchase-table-enhanced tbody td {
         border-bottom-color: #495057;
     }
 
-    .order-table-enhanced tbody tr:hover {
+    .purchase-table-enhanced tbody tr:hover {
         background-color: #343a40;
     }
 }

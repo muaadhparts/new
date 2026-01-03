@@ -1,7 +1,7 @@
-.gs-order-info-cards-wrapper {
+.gs-purchase-info-cards-wrapper {
     margin-bottom: 28px;
 
-    .order-info-card {
+    .purchase-info-card {
         width: 100%;
         height: 100%;
         display: inline-flex;
@@ -58,7 +58,7 @@
             }
         }
 
-        &.order-details-card {
+        &.purchase-details-card {
             .info-type {
                 min-width: 141px;
             }

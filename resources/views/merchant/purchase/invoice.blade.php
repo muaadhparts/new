@@ -43,10 +43,10 @@
 
         <!-- Merchant Purchase Invoice start  -->
         <div class="gs-merchant-purchase-invoice">
-            <!-- order address info -->
+            <!-- purchase address info -->
             <div class="user-purchase-title-wrapper">
                 <div>
-                    <h4 class="order-number">@lang('Genius Shop')</h4>
+                    <h4 class="purchase-number">@lang('Genius Shop')</h4>
                 </div>
 
                 <a href="{{route('merchant-purchase-print',$purchase->purchase_number)}}" class="m-btn m-btn--secondary" type="button">
@@ -294,7 +294,7 @@
 
             </div>
             <!-- ordered catalogItems table -->
-            <div class="merchant-table-wrapper order-details-table-wrapper">
+            <div class="merchant-table-wrapper purchase-details-table-wrapper">
                 <div class="user-table table-responsive  position-relative">
                     <h4 class="table-title">@lang('Items Purchased')</h4>
                     <table class="gs-data-table w-100">

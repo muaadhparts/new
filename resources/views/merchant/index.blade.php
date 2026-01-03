@@ -11,7 +11,7 @@
         <!-- Info cards area start -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 row-cols-xxl-4 gy-4">
             <div class="col">
-                <div class="merchant-panel-info-card order-pending">
+                <div class="merchant-panel-info-card purchase-pending">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_8.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Pending')</p>
@@ -22,7 +22,7 @@
                 </div>
             </div>
             <div class="col">
-                <div class="merchant-panel-info-card order-processing">
+                <div class="merchant-panel-info-card purchase-processing">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_7.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Processing')</p>
@@ -33,7 +33,7 @@
                 </div>
             </div>
             <div class="col">
-                <div class="merchant-panel-info-card order-delivered">
+                <div class="merchant-panel-info-card purchase-delivered">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_6.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Completed!')</p>
@@ -44,7 +44,7 @@
                 </div>
             </div>
             <div class="col">
-                <div class="merchant-panel-info-card total-order">
+                <div class="merchant-panel-info-card total-purchase">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_5.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Total CatalogItems!')</p>
@@ -204,7 +204,7 @@
                 <div class="merchant-table-wrapper recent-orders-table-wrapper">
                     <h4 class="table-title">@lang('Recent Purchase(s)')</h4>
                     <div class="user-table table-responsive">
-                        <table id="recent-order-table" class="gs-data-table w-100">
+                        <table id="recent-purchase-table" class="gs-data-table w-100">
                             <thead>
                                 <tr>
                                     <th>

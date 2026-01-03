@@ -3,7 +3,7 @@
 @section('styles')
 
 <style type="text/css">
-    .order-table-wrap table#example2 {
+    .purchase-table-wrap table#example2 {
     margin: 10px 20px;
 }
 
@@ -19,7 +19,7 @@
     <div class="mr-breadcrumb">
        <div class="row">
           <div class="col-lg-12">
-             <h4 class="heading">{{ __('Order Details') }} <a class="add-btn" href="javascript:history.back();"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
+             <h4 class="heading">{{ __('Purchase Details') }} <a class="add-btn" href="javascript:history.back();"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
              <ul class="links">
                 <li>
                    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
@@ -28,16 +28,16 @@
                    <a href="javascript:;">{{ __('Orders') }}</a>
                 </li>
                 <li>
-                   <a href="javascript:;">{{ __('Order Details') }}</a>
+                   <a href="javascript:;">{{ __('Purchase Details') }}</a>
                 </li>
              </ul>
           </div>
        </div>
     </div>
-    <div class="order-table-wrap">
+    <div class="purchase-table-wrap">
        <div class="row">
         
-          <div class="col-lg-12 order-details-table">
+          <div class="col-lg-12 purchase-details-table">
             <div class="mr-table">
                 <h4 class="title">
                     {{ __('CatalogItems') }}
@@ -182,7 +182,7 @@
              <div class="special-box">
                 <div class="heading-area">
                    <h4 class="title">
-                      {{ __('Order Details') }} 
+                      {{ __('Purchase Details') }} 
                    </h4>
                 </div>
             

@@ -379,7 +379,7 @@
                                 <span class="modal-plus">
                                   <i class="fas fa-plus"></i>
                                 </span>
-                                <input class="modal-total" type="text" id="order-qty1" value="{{ $quickMinQty }}"
+                                <input class="modal-total" type="text" id="purchase-qty1" value="{{ $quickMinQty }}"
                                        data-min="{{ $quickMinQty }}" data-stock="{{ $quickStock }}" data-preordered="{{ $quickPreordered }}">
                                 <input type="hidden" id="mproduct_minimum_qty" value="{{ $quickMinQty }}">
                                 <span class="modal-minus">

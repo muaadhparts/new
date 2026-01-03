@@ -88,7 +88,7 @@ class RazorpayController extends CheckoutBaseControlller
             'payment_capture' => 1 // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($purchaseData);
+        $razorpayOrder = $this->api->purchase->create($purchaseData);
 
         Session::put('input_data',$input);
         Session::put('order_data',$purchase);

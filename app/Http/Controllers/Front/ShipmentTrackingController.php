@@ -24,7 +24,7 @@ class ShipmentTrackingController extends Controller
     public function index(Request $request)
     {
         $trackingNumber = $request->get('tracking');
-        $purchaseNumber = $request->get('order');
+        $purchaseNumber = $request->get('purchase');
         $shipment = null;
         $history = collect();
         $purchase = null;
@@ -49,7 +49,7 @@ class ShipmentTrackingController extends Controller
                 }
             }
         } elseif ($purchaseNumber) {
-            // Search by order number
+            // Search by purchase number
             $purchase = Purchase::where('purchase_number', $purchaseNumber)->first();
 
             if ($purchase) {

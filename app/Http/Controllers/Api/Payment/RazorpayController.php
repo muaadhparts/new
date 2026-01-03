@@ -61,7 +61,7 @@ class RazorpayController extends Controller
             'payment_capture' => 1, // auto capture
         ];
 
-        $razorpayOrder = $this->api->order->create($purchaseData);
+        $razorpayOrder = $this->api->purchase->create($purchaseData);
 
         $razorpayOrderId = $razorpayOrder['id'];
 
@@ -121,7 +121,7 @@ class RazorpayController extends Controller
     {
 
         $success = true;
-        $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
+        $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
         $purchase_id = $razorpayOrder['receipt'];
         $purchase = Purchase::where('purchase_number', $purchase_id)->first();
 
@@ -142,7 +142,7 @@ class RazorpayController extends Controller
 
         if ($success === true) {
 
-            $razorpayOrder = $this->api->order->fetch(session('razorpay_order_id'));
+            $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
 
             $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
