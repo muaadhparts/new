@@ -35,6 +35,7 @@
                                                         <tr>
                                                             <th>{{ __('Customer Email') }}</th>
                                                             <th>{{ __('Order Number') }}</th>
+                                                            <th>{{ __('Merchant') }}</th>
                                                             <th>{{ __('Total Qty') }}</th>
                                                             <th>{{ __('Total Cost') }}</th>
                                                             <th>{{ __('Options') }}</th>
@@ -175,6 +176,7 @@
                columns: [
                         { data: 'customer_email', name: 'customer_email' },
                         { data: 'id', name: 'id' },
+                        { data: 'merchants', name: 'merchants' },
                         { data: 'totalQty', name: 'totalQty' },
                         { data: 'pay_amount', name: 'pay_amount' },
                         { data: 'action', searchable: false, orderable: false }

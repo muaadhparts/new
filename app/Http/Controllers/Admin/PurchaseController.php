@@ -55,16 +55,19 @@ class PurchaseController extends AdminBaseController
 
     public function datatables($status)
     {
+        // Load purchases with merchant relationships
+        $query = Purchase::with(['merchantPurchases.user']);
+
         if ($status == 'pending') {
-            $datas = Purchase::where('status', '=', 'pending')->latest('id')->get();
+            $datas = $query->where('status', '=', 'pending')->latest('id')->get();
         } elseif ($status == 'processing') {
-            $datas = Purchase::where('status', '=', 'processing')->latest('id')->get();
+            $datas = $query->where('status', '=', 'processing')->latest('id')->get();
         } elseif ($status == 'completed') {
-            $datas = Purchase::where('status', '=', 'completed')->latest('id')->get();
+            $datas = $query->where('status', '=', 'completed')->latest('id')->get();
         } elseif ($status == 'declined') {
-            $datas = Purchase::where('status', '=', 'declined')->latest('id')->get();
+            $datas = $query->where('status', '=', 'declined')->latest('id')->get();
         } else {
-            $datas = Purchase::latest('id')->get();
+            $datas = $query->latest('id')->get();
         }
 
         //--- Integrating This Collection Into Datatables
@@ -75,6 +78,13 @@ class PurchaseController extends AdminBaseController
             })
             ->editColumn('pay_amount', function (Purchase $data) {
                 return \PriceHelper::showOrderCurrencyPrice((($data->pay_amount + $data->wallet_price) * $data->currency_value), $data->currency_sign);
+            })
+            ->addColumn('merchants', function (Purchase $data) {
+                // Show merchants involved in this purchase
+                $merchantNames = $data->merchantPurchases->map(function ($mp) {
+                    return $mp->user ? ($mp->user->shop_name ?? $mp->user->name) : __('Unknown');
+                })->unique()->implode(', ');
+                return $merchantNames ?: __('N/A');
             })
             ->addColumn('action', function (Purchase $data) {
                 $purchases = '<a href="javascript:;" data-href="' . route('admin-purchase-edit', $data->id) . '" class="delivery" data-bs-toggle="modal" data-bs-target="#modal1"><i class="fas fa-dollar-sign"></i> ' . __('Delivery Status') . '</a>';

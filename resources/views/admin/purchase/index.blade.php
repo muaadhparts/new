@@ -37,6 +37,7 @@
                                     <tr>
                                         <th>{{ __('Customer Email') }}</th>
                                         <th>{{ __('Purchase Number') }}</th>
+                                        <th>{{ __('Merchant') }}</th>
                                         <th>{{ __('Total Qty') }}</th>
                                         <th>{{ __('Total Cost') }}</th>
                                         <th>{{ __('Options') }}</th>
@@ -142,6 +143,10 @@
                     {
                         data: 'id',
                         name: 'id'
+                    },
+                    {
+                        data: 'merchants',
+                        name: 'merchants'
                     },
                     {
                         data: 'totalQty',

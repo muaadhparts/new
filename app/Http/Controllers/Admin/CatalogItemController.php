@@ -672,8 +672,9 @@ class CatalogItemController extends AdminBaseController
         $data = $merchantItem->catalogItem;
         $sign = $this->curr;
 
-        // Get merchants list for dropdown (merchants + admins with ID=1)
-        $merchants = \App\Models\User::where('is_merchant', 1)->orWhere('id', 1)->get();
+        // Get merchants list for dropdown - only verified active merchants
+        // is_merchant=2 means verified, status=2 means active - admin is NOT a merchant
+        $merchants = \App\Models\User::where('is_merchant', 2)->where('status', 2)->get();
 
         // Get quality brands for dropdown
         $qualityBrands = \App\Models\QualityBrand::all();
