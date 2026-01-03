@@ -522,8 +522,9 @@ class CatalogItemController extends AdminBaseController
         $cats = collect(); // Category::all();
         $sign = $this->curr;
 
-        // Get merchants list for dropdown (only verified active merchants - is_merchant=2 means verified)
-        $merchants = \App\Models\User::where('is_merchant', 2)->where('status', 1)->get();
+        // Get merchants list for dropdown (verified merchants with active status)
+        // is_merchant=2 means verified merchant, status=2 means active
+        $merchants = \App\Models\User::where('is_merchant', 2)->where('status', 2)->get();
 
         return view('admin.catalog-item.catalogitemcsv', compact('cats', 'sign', 'merchants'));
     }
