@@ -12,7 +12,7 @@ class RiderBaseController extends Controller
 {
     protected $gs;
     protected $curr;
-    protected $language_id;
+    protected $language;
     protected $rider;
 
     public function __construct()
@@ -48,7 +48,12 @@ class RiderBaseController extends Controller
             else {
                 $this->curr = DB::table('currencies')->where('is_default','=',1)->first();
             }
-    
+
+            // Share common variables with views
+            view()->share('gs', $this->gs);
+            view()->share('curr', $this->curr);
+            view()->share('rider', $this->rider);
+
             return $next($request);
         });
     }

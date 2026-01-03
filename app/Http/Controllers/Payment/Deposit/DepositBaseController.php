@@ -10,10 +10,9 @@ use Session;
 
 class DepositBaseController extends Controller
 {
-
     protected $gs;
     protected $curr;
-    protected $language_id;
+    protected $language;
     protected $user;
 
     public function __construct()
@@ -49,6 +48,11 @@ class DepositBaseController extends Controller
             else {
                 $this->curr = DB::table('currencies')->where('is_default','=',1)->first();
             }
+
+            // Share common variables with views
+            view()->share('gs', $this->gs);
+            view()->share('curr', $this->curr);
+            view()->share('user', $this->user);
 
             return $next($request);
         });
