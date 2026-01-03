@@ -129,8 +129,6 @@
                 ...payload,
                 merchant_item_id: mpId
             };
-            // Remove old key if present to avoid confusion
-            delete apiPayload.merchant_item_id;
 
             try {
                 const response = await fetch(CONFIG.endpoint, {

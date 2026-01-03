@@ -166,14 +166,14 @@
                 <div class="card-body">
 
                 <div class="table-responsive  dashboard-home-table">
-                                    <table id="poproducts" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="popularMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
 
                                     <th>{{ __('Purchase Number') }}</th>
                                     <th>{{ __('Purchase Date') }}</th>
                                 </tr>
-                                @foreach($rpurchases as $data)
+                                @foreach($recentPurchases as $data)
                                 <tr>
                                     <td>{{ $data->purchase_number }}</td>
                                     <td>{{ date('Y-m-d',strtotime($data->created_at)) }}</td>
@@ -199,13 +199,13 @@
                         <div class="card-body">
         
                              <div class="table-responsive  dashboard-home-table">
-                                    <table id="poproducts" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="popularMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                     <thead>
                                         <tr>
                                             <th>{{ __('Customer Email') }}</th>
                                             <th>{{ __('Joined') }}</th>
                                         </tr>
-                                        @foreach($rusers as $data)
+                                        @foreach($recentUsers as $data)
                                         <tr>
                                             <td>{{ $data->email }}</td>
                                             <td>{{ $data->created_at }}</td>
@@ -233,7 +233,7 @@
                             <div class="card-body">
             
                                 <div class="table-responsive  dashboard-home-table">
-                                    <table id="poproducts" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="popularMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                         <thead>
                                             <tr>
                                                 <th>{{ __('Featured Image') }}</th>
@@ -246,7 +246,7 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($poproducts as $data)
+                                            @foreach($popularMerchantItems as $data)
                                             <tr>
                                             <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
                                             <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
@@ -280,7 +280,7 @@
                             <div class="card-body">
             
                                 <div class="table-responsive dashboard-home-table">
-                                    <table id="pproducts" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="latestMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                             <thead>
                                                     <tr>
                                                         <th>{{ __('Featured Image') }}</th>
@@ -293,7 +293,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach($pproducts as $data)
+                                                    @foreach($latestMerchantItems as $data)
                                                     <tr>
                                                     <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
                                                     <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
@@ -405,7 +405,7 @@
         var lineChart = new Chart(ctx).Line(data, options);
     }
 
-    $('#poproducts').dataTable( {
+    $('#popularMerchantItems').dataTable( {
       "ordering": false,
           'lengthChange': false,
           'searching'   : false,
@@ -416,7 +416,7 @@
           'paging'  : false
     } );
 
-    $('#pproducts').dataTable( {
+    $('#latestMerchantItems').dataTable( {
       "ordering": false,
       'lengthChange': false,
           'searching'   : false,

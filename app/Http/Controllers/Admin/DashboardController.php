@@ -35,7 +35,7 @@ class DashboardController extends AdminBaseController
         $data['blogs'] = Blog::count();
 
         // Get latest merchant items (active only)
-        $data['pproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
+        $data['latestMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1);
@@ -44,10 +44,10 @@ class DashboardController extends AdminBaseController
             ->take(5)
             ->get();
 
-        $data['rpurchases'] = Purchase::latest('id')->take(5)->get();
+        $data['recentPurchases'] = Purchase::latest('id')->take(5)->get();
 
         // Get popular merchant items (by views from catalog_items)
-        $data['poproducts'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
+        $data['popularMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1)->orderBy('views', 'desc');
@@ -58,7 +58,7 @@ class DashboardController extends AdminBaseController
                 return $mi->catalogItem->views ?? 0;
             });
 
-        $data['rusers'] = User::latest('id')->take(5)->get();
+        $data['recentUsers'] = User::latest('id')->take(5)->get();
         $data['referrals'] = Counter::where('type', 'referral')->latest('total_count')->take(5)->get();
         $data['browsers'] = Counter::where('type', 'browser')->latest('total_count')->take(5)->get();
 

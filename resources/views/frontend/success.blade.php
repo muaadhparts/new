@@ -342,7 +342,7 @@
 
                 </div>
                 <div class="ordered-catalogItems wow-replaced" data-wow-delay=".1s">
-                    <h4>@lang('Ordered Items:')</h4>
+                    <h4>@lang('Purchased Items:')</h4>
                     <div class="table-responsive">
                         <table>
                             <thead>

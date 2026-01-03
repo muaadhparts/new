@@ -165,7 +165,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6">{{ __('No orders found') }}</td>
+                                    <td colspan="6">{{ __('No purchases found') }}</td>
                                 </tr>
                             @endforelse
                         </table>

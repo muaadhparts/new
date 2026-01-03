@@ -184,7 +184,7 @@ class RiderController extends RiderBaseController
             return redirect()->route('rider-purchases')->with('unsuccess', __('Purchase not found'));
         }
 
-        return view('rider.order_details', compact('data'));
+        return view('rider.purchase_details', compact('data'));
     }
 
     public function orderAccept($id)

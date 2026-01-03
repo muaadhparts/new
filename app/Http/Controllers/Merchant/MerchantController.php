@@ -25,7 +25,7 @@ class MerchantController extends MerchantBaseController
             // Retrieve recent catalog items for this merchant using the merchantItems relationship.
             // Limit to 5 entries to avoid overwhelming the dashboard when there are many items.
             $userId = $this->user->id;
-            $data['pproducts'] = CatalogItem::whereHas('merchantItems', function ($q) use ($userId) {
+            $data['catalogItems'] = CatalogItem::whereHas('merchantItems', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })
             ->with([

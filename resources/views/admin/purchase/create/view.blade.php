@@ -25,7 +25,7 @@
                    <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
                 </li>
                 <li>
-                   <a href="javascript:;">{{ __('Orders') }}</a>
+                   <a href="javascript:;">{{ __('Purchases') }}</a>
                 </li>
                 <li>
                    <a href="javascript:;">{{ __('Purchase Details') }}</a>

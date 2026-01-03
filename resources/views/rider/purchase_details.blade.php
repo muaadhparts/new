@@ -109,7 +109,7 @@
                     </div>
 
                     <div class="ordered-catalogItems">
-                        <h5>@lang('Ordered Items:') </h5>
+                        <h5>@lang('Purchased Items:') </h5>
                         <div class="user-table-wrapper all-orders-table-wrapper wow-replaced" data-wow-delay=".1s">
 
                             <div class="user-table table-responsive position-relative">
