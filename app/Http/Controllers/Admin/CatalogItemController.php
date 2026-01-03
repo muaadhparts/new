@@ -521,7 +521,11 @@ class CatalogItemController extends AdminBaseController
         // TODO: Removed - old category system
         $cats = collect(); // Category::all();
         $sign = $this->curr;
-        return view('admin.catalog-item.catalogitemcsv', compact('cats', 'sign'));
+
+        // Get merchants list for dropdown (only verified active merchants - is_merchant=2 means verified)
+        $merchants = \App\Models\User::where('is_merchant', 2)->where('status', 1)->get();
+
+        return view('admin.catalog-item.catalogitemcsv', compact('cats', 'sign', 'merchants'));
     }
 
     //*** POST Request
@@ -531,6 +535,7 @@ class CatalogItemController extends AdminBaseController
         //--- Validation Section
         $rules = [
             'csvfile' => 'required|mimes:csv,txt',
+            'merchant_id' => 'required|exists:users,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -631,10 +636,10 @@ class CatalogItemController extends AdminBaseController
                         // Save base catalog item data (without merchant-specific fields)
                         $data->fill($input)->save();
 
-                        // Create merchant_item entry for imported catalog item (assume admin user_id = 1)
+                        // Create merchant_item entry for selected merchant
                         MerchantItem::create([
                             'catalog_item_id' => $data->id,
-                            'user_id' => 1, // Admin/default merchant
+                            'user_id' => $request->merchant_id,
                             'item_type' => $csvItemType,
                             'price' => $convertedPrice,
                             'previous_price' => $convertedPreviousPrice,

@@ -202,12 +202,12 @@
 																	</div>
                                                                 </div>
 
-                                                                
+
 
 
                                                             </div>
                                                         </div>
-            
+
             `);
             $('.cp').colorpicker();
 
@@ -227,7 +227,7 @@
                         <div class="col-md-6 col-sm-6">
                             <label>
                                 {{ __('Color') }} :
-                                
+
                             </label>
                             <div class="color-area">
                                 <div class="input-group colorpicker-component cp">
@@ -253,7 +253,7 @@
 
                     </div>
                 </div>
-            
+
             `);
                 $('.cp').colorpicker();
             }

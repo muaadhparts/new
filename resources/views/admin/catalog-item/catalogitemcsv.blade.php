@@ -46,6 +46,23 @@
 											  </div>
 											  <hr>
 
+											  {{-- Merchant Selection --}}
+											  <div class="row mb-4">
+												  <div class="col-lg-6 offset-lg-3">
+													  <div class="left-area">
+														  <h4 class="heading">{{ __("Select Merchant") }} *</h4>
+														  <p class="sub-heading">{{ __("Items will be imported for this merchant") }}</p>
+													  </div>
+													  <select name="merchant_id" class="form-control" required>
+														  <option value="">{{ __("-- Select Merchant --") }}</option>
+														  @foreach($merchants as $merchant)
+															  <option value="{{ $merchant->id }}">{{ $merchant->shop_name ?? $merchant->name }} ({{ $merchant->email }})</option>
+														  @endforeach
+													  </select>
+												  </div>
+											  </div>
+											  <hr>
+
 											  <div class="row text-center">
 												  <div class="col-lg-12">
 														<div class="csv-icon">
@@ -77,9 +94,4 @@
 
 
 
-@endsection
-
-@section('scripts')
-
-@include('partials.admin.catalogItem.catalogItem-scripts')
 @endsection
