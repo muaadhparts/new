@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
-     * Rename merchant_products table to merchant_items
-     * Also rename product_id to catalog_item_id
+     * Rename merchant_items table to merchant_items
+     * Also rename catalog_item_id to catalog_item_id
      * SAFE APPROACH: Create new table, migrate data, rename old table with _old suffix
      */
     public function up(): void
@@ -17,7 +17,7 @@ return new class extends Migration
         // Step 1: Create merchant_items table with updated structure
         Schema::create('merchant_items', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('catalog_item_id')->unsigned(); // renamed from product_id
+            $table->integer('catalog_item_id')->unsigned(); // renamed from catalog_item_id
             $table->integer('user_id')->unsigned();
             $table->bigInteger('brand_quality_id')->unsigned();
             $table->decimal('price', 10, 2)->nullable();
@@ -77,8 +77,8 @@ return new class extends Migration
                 ->onDelete('restrict')->onUpdate('cascade');
         });
 
-        // Step 2: Copy all data from merchant_products to merchant_items
-        // Note: product_id is mapped to catalog_item_id
+        // Step 2: Copy all data from merchant_items to merchant_items
+        // Note: catalog_item_id is mapped to catalog_item_id
         DB::statement('
             INSERT INTO `merchant_items` (
                 `id`, `catalog_item_id`, `user_id`, `brand_quality_id`, `price`, `previous_price`,
@@ -90,24 +90,24 @@ return new class extends Migration
                 `featured`, `top`, `big`, `trending`, `best`
             )
             SELECT
-                `id`, `product_id`, `user_id`, `brand_quality_id`, `price`, `previous_price`,
+                `id`, `catalog_item_id`, `user_id`, `brand_quality_id`, `price`, `previous_price`,
                 `stock`, `is_discount`, `discount_date`, `whole_sell_qty`, `whole_sell_discount`,
                 `preordered`, `minimum_qty`, `stock_check`, `popular`, `status`, `created_at`,
                 `updated_at`, `is_popular`, `licence_type`, `license_qty`, `license`, `ship`,
                 `product_condition`, `color_all`, `color_price`, `details`, `policy`, `features`,
                 `colors`, `size`, `size_qty`, `product_type`, `size_price`, `affiliate_link`,
                 `featured`, `top`, `big`, `trending`, `best`
-            FROM `merchant_products`
+            FROM `merchant_items`
         ');
 
-        // Step 3: Reset auto_increment to match merchant_products table
+        // Step 3: Reset auto_increment to match merchant_items table
         $maxId = DB::table('merchant_items')->max('id');
         if ($maxId) {
             DB::statement("ALTER TABLE `merchant_items` AUTO_INCREMENT = " . ($maxId + 1));
         }
 
-        // Step 4: Rename merchant_products to merchant_products_old (NEVER DELETE!)
-        Schema::rename('merchant_products', 'merchant_products_old');
+        // Step 4: Rename merchant_items to merchant_items_old (NEVER DELETE!)
+        Schema::rename('merchant_items', 'merchant_items_old');
     }
 
     /**
@@ -115,12 +115,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Rename merchant_products_old back to merchant_products
-        if (Schema::hasTable('merchant_products_old')) {
-            Schema::rename('merchant_products_old', 'merchant_products');
+        // Rename merchant_items_old back to merchant_items
+        if (Schema::hasTable('merchant_items_old')) {
+            Schema::rename('merchant_items_old', 'merchant_items');
         }
 
-        // Drop merchant_items table (safe because data is in merchant_products)
+        // Drop merchant_items table (safe because data is in merchant_items)
         Schema::dropIfExists('merchant_items');
     }
 };

@@ -117,9 +117,9 @@
                     <label class="form-label">{{ __('Merchant') }}</label>
                     <select name="merchant_id" class="form-control">
                         <option value="">{{ __('All Merchants') }}</option>
-                        @foreach($merchants as $vendor)
-                            <option value="{{ $vendor->id }}" {{ $merchantId == $vendor->id ? 'selected' : '' }}>
-                                {{ $vendor->shop_name ?? $vendor->name }}
+                        @foreach($merchants as $merchant)
+                            <option value="{{ $merchant->id }}" {{ $merchantId == $merchant->id ? 'selected' : '' }}>
+                                {{ $merchant->shop_name ?? $merchant->name }}
                             </option>
                         @endforeach
                     </select>
@@ -149,7 +149,7 @@
     </div>
 
     <!-- Shipments Table -->
-    <div class="product-area">
+    <div class="catalogItem-area">
         <div class="row">
             <div class="col-lg-12">
                 <div class="mr-table allproduct">
@@ -160,7 +160,7 @@
                                 <tr>
                                     <th>{{ __('Tracking Number') }}</th>
                                     <th>{{ __('Order') }}</th>
-                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Customer') }}</th>
                                     <th>{{ __('Company') }}</th>
                                     <th>{{ __('Status') }}</th>
@@ -199,7 +199,7 @@
                                                 N/A
                                             @endif
                                         </td>
-                                        <td>{{ $shipment->vendor->shop_name ?? 'N/A' }}</td>
+                                        <td>{{ $shipment->merchant->shop_name ?? 'N/A' }}</td>
                                         <td>{{ $shipment->order->customer_name ?? 'N/A' }}</td>
                                         <td>{{ $shipment->company_name }}</td>
                                         <td>

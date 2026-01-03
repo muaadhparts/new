@@ -1,4 +1,4 @@
-<div class="modal fade gs-modal" id="vendor_package{{ $vendor_id }}" tabindex="-1" role="dialog"
+<div class="modal fade gs-modal" id="merchant_package{{ $merchant_id }}" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog send-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
@@ -17,9 +17,9 @@
                                 view="{{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}"
                                 data-form="{{ $data->title }}"
                                 id="free-package{{ $data->id }}"
-                                ref="{{ $vendor_id }}"
+                                ref="{{ $merchant_id }}"
                                 data-price="{{ round($data->price * $curr->value, 2) }}"
-                                name="packeging[{{ $vendor_id }}]"
+                                name="packeging[{{ $merchant_id }}]"
                                 value="{{ $data->id }}">
                             <label class="icon-label" for="free-package{{ $data->id }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -48,8 +48,8 @@
 
 <script>
 (function() {
-    const merchantId = {{ $vendor_id }};
-    const modalId = 'vendor_package' + merchantId;
+    const merchantId = {{ $merchant_id }};
+    const modalId = 'merchant_package' + merchantId;
     const currSign = '{{ $curr->sign }}';
 
     function initPackagingModal() {

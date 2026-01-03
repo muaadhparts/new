@@ -30,7 +30,7 @@ Route::prefix('specs')->middleware(['web'])->group(function () {
 Route::prefix('catalog-item')->middleware(['web'])->group(function () {
     // Alternatives
     Route::get('/alternatives/{sku}', [CatalogItemApiController::class, 'getAlternatives'])->name('api.catalog-item.alternatives');
-    Route::get('/alternatives/{sku}/related', [CatalogItemApiController::class, 'getAlternativeRelatedProducts'])->name('api.catalog-item.alternatives.related');
+    Route::get('/alternatives/{sku}/related', [CatalogItemApiController::class, 'getAlternativeRelatedCatalogItems'])->name('api.catalog-item.alternatives.related');
     Route::get('/alternatives/{sku}/html', [CatalogItemApiController::class, 'getAlternativesHtml'])->name('api.catalog-item.alternatives.html');
 
     // Compatibility
@@ -243,7 +243,7 @@ Route::group(['prefix' => 'front'], function () {
     Route::post('/checkout','Api\Front\CheckoutController@checkout');
    
     Route::get('/get-shipping-packaging','Api\Front\CheckoutController@getShippingPackaging');
-    Route::get('/vendor/wise/shipping-packaging','Api\Front\CheckoutController@VendorWisegetShippingPackaging');
+    Route::get('/merchant/wise/shipping-packaging','Api\Front\CheckoutController@MerchantWisegetShippingPackaging');
     Route::get('/order/details','Api\Front\CheckoutController@orderDetails');
     Route::get('/get/discount-code','Api\Front\CheckoutController@getDiscountCode');
     Route::post('/checkout/update/{id}','Api\Front\CheckoutController@update');

@@ -81,12 +81,12 @@ class Muaadhsetting extends Model
         'theme_footer_link', 'theme_footer_border',
 
         // ==================================
-        // THEME BUILDER - PRODUCT CARDS
+        // THEME BUILDER - ITEM CARDS
         // ==================================
-        'theme_product_title_size', 'theme_product_title_weight',
-        'theme_product_price_size', 'theme_product_price_weight',
-        'theme_product_card_radius', 'theme_product_img_radius',
-        'theme_product_hover_scale',
+        'theme_item_title_size', 'theme_item_title_weight',
+        'theme_item_price_size', 'theme_item_price_weight',
+        'theme_item_card_radius', 'theme_item_img_radius',
+        'theme_item_hover_scale',
 
         // ==================================
         // THEME BUILDER - MODALS
@@ -179,8 +179,8 @@ class Muaadhsetting extends Model
         'flash_count', 'hot_count', 'new_count', 'sale_count',
         'best_seller_count', 'popular_count', 'top_rated_count',
         'big_save_count', 'trending_count', 'page_count',
-        'seller_product_count', 'favorite_count', 'merchant_page_count',
-        'min_price', 'max_price', 'product_page', 'post_count', 'favorite_page',
+        'seller_item_count', 'favorite_count', 'merchant_page_count',
+        'min_price', 'max_price', 'item_page', 'post_count', 'favorite_page',
         'decimal_separator', 'thousand_separator', 'version',
         'is_reward', 'reward_point', 'reward_dolar',
         'physical', 'digital', 'license', 'affilite',

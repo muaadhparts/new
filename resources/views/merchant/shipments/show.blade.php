@@ -1,9 +1,9 @@
 @extends('layouts.merchant')
 
 @section('content')
-<div class="gs-vendor-outlet">
+<div class="gs-merchant-outlet">
     <!-- Breadcrumb -->
-    <div class="gs-vendor-breadcrumb has-mb">
+    <div class="gs-merchant-breadcrumb has-mb">
         <div class="gs-deposit-title d-flex align-items-center gap-4">
             <a href="{{ route('merchant.shipments.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> @lang('Back')

@@ -69,8 +69,8 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg4">
                 <div class="left">
-                    <h5 class="title">{{ __('Total Products!') }}</h5>
-                    <span class="number">{{$products}}</span>
+                    <h5 class="title">{{ __('Total Catalog Items!') }}</h5>
+                    <span class="number">{{$catalogItems}}</span>
                     <a href="{{route('admin-catalog-item-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
@@ -229,7 +229,7 @@
 
             <div class="col-md-12 col-lg-12 col-sm-12 col-xl-12">
                     <div class="card">
-                            <h5 class="card-header">{{ __('Popular Product(s)') }}</h5>
+                            <h5 class="card-header">{{ __('Popular CatalogItem(s)') }}</h5>
                             <div class="card-body">
             
                                 <div class="table-responsive  dashboard-home-table">
@@ -248,10 +248,10 @@
                                         <tbody>
                                             @foreach($poproducts as $data)
                                             <tr>
-                                            <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                            <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
-                                            <td>{{ $data->product && $data->product->brand ? $data->product->brand->localized_name : 'N/A' }}</td>
-                                                <td>{{ $data->product->type ?? 'N/A' }}</td>
+                                            <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                            <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
+                                            <td>{{ $data->catalogItem && $data->catalogItem->brand ? $data->catalogItem->brand->localized_name : 'N/A' }}</td>
+                                                <td>{{ $data->catalogItem->type ?? 'N/A' }}</td>
 
                                                 <td> {{ $data->showPrice() }} </td>
 
@@ -276,7 +276,7 @@
 
             <div class="col-md-12 col-lg-12 col-sm-12 col-xl-12">
                     <div class="card">
-                            <h5 class="card-header">{{ __('Recent Product(s)') }}</h5>
+                            <h5 class="card-header">{{ __('Recent CatalogItem(s)') }}</h5>
                             <div class="card-body">
             
                                 <div class="table-responsive dashboard-home-table">
@@ -295,13 +295,13 @@
                                                 <tbody>
                                                     @foreach($pproducts as $data)
                                                     <tr>
-                                                    <td><img src="{{filter_var($data->product->photo ?? '', FILTER_VALIDATE_URL) ? $data->product->photo : ($data->product->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->product->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                                    <td>{{ $data->product ? getLocalizedProductName($data->product, 50) : 'N/A' }}</td>
-                                                    <td>{{ $data->product && $data->product->brand ? $data->product->brand->localized_name : 'N/A' }}</td>
-                                                        <td>{{ $data->product->type ?? 'N/A' }}</td>
+                                                    <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                                    <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
+                                                    <td>{{ $data->catalogItem && $data->catalogItem->brand ? $data->catalogItem->brand->localized_name : 'N/A' }}</td>
+                                                        <td>{{ $data->catalogItem->type ?? 'N/A' }}</td>
                                                         <td> {{ $data->showPrice() }} </td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ route('admin-catalog-item-edit',$data->product->id ?? $data->id) }}"><i
+                                                            <div class="action-list"><a href="{{ route('admin-catalog-item-edit',$data->catalogItem->id ?? $data->id) }}"><i
                                                                         class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>

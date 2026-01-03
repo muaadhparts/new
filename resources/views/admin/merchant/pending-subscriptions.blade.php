@@ -6,22 +6,22 @@
                         <div class="mr-breadcrumb">
                             <div class="row">
                                 <div class="col-lg-12">
-                                        <h4 class="heading">{{ __("Pending Vendor Subscriptions") }}</h4>
+                                        <h4 class="heading">{{ __("Pending Merchant Subscriptions") }}</h4>
                                         <ul class="links">
                                             <li>
                                                 <a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
                                             </li>
                                             <li>
-                                                <a href="javascript:;">{{ __("Vendors") }}</a>
+                                                <a href="javascript:;">{{ __("Merchants") }}</a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('admin-merchant-subs','pending') }}">{{ __("Pending Vendor Subscriptions") }}</a>
+                                                <a href="{{ route('admin-merchant-subs','pending') }}">{{ __("Pending Merchant Subscriptions") }}</a>
                                             </li>
                                         </ul>
                                 </div>
                             </div>
                         </div>
-                        <div class="product-area">
+                        <div class="catalogItem-area">
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="mr-table allproduct">
@@ -30,7 +30,7 @@
                                                 <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                     <thead>
                                                         <tr>
-                                                            <th width="15%">{{ __("Vendor Name") }}</th>
+                                                            <th width="15%">{{ __("Merchant Name") }}</th>
                                                             <th width="15%">{{ __("Plan") }}</th>
                                                             <th width="15%">{{ __("Method") }}</th>
                                                             <th width="15%">{{ __("Transcation ID") }}</th>

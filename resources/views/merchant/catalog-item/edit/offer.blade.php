@@ -1,18 +1,18 @@
 @extends('layouts.merchant')
 @php
     $isDashboard = true;
-    $isVendor = true;
+    $isMerchant = true;
 @endphp
 
 @section('content')
-<div class="gs-vendor-outlet">
+<div class="gs-merchant-outlet">
     <!-- breadcrumb start  -->
-    <div class="gs-vendor-breadcrumb has-mb">
-        <h4 class="text-capitalize">@lang('Edit Offer for Product')</h4>
+    <div class="gs-merchant-breadcrumb has-mb">
+        <h4 class="text-capitalize">@lang('Edit Offer for CatalogItem')</h4>
         <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-index') }}">@lang('Products')</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-index') }}">@lang('CatalogItems')</a></li>
                 <li class="breadcrumb-item active" aria-current="page">@lang('Edit Offer')</li>
             </ol>
         </nav>
@@ -24,17 +24,17 @@
         @method('PUT')
 
         <div class="row">
-            <!-- Product Info Preview -->
+            <!-- CatalogItem Info Preview -->
             <div class="col-12 col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5>@lang('Product Information')</h5>
+                        <h5>@lang('CatalogItem Information')</h5>
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
                             <img src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
                                  alt="{{ $data->name }}" class="img-fluid" style="max-height: 200px;">
-                            <p class="text-muted small mt-1">@lang('Product Main Image')</p>
+                            <p class="text-muted small mt-1">@lang('CatalogItem Main Image')</p>
                         </div>
                         <h6>{{ $data->name }}</h6>
                         <p><strong>@lang('SKU'):</strong> {{ $data->sku }}</p>
@@ -46,21 +46,21 @@
                     </div>
                 </div>
 
-                <!-- Vendor Gallery Section -->
+                <!-- Merchant Gallery Section -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h5>@lang('Your Product Images')</h5>
-                        <small class="text-muted">@lang('Add your own images for this product')</small>
+                        <h5>@lang('Your CatalogItem Images')</h5>
+                        <small class="text-muted">@lang('Add your own images for this catalogItem')</small>
                     </div>
                     <div class="card-body">
-                        <!-- Existing Vendor Images -->
-                        <div id="vendor-gallery-list" class="row g-2 mb-3">
+                        <!-- Existing Merchant Images -->
+                        <div id="merchant-gallery-list" class="row g-2 mb-3">
                             @php
-                                $vendorGalleries = \App\Models\Gallery::where('product_id', $data->id)
+                                $merchantGalleries = \App\Models\Gallery::where('catalog_item_id', $data->id)
                                     ->where('user_id', auth()->id())
                                     ->get();
                             @endphp
-                            @foreach($vendorGalleries as $gallery)
+                            @foreach($merchantGalleries as $gallery)
                                 <div class="col-4" id="gallery-item-{{ $gallery->id }}">
                                     <div class="position-relative">
                                         <img src="{{ asset('assets/images/galleries/' . $gallery->photo) }}"
@@ -85,7 +85,7 @@
                         <!-- Preview New Uploads -->
                         <div id="gallery-preview" class="row g-2"></div>
 
-                        <input type="hidden" id="product_id" value="{{ $data->id }}">
+                        <input type="hidden" id="catalog_item_id" value="{{ $data->id }}">
                     </div>
                 </div>
             </div>
@@ -134,13 +134,13 @@
                                 </div>
                             </div>
 
-                            <!-- Product Condition -->
+                            <!-- CatalogItem Condition -->
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Product Condition*')</label>
-                                    <select class="form-control" name="product_condition" required>
-                                        <option value="2" {{ $merchantItem->product_condition == 2 ? 'selected' : '' }}>@lang('New')</option>
-                                        <option value="1" {{ $merchantItem->product_condition == 1 ? 'selected' : '' }}>@lang('Used')</option>
+                                    <label class="form-label">@lang('CatalogItem Condition*')</label>
+                                    <select class="form-control" name="item_condition" required>
+                                        <option value="2" {{ $merchantItem->item_condition == 2 ? 'selected' : '' }}>@lang('New')</option>
+                                        <option value="1" {{ $merchantItem->item_condition == 1 ? 'selected' : '' }}>@lang('Used')</option>
                                     </select>
                                 </div>
                             </div>
@@ -176,7 +176,7 @@
                                         <input class="form-check-input" type="checkbox" id="allow_colors" name="color_check"
                                                value="1" {{ !empty($merchantItem->color_all) ? 'checked' : '' }}>
                                         <label class="form-check-label" for="allow_colors">
-                                            @lang('Allow Product Colors')
+                                            @lang('Allow CatalogItem Colors')
                                         </label>
                                     </div>
                                 </div>
@@ -275,7 +275,7 @@
                             <!-- Policy Override -->
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Policy (Override Product Policy)')</label>
+                                    <label class="form-label">@lang('Policy (Override CatalogItem Policy)')</label>
                                     <textarea class="form-control" name="policy" rows="3">{{ $merchantItem->policy }}</textarea>
                                 </div>
                             </div>
@@ -283,7 +283,7 @@
                             <!-- Features Override -->
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Features (Override Product Features)')</label>
+                                    <label class="form-label">@lang('Features (Override CatalogItem Features)')</label>
                                     <textarea class="form-control" name="features" rows="3">{{ $merchantItem->features }}</textarea>
                                 </div>
                             </div>
@@ -349,11 +349,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ============================================
-    // Vendor Gallery Upload
+    // Merchant Gallery Upload
     // ============================================
     const galleryUpload = document.getElementById('gallery-upload');
     const galleryPreview = document.getElementById('gallery-preview');
-    const productId = document.getElementById('product_id').value;
+    const catalogItemId = document.getElementById('catalog_item_id').value;
 
     // Preview selected images before upload
     galleryUpload.addEventListener('change', function() {
@@ -395,7 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
 
             const formData = new FormData();
-            formData.append('product_id', productId);
+            formData.append('catalog_item_id', catalogItemId);
             formData.append('_token', '{{ csrf_token() }}');
 
             for (let i = 0; i < galleryFiles.length; i++) {
@@ -403,7 +403,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Upload gallery first
-            fetch('{{ route("vendor-gallery-store") }}', {
+            fetch('{{ route("merchant-gallery-store") }}', {
                 method: 'POST',
                 body: formData
             })
@@ -429,7 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const galleryId = btn.dataset.id;
 
             if (confirm('@lang("Are you sure you want to delete this image?")')) {
-                fetch('{{ route("vendor-gallery-delete") }}?id=' + galleryId, {
+                fetch('{{ route("merchant-gallery-delete") }}?id=' + galleryId, {
                     method: 'GET',
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}'

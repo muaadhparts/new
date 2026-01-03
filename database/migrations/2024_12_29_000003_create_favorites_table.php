@@ -16,14 +16,14 @@ return new class extends Migration
         Schema::create('favorites', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id')->unsigned();
-            $table->integer('product_id')->unsigned();
-            $table->integer('merchant_product_id')->unsigned()->nullable();
+            $table->integer('catalog_item_id')->unsigned();
+            $table->integer('merchant_item_id')->unsigned()->nullable();
         });
 
         // Step 2: Migrate data
         DB::statement('
-            INSERT INTO favorites (id, user_id, product_id, merchant_product_id)
-            SELECT id, user_id, product_id, merchant_product_id
+            INSERT INTO favorites (id, user_id, catalog_item_id, merchant_item_id)
+            SELECT id, user_id, catalog_item_id, merchant_item_id
             FROM wishlists
         ');
 

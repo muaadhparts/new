@@ -246,7 +246,7 @@
                             {{-- ✅ Unified Price Summary Component - Step 1 --}}
                             @include('includes.checkout-price-summary', [
                                 'step' => 1,
-                                'productsTotal' => $productsTotal ?? $totalPrice,
+                                'catalogItemsTotal' => $catalogItemsTotal ?? $totalPrice,
                                 'totalPrice' => $totalPrice, // Backward compatibility
                                 'digital' => $digital,
                                 'curr' => $curr,

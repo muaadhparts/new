@@ -37,7 +37,9 @@
       "Bash(dir:*)",
       "Bash(ren:*)",
       "Bash(findstr:*)",
-      "Bash(composer dump-autoload:*)"
+      "Bash(composer dump-autoload:*)",
+      "WebFetch(domain:oldnew.test)",
+      "Bash(cd:*)"
     ]
   }
 }

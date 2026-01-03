@@ -38,9 +38,9 @@
                     <label class="form-label">{{ __('Merchant') }}</label>
                     <select name="merchant_id" class="form-control">
                         <option value="">{{ __('All Merchants') }}</option>
-                        @foreach($merchants as $vendor)
-                            <option value="{{ $vendor->id }}" {{ $merchantId == $vendor->id ? 'selected' : '' }}>
-                                {{ $vendor->shop_name ?? $vendor->name }}
+                        @foreach($merchants as $merchant)
+                            <option value="{{ $merchant->id }}" {{ $merchantId == $merchant->id ? 'selected' : '' }}>
+                                {{ $merchant->shop_name ?? $merchant->name }}
                             </option>
                         @endforeach
                     </select>
@@ -121,28 +121,28 @@
     </div>
 
     <div class="row">
-        <!-- Top Vendors -->
+        <!-- Top Merchants -->
         <div class="col-md-6 mb-4">
             <div class="card h-100">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-store mr-2"></i>{{ __('Top Vendors by Shipments') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-store mr-2"></i>{{ __('Top Merchants by Shipments') }}</h5>
                 </div>
                 <div class="card-body">
-                    @if($topVendors->count() > 0)
+                    @if($topMerchants->count() > 0)
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>{{ __('Vendor') }}</th>
+                                        <th>{{ __('Merchant') }}</th>
                                         <th class="text-right">{{ __('Shipments') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($topVendors as $index => $item)
+                                    @foreach($topMerchants as $index => $item)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
-                                            <td>{{ $item->vendor->shop_name ?? $item->vendor->name ?? 'N/A' }}</td>
+                                            <td>{{ $item->merchant->shop_name ?? $item->merchant->name ?? 'N/A' }}</td>
                                             <td class="text-right">
                                                 <span class="badge badge-primary">{{ $item->total }}</span>
                                             </td>

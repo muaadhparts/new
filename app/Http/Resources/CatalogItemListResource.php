@@ -14,10 +14,10 @@ class CatalogItemListResource extends JsonResource
      */
     public function toArray($request)
     {
-        // Get vendor context from request or catalog item attribute
-        $merchantId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
+        // Get merchant context from request or catalog item attribute
+        $merchantId = (int) ($request->get('user') ?? $this->getAttribute('merchant_user_id') ?? 0);
 
-        // Get vendor-aware pricing using the merchant_items system
+        // Get merchant-aware pricing using the merchant_items system
         $currentPrice = method_exists($this, 'ApishowPrice')
             ? (string) $this->ApishowPrice($merchantId ?: null)
             : (string) 0;
@@ -41,8 +41,8 @@ class CatalogItemListResource extends JsonResource
             // is_discount and discount_date are on merchant_items, not catalog_items
             'sale_end_date' => $this->when($mp && $mp->is_discount == 1, $mp->discount_date ?? null),
 
-            // Add vendor context for API consumers
-            'vendor' => $mp ? [
+            // Add merchant context for API consumers
+            'merchant' => $mp ? [
                 'user_id' => $mp->user_id,
                 'merchant_item_id' => $mp->id,
                 'stock' => (int) $mp->stock,

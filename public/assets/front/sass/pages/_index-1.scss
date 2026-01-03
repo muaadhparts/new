@@ -106,7 +106,7 @@
 /********************** gs-offer-section start **********************/
 .gs-offer-section {
   padding-bottom: 120px;
-  .product-wrapper {
+  .catalogItem-wrapper {
     display: flex;
     flex-direction: column;
     gap: 24px;
@@ -122,8 +122,8 @@
 
 /********************** gs-offer-section end **********************/
 
-/********************** gs-explore-product-section start **********************/
-.gs-explore-product-section {
+/********************** gs-explore-catalogItem-section start **********************/
+.gs-explore-catalogItem-section {
   padding: 120px 0px;
 
   .explore-tab-navbar {
@@ -168,7 +168,7 @@
     }
   }
 }
-/********************** gs-explore-product-section end **********************/
+/********************** gs-explore-catalogItem-section end **********************/
 
 // error
 .error-wrapper {

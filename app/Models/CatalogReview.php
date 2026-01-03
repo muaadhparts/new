@@ -70,25 +70,11 @@ class CatalogReview extends Model
         return $percentage;
     }
 
-    /**
-     * @deprecated Use merchantScorePercentage() instead
-     */
-    public static function vendorScorePercentage($user_id){
-        return self::merchantScorePercentage($user_id);
-    }
-
     public static function merchantReviewCount($user_id){
         $count = CatalogReview::whereHas('merchantItem', function($query) use ($user_id) {
             $query->where('user_id', '=', $user_id);
         })->count();
         return $count;
-    }
-
-    /**
-     * @deprecated Use merchantReviewCount() instead
-     */
-    public static function vendorReviewCount($user_id){
-        return self::merchantReviewCount($user_id);
     }
 
 }

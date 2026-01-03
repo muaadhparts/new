@@ -136,6 +136,6 @@ class Catalog extends Model
      */
     protected static function factory()
     {
-        return \Modules\Product\Database\factories\CatlogFactory::new();
+        return \Modules\CatalogItem\Database\factories\CatlogFactory::new();
     }
 }

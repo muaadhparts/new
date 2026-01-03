@@ -50,8 +50,8 @@ class LoginController extends Controller
             }
 
             // إذا كان تسجيل دخول البائع
-            if ($request->vendor == 1) {
-                return redirect()->route('vendor.dashboard');
+            if ($request->merchant == 1) {
+                return redirect()->route('merchant.dashboard');
             }
 
             // التوجيه دائماً إلى لوحة تحكم المستخدم

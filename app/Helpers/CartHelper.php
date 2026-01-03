@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Session;
  *
  * هذا الـ Helper يحل جميع مشاكل السلة القديمة:
  * 1. توحيد cartKey في كل مكان
- * 2. ربط السلة بـ merchant_products
+ * 2. ربط السلة بـ merchant_items
  * 3. دعم المخزون والحد الأدنى والألوان والمقاسات
  * 4. دعم تعدد التجار
  *
@@ -29,9 +29,9 @@ class CartHelper
     /**
      * توليد مفتاح السلة الموحد
      *
-     * الصيغة: mp{merchant_product_id}:{size}:{color}:{values_hash}
+     * الصيغة: mp{merchant_item_id}:{size}:{color}:{values_hash}
      *
-     * @param int $mpId merchant_product_id
+     * @param int $mpId merchant_item_id
      * @param string $size المقاس
      * @param string $color اللون
      * @param string $values قيم إضافية
@@ -112,7 +112,7 @@ class CartHelper
     /**
      * إضافة عنصر للسلة
      *
-     * @param int $mpId merchant_product_id
+     * @param int $mpId merchant_item_id
      * @param int $qty الكمية
      * @param string $size المقاس
      * @param string $color اللون
@@ -126,7 +126,7 @@ class CartHelper
         $mp = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->find($mpId);
 
         if (!$mp || $mp->status !== 1) {
-            return ['success' => false, 'message' => __('Product not available'), 'cart' => null];
+            return ['success' => false, 'message' => __('CatalogItem not available'), 'cart' => null];
         }
 
         // فحص الحد الأدنى للكمية
@@ -196,25 +196,25 @@ class CartHelper
             $cart['items'][$cartKey]['total_price'] = $unitPrice * $newQty;
         } else {
             // إنشاء عنصر جديد
-            $product = $mp->product;
+            $catalogItem = $mp->catalogItem;
 
             $cart['items'][$cartKey] = [
                 // معرفات
                 'cart_key' => $cartKey,
                 'dom_key' => self::generateDomKey($cartKey),
-                'merchant_product_id' => $mpId,
-                'product_id' => $mp->product_id,
+                'merchant_item_id' => $mpId,
+                'catalog_item_id' => $mp->catalog_item_id,
                 'user_id' => $mp->user_id,
                 'merchant_id' => $mp->user_id, // صريح للاستخدام في route
                 'brand_quality_id' => $mp->brand_quality_id,
 
                 // معلومات المنتج
-                'name' => $product->name ?? '',
-                'name_ar' => $product->name_ar ?? '',
-                'slug' => $product->slug ?? '',
-                'sku' => $product->sku ?? '',
-                'photo' => $product->photo ?? '',
-                'type' => $product->type ?? 'Physical',
+                'name' => $catalogItem->name ?? '',
+                'name_ar' => $catalogItem->name_ar ?? '',
+                'slug' => $catalogItem->slug ?? '',
+                'sku' => $catalogItem->sku ?? '',
+                'photo' => $catalogItem->photo ?? '',
+                'type' => $catalogItem->type ?? 'Physical',
 
                 // معلومات التاجر
                 'merchant_name' => getLocalizedShopName($mp->user),
@@ -248,7 +248,7 @@ class CartHelper
                 // معلومات إضافية من التاجر
                 'ship' => $mp->ship ?? '',
                 'policy' => $mp->policy ?? '',
-                'product_condition' => $mp->product_condition ?? '',
+                'item_condition' => $mp->item_condition ?? '',
 
                 // خصم الجملة
                 'discount' => 0,
@@ -281,13 +281,13 @@ class CartHelper
         }
 
         $item = $cart['items'][$cartKey];
-        $mpId = (int)$item['merchant_product_id'];
+        $mpId = (int)$item['merchant_item_id'];
         $size = $item['size'] ?? '';
 
         // جلب بيانات التاجر الحالية
         $mp = MerchantItem::find($mpId);
         if (!$mp || $mp->status !== 1) {
-            return ['success' => false, 'message' => __('Product no longer available'), 'item' => null, 'cart' => null];
+            return ['success' => false, 'message' => __('CatalogItem no longer available'), 'item' => null, 'cart' => null];
         }
 
         // حساب المخزون الفعلي
@@ -498,7 +498,7 @@ class CartHelper
     private static function calculateUnitPrice(MerchantItem $mp, string $size = '', string $color = ''): float
     {
         // السعر الأساسي (مع العمولة)
-        $basePrice = method_exists($mp, 'vendorSizePrice') ? $mp->vendorSizePrice() : (float)$mp->price;
+        $basePrice = method_exists($mp, 'merchantSizePrice') ? $mp->merchantSizePrice() : (float)$mp->price;
 
         // إضافة سعر المقاس
         $sizePrice = self::getSizePrice($mp, $size);
@@ -605,7 +605,7 @@ class CartHelper
         if (!$oldCart || empty($oldCart->items)) return;
 
         foreach ($oldCart->items as $key => $item) {
-            $mpId = $item['merchant_product_id'] ?? 0;
+            $mpId = $item['merchant_item_id'] ?? 0;
             if (!$mpId) continue;
 
             $qty = (int)($item['qty'] ?? 1);

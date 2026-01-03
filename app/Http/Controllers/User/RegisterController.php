@@ -19,13 +19,13 @@ class RegisterController extends FrontBaseController
 
         return view('frontend.register');
     }
-    public function showVendorRegisterForm()
+    public function showMerchantRegisterForm()
     {
         $gs = Muaadhsetting::findOrFail(1);
-        if ($gs->reg_vendor == 1) {
-            return view('frontend.vendor-register');
+        if ($gs->reg_merchant == 1) {
+            return view('frontend.merchant-register');
         } else {
-            return back()->with('unsuccess', 'Vendor Registration is currently disabled by Admin. Please try again later.');
+            return back()->with('unsuccess', 'Merchant Registration is currently disabled by Admin. Please try again later.');
         }
 
     }
@@ -55,7 +55,7 @@ class RegisterController extends FrontBaseController
         $input['verification_link'] = $token;
         $input['affilate_code'] = md5($request->name . $request->email);
 
-        if (!empty($request->vendor)) {
+        if (!empty($request->merchant)) {
             //--- Validation Section
             $rules = [
                 'shop_name' => 'unique:users',

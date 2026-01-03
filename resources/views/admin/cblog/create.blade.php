@@ -3,10 +3,10 @@
 
 						<div class="content-area">
 
-							<div class="add-product-content">
+							<div class="add-catalogItem-content">
 								<div class="row">
 									<div class="col-lg-12">
-										<div class="product-description">
+										<div class="catalogItem-description">
 											<div class="body-area" id="modalEdit">
 											@include('includes.admin.form-error') 
 											<form id="muaadhformdata" action="{{route('admin-cblog-create')}}" method="POST" enctype="multipart/form-data">

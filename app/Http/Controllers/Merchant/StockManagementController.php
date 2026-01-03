@@ -71,7 +71,7 @@ class StockManagementController extends Controller
     }
 
     /**
-     * Export current vendor stock to Excel/CSV
+     * Export current merchant stock to Excel/CSV
      */
     public function export(Request $request)
     {
@@ -79,7 +79,7 @@ class StockManagementController extends Controller
         $format = $request->get('format', 'csv'); // csv or excel
 
         try {
-            // Get all merchant items for this vendor with catalog item SKU
+            // Get all merchant items for this merchant with catalog item SKU
             $merchantItems = MerchantItem::where('user_id', $userId)
                 ->where('status', 1)
                 ->with('catalogItem:id,sku,name')
@@ -196,7 +196,7 @@ class StockManagementController extends Controller
                 $totalRows++;
 
                 try {
-                    // Expected format: SKU, Product Name (optional), Stock, Price (optional), Previous Price (optional)
+                    // Expected format: SKU, CatalogItem Name (optional), Stock, Price (optional), Previous Price (optional)
                     $sku = trim($row[0] ?? '');
                     $newStock = isset($row[2]) ? (int) $row[2] : null;
                     $newPrice = isset($row[3]) && $row[3] !== '' ? (float) $row[3] : null;
@@ -223,7 +223,7 @@ class StockManagementController extends Controller
                         continue;
                     }
 
-                    // Find merchant item for this vendor
+                    // Find merchant item for this merchant
                     $merchantItem = MerchantItem::where('user_id', $stockUpdate->user_id)
                         ->where('catalog_item_id', $catalogItem->id)
                         ->first();

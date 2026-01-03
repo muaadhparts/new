@@ -23,7 +23,7 @@
                             <th>@lang('Name')</th>
                             <th>@lang('Brand')</th>
                             <th>@lang('Quality')</th>
-                            <th>@lang('Vendor')</th>
+                            <th>@lang('Merchant')</th>
                             <th class="text-center">@lang('Stock')</th>
                             <th class="text-center">@lang('Qty')</th>
                             <th class="text-end">@lang('Price')</th>
@@ -33,8 +33,8 @@
                     <tbody>
                         @foreach($alternatives as $idx => $mp)
                             @php
-                                $product = $mp->product;
-                                $vp = method_exists($mp,'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+                                $catalogItem = $mp->catalogItem;
+                                $vp = method_exists($mp,'merchantSizePrice') ? (float)$mp->merchantSizePrice() : (float)$mp->price;
                                 $inStock = ($mp->stock ?? 0) > 0;
                                 $hasPrice = $vp > 0;
                                 $highlight = ($inStock || $mp->preordered) && $hasPrice;
@@ -48,15 +48,15 @@
                             @endphp
 
                             <tr class="{{ $highlight ? 'row-available' : 'row-unavailable' }}">
-                                <td><code class="fw-bold text-dark">{{ $product->sku }}</code></td>
-                                <td class="text-truncate" style="max-width: 200px;">{{ getLocalizedProductName($product) }}</td>
+                                <td><code class="fw-bold text-dark">{{ $catalogItem->sku }}</code></td>
+                                <td class="text-truncate" style="max-width: 200px;">{{ getLocalizedCatalogItemName($catalogItem) }}</td>
                                 <td>
-                                    @if($product->brand)
+                                    @if($catalogItem->brand)
                                         <span class="catalog-quality-badge">
-                                            @if($product->brand->photo_url)
-                                                <img src="{{ $product->brand->photo_url }}" alt="{{ getLocalizedBrandName($product->brand) }}" class="catalog-quality-badge__logo">
+                                            @if($catalogItem->brand->photo_url)
+                                                <img src="{{ $catalogItem->brand->photo_url }}" alt="{{ getLocalizedBrandName($catalogItem->brand) }}" class="catalog-quality-badge__logo">
                                             @endif
-                                            {{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}
+                                            {{ Str::ucfirst(getLocalizedBrandName($catalogItem->brand)) }}
                                         </span>
                                     @else
                                         <span class="text-muted">-</span>
@@ -102,11 +102,11 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-primary quick-view" data-id="{{ $product->id }}" data-url="{{ route('modal.quickview', ['id' => $product->id]) }}?user={{ $mp->user_id }}" title="@lang('Quick View')">
+                                        <button type="button" class="btn btn-outline-primary quick-view" data-id="{{ $catalogItem->id }}" data-url="{{ route('modal.quickview', ['id' => $catalogItem->id]) }}?user={{ $mp->user_id }}" title="@lang('Quick View')">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         @if($canBuy)
-                                            <button type="button" class="btn btn-success alt-add-to-cart" data-id="{{ $product->id }}" data-mp-id="{{ $mp->id }}" data-user="{{ $mp->user_id }}" data-qty-id="{{ $uniqueId }}" data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}" title="@lang('Add To Cart')">
+                                            <button type="button" class="btn btn-success alt-add-to-cart" data-id="{{ $catalogItem->id }}" data-mp-id="{{ $mp->id }}" data-user="{{ $mp->user_id }}" data-qty-id="{{ $uniqueId }}" data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}" title="@lang('Add To Cart')">
                                                 <i class="fas fa-cart-plus"></i>
                                             </button>
                                         @endif
@@ -123,8 +123,8 @@
         <div class="d-block d-md-none catalog-cards">
             @foreach($alternatives as $idx => $mp)
                 @php
-                    $product = $mp->product;
-                    $vp = method_exists($mp,'vendorSizePrice') ? (float)$mp->vendorSizePrice() : (float)$mp->price;
+                    $catalogItem = $mp->catalogItem;
+                    $vp = method_exists($mp,'merchantSizePrice') ? (float)$mp->merchantSizePrice() : (float)$mp->price;
                     $inStock = ($mp->stock ?? 0) > 0;
                     $hasPrice = $vp > 0;
                     $highlight = ($inStock || $mp->preordered) && $hasPrice;
@@ -139,7 +139,7 @@
 
                 <div class="catalog-card {{ $highlight ? 'card-available' : 'card-unavailable' }}">
                     <div class="catalog-card-header">
-                        <code class="fw-bold">{{ $product->sku }}</code>
+                        <code class="fw-bold">{{ $catalogItem->sku }}</code>
                         @if($inStock)
                             <span class="catalog-badge catalog-badge-success">{{ $mp->stock }} @lang('In Stock')</span>
                         @elseif($preordered)
@@ -150,17 +150,17 @@
                     </div>
 
                     <div class="catalog-card-body">
-                        <div class="catalog-card-title">{{ getLocalizedProductName($product) }}</div>
+                        <div class="catalog-card-title">{{ getLocalizedCatalogItemName($catalogItem) }}</div>
 
                         <div class="catalog-card-details">
-                            @if($product->brand)
+                            @if($catalogItem->brand)
                                 <div class="catalog-card-detail">
                                     <span class="catalog-card-label">@lang('Brand'):</span>
                                     <span class="catalog-quality-badge">
-                                        @if($product->brand->photo_url)
-                                            <img src="{{ $product->brand->photo_url }}" alt="{{ getLocalizedBrandName($product->brand) }}" class="catalog-quality-badge__logo">
+                                        @if($catalogItem->brand->photo_url)
+                                            <img src="{{ $catalogItem->brand->photo_url }}" alt="{{ getLocalizedBrandName($catalogItem->brand) }}" class="catalog-quality-badge__logo">
                                         @endif
-                                        {{ getLocalizedBrandName($product->brand) }}
+                                        {{ getLocalizedBrandName($catalogItem->brand) }}
                                     </span>
                                 </div>
                             @endif
@@ -179,7 +179,7 @@
 
                             @if($mp->user)
                                 <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Vendor'):</span>
+                                    <span class="catalog-card-label">@lang('Merchant'):</span>
                                     <span>{{ getLocalizedShopName($mp->user) }}</span>
                                 </div>
                             @endif
@@ -202,11 +202,11 @@
                             {{ $hasPrice ? \App\Models\CatalogItem::convertPrice($vp) : __('Price not available') }}
                         </div>
                         <div class="catalog-card-actions">
-                            <button type="button" class="catalog-btn catalog-btn-outline quick-view" data-id="{{ $product->id }}" data-url="{{ route('modal.quickview', ['id' => $product->id]) }}?user={{ $mp->user_id }}">
+                            <button type="button" class="catalog-btn catalog-btn-outline quick-view" data-id="{{ $catalogItem->id }}" data-url="{{ route('modal.quickview', ['id' => $catalogItem->id]) }}?user={{ $mp->user_id }}">
                                 <i class="fas fa-eye"></i>
                             </button>
                             @if($canBuy)
-                                <button type="button" class="catalog-btn catalog-btn-success alt-add-to-cart" data-id="{{ $product->id }}" data-mp-id="{{ $mp->id }}" data-user="{{ $mp->user_id }}" data-qty-id="{{ $uniqueId }}" data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}">
+                                <button type="button" class="catalog-btn catalog-btn-success alt-add-to-cart" data-id="{{ $catalogItem->id }}" data-mp-id="{{ $mp->id }}" data-user="{{ $mp->user_id }}" data-qty-id="{{ $uniqueId }}" data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}">
                                     <i class="fas fa-cart-plus"></i> @lang('Add')
                                 </button>
                             @endif

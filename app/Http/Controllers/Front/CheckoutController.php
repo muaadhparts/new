@@ -117,7 +117,7 @@ class CheckoutController extends FrontBaseController
     {
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
         $dp = 1;
         $merchant_shipping_id = 0;
@@ -169,8 +169,8 @@ class CheckoutController extends FrontBaseController
 
 //            dd($total ,$cart->items);
 
-            // Note: 'products' kept for backward compatibility in views
-            return view('frontend.checkout.step1', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+            // Note: 'catalogItems' kept for backward compatibility in views
+            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -213,13 +213,13 @@ class CheckoutController extends FrontBaseController
                     if ($cartItem['item']['type'] != 'Physical') {
                         if (!Auth::check()) {
                             $ck = 1;
-                            // Note: 'products' kept for backward compatibility in views
-                            return view('frontend.checkout.step1', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                            // Note: 'catalogItems' kept for backward compatibility in views
+                            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
                         }
                     }
                 }
-                // Note: 'products' kept for backward compatibility in views
-                return view('frontend.checkout.step1', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                // Note: 'catalogItems' kept for backward compatibility in views
+                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -257,8 +257,8 @@ class CheckoutController extends FrontBaseController
                     $total = $total;
                 }
                 $ck = 1;
-                // Note: 'products' kept for backward compatibility in views
-                return view('frontend.checkout.step1', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                // Note: 'catalogItems' kept for backward compatibility in views
+                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
         }
     }
@@ -271,7 +271,7 @@ class CheckoutController extends FrontBaseController
         }
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
 //        dd(Session::get('cart'));
@@ -331,8 +331,8 @@ class CheckoutController extends FrontBaseController
             // N+1 FIX: Pre-load all merchant data
             $step2Data = $this->prepareStep2MerchantData($cartItems, $step1);
 
-            // Note: 'products' kept for backward compatibility in views
-            return view('frontend.checkout.step2', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+            // Note: 'catalogItems' kept for backward compatibility in views
+            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -378,14 +378,14 @@ class CheckoutController extends FrontBaseController
                     if ($cartItem['item']['type'] != 'Physical') {
                         if (!Auth::check()) {
                             $ck = 1;
-                            // Note: 'products' kept for backward compatibility in views
-                            return view('frontend.checkout.step2', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                            // Note: 'catalogItems' kept for backward compatibility in views
+                            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
                         }
                     }
                 }
 //                dd($cartItems);
-                // Note: 'products' kept for backward compatibility in views
-                return view('frontend.checkout.step2', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                // Note: 'catalogItems' kept for backward compatibility in views
+                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -427,8 +427,8 @@ class CheckoutController extends FrontBaseController
                 // N+1 FIX: Pre-load all merchant data
                 $step2Data = $this->prepareStep2MerchantData($cartItems, $step1);
 
-                // Note: 'products' kept for backward compatibility in views
-                return view('frontend.checkout.step2', ['products' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                // Note: 'catalogItems' kept for backward compatibility in views
+                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
             }
         }
     }
@@ -589,7 +589,7 @@ class CheckoutController extends FrontBaseController
 
         // Items total for price summary
         $itemsTotal = $cart->totalPrice;
-        $step1Data['products_total'] = $itemsTotal;
+        $step1Data['catalog_items_total'] = $itemsTotal;
         $step1Data['tax_amount'] = $totalTaxAmount;
         $step1Data['total_with_tax'] = $itemsTotal + $totalTaxAmount;
 
@@ -766,7 +766,7 @@ class CheckoutController extends FrontBaseController
         }
 
         // ✅ Calculate totals
-        // subtotal_before_discount = products + tax + shipping + packing
+        // subtotal_before_discount = catalogItems + tax + shipping + packing
         $subtotalBeforeDiscount = $baseAmount + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
         // final_total = subtotal - discount
@@ -814,7 +814,7 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.checkout.step2')->with('success', __("Please fill up step 2."));
         }
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         $step1 = (object) Session::get('step1');
@@ -869,7 +869,7 @@ class CheckoutController extends FrontBaseController
         $preloadedCountry = CheckoutDataService::loadCountry($step1);
 
         return view('frontend.checkout.step3', [
-            'products'            => $cart->items,
+            'catalogItems'            => $cart->items,
             'totalPrice'          => $total,
             'pickups'             => $pickups,
             'totalQty'            => $cart->totalQty,
@@ -970,22 +970,22 @@ class CheckoutController extends FrontBaseController
     /* ===================== Merchant-Specific Checkout ===================== */
 
     /**
-     * Helper: Get merchant products and calculate totals
+     * Helper: Get merchant catalogItems and calculate totals
      *
-     * Filters cart to show ONLY merchant's products and calculates:
+     * Filters cart to show ONLY merchant's catalogItems and calculates:
      * - Total price
      * - Total quantity
      * - Digital/Physical flag
      *
      * @param int $merchantId
-     * @return array [merchantProducts, totalPrice, totalQty, digital]
+     * @return array [merchantItems, totalPrice, totalQty, digital]
      */
     /**
      * Get merchant cart data - READ-ONLY helper method
      *
      * CRITICAL SAFETY:
      * 1. Creates Cart instance for READ-ONLY access
-     * 2. Filters products by merchant_id
+     * 2. Filters catalogItems by merchant_id
      * 3. Calculates merchant-specific totals
      * 4. Does NOT modify session
      * 5. Cart instance is discarded after use
@@ -1003,53 +1003,53 @@ class CheckoutController extends FrontBaseController
         // Ensure merchantId is integer for comparison
         $merchantId = (int)$merchantId;
 
-        // Filter products for this merchant only
+        // Filter catalogItems for this merchant only
         $merchantItems = [];
-        foreach ($cart->items as $rowKey => $product) {
+        foreach ($cart->items as $rowKey => $catalogItem) {
             // ✅ Get merchant ID - Cart stores 'user_id' at root level (see Cart::add/addnum)
             // Priority: direct user_id > item.user_id > item.merchant_user_id
             $itemMerchantId = 0;
 
             // Path 1: direct user_id (Cart model stores this at root level)
-            if (isset($product['user_id'])) {
-                $itemMerchantId = (int)$product['user_id'];
+            if (isset($catalogItem['user_id'])) {
+                $itemMerchantId = (int)$catalogItem['user_id'];
             }
-            // Path 2: item.user_id (Product object property)
-            elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->user_id)) {
-                $itemMerchantId = (int)$product['item']->user_id;
+            // Path 2: item.user_id (CatalogItem object property)
+            elseif (isset($catalogItem['item']) && is_object($catalogItem['item']) && isset($catalogItem['item']->user_id)) {
+                $itemMerchantId = (int)$catalogItem['item']->user_id;
             }
             // Path 3: item as array
-            elseif (isset($product['item']) && is_array($product['item']) && isset($product['item']['user_id'])) {
-                $itemMerchantId = (int)$product['item']['user_id'];
+            elseif (isset($catalogItem['item']) && is_array($catalogItem['item']) && isset($catalogItem['item']['user_id'])) {
+                $itemMerchantId = (int)$catalogItem['item']['user_id'];
             }
             // Path 4: merchant_user_id (fallback)
-            elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->merchant_user_id)) {
-                $itemMerchantId = (int)$product['item']->merchant_user_id;
+            elseif (isset($catalogItem['item']) && is_object($catalogItem['item']) && isset($catalogItem['item']->merchant_user_id)) {
+                $itemMerchantId = (int)$catalogItem['item']->merchant_user_id;
             }
 
             if ($itemMerchantId === $merchantId) {
                 // إضافة بيانات الخصم والأبعاد باستخدام MerchantCartService
-                $mpId = data_get($product, 'item.merchant_product_id')
-                    ?? data_get($product, 'merchant_product_id')
+                $mpId = data_get($catalogItem, 'item.merchant_item_id')
+                    ?? data_get($catalogItem, 'merchant_item_id')
                     ?? 0;
-                $qty = (int)($product['qty'] ?? 1);
+                $qty = (int)($catalogItem['qty'] ?? 1);
 
                 if ($mpId) {
                     // حساب خصم الجملة
                     $bulkDiscount = MerchantCartService::calculateBulkDiscount($mpId, $qty);
-                    $product['bulk_discount'] = $bulkDiscount;
+                    $catalogItem['bulk_discount'] = $bulkDiscount;
 
                     // جلب الأبعاد (بدون fallback)
-                    $dimensions = MerchantCartService::getProductDimensions($mpId);
-                    $product['dimensions'] = $dimensions;
-                    $product['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
+                    $dimensions = MerchantCartService::getCatalogItemDimensions($mpId);
+                    $catalogItem['dimensions'] = $dimensions;
+                    $catalogItem['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $qty : null;
                 }
 
-                $merchantItems[$rowKey] = $product;
+                $merchantItems[$rowKey] = $catalogItem;
             }
         }
 
-        // Calculate totals for merchant products only
+        // Calculate totals for merchant catalogItems only
         $totalPrice = 0;
         $totalQty = 0;
         foreach ($merchantItems as $cartItem) {
@@ -1087,7 +1087,7 @@ class CheckoutController extends FrontBaseController
      * MULTI-MERCHANT SIMPLIFIED LOGIC:
      * 1. Checks authentication (logged-in or guest checkout enabled)
      * 2. Saves merchant_id in session for tracking (checkout_merchant_id)
-     * 3. Filters cart to show ONLY this merchant's products (getMerchantCartData)
+     * 3. Filters cart to show ONLY this merchant's catalogItems (getMerchantCartData)
      * 4. Gets ONLY merchant-specific shipping methods (no general cart shipping)
      * 5. Gets ONLY merchant-specific packaging methods (no general cart packaging)
      * 6. Calculates total for THIS merchant only (with merchant-specific discount)
@@ -1113,7 +1113,7 @@ class CheckoutController extends FrontBaseController
         }
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         // ====================================================================
@@ -1141,7 +1141,7 @@ class CheckoutController extends FrontBaseController
         $merchantShippingData = $cartData['shipping_data'];
 
         if (empty($merchantItems)) {
-            return redirect()->route('front.cart')->with('unsuccess', __("No products found for this merchant."));
+            return redirect()->route('front.cart')->with('unsuccess', __("No catalogItems found for this merchant."));
         }
 
         // جلب طرق الشحن الخاصة بهذا التاجر فقط (merchant-specific only)
@@ -1151,16 +1151,16 @@ class CheckoutController extends FrontBaseController
         $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
         // No fallback to user 0 - if merchant has no packages, collection will be empty
 
-        // productsTotal = RAW price (no discount deduction)
-        $productsTotal = $totalPrice;
+        // catalogItemsTotal = RAW price (no discount deduction)
+        $catalogItemsTotal = $totalPrice;
 
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
         return view('frontend.checkout.step1', [
-            'products' => $merchantItems,
-            'productsTotal' => $productsTotal, // ✅ RAW products total (no discount)
-            'totalPrice' => $productsTotal, // Backward compatibility
+            'catalogItems' => $merchantItems,
+            'catalogItemsTotal' => $catalogItemsTotal, // ✅ RAW catalogItems total (no discount)
+            'totalPrice' => $catalogItemsTotal, // Backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'shipping_cost' => 0,
@@ -1316,19 +1316,19 @@ class CheckoutController extends FrontBaseController
 
         $merchantSubtotal = 0;
 
-        // Calculate subtotal for this merchant's products only
-        foreach ($cart->items as $product) {
+        // Calculate subtotal for this merchant's catalogItems only
+        foreach ($cart->items as $catalogItem) {
             $itemMerchantId = 0;
-            if (isset($product['user_id'])) {
-                $itemMerchantId = (int)$product['user_id'];
-            } elseif (isset($product['item']) && is_object($product['item']) && isset($product['item']->user_id)) {
-                $itemMerchantId = (int)$product['item']->user_id;
-            } elseif (isset($product['item']) && is_array($product['item']) && isset($product['item']['user_id'])) {
-                $itemMerchantId = (int)$product['item']['user_id'];
+            if (isset($catalogItem['user_id'])) {
+                $itemMerchantId = (int)$catalogItem['user_id'];
+            } elseif (isset($catalogItem['item']) && is_object($catalogItem['item']) && isset($catalogItem['item']->user_id)) {
+                $itemMerchantId = (int)$catalogItem['item']->user_id;
+            } elseif (isset($catalogItem['item']) && is_array($catalogItem['item']) && isset($catalogItem['item']['user_id'])) {
+                $itemMerchantId = (int)$catalogItem['item']['user_id'];
             }
 
             if ($itemMerchantId == (int)$merchantId) {
-                $merchantSubtotal += (float)($product['price'] ?? 0);
+                $merchantSubtotal += (float)($catalogItem['price'] ?? 0);
             }
         }
 
@@ -1339,7 +1339,7 @@ class CheckoutController extends FrontBaseController
         $step1Data['tax_location'] = $taxLocation;
         $step1Data['tax_amount'] = $taxAmount;
         $step1Data['merchant_subtotal'] = $merchantSubtotal;
-        $step1Data['products_total'] = $merchantSubtotal;
+        $step1Data['catalog_items_total'] = $merchantSubtotal;
         $step1Data['total_with_tax'] = $merchantSubtotal + $taxAmount;
 
         Session::put('merchant_step1_' . $merchantId, $step1Data);
@@ -1357,7 +1357,7 @@ class CheckoutController extends FrontBaseController
         }
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         $step1 = (object) Session::get('merchant_step1_' . $merchantId);
@@ -1389,9 +1389,9 @@ class CheckoutController extends FrontBaseController
         $itemsByMerchant = $this->groupItemsByMerchant($merchantItems);
 
         return view('frontend.checkout.step2', [
-            'productsByMerchant' => $itemsByMerchant, // Grouped items (single merchant) - keep key name for view compatibility
-            'products' => $merchantItems, // Keep for backward compatibility
-            'productsTotal' => $totalPrice, // Items total only - shipping/packing added dynamically
+            'catalogItemsByMerchant' => $itemsByMerchant, // Grouped items (single merchant)
+            'catalogItems' => $merchantItems, // Keep for backward compatibility
+            'catalogItemsTotal' => $totalPrice, // Items total only - shipping/packing added dynamically
             'totalPrice' => $totalPrice, // Backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
@@ -1418,7 +1418,7 @@ class CheckoutController extends FrontBaseController
      *
      * MERCHANT-ONLY LOGIC:
      * 1. Reads cart (READ-ONLY) to calculate merchant total
-     * 2. Filters products by merchant_id
+     * 2. Filters catalogItems by merchant_id
      * 3. Calculates shipping cost for this merchant only
      * 4. Saves to merchant_step2_{merchantId} session (not global step2)
      * 5. Does NOT modify cart or auth state
@@ -1432,21 +1432,21 @@ class CheckoutController extends FrontBaseController
         $step2 = $request->all();
         $oldCart = Session::get('cart');
 
-        // Check if cart contains physical products (digital products don't need shipping)
+        // Check if cart contains physical catalogItems (digital catalogItems don't need shipping)
         $cart = new Cart($oldCart);
         $hasPhysicalProducts = false;
-        foreach ($cart->items as $product) {
-            $itemMerchantId = data_get($product, 'item.user_id') ?? data_get($product, 'item.merchant_user_id') ?? 0;
+        foreach ($cart->items as $catalogItem) {
+            $itemMerchantId = data_get($catalogItem, 'item.user_id') ?? data_get($catalogItem, 'item.merchant_user_id') ?? 0;
             if ($itemMerchantId == $merchantId) {
-                // Check if this is a physical product (dp = 0)
-                if (isset($product['dp']) && $product['dp'] == 0) {
+                // Check if this is a physical catalogItem (dp = 0)
+                if (isset($catalogItem['dp']) && $catalogItem['dp'] == 0) {
                     $hasPhysicalProducts = true;
                     break;
                 }
             }
         }
 
-        // ✅ VALIDATION: Check if shipping method is selected (for physical products only)
+        // ✅ VALIDATION: Check if shipping method is selected (for physical catalogItems only)
         if ($hasPhysicalProducts) {
             $hasShipping = false;
 
@@ -1473,24 +1473,24 @@ class CheckoutController extends FrontBaseController
         $input = Session::get('merchant_step1_' . $merchantId) + $step2;
 
         // NOTE: Creating Cart instance for READ-ONLY access
-        // This does NOT modify session - only used to read and filter merchant products
+        // This does NOT modify session - only used to read and filter merchant catalogItems
         $cart = new Cart($oldCart);
 
-        // تصفية منتجات هذا التاجر فقط (merchant products only)
+        // تصفية منتجات هذا التاجر فقط (merchant catalogItems only)
         $merchantTotal = 0;
-        foreach ($cart->items as $product) {
-            $itemMerchantId = data_get($product, 'item.user_id') ?? data_get($product, 'item.merchant_user_id') ?? 0;
+        foreach ($cart->items as $catalogItem) {
+            $itemMerchantId = data_get($catalogItem, 'item.user_id') ?? data_get($catalogItem, 'item.merchant_user_id') ?? 0;
             if ($itemMerchantId == $merchantId) {
-                $merchantTotal += (float)($product['price'] ?? 0);
+                $merchantTotal += (float)($catalogItem['price'] ?? 0);
             }
         }
 
         // ========================================================================
-        // ✅ UNIFIED: products_total is the RAW total (no discount subtracted)
+        // ✅ UNIFIED: catalog_items_total is the RAW total (no discount subtracted)
         // ========================================================================
-        $productsTotal = $merchantTotal;
+        $catalogItemsTotal = $merchantTotal;
 
-        // Get discount code data (but DON'T subtract from productsTotal!)
+        // Get discount code data (but DON'T subtract from catalogItemsTotal!)
         $discountAmount = 0;
         $discountCode = '';
         $discountPercentage = '';
@@ -1508,8 +1508,8 @@ class CheckoutController extends FrontBaseController
             $discountCodeId = Session::get('discount_code_id');
         }
 
-        // For free_above calculation, use products total (before discount)
-        $baseAmount = $productsTotal;
+        // For free_above calculation, use catalogItems total (before discount)
+        $baseAmount = $catalogItemsTotal;
 
         $shipping_cost_total = 0.0;
         $shipping_names = [];
@@ -1620,17 +1620,17 @@ class CheckoutController extends FrontBaseController
         // ========================================================================
         // ✅ UNIFIED PRICE CALCULATION
         // ========================================================================
-        // products_total = RAW products (no discount)
-        // subtotal = products_total - discount_amount
+        // catalog_items_total = RAW catalogItems (no discount)
+        // subtotal = catalog_items_total - discount_amount
         // grand_total = subtotal + tax + shipping + packing
-        // subtotal_before_discount = products_total + tax + shipping + packing (for discount recalculation)
+        // subtotal_before_discount = catalog_items_total + tax + shipping + packing (for discount recalculation)
 
-        $subtotal = $productsTotal - $discountAmount;
+        $subtotal = $catalogItemsTotal - $discountAmount;
         $grandTotal = $subtotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
-        $subtotalBeforeDiscount = $productsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
 
         // Save all data to step2
-        $step2['products_total'] = $productsTotal;                   // ✅ RAW products total
+        $step2['catalog_items_total'] = $catalogItemsTotal;          // ✅ RAW catalogItems total
         $step2['discount_amount'] = $discountAmount;                 // ✅ Discount amount
         $step2['discount_code'] = $discountCode;                     // ✅ Discount code
         $step2['discount_percentage'] = $discountPercentage;         // ✅ Discount percentage
@@ -1671,7 +1671,7 @@ class CheckoutController extends FrontBaseController
      * 1. Shows ONLY payment gateways where user_id = merchant_id
      * 2. NO FALLBACK to global/admin payment methods
      * 3. If merchant has no payment methods: ERROR and redirect
-     * 4. Filters cart to merchant's products only
+     * 4. Filters cart to merchant's catalogItems only
      * 5. Calculates totals for this merchant only
      *
      * This ensures each merchant uses ONLY their configured payment methods
@@ -1688,7 +1688,7 @@ class CheckoutController extends FrontBaseController
             return redirect()->route('front.checkout.merchant.step2', $merchantId)->with('success', __("Please fill up step 2."));
         }
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         $step1 = (object) Session::get('merchant_step1_' . $merchantId);
@@ -1697,7 +1697,7 @@ class CheckoutController extends FrontBaseController
         // Get merchant cart data using helper method (avoids code duplication)
         $cartData = $this->getMerchantCartData($merchantId);
         $merchantItems = $cartData['merchantItems'];
-        $productsTotal = $cartData['totalPrice']; // Products only (no shipping)
+        $catalogItemsTotal = $cartData['totalPrice']; // CatalogItems only (no shipping)
         $totalQty = $cartData['totalQty'];
         $dp = $cartData['digital'];
 
@@ -1726,18 +1726,18 @@ class CheckoutController extends FrontBaseController
         $paystack = PaymentGateway::whereKeyword('paystack')->first();
         $paystackData = $paystack ? $paystack->convertAutoData() : [];
 
-        // CRITICAL: Use total from step2 (products + shipping + any adjustments)
+        // CRITICAL: Use total from step2 (catalogItems + shipping + any adjustments)
         // step2 already calculated: merchantTotal + shipping_cost
         // This is the ONLY source of truth for final total
-        $finalTotal = $step2->total ?? $productsTotal;
+        $finalTotal = $step2->total ?? $catalogItemsTotal;
 
         // ✅ N+1 FIX: Pre-load country for step3
         $preloadedCountry = CheckoutDataService::loadCountry($step1);
 
         return view('frontend.checkout.step3', [
-            'products' => $merchantItems,
-            'productsTotal' => $productsTotal, // Products only - ALWAYS for "Total MRP" display
-            'totalPrice' => $productsTotal, // Keep same as productsTotal for backward compatibility
+            'catalogItems' => $merchantItems,
+            'catalogItemsTotal' => $catalogItemsTotal, // CatalogItems only - ALWAYS for "Total MRP" display
+            'totalPrice' => $catalogItemsTotal, // Keep same as catalogItemsTotal for backward compatibility
             'pickups' => $pickups,
             'totalQty' => $totalQty,
             'gateways' => $gateways,
@@ -1749,7 +1749,7 @@ class CheckoutController extends FrontBaseController
             'merchant_shipping_id' => $merchantId,
             'merchant_packing_id' => $merchantId,
             'paystack' => $paystackData,
-            'step2' => $step2, // CRITICAL: Contains pre-calculated total (products + tax + shipping)
+            'step2' => $step2, // CRITICAL: Contains pre-calculated total (catalogItems + tax + shipping)
             'step1' => $step1,
             'is_merchant_checkout' => true,
             'merchant_id' => $merchantId,
@@ -1758,10 +1758,10 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Helper: Group products by merchant ID - READ-ONLY
+     * Helper: Group catalogItems by merchant ID - READ-ONLY
      *
      * SAFETY:
-     * 1. Receives array of products (already filtered)
+     * 1. Receives array of catalogItems (already filtered)
      * 2. Groups them by merchant_id
      * 3. Does NOT access session
      * 4. Does NOT modify cart
@@ -1825,12 +1825,12 @@ class CheckoutController extends FrontBaseController
 
         // تصفية المنتجات: الاحتفاظ فقط بمنتجات التجار الآخرين
         $remainingItems = [];
-        foreach ($cart->items as $rowKey => $product) {
-            $itemMerchantId = data_get($product, 'item.user_id') ?? data_get($product, 'item.merchant_user_id') ?? 0;
+        foreach ($cart->items as $rowKey => $catalogItem) {
+            $itemMerchantId = data_get($catalogItem, 'item.user_id') ?? data_get($catalogItem, 'item.merchant_user_id') ?? 0;
 
             // إذا لم يكن من نفس التاجر، نحتفظ به
             if ($itemMerchantId != $merchantId) {
-                $remainingItems[$rowKey] = $product;
+                $remainingItems[$rowKey] = $catalogItem;
             }
         }
 

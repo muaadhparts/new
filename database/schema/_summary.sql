@@ -49,7 +49,7 @@
 -- - illustrations
 -- - languages
 -- - licenses
--- - merchant_products
+-- - merchant_items
 -- - messages
 -- - migrations
 -- - newcategories
@@ -68,7 +68,7 @@
 -- - pickups
 -- - product_clicks
 -- - product_fitments
--- - products
+-- - catalogItems
 -- - catalog_reviews
 -- - replies
 -- - reports

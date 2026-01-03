@@ -38,7 +38,7 @@ a.btn,
 .mybtn2,
 .mybtn3,
 .category-add-btn,
-.product-add-btn,
+.catalogItem-add-btn,
 .export-btn,
 .import-btn,
 /* Action buttons */
@@ -109,7 +109,7 @@ a.btn-primary,
 .add-btn,
 .mybtn1,
 .category-add-btn,
-.product-add-btn,
+.catalogItem-add-btn,
 input[type="submit"],
 button[type="submit"]:not(.btn-secondary):not(.btn-danger):not(.btn-outline-primary) {
     background-color: var(--color-primary) !important;
@@ -378,7 +378,7 @@ button[type="submit"]:hover {
    ======================================== */
 
 /* Reset ALL cards */
-/* NOTE: .product-card excluded - styles in product-card.css */
+/* NOTE: .catalogItem-card excluded - styles in catalogItem-card.css */
 .card,
 .muaadh-card,
 .category-card,
@@ -390,8 +390,8 @@ button[type="submit"]:hover {
 .widget,
 /* Admin cards */
 .mr-table,
-.add-product-content,
-.product-description,
+.add-catalogItem-content,
+.catalogItem-description,
 .order-content,
 .settings-content,
 .vendor-content {
@@ -417,7 +417,7 @@ button[type="submit"]:hover {
 .box-header,
 .content-header,
 .mr-table .table-header,
-.add-product-content > h4:first-child,
+.add-catalogItem-content > h4:first-child,
 .settings-content > h4:first-child {
     background-color: var(--bg-subtle) !important;
     border-bottom: 1px solid var(--border-default) !important;
@@ -434,7 +434,7 @@ button[type="submit"]:hover {
 .box-body,
 .content-body,
 .mr-table .table-responsive,
-.add-product-content .form-group:first-of-type,
+.add-catalogItem-content .form-group:first-of-type,
 .settings-content .form-group:first-of-type {
     padding: var(--space-5) !important;
 }
@@ -479,7 +479,7 @@ button[type="submit"]:hover {
 [class*="label-"],
 /* Status badges */
 .order-status,
-.product-status,
+.catalogItem-status,
 .payment-status,
 .user-status {
     display: inline-flex;

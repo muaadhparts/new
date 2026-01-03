@@ -1319,37 +1319,37 @@
                             </div>
                         </div>
 
-                        <!-- Product Cards -->
+                        <!-- CatalogItem Cards -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-box-open"></i> {{ __('Product Cards') }}</h4>
-                            <p class="theme-section-desc">{{ __('Specific styles for product cards') }}</p>
+                            <h4 class="theme-section-title"><i class="fas fa-box-open"></i> {{ __('CatalogItem Cards') }}</h4>
+                            <p class="theme-section-desc">{{ __('Specific styles for catalogItem cards') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Title Size') }}</label>
-                                        <input type="text" name="theme_product_title_size" value="{{ $gs->theme_product_title_size ?? '14px' }}">
+                                        <input type="text" name="theme_item_title_size" value="{{ $gs->theme_item_title_size ?? '14px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Title Weight') }}</label>
-                                        <select name="theme_product_title_weight">
-                                            <option value="400" {{ ($gs->theme_product_title_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_product_title_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_product_title_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                        <select name="theme_item_title_weight">
+                                            <option value="400" {{ ($gs->theme_item_title_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
+                                            <option value="500" {{ ($gs->theme_item_title_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
+                                            <option value="600" {{ ($gs->theme_item_title_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Price Size') }}</label>
-                                        <input type="text" name="theme_product_price_size" value="{{ $gs->theme_product_price_size ?? '16px' }}">
+                                        <input type="text" name="theme_item_price_size" value="{{ $gs->theme_item_price_size ?? '16px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Hover Scale') }}</label>
-                                        <input type="text" name="theme_product_hover_scale" value="{{ $gs->theme_product_hover_scale ?? '1.02' }}">
+                                        <input type="text" name="theme_item_hover_scale" value="{{ $gs->theme_item_hover_scale ?? '1.02' }}">
                                     </div>
                                 </div>
                             </div>
@@ -2230,7 +2230,7 @@ $(document).ready(function() {
             // البطاقات - عصرية بلمسة تراثية
             theme_card_bg: '#ffffff', theme_card_border: '#e8dcc8', theme_card_radius: '8px',
             theme_card_shadow: '0 2px 6px rgba(26,21,16,0.06)', theme_card_hover_shadow: '0 6px 18px rgba(0,108,53,0.1)', theme_card_padding: '22px',
-            theme_product_title_size: '14px', theme_product_title_weight: '500', theme_product_price_size: '16px', theme_product_hover_scale: '1.01',
+            theme_item_title_size: '14px', theme_item_title_weight: '500', theme_item_price_size: '16px', theme_item_hover_scale: '1.01',
             // النماذج
             theme_input_height: '46px', theme_input_bg: '#ffffff', theme_input_border: '#d4c4a8',
             theme_input_radius: '4px', theme_input_focus_border: '#006c35', theme_input_focus_shadow: '0 0 0 3px rgba(0,108,53,0.12)', theme_input_placeholder: '#9c8d7a',

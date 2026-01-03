@@ -25,9 +25,9 @@ class ImportController extends AdminBaseController
     public function datatables()
     {
         // Query merchant items directly - each merchant item = independent row
-        // Only affiliate type items (product_type is now on merchant_items)
+        // Only affiliate type items (item_type is now on merchant_items)
         $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
-            ->where('product_type', 'affiliate');
+            ->where('item_type', 'affiliate');
 
         $datas = $query->latest('id');
 
@@ -50,7 +50,7 @@ class ImportController extends AdminBaseController
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
             ->addColumn('name', function (MerchantItem $mi) {
-                $catalogItem = $mi->product;
+                $catalogItem = $mi->catalogItem;
                 if (!$catalogItem) return __('N/A');
 
                 $itemLink = route('front.catalog-item', [
@@ -59,24 +59,24 @@ class ImportController extends AdminBaseController
                     'merchant_item_id' => $mi->id
                 ]);
 
-                $displayName = getLocalizedProductName($catalogItem);
+                $displayName = getLocalizedCatalogItemName($catalogItem);
                 $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
-                $condition = $mi->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $condition = $mi->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
                 return '<a href="' . $itemLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mi) {
-                $catalogItem = $mi->product;
+                $catalogItem = $mi->catalogItem;
                 return $catalogItem && $catalogItem->brand ? getLocalizedBrandName($catalogItem->brand) : __('N/A');
             })
             ->addColumn('quality_brand', function (MerchantItem $mi) {
                 return $mi->qualityBrand ? getLocalizedQualityName($mi->qualityBrand) : __('N/A');
             })
-            ->addColumn('vendor', function (MerchantItem $mi) {
+            ->addColumn('merchant', function (MerchantItem $mi) {
                 // Display merchant info
                 if (!$mi->user) return __('N/A');
                 $shopName = $mi->user->shop_name ?: $mi->user->name;
-                return '<a href="' . route('admin-vendor-show', $mi->user_id) . '" target="_blank">' . $shopName . '</a>';
+                return '<a href="' . route('admin-merchant-show', $mi->user_id) . '" target="_blank">' . $shopName . '</a>';
             })
             ->addColumn('price', function (MerchantItem $mi) {
                 $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
@@ -98,13 +98,13 @@ class ImportController extends AdminBaseController
 
                 return '<div class="action-list">
                     <select class="process select droplinks ' . $class . '">
-                        <option data-val="1" value="' . route('admin-merchant-product-status', ['id' => $mi->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
-                        <option data-val="0" value="' . route('admin-merchant-product-status', ['id' => $mi->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
+                        <option data-val="1" value="' . route('admin-merchant-catalogItem-status', ['id' => $mi->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
+                        <option data-val="0" value="' . route('admin-merchant-catalogItem-status', ['id' => $mi->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
                     </select>
                 </div>';
             })
             ->addColumn('action', function (MerchantItem $mi) {
-                $catalogItem = $mi->product;
+                $catalogItem = $mi->catalogItem;
                 if (!$catalogItem) return '';
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
@@ -115,7 +115,7 @@ class ImportController extends AdminBaseController
                         <a href="javascript:;" data-href="' . route('admin-affiliate-prod-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a>
                     </div></div>';
             })
-            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant'])
             ->toJson();
     }
 
@@ -159,13 +159,13 @@ class ImportController extends AdminBaseController
         list(, $image)      = explode(',', $image);
         $image = base64_decode($image);
         $image_name = time().Str::random(8).'.png';
-        $path = 'assets/images/products/'.$image_name;
+        $path = 'assets/images/catalogItems/'.$image_name;
         file_put_contents($path, $image);
 
         if($data->photo != null)
         {
-            if (file_exists(public_path().'/assets/images/products/'.$data->photo)) {
-                unlink(public_path().'/assets/images/products/'.$data->photo);
+            if (file_exists(public_path().'/assets/images/catalogItems/'.$data->photo)) {
+                unlink(public_path().'/assets/images/catalogItems/'.$data->photo);
             }
         }
 
@@ -215,35 +215,35 @@ class ImportController extends AdminBaseController
             list(, $image)      = explode(',', $image);
             $image = base64_decode($image);
             $image_name = time().Str::random(8).'.png';
-            $path = 'assets/images/products/'.$image_name;
+            $path = 'assets/images/catalogItems/'.$image_name;
             file_put_contents($path, $image);
             $input['photo'] = $image_name;
         }else{
             $input['photo'] = $request->photolink;
         }
 
-        // Check Physical meta (identity only — لا نكتب price/stock/size في products)
+        // Check Physical meta (identity only — لا نكتب price/stock/size في catalogItems)
         if($request->type == "Physical")
         {
             //--- Validation Section
-            $rules = ['sku' => 'min:8|unique:products'];
+            $rules = ['sku' => 'min:8|unique:catalogItems'];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
             //--- Validation Section Ends
 
-            // Identity flags (لن تُكتب أسعار/مخزون على products)
-            if ($request->product_condition_check == ""){ $input['product_condition'] = 0; }
+            // Identity flags (لن تُكتب أسعار/مخزون على catalogItems)
+            if ($request->item_condition_check == ""){ $input['item_condition'] = 0; }
             if ($request->preordered_check == ""){ $input['preordered'] = 0; }
             if ($request->shipping_time_check == ""){ $input['ship'] = null; }
 
-            // لا تكتب هذه في products
+            // لا تكتب هذه في catalogItems
             unset($input['stock_check'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
-            // Colors belong to merchant_products, not products
-            // This will be handled separately in merchant product creation
+            // Colors belong to merchant_items, not catalogItems
+            // This will be handled separately in merchant item creation
 
-            // قياسات عامة للهوية (إن أردت إبقاءها في products: size_all)
+            // قياسات عامة للهوية (إن أردت إبقاءها في catalogItems: size_all)
             if(empty($request->size_check)) {
                 $input['size_all'] = null;
             } else {
@@ -286,8 +286,8 @@ class ImportController extends AdminBaseController
             $input['tags'] = implode(',', (array)$request->tags);
         }
 
-        // لا نكتب price/previous_price/product_type إلى products
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['product_type']);
+        // لا نكتب price/previous_price/item_type إلى catalogItems
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['item_type']);
 
         // Save catalog item (identity only)
         $data->fill($input)->save();
@@ -302,7 +302,7 @@ class ImportController extends AdminBaseController
         }
 
         // Thumbnail
-        $fimageData = public_path().'/assets/images/products/'.$catalogItem->photo;
+        $fimageData = public_path().'/assets/images/catalogItems/'.$catalogItem->photo;
         if(filter_var($catalogItem->photo, FILTER_VALIDATE_URL)){
             $fimageData = $catalogItem->photo;
         }
@@ -327,7 +327,7 @@ class ImportController extends AdminBaseController
         // Create/update merchant item
         $merchantId = (int) ($request->input('user_id') ?? $request->input('merchant_id') ?? 0);
         if ($merchantId <= 0) {
-            return response()->json(['errors' => ['vendor' => 'Merchant (user) is required']], 422);
+            return response()->json(['errors' => ['merchant' => 'Merchant (user) is required']], 422);
         }
 
         // Price calculations for base store
@@ -357,9 +357,9 @@ class ImportController extends AdminBaseController
         }
 
         MerchantItem::updateOrCreate(
-            ['product_id' => $catalogItem->id, 'user_id' => $merchantId],
+            ['catalog_item_id' => $catalogItem->id, 'user_id' => $merchantId],
             [
-                'product_type'        => 'affiliate',
+                'item_type'        => 'affiliate',
                 'price'               => $mpPrice,
                 'previous_price'      => $mpPreviousPrice,
                 'stock'               => (int) $request->input('stock', 0),
@@ -370,7 +370,7 @@ class ImportController extends AdminBaseController
                 'whole_sell_qty'      => !empty($request->whole_sell_qty) ? implode(',', (array)$request->whole_sell_qty) : null,
                 'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', (array)$request->whole_sell_discount) : null,
                 'preordered'          => (int) ($request->input('preordered') ?? 0),
-                'product_condition'   => (int) ($request->input('product_condition') ?? 0),
+                'item_condition'   => (int) ($request->input('item_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
                 'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
                 'status'              => 1,
@@ -389,7 +389,7 @@ class ImportController extends AdminBaseController
                     $img = Image::make($file->getRealPath())->resize(800, 800);
                     $img->save(public_path() . '/assets/images/galleries/' . $name);
                     $gallery['photo'] = $name;
-                    $gallery['product_id'] = $lastid;
+                    $gallery['catalog_item_id'] = $lastid;
                     $gallery->save();
                 }
             }
@@ -397,7 +397,7 @@ class ImportController extends AdminBaseController
         //logic Section Ends
 
         //--- Redirect Section
-        $msg = __("New Affiliate Product Added Successfully.").'<a href="'.route('admin-import-index').'">'.__("View Product Lists.").'</a>';
+        $msg = __("New Affiliate CatalogItem Added Successfully.").'<a href="'.route('admin-import-index').'">'.__("View CatalogItem Lists.").'</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }
@@ -454,18 +454,18 @@ class ImportController extends AdminBaseController
         if($data->type == "Physical")
         {
             //--- Validation Section
-            $rules = ['sku' => 'min:8|unique:products,sku,'.$id];
+            $rules = ['sku' => 'min:8|unique:catalogItems,sku,'.$id];
             $validator = Validator::make($request->all(), $rules);
             if ($validator->fails()) {
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
             //--- Validation Section Ends
 
-            if ($request->product_condition_check == ""){ $input['product_condition'] = 0; }
+            if ($request->item_condition_check == ""){ $input['item_condition'] = 0; }
             if ($request->preordered_check == ""){ $input['preordered'] = 0; }
             if ($request->shipping_time_check == ""){ $input['ship'] = null; }
 
-            // لا تكتب مقاسات/مخزون/أسعار على products
+            // لا تكتب مقاسات/مخزون/أسعار على catalogItems
             if(empty($request->stock_check)) {
                 $input['stock_check'] = 0;
                 $input['size'] = null;
@@ -473,13 +473,13 @@ class ImportController extends AdminBaseController
                 $input['size_price'] = null;
                 $input['color'] = null;
             } else {
-                // لن نخزن على products — ستذهب إلى MP
+                // لن نخزن على catalogItems — ستذهب إلى MP
                 unset($input['size'], $input['size_qty'], $input['size_price'], $input['color']);
                 $input['stock_check'] = 1; // لأغراض العرض فقط إن كان لازال مستخدمًا في الواجهات
             }
 
-            // Colors belong to merchant_products, not products
-            // This will be handled separately in merchant product update
+            // Colors belong to merchant_items, not catalogItems
+            // This will be handled separately in merchant item update
 
             if(empty($request->size_check)) {
                 $input['size_all'] = null;
@@ -556,7 +556,7 @@ class ImportController extends AdminBaseController
             }
         }
 
-        $fimageData = public_path().'/assets/images/products/'.$catalogItem->photo;
+        $fimageData = public_path().'/assets/images/catalogItems/'.$catalogItem->photo;
         if(filter_var($catalogItem->photo, FILTER_VALIDATE_URL)){
             $fimageData = $catalogItem->photo;
         }
@@ -580,7 +580,7 @@ class ImportController extends AdminBaseController
         // Update/create MerchantItem record
         $merchantId = (int) ($request->input('user_id') ?? $request->input('merchant_id') ?? 0);
         if ($merchantId <= 0) {
-            return response()->json(['errors' => ['vendor' => 'Merchant (user) is required']], 422);
+            return response()->json(['errors' => ['merchant' => 'Merchant (user) is required']], 422);
         }
 
         $mpPrice         = $request->filled('price') ? ((float)$request->input('price') / $sign->value) : 0.0;
@@ -607,9 +607,9 @@ class ImportController extends AdminBaseController
         }
 
         MerchantItem::updateOrCreate(
-            ['product_id' => $catalogItem->id, 'user_id' => $merchantId],
+            ['catalog_item_id' => $catalogItem->id, 'user_id' => $merchantId],
             [
-                'product_type'        => 'affiliate',
+                'item_type'        => 'affiliate',
                 'price'               => $mpPrice,
                 'previous_price'      => $mpPreviousPrice,
                 'stock'               => (int)$request->input('stock', 0),
@@ -620,7 +620,7 @@ class ImportController extends AdminBaseController
                 'whole_sell_qty'      => !empty($request->whole_sell_qty) ? implode(',', (array)$request->whole_sell_qty) : null,
                 'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', (array)$request->whole_sell_discount) : null,
                 'preordered'          => (int) ($request->input('preordered') ?? 0),
-                'product_condition'   => (int) ($request->input('product_condition') ?? 0),
+                'item_condition'   => (int) ($request->input('item_condition') ?? 0),
                 'ship'                => $request->input('ship') ?: null,
                 'brand_quality_id'    => $request->input('brand_quality_id') ?: null,
                 'affiliate_link'      => $request->input('affiliate_link') ?: null,
@@ -629,7 +629,7 @@ class ImportController extends AdminBaseController
         );
 
         //--- Redirect Section
-        $msg = __('Product Updated Successfully.').'<a href="'.route('admin-import-index').'">'.__("View Catalog Item Lists.").'</a>';
+        $msg = __('CatalogItem Updated Successfully.').'<a href="'.route('admin-import-index').'">'.__("View Catalog Item Lists.").'</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }

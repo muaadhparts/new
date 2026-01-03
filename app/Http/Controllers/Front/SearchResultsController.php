@@ -58,7 +58,7 @@ class SearchResultsController extends Controller
         $availableStores = $allForFilters->pluck('user')->filter()->unique('id')->keyBy('id');
         $availableQualities = $allForFilters->pluck('qualityBrand')->filter()->unique('id')->keyBy('id');
 
-        // Query 2: Main products - PAGINATED (only 12 DTOs built)
+        // Query 2: Main catalogItems - PAGINATED (only 12 DTOs built)
         $mainPaginator = $this->loadMerchantItemsPaginated(
             $mainCatalogItemIds,
             $storeFilter,
@@ -70,7 +70,7 @@ class SearchResultsController extends Controller
         // Build DTOs only for the 12 items on current page
         $cards = $this->cardBuilder->buildCardsFromPaginator($mainPaginator);
 
-        // Query 3: Alternative products - Limited to 12 (no pagination, just limit)
+        // Query 3: Alternative catalogItems - Limited to 12 (no pagination, just limit)
         $alternativeCards = collect();
         if (!empty($altCatalogItemIds)) {
             $altMerchants = $this->loadMerchantItemsLimited($altCatalogItemIds, $storeFilter, $qualityFilter, $sortBy, 12);
@@ -90,7 +90,7 @@ class SearchResultsController extends Controller
     }
 
     /**
-     * Get alternative products for a SKU
+     * Get alternative catalogItems for a SKU
      */
     private function getAlternatives(string $sku): \Illuminate\Support\Collection
     {
@@ -113,7 +113,7 @@ class SearchResultsController extends Controller
     }
 
     /**
-     * Load merchant products with PAGINATION at query level
+     * Load merchant catalogItems with PAGINATION at query level
      * Sorting is done in the query, not after
      */
     private function loadMerchantItemsPaginated(

@@ -340,20 +340,20 @@ $(document).ready(function () {
 
   //****** 11. PRODUCT DETAILS SLIDER ******//
 
-  if (typeof $.fn.slick !== 'undefined' && $(".product-main-slider").length > 0) {
-    $(".product-main-slider").slick({
+  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-main-slider").length > 0) {
+    $(".catalogItem-main-slider").slick({
       slidesToShow: 1,
       slidesToScroll: 1,
       arrows: false,
       // fade: true,
-      asNavFor: ".product-nav-slider",
+      asNavFor: ".catalogItem-nav-slider",
     });
   }
-  if (typeof $.fn.slick !== 'undefined' && $(".product-nav-slider").length > 0) {
-    $(".product-nav-slider").slick({
+  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-nav-slider").length > 0) {
+    $(".catalogItem-nav-slider").slick({
       slidesToShow: 3,
       slidesToScroll: 1,
-      asNavFor: ".product-main-slider",
+      asNavFor: ".catalogItem-main-slider",
       dots: false,
       focusOnSelect: true,
       variableWidth: true,
@@ -441,8 +441,8 @@ $(document).ready(function () {
 
   //****** 16. PRODUCT CARDS SLIDER ******//
   // Updated to match grid layout: col-6 col-md-4 col-lg-3 (4 cards on lg, 3 on md, 2 on sm)
-  if (typeof $.fn.slick !== 'undefined' && $(".product-cards-slider").length > 0) {
-    $(".product-cards-slider").slick({
+  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-cards-slider").length > 0) {
+    $(".catalogItem-cards-slider").slick({
       dots: false,
       infinite: true,
       speed: 300,
@@ -507,14 +507,14 @@ $(document).ready(function () {
 
 
   //****** 19. TOGGLING ADD PRODUCT FORM  BASED ON SELECTED PRODUCT TYPE ******//
-  const $physicalProductInputesWrapper = $(".physical-product-inputes-wrapper");
-  const $digitalProductInputesWrapper = $(".digital-product-inputes-wrapper");
+  const $physicalProductInputesWrapper = $(".physical-catalogItem-inputes-wrapper");
+  const $digitalProductInputesWrapper = $(".digital-catalogItem-inputes-wrapper");
 
-  $(".physical-product-radio").on("click", function () {
+  $(".physical-catalogItem-radio").on("click", function () {
     $physicalProductInputesWrapper.addClass("show");
     $digitalProductInputesWrapper.removeClass("show");
   });
-  $(".digital-product-radio").on("click", function () {
+  $(".digital-catalogItem-radio").on("click", function () {
     $digitalProductInputesWrapper.addClass("show");
     $physicalProductInputesWrapper.removeClass("show");
   });

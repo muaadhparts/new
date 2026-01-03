@@ -204,7 +204,7 @@ class ShippingCalculatorService
         if ($merchantShippingData['actual_weight'] === null) {
             $errors[] = [
                 'field' => 'weight',
-                'message' => __('Product weights are missing'),
+                'message' => __('CatalogItem weights are missing'),
             ];
         }
 
@@ -212,7 +212,7 @@ class ShippingCalculatorService
         if ($dims['length'] === null || $dims['width'] === null || $dims['height'] === null) {
             $errors[] = [
                 'field' => 'dimensions',
-                'message' => __('Product dimensions are missing'),
+                'message' => __('CatalogItem dimensions are missing'),
             ];
         }
 

@@ -29,10 +29,10 @@ class LoginController extends FrontBaseController
         return view('user.success', compact('status'));
     }
     
-    public function showVendorLoginForm()
+    public function showMerchantLoginForm()
     {
 
-      return view('frontend.vendor-login');
+      return view('frontend.merchant-login');
     }
 
     public function login(Request $request)

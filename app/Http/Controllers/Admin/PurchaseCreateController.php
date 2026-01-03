@@ -22,20 +22,20 @@ class PurchaseCreateController extends AdminBaseController
     public function create(Request $request)
     {
         // Handle pre-selected catalog items from request
-        if ($request->products) {
-            $selectd_products = $request->products;
+        if ($request->catalogItems) {
+            $selectd_products = $request->catalogItems;
             foreach ($selectd_products as $itemId) {
-                $products[] = CatalogItem::findOrFail($itemId);
+                $catalogItems[] = CatalogItem::findOrFail($itemId);
             }
         } else {
             $selectd_products = [];
-            $products = [];
+            $catalogItems = [];
         }
 
         $sign = $this->curr;
         Session::forget('purchase_products');
 
-        return view('admin.purchase.create.index', compact('products', 'selectd_products', 'sign'));
+        return view('admin.purchase.create.index', compact('catalogItems', 'selectd_products', 'sign'));
     }
 
     public function datatables()
@@ -62,13 +62,13 @@ class PurchaseCreateController extends AdminBaseController
                     ? $catalogItem->photo
                     : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
                 $img = '<img src="' . $photoUrl . '" alt="Image" class="img-thumbnail" width="100"> <br>';
-                $name = getLocalizedProductName($catalogItem, 50);
+                $name = getLocalizedCatalogItemName($catalogItem, 50);
 
                 // Merchant info
                 $merchantInfo = $mi->user ? '<span class="badge badge-info">' . ($mi->user->shop_name ?: $mi->user->name) . '</span>' : '';
 
                 // Item condition (new/used)
-                $condition = $mi->product_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $condition = $mi->item_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
                 // Stock
                 $stock = $mi->stock === null ? __('Unlimited') : (($mi->stock > 0) ? $mi->stock : '<span class="text-danger">' . __('Out Of Stock') . '</span>');
@@ -78,7 +78,7 @@ class PurchaseCreateController extends AdminBaseController
 
             ->addColumn('action', function (\App\Models\MerchantItem $mi) {
                 // Use merchant_item_id instead of catalog_item_id
-                return '<div class="action-list"><a href="javascript:;" class="purchase_product_add" data-bs-toggle="modal" class="add-btn-small pl-2" data-bs-target="#add-product" data-href="' . $mi->id . '" data-catalog-item-id="' . $mi->catalog_item_id . '"> <i class="fas fa-plus"></i></a></div>';
+                return '<div class="action-list"><a href="javascript:;" class="purchase_product_add" data-bs-toggle="modal" class="add-btn-small pl-2" data-bs-target="#add-catalogItem" data-href="' . $mi->id . '" data-catalog-item-id="' . $mi->catalog_item_id . '"> <i class="fas fa-plus"></i></a></div>';
             })
 
             ->rawColumns(['name', 'action'])
@@ -86,21 +86,21 @@ class PurchaseCreateController extends AdminBaseController
     }
 
 
-    public function addProduct($product_id)
+    public function addCatalogItem($catalogItem_id)
     {
 
-        $purchase_products = Session::get('purchase_products');
-        if (!$purchase_products) {
-            $purchase_products = [];
+        $purchase_catalogItems = Session::get('purchase_catalogItems');
+        if (!$purchase_catalogItems) {
+            $purchase_catalogItems = [];
         }
-        if (!in_array($product_id, $purchase_products)) {
-            $purchase_products[] = $product_id;
+        if (!in_array($catalogItem_id, $purchase_catalogItems)) {
+            $purchase_catalogItems[] = $catalogItem_id;
         }
 
-        Session::put('purchase_products', $purchase_products);
+        Session::put('purchase_catalogItems', $purchase_catalogItems);
 
         $sign = $this->curr;
-        return view('admin.purchase.partials.product_add_table', compact('sign'));
+        return view('admin.purchase.partials.catalogItem_add_table', compact('sign'));
     }
 
 
@@ -111,31 +111,31 @@ class PurchaseCreateController extends AdminBaseController
     }
 
 
-    public function removePurchaseProduct($product_id)
+    public function removePurchaseCatalogItem($catalogItem_id)
     {
-        $items = Session::get('purchase_products');
+        $items = Session::get('purchase_catalogItems');
         foreach ($items as $key => $item) {
-            if ($item == $product_id) {
+            if ($item == $catalogItem_id) {
                 unset($items[$key]);
             }
         }
         $sign = $this->curr;
         if ($items) {
-            Session::put('purchase_products', $items);
+            Session::put('purchase_catalogItems', $items);
         } else {
-            Session::forget('purchase_products');
+            Session::forget('purchase_catalogItems');
         }
 
-        return view('admin.purchase.partials.product_add_table', compact('sign'));
+        return view('admin.purchase.partials.catalogItem_add_table', compact('sign'));
     }
 
 
     // Show catalog item details for adding to purchase
-    public function product_show($id)
+    public function catalogItem_show($id)
     {
-        $data['productt'] = CatalogItem::find($id);
+        $data['catalogItem'] = CatalogItem::find($id);
         $data['curr'] = $this->curr;
-        return view('admin.purchase.create.add-product', $data);
+        return view('admin.purchase.create.add-catalogItem', $data);
     }
 
     public function addcart(Request $request)
@@ -165,7 +165,7 @@ class PurchaseCreateController extends AdminBaseController
         }
 
         // Get the first active merchant item for this catalog item
-        $merchantItem = $catalogItem->merchantProducts()
+        $merchantItem = $catalogItem->merchantItems()
             ->where('status', 1)
             ->orderBy('price')
             ->first();
@@ -223,7 +223,7 @@ class PurchaseCreateController extends AdminBaseController
 
         if (empty($color)) {
             // Get color from merchant colors (merchant_items.color_all)
-            $merchantColors = $catalogItem->getVendorColors();
+            $merchantColors = $catalogItem->getMerchantColors();
             if (!empty($merchantColors)) {
                 $color = $merchantColors[0];
             }
@@ -334,7 +334,7 @@ class PurchaseCreateController extends AdminBaseController
         $new_cart['totalPrice'] = $t_cart->totalPrice;
         $new_cart['items'] = $t_cart->items;
         $new_cart = json_encode($new_cart);
-        $temp_affilate_users = PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $temp_affilate_users = PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         $purchase = new Purchase;

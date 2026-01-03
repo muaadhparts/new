@@ -45,14 +45,6 @@ class Shipping extends Model
     }
 
     /**
-     * @deprecated Use scopeForMerchant() instead
-     */
-    public function scopeForVendor(Builder $query, int $merchantId): Builder
-    {
-        return $this->scopeForMerchant($query, $merchantId);
-    }
-
-    /**
      * سكوب للتعرّف على Tryoto مؤقتًا (يفضل لاحقًا عمود provider).
      */
     public function scopeIsTryoto(Builder $query): Builder

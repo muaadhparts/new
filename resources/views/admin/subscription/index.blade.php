@@ -6,19 +6,19 @@
             <div class="mr-breadcrumb">
               <div class="row">
                 <div class="col-lg-12">
-                    <h4 class="heading">{{ __("Vendor Subscription Plans") }}</h4>
+                    <h4 class="heading">{{ __("Merchant Subscription Plans") }}</h4>
                     <ul class="links">
                       <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
                       </li>
                       <li>
-                        <a href="{{ route('admin-subscription-index') }}">{{ __("Vendor Subscription Plans") }}</a>
+                        <a href="{{ route('admin-subscription-index') }}">{{ __("Merchant Subscription Plans") }}</a>
                       </li>
                     </ul>
                 </div>
               </div>
             </div>
-            <div class="product-area">
+            <div class="catalogItem-area">
               <div class="row">
                 <div class="col-lg-12">
                   <div class="mr-table allproduct">
@@ -32,7 +32,7 @@
                                           <th>{{ __("Title") }}</th>
                                           <th>{{ __("Cost") }}</th>
                                           <th>{{ __("Duration") }}</th>
-                                          <th>{{ __("Product Allowed") }}</th>
+                                          <th>{{ __("CatalogItem Allowed") }}</th>
                                           <th>{{ __("Options") }}</th>
                             </tr>
                           </thead>

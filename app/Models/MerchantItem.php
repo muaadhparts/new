@@ -16,7 +16,7 @@ class MerchantItem extends Model
         'catalog_item_id',
         'user_id',
         'brand_quality_id',
-        'product_type',
+        'item_type',
         'affiliate_link',
         'price',
         'previous_price',
@@ -35,7 +35,7 @@ class MerchantItem extends Model
         'license_qty',
         'license',
         'ship',
-        'product_condition',
+        'item_condition',
         'color_all',
         'color_price',
         'details',
@@ -81,7 +81,7 @@ class MerchantItem extends Model
      */
     public function scopeAffiliate($query)
     {
-        return $query->where('product_type', 'affiliate');
+        return $query->where('item_type', 'affiliate');
     }
 
     /**
@@ -89,7 +89,7 @@ class MerchantItem extends Model
      */
     public function scopeNormal($query)
     {
-        return $query->where('product_type', 'normal');
+        return $query->where('item_type', 'normal');
     }
 
     /**
@@ -112,9 +112,9 @@ class MerchantItem extends Model
     }
 
     /**
-     * Calculate final price for vendor display with size/options and commissions.
+     * Calculate final price for merchant display with size/options and commissions.
      */
-    public function vendorSizePrice()
+    public function merchantSizePrice()
     {
         // Base price = merchant item price + any increments (sizes/options) if numeric
         $base = (float) ($this->price ?? 0);
@@ -153,7 +153,7 @@ class MerchantItem extends Model
      */
     public function showPrice(): string
     {
-        $final = $this->vendorSizePrice();
+        $final = $this->merchantSizePrice();
         return CatalogItem::convertPrice($final);
     }
 
@@ -166,7 +166,7 @@ class MerchantItem extends Model
             return 0;
         }
 
-        $current = $this->vendorSizePrice();
+        $current = $this->merchantSizePrice();
         if ($current === null || $current <= 0) {
             return 0;
         }

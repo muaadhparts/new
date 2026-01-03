@@ -5,7 +5,7 @@ namespace App\Http\Controllers\User;
 use Illuminate\Http\Request;
 use App\{
     Models\CatalogItem,
-    Models\Favorite,
+    Models\FavoriteSeller,
     View\Composers\HeaderComposer
 };
 
@@ -21,7 +21,7 @@ class FavoriteController extends UserBaseController
         $user = $this->user;
         $page_count = isset($pageby) ? $pageby : $gs->favorite_count;
 
-        $favoriteQuery = Favorite::where('user_id', $user->id)
+        $favoriteQuery = FavoriteSeller::where('user_id', $user->id)
             ->with([
                 'catalogItem.merchantItems' => fn($q) => $q->where('status', 1)->with(['qualityBrand', 'user'])->orderBy('price'),
                 'catalogItem.brand',
@@ -33,32 +33,32 @@ class FavoriteController extends UserBaseController
         if (!empty($request->sort)) {
             $sort = $request->sort;
             if ($sort == "id_desc") {
-                $favoriteQuery = $favoriteQuery->latest('favorites.id');
+                $favoriteQuery = $favoriteQuery->latest('favorite_sellers.id');
             } elseif ($sort == "id_asc") {
-                $favoriteQuery = $favoriteQuery->oldest('favorites.id');
+                $favoriteQuery = $favoriteQuery->oldest('favorite_sellers.id');
             } elseif ($sort == "price_asc") {
-                $favoriteQuery = $favoriteQuery->join('merchant_products as mp', function($join) {
-                    $join->on('mp.id', '=', 'favorites.merchant_product_id')
+                $favoriteQuery = $favoriteQuery->join('merchant_items as mp', function($join) {
+                    $join->on('mp.id', '=', 'favorite_sellers.merchant_item_id')
                          ->orWhere(function($query) {
-                             $query->whereNull('favorites.merchant_product_id')
-                                   ->on('mp.catalog_item_id', '=', 'favorites.catalog_item_id')
+                             $query->whereNull('favorite_sellers.merchant_item_id')
+                                   ->on('mp.catalog_item_id', '=', 'favorite_sellers.catalog_item_id')
                                    ->where('mp.status', 1);
                          });
                 })->orderBy('mp.price', 'asc');
             } elseif ($sort == "price_desc") {
-                $favoriteQuery = $favoriteQuery->join('merchant_products as mp', function($join) {
-                    $join->on('mp.id', '=', 'favorites.merchant_product_id')
+                $favoriteQuery = $favoriteQuery->join('merchant_items as mp', function($join) {
+                    $join->on('mp.id', '=', 'favorite_sellers.merchant_item_id')
                          ->orWhere(function($query) {
-                             $query->whereNull('favorites.merchant_product_id')
-                                   ->on('mp.catalog_item_id', '=', 'favorites.catalog_item_id')
+                             $query->whereNull('favorite_sellers.merchant_item_id')
+                                   ->on('mp.catalog_item_id', '=', 'favorite_sellers.catalog_item_id')
                                    ->where('mp.status', 1);
                          });
                 })->orderBy('mp.price', 'desc');
             } else {
-                $favoriteQuery = $favoriteQuery->latest('favorites.id');
+                $favoriteQuery = $favoriteQuery->latest('favorite_sellers.id');
             }
         } else {
-            $favoriteQuery = $favoriteQuery->latest('favorites.id');
+            $favoriteQuery = $favoriteQuery->latest('favorite_sellers.id');
         }
 
         $favoriteItems = $favoriteQuery->paginate($page_count);
@@ -69,7 +69,7 @@ class FavoriteController extends UserBaseController
             if ($effectiveMerchantItem) {
                 $favoriteItem->effective_merchant_item = $effectiveMerchantItem;
                 $favoriteItem->effective_price = $effectiveMerchantItem->price;
-                $favoriteItem->effective_vendor = $effectiveMerchantItem->user;
+                $favoriteItem->effective_merchant = $effectiveMerchantItem->user;
             }
 
             return $favoriteItem;
@@ -85,7 +85,7 @@ class FavoriteController extends UserBaseController
     }
 
     /**
-     * Add merchant product to favorites
+     * Add merchant catalogItem to favorites
      */
     public function addMerchantFavorite($merchantProductId)
     {
@@ -93,13 +93,13 @@ class FavoriteController extends UserBaseController
     }
 
     /**
-     * Remove merchant product from favorites
+     * Remove merchant catalogItem from favorites
      */
     public function removeMerchantFavorite($merchantProductId)
     {
         $user = $this->user;
 
-        $favorite = Favorite::where('user_id', $user->id)
+        $favorite = FavoriteSeller::where('user_id', $user->id)
             ->where('merchant_item_id', $merchantProductId)
             ->first();
 
@@ -107,25 +107,25 @@ class FavoriteController extends UserBaseController
             $favorite->delete();
             HeaderComposer::invalidateFavoriteCache($user->id);
             $data[0] = 1;
-            $data[1] = Favorite::where('user_id', $user->id)->count();
+            $data[1] = FavoriteSeller::where('user_id', $user->id)->count();
             $data['success'] = __('Successfully Removed From Favorites.');
         } else {
             $data[0] = 0;
-            $data['error'] = __('Item not found in favorites.');
+            $data['error'] = __('Item not found in favorite_sellers.');
         }
 
         return response()->json($data);
     }
 
     /**
-     * Add merchant product to favorites
+     * Add merchant catalogItem to favorites
      */
     public function add($merchantProductId)
     {
         $user = $this->user;
         $data[0] = 0;
 
-        $ck = Favorite::where('user_id', $user->id)
+        $ck = FavoriteSeller::where('user_id', $user->id)
             ->where('merchant_item_id', $merchantProductId)
             ->exists();
 
@@ -136,7 +136,7 @@ class FavoriteController extends UserBaseController
 
         $merchantItem = \App\Models\MerchantItem::findOrFail($merchantProductId);
 
-        $favorite = new Favorite();
+        $favorite = new FavoriteSeller();
         $favorite->user_id = $user->id;
         $favorite->catalog_item_id = $merchantItem->catalog_item_id;
         $favorite->merchant_item_id = $merchantProductId;
@@ -144,7 +144,7 @@ class FavoriteController extends UserBaseController
 
         HeaderComposer::invalidateFavoriteCache($user->id);
         $data[0] = 1;
-        $data[1] = Favorite::where('user_id', $user->id)->count();
+        $data[1] = FavoriteSeller::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To Favorites.');
         return response()->json($data);
     }
@@ -172,11 +172,11 @@ class FavoriteController extends UserBaseController
         }
 
         if (!$merchantItem) {
-            $data['error'] = __('Product not available from any vendor.');
+            $data['error'] = __('CatalogItem not available from any merchant.');
             return response()->json($data);
         }
 
-        $ck = Favorite::where('user_id', $user->id)
+        $ck = FavoriteSeller::where('user_id', $user->id)
             ->where('merchant_item_id', $merchantItem->id)
             ->exists();
 
@@ -185,7 +185,7 @@ class FavoriteController extends UserBaseController
             return response()->json($data);
         }
 
-        $favorite = new Favorite();
+        $favorite = new FavoriteSeller();
         $favorite->user_id = $user->id;
         $favorite->catalog_item_id = $catalogItemId;
         $favorite->merchant_item_id = $merchantItem->id;
@@ -193,7 +193,7 @@ class FavoriteController extends UserBaseController
 
         HeaderComposer::invalidateFavoriteCache($user->id);
         $data[0] = 1;
-        $data[1] = Favorite::where('user_id', $user->id)->count();
+        $data[1] = FavoriteSeller::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Added To Favorites.');
         return response()->json($data);
     }
@@ -201,12 +201,12 @@ class FavoriteController extends UserBaseController
     public function remove($id)
     {
         $user = $this->user;
-        $favorite = Favorite::where('user_id', $user->id)->findOrFail($id);
+        $favorite = FavoriteSeller::where('user_id', $user->id)->findOrFail($id);
         $favorite->delete();
 
         HeaderComposer::invalidateFavoriteCache($user->id);
         $data[0] = 1;
-        $data[1] = Favorite::where('user_id', $user->id)->count();
+        $data[1] = FavoriteSeller::where('user_id', $user->id)->count();
         $data['success'] = __('Successfully Removed From Favorites.');
         return response()->json($data);
     }

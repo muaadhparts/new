@@ -9,8 +9,8 @@ return new class extends Migration
 {
     /**
      * Update related tables to use new naming convention:
-     * - product_id -> catalog_item_id
-     * - merchant_product_id -> merchant_item_id
+     * - catalog_item_id -> catalog_item_id
+     * - merchant_item_id -> merchant_item_id
      * - Rename product_fitments -> catalog_item_fitments
      * - Rename product_clicks -> catalog_item_clicks
      */
@@ -35,7 +35,7 @@ return new class extends Migration
 
             // Rename column
             Schema::table('product_fitments', function (Blueprint $table) {
-                $table->renameColumn('product_id', 'catalog_item_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
 
             // Rename table
@@ -69,12 +69,12 @@ return new class extends Migration
         if (Schema::hasTable('product_clicks') && !Schema::hasTable('catalog_item_clicks')) {
             // Rename columns
             Schema::table('product_clicks', function (Blueprint $table) {
-                $table->renameColumn('product_id', 'catalog_item_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
 
-            if (Schema::hasColumn('product_clicks', 'merchant_product_id')) {
+            if (Schema::hasColumn('product_clicks', 'merchant_item_id')) {
                 Schema::table('product_clicks', function (Blueprint $table) {
-                    $table->renameColumn('merchant_product_id', 'merchant_item_id');
+                    $table->renameColumn('merchant_item_id', 'merchant_item_id');
                 });
             }
 
@@ -86,15 +86,15 @@ return new class extends Migration
         // 3. Update favorites table
         // =====================================================
 
-        if (Schema::hasColumn('favorites', 'product_id')) {
+        if (Schema::hasColumn('favorites', 'catalog_item_id')) {
             Schema::table('favorites', function (Blueprint $table) {
-                $table->renameColumn('product_id', 'catalog_item_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
-        if (Schema::hasColumn('favorites', 'merchant_product_id')) {
+        if (Schema::hasColumn('favorites', 'merchant_item_id')) {
             Schema::table('favorites', function (Blueprint $table) {
-                $table->renameColumn('merchant_product_id', 'merchant_item_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
@@ -102,22 +102,22 @@ return new class extends Migration
         // 4. Update catalog_reviews table
         // =====================================================
 
-        if (Schema::hasColumn('catalog_reviews', 'product_id')) {
+        if (Schema::hasColumn('catalog_reviews', 'catalog_item_id')) {
             Schema::table('catalog_reviews', function (Blueprint $table) {
-                $table->renameColumn('product_id', 'catalog_item_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
-        if (Schema::hasColumn('catalog_reviews', 'merchant_product_id')) {
+        if (Schema::hasColumn('catalog_reviews', 'merchant_item_id')) {
             // Drop index first if exists
             try {
-                DB::statement('ALTER TABLE `catalog_reviews` DROP INDEX `catalog_reviews_merchant_product_id_index`');
+                DB::statement('ALTER TABLE `catalog_reviews` DROP INDEX `catalog_reviews_merchant_catalog_item_id_index`');
             } catch (\Exception $e) {
                 // Index may not exist
             }
 
             Schema::table('catalog_reviews', function (Blueprint $table) {
-                $table->renameColumn('merchant_product_id', 'merchant_item_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
 
             // Re-add index with new name
@@ -130,16 +130,16 @@ return new class extends Migration
         // 5. Update stock_reservations table
         // =====================================================
 
-        if (Schema::hasColumn('stock_reservations', 'merchant_product_id')) {
+        if (Schema::hasColumn('stock_reservations', 'merchant_item_id')) {
             // Drop index first if exists
             try {
-                DB::statement('ALTER TABLE `stock_reservations` DROP INDEX `stock_reservations_expires_at_merchant_product_id_index`');
+                DB::statement('ALTER TABLE `stock_reservations` DROP INDEX `stock_reservations_expires_at_merchant_catalog_item_id_index`');
             } catch (\Exception $e) {
                 // Index may not exist
             }
 
             Schema::table('stock_reservations', function (Blueprint $table) {
-                $table->renameColumn('merchant_product_id', 'merchant_item_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
 
             // Re-add index with new name
@@ -152,22 +152,22 @@ return new class extends Migration
         // 6. Update reports table
         // =====================================================
 
-        if (Schema::hasColumn('reports', 'product_id')) {
+        if (Schema::hasColumn('reports', 'catalog_item_id')) {
             Schema::table('reports', function (Blueprint $table) {
-                $table->renameColumn('product_id', 'catalog_item_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
-        if (Schema::hasColumn('reports', 'merchant_product_id')) {
+        if (Schema::hasColumn('reports', 'merchant_item_id')) {
             // Drop index first if exists
             try {
-                DB::statement('ALTER TABLE `reports` DROP INDEX `reports_merchant_product_id_index`');
+                DB::statement('ALTER TABLE `reports` DROP INDEX `reports_merchant_catalog_item_id_index`');
             } catch (\Exception $e) {
                 // Index may not exist
             }
 
             Schema::table('reports', function (Blueprint $table) {
-                $table->renameColumn('merchant_product_id', 'merchant_item_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
 
             // Re-add index with new name
@@ -183,12 +183,12 @@ return new class extends Migration
         // Disable strict mode temporarily for this operation
         DB::statement('SET SESSION sql_mode = ""');
 
-        if (Schema::hasColumn('comments', 'product_id')) {
-            DB::statement('ALTER TABLE `comments` CHANGE `product_id` `catalog_item_id` INT UNSIGNED NULL');
+        if (Schema::hasColumn('comments', 'catalog_item_id')) {
+            DB::statement('ALTER TABLE `comments` CHANGE `catalog_item_id` `catalog_item_id` INT UNSIGNED NULL');
         }
 
-        if (Schema::hasColumn('comments', 'merchant_product_id')) {
-            DB::statement('ALTER TABLE `comments` CHANGE `merchant_product_id` `merchant_item_id` INT UNSIGNED NULL');
+        if (Schema::hasColumn('comments', 'merchant_item_id')) {
+            DB::statement('ALTER TABLE `comments` CHANGE `merchant_item_id` `merchant_item_id` INT UNSIGNED NULL');
         }
 
         // Restore strict mode
@@ -198,9 +198,9 @@ return new class extends Migration
         // 8. Update galleries table
         // =====================================================
 
-        if (Schema::hasColumn('galleries', 'product_id')) {
+        if (Schema::hasColumn('galleries', 'catalog_item_id')) {
             Schema::table('galleries', function (Blueprint $table) {
-                $table->renameColumn('product_id', 'catalog_item_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
     }
@@ -218,15 +218,15 @@ return new class extends Migration
         DB::statement('ALTER TABLE `catalog_item_fitments` DROP INDEX `uq_catalog_item_cat_sub_child`');
 
         Schema::table('catalog_item_fitments', function (Blueprint $table) {
-            $table->renameColumn('catalog_item_id', 'product_id');
+            $table->renameColumn('catalog_item_id', 'catalog_item_id');
         });
 
         Schema::rename('catalog_item_fitments', 'product_fitments');
 
         Schema::table('product_fitments', function (Blueprint $table) {
-            $table->unique(['product_id', 'category_id', 'subcategory_id', 'childcategory_id'], 'uq_prod_cat_sub_child');
-            $table->foreign('product_id', 'fk_pf_product')
-                ->references('id')->on('products')
+            $table->unique(['catalog_item_id', 'category_id', 'subcategory_id', 'childcategory_id'], 'uq_prod_cat_sub_child');
+            $table->foreign('catalog_item_id', 'fk_pf_product')
+                ->references('id')->on('catalogItems')
                 ->onDelete('cascade');
         });
 
@@ -234,78 +234,78 @@ return new class extends Migration
         Schema::rename('catalog_item_clicks', 'product_clicks');
 
         Schema::table('product_clicks', function (Blueprint $table) {
-            $table->renameColumn('catalog_item_id', 'product_id');
+            $table->renameColumn('catalog_item_id', 'catalog_item_id');
         });
 
         if (Schema::hasColumn('product_clicks', 'merchant_item_id')) {
             Schema::table('product_clicks', function (Blueprint $table) {
-                $table->renameColumn('merchant_item_id', 'merchant_product_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
         // 3. Revert favorites
         if (Schema::hasColumn('favorites', 'catalog_item_id')) {
             Schema::table('favorites', function (Blueprint $table) {
-                $table->renameColumn('catalog_item_id', 'product_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
         if (Schema::hasColumn('favorites', 'merchant_item_id')) {
             Schema::table('favorites', function (Blueprint $table) {
-                $table->renameColumn('merchant_item_id', 'merchant_product_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
         // 4. Revert catalog_reviews
         if (Schema::hasColumn('catalog_reviews', 'catalog_item_id')) {
             Schema::table('catalog_reviews', function (Blueprint $table) {
-                $table->renameColumn('catalog_item_id', 'product_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
         if (Schema::hasColumn('catalog_reviews', 'merchant_item_id')) {
             Schema::table('catalog_reviews', function (Blueprint $table) {
-                $table->renameColumn('merchant_item_id', 'merchant_product_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
         // 5. Revert stock_reservations
         if (Schema::hasColumn('stock_reservations', 'merchant_item_id')) {
             Schema::table('stock_reservations', function (Blueprint $table) {
-                $table->renameColumn('merchant_item_id', 'merchant_product_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
         // 6. Revert reports
         if (Schema::hasColumn('reports', 'catalog_item_id')) {
             Schema::table('reports', function (Blueprint $table) {
-                $table->renameColumn('catalog_item_id', 'product_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
         if (Schema::hasColumn('reports', 'merchant_item_id')) {
             Schema::table('reports', function (Blueprint $table) {
-                $table->renameColumn('merchant_item_id', 'merchant_product_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
         // 7. Revert comments
         if (Schema::hasColumn('comments', 'catalog_item_id')) {
             Schema::table('comments', function (Blueprint $table) {
-                $table->renameColumn('catalog_item_id', 'product_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
 
         if (Schema::hasColumn('comments', 'merchant_item_id')) {
             Schema::table('comments', function (Blueprint $table) {
-                $table->renameColumn('merchant_item_id', 'merchant_product_id');
+                $table->renameColumn('merchant_item_id', 'merchant_item_id');
             });
         }
 
         // 8. Revert galleries
         if (Schema::hasColumn('galleries', 'catalog_item_id')) {
             Schema::table('galleries', function (Blueprint $table) {
-                $table->renameColumn('catalog_item_id', 'product_id');
+                $table->renameColumn('catalog_item_id', 'catalog_item_id');
             });
         }
     }

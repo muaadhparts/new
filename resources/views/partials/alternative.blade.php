@@ -16,7 +16,7 @@
     const sku = '{{ $sku }}';
     const container = document.getElementById('alternatives-container-' + sku);
 
-    fetch('/api/product/alternatives/' + encodeURIComponent(sku) + '/html')
+    fetch('/api/catalogItem/alternatives/' + encodeURIComponent(sku) + '/html')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.html) {

@@ -23,10 +23,10 @@
     </div>
 
     {{-- Current Best Month Products Section --}}
-    <div class="add-product-content1 add-product-content2 mb-4">
+    <div class="add-catalogItem-content1 add-catalogItem-content2 mb-4">
         <div class="row">
             <div class="col-lg-12">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
                         <div class="row mb-4">
                             <div class="col-md-8">
@@ -34,61 +34,61 @@
                             </div>
                             <div class="col-md-4">
                                 <button type="button" class="btn btn-success float-end" data-bs-toggle="modal" data-bs-target="#addBestModal">
-                                    <i class="fas fa-plus"></i> {{ __('Add Product') }}
+                                    <i class="fas fa-plus"></i> {{ __('Add CatalogItem') }}
                                 </button>
                             </div>
                         </div>
 
-                        <div class="table-responsive" id="bestProductsTable">
-                            @if($bestProducts->count() > 0)
+                        <div class="table-responsive" id="bestCatalogItemsTable">
+                            @if($bestCatalogItems->count() > 0)
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th style="width: 80px;">{{ __('Image') }}</th>
-                                        <th>{{ __('Product') }}</th>
-                                        <th>{{ __('Brand') }} / {{ __('Quality') }} / {{ __('Vendor') }}</th>
+                                        <th>{{ __('CatalogItem') }}</th>
+                                        <th>{{ __('Brand') }} / {{ __('Quality') }} / {{ __('Merchant') }}</th>
                                         <th>{{ __('Price') }}</th>
                                         <th>{{ __('Stock') }}</th>
                                         <th style="width: 60px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($bestProducts as $mp)
+                                    @foreach($bestCatalogItems as $mp)
                                     @php
                                         // Get localized name
-                                        $productName = app()->getLocale() == 'ar'
-                                            ? ($mp->product->label_ar ?: $mp->product->label_en ?: $mp->product->name)
-                                            : ($mp->product->label_en ?: $mp->product->name);
+                                        $catalogItemName = app()->getLocale() == 'ar'
+                                            ? ($mp->catalogItem->label_ar ?: $mp->catalogItem->label_en ?: $mp->catalogItem->name)
+                                            : ($mp->catalogItem->label_en ?: $mp->catalogItem->name);
 
                                         // Get photo URL like homepage
-                                        $photo = $mp->product->photo
-                                            ? (filter_var($mp->product->photo, FILTER_VALIDATE_URL)
-                                                ? $mp->product->photo
-                                                : Storage::url($mp->product->photo))
+                                        $photo = $mp->catalogItem->photo
+                                            ? (filter_var($mp->catalogItem->photo, FILTER_VALIDATE_URL)
+                                                ? $mp->catalogItem->photo
+                                                : Storage::url($mp->catalogItem->photo))
                                             : asset('assets/images/noimage.png');
 
                                         // Brand (Toyota, Nissan, etc.)
-                                        $brandName = $mp->product->brand?->localized_name;
-                                        $brandLogo = $mp->product->brand?->photo_url;
+                                        $brandName = $mp->catalogItem->brand?->localized_name;
+                                        $brandLogo = $mp->catalogItem->brand?->photo_url;
 
                                         // Quality brand (OEM, Aftermarket, etc.)
                                         $qualityName = $mp->qualityBrand?->localized_name;
                                         $qualityLogo = $mp->qualityBrand?->logo_url;
 
-                                        // Vendor
-                                        $vendorName = app()->getLocale() == 'ar'
+                                        // Merchant
+                                        $merchantName = app()->getLocale() == 'ar'
                                             ? ($mp->user->shop_name_ar ?: $mp->user->shop_name)
                                             : $mp->user->shop_name;
                                     @endphp
                                     <tr id="best-row-{{ $mp->id }}">
                                         <td>
                                             <img src="{{ $photo }}"
-                                                 alt="{{ $productName }}"
+                                                 alt="{{ $catalogItemName }}"
                                                  style="width: 60px; height: 60px; object-fit: contain; border-radius: 8px; border: 1px solid #eee;">
                                         </td>
                                         <td>
-                                            <strong>{{ $productName }}</strong>
-                                            <br><small class="text-muted">SKU: {{ $mp->product->sku }}</small>
+                                            <strong>{{ $catalogItemName }}</strong>
+                                            <br><small class="text-muted">SKU: {{ $mp->catalogItem->sku }}</small>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-wrap gap-2">
@@ -112,10 +112,10 @@
                                                 </span>
                                                 @endif
 
-                                                {{-- Vendor --}}
+                                                {{-- Merchant --}}
                                                 <span class="badge bg-secondary d-inline-flex align-items-center gap-1">
                                                     <i class="fas fa-store"></i>
-                                                    {{ $vendorName }}
+                                                    {{ $merchantName }}
                                                 </span>
                                             </div>
                                         </td>
@@ -142,7 +142,7 @@
                             </table>
                             @else
                             <div class="alert alert-info" id="noBestAlert">
-                                {{ __('No best sellers configured. Click "Add Product" to add products.') }}
+                                {{ __('No best sellers configured. Click "Add CatalogItem" to add catalogItems.') }}
                             </div>
                             @endif
                         </div>
@@ -153,24 +153,24 @@
     </div>
 </div>
 
-{{-- Add Best Seller Product Modal --}}
+{{-- Add Best Seller CatalogItem Modal --}}
 <div class="modal fade" id="addBestModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Add Product to Best Sellers') }}</h5>
+                <h5 class="modal-title">{{ __('Add CatalogItem to Best Sellers') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 {{-- Step 1: Search Products --}}
                 <div id="step1-search">
                     <div class="mb-3">
-                        <label class="form-label">{{ __('Search by SKU or Product Name') }}</label>
-                        <input type="text" id="bestProductSearch" class="form-control" placeholder="{{ __('Enter SKU or product name...') }}">
+                        <label class="form-label">{{ __('Search by SKU or CatalogItem Name') }}</label>
+                        <input type="text" id="bestProductSearch" class="form-control" placeholder="{{ __('Enter SKU or catalogItem name...') }}">
                     </div>
 
                     <div id="searchResults" class="mt-3">
-                        <p class="text-muted">{{ __('Start typing to search for products...') }}</p>
+                        <p class="text-muted">{{ __('Start typing to search for catalogItems...') }}</p>
                     </div>
                 </div>
 
@@ -181,15 +181,15 @@
                             <i class="fas fa-arrow-left"></i> {{ __('Back') }}
                         </button>
                         <div class="d-flex align-items-center">
-                            <img id="selectedProductImg" src="" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; margin-right: 10px;">
+                            <img id="selectedCatalogItemImg" src="" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px; margin-right: 10px;">
                             <div>
-                                <strong id="selectedProductName"></strong>
-                                <small class="text-muted d-block" id="selectedProductSku"></small>
+                                <strong id="selectedCatalogItemName"></strong>
+                                <small class="text-muted d-block" id="selectedCatalogItemSku"></small>
                             </div>
                         </div>
                     </div>
 
-                    <h6>{{ __('Select Vendor & Quality Brand') }}:</h6>
+                    <h6>{{ __('Select Merchant & Quality Brand') }}:</h6>
                     <div id="merchantsList" class="mt-3">
                         <p class="text-muted">{{ __('Loading...') }}</p>
                     </div>
@@ -231,7 +231,7 @@
 }
 .brand-badge.brand { background: #e3f2fd; color: #1565c0; }
 .brand-badge.quality { background: #e8f5e9; color: #2e7d32; }
-.brand-badge.vendor { background: #fce4ec; color: #c2185b; }
+.brand-badge.merchant { background: #fce4ec; color: #c2185b; }
 </style>
 
 @endsection
@@ -240,16 +240,16 @@
 <script>
 $(document).ready(function() {
     let searchTimeout;
-    let selectedProductId = null;
-    let selectedProductPhoto = '';
+    let selectedCatalogItemId = null;
+    let selectedCatalogItemPhoto = '';
 
-    // Step 1: Search products
+    // Step 1: Search catalogItems
     $('#bestProductSearch').on('keyup', function() {
         clearTimeout(searchTimeout);
         const query = $(this).val();
 
         if (query.length < 2) {
-            $('#searchResults').html('<p class="text-muted">{{ __("Start typing to search for products...") }}</p>');
+            $('#searchResults').html('<p class="text-muted">{{ __("Start typing to search for catalogItems...") }}</p>');
             return;
         }
 
@@ -258,26 +258,26 @@ $(document).ready(function() {
 
             $.get('{{ route("admin-ps-best-sellers-search") }}', { q: query }, function(data) {
                 if (data.length === 0) {
-                    $('#searchResults').html('<p class="text-muted">{{ __("No products found") }}</p>');
+                    $('#searchResults').html('<p class="text-muted">{{ __("No catalogItems found") }}</p>');
                     return;
                 }
 
                 let html = '<div class="list-group">';
-                data.forEach(function(product) {
+                data.forEach(function(catalogItem) {
                     html += `
-                        <a href="javascript:;" class="list-group-item list-group-item-action d-flex align-items-center select-product"
-                           data-id="${product.product_id}"
-                           data-name="${product.name}"
-                           data-sku="${product.sku}"
-                           data-photo="${product.photo}">
-                            <img src="${product.photo}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;" class="me-3"
+                        <a href="javascript:;" class="list-group-item list-group-item-action d-flex align-items-center select-catalogItem"
+                           data-id="${catalogItem.catalog_item_id}"
+                           data-name="${catalogItem.name}"
+                           data-sku="${catalogItem.sku}"
+                           data-photo="${catalogItem.photo}">
+                            <img src="${catalogItem.photo}" alt="" style="width: 50px; height: 50px; object-fit: contain; border-radius: 8px;" class="me-3"
                                  onerror="this.src='{{ asset('assets/images/noimage.png') }}'">
                             <div class="flex-grow-1">
-                                <strong>${product.name}</strong><br>
-                                <small class="text-muted">SKU: ${product.sku}</small>
+                                <strong>${catalogItem.name}</strong><br>
+                                <small class="text-muted">SKU: ${catalogItem.sku}</small>
                             </div>
                             <div class="text-end">
-                                <span class="badge bg-info">${product.merchants_count} {{ __("vendors") }}</span>
+                                <span class="badge bg-info">${catalogItem.merchants_count} {{ __("merchants") }}</span>
                                 <i class="fas fa-chevron-right ms-2"></i>
                             </div>
                         </a>
@@ -289,25 +289,25 @@ $(document).ready(function() {
         }, 300);
     });
 
-    // Step 2: Select product and show merchants
-    $(document).on('click', '.select-product', function() {
-        selectedProductId = $(this).data('id');
+    // Step 2: Select catalogItem and show merchants
+    $(document).on('click', '.select-catalogItem', function() {
+        selectedCatalogItemId = $(this).data('id');
         const name = $(this).data('name');
         const sku = $(this).data('sku');
-        selectedProductPhoto = $(this).data('photo');
+        selectedCatalogItemPhoto = $(this).data('photo');
 
-        $('#selectedProductName').text(name);
-        $('#selectedProductSku').text('SKU: ' + sku);
-        $('#selectedProductImg').attr('src', selectedProductPhoto);
+        $('#selectedCatalogItemName').text(name);
+        $('#selectedCatalogItemSku').text('SKU: ' + sku);
+        $('#selectedCatalogItemImg').attr('src', selectedCatalogItemPhoto);
 
         $('#step1-search').hide();
         $('#step2-merchants').show();
         $('#merchantsList').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
-        // Load merchants for this product
-        $.get('{{ route("admin-ps-best-sellers-merchants") }}', { product_id: selectedProductId }, function(merchants) {
+        // Load merchants for this catalogItem
+        $.get('{{ route("admin-ps-best-sellers-merchants") }}', { catalog_item_id: selectedCatalogItemId }, function(merchants) {
             if (merchants.length === 0) {
-                $('#merchantsList').html('<p class="text-muted">{{ __("No vendors found for this product") }}</p>');
+                $('#merchantsList').html('<p class="text-muted">{{ __("No merchants found for this catalogItem") }}</p>');
                 return;
             }
 
@@ -331,10 +331,10 @@ $(document).ready(function() {
                        </span>`
                     : '';
 
-                // Vendor badge
-                const vendorBadge = `<span class="brand-badge vendor">
+                // Merchant badge
+                const merchantBadge = `<span class="brand-badge merchant">
                     <i class="fas fa-store"></i>
-                    ${mp.vendor_name}
+                    ${mp.merchant_name}
                    </span>`;
 
                 // Price
@@ -350,7 +350,7 @@ $(document).ready(function() {
                                 <div class="d-flex flex-wrap gap-2 mb-2">
                                     ${brandBadge}
                                     ${qualityBadge}
-                                    ${vendorBadge}
+                                    ${merchantBadge}
                                 </div>
                                 <small class="text-muted">{{ __("Stock") }}: ${mp.stock || 0}</small>
                             </div>
@@ -375,7 +375,7 @@ $(document).ready(function() {
     $('#backToSearch').on('click', function() {
         $('#step2-merchants').hide();
         $('#step1-search').show();
-        selectedProductId = null;
+        selectedCatalogItemId = null;
     });
 
     // Reset modal on close
@@ -383,11 +383,11 @@ $(document).ready(function() {
         $('#step2-merchants').hide();
         $('#step1-search').show();
         $('#bestProductSearch').val('');
-        $('#searchResults').html('<p class="text-muted">{{ __("Start typing to search for products...") }}</p>');
-        selectedProductId = null;
+        $('#searchResults').html('<p class="text-muted">{{ __("Start typing to search for catalogItems...") }}</p>');
+        selectedCatalogItemId = null;
     });
 
-    // Add product to best month (silent)
+    // Add catalogItem to best month (silent)
     $(document).on('click', '.add-to-best', function() {
         const btn = $(this);
         const card = btn.closest('.merchant-card');
@@ -415,7 +415,7 @@ $(document).ready(function() {
         });
     });
 
-    // Remove product from best month (silent)
+    // Remove catalogItem from best month (silent)
     $(document).on('click', '.remove-best', function() {
         const btn = $(this);
         const productId = btn.data('id');
@@ -435,10 +435,10 @@ $(document).ready(function() {
                 if (response.success) {
                     row.fadeOut(300, function() {
                         $(this).remove();
-                        if ($('#bestProductsTable tbody tr').length === 0) {
-                            $('#bestProductsTable').html(`
+                        if ($('#bestCatalogItemsTable tbody tr').length === 0) {
+                            $('#bestCatalogItemsTable').html(`
                                 <div class="alert alert-info">
-                                    {{ __('No best sellers configured. Click "Add Product" to add products.') }}
+                                    {{ __('No best sellers configured. Click "Add CatalogItem" to add catalogItems.') }}
                                 </div>
                             `);
                         }

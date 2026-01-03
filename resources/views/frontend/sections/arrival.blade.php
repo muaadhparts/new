@@ -63,78 +63,78 @@ Receives: $merchantItems (Collection of MerchantItem models)
 
         // Catalog item type
         $catalogItemType = $actualCatalogItem->type ?? 'Physical';
-        $affiliateCatalogItemType = $merchantItem->product_type ?? null;
+        $affiliateCatalogItemType = $merchantItem->item_type ?? null;
         $affiliateLink = $merchantItem->affiliate_link ?? null;
     @endphp
 
     <div class="col-6 col-md-4 col-lg-3 mb-4">
-        <div class="product-card" id="ci_{{ $catalogItemId }}_{{ $merchantItemId }}">
+        <div class="catalogItem-card" id="ci_{{ $catalogItemId }}_{{ $merchantItemId }}">
             {{-- Media Section --}}
-            <div class="product-card__media">
+            <div class="catalogItem-card__media">
                 @if ($offPercentage > 0)
-                    <span class="product-card__badge product-card__badge--discount">
+                    <span class="catalogItem-card__badge catalogItem-card__badge--discount">
                         -{{ $offPercentage }}%
                     </span>
                 @endif
 
                 @if (!$inStock)
-                    <span class="product-card__badge product-card__badge--stock">
+                    <span class="catalogItem-card__badge catalogItem-card__badge--stock">
                         {{ __('Out of Stock') }}
                     </span>
                 @endif
 
-                <a href="{{ $catalogItemUrl }}" class="product-card__media-link">
-                    <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="product-card__img"
+                <a href="{{ $catalogItemUrl }}" class="catalogItem-card__media-link">
+                    <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="catalogItem-card__img"
                          loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
                 </a>
             </div>
 
             {{-- Content Section --}}
-            <div class="product-card__content">
-                <h6 class="product-card__title">
+            <div class="catalogItem-card__content">
+                <h6 class="catalogItem-card__title">
                     <a href="{{ $catalogItemUrl }}">{{ Str::limit($catalogItemName, 50) }}</a>
                 </h6>
 
                 {{-- Catalog Item Info: Brand, Quality, Merchant --}}
-                <div class="product-card__info">
+                <div class="catalogItem-card__info">
                     @if($brandName)
-                        <span class="product-card__brand">
+                        <span class="catalogItem-card__brand">
                             @if($brandLogo)
-                                <img src="{{ $brandLogo }}" alt="" class="product-card__brand-logo">
+                                <img src="{{ $brandLogo }}" alt="" class="catalogItem-card__brand-logo">
                             @endif
                             {{ $brandName }}
                         </span>
                     @endif
                     @if($qualityBrandName)
-                        <span class="product-card__quality">
+                        <span class="catalogItem-card__quality">
                             @if($qualityBrandLogo)
-                                <img src="{{ $qualityBrandLogo }}" alt="" class="product-card__quality-logo">
+                                <img src="{{ $qualityBrandLogo }}" alt="" class="catalogItem-card__quality-logo">
                             @endif
                             {{ $qualityBrandName }}
                         </span>
                     @endif
                     @if($merchantName)
-                        <span class="product-card__merchant">
+                        <span class="catalogItem-card__merchant">
                             <i class="fas fa-store"></i> {{ $merchantName }}
                         </span>
                     @endif
-                    <span class="product-card__stock {{ $inStock ? 'product-card__stock--in' : 'product-card__stock--out' }}">
+                    <span class="catalogItem-card__stock {{ $inStock ? 'catalogItem-card__stock--in' : 'catalogItem-card__stock--out' }}">
                         {{ $stockText }}
                     </span>
                 </div>
 
                 {{-- Price --}}
-                <div class="product-card__price">
-                    <span class="product-card__price-current">{{ $priceFormatted }}</span>
+                <div class="catalogItem-card__price">
+                    <span class="catalogItem-card__price-current">{{ $priceFormatted }}</span>
                     @if($previousPrice > 0 && $offPercentage > 0)
-                        <span class="product-card__price-old">{{ $previousPriceFormatted }}</span>
+                        <span class="catalogItem-card__price-old">{{ $previousPriceFormatted }}</span>
                     @endif
                 </div>
 
                 {{-- Add to Cart --}}
                 @if ($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
                     @if ($inStock)
-                        <button type="button" class="product-card__cart-btn m-cart-add"
+                        <button type="button" class="catalogItem-card__cart-btn m-cart-add"
                             data-merchant-item-id="{{ $merchantItemId }}"
                             data-merchant-user-id="{{ $merchantUserId }}"
                             data-catalog-item-id="{{ $catalogItemId }}"
@@ -145,13 +145,13 @@ Receives: $merchantItems (Collection of MerchantItem models)
                             <span>@lang('Add to Cart')</span>
                         </button>
                     @else
-                        <button type="button" class="product-card__cart-btn product-card__cart-btn--disabled" disabled>
+                        <button type="button" class="catalogItem-card__cart-btn catalogItem-card__cart-btn--disabled" disabled>
                             <i class="fas fa-ban"></i>
                             <span>@lang('Out of Stock')</span>
                         </button>
                     @endif
                 @elseif ($affiliateCatalogItemType === 'affiliate' && $affiliateLink)
-                    <a href="{{ $affiliateLink }}" class="product-card__cart-btn" target="_blank">
+                    <a href="{{ $affiliateLink }}" class="catalogItem-card__cart-btn" target="_blank">
                         <i class="fas fa-external-link-alt"></i>
                         <span>@lang('Buy Now')</span>
                     </a>

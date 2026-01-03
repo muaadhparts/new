@@ -4,10 +4,10 @@
 
             <div class="content-area">
 
-              <div class="add-product-content1 add-product-content2">
+              <div class="add-catalogItem-content1 add-catalogItem-content2">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                       <div class="body-area">
                         @include('alerts.admin.form-error')  
                       <form id="muaadhformdata" action="{{route('admin-sb-store')}}" method="POST" enctype="multipart/form-data">

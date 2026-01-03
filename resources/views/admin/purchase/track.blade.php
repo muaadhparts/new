@@ -4,10 +4,10 @@
 
 {{-- ADD PURCHASE TRACKING --}}
 
-                            <div class="add-product-content1">
+                            <div class="add-catalogItem-content1">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <div class="product-description">
+                                        <div class="catalogItem-description">
                                             <div class="body-area" id="modalEdit">
                                                 <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                                             <input type="hidden" id="track-store" value="{{route('admin-purchase-timeline-store')}}">
@@ -71,10 +71,10 @@
 {{-- PURCHASE TRACKING DETAILS --}}
 
 						<div class="content-area no-padding">
-							<div class="add-product-content">
+							<div class="add-catalogItem-content">
 								<div class="row">
 									<div class="col-lg-12">
-										<div class="product-description">
+										<div class="catalogItem-description">
 											<div class="body-area" id="modalEdit">
 
 

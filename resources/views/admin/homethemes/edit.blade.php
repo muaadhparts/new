@@ -28,10 +28,10 @@
         </div>
     </div>
 
-    <div class="add-product-content1">
+    <div class="add-catalogItem-content1">
         <div class="row">
             <div class="col-lg-12">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
                         <div class="gocover" style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
@@ -138,7 +138,7 @@
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Featured Products') }}</label>
+                                                <label class="control-label">{{ __('Featured CatalogItems') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_featured_products" value="1" {{ $theme->show_featured_products ? 'checked' : '' }}>
                                                     <span class="slider round"></span>
@@ -245,7 +245,7 @@
                                             <input type="number" class="form-control" name="order_arrival" value="{{ $theme->order_arrival }}" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Featured Products Order') }}</label>
+                                            <label class="control-label">{{ __('Featured CatalogItems Order') }}</label>
                                             <input type="number" class="form-control" name="order_featured_products" value="{{ $theme->order_featured_products }}" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
@@ -300,8 +300,8 @@
                                             <input type="text" class="form-control" name="title_categories" value="{{ $theme->title_categories }}" placeholder="{{ __('Shop by Category') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Featured Products Title') }}</label>
-                                            <input type="text" class="form-control" name="title_featured_products" value="{{ $theme->title_featured_products }}" placeholder="{{ __('Featured Products') }}">
+                                            <label class="control-label">{{ __('Featured CatalogItems Title') }}</label>
+                                            <input type="text" class="form-control" name="title_featured_products" value="{{ $theme->title_featured_products }}" placeholder="{{ __('Featured CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Deal of Day Title') }}</label>
@@ -309,19 +309,19 @@
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Top Rated Title') }}</label>
-                                            <input type="text" class="form-control" name="title_top_rated" value="{{ $theme->title_top_rated }}" placeholder="{{ __('Top Rated Products') }}">
+                                            <input type="text" class="form-control" name="title_top_rated" value="{{ $theme->title_top_rated }}" placeholder="{{ __('Top Rated CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Big Save Title') }}</label>
-                                            <input type="text" class="form-control" name="title_big_save" value="{{ $theme->title_big_save }}" placeholder="{{ __('Big Save Products') }}">
+                                            <input type="text" class="form-control" name="title_big_save" value="{{ $theme->title_big_save }}" placeholder="{{ __('Big Save CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Trending Title') }}</label>
-                                            <input type="text" class="form-control" name="title_trending" value="{{ $theme->title_trending }}" placeholder="{{ __('Trending Products') }}">
+                                            <input type="text" class="form-control" name="title_trending" value="{{ $theme->title_trending }}" placeholder="{{ __('Trending CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Best Sellers Title') }}</label>
-                                            <input type="text" class="form-control" name="title_best_sellers" value="{{ $theme->title_best_sellers }}" placeholder="{{ __('Best Selling Products') }}">
+                                            <input type="text" class="form-control" name="title_best_sellers" value="{{ $theme->title_best_sellers }}" placeholder="{{ __('Best Selling CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Blogs Title') }}</label>
@@ -331,15 +331,15 @@
                                 </div>
                             </div>
 
-                            {{-- Product Counts --}}
+                            {{-- CatalogItem Counts --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('Product Counts Per Section') }}</h3>
+                                    <h3 class="panel-title">{{ __('CatalogItem Counts Per Section') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Featured Products') }}</label>
+                                            <label class="control-label">{{ __('Featured CatalogItems') }}</label>
                                             <input type="number" class="form-control" name="count_featured_products" value="{{ $theme->count_featured_products }}" min="1" max="24">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">

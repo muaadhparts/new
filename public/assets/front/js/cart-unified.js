@@ -3,7 +3,7 @@
  * ===================
  * Single source of truth for all cart operations.
  * Uses merchant_item_id exclusively - NO fallbacks.
- * Maintains backward compatibility with merchant_product_id data attributes.
+ * Maintains backward compatibility with merchant_item_id data attributes.
  *
  * @version 3.1
  */
@@ -110,11 +110,11 @@
         /**
          * Add item to cart (unified endpoint)
          * Sends merchant_item_id in payload (new naming convention)
-         * Also reads from merchant_product_id for backward compatibility
+         * Also reads from merchant_item_id for backward compatibility
          */
         async addItem(payload) {
-            // Support both merchant_item_id (new) and merchant_product_id (legacy)
-            const mpId = payload.merchant_item_id || payload.merchant_product_id;
+            // Support both merchant_item_id (new) and merchant_item_id (legacy)
+            const mpId = payload.merchant_item_id || payload.merchant_item_id;
 
             // Prevent duplicate requests
             if (state.processing.has(mpId)) {
@@ -130,7 +130,7 @@
                 merchant_item_id: mpId
             };
             // Remove old key if present to avoid confusion
-            delete apiPayload.merchant_product_id;
+            delete apiPayload.merchant_item_id;
 
             try {
                 const response = await fetch(CONFIG.endpoint, {
@@ -478,17 +478,17 @@
     const SimpleAddHandler = {
         /**
          * Handle simple add-to-cart button clicks (.m-cart-add)
-         * Reads merchant_item_id (new) or merchant_product_id (legacy) for backward compatibility
+         * Reads merchant_item_id (new) or merchant_item_id (legacy) for backward compatibility
          */
         handleClick(e) {
             e.preventDefault();
             const btn = e.currentTarget;
 
-            // REQUIRED: merchant_item_id (also accepts merchant_product_id for backward compatibility)
+            // REQUIRED: merchant_item_id (also accepts merchant_item_id for backward compatibility)
             const mpId = btn.dataset.merchantItemId || btn.dataset.merchantProductId;
             if (!mpId) {
                 console.error('Cart: merchant_item_id not found on button');
-                utils.toast('Cannot add to cart - missing product data', 'error');
+                utils.toast('Cannot add to cart - missing catalogItem data', 'error');
                 return;
             }
 
@@ -506,10 +506,10 @@
             if (qtyInputSelector) {
                 let qtyInput = null;
 
-                // 1. First: Search within closest modal/product container (for quickview modals)
+                // 1. First: Search within closest modal/catalogItem container (for quickview modals)
                 const modalContainers = [
                     '.catalog-quickview',
-                    '.ill-product',
+                    '.ill-catalogItem',
                     '.modal-body',
                     '.mfp-content',
                     '.m-cart-button'
@@ -603,7 +603,7 @@
     };
 
     // ========================================
-    // Quantity Controls for Product Detail Page
+    // Quantity Controls for CatalogItem Detail Page
     // ========================================
     const QtyControls = {
         /**
@@ -650,7 +650,7 @@
          */
         findQtyInput(btn) {
             // 1. Try modal containers first
-            const containers = ['.catalog-quickview', '.ill-product', '.modal-body', '.mfp-content', '.qty', '.add-qty-wrapper'];
+            const containers = ['.catalog-quickview', '.ill-catalogItem', '.modal-body', '.mfp-content', '.qty', '.add-qty-wrapper'];
             for (const sel of containers) {
                 const container = btn.closest(sel);
                 if (container) {
@@ -711,7 +711,7 @@
          * Handle modal qty plus button
          */
         handleQtyPlus(btn) {
-            const modalContainers = ['.catalog-quickview', '.ill-product', '.modal-body', '.mfp-content'];
+            const modalContainers = ['.catalog-quickview', '.ill-catalogItem', '.modal-body', '.mfp-content'];
             let input = null;
 
             for (const containerSelector of modalContainers) {
@@ -737,7 +737,7 @@
          * Handle modal qty minus button
          */
         handleQtyMinus(btn) {
-            const modalContainers = ['.catalog-quickview', '.ill-product', '.modal-body', '.mfp-content'];
+            const modalContainers = ['.catalog-quickview', '.ill-catalogItem', '.modal-body', '.mfp-content'];
             let input = null;
 
             for (const containerSelector of modalContainers) {

@@ -24,10 +24,10 @@
     </div>
   </div>
 
-  <div class="add-product-content1">
+  <div class="add-catalogItem-content1">
     <div class="row">
       <div class="col-lg-12">
-        <div class="product-description">
+        <div class="catalogItem-description">
           <div class="social-links-area">
             <div class="gocover"
               style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
@@ -64,7 +64,7 @@
               <div class="row justify-content-center">
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="category">{{ __('Featured Products') }} *</label>
+                  <label class="control-label" for="category">{{ __('Featured CatalogItems') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="category" value="1" {{ $data->category == 1 ? "checked" : "" }}>
                     <span class="slider round"></span>
@@ -108,7 +108,7 @@
               <div class="row justify-content-center">
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="best_sellers">{{ __('Best Selling Product') }} *</label>
+                  <label class="control-label" for="best_sellers">{{ __('Best Selling CatalogItem') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="best_sellers" value="1" {{ $data->best_sellers == 1 ? "checked" : "" }}>
                     <span class="slider round"></span>

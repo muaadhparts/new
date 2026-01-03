@@ -18,7 +18,7 @@
                 </div>
               </div>
             </div>
-            <div class="product-area">
+            <div class="catalogItem-area">
               <div class="row">
                 <div class="col-lg-12">
                   <div class="mr-table allproduct">

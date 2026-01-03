@@ -1,13 +1,13 @@
-{{-- AJAX Response for Vendor Products --}}
+{{-- AJAX Response for Merchant Products --}}
 @php
     // Determine view mode
     $view = request()->input('view_check', 'list-view');
 @endphp
 
 {{-- Products Content --}}
-<div id="ajax-products-content">
+<div id="ajax-catalogItems-content">
     <div class="tab-content" id="myTabContent">
-        <!-- product list view -->
+        <!-- catalogItem list view -->
         <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
             id="layout-list-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4">
@@ -17,7 +17,7 @@
             </div>
         </div>
 
-        <!-- product grid view -->
+        <!-- catalogItem grid view -->
         <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
             id="layout-grid-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4">

@@ -7,7 +7,7 @@
 
 @php
     $freeAboveValue = $freeAbove ?? 0;
-    $merchantTotal = $merchantProductsTotal ?? $vendorProductsTotal ?? 0;
+    $merchantTotal = $merchantProductsTotal ?? $merchantCatalogitemsTotal ?? 0;
     $isFreeShipping = ($freeAboveValue > 0 && $merchantTotal >= $freeAboveValue);
     $merchantUserIdValue = $merchantUserId ?? $merchantId ?? 0;
 @endphp
@@ -62,7 +62,7 @@
                         <input type="radio"
                                class="tryoto-radio shipping-option"
                                ref="{{ $merchantId ?? 0 }}"
-                               data-vendor="{{ $merchantId ?? 0 }}"
+                               data-merchant="{{ $merchantId ?? 0 }}"
                                data-price="{{ $convertedPrice }}"
                                data-free-above="{{ $freeAboveValue }}"
                                data-view="{{ $convertedPrice }} {{ $curr->sign }}"
@@ -533,7 +533,7 @@
     // Handle shipping option selection
     document.querySelectorAll('.tryoto-options-container .shipping-option').forEach(function(radio) {
         radio.addEventListener('change', function() {
-            var merchantId = this.dataset.vendor;
+            var merchantId = this.dataset.merchant;
             var price = this.dataset.price;
             var company = this.dataset.company;
             var service = this.dataset.service;

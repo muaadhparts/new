@@ -10,16 +10,16 @@
 							<div class="mr-breadcrumb">
 								<div class="row">
 									<div class="col-lg-12">
-											<h4 class="heading">{{ __("Product Bulk Upload") }}</h4>
+											<h4 class="heading">{{ __("CatalogItem Bulk Upload") }}</h4>
 											<ul class="links">
 												<li>
 													<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 												</li>
 											<li>
-												<a href="javascript:;">{{ __("Products") }} </a>
+												<a href="javascript:;">{{ __("CatalogItems") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-catalog-item-index') }}">{{ __("All Products") }}</a>
+												<a href="{{ route('admin-catalog-item-index') }}">{{ __("All CatalogItems") }}</a>
 											</li>
 												<li>
 													<a href="{{ route('admin-catalog-item-import') }}">{{ __("Bulk Upload") }}</a>
@@ -28,7 +28,7 @@
 									</div>
 								</div>
 							</div>
-							<div class="add-product-content">
+							<div class="add-catalogItem-content">
 								<div class="row">
 									<div class="col-lg-12 p-5">
 
@@ -40,7 +40,7 @@
 
 											  <div class="row">
 												  <div class="col-lg-12 text-right">
-													  <span style="margin-top:10px;"><a class="btn btn-primary" href="{{asset('assets/product-csv-format.csv')}}">{{ __("Download Sample CSV") }}</a></span>
+													  <span style="margin-top:10px;"><a class="btn btn-primary" href="{{asset('assets/catalogItem-csv-format.csv')}}">{{ __("Download Sample CSV") }}</a></span>
 												  </div>
 
 											  </div>
@@ -81,5 +81,5 @@
 
 @section('scripts')
 
-@include('partials.admin.product.product-scripts')
+@include('partials.admin.catalogItem.catalogItem-scripts')
 @endsection

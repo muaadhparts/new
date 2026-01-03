@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-// Import MerchantItem model to expose vendor listings via a relationship
+// Import MerchantItem model to expose merchant listings via a relationship
 use App\Models\MerchantItem;
 use App\Models\CatalogItem;
 use App\Models\SupportThread;
-use App\Models\Favorite;
+use App\Models\FavoriteSeller;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -25,14 +25,6 @@ class User extends Authenticatable implements JWTSubject
             return true;
         }
         return false;
-    }
-
-    /**
-     * @deprecated Use IsMerchant() instead
-     */
-    public function IsVendor()
-    {
-        return $this->IsMerchant();
     }
 
     public function purchases()
@@ -57,7 +49,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function favorites()
     {
-        return $this->hasMany(Favorite::class);
+        return $this->hasMany(FavoriteSeller::class);
     }
 
     public function oauthAccounts()
@@ -101,31 +93,13 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Transaction', 'user_id')->orderBy('id', 'desc');
     }
 
-    // Multi Vendor
+    // Multi Merchant
 
     /**
-     * Legacy relationship - DEPRECATED
-     * Note: catalog_items table no longer has user_id column
-     * Use merchantItems() or catalogItems() instead
-     *
-     * @deprecated Use merchantItems() for direct merchant listings
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function products()
-    {
-        // Return empty collection to prevent errors
-        // This method is kept for backward compatibility only
-        return $this->hasMany('App\Models\CatalogItem')->whereRaw('1 = 0');
-    }
-
-    /**
-     * Get all unique catalog items that this vendor sells via merchantItems
-     * This returns CatalogItem models, not MerchantItem models
-     *
-     * @deprecated Use catalogItems() instead
+     * @deprecated Use catalogItems() via hasManyThrough instead
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */
-    public function vendorProducts()
+    public function merchantCatalogitem()
     {
         return $this->hasManyThrough(
             'App\Models\CatalogItem',
@@ -223,7 +197,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function favoriteCount()
     {
-        return Favorite::where('user_id', '=', $this->id)
+        return FavoriteSeller::where('user_id', '=', $this->id)
             ->whereHas('catalogItem', function ($catalogItemQuery) {
                 $catalogItemQuery->whereIn('id', function($subQuery) {
                     $subQuery->select('catalog_item_id')
@@ -235,7 +209,7 @@ class User extends Authenticatable implements JWTSubject
     }
 
     /**
-     * Get all merchant item entries belonging to this user (vendor).
+     * Get all merchant item entries belonging to this user (merchant).
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
@@ -244,17 +218,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(MerchantItem::class, 'user_id');
     }
 
-    /**
-     * @deprecated Use merchantItems() instead
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function merchantProducts()
-    {
-        return $this->merchantItems();
-    }
 
     /**
-     * Get all unique catalog items that this vendor sells via merchantItems
+     * Get all unique catalog items that this merchant sells via merchantItems
      *
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
      */

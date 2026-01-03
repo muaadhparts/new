@@ -366,8 +366,8 @@
     }
   }
 
-  // product-infos-wrapper
-  .product-infos-wrapper {
+  // catalogItem-infos-wrapper
+  .catalogItem-infos-wrapper {
     margin-top: 40px;
     padding: 24px;
     background-color: $text-color-50;
@@ -397,13 +397,13 @@
       }
     }
 
-    .product-list {
+    .catalogItem-list {
       margin-top: 32px;
       display: flex;
       flex-direction: column;
       gap: 32px;
 
-      .checkout-single-product {
+      .checkout-single-catalogItem {
         display: flex;
         gap: 16px;
         @include screen-768 {
@@ -417,7 +417,7 @@
           flex-direction: column;
           gap: 16px;
         }
-        .product-specifications-list {
+        .catalogItem-specifications-list {
           display: flex;
           flex-direction: column;
           gap: 8px;
@@ -440,7 +440,7 @@
             }
           }
         }
-        .product-title {
+        .catalogItem-title {
           color: $text-color-950;
           transition: $transition;
           &:hover {

@@ -89,13 +89,13 @@ a:not([href]) {
 }
 .slider-title {
 }
-.product-description .panel-heading.text-center h3 {
+.catalogItem-description .panel-heading.text-center h3 {
   background-color: #1f224f;
   color: #ffffff;
   padding: 10px 0px 10px;
 }
 
-.product-description .panel.panel-default {
+.catalogItem-description .panel.panel-default {
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .no-padding {
@@ -498,11 +498,11 @@ a.add-btn:hover {
 /* Products Order Area End */
 
 /* Customar Details Area Start */
-.product-description .user-image {
+.catalogItem-description .user-image {
   display: block;
   text-align: center;
 }
-.product-description .user-image img {
+.catalogItem-description .user-image img {
   width: 130px;
   height: 130px;
   border-radius: 50%;
@@ -512,7 +512,7 @@ a.add-btn:hover {
   display: block;
   margin: 0 auto;
 }
-.product-description .user-image .mybtn1 {
+.catalogItem-description .user-image .mybtn1 {
   display: inline-block;
   margin: 0 auto;
   margin-top: 10px;
@@ -523,27 +523,27 @@ a.add-btn:hover {
   /* line-height: 40px; */
   width: auto;
 }
-.product-description .show-table table tr th {
+.catalogItem-description .show-table table tr th {
   text-align: left;
 }
-.product-description .table td,
-.product-description .table th {
+.catalogItem-description .table td,
+.catalogItem-description .table th {
   border: 0px;
   border-bottom: 1px dashed #ddd;
   padding: 6px 0px;
 }
-.product-description .order-details-table .table td,
-.product-description .order-details-table .table th {
+.catalogItem-description .order-details-table .table td,
+.catalogItem-description .order-details-table .table th {
   border: 0px;
   padding: 6px 15px;
 }
 .customar-details-area .order-table-wrap {
   padding-top: 0px;
 }
-.customar-details-area .product-description .body-area .row {
+.customar-details-area .catalogItem-description .body-area .row {
   margin-bottom: 0px;
 }
-.customar-details-area .product-description .body-area {
+.customar-details-area .catalogItem-description .body-area {
   padding-bottom: 0px;
 }
 .customar-details-area .view-details {
@@ -571,13 +571,13 @@ table.dataTable thead th,
 table.dataTable thead td {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
-.product-description .review,
-.product-description .comment {
+.catalogItem-description .review,
+.catalogItem-description .comment {
   font-size: 18px;
   font-weight: 600;
 }
-.product-description .review-text,
-.product-description .comment-text {
+.catalogItem-description .review-text,
+.catalogItem-description .comment-text {
   font-size: 14px;
 }
 
@@ -882,7 +882,7 @@ span.price-curr {
 .price-container input {
   padding-left: 10px;
 }
-select.vendor-btn {
+select.merchant-btn {
   color: #fff;
   width: auto;
   height: auto;
@@ -891,7 +891,7 @@ select.vendor-btn {
   border-radius: 50px;
   cursor: pointer;
 }
-select.vendor-btn option {
+select.merchant-btn option {
   background: #fff;
   color: black;
 }

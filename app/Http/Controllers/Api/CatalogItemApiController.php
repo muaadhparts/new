@@ -42,7 +42,7 @@ class CatalogItemApiController extends Controller
     /**
      * Get alternative related catalog items (merchant items for alternatives)
      */
-    public function getAlternativeRelatedProducts(Request $request, string $sku)
+    public function getAlternativeRelatedCatalogItems(Request $request, string $sku)
     {
         // 1) Get the base SKU record
         $skuAlternative = SkuAlternative::where('sku', $sku)->first();
@@ -85,7 +85,7 @@ class CatalogItemApiController extends Controller
 
         // 4) Sort: in stock with price > 0 first, then by price ascending
         $sorted = $listings->sortBy(function (MerchantItem $mp) {
-            $vp = method_exists($mp, 'vendorSizePrice') ? (float) $mp->vendorSizePrice() : (float) $mp->price;
+            $vp = method_exists($mp, 'merchantSizePrice') ? (float) $mp->merchantSizePrice() : (float) $mp->price;
             $has = ($mp->stock > 0 && $vp > 0) ? 0 : 1;
             return [$has, $vp];
         })->values();

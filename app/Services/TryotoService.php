@@ -325,7 +325,7 @@ class TryotoService
      * Get delivery options for a route using checkOTODeliveryFee endpoint
      *
      * المبدأ الأساسي:
-     * - الوزن مطلوب (من products.weight × الكمية)
+     * - الوزن مطلوب (من catalogItems.weight × الكمية)
      * - المقاسات اختيارية - إذا غير متوفرة، نستخدم قيم محسوبة من الوزن
      *
      * @param string $originCity المدينة المصدر
@@ -581,7 +581,7 @@ class TryotoService
             ]);
             return [
                 'success' => false,
-                'error' => 'Product weight is required for shipping',
+                'error' => 'CatalogItem weight is required for shipping',
                 'error_code' => 'WEIGHT_MISSING',
                 'missing_fields' => ['weight']
             ];
@@ -1332,11 +1332,11 @@ class TryotoService
             }
 
             $qty = (int)($ci['qty'] ?? $ci['quantity'] ?? 1);
-            $mpId = (int)($ci['merchant_product_id'] ?? $item['merchant_product_id'] ?? 0);
+            $mpId = (int)($ci['merchant_item_id'] ?? $item['merchant_item_id'] ?? 0);
 
             if ($mpId > 0) {
                 // استخدام MerchantCartService للحصول على الأبعاد الحقيقية
-                $dimensions = MerchantCartService::getProductDimensions($mpId);
+                $dimensions = MerchantCartService::getCatalogItemDimensions($mpId);
                 $itemsForCalculation[] = [
                     'qty' => max(1, $qty),
                     'weight' => $dimensions['weight'],

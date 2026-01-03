@@ -2,10 +2,10 @@
 @section('content')
 
     <div class="content-area no-padding">
-        <div class="add-product-content">
+        <div class="add-catalogItem-content">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                         <div class="body-area">
                             <div class="row">
                                 <div class="col-lg-6">
@@ -36,16 +36,16 @@
                                     <div class="table-responsive show-table">
                                         <table class="table">
                                             <tr>
-                                                <th>{{ __('Product') }}</th>
-                                                <td>{{ $data->product ? getLocalizedProductName($data->product) : __('N/A') }}</td>
+                                                <th>{{ __('CatalogItem') }}</th>
+                                                <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem) : __('N/A') }}</td>
                                             </tr>
                                             <tr>
                                                 <th>{{ __('Brand') }}</th>
-                                                <td>{{ $data->product && $data->product->brand ? getLocalizedBrandName($data->product->brand) : __('N/A') }}</td>
+                                                <td>{{ $data->catalogItem && $data->catalogItem->brand ? getLocalizedBrandName($data->catalogItem->brand) : __('N/A') }}</td>
                                             </tr>
                                             @if($data->merchantItem && $data->merchantItem->id)
                                             <tr>
-                                                <th>{{ __('Vendor') }}</th>
+                                                <th>{{ __('Merchant') }}</th>
                                                 <td>{{ $data->merchantItem->user->shop_name ?? $data->merchantItem->user->name ?? __('N/A') }}</td>
                                             </tr>
                                             <tr>

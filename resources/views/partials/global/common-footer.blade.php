@@ -66,7 +66,7 @@
             </div>
             <div class="col">
                 <div class="footer-widget category-widget my-5">
-                    <h3 class="widget-title mb-4">{{ __('Product Category') }}</h3>
+                    <h3 class="widget-title mb-4">{{ __('CatalogItem Category') }}</h3>
                     <ul>
                         @foreach ($categories->take(6) as $cate)
                             <li><a

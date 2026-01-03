@@ -16,8 +16,8 @@ class CommentController extends AdminBaseController
 			->get();
 
 		return Datatables::of($datas)
-			->addColumn('product', function (Comment $data) {
-				$name = $data->catalogItem ? getLocalizedProductName($data->catalogItem, 50) : __('N/A');
+			->addColumn('catalogItem', function (Comment $data) {
+				$name = $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : __('N/A');
 
 				// Build link to catalog item
 				if ($data->merchantItem && $data->merchantItem->id && $data->catalogItem) {
@@ -43,11 +43,11 @@ class CommentController extends AdminBaseController
 					? getLocalizedQualityName($data->merchantItem->qualityBrand)
 					: __('N/A');
 			})
-			->addColumn('vendor', function (Comment $data) {
+			->addColumn('merchant', function (Comment $data) {
 				// Display merchant info
 				if ($data->merchantItem && $data->merchantItem->user) {
 					$shopName = $data->merchantItem->user->shop_name ?: $data->merchantItem->user->name;
-					return '<a href="' . route('admin-vendor-show', $data->merchantItem->user_id) . '" target="_blank">' . $shopName . '</a>';
+					return '<a href="' . route('admin-merchant-show', $data->merchantItem->user_id) . '" target="_blank">' . $shopName . '</a>';
 				}
 				return __('N/A');
 			})
@@ -61,7 +61,7 @@ class CommentController extends AdminBaseController
 			->addColumn('action', function (Comment $data) {
 				return '<div class="action-list"><a data-href="' . route('admin-comment-show', $data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i>' . __('Details') . '</a><a href="javascript:;" data-href="' . route('admin-comment-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
 			})
-			->rawColumns(['product', 'vendor', 'action'])
+			->rawColumns(['catalogItem', 'merchant', 'action'])
 			->toJson();
 	}
 

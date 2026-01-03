@@ -36,10 +36,10 @@ class MerchantPurchaseDetailsResource extends JsonResource
             'shipping' => $this->shipping,
             'total_qty' => $this->merchantPurchases()->where('user_id','=',$user->id)->sum('qty'),
             'pay_amount' => $this->currency_sign . "" . round($this->merchantPurchases()->where('user_id','=',$user->id)->sum('price') * $this->currency_value , 2),
-            'shipping_cost' => $this->when($this->vendor_shipping_id == $user->id, function() {
+            'shipping_cost' => $this->when($this->merchant_shipping_id == $user->id, function() {
                 return $this->shipping_cost;
             }),
-            'packing_cost' => $this->when($this->vendor_packing_id == $user->id, function() {
+            'packing_cost' => $this->when($this->merchant_packing_id == $user->id, function() {
                 return $this->packing_cost;
             }),
             'packing_cost' => $this->packing_cost,

@@ -1,41 +1,41 @@
 {{-- SEO Canonical Tags --}}
 @section('seo')
-    @if(isset($productt,$merchantId,$merchant) && $merchantId && $merchant)
-        <link rel="canonical" href="{{ route('front.catalog-item', ['slug'=>$productt->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}">
+    @if(isset($catalogItem,$merchantId,$merchant) && $merchantId && $merchant)
+        <link rel="canonical" href="{{ route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}">
 
         {{-- Open Graph Meta Tags --}}
-        <meta property="og:type" content="product">
-        <meta property="og:url" content="{{ route('front.catalog-item', ['slug'=>$productt->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}">
-        <meta property="og:title" content="{{ $productt->name }}">
-        @if($productt->meta_description)
-            <meta property="og:description" content="{{ $productt->meta_description }}">
+        <meta property="og:type" content="catalogItem">
+        <meta property="og:url" content="{{ route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}">
+        <meta property="og:title" content="{{ $catalogItem->name }}">
+        @if($catalogItem->meta_description)
+            <meta property="og:description" content="{{ $catalogItem->meta_description }}">
         @endif
-        @if($productt->photo)
-            <meta property="og:image" content="{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}">
+        @if($catalogItem->photo)
+            <meta property="og:image" content="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}">
         @endif
 
         {{-- Twitter Card --}}
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="{{ $productt->name }}">
-        @if($productt->meta_description)
-            <meta name="twitter:description" content="{{ $productt->meta_description }}">
+        <meta name="twitter:title" content="{{ $catalogItem->name }}">
+        @if($catalogItem->meta_description)
+            <meta name="twitter:description" content="{{ $catalogItem->meta_description }}">
         @endif
-        @if($productt->photo)
-            <meta name="twitter:image" content="{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}">
+        @if($catalogItem->photo)
+            <meta name="twitter:image" content="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}">
         @endif
 
-        {{-- Product Schema --}}
+        {{-- CatalogItem Schema --}}
         <script type="application/ld+json">
         {
             "@context": "https://schema.org/",
-            "@type": "Product",
-            "name": "{{ $productt->name }}",
-            "image": "{{ $productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png') }}",
-            "description": "{{ $productt->meta_description ?? strip_tags($productt->description ?? '') }}",
-            "sku": "{{ $productt->sku }}",
+            "@type": "CatalogItem",
+            "name": "{{ $catalogItem->name }}",
+            "image": "{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}",
+            "description": "{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}",
+            "sku": "{{ $catalogItem->sku }}",
             "offers": {
                 "@type": "Offer",
-                "url": "{{ route('front.catalog-item', ['slug'=>$productt->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}",
+                "url": "{{ route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]) }}",
                 "priceCurrency": "{{ isset($currencies) ? ($currencies->where('is_default', 1)->first()->name ?? 'USD') : 'USD' }}",
                 "price": "{{ $merchant->price }}",
                 "availability": "{{ ($merchant->stock > 0 || is_null($merchant->stock)) ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock' }}"

@@ -28,26 +28,26 @@ class Cart extends Model
      */
     protected function merchantUserIdFromItem($item): int
     {
-        return (int)($item->vendor_user_id ?? $item->user_id ?? 0);
+        return (int)($item->merchant_user_id ?? $item->user_id ?? 0);
     }
 
     /**
-     * أنشئ مفتاح العنصر في السلة مع تمييز البائع و merchant_product_id.
-     * الشكل: id : u{vendor} : mp{merchant_product_id} : {size_key|size} : {color} : {values-clean}
+     * أنشئ مفتاح العنصر في السلة مع تمييز البائع و merchant_item_id.
+     * الشكل: id : u{merchant} : mp{merchant_item_id} : {size_key|size} : {color} : {values-clean}
      *
-     * IMPORTANT: merchant_product_id ضروري لتمييز نفس المنتج من نفس التاجر لكن بـ brand_quality مختلف
+     * IMPORTANT: merchant_item_id ضروري لتمييز نفس المنتج من نفس التاجر لكن بـ brand_quality مختلف
      */
     protected function makeKey($item, $size = '', $color = '', $values = '', $size_key = '')
     {
         $merchantUserId = $this->merchantUserIdFromItem($item);
-        $merchantProductId = $item->merchant_product_id ?? 0;
+        $merchantItemId = $item->merchant_item_id ?? 0;
         $cleanValues = is_string($values) ? str_replace([' ', ','], '', $values) : (string)$values;
         $dim = ($size_key !== '' && $size_key !== null) ? $size_key : $size;
 
         return implode(':', [
             $item->id,
             'u' . $merchantUserId,
-            'mp' . $merchantProductId,
+            'mp' . $merchantItemId,
             (string)$dim,
             (string)$color,
             (string)$cleanValues,
@@ -86,7 +86,7 @@ class Cart extends Model
     {
         $storedItem = [
             'user_id'             => $this->merchantUserIdFromItem($item),
-            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'merchant_item_id' => $item->merchant_item_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'                 => 0,
             'size_key'            => 0,
@@ -108,7 +108,7 @@ class Cart extends Model
             'preordered'          => $item->preordered ?? 0,
         ];
 
-        // مفتاح Vendor-aware
+        // مفتاح Merchant-aware
         $key = $this->makeKey($item, (string)$size, (string)$color, (string)$values, '');
 
         if ($item->type == 'Physical') {
@@ -201,7 +201,7 @@ class Cart extends Model
 
         $storedItem = [
             'user_id'      => $this->merchantUserIdFromItem($item),
-            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'merchant_item_id' => $item->merchant_item_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
             'size_key'     => 0,
@@ -224,7 +224,7 @@ class Cart extends Model
             'preordered'   => $item->preordered ?? 0,
         ];
 
-        // مفتاح Vendor-aware
+        // مفتاح Merchant-aware
         $key = $this->makeKey($item, (string)$size, (string)$color, (string)$values, (string)$size_key);
 
         if ($item->type == 'Physical') {
@@ -280,10 +280,10 @@ class Cart extends Model
             $color_cost = (float)$color_price;
         }
 
-        // Get color from vendor colors (merchant_products.color_all)
-        $vendorColors = $item->getVendorColors();
-        if (!empty($vendorColors)) {
-            $colors = $this->toArrayValues($vendorColors);
+        // Get color from merchant colors (merchant_items.color_all)
+        $merchantColors = $item->getMerchantColors();
+        if (!empty($merchantColors)) {
+            $colors = $this->toArrayValues($merchantColors);
             if (!empty($colors)) $storedItem['color'] = $colors[0];
         }
         if (!empty($color)) $storedItem['color'] = $color;
@@ -338,7 +338,7 @@ class Cart extends Model
     {
         $storedItem = [
             'user_id'      => $this->merchantUserIdFromItem($item),
-            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'merchant_item_id' => $item->merchant_item_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
             'size_key'     => 0,
@@ -399,7 +399,7 @@ class Cart extends Model
     {
         $storedItem = [
             'user_id'      => $this->merchantUserIdFromItem($item),
-            'merchant_product_id' => $item->merchant_product_id ?? 0,
+            'merchant_item_id' => $item->merchant_item_id ?? 0,
             'brand_quality_id'    => $item->brand_quality_id ?? null,
             'qty'          => 0,
             'size_key'     => 0,

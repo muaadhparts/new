@@ -181,7 +181,7 @@ class CalloutController extends Controller
             return response()->json([
                 'ok'         => true,
                 'elapsed_ms' => (int) round((microtime(true) - $t0) * 1000),
-                'products'   => [],
+                'catalogItems'   => [],
                 'pagination' => ['total' => 0, 'per_page' => $perPage, 'current_page' => $page, 'last_page' => 0],
                 'rawResults' => [],
             ]);
@@ -214,7 +214,7 @@ class CalloutController extends Controller
         return response()->json([
             'ok'         => true,
             'elapsed_ms' => $elapsed,
-            'products'   => $paginatedParts,
+            'catalogItems'   => $paginatedParts,
             'pagination' => [
                 'total'        => $total,
                 'per_page'     => $perPage,

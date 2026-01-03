@@ -36,7 +36,7 @@ Route::prefix('api/vehicle')->group(function () {
 //     Artisan::call('stock:full-refresh');
 //     $refreshOutput = Artisan::output();
 
-//     Artisan::call('products:update-price');
+//     Artisan::call('catalogItems:update-price');
 //     $priceOutput = Artisan::output();
 
 //     return response()->json([
@@ -57,7 +57,7 @@ Route::prefix('api/vehicle')->group(function () {
 //     $logs[] = Artisan::output();
 
 //     // تشغيل تحديث الأسعار
-//     Artisan::call('products:update-price');
+//     Artisan::call('catalogItems:update-price');
 //     $logs[] = Artisan::output();
 
 //     // دمج المخرجات
@@ -99,7 +99,7 @@ Route::prefix('api/vehicle')->group(function () {
 //     $output[] = Artisan::output();
 
 //     // تحديث الأسعار
-//     Artisan::call('products:update-price');
+//     Artisan::call('catalogItems:update-price');
 //     $output[] = Artisan::output();
 
 //     // نجمع كل المخرجات ونرجعها كـ نص
@@ -236,21 +236,21 @@ Route::prefix('admin')->group(function () {
         Route::get('/purchase/{id1}/status/{status}', 'Admin\PurchaseController@status')->name('admin-purchase-status');
         Route::post('/purchase/email/', 'Admin\PurchaseController@emailsub')->name('admin-purchase-emailsub');
         Route::post('/purchase/{id}/license', 'Admin\PurchaseController@license')->name('admin-purchase-license');
-        Route::post('/purchase/product-submit', 'Admin\PurchaseController@product_submit')->name('admin-purchase-product-submit');
-        Route::get('/purchase/product-show/{id}', 'Admin\PurchaseController@product_show');
+        Route::post('/purchase/catalogItem-submit', 'Admin\PurchaseController@catalogItem_submit')->name('admin-purchase-catalogItem-submit');
+        Route::get('/purchase/catalogItem-show/{id}', 'Admin\PurchaseController@catalogItem_show');
         Route::get('/purchase/addcart/{id}', 'Admin\PurchaseController@addcart');
-        Route::get('/purchasecart/product-edit/{id}/{itemid}/{purchaseid}', 'Admin\PurchaseController@product_edit')->name('admin-purchase-product-edit');
+        Route::get('/purchasecart/catalogItem-edit/{id}/{itemid}/{purchaseid}', 'Admin\PurchaseController@catalogItem_edit')->name('admin-purchase-catalogItem-edit');
         Route::get('/purchase/updatecart/{id}', 'Admin\PurchaseController@updatecart');
-        Route::get('/purchasecart/product-delete/{id}/{purchaseid}', 'Admin\PurchaseController@product_delete')->name('admin-purchase-product-delete');
+        Route::get('/purchasecart/catalogItem-delete/{id}/{purchaseid}', 'Admin\PurchaseController@catalogItem_delete')->name('admin-purchase-catalogItem-delete');
         // Purchase Tracking
 
         // CREATE PURCHASE
 
         Route::get('/purchase/catalog-item/datatables', 'Admin\PurchaseCreateController@datatables')->name('admin-purchase-catalog-item-datatables');
         Route::get('/purchase/create', 'Admin\PurchaseCreateController@create')->name('admin-purchase-create');
-        Route::get('/purchase/catalog-item/add/{catalog_item_id}', 'Admin\PurchaseCreateController@addProduct')->name('admin-purchase-catalog-item-add');
+        Route::get('/purchase/catalog-item/add/{catalog_item_id}', 'Admin\PurchaseCreateController@addCatalogItem')->name('admin-purchase-catalog-item-add');
         Route::get('/purchase/catalog-item/add', 'Admin\PurchaseCreateController@purchaseStore')->name('admin.purchase.store.new');
-        Route::get('/purchase/catalog-item/remove/{catalog_item_id}', 'Admin\PurchaseCreateController@removePurchaseProduct')->name('admin.purchase.catalog-item.remove');
+        Route::get('/purchase/catalog-item/remove/{catalog_item_id}', 'Admin\PurchaseCreateController@removePurchaseCatalogItem')->name('admin.purchase.catalog-item.remove');
         Route::get('/purchase/create/catalog-item-show/{id}', 'Admin\PurchaseCreateController@catalog_item_show');
         Route::get('/purchase/create/addcart/{id}', 'Admin\PurchaseCreateController@addcart');
         Route::get('/purchase/remove/addcart/{id}', 'Admin\PurchaseCreateController@removeCart')->name('admin.purchase.remove.cart');
@@ -385,9 +385,9 @@ Route::prefix('admin')->group(function () {
 
     //------------ ADMIN CSV IMPORT SECTION ENDS ------------
 
-    //------------ ADMIN PRODUCT DISCUSSION SECTION ------------
+    //------------ ADMIN CATALOGITEM DISCUSSION SECTION ------------
 
-    Route::group(['middleware' => 'permissions:product_discussion'], function () {
+    Route::group(['middleware' => 'permissions:catalogItem_discussion'], function () {
 
         // CATALOG REVIEW SECTION ------------
 
@@ -452,8 +452,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/user/default/image', 'Admin\MuaadhSettingController@user_image')->name('admin-user-image');
         Route::get('/users/deposit/{id}', 'Admin\UserController@deposit')->name('admin-user-deposit');
         Route::post('/user/deposit/{id}', 'Admin\UserController@depositUpdate')->name('admin-user-deposit-update');
-        Route::get('/users/vendor/{id}', 'Admin\UserController@vendor')->name('admin-user-vendor');
-        Route::post('/user/vendor/{id}', 'Admin\UserController@setVendor')->name('admin-user-vendor-update');
+        Route::get('/users/merchant/{id}', 'Admin\UserController@merchant')->name('admin-user-merchant');
+        Route::post('/user/merchant/{id}', 'Admin\UserController@setMerchant')->name('admin-user-merchant-update');
 
         //USER WITHDRAW SECTION
 
@@ -802,13 +802,13 @@ Route::prefix('admin')->group(function () {
         Route::get('/menu/links', 'Admin\PageSettingController@menu_links')->name('admin-ps-menu-links');
         Route::get('/deal/of/day', 'Admin\PageSettingController@deal')->name('admin-ps-deal');
         Route::post('/deal/of/day/toggle', 'Admin\PageSettingController@toggleDeal')->name('admin-ps-deal-toggle');
-        Route::get('/deal/of/day/search', 'Admin\PageSettingController@searchDealProducts')->name('admin-ps-deal-search');
-        Route::get('/deal/of/day/merchants', 'Admin\PageSettingController@getProductMerchants')->name('admin-ps-deal-merchants');
+        Route::get('/deal/of/day/search', 'Admin\PageSettingController@searchDealCatalogItems')->name('admin-ps-deal-search');
+        Route::get('/deal/of/day/merchants', 'Admin\PageSettingController@getCatalogItemMerchants')->name('admin-ps-deal-merchants');
 
         // Best Sellers Management
         Route::get('/best-sellers', 'Admin\PageSettingController@bestSellers')->name('admin-ps-best-sellers');
         Route::post('/best-sellers/toggle', 'Admin\PageSettingController@toggleBestSellers')->name('admin-ps-best-sellers-toggle');
-        Route::get('/best-sellers/search', 'Admin\PageSettingController@searchBestSellersProducts')->name('admin-ps-best-sellers-search');
+        Route::get('/best-sellers/search', 'Admin\PageSettingController@searchBestSellersCatalogItems')->name('admin-ps-best-sellers-search');
         Route::get('/best-sellers/merchants', 'Admin\PageSettingController@getBestSellersMerchants')->name('admin-ps-best-sellers-merchants');
 
         // Top Rated Management
@@ -829,7 +829,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/trending/search', 'Admin\PageSettingController@searchTrending')->name('admin-ps-trending-search');
         Route::get('/trending/merchants', 'Admin\PageSettingController@getTrendingMerchants')->name('admin-ps-trending-merchants');
 
-        // Featured Products Management
+        // Featured CatalogItems Management
         Route::get('/featured', 'Admin\PageSettingController@featured')->name('admin-ps-featured');
         Route::post('/featured/toggle', 'Admin\PageSettingController@toggleFeatured')->name('admin-ps-featured-toggle');
         Route::get('/featured/search', 'Admin\PageSettingController@searchFeatured')->name('admin-ps-featured-search');
@@ -1443,8 +1443,8 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // Subscription Package
         Route::get('/package', 'User\SubscriptionController@package')->name('user-package');
-        Route::get('/subscription/{id}', 'User\SubscriptionController@vendorrequest')->name('user-vendor-request');
-        Route::post('/vendor-request', 'User\SubscriptionController@vendorrequestsub')->name('user-vendor-request-submit');
+        Route::get('/subscription/{id}', 'User\SubscriptionController@merchantrequest')->name('user-merchant-request');
+        Route::post('/merchant-request', 'User\SubscriptionController@merchantrequestsub')->name('user-merchant-request-submit');
 
         // Subscription Payment Redirect
         Route::get('/payment/cancle', 'User\SubscriptionController@paycancle')->name('user.payment.cancle');
@@ -1566,7 +1566,7 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/message/{id}', 'User\MessageController@message')->name('user-message');
         Route::post('/message/post', 'User\MessageController@postmessage')->name('user-message-post');
         Route::get('/message/{id}/delete', 'User\MessageController@messagedelete')->name('user-message-delete');
-        Route::get('/message/load/{id}', 'User\MessageController@msgload')->name('user-vendor-message-load');
+        Route::get('/message/load/{id}', 'User\MessageController@msgload')->name('user-merchant-message-load');
 
         // User Vendor Send Message Ends
 
@@ -1876,21 +1876,21 @@ Route::group(['middleware' => 'maintenance'], function () {
     // Merchant-specific checkout routes (with session preservation middleware)
     Route::middleware(['preserve.session'])->prefix('checkout/merchant/{merchantId}')->group(function () {
         // Step 1: Address
-        Route::get('/', 'Front\CheckoutController@checkoutVendor')->name('front.checkout.merchant');
-        Route::post('/step1/submit', 'Front\CheckoutController@checkoutVendorStep1')->name('front.checkout.merchant.step1.submit');
+        Route::get('/', 'Front\CheckoutController@checkoutMerchant')->name('front.checkout.merchant');
+        Route::post('/step1/submit', 'Front\CheckoutController@checkoutMerchantStep1')->name('front.checkout.merchant.step1.submit');
         Route::get('/step1/submit', function($merchantId) {
             return redirect()->route('front.checkout.merchant', $merchantId)->with('info', __('Please fill out the form and submit again.'));
         });
 
         // Step 2: Shipping
-        Route::get('/step2', 'Front\CheckoutController@checkoutVendorStep2')->name('front.checkout.merchant.step2');
-        Route::post('/step2/submit', 'Front\CheckoutController@checkoutVendorStep2Submit')->name('front.checkout.merchant.step2.submit');
+        Route::get('/step2', 'Front\CheckoutController@checkoutMerchantStep2')->name('front.checkout.merchant.step2');
+        Route::post('/step2/submit', 'Front\CheckoutController@checkoutMerchantStep2Submit')->name('front.checkout.merchant.step2.submit');
         Route::get('/step2/submit', function($merchantId) {
             return redirect()->route('front.checkout.merchant.step2', $merchantId)->with('info', __('Please fill out the form and submit again.'));
         });
 
         // Step 3: Payment
-        Route::get('/step3', 'Front\CheckoutController@checkoutVendorStep3')->name('front.checkout.merchant.step3');
+        Route::get('/step3', 'Front\CheckoutController@checkoutMerchantStep3')->name('front.checkout.merchant.step3');
 
         // ================================================================
         // PAYMENT ROUTES - All inside merchant context
@@ -1968,7 +1968,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     });
 
     // ====================================================================
-    // PAYMENT NOTIFY/CALLBACK ROUTES (External - no vendor_id)
+    // PAYMENT NOTIFY/CALLBACK ROUTES (External - no merchant_id)
     // These are called by payment gateways, not by our app
     // ====================================================================
     Route::get('/checkout/payment/myfatoorah/notify', 'App\Http\Controllers\MyFatoorahController@notify')->name('front.myfatoorah.notify');

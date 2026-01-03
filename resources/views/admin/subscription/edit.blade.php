@@ -3,10 +3,10 @@
 @section('content')
             <div class="content-area">
 
-              <div class="add-product-content1">
+              <div class="add-catalogItem-content1">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                       <div class="body-area">
                         @include('alerts.admin.form-error') 
                       <form id="muaadhformdata" action="{{route('admin-subscription-update',$data->id)}}" method="POST" enctype="multipart/form-data">
@@ -48,27 +48,27 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __("Product Limitations") }}*</h4>
+                                <h4 class="heading">{{ __("CatalogItem Limitations") }}*</h4>
                             </div>
                           </div>
                           <div class="col-lg-7">
                               <select id="limit" name="limit" required="">
                                   <option value="">{{ __("Select an Option") }}</option>
-                                  <option {{ $data->allowed_products == 0 ? "selected" : "" }} value="0">{{ __("Unlimited") }}</option>
-                                  <option {{ $data->allowed_products != 0 ? "selected" : "" }} value="1">{{ __("Limited") }}</option>
+                                  <option {{ $data->allowed_catalogitems == 0 ? "selected" : "" }} value="0">{{ __("Unlimited") }}</option>
+                                  <option {{ $data->allowed_catalogitems != 0 ? "selected" : "" }} value="1">{{ __("Limited") }}</option>
                               </select>
                           </div>
                         </div>
 
-                        <div class="{{ $data->allowed_products == 0 ? 'showbox' : '' }}" id="limits">
+                        <div class="{{ $data->allowed_catalogitems == 0 ? 'showbox' : '' }}" id="limits">
                           <div class="row">
                             <div class="col-lg-4">
                               <div class="left-area">
-                                  <h4 class="heading">{{ __("Allowed Products") }} *</h4>
+                                  <h4 class="heading">{{ __("Allowed CatalogItems") }} *</h4>
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <input type="number" min="1" class="form-control" id="allowed_products" name="allowed_products" placeholder="{{ __("Enter Allowed Products") }}" {{ $data->allowed_products != 0 ? "required" : "" }} value="{{ $data->allowed_products != 0 ? $data->allowed_products : '1' }}">
+                              <input type="number" min="1" class="form-control" id="allowed_catalogitems" name="allowed_catalogitems" placeholder="{{ __("Enter Allowed CatalogItems") }}" {{ $data->allowed_catalogitems != 0 ? "required" : "" }} value="{{ $data->allowed_catalogitems != 0 ? $data->allowed_catalogitems : '1' }}">
                             </div>
                           </div>
                         </div>

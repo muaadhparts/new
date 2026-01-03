@@ -58,7 +58,7 @@ class PackageController extends Controller
             //--- Validation Section Ends
 
             $gs = Muaadhsetting::findOrfail(1);
-            if ($gs->reg_vendor != 1) {
+            if ($gs->reg_merchant != 1) {
                 return response()->json(['status' => false, 'data' => [], 'error' => []]);
             }
 
@@ -172,7 +172,7 @@ class PackageController extends Controller
             if ($settings->is_smtp == 1) {
                 $data = [
                     'to' => $user->email,
-                    'type' => "vendor_accept",
+                    'type' => "merchant_accept",
                     'cname' => $user->name,
                     'oamount' => "",
                     'aname' => "",
@@ -183,10 +183,10 @@ class PackageController extends Controller
                 $mailer->sendAutoMail($data);
             } else {
                 $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";
-                mail($user->email, 'Your Vendor Account Activated', 'Your Vendor Account Activated Successfully. Please Login to your account and build your own shop.', $headers);
+                mail($user->email, 'Your Merchant Account Activated', 'Your Merchant Account Activated Successfully. Please Login to your account and build your own shop.', $headers);
             }
 
-            return response()->json(['status' => true, 'data' => ['message' => 'Vendor Account Activated Successfully.'], 'error' => []]);
+            return response()->json(['status' => true, 'data' => ['message' => 'Merchant Account Activated Successfully.'], 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }

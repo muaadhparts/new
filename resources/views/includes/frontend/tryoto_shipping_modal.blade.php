@@ -12,7 +12,7 @@
                 <div class="summary-inner-box">
                     <div class="inputs-wrapper">
                         <div class="shipping-provider-section tryoto-shipping-section">
-                            <div class="provider-methods-wrapper" id="tryoto-options-container-{{ $vendor_id }}">
+                            <div class="provider-methods-wrapper" id="tryoto-options-container-{{ $merchant_id }}">
                                 {{-- سيتم تحميل خيارات الشحن عبر API --}}
                                 <div class="text-center py-4">
                                     <div class="spinner-border text-primary" role="status">
@@ -32,14 +32,14 @@
 <script>
 (function() {
     const modalId = '{{ $modalId }}';
-    const merchantId = {{ $vendor_id }};
+    const merchantId = {{ $merchant_id }};
     const containerId = 'tryoto-options-container-' + merchantId;
     let optionsLoaded = false;
 
     // دالة لتحديث نص الشحن
     function updateTryotoShippingDisplay(selectedRadio) {
-        if (typeof updateVendorShippingText === 'function') {
-            updateVendorShippingText(merchantId);
+        if (typeof updateMerchantShippingText === 'function') {
+            updateMerchantShippingText(merchantId);
         } else {
             if (!selectedRadio) return;
 
@@ -88,7 +88,7 @@
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                vendor_id: merchantId
+                merchant_id: merchantId
             })
         })
         .then(response => response.json())
@@ -141,17 +141,17 @@
             const originalPrice = parseFloat(selectedRadio.getAttribute('data-price')) || 0;
             const freeAbove = parseFloat(selectedRadio.getAttribute('data-free-above')) || 0;
 
-            // Get vendor products total
-            let vendorTotal = 0;
-            if (typeof window.getVendorTotal === 'function') {
-                vendorTotal = window.getVendorTotal(merchantId);
+            // Get merchant catalogItems total
+            let merchantTotal = 0;
+            if (typeof window.getMerchantTotal === 'function') {
+                merchantTotal = window.getMerchantTotal(merchantId);
             } else {
-                vendorTotal = parseFloat(document.getElementById('ttotal')?.value) || 0;
+                merchantTotal = parseFloat(document.getElementById('ttotal')?.value) || 0;
             }
 
             // Check if free shipping applies
             let finalPrice = originalPrice;
-            let isFreeShipping = (freeAbove > 0 && vendorTotal >= freeAbove);
+            let isFreeShipping = (freeAbove > 0 && merchantTotal >= freeAbove);
             if (isFreeShipping) finalPrice = 0;
 
             // ✅ Update PriceSummary directly

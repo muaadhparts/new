@@ -7,7 +7,7 @@
 		@foreach($datas as $data)
 			@php
 				$catalogItem = $data->catalogItem;
-				$catalogItemName = $catalogItem ? getLocalizedProductName($catalogItem, 30) : __('N/A');
+				$catalogItemName = $catalogItem ? getLocalizedCatalogItemName($catalogItem, 30) : __('N/A');
 
 				// المخزون من merchant_items
 				$totalStock = 0;

@@ -122,7 +122,7 @@ html {
                                     width="100%">
                                     <thead style="border-top:1px solid rgba(0, 0, 0, 0.1) !important;">
                                         <tr>
-                                            <th>{{ __('Product') }}</th>
+                                            <th>{{ __('CatalogItem') }}</th>
                                             <th>{{ __('Details') }}</th>
                                             <th>{{ __('Total') }}</th>
                                         </tr>
@@ -133,36 +133,36 @@ html {
                                         $tax = 0;
                                         $data = 0;
                                         @endphp
-                                        @foreach($cart['items'] as $product)
-                                        @if($product['item']['user_id'] != 0)
-                                            @if($product['item']['user_id'] == $user->id)
+                                        @foreach($cart['items'] as $catalogItem)
+                                        @if($catalogItem['item']['user_id'] != 0)
+                                            @if($catalogItem['item']['user_id'] == $user->id)
                                         <tr>
                                             <td width="50%">
-                                                {{ getLocalizedProductName($product['item']) }}
-                                                <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                                {{ getLocalizedCatalogItemName($catalogItem['item']) }}
+                                                <br><small>SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
                                             </td>
 
                                             <td>
-                                                @if($product['size'])
+                                                @if($catalogItem['size'])
                                                <p>
-                                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$product['size'])}}
+                                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$catalogItem['size'])}}
                                                </p>
                                                @endif
-                                                @if($product['color'])
+                                                @if($catalogItem['color'])
                                                 <p>
-                                                        <strong>{{ __('Color') }} :</strong> <span style="width: 20px; height: 5px; display: block; border-radius: 50%; border: 10px solid {{$product['color'] == "" ? "white" : '#'.$product['color']}};"></span>
+                                                        <strong>{{ __('Color') }} :</strong> <span style="width: 20px; height: 5px; display: block; border-radius: 50%; border: 10px solid {{$catalogItem['color'] == "" ? "white" : '#'.$catalogItem['color']}};"></span>
                                                 </p>
                                                 @endif
                                                 <p>
                                                         <strong>{{ __('Price') }} :</strong> 
-                                                        {{ \PriceHelper::showOrderCurrencyPrice(($product['item_price'] * $purchase->currency_value),$purchase->currency_sign) }}
+                                                        {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['item_price'] * $purchase->currency_value),$purchase->currency_sign) }}
                                                 </p>
                                                <p>
-                                                    <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{ $product['item']['measure'] }}
+                                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
                                                </p>
-                                                    @if(!empty($product['keys']))
+                                                    @if(!empty($catalogItem['keys']))
 
-                                                    @foreach( array_combine(explode(',', $product['keys']), explode(',', $product['values']))  as $key => $value)
+                                                    @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
                                                     <p>
 
                                                         <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} 
@@ -175,10 +175,10 @@ html {
                                             </td>
 
                                             <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice(($product['price'] * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'% '.__('Off').')' }}</small>
+                                                {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
                                             @php
-                                            $subtotal += round($product['price'] * $purchase->currency_value, 2);
+                                            $subtotal += round($catalogItem['price'] * $purchase->currency_value, 2);
                                             @endphp
 
                                         </tr>
@@ -196,7 +196,7 @@ html {
                                             </td>
 
                                         </tr>
-                                        @if(Auth::user()->id == $purchase->vendor_shipping_id)
+                                        @if(Auth::user()->id == $purchase->merchant_shipping_id)
                                             @if($purchase->shipping_cost != 0)
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
@@ -212,7 +212,7 @@ html {
                                             @endphp
                                             @endif
                                         @endif
-                                        @if(Auth::user()->id == $purchase->vendor_packing_id)
+                                        @if(Auth::user()->id == $purchase->merchant_packing_id)
                                             @if($purchase->packing_cost != 0)
                                             <tr class="no-border">
                                                 <td colspan="1"></td>

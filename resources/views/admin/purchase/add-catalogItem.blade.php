@@ -1,25 +1,25 @@
-<div class="product-info text-center">
+<div class="catalogItem-info text-center">
 
   <h4 class="item-name">
-    {{ $productt->name }}
+    {{ $catalogItem->name }}
   </h4>
 
   <div class="price-and-discount">
     <div class="price">
       <div class="current-price" id="sizeprice">
-        {{ $productt->showPrice() }}
+        {{ $catalogItem->showPrice() }}
       </div>
     </div>
   </div>
 
-  {{-- PRODUCT SIZE SECTION --}}
+  {{-- CATALOGITEM SIZE SECTION --}}
 
-  @if(!empty($productt->size))
+  @if(!empty($catalogItem->size))
 
-  <div class="product-size">
+  <div class="catalogItem-size">
     <p class="title">{{ __('Size :') }}</p>
     <ul class="siz-list">
-      @foreach(array_unique($productt->size) as $key => $data1)
+      @foreach(array_unique($catalogItem->size) as $key => $data1)
       <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
         <span class="box">
           {{ $data1 }}
@@ -31,27 +31,27 @@
 
   @endif
 
-  {{-- PRODUCT SIZE SECTION ENDS --}}
+  {{-- CATALOGITEM SIZE SECTION ENDS --}}
 
-  {{-- PRODUCT COLOR SECTION --}}
+  {{-- CATALOGITEM COLOR SECTION --}}
 
-  @if(!empty($productt->color))
+  @if(!empty($catalogItem->color))
 
-  <div class="product-color">
+  <div class="catalogItem-color">
     <div class="title">{{ __('Color :') }}</div>
     <ul class="color-list">
 
-      @foreach($productt->color as $key => $data1)
+      @foreach($catalogItem->color as $key => $data1)
 
       <li
-        class="{{ $loop->first ? 'active' : '' }} {{ $productt->IsSizeColor($productt->size[$key]) ? str_replace(' ','',$productt->size[$key]) : ''  }} {{ $productt->size[$key] == $productt->size[0] ? 'show-colors' : '' }}">
-        <span class="box" data-color="{{ $productt->color[$key] }}"
-          style="background-color: {{ $productt->color[$key] }}">
+        class="{{ $loop->first ? 'active' : '' }} {{ $catalogItem->IsSizeColor($catalogItem->size[$key]) ? str_replace(' ','',$catalogItem->size[$key]) : ''  }} {{ $catalogItem->size[$key] == $catalogItem->size[0] ? 'show-colors' : '' }}">
+        <span class="box" data-color="{{ $catalogItem->color[$key] }}"
+          style="background-color: {{ $catalogItem->color[$key] }}">
 
-          <input type="hidden" class="size" value="{{ $productt->size[$key] }}">
-          <input type="hidden" class="size_qty" value="{{ $productt->size_qty[$key] }}">
+          <input type="hidden" class="size" value="{{ $catalogItem->size[$key] }}">
+          <input type="hidden" class="size_qty" value="{{ $catalogItem->size_qty[$key] }}">
           <input type="hidden" class="size_key" value="{{$key}}">
-          <input type="hidden" class="size_price" value="{{ round($productt->size_price[$key] * $curr->value,2) }}">
+          <input type="hidden" class="size_price" value="{{ round($catalogItem->size_price[$key] * $curr->value,2) }}">
 
         </span>
       </li>
@@ -63,39 +63,39 @@
 
   @endif
 
-  {{-- PRODUCT COLOR SECTION ENDS --}}
+  {{-- CATALOGITEM COLOR SECTION ENDS --}}
 
-  {{-- PRODUCT STOCK CONDITION SECTION --}}
+  {{-- CATALOGITEM STOCK CONDITION SECTION --}}
 
-  @if(!empty($productt->size))
+  @if(!empty($catalogItem->size))
 
-  <input type="hidden" class="product-stock" value="{{ $productt->size_qty[0] }}">
+  <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->size_qty[0] }}">
 
   @else
 
-  @if(!$productt->emptyStock())
-  <input type="hidden" class="product-stock" value="{{ $productt->stock }}">
-  @elseif($productt->type != 'Physical')
-  <input type="hidden" class="product-stock" value="0">
+  @if(!$catalogItem->emptyStock())
+  <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->stock }}">
+  @elseif($catalogItem->type != 'Physical')
+  <input type="hidden" class="catalogItem-stock" value="0">
   @else
-  <input type="hidden" class="product-stock" value="">
+  <input type="hidden" class="catalogItem-stock" value="">
 
   @endif
 
   @endif
 
-  {{-- PRODUCT STOCK CONDITION SECTION ENDS --}}
+  {{-- CATALOGITEM STOCK CONDITION SECTION ENDS --}}
 
-  {{-- PRODUCT ATTRIBUTE SECTION --}}
+  {{-- CATALOGITEM ATTRIBUTE SECTION --}}
 
-  @if (!empty($productt->attributes))
+  @if (!empty($catalogItem->attributes))
   @php
-  $attrArr = json_decode($productt->attributes, true);
+  $attrArr = json_decode($catalogItem->attributes, true);
   @endphp
   @endif
   @if (!empty($attrArr))
 
-  <div class="product-attributes mt-3 mb-3 text-left">
+  <div class="catalogItem-attributes mt-3 mb-3 text-left">
     <div class="row">
       @foreach ($attrArr as $attrKey => $attrVal)
       @if (array_key_exists("details_status",$attrVal) && $attrVal['details_status'] == 1)
@@ -109,7 +109,7 @@
               <input type="hidden" class="keys" value="">
               <input type="hidden" class="values" value="">
               <input type="radio" id="{{$attrKey}}{{ $optionKey }}" name="{{ $attrKey }}"
-                class="custom-control-input product-attr" data-key="{{ $attrKey }}"
+                class="custom-control-input catalogItem-attr" data-key="{{ $attrKey }}"
                 data-price="{{ $attrVal['prices'][$optionKey] * $curr->value }}" value="{{ $optionVal }}" {{
                 $loop->first ? 'checked' : '' }}>
               <label class="custom-control-label" for="{{$attrKey}}{{ $optionKey }}">{{ $optionVal }}
@@ -131,10 +131,10 @@
 
   @endif
 
-  {{-- PRODUCT ATTRIBUTE SECTION ENDS --}}
+  {{-- CATALOGITEM ATTRIBUTE SECTION ENDS --}}
 
-  <input type="hidden" id="product_price" value="{{ round($productt->vendorPrice() * $curr->value,2) }}">
-  <input type="hidden" id="product_id" value="{{ $productt->id }}">
+  <input type="hidden" id="catalogItem_price" value="{{ round($catalogItem->merchantPrice() * $curr->value,2) }}">
+  <input type="hidden" id="catalogItem_id" value="{{ $catalogItem->id }}">
   <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
   <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
 
@@ -202,12 +202,12 @@
       var size_key = "";
       var colors = "";
       var mtotal = "";
-      var mstock = $('.product-stock').val();
+      var mstock = $('.catalogItem-stock').val();
       var keys = "";
       var values = "";
       var prices = "";
   
-      $('.product-attr').on('change',function(){
+      $('.catalogItem-attr').on('change',function(){
   
         var total = 0;
          total = mgetAmount()+mgetSizePrice();
@@ -230,9 +230,9 @@
       {
   
         var total = 0;
-          if($('.product-color .color-list li.active').length > 0)
+          if($('.catalogItem-color .color-list li.active').length > 0)
           {
-            total = parseFloat($('.product-color .color-list li.active').find('.size_price').val());
+            total = parseFloat($('.catalogItem-color .color-list li.active').find('.size_price').val());
           }
           return total;
       }
@@ -240,8 +240,8 @@
       function mgetAmount()
       {
         var total = 0;
-        var value = parseFloat($('#product_price').val());
-        var datas = $(".product-attr:checked").map(function() {
+        var value = parseFloat($('#catalogItem_price').val());
+        var datas = $(".catalogItem-attr:checked").map(function() {
           return $(this).data('price');
         }).get();
   
@@ -253,17 +253,17 @@
         return total;
       }
   
-      // Product Details Product Size Active Js Code
-      $('.product-size .siz-list .box').on('click', function () {
+      // CatalogItem Details CatalogItem Size Active Js Code
+      $('.catalogItem-size .siz-list .box').on('click', function () {
         var total = 0;
           var parent = $(this).parent();
-          $('.product-size .siz-list li').removeClass('active');
+          $('.catalogItem-size .siz-list li').removeClass('active');
           parent.addClass('active');
   
           $('.qttotal').val('1')
   
-          $('.product-color .color-list li').removeClass('show-colors');
-          var size_color = $('.product-color .color-list li.'+parent.data('key'));
+          $('.catalogItem-color .color-list li').removeClass('show-colors');
+          var size_color = $('.catalogItem-color .color-list li.'+parent.data('key'));
           size_color.addClass('show-colors').first().addClass('active');
           colors = size_color.find('span.box').data('color');
   
@@ -287,12 +287,12 @@
   
       });
   
-      // Product Details Product Color Active Js Code
-      $('.product-color .color-list .box').on('click', function () {
+      // CatalogItem Details CatalogItem Color Active Js Code
+      $('.catalogItem-color .color-list .box').on('click', function () {
         var total = 0;
           colors = $(this).data('color');
           var parent = $(this).parent();
-          $('.product-color .color-list li').removeClass('active');
+          $('.catalogItem-color .color-list li').removeClass('active');
           parent.addClass('active');
   
           $('.qttotal').html('1');
@@ -361,19 +361,19 @@
   
       $(document).on("click", "#qaddcrt" , function(){
         var qty = $('.qttotal').val();
-        var pid = $(this).parent().parent().parent().parent().parent().find("#product_id").val();
+        var pid = $(this).parent().parent().parent().parent().parent().find("#catalogItem_id").val();
    
-        if($('.product-attr').length > 0)
+        if($('.catalogItem-attr').length > 0)
         {
-        values = $(".product-attr:checked").map(function() {
+        values = $(".catalogItem-attr:checked").map(function() {
         return $(this).val();
         }).get();
   
-        keys = $(".product-attr:checked").map(function() {
+        keys = $(".catalogItem-attr:checked").map(function() {
         return $(this).data('key');
         }).get();
   
-        prices = $(".product-attr:checked").map(function() {
+        prices = $(".catalogItem-attr:checked").map(function() {
         return $(this).data('price');
         }).get();
   

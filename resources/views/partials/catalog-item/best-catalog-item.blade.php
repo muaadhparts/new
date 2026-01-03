@@ -1,42 +1,42 @@
 @php
     // Use eager-loaded accessor (avoids N+1 query)
-    $bestProdMerchant = $prod->best_merchant_item;
+    $bestProdMerchant = $cartItem->best_merchant_item;
 
-    $bestProdUrl = $bestProdMerchant && $prod->slug
-        ? route('front.catalog-item', ['slug' => $prod->slug, 'merchant_id' => $bestProdMerchant->user_id, 'merchant_item_id' => $bestProdMerchant->id])
-        : ($prod->slug ? route('front.catalog-item.legacy', $prod->slug) : '#');
+    $bestProdUrl = $bestProdMerchant && $cartItem->slug
+        ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_id' => $bestProdMerchant->user_id, 'merchant_item_id' => $bestProdMerchant->id])
+        : ($cartItem->slug ? route('front.catalog-item.legacy', $cartItem->slug) : '#');
 @endphp
 
 <div class="col">
-    <div class="product type-product">
-        <div class="product-wrapper">
+    <div class="catalogItem type-catalogItem">
+        <div class="catalogItem-wrapper">
             <div class="catalog-item-image">
-                <a href="{{ $bestProdUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ filter_var($prod->photo, FILTER_VALIDATE_URL) ? $prod->photo : ($prod->photo ? \Illuminate\Support\Facades\Storage::url($prod->photo) : asset('assets/images/noimage.png')) }}" alt="Product Image"></a>
-                @if (round($prod->offPercentage() )>0)
-                <div class="on-sale">-{{ round($prod->offPercentage() )}}%</div>
+                <a href="{{ $bestProdUrl }}" class="woocommerce-LoopProduct-link"><img src="{{ filter_var($cartItem->photo, FILTER_VALIDATE_URL) ? $cartItem->photo : ($cartItem->photo ? \Illuminate\Support\Facades\Storage::url($cartItem->photo) : asset('assets/images/noimage.png')) }}" alt="CatalogItem Image"></a>
+                @if (round($cartItem->offPercentage() )>0)
+                <div class="on-sale">-{{ round($cartItem->offPercentage() )}}%</div>
                 @endif
             </div>
-            <div class="product-info">
-                <h3 class="product-title"><a href="{{ $bestProdUrl }}">{{ $prod->showName() }}</a></h3>
-                <div class="product-price">
+            <div class="catalogItem-info">
+                <h3 class="catalogItem-title"><a href="{{ $bestProdUrl }}">{{ $cartItem->showName() }}</a></h3>
+                <div class="catalogItem-price">
                     <div class="price">
-                        <ins>{{ $prod->showPrice() }} </ins>
-                        <del>{{ $prod->showPreviousPrice() }}</del>
+                        <ins>{{ $cartItem->showPrice() }} </ins>
+                        <del>{{ $cartItem->showPreviousPrice() }}</del>
                     </div>
                 </div>
                
                 <div class="shipping-feed-back">
                     <div class="star-rating">
                         <div class="rating-wrap">
-                            <p><i class="fas fa-star"></i><span> {{ number_format($prod->catalog_reviews_avg_rating ?? 0, 1) }} ({{ $prod->catalog_reviews_count ?? 0 }})</span></p>
+                            <p><i class="fas fa-star"></i><span> {{ number_format($cartItem->catalog_reviews_avg_rating ?? 0, 1) }} ({{ $cartItem->catalog_reviews_count ?? 0 }})</span></p>
                         </div>
                     </div>
                 </div>
                 {{-- Shipping Quote Button --}}
-                @if(($prod->type ?? 'Physical') == 'Physical' && $bestProdMerchant)
+                @if(($cartItem->type ?? 'Physical') == 'Physical' && $bestProdMerchant)
                     <x-shipping-quote-button
                         :merchant-user-id="$bestProdMerchant->user_id"
-                        :catalog-item-name="$prod->showName()"
+                        :catalog-item-name="$cartItem->showName()"
                         class="mt-2"
                     />
                 @endif

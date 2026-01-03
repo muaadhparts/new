@@ -59,13 +59,13 @@ p {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.single-product .img-wrapper .product-badge,
-.single-product-list-view .img-wrapper .product-badge {
+.single-catalogItem .img-wrapper .catalogItem-badge,
+.single-catalogItem-list-view .img-wrapper .catalogItem-badge {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.single-product .rating-title,
-.single-product-list-view .rating-title {
+.single-catalogItem .rating-title,
+.single-catalogItem-list-view .rating-title {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
@@ -130,7 +130,7 @@ div.dt-container .dt-paging .dt-paging-button {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.gs-explore-product-section .explore-tab-navbar li .nav-link {
+.gs-explore-catalogItem-section .explore-tab-navbar li .nav-link {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
@@ -142,10 +142,10 @@ div.dt-container .dt-paging .dt-paging-button {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.tab-product-des-wrapper .nav-link {
+.tab-catalogItem-des-wrapper .nav-link {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.select-product-types-wrapper .inputs-wrapper .label {
+.select-catalogItem-types-wrapper .inputs-wrapper .label {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }

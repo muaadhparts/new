@@ -95,9 +95,9 @@ class MuaadhSettingController extends AdminBaseController
     }
 
     // Merchant color settings page
-    public function vendor_color()
+    public function merchant_color()
     {
-        return view('admin.muaadhsetting.vendor_color');
+        return view('admin.muaadhsetting.merchant_color');
     }
 
     public function user_image()
@@ -185,10 +185,10 @@ class MuaadhSettingController extends AdminBaseController
             }
 
             // Handle catalog item page display options
-            if (!empty($request->product_page)) {
-                $input['product_page'] = implode(',', $request->product_page);
+            if (!empty($request->item_page)) {
+                $input['item_page'] = implode(',', $request->item_page);
             } else {
-                $input['product_page'] = null;
+                $input['item_page'] = null;
             }
 
             if ($request->capcha_secret_key) {
@@ -226,8 +226,8 @@ class MuaadhSettingController extends AdminBaseController
             $prev = $data->molly_key;
 
             // Handle merchant shipping info setting
-            if ($request->vendor_ship_info == "") {
-                $input['vendor_ship_info'] = 0;
+            if ($request->merchant_ship_info == "") {
+                $input['merchant_ship_info'] = 0;
             }
 
             if ($request->instamojo_sandbox == "") {
@@ -458,15 +458,15 @@ class MuaadhSettingController extends AdminBaseController
         $data->theme_footer_border = $request->theme_footer_border ?? '#374151';
 
         // ==================================
-        // PRODUCT CARDS
+        // ITEM CARDS
         // ==================================
-        $data->theme_product_title_size = $request->theme_product_title_size ?? '14px';
-        $data->theme_product_title_weight = $request->theme_product_title_weight ?? '500';
-        $data->theme_product_price_size = $request->theme_product_price_size ?? '16px';
-        $data->theme_product_price_weight = $request->theme_product_price_weight ?? '700';
-        $data->theme_product_card_radius = $request->theme_product_card_radius ?? '12px';
-        $data->theme_product_img_radius = $request->theme_product_img_radius ?? '8px';
-        $data->theme_product_hover_scale = $request->theme_product_hover_scale ?? '1.02';
+        $data->theme_item_title_size = $request->theme_item_title_size ?? '14px';
+        $data->theme_item_title_weight = $request->theme_item_title_weight ?? '500';
+        $data->theme_item_price_size = $request->theme_item_price_size ?? '16px';
+        $data->theme_item_price_weight = $request->theme_item_price_weight ?? '700';
+        $data->theme_item_card_radius = $request->theme_item_card_radius ?? '12px';
+        $data->theme_item_img_radius = $request->theme_item_img_radius ?? '8px';
+        $data->theme_item_hover_scale = $request->theme_item_hover_scale ?? '1.02';
 
         // ==================================
         // MODALS
@@ -783,15 +783,15 @@ class MuaadhSettingController extends AdminBaseController
         $footerBorder = $gs->theme_footer_border ?? '#374151';
 
         // ==================================
-        // PRODUCT CARDS
+        // ITEM CARDS
         // ==================================
-        $productTitleSize = $gs->theme_product_title_size ?? '14px';
-        $productTitleWeight = $gs->theme_product_title_weight ?? '500';
-        $productPriceSize = $gs->theme_product_price_size ?? '16px';
-        $productPriceWeight = $gs->theme_product_price_weight ?? '700';
-        $productCardRadius = $gs->theme_product_card_radius ?? '12px';
-        $productImgRadius = $gs->theme_product_img_radius ?? '8px';
-        $productHoverScale = $gs->theme_product_hover_scale ?? '1.02';
+        $itemTitleSize = $gs->theme_item_title_size ?? '14px';
+        $itemTitleWeight = $gs->theme_item_title_weight ?? '500';
+        $itemPriceSize = $gs->theme_item_price_size ?? '16px';
+        $itemPriceWeight = $gs->theme_item_price_weight ?? '700';
+        $itemCardRadius = $gs->theme_item_card_radius ?? '12px';
+        $itemImgRadius = $gs->theme_item_img_radius ?? '8px';
+        $itemHoverScale = $gs->theme_item_hover_scale ?? '1.02';
 
         // ==================================
         // MODALS
@@ -1106,14 +1106,14 @@ class MuaadhSettingController extends AdminBaseController
     --theme-footer-link-hover: {$footerLinkHover};
     --theme-footer-border: {$footerBorder};
 
-    /* ===== PRODUCT CARDS ===== */
-    --theme-product-title-size: {$productTitleSize};
-    --theme-product-title-weight: {$productTitleWeight};
-    --theme-product-price-size: {$productPriceSize};
-    --theme-product-price-weight: {$productPriceWeight};
-    --theme-product-card-radius: {$productCardRadius};
-    --theme-product-img-radius: {$productImgRadius};
-    --theme-product-hover-scale: {$productHoverScale};
+    /* ===== ITEM CARDS ===== */
+    --theme-catalogItem-title-size: {$itemTitleSize};
+    --theme-catalogItem-title-weight: {$itemTitleWeight};
+    --theme-catalogItem-price-size: {$itemPriceSize};
+    --theme-catalogItem-price-weight: {$itemPriceWeight};
+    --theme-catalogItem-card-radius: {$itemCardRadius};
+    --theme-catalogItem-img-radius: {$itemImgRadius};
+    --theme-catalogItem-hover-scale: {$itemHoverScale};
 
     /* ===== MODALS ===== */
     --theme-modal-bg: {$modalBg};

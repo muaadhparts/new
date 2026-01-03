@@ -7,7 +7,7 @@
  *
  * ALLOWED EXCEPTIONS (Only 2):
  * 1. PDF/Print paths - resources/views/pdf/, resources/views/print/
- * 2. Dynamic product swatches - {{ $color }}, {{ $productt->color[$key] }}, --swatch-color: #
+ * 2. Dynamic catalogItem swatches - {{ $color }}, {{ $catalogItem->color[$key] }}, --swatch-color: #
  *
  * Exit codes:
  *   0 = Pass (no violations)
@@ -43,15 +43,15 @@ const CONFIG = {
         'theme_colors.blade.php'
     ],
 
-    // STRICT WHITELIST: Only product swatches and essential SVG patterns
+    // STRICT WHITELIST: Only catalogItem swatches and essential SVG patterns
     allowedPatterns: [
-        // ====== EXCEPTION 1: Dynamic Product Color Swatches ======
+        // ====== EXCEPTION 1: Dynamic CatalogItem Color Swatches ======
         /--swatch-color:\s*#/,
         /\{\{\s*\$.*color.*\}\}/i,
         /\{\{\s*\$.*Color.*\}\}/i,
         /\{\{\s*\$ct\s*\}\}/,
-        /\{\{\s*\$productt->color/,
-        /\{\{\s*\$prod->colors/,
+        /\{\{\s*\$catalogItem->color/,
+        /\{\{\s*\$cartItem->colors/,
         /\{\{\s*\$vendorColors/,
         /style="[^"]*\{\{[^}]*color/i,
 
@@ -224,9 +224,9 @@ function matchesExcludePatterns(line, excludePatterns) {
 function classifyViolation(match, context, filePath) {
     const normalizedPath = filePath.replace(/\\/g, '/');
 
-    // Check if it's a product swatch context
-    if (/color.*swatch|swatch.*color|\$prod.*color|\$productt.*color|\$vendorColor/i.test(context)) {
-        return { decision: 'WHITELIST', reason: 'Dynamic product color swatch' };
+    // Check if it's a catalogItem swatch context
+    if (/color.*swatch|swatch.*color|\$cartItem.*color|\$catalogItem.*color|\$vendorColor/i.test(context)) {
+        return { decision: 'WHITELIST', reason: 'Dynamic catalogItem color swatch' };
     }
 
     // Check if it's inside a var() fallback
@@ -320,7 +320,7 @@ function generateReport(violations, baseDir) {
         mode: 'STRICT',
         allowedExceptions: [
             'PDF/Print paths (resources/views/pdf/, resources/views/print/)',
-            'Dynamic product swatches ({{ $color }}, --swatch-color: #)'
+            'Dynamic catalogItem swatches ({{ $color }}, --swatch-color: #)'
         ],
         summary: {
             total: violations.length,
@@ -391,7 +391,7 @@ function main() {
 
     log('magenta', 'Allowed Exceptions:');
     log('magenta', '  1. PDF/Print paths');
-    log('magenta', '  2. Dynamic product swatches\n');
+    log('magenta', '  2. Dynamic catalogItem swatches\n');
 
     const baseDir = process.cwd();
     let allViolations = [];

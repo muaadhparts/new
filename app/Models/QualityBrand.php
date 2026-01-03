@@ -30,13 +30,6 @@ class QualityBrand extends Model
         return $this->hasMany(MerchantItem::class, 'brand_quality_id');
     }
 
-    /**
-     * @deprecated Use merchantItems() instead
-     */
-    public function merchantProducts()
-    {
-        return $this->merchantItems();
-    }
 
     /**
      * Get localized quality brand name based on current locale.

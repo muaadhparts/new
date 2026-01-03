@@ -128,8 +128,8 @@ html {
                                     width="100%">
                                     <thead style="border-top:1px solid rgba(0, 0, 0, 0.1) !important;">
                                         <tr>
-                                            <th>{{ __('Product') }}</th>
-                                            <th>{{ __('Vendor') }}</th>
+                                            <th>{{ __('CatalogItem') }}</th>
+                                            <th>{{ __('Merchant') }}</th>
                                             <th>{{ __('Details') }}</th>
                                             <th>{{ __('Total') }}</th>
                                         </tr>
@@ -139,20 +139,20 @@ html {
                                         $subtotal = 0;
                                         $tax = 0;
                                         @endphp
-                                        @foreach($cart['items'] as $product)
+                                        @foreach($cart['items'] as $catalogItem)
                                         <tr>
                                             <td width="40%">
-                                                {{ getLocalizedProductName($product['item']) }}
-                                                <br><small>SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
-                                                @if(isset($product['item']['brand_name']))
-                                                <br><small>{{ __('Brand') }}: {{ $product['item']['brand_name'] }}</small>
+                                                {{ getLocalizedCatalogItemName($catalogItem['item']) }}
+                                                <br><small>SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                                @if(isset($catalogItem['item']['brand_name']))
+                                                <br><small>{{ __('Brand') }}: {{ $catalogItem['item']['brand_name'] }}</small>
                                                 @endif
                                                 @php
                                                     $printQualityBrand = null;
-                                                    if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
-                                                        $printQualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                                    if (isset($catalogItem['brand_quality_id']) && $catalogItem['brand_quality_id']) {
+                                                        $printQualityBrand = \App\Models\QualityBrand::find($catalogItem['brand_quality_id']);
                                                     }
-                                                    $printCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                                    $printCondition = isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? __('Used') : __('New');
                                                 @endphp
                                                 @if($printQualityBrand)
                                                 <br><small>{{ __('Quality') }}: {{ getLocalizedQualityName($printQualityBrand) }}</small>
@@ -160,36 +160,36 @@ html {
                                                 <br><small>{{ __('Condition') }}: {{ $printCondition }}</small>
                                             </td>
                                             <td width="15%">
-                                                @if(isset($product['vendor_name']))
-                                                    {{ $product['vendor_name'] }}
-                                                @elseif(isset($product['item']['user_id']) && $product['item']['user_id'] != 0)
-                                                    @php $user = App\Models\User::find($product['item']['user_id']); @endphp
+                                                @if(isset($catalogItem['merchant_name']))
+                                                    {{ $catalogItem['merchant_name'] }}
+                                                @elseif(isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0)
+                                                    @php $user = App\Models\User::find($catalogItem['item']['user_id']); @endphp
                                                     {{ $user->shop_name ?? $user->name ?? '' }}
                                                 @endif
                                             </td>
 
                                             <td>
-                                                @if($product['size'])
+                                                @if($catalogItem['size'])
                                                <p>
-                                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$product['size'])}}
+                                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$catalogItem['size'])}}
                                                </p>
                                                @endif
-                                               @if($product['color'])
+                                               @if($catalogItem['color'])
                                                 <p>
-                                                        <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 5px; display: block; border-radius: 50%; border: 10px solid {{$product['color'] == "" ? "white" : '#'.$product['color']}};"></span>
+                                                        <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 5px; display: block; border-radius: 50%; border: 10px solid {{$catalogItem['color'] == "" ? "white" : '#'.$catalogItem['color']}};"></span>
                                                 </p>
                                                 @endif
                                                 <p>
-                                                        <strong>{{ __('Price') }} :</strong> {{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $purchase->currency_value) }}
+                                                        <strong>{{ __('Price') }} :</strong> {{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) * $purchase->currency_value) }}
                                                 </p>
                                                <p>
-                                                    <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{ $product['item']['measure'] }}
+                                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
                                                </p>
 
 
-                                                    @if(!empty($product['keys']))
+                                                    @if(!empty($catalogItem['keys']))
 
-                                                    @foreach( array_combine(explode(',', $product['keys']), explode(',', $product['values']))  as $key => $value)
+                                                    @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
                                                     <p>
 
                                                         <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} 
@@ -201,10 +201,10 @@ html {
                                                
                                             </td>
 
-                                            <td> {{ \PriceHelper::showCurrencyPrice($product['price'] * $purchase->currency_value)  }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'% '.__('Off').')' }}</small>
+                                            <td> {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value)  }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
                                             @php
-                                            $subtotal += round(($product['price']/ $purchase->currency_value) * $purchase->currency_value, 2);
+                                            $subtotal += round(($catalogItem['price']/ $purchase->currency_value) * $purchase->currency_value, 2);
                                             @endphp
 
                                         </tr>

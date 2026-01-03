@@ -56,13 +56,13 @@ html {
    <div class="row">
    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <!-- Starting of Dashboard data-table area -->
-      <div class="section-padding add-product-1">
+      <div class="section-padding add-catalogItem-1">
          <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
                <div class="product__header">
                   <div class="row reorder-xs">
                      <div class="col-lg-8 col-md-5 col-sm-5 col-xs-12">
-                        <div class="product-header-title">
+                        <div class="catalogItem-header-title">
                            <h2>{{ __('Purchase#') }} {{$purchase->purchase_number}} [{{$purchase->status}}]</h2>
                         </div>
                      </div>
@@ -170,7 +170,7 @@ html {
                                  <br>
                                  <div class="table-responsive">
                                     <table id="example" class="table">
-                                       <h4 class="text-center">{{ __('Purchased Products:') }}</h4>
+                                       <h4 class="text-center">{{ __('Purchased Items:') }}</h4>
                                        <hr>
                                        <thead>
                                           <tr>
@@ -182,29 +182,29 @@ html {
                                           </tr>
                                        </thead>
                                        <tbody>
-                                          @foreach($cart['items'] as $product)
+                                          @foreach($cart['items'] as $catalogItem)
                                           <tr>
-                                             <td>{{ $product['item']['id'] }}</td>
-                                             <td>{{ getLocalizedProductName($product['item'], 50) }}</td>
+                                             <td>{{ $catalogItem['item']['id'] }}</td>
+                                             <td>{{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}</td>
                                              <td>
-                                                <b>{{ __('Quantity') }}</b>: {{$product['qty']}} <br>
-                                                @if(!empty($product['size']))
-                                                <b>{{ __('Size') }}</b>: {{ $product['item']['measure'] }}{{str_replace('-',' ',$product['size'])}} <br>
+                                                <b>{{ __('Quantity') }}</b>: {{$catalogItem['qty']}} <br>
+                                                @if(!empty($catalogItem['size']))
+                                                <b>{{ __('Size') }}</b>: {{ $catalogItem['item']['measure'] }}{{str_replace('-',' ',$catalogItem['size'])}} <br>
                                                 @endif
-                                                @if(!empty($product['color']))
-                                                <b>{{ __('Color') }}</b>:  <span id="color-bar" style="border-radius: 50%; vertical-align: bottom; border: 10px solid {{$product['color'] == "" ? "white" : '#'.$product['color']}};"></span>
+                                                @if(!empty($catalogItem['color']))
+                                                <b>{{ __('Color') }}</b>:  <span id="color-bar" style="border-radius: 50%; vertical-align: bottom; border: 10px solid {{$catalogItem['color'] == "" ? "white" : '#'.$catalogItem['color']}};"></span>
                                                 @endif
-                                                @if(!empty($product['keys']))
-                                                @foreach( array_combine(explode(',', $product['keys']), explode(',', $product['values']))  as $key => $value)
+                                                @if(!empty($catalogItem['keys']))
+                                                @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
                                                 <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} <br>
                                                 @endforeach
                                                 @endif
                                              </td>
                                              <td>
-                                                {{ \PriceHelper::showCurrencyPrice(($product['item_price'] ) * $purchase->currency_value) }}
+                                                {{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) * $purchase->currency_value) }}
                                              </td>
                                              <td>
-                                                {{ \PriceHelper::showCurrencyPrice(($product['item_price'] * $product['qty'] ) * $purchase->currency_value) }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'% '.__('Off').')' }}</small>
+                                                {{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] * $catalogItem['qty'] ) * $purchase->currency_value) }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                              </td>
                                           </tr>
                                           @endforeach

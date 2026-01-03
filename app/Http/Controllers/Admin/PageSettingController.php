@@ -142,8 +142,8 @@ class PageSettingController extends AdminBaseController
     public function deal(){
         $data = Pagesetting::findOrFail(1);
 
-        // Get current deal products (is_discount = 1 and valid discount_date)
-        $dealProducts = \App\Models\MerchantItem::where('is_discount', 1)
+        // Get current deal catalogItems (is_discount = 1 and valid discount_date)
+        $dealCatalogItems = \App\Models\MerchantItem::where('is_discount', 1)
             ->where('discount_date', '>=', date('Y-m-d'))
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
@@ -155,7 +155,7 @@ class PageSettingController extends AdminBaseController
             ->latest()
             ->get();
 
-        return view('admin.pagesetting.deal', compact('dealProducts'));
+        return view('admin.pagesetting.deal', compact('dealCatalogItems'));
     }
 
     /**
@@ -182,7 +182,7 @@ class PageSettingController extends AdminBaseController
 
             return response()->json([
                 'success' => true,
-                'message' => $isDiscount ? __('Product added to Deal of the Day') : __('Product removed from Deal of the Day')
+                'message' => $isDiscount ? __('CatalogItem added to Deal of the Day') : __('CatalogItem removed from Deal of the Day')
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -195,7 +195,7 @@ class PageSettingController extends AdminBaseController
     /**
      * Search catalog items for deal selection (Step 1: Find items)
      */
-    public function searchDealProducts(\Illuminate\Http\Request $request)
+    public function searchDealCatalogItems(\Illuminate\Http\Request $request)
     {
         $search = $request->get('q', '');
 
@@ -244,9 +244,9 @@ class PageSettingController extends AdminBaseController
     /**
      * Get merchants for a specific catalog item (Step 2: Choose merchant + quality brand)
      */
-    public function getProductMerchants(\Illuminate\Http\Request $request)
+    public function getCatalogItemMerchants(\Illuminate\Http\Request $request)
     {
-        $catalogItemId = $request->get('product_id') ?? $request->get('catalog_item_id');
+        $catalogItemId = $request->get('catalog_item_id');
 
         // Get catalog item with brand
         $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
@@ -362,7 +362,7 @@ class PageSettingController extends AdminBaseController
     public function bestSellers()
     {
         // Get current best sellers (best = 1)
-        $bestProducts = \App\Models\MerchantItem::where('best', 1)
+        $bestCatalogItems = \App\Models\MerchantItem::where('best', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
                 'catalogItem:id,name,label_en,label_ar,slug,photo,sku,brand_id',
@@ -373,7 +373,7 @@ class PageSettingController extends AdminBaseController
             ->latest()
             ->get();
 
-        return view('admin.pagesetting.best_sellers_manage', compact('bestProducts'));
+        return view('admin.pagesetting.best_sellers_manage', compact('bestCatalogItems'));
     }
 
     /**
@@ -398,7 +398,7 @@ class PageSettingController extends AdminBaseController
 
             return response()->json([
                 'success' => true,
-                'message' => $isBest ? __('Product added to Best Sellers') : __('Product removed from Best Sellers')
+                'message' => $isBest ? __('CatalogItem added to Best Sellers') : __('CatalogItem removed from Best Sellers')
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -411,7 +411,7 @@ class PageSettingController extends AdminBaseController
     /**
      * Search catalog items for best sellers selection
      */
-    public function searchBestSellersProducts(\Illuminate\Http\Request $request)
+    public function searchBestSellersCatalogItems(\Illuminate\Http\Request $request)
     {
         $search = $request->get('q', '');
 
@@ -459,7 +459,7 @@ class PageSettingController extends AdminBaseController
      */
     public function getBestSellersMerchants(\Illuminate\Http\Request $request)
     {
-        $catalogItemId = $request->get('product_id') ?? $request->get('catalog_item_id');
+        $catalogItemId = $request->get('catalog_item_id');
         $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
 
         $merchantItems = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
@@ -499,7 +499,7 @@ class PageSettingController extends AdminBaseController
     /**
      * Generic method to get merchant items by flag
      */
-    private function getProductsByFlag($flag)
+    private function getCatalogItemsByFlag($flag)
     {
         return \App\Models\MerchantItem::where($flag, 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
@@ -540,7 +540,7 @@ class PageSettingController extends AdminBaseController
     /**
      * Generic search catalog items for homepage sections
      */
-    private function searchProducts($search)
+    private function searchCatalogItems($search)
     {
         return \App\Models\CatalogItem::where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
@@ -587,28 +587,28 @@ class PageSettingController extends AdminBaseController
     }
 
     // TOP RATED
-    public function topRated() { return view('admin.pagesetting.top_rated_manage', ['products' => $this->getProductsByFlag('top')]); }
+    public function topRated() { return view('admin.pagesetting.top_rated_manage', ['catalogItems' => $this->getCatalogItemsByFlag('top')]); }
     public function toggleTopRated(\Illuminate\Http\Request $request) { return $this->toggleFlag($request, 'top', 'homepage_top_merchants'); }
-    public function searchTopRated(\Illuminate\Http\Request $request) { return response()->json($this->searchProducts($request->get('q', ''))); }
-    public function getTopRatedMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('product_id'), 'top')); }
+    public function searchTopRated(\Illuminate\Http\Request $request) { return response()->json($this->searchCatalogItems($request->get('q', ''))); }
+    public function getTopRatedMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('catalog_item_id'), 'top')); }
 
     // BIG SAVE
-    public function bigSave() { return view('admin.pagesetting.big_save_manage', ['products' => $this->getProductsByFlag('big')]); }
+    public function bigSave() { return view('admin.pagesetting.big_save_manage', ['catalogItems' => $this->getCatalogItemsByFlag('big')]); }
     public function toggleBigSave(\Illuminate\Http\Request $request) { return $this->toggleFlag($request, 'big', 'homepage_big_merchants'); }
-    public function searchBigSave(\Illuminate\Http\Request $request) { return response()->json($this->searchProducts($request->get('q', ''))); }
-    public function getBigSaveMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('product_id'), 'big')); }
+    public function searchBigSave(\Illuminate\Http\Request $request) { return response()->json($this->searchCatalogItems($request->get('q', ''))); }
+    public function getBigSaveMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('catalog_item_id'), 'big')); }
 
     // TRENDING
-    public function trending() { return view('admin.pagesetting.trending_manage', ['products' => $this->getProductsByFlag('trending')]); }
+    public function trending() { return view('admin.pagesetting.trending_manage', ['catalogItems' => $this->getCatalogItemsByFlag('trending')]); }
     public function toggleTrending(\Illuminate\Http\Request $request) { return $this->toggleFlag($request, 'trending', 'homepage_trending_merchants'); }
-    public function searchTrending(\Illuminate\Http\Request $request) { return response()->json($this->searchProducts($request->get('q', ''))); }
-    public function getTrendingMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('product_id'), 'trending')); }
+    public function searchTrending(\Illuminate\Http\Request $request) { return response()->json($this->searchCatalogItems($request->get('q', ''))); }
+    public function getTrendingMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('catalog_item_id'), 'trending')); }
 
     // FEATURED
-    public function featured() { return view('admin.pagesetting.featured_manage', ['products' => $this->getProductsByFlag('featured')]); }
+    public function featured() { return view('admin.pagesetting.featured_manage', ['catalogItems' => $this->getCatalogItemsByFlag('featured')]); }
     public function toggleFeatured(\Illuminate\Http\Request $request) { return $this->toggleFlag($request, 'featured', 'homepage_featured_merchants'); }
-    public function searchFeatured(\Illuminate\Http\Request $request) { return response()->json($this->searchProducts($request->get('q', ''))); }
-    public function getFeaturedMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('product_id'), 'featured')); }
+    public function searchFeatured(\Illuminate\Http\Request $request) { return response()->json($this->searchCatalogItems($request->get('q', ''))); }
+    public function getFeaturedMerchants(\Illuminate\Http\Request $request) { return response()->json($this->getMerchants($request->get('catalog_item_id'), 'featured')); }
 
     //Upadte About Page Section Settings
 

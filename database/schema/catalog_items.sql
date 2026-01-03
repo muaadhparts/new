@@ -36,7 +36,7 @@ CREATE TABLE `catalog_items` (
   `cross_products` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `length` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `height` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `width` decimal(10,2) DEFAULT NULL COMMENT 'Product width in cm for volumetric weight calculation',
+  `width` decimal(10,2) DEFAULT NULL COMMENT 'CatalogItem width in cm for volumetric weight calculation',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uq_sku` (`sku`) USING BTREE,
   KEY `idx_catalog_items_sku` (`sku`),

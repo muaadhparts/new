@@ -10,7 +10,7 @@ class WithdrawController extends MerchantBaseController
 
     public function index()
     {
-        $withdraws = Withdraw::where('user_id', '=', $this->user->id)->where('type', '=', 'vendor')->latest('id')->get();
+        $withdraws = Withdraw::where('user_id', '=', $this->user->id)->where('type', '=', 'merchant')->latest('id')->get();
         $sign = $this->curr;
         return view('merchant.withdraw.index', compact('withdraws', 'sign'));
     }
@@ -61,10 +61,10 @@ class WithdrawController extends MerchantBaseController
                 $newwithdraw['reference'] = $request->reference;
                 $newwithdraw['amount'] = $finalamount;
                 $newwithdraw['fee'] = $fee;
-                $newwithdraw['type'] = 'vendor';
+                $newwithdraw['type'] = 'merchant';
                 $newwithdraw->save();
 
-                return redirect()->route('vendor.withdraw.index')->with('success', __('Withdraw request has been successfully submitted.'));
+                return redirect()->route('merchant-wt-index')->with('success', __('Withdraw request has been successfully submitted.'));
             } else {
                 return redirect()->back()->with('unsuccess', __('You do not have sufficient funds to withdraw.'));
             }

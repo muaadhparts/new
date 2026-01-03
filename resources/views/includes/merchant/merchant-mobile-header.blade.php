@@ -67,12 +67,12 @@
             </li>
 
             <li
-                class="has-sub-menu {{ request()->is('merchant/products/types') || request()->is('merchant/products') || request()->is('merchant/products/catalogs') || request()->is('merchant/products/physical/create') || request()->is('merchant/products/digital/create') || request()->is('merchant/products/license/create') || request()->is('merchant/products/listing/create') || request()->is('merchant/products/edit/*') || request()->is('merchant/products/catalog/*') ? 'active' : '' }}">
+                class="has-sub-menu {{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/catalogItems/listing/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') ? 'active' : '' }}">
 
 
-                <a href="#merchant-collapse-product"
-                    class="{{ request()->is('merchant/products/types') || request()->is('merchant/products') || request()->is('merchant/products/catalogs') || request()->is('merchant/products/physical/create') || request()->is('merchant/products/digital/create') || request()->is('merchant/products/license/create') || request()->is('merchant/products/listing/create') || request()->is('merchant/products/edit/*') || request()->is('merchant/products/catalog/*') ? '' : 'collapsed' }}"
-                    data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapse-product">
+                <a href="#merchant-collapse-catalogItem"
+                    class="{{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/catalogItems/listing/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') ? '' : 'collapsed' }}"
+                    data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapse-catalogItem">
 
 
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -82,20 +82,20 @@
                         <path d="M16.5 9.5L7.5 4.5" stroke="#1F0300" stroke-width="2" stroke-linecap="round"
                             stroke-linejoin="round" />
                     </svg>
-                    <span class="label">@lang('Products')</span>
+                    <span class="label">@lang('CatalogItems')</span>
                     <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
                 </a>
-                <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/products/types') || request()->is('merchant/products') || request()->is('merchant/products/catalogs') || request()->is('merchant/products/physical/create') || request()->is('merchant/products/digital/create') || request()->is('merchant/products/license/create') || request()->is('merchant/products/listing/create') || request()->is('merchant/products/edit/*') || request()->is('merchant/products/catalog/*') ? 'show' : '' }}"
-                    id="merchant-collapse-product">
+                <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/catalogItems/listing/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') ? 'show' : '' }}"
+                    id="merchant-collapse-catalogItem">
 
 
-                    <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products/types') || request()->is('merchant/products/physical/create') || request()->is('merchant/products/digital/create') || request()->is('merchant/products/license/create') || request()->is('merchant/listing/create') ? 'active' : '' }}"
-                            href="{{ route('merchant-catalog-item-types') }}">@lang('Add New Product')</a>
+                    <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/listing/create') ? 'active' : '' }}"
+                            href="{{ route('merchant-catalog-item-types') }}">@lang('Add New CatalogItem')</a>
                     </li>
-                    <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products') || request()->is('merchant/products/edit/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-catalog-item-index') }}">@lang('All Product')</a></li>
-                    <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/products/catalogs') || request()->is('merchant/products/catalog/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-catalog-item-catalogs') }}">@lang('Product Catalogs')</a></li>
+                    <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/edit/*') ? 'active' : '' }}"
+                            href="{{ route('merchant-catalog-item-index') }}">@lang('All CatalogItem')</a></li>
+                    <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/catalog/*') ? 'active' : '' }}"
+                            href="{{ route('merchant-catalog-item-catalogs') }}">@lang('CatalogItem Catalogs')</a></li>
                 </ul>
             </li>
 
@@ -103,7 +103,7 @@
 
 
 
-            <li class="{{ request()->is('merchant/products/import') ? 'active' : '' }}">
+            <li class="{{ request()->is('merchant/catalogItems/import') ? 'active' : '' }}">
                 <a href="{{ route('merchant-catalog-item-import') }}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path
@@ -150,7 +150,7 @@
                             href="{{ route('merchant-shipping-index') }}">@lang('Shipping Methods')</a></li>
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('merchant/package') || request()->is('merchant/package/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-package-index') }}">@lang('Packagings Products')</a></li>
+                            href="{{ route('merchant-package-index') }}">@lang('Packagings CatalogItems')</a></li>
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('merchant/pickup-point') || request()->is('merchant/pickup-point/*') ? 'active' : '' }}"
                             href="{{ route('merchant-pickup-point-index') }}">@lang('Pickup Point')</a></li>
@@ -218,7 +218,7 @@
                 <form class="search-form">
                     <div class="input-group input__group">
                         <input type="text" class="form-control form__control"
-                            placeholder="@lang('Search Any Product Here')">
+                            placeholder="@lang('Search Any CatalogItem Here')">
                         <div class="input-group-append">
                             <span class="search-separator"></span>
                             <button class="dropdown-toggle btn btn-secondary search-category-dropdown"

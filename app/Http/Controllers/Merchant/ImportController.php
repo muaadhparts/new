@@ -25,9 +25,9 @@ class ImportController extends MerchantBaseController
         $user = $this->user;
 
         // عروض هذا البائع فقط + تحميل تعريف العنصر
-        // product_type is now on merchant_items, not catalog_items
+        // item_type is now on merchant_items, not catalog_items
         $datas = MerchantItem::where('user_id', $user->id)
-            ->where('product_type', 'affiliate')
+            ->where('item_type', 'affiliate')
             ->with('catalogItem')
             ->latest('id')
             ->get();
@@ -39,7 +39,7 @@ class ImportController extends MerchantBaseController
                     ? mb_substr(strip_tags($catalogItem->name), 0, 50, 'UTF-8') . '...'
                     : strip_tags($catalogItem->name);
 
-                // تمرير {vendor_id} و {merchant_item_id} في الرابط
+                // تمرير {merchant_id} و {merchant_item_id} في الرابط
                 $id = '<small>' . __('Catalog Item ID') . ': <a href="' .
                     route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $data->user_id, 'merchant_item_id' => $data->id]) .
                     '" target="_blank">' . sprintf("%'.08d", $catalogItem->id) . '</a></small>';
@@ -51,11 +51,11 @@ class ImportController extends MerchantBaseController
                 return \PriceHelper::showAdminCurrencyPrice($price);
             })
             ->addColumn('status', function (MerchantItem $data) {
-                // نفترض أن المسار vendor-prod-status يقوم بتحديث حالة عرض البائع لهذا المنتج
+                // نفترض أن المسار merchant-prod-status يقوم بتحديث حالة عرض البائع لهذا المنتج
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
                 $s     = $data->status == 1 ? 'selected' : '';
                 $ns    = $data->status == 0 ? 'selected' : '';
-                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('merchant-catalog-item-status', ['id1' => $data->product_id, 'id2' => 1]) . '" ' . $s . '>' . __('Activated') . '</option><option data-val="0" value="' . route('merchant-catalog-item-status', ['id1' => $data->product_id, 'id2' => 0]) . '" ' . $ns . '>' . __('Deactivated') . '</option></select></div>';
+                return '<div class="action-list"><select class="process select droplinks ' . $class . '"><option data-val="1" value="' . route('merchant-catalog-item-status', ['id1' => $data->catalog_item_id, 'id2' => 1]) . '" ' . $s . '>' . __('Activated') . '</option><option data-val="0" value="' . route('merchant-catalog-item-status', ['id1' => $data->catalog_item_id, 'id2' => 0]) . '" ' . $ns . '>' . __('Deactivated') . '</option></select></div>';
             })
             ->addColumn('action', function (MerchantItem $data) {
                 return '<div class="action-list">
@@ -124,11 +124,11 @@ class ImportController extends MerchantBaseController
         list(, $image) = explode(',', $image);
         $image = base64_decode($image);
         $image_name = time() . Str::random(8) . '.png';
-        $path = 'assets/images/products/' . $image_name;
+        $path = 'assets/images/catalogItems/' . $image_name;
         file_put_contents($path, $image);
         if ($data->photo != null) {
-            if (file_exists(public_path() . '/assets/images/products/' . $data->photo)) {
-                unlink(public_path() . '/assets/images/products/' . $data->photo);
+            if (file_exists(public_path() . '/assets/images/catalogItems/' . $data->photo)) {
+                unlink(public_path() . '/assets/images/catalogItems/' . $data->photo);
             }
         }
         $input['photo'] = $image_name;
@@ -139,14 +139,14 @@ class ImportController extends MerchantBaseController
     //*** POST Request
     public function store(Request $request)
     {
-        // BEGIN NEW MERCHANT PRODUCT HANDLING
+        // BEGIN NEW MERCHANT ITEM HANDLING
         $user = $this->user;
         $package = $user->subscribes()->latest('id')->first();
         // عدد العروض الخاصة بالبائع (على merchant_items)
-        $prods = $user->merchantProducts()->latest('id')->count();
-        // // dd(['vendor_products_count' => $prods]); // اختباري
+        $prods = $user->merchantItems()->latest('id')->count();
+        // // dd(['merchant_items_count' => $prods]); // اختباري
 
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 return response()->json(array('errors' => [0 => __('You must complete your verfication first.')]));
             }
@@ -191,27 +191,27 @@ class ImportController extends MerchantBaseController
                 list(, $image) = explode(',', $image);
                 $image = base64_decode($image);
                 $image_name = time() . Str::random(8) . '.png';
-                $path = 'assets/images/products/' . $image_name;
+                $path = 'assets/images/catalogItems/' . $image_name;
                 file_put_contents($path, $image);
                 $catalogItemInput['photo'] = $image_name;
             } else {
                 $catalogItemInput['photo'] = $request->photolink;
             }
 
-            // إنشاء تعريف العنصر (product_type moved to merchant_items)
+            // إنشاء تعريف العنصر (item_type moved to merchant_items)
             $catalogItem = new CatalogItem;
             $catalogItem->fill($catalogItemInput);
             $catalogItem->save();
 
             // مدخلات عرض البائع (MerchantItem) — السعر/المخزون/المقاسات
-            // product_type is now stored on merchant_items
+            // item_type is now stored on merchant_items
             $merchantInput = $request->only([
                 'stock', 'is_discount', 'discount_date', 'whole_sell_qty',
                 'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
                 'popular', 'status', 'is_popular', 'licence_type', 'license_qty',
-                'license', 'ship', 'product_condition', 'affiliate_link'
+                'license', 'ship', 'item_condition', 'affiliate_link'
             ]);
-            $merchantInput['product_type'] = 'affiliate';
+            $merchantInput['item_type'] = 'affiliate';
 
             // المقاسات على MP
             if (!empty($request->size)) {
@@ -262,7 +262,7 @@ class ImportController extends MerchantBaseController
             $catalogItem->slug = Str::slug($catalogItem->name, '-') . '-' . strtolower(Str::random(3) . $catalogItem->id . Str::random(3));
             $catalogItem->save();
 
-            $fimageData = public_path() . '/assets/images/products/' . $catalogItem->photo;
+            $fimageData = public_path() . '/assets/images/catalogItems/' . $catalogItem->photo;
             if (filter_var($catalogItem->photo, FILTER_VALIDATE_URL)) {
                 $fimageData = $catalogItem->photo;
             }
@@ -272,12 +272,12 @@ class ImportController extends MerchantBaseController
             $catalogItem->thumbnail = $thumbnail;
             $catalogItem->save();
 
-            $msg = __('New Affiliate Product Added Successfully.') . '<a href="' . route('merchant-import-index') . '">' . __('View Product Lists.') . '</a>';
+            $msg = __('New Affiliate CatalogItem Added Successfully.') . '<a href="' . route('merchant-import-index') . '">' . __('View CatalogItem Lists.') . '</a>';
             return response()->json($msg);
         } else {
-            return response()->json(array('errors' => [0 => __('You Can\'t Add More Product.')]));
+            return response()->json(array('errors' => [0 => __('You Can\'t Add More CatalogItem.')]));
         }
-        // END NEW MERCHANT PRODUCT HANDLING
+        // END NEW MERCHANT ITEM HANDLING
     }
 
     //*** GET Request
@@ -286,7 +286,7 @@ class ImportController extends MerchantBaseController
         $cats = collect(); // Category system removed - using TreeCategories
         $data = CatalogItem::findOrFail($id);
 
-        // Get merchant item data for this vendor
+        // Get merchant item data for this merchant
         $merchantItem = MerchantItem::where('catalog_item_id', $id)
             ->where('user_id', $this->user->id)
             ->first();
@@ -337,7 +337,7 @@ class ImportController extends MerchantBaseController
             'stock', 'is_discount', 'discount_date', 'whole_sell_qty',
             'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
             'popular', 'status', 'is_popular', 'licence_type', 'license_qty',
-            'license', 'ship', 'product_condition', 'affiliate_link'
+            'license', 'ship', 'item_condition', 'affiliate_link'
         ]);
 
         // المقاسات على MP
@@ -383,7 +383,7 @@ class ImportController extends MerchantBaseController
 
         // تحديث عرض البائع
         $merchant->update($merchantInput);
-        // // dd(['vendor_mp_updated' => true]); // اختباري
+        // // dd(['merchant_item_updated' => true]); // اختباري
 
         // لو تغيّرت الصورة الرئيسية — أعِد توليد الـ Thumbnail
         if (!empty($catalogItemInput['photo']) && $oldPhoto !== $catalogItemInput['photo']) {
@@ -391,7 +391,7 @@ class ImportController extends MerchantBaseController
                 @unlink(public_path() . '/assets/images/thumbnails/' . $catalogItem->thumbnail);
             }
 
-            $fimageData = public_path() . '/assets/images/products/' . $catalogItemInput['photo'];
+            $fimageData = public_path() . '/assets/images/catalogItems/' . $catalogItemInput['photo'];
             if (filter_var($catalogItemInput['photo'], FILTER_VALIDATE_URL)) {
                 $fimageData = $catalogItemInput['photo'];
             }
@@ -403,7 +403,7 @@ class ImportController extends MerchantBaseController
             $catalogItem->save();
         }
 
-        $msg = __('Product Updated Successfully.') . '<a href="' . route('merchant-import-index') . '">' . __('View Product Lists.') . '</a>';
+        $msg = __('CatalogItem Updated Successfully.') . '<a href="' . route('merchant-import-index') . '">' . __('View CatalogItem Lists.') . '</a>';
         return response()->json($msg);
     }
 }

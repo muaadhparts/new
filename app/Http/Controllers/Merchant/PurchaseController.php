@@ -29,7 +29,7 @@ class PurchaseController extends MerchantBaseController
         $user = $this->user;
         $purchase = Purchase::where('purchase_number', '=', $slug)->first();
 
-        // Security: Verify vendor has items in this purchase
+        // Security: Verify merchant has items in this purchase
         if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $user->id)->exists()) {
             abort(403, 'Unauthorized access to purchase');
         }
@@ -43,7 +43,7 @@ class PurchaseController extends MerchantBaseController
         $user = $this->user;
         $purchase = Purchase::where('purchase_number', '=', $slug)->first();
 
-        // Security: Verify vendor has items in this purchase
+        // Security: Verify merchant has items in this purchase
         if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $user->id)->exists()) {
             abort(403, 'Unauthorized access to purchase');
         }
@@ -62,7 +62,7 @@ class PurchaseController extends MerchantBaseController
         $user = $this->user;
         $purchase = Purchase::where('purchase_number', '=', $slug)->first();
 
-        // Security: Verify vendor has items in this purchase
+        // Security: Verify merchant has items in this purchase
         if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $user->id)->exists()) {
             abort(403, 'Unauthorized access to purchase');
         }
@@ -76,7 +76,7 @@ class PurchaseController extends MerchantBaseController
         $user = $this->user;
         $purchase = Purchase::where('purchase_number', '=', $slug)->first();
 
-        // Security: Verify vendor has items in this purchase
+        // Security: Verify merchant has items in this purchase
         if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $user->id)->exists()) {
             abort(403, 'Unauthorized access to purchase');
         }

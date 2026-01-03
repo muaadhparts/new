@@ -2,7 +2,7 @@
  * Centralized Quantity Control Module
  * ====================================
  * Unified quantity +/- logic respecting stock and minimum_qty.
- * Used across: Cart, Quick Modal, Product Page, Alternatives.
+ * Used across: Cart, Quick Modal, CatalogItem Page, Alternatives.
  *
  * @version 1.0
  *
@@ -98,7 +98,7 @@
             // Check hidden input
             const $container = $element.closest(CONFIG.containers.join(', '));
             if ($container.length) {
-                const $stockInput = $container.find('.stock_val, .product-stock, [name="stock"]');
+                const $stockInput = $container.find('.stock_val, .catalogItem-stock, [name="stock"]');
                 if ($stockInput.length) {
                     stock = parseInt($stockInput.val());
                     if (!isNaN(stock)) return stock;

@@ -28,11 +28,11 @@ function getMerchantDisplayName($merchantItem)
 
 
 /**
- * Get localized product name from cart item array or Product model
- * Supports both array format (cart) and object format (Product model)
+ * Get localized catalogItem name from cart item array or CatalogItem model
+ * Supports both array format (cart) and object format (CatalogItem model)
  */
-if (! function_exists('getLocalizedProductName')) {
-    function getLocalizedProductName($item, $maxLength = null): string
+if (! function_exists('getLocalizedCatalogItemName')) {
+    function getLocalizedCatalogItemName($item, $maxLength = null): string
     {
         $isAr = app()->getLocale() === 'ar';
 
@@ -42,7 +42,7 @@ if (! function_exists('getLocalizedProductName')) {
             $labelEn = trim($item['label_en'] ?? '');
             $name = trim($item['name'] ?? '');
         }
-        // Handle object format (Product model)
+        // Handle object format (CatalogItem model)
         elseif (is_object($item)) {
             // If model has localized_name accessor, use it
             if (method_exists($item, 'getLocalizedNameAttribute') || property_exists($item, 'localized_name')) {
@@ -74,6 +74,7 @@ if (! function_exists('getLocalizedProductName')) {
         return $displayName;
     }
 }
+
 
 /**
  * Get localized brand name from Brand model or array
@@ -239,32 +240,32 @@ if (! function_exists('getMerchantName')) {
 }
 
 /**
- * Get manufacturer name from product
+ * Get manufacturer name from catalogItem
  */
 if (! function_exists('getManufacturerName')) {
-    function getManufacturerName($product): string
+    function getManufacturerName($catalogItem): string
     {
-        if (!$product) return '';
+        if (!$catalogItem) return '';
 
         // From array
-        if (is_array($product)) {
-            $item = $product['item'] ?? $product;
+        if (is_array($catalogItem)) {
+            $item = $catalogItem['item'] ?? $catalogItem;
             return $item['manufacturer'] ?? $item['manufacturer_name'] ?? '';
         }
 
         // From object
-        if (is_object($product)) {
+        if (is_object($catalogItem)) {
             // If has manufacturer relationship
-            if (isset($product->manufacturer) && $product->manufacturer) {
-                return $product->manufacturer->name ?? '';
+            if (isset($catalogItem->manufacturer) && $catalogItem->manufacturer) {
+                return $catalogItem->manufacturer->name ?? '';
             }
             // If has manufacturer_name attribute
-            if (isset($product->manufacturer_name)) {
-                return $product->manufacturer_name;
+            if (isset($catalogItem->manufacturer_name)) {
+                return $catalogItem->manufacturer_name;
             }
             // If has manufacturer attribute
-            if (isset($product->manufacturer)) {
-                return $product->manufacturer;
+            if (isset($catalogItem->manufacturer)) {
+                return $catalogItem->manufacturer;
             }
         }
 
@@ -276,7 +277,7 @@ if (! function_exists('getManufacturerName')) {
 if (! function_exists('getLocalizedLabel')) {
     function getLocalizedLabel($item): string
     {
-        return getLocalizedProductName($item);
+        return getLocalizedCatalogItemName($item);
     }
 }
 

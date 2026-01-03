@@ -86,8 +86,8 @@
 
     // CatalogItem info (for display only)
     $catalogItem = $mp->catalogItem;
-    $productName = $catalogItem ? $catalogItem->showName() : '';
-    $productType = $catalogItem ? $catalogItem->type : 'Physical';
+    $catalogItemDisplayName = $catalogItem ? $catalogItem->showName() : '';
+    $catalogItemType = $catalogItem ? $catalogItem->type : 'Physical';
 
     // Unique ID for this instance
     $uniqueId = 'cart_' . $mpId . '_' . uniqid();
@@ -125,7 +125,7 @@
      data-colors="{{ json_encode($colors) }}"
      data-color-prices="{{ json_encode($colorPrices) }}"
      data-in-stock="{{ $inStock ? '1' : '0' }}"
-     data-product-type="{{ $productType }}">
+     data-catalogItem-type="{{ $catalogItemType }}">
 
     @if (!$inStock)
         {{-- Out of Stock State --}}
@@ -178,7 +178,7 @@
         @endif
 
         {{-- Quantity Selector --}}
-        @if ($showQty && $productType === 'Physical')
+        @if ($showQty && $catalogItemType === 'Physical')
             <div class="m-cart-button__qty">
                 <label class="m-cart-button__label">@lang('Qty'):</label>
                 <div class="m-cart-button__qty-control">

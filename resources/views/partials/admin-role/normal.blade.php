@@ -74,27 +74,27 @@
 
 {{-- Old Category menu removed - using TreeCategories system --}}
 
-@if(Auth::guard('admin')->user()->sectionCheck('products'))
+@if(Auth::guard('admin')->user()->sectionCheck('catalogItems'))
 
 <li>
     <a href="#menu2" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-cart"></i>{{ __('Products') }}
+        <i class="icofont-cart"></i>{{ __('CatalogItems') }}
     </a>
     <ul class="collapse list-unstyled" id="menu2" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-catalog-item-types') }}"><span>{{ __('Add New Product') }}</span></a>
+            <a href="{{ route('admin-catalog-item-types') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-catalog-item-index') }}"><span>{{ __('All Products') }}</span></a>
+            <a href="{{ route('admin-catalog-item-index') }}"><span>{{ __('All CatalogItems') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-catalog-item-deactive') }}"><span>{{ __('Deactivated Product') }}</span></a>
+            <a href="{{ route('admin-catalog-item-deactive') }}"><span>{{ __('Deactivated CatalogItem') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-catalog-item-catalog-index') }}"><span>{{ __('Product Catalogs') }}</span></a>
+            <a href="{{ route('admin-catalog-item-catalog-index') }}"><span>{{ __('CatalogItem Catalogs') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-gs-catalog-item-settings') }}"><span>{{ __('Product Settings') }}</span></a>
+            <a href="{{ route('admin-gs-catalog-item-settings') }}"><span>{{ __('CatalogItem Settings') }}</span></a>
         </li>
     </ul>
 </li>
@@ -105,14 +105,14 @@
 
 <li>
     <a href="#affiliateprod" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-opencart"></i>{{ __('Affiliate Products') }}
+        <i class="icofont-opencart"></i>{{ __('Affiliate CatalogItems') }}
     </a>
     <ul class="collapse list-unstyled" id="affiliateprod" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-import-create') }}"><span>{{ __('Add Affiliate Product') }}</span></a>
+            <a href="{{ route('admin-import-create') }}"><span>{{ __('Add Affiliate CatalogItem') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-import-index') }}"><span>{{ __('All Affiliate Products') }}</span></a>
+            <a href="{{ route('admin-import-index') }}"><span>{{ __('All Affiliate CatalogItems') }}</span></a>
         </li>
     </ul>
 </li>
@@ -122,7 +122,7 @@
 @if(Auth::guard('admin')->user()->sectionCheck('bulk_product_upload'))
 
 <li>
-    <a href="{{ route('admin-catalog-item-import') }}"><i class="fas fa-upload"></i>{{ __('Bulk Product Upload') }}</a>
+    <a href="{{ route('admin-catalog-item-import') }}"><i class="fas fa-upload"></i>{{ __('Bulk CatalogItem Upload') }}</a>
 </li>
 
 @endif
@@ -131,11 +131,11 @@
 
 <li>
     <a href="#menu4" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-speech-comments"></i>{{ __('Product Discussion') }}
+        <i class="icofont-speech-comments"></i>{{ __('CatalogItem Discussion') }}
     </a>
     <ul class="collapse list-unstyled" id="menu4" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-catalog-review-index') }}"><span>{{ __('Product Reviews') }}</span></a>
+            <a href="{{ route('admin-catalog-review-index') }}"><span>{{ __('CatalogItem Reviews') }}</span></a>
         </li>
      
         <li>
@@ -201,15 +201,15 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('vendors'))
+@if(Auth::guard('admin')->user()->sectionCheck('merchants'))
 
 <li>
-    <a href="#vendor" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-ui-user-group"></i>{{ __('Vendors') }}
+    <a href="#merchant" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="icofont-ui-user-group"></i>{{ __('Merchants') }}
     </a>
-    <ul class="collapse list-unstyled" id="vendor" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="merchant" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-merchant-index') }}"><span>{{ __('Vendors List') }}</span></a>
+            <a href="{{ route('admin-merchant-index') }}"><span>{{ __('Merchants List') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-merchant-withdraw-index') }}"><span>{{ __('Withdraws') }}</span></a>
@@ -222,13 +222,13 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('vendor_subscriptions'))
+@if(Auth::guard('admin')->user()->sectionCheck('merchant_subscriptions'))
 
 <li>
-    <a href="#vendorSubs" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-user-suited"></i>{{ __('Vendor Subscriptions') }}
+    <a href="#merchantSubs" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="icofont-user-suited"></i>{{ __('Merchant Subscriptions') }}
     </a>
-    <ul class="collapse list-unstyled" id="vendorSubs" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="merchantSubs" data-bs-parent="#accordion">
         <li>
             <a href="{{ route('admin-merchant-subs','completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
         </li>
@@ -241,13 +241,13 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('vendor_verifications'))
+@if(Auth::guard('admin')->user()->sectionCheck('merchant_verifications'))
 
 <li>
-    <a href="#vendor1" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-verification-check"></i>{{ __('Vendor Verifications') }}
+    <a href="#merchantVerifications" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="icofont-verification-check"></i>{{ __('Merchant Verifications') }}
     </a>
-    <ul class="collapse list-unstyled" id="vendor1" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="merchantVerifications" data-bs-parent="#accordion">
         <li>
             <a href="{{ route('admin-vr-index','all') }}"><span>{{ __('All Verifications') }}</span></a>
         </li>
@@ -260,11 +260,11 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('vendor_subscription_plans'))
+@if(Auth::guard('admin')->user()->sectionCheck('merchant_subscription_plans'))
 
 <li>
     <a href="{{ route('admin-subscription-index') }}" class=" wave-effect"><i class="fas fa-dollar-sign"></i>{{
-        __('Vendor Subscription Plans') }}</a>
+        __('Merchant Subscription Plans') }}</a>
 </li>
 
 @endif
@@ -379,7 +379,7 @@
             <a href="{{ route('admin-ps-trending') }}"><span>{{ __('Trending') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-featured') }}"><span>{{ __('Featured Products') }}</span></a>
+            <a href="{{ route('admin-ps-featured') }}"><span>{{ __('Featured CatalogItems') }}</span></a>
         </li>
 
         <li>
@@ -488,7 +488,7 @@
     </a>
     <ul class="collapse list-unstyled" id="seoTools" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-catalog-item-popular',30) }}"><span>{{ __('Popular Products') }}</span></a>
+            <a href="{{ route('admin-catalog-item-popular',30) }}"><span>{{ __('Popular CatalogItems') }}</span></a>
         </li>
         <li>
             <a href="{{ route('admin-seotool-analytics') }}"><span>{{ __('Google Analytics') }}</span></a>

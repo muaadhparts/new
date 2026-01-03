@@ -29,14 +29,6 @@ class DeliveryRider extends Model
         return $this->belongsTo(User::class, 'merchant_id');
     }
 
-    /**
-     * @deprecated Use merchant() instead
-     */
-    public function vendor()
-    {
-        return $this->merchant();
-    }
-
     public function pickup()
     {
         return $this->belongsTo(PickupPoint::class, 'pickup_point_id')->withDefault();

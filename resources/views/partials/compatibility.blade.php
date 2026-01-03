@@ -16,7 +16,7 @@
     const sku = '{{ $sku }}';
     const container = document.getElementById('compatibility-container-' + sku);
 
-    fetch('/api/product/compatibility/' + encodeURIComponent(sku) + '/html')
+    fetch('/api/catalogItem/compatibility/' + encodeURIComponent(sku) + '/html')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.html) {

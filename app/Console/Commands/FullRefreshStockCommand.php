@@ -11,7 +11,7 @@ use Throwable;
 class FullRefreshStockCommand extends Command
 {
     protected $signature = 'stock:full-refresh {--branch=ATWJRY}';
-    protected $description = 'Download stock files, import into stocks, aggregate into stock_all, and update products table';
+    protected $description = 'Download stock files, import into stocks, aggregate into stock_all, and update catalogItems table';
 
     public function handle(): int
     {
@@ -38,7 +38,7 @@ class FullRefreshStockCommand extends Command
             Artisan::call('catalog-items:update-stock');
             $this->line(Artisan::output());
 
-            $this->info("🎉 Full refresh + product update completed successfully.");
+            $this->info("🎉 Full refresh + catalogItem update completed successfully.");
             return self::SUCCESS;
 
         } catch (Throwable $e) {

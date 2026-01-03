@@ -1,23 +1,23 @@
-<section class="product-details-area">
+<section class="catalogItem-details-area">
     <div id="quick-section">
     <div class="left-area-top-info">
         <div class="row">
           <div class="col-lg-5">
               <div class="xzoom-container">
                   <img class="xzoom5" id="xzoom-magnific"
-                    src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
-                    xoriginal="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}" />
+                    src="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}"
+                    xoriginal="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}" />
                   <div class="xzoom-thumbs">
                     <div class="all-slider">
 
-                      <a href="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
-                        <img class="xzoom-gallery5" width="80" src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}">
+                      <a href="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}">
+                        <img class="xzoom-gallery5" width="80" src="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}">
                       </a>
 
                       @php
                         // Get merchant-specific galleries
-                        $quickMerchantUserId = request()->get('user', $product->user_id);
-                        $merchantGalleries = $product->galleriesForVendor($quickMerchantUserId, 4);
+                        $quickMerchantUserId = request()->get('user', $catalogItem->user_id);
+                        $merchantGalleries = $catalogItem->galleriesForMerchant($quickMerchantUserId, 4);
                       @endphp
                       @foreach($merchantGalleries as $gal)
 
@@ -35,20 +35,20 @@
 
           </div>
           <div class="col-lg-7">
-            <div class="product-info">
+            <div class="catalogItem-info">
               @php
-                  $headerMerchantUserId = request()->get('user', $product->user_id);
+                  $headerMerchantUserId = request()->get('user', $catalogItem->user_id);
               @endphp
               <h4 class="item-name">
-                <x-catalog-item-name :catalog-item="$product" :merchant-user-id="$headerMerchantUserId" target="_blank" />
+                <x-catalog-item-name :catalog-item="$catalogItem" :merchant-user-id="$headerMerchantUserId" target="_blank" />
               </h4>
 
               <div class="top-meta">
 
                   {{-- STOCK SECTION  --}}
 
-                  @if($product->type == 'Physical')
-                      @if($product->emptyStock())
+                  @if($catalogItem->type == 'Physical')
+                      @if($catalogItem->emptyStock())
                       <li class="outStock">
                         <p>
                           <i class="icofont-close-circled"></i>
@@ -59,7 +59,7 @@
                       <div class="isStock">
                           <span>
                             <i class="far fa-check-circle"></i>
-                            {{ $gs->show_stock == 0 ? '' : $product->vendorSizeStock() }} {{ __('In Stock') }}
+                            {{ $gs->show_stock == 0 ? '' : $catalogItem->merchantSizeStock() }} {{ __('In Stock') }}
                           </span>
                       </div>
                       @endif
@@ -72,35 +72,35 @@
                     <div class="stars">
                         <div class="review-stars">
                             <div class="empty-stars"></div>
-                            <div class="full-stars" style="width:{{ App\Models\CatalogReview::scorePercentage($product->id) }}%"></div>
+                            <div class="full-stars" style="width:{{ App\Models\CatalogReview::scorePercentage($catalogItem->id) }}%"></div>
                           </div>
                     </div>
 
                     <div class="review">
-                      <i class="far fa-comments"></i> {{ App\Models\CatalogReview::reviewCount($product->id) }} {{ __('Review') }}
+                      <i class="far fa-comments"></i> {{ App\Models\CatalogReview::reviewCount($catalogItem->id) }} {{ __('Review') }}
                     </div>
 
                   {{-- REVIEW SECTION ENDS  --}}
 
-                  {{-- PRODUCT CONDITION SECTION  --}}
+                  {{-- CATALOGITEM CONDITION SECTION  --}}
 
-                  @if($product->product_condition != 0)
+                  @if($catalogItem->item_condition != 0)
 
-                    <div class="{{ $product->product_condition == 2 ? 'condition' : 'no-condition' }}">
-                      <span>{{ $product->product_condition == 2 ?  __('New')  :  __('Used') }}</span>
+                    <div class="{{ $catalogItem->item_condition == 2 ? 'condition' : 'no-condition' }}">
+                      <span>{{ $catalogItem->item_condition == 2 ?  __('New')  :  __('Used') }}</span>
                     </div>
 
                   @endif
 
-                  {{-- PRODUCT CONDITION SECTION ENDS --}}
+                  {{-- CATALOGITEM CONDITION SECTION ENDS --}}
 
-                  {{-- PRODUCT FAVORITE SECTION  --}}
+                  {{-- CATALOGITEM FAVORITE SECTION  --}}
 
                     <div class="wish">
 
                       @if(Auth::check())
 
-                      <a class="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Favorites') }}">
+                      <a class="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Favorites') }}">
                         <i class="far fa-heart"></i>
                       </a>
 
@@ -114,65 +114,65 @@
 
                     </div>
 
-                  {{-- PRODUCT FAVORITE SECTION ENDS --}}
+                  {{-- CATALOGITEM FAVORITE SECTION ENDS --}}
 
-                  {{-- PRODUCT COMPARE SECTION  --}}
+                  {{-- CATALOGITEM COMPARE SECTION  --}}
 
                     <div class="compear">
 
-                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('catalog-item.compare.add',$product->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
+                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('catalog-item.compare.add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
                         <i class="fas fa-random"></i>
                       </a>
 
                     </div>
 
-                  {{-- PRODUCT COMPARE SECTION  --}}
+                  {{-- CATALOGITEM COMPARE SECTION  --}}
 
-                  {{-- PRODUCT VIDEO DISPLAY SECTION  --}}
+                  {{-- CATALOGITEM VIDEO DISPLAY SECTION  --}}
 
-                    @if($product->youtube != null)
+                    @if($catalogItem->youtube != null)
                       <div class="play-video">
-                        <a href="{{ $product->youtube }}" class="video-play-btn mfp-iframe"
+                        <a href="{{ $catalogItem->youtube }}" class="video-play-btn mfp-iframe"
                           data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Play Video') }}">
                           <i class="fas fa-play"></i>
                         </a>
                       </div>
                     @endif
 
-                  {{-- PRODUCT VIDEO DISPLAY SECTION ENDS  --}}
+                  {{-- CATALOGITEM VIDEO DISPLAY SECTION ENDS  --}}
 
               </div>
 
-              {{-- PRODUCT PRICE SECTION  --}}
+              {{-- CATALOGITEM PRICE SECTION  --}}
 
               <div class="price-and-discount">
                 <div class="price">
                   <div class="current-price" id="msizeprice">
-                    {{ $product->vendorSizePrice() }}
+                    {{ $catalogItem->merchantSizePrice() }}
                   </div>
                   <small>
                     <del>
                     @php
-                        $vendorPrice = $product->vendorSizePrice();
-                        $vendorPrevPrice = $product->vendorSizePreviousPrice();
+                        $merchantPrice = $catalogItem->merchantSizePrice();
+                        $merchantPrevPrice = $catalogItem->merchantSizePreviousPrice();
                     @endphp
-                    {{ $vendorPrevPrice ? $vendorPrevPrice : '' }}
+                    {{ $merchantPrevPrice ? $merchantPrevPrice : '' }}
                     </del>
                   </small>
                 </div>
               </div>
 
-              {{-- PRODUCT PRICE SECTION ENDS --}}
+              {{-- CATALOGITEM PRICE SECTION ENDS --}}
 
-              {{-- PRODUCT SIZE SECTION  --}}
+              {{-- CATALOGITEM SIZE SECTION  --}}
 
-              @if ($product->stock_check == 1)
+              @if ($catalogItem->stock_check == 1)
 
-                  {{-- PRODUCT SIZE SECTION  --}}
+                  {{-- CATALOGITEM SIZE SECTION  --}}
 
                   @php
-                    $merchantUserId = request()->get('user') ?? ($product->vendor_user_id ?? $product->user_id);
-                    $merchantSizes = $product->getVendorSizes($merchantUserId);
+                    $merchantUserId = request()->get('user') ?? ($catalogItem->merchant_user_id ?? $catalogItem->user_id);
+                    $merchantSizes = $catalogItem->getMerchantSizes($merchantUserId);
                   @endphp
                   @if(!empty($merchantSizes))
                   <div class="mproduct-size">
@@ -193,26 +193,26 @@
 
                   @endif
 
-                  {{-- PRODUCT SIZE SECTION ENDS  --}}
+                  {{-- CATALOGITEM SIZE SECTION ENDS  --}}
 
-                  {{-- PRODUCT COLOR SECTION  --}}
+                  {{-- CATALOGITEM COLOR SECTION  --}}
 
-                  @if(!empty($product->getVendorColors()))
+                  @if(!empty($catalogItem->getMerchantColors()))
 
                   <div class="mproduct-color">
                     <div class="title">{{ __('Color :') }}</div>
                     <ul class="color-list">
 
                       @php
-                        $merchantColors = $product->getVendorColors($merchantUserId);
+                        $merchantColors = $catalogItem->getMerchantColors($merchantUserId);
                       @endphp
                       @foreach($merchantColors as $key => $data1)
 
-                        <li class="{{ $loop->first ? 'active' : '' }} {{ $product->IsSizeColor($merchantSizes[$key] ?? '') ? str_replace(' ','',($merchantSizes[$key] ?? '')) : ''  }} {{ ($merchantSizes[$key] ?? '') == ($merchantSizes[0] ?? '') ? 'show-colors' : '' }}">
+                        <li class="{{ $loop->first ? 'active' : '' }} {{ $catalogItem->IsSizeColor($merchantSizes[$key] ?? '') ? str_replace(' ','',($merchantSizes[$key] ?? '')) : ''  }} {{ ($merchantSizes[$key] ?? '') == ($merchantSizes[0] ?? '') ? 'show-colors' : '' }}">
                           <span class="box" data-color="{{ $merchantColors[$key] }}" style="background-color: {{ $merchantColors[$key] }}">
                             @php
-                                $merchantSizeQty = $product->getVendorSizeQty($merchantUserId, $key);
-                                $merchantSizePrice = $product->getVendorSizePrice($merchantUserId, $key);
+                                $merchantSizeQty = $catalogItem->getMerchantSizeQty($merchantUserId, $key);
+                                $merchantSizePrice = $catalogItem->getMerchantSizePrice($merchantUserId, $key);
                             @endphp
                             <input type="hidden" class="msize" value="{{ $merchantSizes[$key] ?? '' }}">
                             <input type="hidden" class="msize_qty" value="{{ $merchantSizeQty }}">
@@ -229,11 +229,11 @@
 
                   @endif
 
-                  {{-- PRODUCT COLOR SECTION ENDS  --}}
+                  {{-- CATALOGITEM COLOR SECTION ENDS  --}}
 
                   @else
                   @php
-                    $merchantSizeAll = $product->getVendorSizeAll($merchantUserId);
+                    $merchantSizeAll = $catalogItem->getMerchantSizeAll($merchantUserId);
                 @endphp
                 @if(!empty($merchantSizeAll))
                   <div class="mproduct-size" data-key="false">
@@ -252,7 +252,7 @@
                   </div>
                   @endif
                   @php
-                      $merchantColorAll = $product->getVendorColorAll($merchantUserId);
+                      $merchantColorAll = $catalogItem->getMerchantColorAll($merchantUserId);
                   @endphp
                   @if(!empty($merchantColorAll))
 
@@ -277,41 +277,41 @@
                   @endif
                   @endif
 
-              {{-- PRODUCT COLOR SECTION ENDS  --}}
+              {{-- CATALOGITEM COLOR SECTION ENDS  --}}
 
-              {{-- PRODUCT STOCK CONDITION SECTION  --}}
+              {{-- CATALOGITEM STOCK CONDITION SECTION  --}}
 
               @if(!empty($merchantSizes))
 
                 @php
-                    $firstSizeQty = $product->getVendorSizeQty($merchantUserId, 0);
+                    $firstSizeQty = $catalogItem->getMerchantSizeQty($merchantUserId, 0);
                 @endphp
-                <input type="hidden" class="product-stock" value="{{ $firstSizeQty }}">
+                <input type="hidden" class="catalogItem-stock" value="{{ $firstSizeQty }}">
 
                 @else
 
-                @if(!$product->emptyStock())
-                  <input type="hidden" class="product-stock" value="{{ $product->vendorSizeStock() }}">
-                @elseif($product->type != 'Physical')
-                  <input type="hidden" class="product-stock" value="0">
+                @if(!$catalogItem->emptyStock())
+                  <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->merchantSizeStock() }}">
+                @elseif($catalogItem->type != 'Physical')
+                  <input type="hidden" class="catalogItem-stock" value="0">
                 @else
-                  <input type="hidden" class="product-stock" value="">
+                  <input type="hidden" class="catalogItem-stock" value="">
 
                 @endif
 
               @endif
 
-              {{-- PRODUCT STOCK CONDITION SECTION ENDS --}}
+              {{-- CATALOGITEM STOCK CONDITION SECTION ENDS --}}
 
-              {{-- PRODUCT ATTRIBUTE SECTION  --}}
+              {{-- CATALOGITEM ATTRIBUTE SECTION  --}}
 
-              @if (!empty($product->attributes))
+              @if (!empty($catalogItem->attributes))
                 @php
-                  $attrArr = json_decode($product->attributes, true);
+                  $attrArr = json_decode($catalogItem->attributes, true);
                 @endphp
               @endif
               @if (!empty($attrArr))
-                <div class="product-attributes">
+                <div class="catalogItem-attributes">
                   <div class="row">
                   @foreach ($attrArr as $attrKey => $attrVal)
                     @if (array_key_exists("details_status",$attrVal) && $attrVal['details_status'] == 1)
@@ -343,20 +343,20 @@
                 </div>
               @endif
 
-              {{-- PRODUCT ATTRIBUTE SECTION ENDS  --}}
+              {{-- CATALOGITEM ATTRIBUTE SECTION ENDS  --}}
 
-              {{-- PRODUCT ADD CART SECTION --}}
+              {{-- CATALOGITEM ADD CART SECTION --}}
               @php
-                  $quickMerchantUserId = request()->get('user', $product->user_id);
-                  $quickMerchantItem = $product->merchantItems()->where('user_id', $quickMerchantUserId)->where('status', 1)->first();
-                  $quickMinQty = $quickMerchantItem ? max(1, (int)($quickMerchantItem->minimum_qty ?? 1)) : max(1, (int)($product->minimum_qty ?? 1));
-                  $quickStock = $quickMerchantItem ? (int)($quickMerchantItem->stock ?? 0) : (int)($product->stock ?? 0);
+                  $quickMerchantUserId = request()->get('user', $catalogItem->user_id);
+                  $quickMerchantItem = $catalogItem->merchantItems()->where('user_id', $quickMerchantUserId)->where('status', 1)->first();
+                  $quickMinQty = $quickMerchantItem ? max(1, (int)($quickMerchantItem->minimum_qty ?? 1)) : max(1, (int)($catalogItem->minimum_qty ?? 1));
+                  $quickStock = $quickMerchantItem ? (int)($quickMerchantItem->stock ?? 0) : (int)($catalogItem->stock ?? 0);
                   $quickPreordered = $quickMerchantItem ? (int)($quickMerchantItem->preordered ?? 0) : 0;
                   $quickCanBuy = $quickStock > 0 || $quickPreordered;
               @endphp
 
-              <input type="hidden" id="mproduct_price" value="{{ round($product->vendorSizePrice() * $curr->value,2) }}">
-              <input type="hidden" id="mproduct_id" value="{{ $product->id }}">
+              <input type="hidden" id="mproduct_price" value="{{ round($catalogItem->merchantSizePrice() * $curr->value,2) }}">
+              <input type="hidden" id="mcatalog_item_id" value="{{ $catalogItem->id }}">
               <input type="hidden" id="mmerchant_item_id" value="{{ $quickMerchantItem->id ?? '' }}">
               <input type="hidden" id="mmerchant_user_id" value="{{ $quickMerchantUserId }}">
               <input type="hidden" id="mcurr_pos" value="{{ $gs->currency_format }}">
@@ -368,10 +368,10 @@
                   <div class="cart-btn">
                     <ul class="btn-list">
 
-                      {{-- PRODUCT QUANTITY SECTION --}}
+                      {{-- CATALOGITEM QUANTITY SECTION --}}
 
-                      {{-- product_type is now on merchant_items --}}
-                      @if($quickMerchantItem && $quickMerchantItem->product_type != "affiliate" && $product->type == 'Physical')
+                      {{-- item_type is now on merchant_items --}}
+                      @if($quickMerchantItem && $quickMerchantItem->item_type != "affiliate" && $catalogItem->type == 'Physical')
 
                           <li>
                             <div class="multiple-item-price">
@@ -391,13 +391,13 @@
 
                       @endif
 
-                      {{-- PRODUCT QUANTITY SECTION ENDS --}}
+                      {{-- CATALOGITEM QUANTITY SECTION ENDS --}}
 
-                      {{-- product_type is now on merchant_items --}}
-                      @if($quickMerchantItem && $quickMerchantItem->product_type == "affiliate")
+                      {{-- item_type is now on merchant_items --}}
+                      @if($quickMerchantItem && $quickMerchantItem->item_type == "affiliate")
 
                       <li>
-                        <a href="{{ route('affiliate.product', $product->slug) }}" target="_blank">
+                        <a href="{{ route('affiliate.catalogItem', $catalogItem->slug) }}" target="_blank">
                           <i class="icofont-cart"></i>
                           {{ __('Purchase Now') }}
                         </a>
@@ -437,71 +437,71 @@
 
               @endif
 
-              {{-- PRODUCT ADD CART SECTION ENDS --}}
+              {{-- CATALOGITEM ADD CART SECTION ENDS --}}
 
-              {{-- PRODUCT OTHER DETAILS SECTION --}}
+              {{-- CATALOGITEM OTHER DETAILS SECTION --}}
 
-              @if($product->ship != null)
+              @if($catalogItem->ship != null)
 
               <div class="shipping-time">
                 {{ __('Estimated Shipping Time:') }}
-                <span>{{ $product->ship }}</span>
+                <span>{{ $catalogItem->ship }}</span>
               </div>
 
               @endif
 
-              @if( $product->sku != null )
+              @if( $catalogItem->sku != null )
 
-              <div class="product-id">
-                {{ __('Product SKU:') }}
-                <span>{{ $product->sku }}</span>
+              <div class="catalogItem-id">
+                {{ __('CatalogItem SKU:') }}
+                <span>{{ $catalogItem->sku }}</span>
               </div>
 
               @endif
 
-              @if($product->brand)
-              <div class="product-id">
+              @if($catalogItem->brand)
+              <div class="catalogItem-id">
                 {{ __('Brand:') }}
-                <span>{{ Str::ucfirst(getLocalizedBrandName($product->brand)) }}</span>
+                <span>{{ Str::ucfirst(getLocalizedBrandName($catalogItem->brand)) }}</span>
               </div>
               @endif
 
               @php
-                $qualityMerchantUserId = request()->get('user', $product->user_id);
-                $qualityMerchantItem = $product->merchantItems()->where('user_id', $qualityMerchantUserId)->where('status', 1)->first();
+                $qualityMerchantUserId = request()->get('user', $catalogItem->user_id);
+                $qualityMerchantItem = $catalogItem->merchantItems()->where('user_id', $qualityMerchantUserId)->where('status', 1)->first();
               @endphp
 
               @if($qualityMerchantItem && $qualityMerchantItem->qualityBrand)
-              <div class="product-id">
+              <div class="catalogItem-id">
                 {{ __('Brand qualities:') }}
                 <span>{{ getLocalizedQualityName($qualityMerchantItem->qualityBrand) }}</span>
               </div>
               @endif
 
-              {{-- PRODUCT OTHER DETAILS SECTION ENDS --}}
+              {{-- CATALOGITEM OTHER DETAILS SECTION ENDS --}}
 
-              {{-- PRODUCT LICENSE SECTION --}}
+              {{-- CATALOGITEM LICENSE SECTION --}}
 
-              @if($product->type == 'License')
+              @if($catalogItem->type == 'License')
 
-                @if($product->platform != null)
+                @if($catalogItem->platform != null)
                   <div class="license-id">
                       {{ __('Platform:') }}
-                      <span>{{ $product->platform }}</span>
+                      <span>{{ $catalogItem->platform }}</span>
                   </div>
                 @endif
 
-                @if($product->region != null)
+                @if($catalogItem->region != null)
                   <div class="license-id">
                       {{ __('Region:') }}
-                      <span>{{ $product->region }}</span>
+                      <span>{{ $catalogItem->region }}</span>
                   </div>
                 @endif
 
-                @if($product->licence_type != null)
+                @if($catalogItem->licence_type != null)
                 <div class="license-id">
                     {{ __('License Type:') }}
-                    <span>{{ $product->licence_type }}</span>
+                    <span>{{ $catalogItem->licence_type }}</span>
                 </div>
                 @endif
 
@@ -509,17 +509,17 @@
 
               <div class="mt-2">
                 @php
-                    $detailMerchantUserId = request()->get('user', $product->user_id);
-                    $detailMerchantItem = $product->merchantItems()->where('user_id', $detailMerchantUserId)->where('status', 1)->first();
+                    $detailMerchantUserId = request()->get('user', $catalogItem->user_id);
+                    $detailMerchantItem = $catalogItem->merchantItems()->where('user_id', $detailMerchantUserId)->where('status', 1)->first();
                     $detailMerchantItemId = $detailMerchantItem->id ?? null;
                 @endphp
                 @if($detailMerchantItemId)
-                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $product->slug, 'merchant_id' => $detailMerchantUserId, 'merchant_item_id' => $detailMerchantItemId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $detailMerchantUserId, 'merchant_item_id' => $detailMerchantItemId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
                 @endif
               </div>
 
 
-              {{-- PRODUCT LICENSE SECTION ENDS--}}
+              {{-- CATALOGITEM LICENSE SECTION ENDS--}}
 
 
             </div>
@@ -572,7 +572,7 @@
         var size_key = "";
         var colors = "";
         var total = "";
-        var mstock = $('.product-stock').val();
+        var mstock = $('.catalogItem-stock').val();
         var keys = "";
         var values = "";
         var prices = "";
@@ -621,7 +621,7 @@
           return total;
         }
 
-        // Product Details Product Size Active Js Code
+        // CatalogItem Details CatalogItem Size Active Js Code
         $('.mproduct-size .siz-list .box').on('click', function () {
 
             var parent = $(this).parent();
@@ -665,7 +665,7 @@
 
 
 
-        // Product Details Product Color Active Js Code
+        // CatalogItem Details CatalogItem Color Active Js Code
         $('.mproduct-color .color-list .box').on('click', function () {
             colors = $(this).data('color');
             var parent = $(this).parent();

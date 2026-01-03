@@ -30,10 +30,10 @@
                 </div>
               </div>
 
-              <div class="add-product-content1 add-product-content2">
+              <div class="add-catalogItem-content1 add-catalogItem-content2">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                       <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                         @include('includes.admin.form-both') 
@@ -55,14 +55,14 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Vendor') }}</h4>
+                                <h4 class="heading">{{ __('Merchant') }}</h4>
                             </div>
                           </div>
                           <div class="col-lg-7">
                               <select name="user_id">
-                                  <option value="">{{ __('Select Vendor') }}</option>
-                                  @foreach($merchants as $vendor)
-                                    <option value="{{ $vendor->id }}" {{ $data->user_id == $vendor->id ? 'selected' : '' }}>{{ $vendor->shop_name ?? $vendor->name }}</option>
+                                  <option value="">{{ __('Select Merchant') }}</option>
+                                  @foreach($merchants as $merchant)
+                                    <option value="{{ $merchant->id }}" {{ $data->user_id == $merchant->id ? 'selected' : '' }}>{{ $merchant->shop_name ?? $merchant->name }}</option>
                                   @endforeach
                               </select>
                           </div>
@@ -71,7 +71,7 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Allow Product Type') }}*</h4>
+                                <h4 class="heading">{{ __('Allow CatalogItem Type') }}*</h4>
                             </div>
                           </div>
                           <div class="col-lg-7">

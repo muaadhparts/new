@@ -9,12 +9,12 @@ class UpdateCatalogItemsStockCommand extends Command
 {
     /**
      * options:
-     *  --user_id= : target vendor user_id (default: 59)
+     *  --user_id= : target merchant user_id (default: 59)
      */
     protected $signature = 'catalog-items:update-stock
-                            {--user_id=59 : Vendor user_id to update stock for}';
+                            {--user_id=59 : Merchant user_id to update stock for}';
 
-    protected $description = 'Update merchant_items.stock from stock_all.qty for the given vendor.';
+    protected $description = 'Update merchant_items.stock from stock_all.qty for the given merchant.';
 
     public function handle(): int
     {

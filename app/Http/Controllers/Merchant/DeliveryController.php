@@ -27,7 +27,7 @@ class DeliveryController extends MerchantBaseController
         $user = $this->user;
 
         // ✅ FIX: Use explicit query instead of silent reject
-        // Get purchases that have merchant_purchases for this vendor
+        // Get purchases that have merchant_purchases for this merchant
         $datas = Purchase::orderby('id', 'desc')
             ->whereHas('merchantPurchases', function ($query) use ($user) {
                 $query->where('user_id', $user->id);

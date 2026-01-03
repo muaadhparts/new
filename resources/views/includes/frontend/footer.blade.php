@@ -60,7 +60,7 @@
                         @if ($ps->home == 1)
                             <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         @endif
-                        <li><a href="{{ route('front.category') }}">@lang('Products')</a></li>
+                        <li><a href="{{ route('front.category') }}">@lang('CatalogItems')</a></li>
                         @if ($ps->contact == 1)
                             <li><a href="{{ route('front.contact') }}">@lang('Contact Us')</a></li>
                         @endif
@@ -75,7 +75,7 @@
                 <div class="muaadh-footer-col">
                     <h5 class="muaadh-footer-title">@lang('Newsletter')</h5>
                     <p class="muaadh-footer-newsletter-text">
-                        @lang('Subscribe to get updates on new products and offers.')
+                        @lang('Subscribe to get updates on new catalogItems and offers.')
                     </p>
                     <form action="{{ route('front.subscribe') }}" method="POST" class="muaadh-footer-newsletter">
                         @csrf

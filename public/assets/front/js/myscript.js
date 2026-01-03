@@ -136,7 +136,7 @@
     });
   });
 
-  // Product Add Qty - uses minimum_qty as step (for bundles)
+  // CatalogItem Add Qty - uses minimum_qty as step (for bundles)
   $(document).on("click", ".qtplus", function () {
     var $tselector = $("#order-qty");
     var stock = $("#stock").val();
@@ -167,7 +167,7 @@
     }
   });
 
-  // Product Minus Qty - uses minimum_qty as step (for bundles)
+  // CatalogItem Minus Qty - uses minimum_qty as step (for bundles)
   $(document).on("click", ".qtminus", function () {
     var $tselector = $("#order-qty");
     var total = parseInt($($tselector).val()) || 1;
@@ -211,7 +211,7 @@
     $("#rating").val($(this).data("val"));
   });
 
-  // ========== Home Product Quantity Controls ==========
+  // ========== Home CatalogItem Quantity Controls ==========
   // زيادة الكمية في home_product
   $(document).on('click', '.hp-qtplus', function(e) {
     e.preventDefault();
@@ -253,7 +253,7 @@
   // ============================================
   // CART SYSTEM: All cart functionality uses m-cart-add class
   // Handled exclusively by cart-unified.js via POST /cart/unified
-  // Required: data-merchant-product-id, data-qty-input
+  // Required: data-merchant-catalogItem-id, data-qty-input
   // Optional: data-redirect="/cart" for Buy Now
   // ============================================
 
@@ -476,28 +476,28 @@
 
 
   // ============================================
-  // Product Card Gallery - Switch images on indicator hover/click
+  // CatalogItem Card Gallery - Switch images on indicator hover/click
   // ============================================
-  $(document).on('mouseenter click', '.m-product-card__indicator', function() {
+  $(document).on('mouseenter click', '.m-catalogItem-card__indicator', function() {
     var $indicator = $(this);
-    var $card = $indicator.closest('.m-product-card');
+    var $card = $indicator.closest('.m-catalogItem-card');
     var index = $indicator.data('index');
 
     // Update indicators
-    $card.find('.m-product-card__indicator').removeClass('active');
+    $card.find('.m-catalogItem-card__indicator').removeClass('active');
     $indicator.addClass('active');
 
     // Update images
-    $card.find('.m-product-card__img').removeClass('active');
-    $card.find('.m-product-card__img[data-index="' + index + '"]').addClass('active');
+    $card.find('.m-catalogItem-card__img').removeClass('active');
+    $card.find('.m-catalogItem-card__img[data-index="' + index + '"]').addClass('active');
   });
 
   // Auto-cycle images on card hover (optional - subtle effect)
   var cardHoverInterval = null;
-  $(document).on('mouseenter', '.m-product-card__image', function() {
+  $(document).on('mouseenter', '.m-catalogItem-card__image', function() {
     var $imageContainer = $(this);
-    var $card = $imageContainer.closest('.m-product-card');
-    var $indicators = $card.find('.m-product-card__indicator');
+    var $card = $imageContainer.closest('.m-catalogItem-card');
+    var $indicators = $card.find('.m-catalogItem-card__indicator');
 
     if ($indicators.length <= 1) return;
 
@@ -508,14 +508,14 @@
     }, 2000);
   });
 
-  $(document).on('mouseleave', '.m-product-card__image', function() {
+  $(document).on('mouseleave', '.m-catalogItem-card__image', function() {
     if (cardHoverInterval) {
       clearInterval(cardHoverInterval);
       cardHoverInterval = null;
     }
     // Reset to first image
-    var $card = $(this).closest('.m-product-card');
-    $card.find('.m-product-card__indicator').first().trigger('mouseenter');
+    var $card = $(this).closest('.m-catalogItem-card');
+    $card.find('.m-catalogItem-card__indicator').first().trigger('mouseenter');
   });
 
 })(jQuery);

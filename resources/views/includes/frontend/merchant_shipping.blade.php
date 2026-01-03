@@ -1,4 +1,4 @@
-<div class="modal fade gs-modal" id="vendor_shipping{{$vendor_id}}" tabindex="-1" role="dialog"
+<div class="modal fade gs-modal" id="merchant_shipping{{$merchant_id}}" tabindex="-1" role="dialog"
     aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
     <div class="modal-dialog send-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
@@ -13,11 +13,11 @@
                     <div class="inputs-wrapper">
                         @forelse($shipping as $data)
                         <div class="gs-radio-wrapper">
-                            <input type="radio" class="shipping" ref="{{$vendor_id}}"
+                            <input type="radio" class="shipping" ref="{{$merchant_id}}"
                                 data-price="{{ round($data->price * $curr->value,2) }}"
                                 view="{{ $curr->sign }}{{ round($data->price * $curr->value,2) }}"
                                 data-form="{{$data->title}}" id="free-shepping{{ $data->id }}"
-                                name="shipping[{{$vendor_id}}]" value="{{ $data->id }}" {{ ($loop->first) ?
+                                name="shipping[{{$merchant_id}}]" value="{{ $data->id }}" {{ ($loop->first) ?
                             'checked' :
                             ''
                             }}>

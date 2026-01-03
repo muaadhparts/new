@@ -16,12 +16,12 @@ class CatalogItemCardDTO
 {
     // CatalogItem
     public int $catalogItemId;
-    public string $productName;
-    public string $productSlug;
+    public string $catalogItemName;
+    public string $catalogItemSlug;
     public ?string $sku;
     public string $photo;
     public string $type;
-    public string $productType;
+    public string $itemType;
     public ?string $affiliateLink;
     public float $catalogReviewsAvg;
     public int $catalogReviewsCount;
@@ -39,7 +39,7 @@ class CatalogItemCardDTO
 
     // Computed
     public bool $inStock;
-    public bool $hasVendor;
+    public bool $hasMerchant;
     public int $offPercentage;
     public string $detailsUrl;
     public bool $isInFavorites;
@@ -76,13 +76,13 @@ class CatalogItemCardDTO
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
-        $dto->productName = $catalogItem->showName();
-        $dto->productSlug = $catalogItem->slug ?? '';
+        $dto->catalogItemName = $catalogItem->showName();
+        $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->sku = $catalogItem->sku;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
         $dto->type = $catalogItem->type ?? 'Physical';
-        // product_type is now on merchant_items, not catalog_items
-        $dto->productType = $merchant->product_type ?? '';
+        // item_type is now on merchant_items, not catalog_items
+        $dto->itemType = $merchant->item_type ?? '';
         // affiliate_link is now on merchant_items, not catalog_items
         $dto->affiliateLink = $merchant->affiliate_link;
         $dto->catalogReviewsAvg = (float) ($catalogItem->catalog_reviews_avg_rating ?? 0);
@@ -103,9 +103,9 @@ class CatalogItemCardDTO
 
         // Computed values
         $dto->inStock = $dto->stock > 0 || $dto->preordered;
-        $dto->hasVendor = $dto->merchantId > 0;
+        $dto->hasMerchant = $dto->merchantId > 0;
         $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
-        $dto->detailsUrl = self::buildDetailsUrl($dto->productSlug, $dto->merchantId, $dto->merchantItemId);
+        $dto->detailsUrl = self::buildDetailsUrl($dto->catalogItemSlug, $dto->merchantId, $dto->merchantItemId);
 
         // Favorites
         $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantItemId);
@@ -146,13 +146,13 @@ class CatalogItemCardDTO
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
-        $dto->productName = $catalogItem->showName();
-        $dto->productSlug = $catalogItem->slug ?? '';
+        $dto->catalogItemName = $catalogItem->showName();
+        $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->sku = $catalogItem->sku;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
         $dto->type = $catalogItem->type ?? 'Physical';
-        // product_type is now on merchant_items - no type without merchant
-        $dto->productType = '';
+        // item_type is now on merchant_items - no type without merchant
+        $dto->itemType = '';
         // affiliate_link is now on merchant_items - no link without merchant
         $dto->affiliateLink = null;
         $dto->catalogReviewsAvg = (float) ($catalogItem->catalog_reviews_avg_rating ?? 0);
@@ -171,9 +171,9 @@ class CatalogItemCardDTO
 
         // Computed
         $dto->inStock = false;
-        $dto->hasVendor = false;
+        $dto->hasMerchant = false;
         $dto->offPercentage = 0;
-        $dto->detailsUrl = route('front.catalog-item.legacy', $dto->productSlug);
+        $dto->detailsUrl = route('front.catalog-item.legacy', $dto->catalogItemSlug);
 
         // Favorites (catalog item level)
         $dto->isInFavorites = $favoriteCatalogItemIds->contains($dto->catalogItemId);

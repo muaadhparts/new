@@ -50,38 +50,38 @@ class FrontendController extends Controller
         }
     }
 
-    // Display All Type Of Products
+    // Display All Type Of CatalogItems
 
-    public function merchant_products(Request $request, $merchant_id)
+    public function merchant_items(Request $request, $merchant_id)
     {
         try {
             $user = User::where('id', $merchant_id)->first();
             if (!$user) {
-                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Vendor not found']]);
+                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Merchant not found']]);
             }
 
-            // Get products through merchant_items for this vendor
-            // product_type is now on merchant_items, not products
+            // Get catalogItems through merchant_items for this merchant
+            // item_type is now on merchant_items, not catalogItems
             $merchantItemsQuery = \App\Models\MerchantItem::where('user_id', $user->id)
                 ->where('status', 1)
-                ->with(['product' => function($query) {
+                ->with(['catalogItem' => function($query) {
                     $query->where('status', 1);
                 }]);
 
             if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
-                $merchantItemsQuery->where('product_type', $request->type);
+                $merchantItemsQuery->where('item_type', $request->type);
             }
 
             $merchantItems = $merchantItemsQuery->get();
 
-            // Extract catalog items and inject vendor context using CatalogItemContextHelper
+            // Extract catalog items and inject merchant context using CatalogItemContextHelper
             $prods = $merchantItems->map(function($mp) use ($user) {
-                if (!$mp->product) return null;
+                if (!$mp->catalogItem) return null;
 
-                $product = $mp->product;
+                $catalogItem = $mp->catalogItem;
                 // Use CatalogItemContextHelper for consistency
-                CatalogItemContextHelper::apply($product, $mp);
-                return $product;
+                CatalogItemContextHelper::apply($catalogItem, $mp);
+                return $catalogItem;
             })->filter()->values();
 
             return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
@@ -258,9 +258,9 @@ class FrontendController extends Controller
 
     // Display Sliders, Featured Links, Featured Banners, Services, Banners & Brands Ends
 
-    // Display All Type Of Products
+    // Display All Type Of CatalogItems
 
-    public function products(Request $request)
+    public function catalogItems(Request $request)
     {
 
         try {
@@ -272,8 +272,8 @@ class FrontendController extends Controller
                 $typeCheck = !empty($type) && in_array($type, ['Physical', 'Digital', 'License', 'Listing']);
                 $highlight = isset($input['highlight']) ? $input['highlight'] : '';
                 $highlightCheck = !empty($highlight) && in_array($highlight, ['featured', 'best', 'top', 'big', 'is_discount', 'hot', 'latest', 'trending', 'sale']);
-                $productType = isset($input['product_type']) ? $input['product_type'] : '';
-                $productTypeCheck = !empty($productType) && in_array($productType, ['normal', 'affiliate']);
+                $itemType = isset($input['item_type']) ? $input['item_type'] : '';
+                $itemTypeCheck = !empty($itemType) && in_array($itemType, ['normal', 'affiliate']);
                 $limit = isset($input['limit']) ? (int) $input['limit'] : 0;
                 $paginate = isset($input['paginate']) ? (int) $input['paginate'] : 0;
 
@@ -283,9 +283,9 @@ class FrontendController extends Controller
                     $prods = $prods->whereType($type);
                 }
 
-                // product_type is now on merchant_items, not catalog_items
-                if ($productTypeCheck) {
-                    $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('product_type', $productType));
+                // item_type is now on merchant_items, not catalog_items
+                if ($itemTypeCheck) {
+                    $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('item_type', $itemType));
                 }
 
                 // All highlight flags (featured, best, top, big, trending) are on merchant_items table
@@ -321,14 +321,14 @@ class FrontendController extends Controller
                     $prods = $prods->where('status', 1)->paginate($paginate);
                 }
 
-                // Note: General listing shows catalog items from all vendors
-                // For vendor-specific data, CatalogItemListResource will use the first available merchant_item
+                // Note: General listing shows catalog items from all merchants
+                // For merchant-specific data, CatalogItemListResource will use the first available merchant_item
                 return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods)->response()->getData(true), 'error' => []]);
             } else {
 
                 $prods = CatalogItem::status(1)->get();
-                // Note: General listing shows catalog items from all vendors
-                // For vendor-specific data, CatalogItemListResource will use the first available merchant_item
+                // Note: General listing shows catalog items from all merchants
+                // For merchant-specific data, CatalogItemListResource will use the first available merchant_item
                 return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
             }
         } catch (\Exception $e) {
@@ -336,7 +336,7 @@ class FrontendController extends Controller
         }
     }
 
-    // Display All Type Of Products Ends
+    // Display All Type Of CatalogItems Ends
 
     // Display Faq, Blog, Page
 

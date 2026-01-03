@@ -12,7 +12,7 @@
                                                 <a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
                                             </li>
                                             <li>
-                                                <a href="javascript:;">{{ __("Vendors") }}</a>
+                                                <a href="javascript:;">{{ __("Merchants") }}</a>
                                             </li>
                                             <li>
                                                 <a href="{{ route('admin-withdraw-index') }}">{{ __("Withdraws") }}</a>
@@ -21,7 +21,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="product-area">
+                        <div class="catalogItem-area">
                             <div class="row">
                                 <div class="col-lg-12">
                                     <div class="mr-table allproduct">

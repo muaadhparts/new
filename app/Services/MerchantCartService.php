@@ -135,13 +135,6 @@ class MerchantCartService
         ];
     }
 
-    /**
-     * @deprecated Use getCatalogItemDimensions() instead
-     */
-    public static function getProductDimensions(int $mpId): array
-    {
-        return self::getCatalogItemDimensions($mpId);
-    }
 
     /**
      * ======================================
@@ -171,9 +164,9 @@ class MerchantCartService
                 continue;
             }
 
-            // البحث عن merchant_product_id في مستويات متعددة
-            $mpId = $item['merchant_product_id']
-                ?? data_get($item, 'item.merchant_product_id')
+            // البحث عن merchant_item_id في مستويات متعددة
+            $mpId = $item['merchant_item_id']
+                ?? data_get($item, 'item.merchant_item_id')
                 ?? 0;
 
             $qty = (int) ($item['qty'] ?? 1);
@@ -366,7 +359,7 @@ class MerchantCartService
                 continue;
             }
 
-            $mpId = $item['merchant_product_id'] ?? 0;
+            $mpId = $item['merchant_item_id'] ?? 0;
             $qty = (int) ($item['qty'] ?? 1);
 
             // حساب الخصم الموحد
@@ -376,7 +369,7 @@ class MerchantCartService
             $dimensions = self::getCatalogItemDimensions($mpId);
 
             $itemsDetails[$cartKey] = [
-                'merchant_product_id' => $mpId,
+                'merchant_item_id' => $mpId,
                 'qty' => $qty,
                 'bulk_discount' => $bulkDiscount,
                 'dimensions' => $dimensions,

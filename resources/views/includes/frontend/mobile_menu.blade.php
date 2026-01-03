@@ -87,7 +87,7 @@
                 </a>
                 <a href="{{ route('front.category') }}" class="muaadh-mobile-nav-item {{ request()->is('category*') ? 'active' : '' }}">
                     <i class="fas fa-box-open"></i>
-                    <span>@lang('Products')</span>
+                    <span>@lang('CatalogItems')</span>
                 </a>
                 @if ($pages->where('header', '=', 1)->count() > 0)
                     <div class="muaadh-mobile-nav-accordion">
@@ -243,7 +243,7 @@
                 {{-- Go Button --}}
                 <button type="button" class="muaadh-mobile-go-btn" id="mobile-category-go-btn">
                     <i class="fas fa-search"></i>
-                    @lang('Show Products')
+                    @lang('Show CatalogItems')
                 </button>
             </div>
 
@@ -335,7 +335,7 @@
                     <h6 class="muaadh-mobile-section-title">@lang('Other Accounts')</h6>
                     <a href="{{ route('merchant.login') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-store"></i>
-                        <span>@lang('Vendor Login')</span>
+                        <span>@lang('Merchant Login')</span>
                     </a>
                     <a href="{{ route('rider.login') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-motorcycle"></i>

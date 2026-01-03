@@ -56,9 +56,9 @@
 
                     @if($hasRemainingCart)
                         <a href="{{ route('front.cart') }}" class="template-btn btn-success-page">
-                            <i class="fas fa-shopping-cart me-2"></i>@lang('Continue Shopping - Complete Other Vendors')
+                            <i class="fas fa-shopping-cart me-2"></i>@lang('Continue Shopping - Complete Other Merchants')
                         </a>
-                        <p class="mt-2 text-muted small">@lang('You still have items from other vendors in your cart')</p>
+                        <p class="mt-2 text-muted small">@lang('You still have items from other merchants in your cart')</p>
                     @else
                         <a href="{{ route('front.index') }}" class="template-btn btn-success-page">@lang('Get Back to Our Homepage')</a>
                     @endif
@@ -341,14 +341,14 @@
 
 
                 </div>
-                <div class="ordered-products wow-replaced" data-wow-delay=".1s">
-                    <h4>@lang('Ordered Products:')</h4>
+                <div class="ordered-catalogItems wow-replaced" data-wow-delay=".1s">
+                    <h4>@lang('Ordered Items:')</h4>
                     <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr class="wow-replaced" data-wow-delay=".1s">
-                                    <th class="d-none d-lg-table-cell">@lang('Product Image')</th>
-                                    <th>@lang('Product Details')</th>
+                                    <th class="d-none d-lg-table-cell">@lang('CatalogItem Image')</th>
+                                    <th>@lang('CatalogItem Details')</th>
                                     <th class="d-none d-lg-table-cell">@lang('Unit Price')</th>
                                     <th class="d-none d-lg-table-cell">@lang('Total')</th>
                                 </tr>
@@ -356,56 +356,56 @@
                             <tbody>
 
 
-                                @foreach ($tempcart->items as $product)
+                                @foreach ($tempcart->items as $catalogItem)
                                     <tr class="wow-replaced" data-wow-delay=".1s">
-                                        <td colspan="1" class="product-img d-none d-lg-table-cell">
-                                            <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
+                                        <td colspan="1" class="catalogItem-img d-none d-lg-table-cell">
+                                            <img src="{{ $catalogItem['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="">
                                         </td>
-                                        <td class="product-details">
-                                            <img src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
+                                        <td class="catalogItem-details">
+                                            <img src="{{ $catalogItem['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png') }}"
                                                 alt="" class="d-lg-none d-table-cell pb-24 small-device-img">
-                                            <h6>{{ getLocalizedProductName($product['item']) }}</h6>
-                                            <p><span>@lang('Quantity:')</span> {{ $product['qty'] }}</p>
+                                            <h6>{{ getLocalizedCatalogItemName($catalogItem['item']) }}</h6>
+                                            <p><span>@lang('Quantity:')</span> {{ $catalogItem['qty'] }}</p>
                                             <p><span>Size:</span>
-                                                @if (!empty($product['size']))
+                                                @if (!empty($catalogItem['size']))
                                                     <b>{{ __('Size') }}</b>:
-                                                    {{ $product['item']['measure'] }}{{ str_replace('-', '                                                                ', $product['size']) }}
+                                                    {{ $catalogItem['item']['measure'] }}{{ str_replace('-', '                                                                ', $catalogItem['size']) }}
                                                     <br>
                                                 @endif
 
                                             </p>
                                             <p><span>@lang('Color:')</span>
 
-                                                @if (!empty($product['color']))
+                                                @if (!empty($catalogItem['color']))
                                                     <div class="d-flex mt-2">
                                                         <b>{{ __('Color') }}</b>: <span class="color-show-btn mt-1 ms-3 muaadh-success-color-swatch" id="color-bar"
-                                                            style="--swatch-color: #{{ $product['color'] == '' ? 'fff' : $product['color'] }};"></span>
+                                                            style="--swatch-color: #{{ $catalogItem['color'] == '' ? 'fff' : $catalogItem['color'] }};"></span>
                                                     </div>
                                                 @endif
                                             </p>
 
-                                            @if (!empty($product['keys']))
-                                                @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                            @if (!empty($catalogItem['keys']))
+                                                @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
                                                     <p><span>{{ ucwords(str_replace('_', ' ', $key)) }}:</span>
                                                         {{ $value }}</p>
                                                 @endforeach
                                             @endif
 
                                             <p class="d-lg-none d-table-cell"><span>@lang('Unit Price:')</span>
-                                                {{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}
+                                                {{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $order->currency_value) }}
                                             </p>
-                                            <p class="d-lg-none"><span>@lang('Total Price:')</span>{{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
-                                                <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
+                                            <p class="d-lg-none"><span>@lang('Total Price:')</span>{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $order->currency_value) }}
+                                                <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                             </p>
 
                                         </td>
                                         <td class="d-none d-lg-table-cell">
-                                            {{ \PriceHelper::showCurrencyPrice($product['item_price'] * $order->currency_value) }}
+                                            {{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $order->currency_value) }}
                                         </td>
                                         <td class="d-none d-lg-table-cell">
-                                            {{ \PriceHelper::showCurrencyPrice($product['price'] * $order->currency_value) }}
-                                            <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
+                                            {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $order->currency_value) }}
+                                            <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                         </td>
                                     </tr>
                                 @endforeach

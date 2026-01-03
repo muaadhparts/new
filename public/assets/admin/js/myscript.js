@@ -1013,7 +1013,7 @@
           $("#user-notf-count").html(data["user_count"]);
           $("#conv-notf-count").html(data["conv_count"]);
           $("#order-notf-count").html(data["order_count"]);
-          $("#product-notf-count").html(data["product_count"]);
+          $("#catalogItem-notf-count").html(data["product_count"]);
         },
       });
     }, 300000);
@@ -1052,13 +1052,13 @@
   // PRODUCT NOTIFICATION
 
   $(document).on("click", "#notf_product", function () {
-    $("#product-notf-count").html("0");
-    $("#product-notf-show").load($("#product-notf-show").data("href"));
+    $("#catalogItem-notf-count").html("0");
+    $("#catalogItem-notf-show").load($("#catalogItem-notf-show").data("href"));
   });
 
-  $(document).on("click", "#product-notf-clear", function () {
+  $(document).on("click", "#catalogItem-notf-clear", function () {
     $(this).parent().parent().trigger("click");
-    $.get($("#product-notf-clear").data("href"));
+    $.get($("#catalogItem-notf-clear").data("href"));
   });
 
   // PRODUCT NOTIFICATION ENDS

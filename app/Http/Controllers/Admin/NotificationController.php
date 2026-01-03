@@ -11,7 +11,7 @@ class NotificationController extends AdminBaseController
   {
       $user_count = DB::table('notifications')->where('user_id','!=',null)->where('is_read','=',0)->count();
       $order_count = DB::table('notifications')->where('purchase_id','!=',null)->where('is_read','=',0)->count();
-      $product_count = DB::table('notifications')->where('product_id','!=',null)->where('is_read','=',0)->count();
+      $product_count = DB::table('notifications')->where('catalog_item_id','!=',null)->where('is_read','=',0)->count();
       $conv_count = DB::table('notifications')->where('conversation_id','!=',null)->where('is_read','=',0)->count();
 
       $data = array();        
@@ -59,22 +59,22 @@ class NotificationController extends AdminBaseController
       return view('admin.notification.purchase',compact('datas'));           
   } 
 
-  public function product_notf_clear()
+  public function catalogItem_notf_clear()
   {
-      $data = CatalogEvent::where('product_id','!=',null);
+      $data = CatalogEvent::where('catalog_item_id','!=',null);
       $data->delete();        
   } 
 
-  public function product_notf_show()
+  public function catalogItem_notf_show()
   {
-      $datas = CatalogEvent::where('product_id','!=',null)->latest('id')->get();
+      $datas = CatalogEvent::where('catalog_item_id','!=',null)->latest('id')->get();
       if($datas->count() > 0){
         foreach($datas as $data){
           $data->is_read = 1;
           $data->update();
         }
       }       
-      return view('admin.notification.product',compact('datas'));           
+      return view('admin.notification.catalogItem',compact('datas'));           
   } 
 
   public function conv_notf_clear()

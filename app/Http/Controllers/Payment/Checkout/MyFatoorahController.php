@@ -177,7 +177,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $input = array_merge($step1, $step2, $request->all());
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         $oldCart = Session::get('cart');
@@ -192,7 +192,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         ];
         $input['cart'] = json_encode($cartData);
 
-        $affilateUsers = PurchaseHelper::product_affilate_check($cart);
+        $affilateUsers = PurchaseHelper::item_affilate_check($cart);
         $input['affilate_users'] = $affilateUsers ? json_encode($affilateUsers) : null;
 
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller

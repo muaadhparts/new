@@ -14,7 +14,7 @@ $excludeDirs = [
     $root . DIRECTORY_SEPARATOR . 'node_modules',
 ];
 
-$pattern = '/\$(prod)\b/'; // $prod فقط
+$pattern = '/\$(prod)\b/'; // $cartItem فقط
 
 $rii = new RecursiveIteratorIterator(
     new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)

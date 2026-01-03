@@ -21,7 +21,7 @@ class MerchantPurchaseResource extends JsonResource
             'total_qty' => $this->merchantPurchases()->where('user_id','=',$user->id)->sum('qty'),
             'pay_amount' => $this->currency_sign . "" . round($this->merchantPurchases()->where('user_id','=',$user->id)->sum('price') * $this->currency_value , 2),
             'status' => $this->status,
-            'details' => route('vendor-purchase-show', $this->purchase_number),
+            'details' => route('merchant-purchase-show', $this->purchase_number),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
           ];

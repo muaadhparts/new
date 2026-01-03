@@ -23,14 +23,14 @@ class SubscriptionController extends UserBaseController
         return view('user.package.index',$data);
     }
 
-    public function vendorrequest($id)
+    public function merchantrequest($id)
     {
         $data['curr'] = $this->curr;
         $data['subs'] = Subscription::findOrFail($id);
         $data['user'] = $this->user;
         $data['package'] = $this->user->subscribes()->where('status',1)->latest('id')->first();
 
-        if($this->gs->reg_vendor != 1)
+        if($this->gs->reg_merchant != 1)
         {
             return redirect()->back();
         }
@@ -44,7 +44,7 @@ class SubscriptionController extends UserBaseController
         return view('user.package.details',$data);
     }
 
-    public function vendorrequestsub(Request $request)
+    public function merchantrequestsub(Request $request)
     {
         $input = $request->all();
         if(isset($input['method'])){
@@ -83,7 +83,7 @@ class SubscriptionController extends UserBaseController
 
             $data = [
                 'to' => $user->email,
-                'type' => "vendor_accept",
+                'type' => "merchant_accept",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",
@@ -93,7 +93,7 @@ class SubscriptionController extends UserBaseController
             $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
 
-            return redirect($success_url)->with('success',__('Vendor Account Activated Successfully'));
+            return redirect($success_url)->with('success',__('Merchant Account Activated Successfully'));
 
     }
 
@@ -102,7 +102,7 @@ class SubscriptionController extends UserBaseController
     }
 
     public function payreturn(){
-        return redirect()->route('user-dashboard')->with('success',__('Vendor Account Activated Successfully'));
+        return redirect()->route('user-dashboard')->with('success',__('Merchant Account Activated Successfully'));
     }
 
     public function check(Request $request){

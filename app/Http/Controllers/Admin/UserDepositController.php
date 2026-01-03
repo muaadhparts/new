@@ -37,7 +37,7 @@ class UserDepositController extends AdminBaseController
                                         $class = $data->status == 1 ? 'drop-success' : 'drop-warning';
                                         $s = $data->status == 1 ? 'selected' : '';
                                         $ns = $data->status == 0 ? 'selected' : '';
-                                        return '<div class="action-list"><select class="process select vendor-droplinks '.$class.'"><option data-val="1" value="'. route('admin-user-deposit-status',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>'.__("Completed").'</option><option data-val="0" value="'. route('admin-user-deposit-status',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("Pending").'</option></select></div>';
+                                        return '<div class="action-list"><select class="process select merchant-droplinks '.$class.'"><option data-val="1" value="'. route('admin-user-deposit-status',['id1' => $data->id, 'id2' => 1]).'" '.$s.'>'.__("Completed").'</option><option data-val="0" value="'. route('admin-user-deposit-status',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("Pending").'</option></select></div>';
                                     }
 
                                 }) 

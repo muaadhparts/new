@@ -14,15 +14,15 @@
                         @if($methods->count() > 0)
                             @foreach($methods as $index => $data)
                                 <div class="gs-radio-wrapper">
-                                    <input type="radio" class="shipping" ref="{{ $vendor_id }}"
+                                    <input type="radio" class="shipping" ref="{{ $merchant_id }}"
                                            data-price="{{ round($data->price * $curr->value, 2) }}"
                                            data-free-above="{{ round(($data->free_above ?? 0) * $curr->value, 2) }}"
                                            view="{{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}"
                                            data-form="{{ $data->title }}"
-                                           id="{{ $provider }}-shipping-{{ $vendor_id }}-{{ $data->id }}"
-                                           name="shipping[{{ $vendor_id }}]" value="{{ $data->id }}">
+                                           id="{{ $provider }}-shipping-{{ $merchant_id }}-{{ $data->id }}"
+                                           name="shipping[{{ $merchant_id }}]" value="{{ $data->id }}">
 
-                                    <label class="icon-label" for="{{ $provider }}-shipping-{{ $vendor_id }}-{{ $data->id }}">
+                                    <label class="icon-label" for="{{ $provider }}-shipping-{{ $merchant_id }}-{{ $data->id }}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none">
                                             <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" fill="#FDFDFD" />
                                             <rect x="0.5" y="0.5" width="19" height="19" rx="9.5" stroke="#EE1243" />
@@ -30,7 +30,7 @@
                                         </svg>
                                     </label>
 
-                                    <label for="{{ $provider }}-shipping-{{ $vendor_id }}-{{ $data->id }}">
+                                    <label for="{{ $provider }}-shipping-{{ $merchant_id }}-{{ $data->id }}">
                                         <span class="shipping-title">{{ $data->title }}</span>
                                         <span class="shipping-price-display">
                                             @if($data->price != 0)
@@ -59,18 +59,18 @@
 <script>
 (function() {
     const modalId = '{{ $modalId }}';
-    const merchantId = {{ $vendor_id }};
+    const merchantId = {{ $merchant_id }};
     const currSign = '{{ $curr->sign }}';
 
     @php
-        $vendorProductsTotal = 0;
+        $merchantCatalogitemsTotal = 0;
         if (isset($array_product)) {
-            foreach ($array_product as $product) {
-                $vendorProductsTotal += $product['price'] ?? 0;
+            foreach ($array_product as $catalogItem) {
+                $merchantCatalogitemsTotal += $catalogItem['price'] ?? 0;
             }
         }
     @endphp
-    const vendorCartTotal = {{ round($vendorProductsTotal * $curr->value, 2) }};
+    const merchantCartTotal = {{ round($merchantCatalogitemsTotal * $curr->value, 2) }};
 
     function initShippingModal() {
         const modal = document.getElementById(modalId);
@@ -91,7 +91,7 @@
 
                 // Check if free shipping applies
                 let finalPrice = originalPrice;
-                let isFreeShipping = (freeAbove > 0 && vendorCartTotal >= freeAbove);
+                let isFreeShipping = (freeAbove > 0 && merchantCartTotal >= freeAbove);
                 if (isFreeShipping) finalPrice = 0;
 
                 // Update shipping text display

@@ -69,47 +69,47 @@
         : '#';
 
     // Condition
-    $isUsed = $merchantItem->product_condition == 1;
+    $isUsed = $merchantItem->item_condition == 1;
     $conditionLabel = $isUsed ? __('Used') : __('New');
 @endphp
 
 @if($layout === 'list')
     {{-- List View --}}
     <div class="col-12">
-        <div class="m-product-card m-product-card--list">
-            <div class="m-product-card__image-wrapper">
+        <div class="m-catalogItem-card m-catalogItem-card--list">
+            <div class="m-catalogItem-card__image-wrapper">
                 <a href="{{ $itemUrl }}">
-                    <img src="{{ $thumbnail }}" alt="{{ $name }}" class="m-product-card__image" loading="lazy">
+                    <img src="{{ $thumbnail }}" alt="{{ $name }}" class="m-catalogItem-card__image" loading="lazy">
                 </a>
                 @if($isUsed)
-                    <span class="m-product-card__badge m-product-card__badge--warning">{{ $conditionLabel }}</span>
+                    <span class="m-catalogItem-card__badge m-catalogItem-card__badge--warning">{{ $conditionLabel }}</span>
                 @endif
             </div>
-            <div class="m-product-card__content">
-                <div class="m-product-card__header">
-                    <a href="{{ $itemUrl }}" class="m-product-card__title">{{ Str::limit($partLabel, 60) }}</a>
+            <div class="m-catalogItem-card__content">
+                <div class="m-catalogItem-card__header">
+                    <a href="{{ $itemUrl }}" class="m-catalogItem-card__title">{{ Str::limit($partLabel, 60) }}</a>
                     @if($sku)
-                        <span class="m-product-card__sku">{{ $sku }}</span>
+                        <span class="m-catalogItem-card__sku">{{ $sku }}</span>
                     @endif
                 </div>
-                <div class="m-product-card__meta">
+                <div class="m-catalogItem-card__meta">
                     @if($qualityName)
-                        <span class="m-product-card__quality">{{ $qualityName }}</span>
+                        <span class="m-catalogItem-card__quality">{{ $qualityName }}</span>
                     @endif
-                    <span class="m-product-card__seller">{{ $merchantName }}</span>
+                    <span class="m-catalogItem-card__seller">{{ $merchantName }}</span>
                 </div>
-                <div class="m-product-card__footer">
-                    <div class="m-product-card__price-wrapper">
-                        <span class="m-product-card__price">{{ \PriceHelper::showCurrencyPrice($finalPrice) }}</span>
+                <div class="m-catalogItem-card__footer">
+                    <div class="m-catalogItem-card__price-wrapper">
+                        <span class="m-catalogItem-card__price">{{ \PriceHelper::showCurrencyPrice($finalPrice) }}</span>
                     </div>
-                    <div class="m-product-card__stock {{ $inStock ? 'm-product-card__stock--available' : 'm-product-card__stock--out' }}">
+                    <div class="m-catalogItem-card__stock {{ $inStock ? 'm-catalogItem-card__stock--available' : 'm-catalogItem-card__stock--out' }}">
                         @if($inStock)
                             <i class="fas fa-check-circle"></i> @lang('In Stock') ({{ $stock }})
                         @else
                             <i class="fas fa-times-circle"></i> @lang('Out of Stock')
                         @endif
                     </div>
-                    <div class="m-product-card__actions">
+                    <div class="m-catalogItem-card__actions">
                         <a href="{{ $itemUrl }}" class="m-btn m-btn--primary m-btn--sm">
                             <i class="fas fa-eye"></i> @lang('View')
                         </a>
@@ -127,30 +127,30 @@
 @else
     {{-- Grid View --}}
     <div class="{{ $class ?? 'col-6 col-md-4 col-lg-3' }}">
-        <div class="m-product-card m-product-card--grid">
-            <div class="m-product-card__image-wrapper">
+        <div class="m-catalogItem-card m-catalogItem-card--grid">
+            <div class="m-catalogItem-card__image-wrapper">
                 <a href="{{ $itemUrl }}">
-                    <img src="{{ $thumbnail }}" alt="{{ $name }}" class="m-product-card__image" loading="lazy">
+                    <img src="{{ $thumbnail }}" alt="{{ $name }}" class="m-catalogItem-card__image" loading="lazy">
                 </a>
                 @if($isUsed)
-                    <span class="m-product-card__badge m-product-card__badge--warning">{{ $conditionLabel }}</span>
+                    <span class="m-catalogItem-card__badge m-catalogItem-card__badge--warning">{{ $conditionLabel }}</span>
                 @endif
                 @if(!$inStock)
-                    <span class="m-product-card__badge m-product-card__badge--danger">@lang('Out of Stock')</span>
+                    <span class="m-catalogItem-card__badge m-catalogItem-card__badge--danger">@lang('Out of Stock')</span>
                 @endif
             </div>
-            <div class="m-product-card__content">
-                <a href="{{ $itemUrl }}" class="m-product-card__title">{{ Str::limit($partLabel, 40) }}</a>
+            <div class="m-catalogItem-card__content">
+                <a href="{{ $itemUrl }}" class="m-catalogItem-card__title">{{ Str::limit($partLabel, 40) }}</a>
                 @if($sku)
-                    <span class="m-product-card__sku">{{ $sku }}</span>
+                    <span class="m-catalogItem-card__sku">{{ $sku }}</span>
                 @endif
                 @if($qualityName)
-                    <span class="m-product-card__quality">{{ $qualityName }}</span>
+                    <span class="m-catalogItem-card__quality">{{ $qualityName }}</span>
                 @endif
-                <div class="m-product-card__price-wrapper">
-                    <span class="m-product-card__price">{{ \PriceHelper::showCurrencyPrice($finalPrice) }}</span>
+                <div class="m-catalogItem-card__price-wrapper">
+                    <span class="m-catalogItem-card__price">{{ \PriceHelper::showCurrencyPrice($finalPrice) }}</span>
                 </div>
-                <div class="m-product-card__actions">
+                <div class="m-catalogItem-card__actions">
                     <a href="{{ $itemUrl }}" class="m-btn m-btn--primary m-btn--sm w-100">
                         <i class="fas fa-eye"></i> @lang('View')
                     </a>

@@ -6,12 +6,12 @@
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __("Vendor Verifications") }}</h4>
+										<h4 class="heading">{{ __("Merchant Verifications") }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 											</li>
-											<li><a href="javascript:;">{{ __('Vendor Verifications') }}</a></li>
+											<li><a href="javascript:;">{{ __('Merchant Verifications') }}</a></li>
 											<li>
 												<a href="{{ route('admin-vr-index','all') }}">{{ __("All Verifications") }}</a>
 											</li>
@@ -19,17 +19,17 @@
 								</div>
 							</div>
 						</div>
-						<div class="product-area">
+						<div class="catalogItem-area">
 							<div class="row">
 								<div class="col-lg-12">
 									<div class="heading-area">
 										<h4 class="title">
-											{{ __('Allow Verification To Add Product') }} :
+											{{ __('Allow Verification To Add CatalogItem') }} :
 										</h4>
 										<div class="action-list">
-											<select class="process new-select {{ $gs->verify_product == 1 ? 'drop-success' : 'drop-danger' }}">
-											  <option data-val="1" value="{{route('admin-gs-status',['verify_product',1])}}" {{ $gs->verify_product == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-											  <option data-val="0" value="{{route('admin-gs-status',['verify_product',0])}}" {{ $gs->verify_product == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
+											<select class="process new-select {{ $gs->verify_item == 1 ? 'drop-success' : 'drop-danger' }}">
+											  <option data-val="1" value="{{route('admin-gs-status',['verify_item',1])}}" {{ $gs->verify_item == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
+											  <option data-val="0" value="{{route('admin-gs-status',['verify_item',0])}}" {{ $gs->verify_item == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
 											</select>
 										  </div>
 									</div>
@@ -41,8 +41,8 @@
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
-		                                                  <th>{{ __("Vendor Name") }}</th>
-		                                                  <th>{{ __("Vendor Email") }}</th>
+		                                                  <th>{{ __("Merchant Name") }}</th>
+		                                                  <th>{{ __("Merchant Email") }}</th>
 		                                                  <th>{{ __("Descriptions") }}</th>
 		                                                  <th>{{ __("Status") }}</th>
 		                                                  <th>{{ __("Options") }}</th>

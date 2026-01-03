@@ -47,14 +47,6 @@ class ShipmentStatusLog extends Model
     }
 
     /**
-     * @deprecated Use merchant() instead
-     */
-    public function vendor()
-    {
-        return $this->merchant();
-    }
-
-    /**
      * Get status translations
      */
     public static function getStatusTranslations()
@@ -113,11 +105,4 @@ class ShipmentStatusLog extends Model
         return $query->where('merchant_id', $merchantId);
     }
 
-    /**
-     * @deprecated Use scopeByMerchant() instead
-     */
-    public function scopeByVendor($query, $merchantId)
-    {
-        return $this->scopeByMerchant($query, $merchantId);
-    }
 }

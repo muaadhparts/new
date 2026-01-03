@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 /**
  * ShippingQuoteService - Quote Only
  *
- * Single function: getProductQuote(merchantId, weight, cityId)
+ * Single function: getCatalogItemQuote(merchantId, weight, cityId)
  * Uses same logic as Checkout (origin merchant → destination customer)
  * NO shipment creation, NO COD, NO storage
  */
@@ -26,14 +26,14 @@ class ShippingQuoteService
     }
 
     /**
-     * Get shipping quote for a product
+     * Get shipping quote for a catalogItem
      *
      * @param int $merchantId Merchant user_id
-     * @param float $weight Product weight in kg
+     * @param float $weight CatalogItem weight in kg
      * @param int|null $cityId Destination city (uses session if null)
      * @return array Quote result
      */
-    public function getProductQuote(int $merchantId, float $weight = 0.5, ?int $cityId = null): array
+    public function getCatalogItemQuote(int $merchantId, float $weight = 0.5, ?int $cityId = null): array
     {
         // 1. Get destination city
         $destinationCityId = $cityId ?? $this->locationService->getCityId();

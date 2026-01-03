@@ -5,16 +5,16 @@
 		<div class="mr-breadcrumb">
 			<div class="row">
 				<div class="col-lg-12">
-						<h4 class="heading"> {{ __("Edit Product") }}<a class="add-btn" href="{{ url()->previous() }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
+						<h4 class="heading"> {{ __("Edit CatalogItem") }}<a class="add-btn" href="{{ url()->previous() }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
 						<ul class="links">
 							<li>
 								<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 							</li>
 							<li>
-								<a href="{{ route('admin-catalog-item-index') }}">{{ __("Products") }} </a>
+								<a href="{{ route('admin-catalog-item-index') }}">{{ __("Catalog Items") }} </a>
 							</li>
 							<li>
-								<a href="javascript:;">{{ __("Digital Product") }}</a>
+								<a href="javascript:;">{{ __("Digital CatalogItem") }}</a>
 							</li>
 							<li>
 								<a href="{{ url()->previous() }}">{{ __("Edit") }}</a>
@@ -29,27 +29,27 @@
 			@include('alerts.admin.form-both')
 			<div class="row">
 				<div class="col-lg-8">
-					<div class="add-product-content">
+					<div class="add-catalogItem-content">
 						<div class="row">
 							<div class="col-lg-12">
-								<div class="product-description">
+								<div class="catalogItem-description">
 									<div class="body-area">
 										<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
-										{{-- Vendor Selection --}}
+										{{-- Merchant Selection --}}
 										<div class="row">
 											<div class="col-lg-12">
 												<div class="left-area">
-													<h4 class="heading">{{ __('Vendor') }}*</h4>
+													<h4 class="heading">{{ __('Merchant') }}*</h4>
 												</div>
 											</div>
 											<div class="col-lg-12">
-												<select name="vendor_id" required="">
-													<option value="">{{ __('Select Vendor') }}</option>
-													@foreach ($merchants as $vendor)
-														<option value="{{ $vendor->id }}"
-															{{ $merchantItem->user_id == $vendor->id ? 'selected' : '' }}>
-															{{ $vendor->shop_name ?: $vendor->name }} ({{ $vendor->email }})
+												<select name="merchant_id" required="">
+													<option value="">{{ __('Select Merchant') }}</option>
+													@foreach ($merchants as $merchant)
+														<option value="{{ $merchant->id }}"
+															{{ $merchantItem->user_id == $merchant->id ? 'selected' : '' }}>
+															{{ $merchant->shop_name ?: $merchant->name }} ({{ $merchant->email }})
 														</option>
 													@endforeach
 												</select>
@@ -99,12 +99,12 @@
 										<div class="row">
 											<div class="col-lg-12">
 												<div class="left-area">
-														<h4 class="heading">{{ __("Product Name") }}* </h4>
+														<h4 class="heading">{{ __("CatalogItem Name") }}* </h4>
 														<p class="sub-heading">{{ __("(In Any Language)") }}</p>
 												</div>
 											</div>
 											<div class="col-lg-12">
-												<input type="text" class="form-control" placeholder="{{ __("Enter Product Name") }}" name="name" required="" value="{{ $data->name }}">
+												<input type="text" class="form-control" placeholder="{{ __("Enter CatalogItem Name") }}" name="name" required="" value="{{ $data->name }}">
 											</div>
 										</div>
 
@@ -112,12 +112,12 @@
 										<div class="row">
 											<div class="col-lg-12">
 												<div class="left-area">
-													<h4 class="heading">{{ __('Product Name (English)') }}</h4>
+													<h4 class="heading">{{ __('CatalogItem Name (English)') }}</h4>
 												</div>
 											</div>
 											<div class="col-lg-12">
 												<input type="text" class="form-control"
-													placeholder="{{ __('Enter Product Name in English') }}"
+													placeholder="{{ __('Enter CatalogItem Name in English') }}"
 													name="label_en" value="{{ $data->label_en }}">
 											</div>
 										</div>
@@ -126,12 +126,12 @@
 										<div class="row">
 											<div class="col-lg-12">
 												<div class="left-area">
-													<h4 class="heading">{{ __('Product Name (Arabic)') }}</h4>
+													<h4 class="heading">{{ __('CatalogItem Name (Arabic)') }}</h4>
 												</div>
 											</div>
 											<div class="col-lg-12">
 												<input type="text" class="form-control" dir="rtl"
-													placeholder="{{ __('Enter Product Name in Arabic') }}"
+													placeholder="{{ __('Enter CatalogItem Name in Arabic') }}"
 													name="label_ar" value="{{ $data->label_ar }}">
 											</div>
 										</div>
@@ -180,7 +180,7 @@
 										<div class="col-lg-12">
 											<div class="left-area">
 												<h4 class="heading">
-													{{ __('Product Description') }}*
+													{{ __('CatalogItem Description') }}*
 												</h4>
 											</div>
 										</div>
@@ -195,7 +195,7 @@
 										<div class="col-lg-12">
 											<div class="left-area">
 												<h4 class="heading">
-														{{ __('Product Buy/Return Policy') }}*
+														{{ __('CatalogItem Buy/Return Policy') }}*
 												</h4>
 											</div>
 										</div>
@@ -210,7 +210,7 @@
 										<div class="col-lg-12">
 											<div class="checkbox-wrapper">
 												<input type="checkbox" name="seo_check" value="1" class="checkclick" id="allowProductSEO" {{ ($data->meta_tag != null || strip_tags($data->meta_description) != null) ? 'checked':'' }}>
-												<label for="allowProductSEO">{{ __('Allow Product SEO') }}</label>
+												<label for="allowProductSEO">{{ __('Allow CatalogItem SEO') }}</label>
 											  </div>
 										</div>
 									</div>
@@ -257,10 +257,10 @@
 			</div>
 		</div>
 				<div class="col-lg-4">
-					<div class="add-product-content">
+					<div class="add-catalogItem-content">
 						<div class="row">
 							<div class="col-lg-12">
-								<div class="product-description">
+								<div class="catalogItem-description">
 									<div class="body-area">
 
 										<div class="row">
@@ -285,7 +285,7 @@
 												<div class="col-lg-12">
 													<div class="left-area">
 														<h4 class="heading">
-															{{ __('Product Gallery Images') }} *
+															{{ __('CatalogItem Gallery Images') }} *
 														</h4>
 													</div>
 												</div>
@@ -301,7 +301,7 @@
 												<div class="col-lg-12">
 													<div class="left-area">
 														<h4 class="heading">
-															{{ __('Product Current Price') }}*
+															{{ __('CatalogItem Current Price') }}*
 														</h4>
 														<p class="sub-heading">
 															({{ __('In') }} {{$sign->name}})
@@ -316,7 +316,7 @@
 											<div class="row">
 												<div class="col-lg-12">
 													<div class="left-area">
-															<h4 class="heading">{{ __('Product Discount Price') }}*</h4>
+															<h4 class="heading">{{ __('CatalogItem Discount Price') }}*</h4>
 															<p class="sub-heading">{{ __('(Optional)') }}</p>
 													</div>
 												</div>
@@ -445,7 +445,7 @@
 								<div class="upload-img-btn">
 									<form  method="POST" enctype="multipart/form-data" id="form-gallery">
 										@csrf
-									<input type="hidden" id="pid" name="product_id" value="">
+									<input type="hidden" id="pid" name="catalog_item_id" value="">
 									<input type="file" name="gallery[]" class="hidden" id="uploadgallery" accept="image/*" multiple>
 											<label for="image-upload" id="prod_gallery"><i class="icofont-upload-alt"></i>{{ __("Upload File") }}</label>
 									</form>
@@ -591,7 +591,7 @@ $('.cropme').simpleCropper();
 
 $(document).ready(function() {
     $('.select2').select2({
-		placeholder: "Select Products",
+		placeholder: "Select Catalog Items",
 		maximumSelectionLength: 4,
 	});
 });
@@ -655,5 +655,5 @@ $(document).ready(function() {
 
   </script>
 
-@include('partials.admin.product.product-scripts')
+@include('partials.admin.catalogItem.catalogItem-scripts')
 @endsection

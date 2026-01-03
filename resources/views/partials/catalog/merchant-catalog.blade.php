@@ -6,8 +6,8 @@
 
             <div id="woocommerce_product_categories-4"
                 class="widget woocommerce widget_product_categories widget-toggle">
-                <h2 class="widget-title">{{ __('Product categories') }}</h2>
-                <ul class="product-categories">
+                <h2 class="widget-title">{{ __('CatalogItem categories') }}</h2>
+                <ul class="catalogItem-categories">
                     @foreach (App\Models\Category::where('status', 1)->get() as $category)
 
                         <li class="cat-item cat-parent">
@@ -146,39 +146,39 @@
             <div class="col-12">
                 <div class="section-head border-bottom d-flex justify-content-between align-items-center">
                     <div class="d-flex section-head-side-title">
-                        <h5 class="font-700 text-dark mb-0">{{ __('Recent Product') }}</h5>
+                        <h5 class="font-700 text-dark mb-0">{{ __('Recent CatalogItem') }}</h5>
                     </div>
                 </div>
             </div>
             <div class="col-12">
                 <div
-                    class="product-style-2 owl-carousel owl-nav-hover-primary nav-top-right single-carousel dot-disable product-list e-bg-white">
+                    class="catalogItem-style-2 owl-carousel owl-nav-hover-primary nav-top-right single-carousel dot-disable catalogItem-list e-bg-white">
 
                     @foreach (array_chunk($latest_products->toArray(), 3) as $item)
 
                         <div class="item">
                             <div class="row row-cols-1">
-                                @foreach ($item as $prod)
+                                @foreach ($item as $cartItem)
                                     @php
                                         // ✅ N+1 FIX: Load catalog item once and reuse
-                                        $vCatalogProdObj = \App\Models\CatalogItem::with(['merchantItems' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+                                        $vCatalogProdObj = \App\Models\CatalogItem::with(['merchantItems' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($cartItem['id']);
 
                                         // Use best_merchant_item from eager-loaded data
                                         $vCatalogMerchant = $vCatalogProdObj?->best_merchant_item;
 
-                                        $vCatalogProdUrl = $vCatalogMerchant && isset($prod['slug'])
-                                            ? route('front.catalog-item', ['slug' => $prod['slug'], 'merchant_id' => $vCatalogMerchant->user_id, 'merchant_item_id' => $vCatalogMerchant->id])
-                                            : (isset($prod['slug']) ? route('front.catalog-item.legacy', $prod['slug']) : '#');
+                                        $vCatalogProdUrl = $vCatalogMerchant && isset($cartItem['slug'])
+                                            ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_id' => $vCatalogMerchant->user_id, 'merchant_item_id' => $vCatalogMerchant->id])
+                                            : (isset($cartItem['slug']) ? route('front.catalog-item.legacy', $cartItem['slug']) : '#');
                                     @endphp
 
                                     <div class="col mb-1">
-                                        <div class="product type-product">
-                                            <div class="product-wrapper">
+                                        <div class="catalogItem type-catalogItem">
+                                            <div class="catalogItem-wrapper">
                                                 <div class="catalog-item-image">
                                                     <a href="{{ $vCatalogProdUrl }}"
                                                         class="woocommerce-LoopProduct-link"><img
-                                                            src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"
-                                                            alt="Product Image"></a>
+                                                            src="{{ filter_var($cartItem['photo'] ?? '', FILTER_VALIDATE_URL) ? $cartItem['photo'] : (($cartItem['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($cartItem['photo']) : asset('assets/images/noimage.png')) }}"
+                                                            alt="CatalogItem Image"></a>
                                                     <div class="favorite-view">
                                                         <div class="quickview-button">
                                                             <a class="quickview-btn"
@@ -195,12 +195,12 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="product-info">
+                                                <div class="catalogItem-info">
                                                     {{-- ✅ N+1 FIX: Reuse $vCatalogProdObj instead of querying again --}}
-                                                    <h3 class="product-title"><a
+                                                    <h3 class="catalogItem-title"><a
                                                             href="{{ $vCatalogProdUrl }}">{{ $vCatalogProdObj?->showName() ?? '' }}</a>
                                                     </h3>
-                                                    <div class="product-price">
+                                                    <div class="catalogItem-price">
                                                         <div class="price">
                                                             <ins>{{ $vCatalogProdObj?->showPrice() ?? '' }}</ins>
                                                             <del>{{ $vCatalogProdObj?->showPreviousPrice() ?? '' }}</del>
@@ -213,10 +213,10 @@
                                                         <div class="star-rating">
                                                             <div class="rating-wrap">
                                                                 <p><i class="fas fa-star"></i><span>
-                                                                        {{ App\Models\CatalogReview::scorePercentage($prod['id']) }}</span></p>
+                                                                        {{ App\Models\CatalogReview::scorePercentage($cartItem['id']) }}</span></p>
                                                             </div>
                                                             <div class="rating-counts-wrap">
-                                                                <p>({{ App\Models\CatalogReview::reviewCount($prod['id']) }})</p>
+                                                                <p>({{ App\Models\CatalogReview::reviewCount($cartItem['id']) }})</p>
                                                             </div>
                                                         </div>
                                                     </div>

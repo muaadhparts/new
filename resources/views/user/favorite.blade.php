@@ -5,10 +5,10 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title">@lang('Product')</h2>
+                <h2 class="breadcrumb-title">@lang('CatalogItem')</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                    <li><a href="javascript:;">@lang('Product')</a></li>
+                    <li><a href="javascript:;">@lang('CatalogItem')</a></li>
                 </ul>
             </div>
         </div>
@@ -19,8 +19,8 @@
         <div class="row flex-column-reverse flex-lg-row">
 
             <div class="col-12 col-lg-12 col-xl-12 gs-main-blog-wrapper">
-                <div class=" product-nav-wrapper">
-                    <h5>@lang('Total Products Found:') <span id="favorite-count">{{ $favorites->count() }}</span></h5>
+                <div class=" catalogItem-nav-wrapper">
+                    <h5>@lang('Total Items Found:') <span id="favorite-count">{{ $favorites->count() }}</span></h5>
                 </div>
                 @if($favorites->count() > 0)
                 <div class="row gy-4 mt-20">
@@ -41,8 +41,8 @@
                 {{ $favorites->links('includes.frontend.pagination') }}
                 
                 @else
-                <div class="product-nav-wrapper d-flex justify-content-center mt-4">
-                    <h5>@lang('No Product Found')</h5>
+                <div class="catalogItem-nav-wrapper d-flex justify-content-center mt-4">
+                    <h5>@lang('No CatalogItem Found')</h5>
                 </div>
                 @endif
 

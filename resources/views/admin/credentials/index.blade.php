@@ -21,10 +21,10 @@
         </div>
     </div>
 
-    <div class="add-product-content1">
+    <div class="add-catalogItem-content1">
         <div class="row">
             <div class="col-lg-12">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
 
                         @include('alerts.admin.form-both')
@@ -36,7 +36,7 @@
                                     <i class="fas fa-info-circle me-2"></i>
                                     <strong>{{ __('System-Level Credentials') }}</strong>
                                     <br>
-                                    <small>{{ __('Google Maps, DigitalOcean, and other system-wide API keys. For vendor payment/shipping credentials, use Vendor Credentials section.') }}</small>
+                                    <small>{{ __('Google Maps, DigitalOcean, and other system-wide API keys. For merchant payment/shipping credentials, use Merchant Credentials section.') }}</small>
                                 </div>
                             </div>
                             <div class="col-lg-4 text-end">

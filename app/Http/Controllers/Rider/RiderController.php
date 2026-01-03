@@ -174,7 +174,7 @@ class RiderController extends RiderBaseController
 
     public function orderDetails($id)
     {
-        $data = DeliveryRider::with(['purchase', 'pickup', 'vendor'])
+        $data = DeliveryRider::with(['purchase', 'pickup', 'merchant'])
             ->where('rider_id', $this->rider->id)
             ->where('id', $id)
             ->whereNotNull('purchase_id')

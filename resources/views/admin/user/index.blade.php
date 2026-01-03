@@ -18,7 +18,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="product-area">
+						<div class="catalogItem-area">
 							<div class="row">
 								<div class="col-lg-12">
 									<div class="mr-table allproduct">
@@ -135,11 +135,11 @@
 
 {{-- MESSAGE MODAL --}}
 <div class="sub-categori">
-	<div class="modal" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+	<div class="modal" id="merchantform" tabindex="-1" role="dialog" aria-labelledby="merchantformLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
+					<h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 							
 						</button>
@@ -229,14 +229,14 @@
 	// DEPOSIT OPERATION END
 
 
-	// VENDOR OPERATION
+	// MERCHANT OPERATION
 
-	$(document).on('click','.make-vendor',function(){
+	$(document).on('click','.make-merchant',function(){
 		if(admin_loader == 1)
 		{
 		$('.submit-loader').show();
 		}
-		$('#modal1').find('.modal-title').html('Make Vendor');
+		$('#modal1').find('.modal-title').html('Make Merchant');
 		$('#modal1 .modal-content .modal-body').html('').load($(this).attr('data-href'),function(response, status, xhr){
 			if(status == "success")
 			{
@@ -249,7 +249,7 @@
 		});
 
 
-	// VENDOR OPERATION END
+	// MERCHANT OPERATION END
 
 
 	$(function() {

@@ -21,7 +21,7 @@
             </div>
         </div>
     </div>
-    <div class="product-area">
+    <div class="catalogItem-area">
         <div class="row">
             <div class="col-lg-12">
                 <div class="mr-table allproduct">
@@ -30,10 +30,10 @@
                         <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Product') }}</th>
+                                    <th>{{ __('CatalogItem') }}</th>
                                     <th>{{ __('Brand') }}</th>
                                     <th>{{ __('Quality Brand') }}</th>
-                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Reviewer') }}</th>
                                     <th>{{ __('Rating') }}</th>
                                     <th>{{ __('Review') }}</th>
@@ -65,10 +65,10 @@
         serverSide: true,
         ajax: '{{ route('admin-catalog-review-datatables') }}',
         columns: [
-            { data: 'product', name: 'product', searchable: false, orderable: false },
+            { data: 'catalogItem', name: 'catalogItem', searchable: false, orderable: false },
             { data: 'brand', name: 'brand' },
             { data: 'quality_brand', name: 'quality_brand' },
-            { data: 'vendor', name: 'vendor' },
+            { data: 'merchant', name: 'merchant' },
             { data: 'reviewer', name: 'reviewer' },
             { data: 'rating', name: 'rating' },
             { data: 'review', name: 'review' },

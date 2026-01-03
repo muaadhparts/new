@@ -26,14 +26,14 @@ class AlternativeService
         $baseData = DB::table('catalog_items as p')
             ->leftJoin('sku_alternatives as sa', 'sa.sku', '=', 'p.sku')
             ->where('p.sku', $sku)
-            ->select('p.id as product_id', 'sa.group_id')
+            ->select('p.id as catalog_item_id', 'sa.group_id')
             ->first();
 
         if (!$baseData) {
             return collect();
         }
 
-        $catalogItemId = $baseData->product_id;
+        $catalogItemId = $baseData->catalog_item_id;
         $groupId = $baseData->group_id;
 
         // ✅ جمع جميع catalog_item_ids في استعلام واحد
@@ -89,7 +89,7 @@ class AlternativeService
      *
      * ✅ محسّن: استخدام JOIN بدلاً من whereHas
      */
-    protected function fetchSameProductVariants(int $catalogItemId, bool $includeSelf): Collection
+    protected function fetchSameCatalogItemVariants(int $catalogItemId, bool $includeSelf): Collection
     {
         return MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')

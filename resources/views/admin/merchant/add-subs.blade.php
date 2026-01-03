@@ -2,10 +2,10 @@
 @section('content')
 
 						<div class="content-area">
-							<div class="add-product-content">
+							<div class="add-catalogItem-content">
 								<div class="row">
 									<div class="col-lg-12">
-										<div class="product-description">
+										<div class="catalogItem-description">
 											<div class="body-area">
 
                                             @include('includes.admin.form-error') 

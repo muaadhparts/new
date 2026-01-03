@@ -1,4 +1,4 @@
-.select-product-types-wrapper {
+.select-catalogItem-types-wrapper {
   display: flex;
   padding: 32px;
   flex-direction: column;
@@ -38,8 +38,8 @@
   }
 }
 
-// add product form
-.add-product-form {
+// add catalogItem form
+.add-catalogItem-form {
   margin-top: 8px;
 
   @include screen-992 {
@@ -74,8 +74,8 @@
     }
   }
 
-  .physical-product-inputes-wrapper,
-  .digital-product-inputes-wrapper,
+  .physical-catalogItem-inputes-wrapper,
+  .digital-catalogItem-inputes-wrapper,
   .upload-by-file,
   .upload-by-url {
     display: none;
@@ -123,8 +123,8 @@
   }
 }
 
-// add product form sidebar 
-.add-product-form-sidebar {
+// add catalogItem form sidebar 
+.add-catalogItem-form-sidebar {
   .img {
     max-width: 429px;
     cursor: pointer;

@@ -51,15 +51,15 @@
                                                     <small class="hover-white">{{ __('Ends on:') }}
                                                         {{ date('d/m/Y', strtotime($user->date)) }}</small>
                                                 @endif
-                                                <a href="{{ route('user-vendor-request', $sub->id) }}"
+                                                <a href="{{ route('user-merchant-request', $sub->id) }}"
                                                     class=""><u>{{ __('Renew') }}</u></a>
                                             @else
-                                                <a href="{{ route('user-vendor-request', $sub->id) }}"
+                                                <a href="{{ route('user-merchant-request', $sub->id) }}"
                                                     class="template-btn outline-btn w-100">{{ __('Get Started') }}</a>
                                                 <br><small>&nbsp;</small>
                                             @endif
                                         @else
-                                            <a href="{{ route('user-vendor-request', $sub->id) }}"
+                                            <a href="{{ route('user-merchant-request', $sub->id) }}"
                                                 class="template-btn outline-btn w-100">{{ __('Get Started') }}</a>
                                             <br><small>&nbsp;</small>
                                         @endif

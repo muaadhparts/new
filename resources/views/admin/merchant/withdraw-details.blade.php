@@ -2,10 +2,10 @@
 @section('content')
 
                         <div class="content-area no-padding">
-                            <div class="add-product-content1">
+                            <div class="add-catalogItem-content1">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <div class="product-description">
+                                        <div class="catalogItem-description">
                                             <div class="body-area">
 
                                     <div class="table-responsive show-table">

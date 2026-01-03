@@ -71,16 +71,16 @@ class MerchantController extends Controller
 
             // Extract catalog items and inject merchant context using CatalogItemContextHelper
             $prods = $merchantItems->map(function($mp) use ($merchant) {
-                if (!$mp->product) return null;
+                if (!$mp->catalogItem) return null;
 
-                $product = $mp->product;
+                $catalogItem = $mp->catalogItem;
                 // Use CatalogItemContextHelper for consistency
-                CatalogItemContextHelper::apply($product, $mp);
-                return $product;
+                CatalogItemContextHelper::apply($catalogItem, $mp);
+                return $catalogItem;
             })->filter()->values();
 
             $vprods = (new Collection(CatalogItem::filterProducts($prods)));
-            $data['products'] = CatalogItemListResource::collection($vprods);
+            $data['catalogItems'] = CatalogItemListResource::collection($vprods);
 
             return response()->json(['status' => true, 'data' => $data, 'error' => []]);
         } catch (\Exception $e) {

@@ -76,7 +76,7 @@
   }
 }
 
-.ordered-products {
+.ordered-catalogItems {
   h5 {
     margin-top: 32px;
     margin-bottom: 16px;
@@ -97,10 +97,10 @@
       }
     }
   }
-  .product-title-width {
+  .catalogItem-title-width {
     max-width: 400px !important;
   }
-  .tbody-product {
+  .tbody-catalogItem {
     td {
       ul {
         display: flex;

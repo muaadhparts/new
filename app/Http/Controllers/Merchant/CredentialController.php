@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\VendorCredential;
+use App\Models\MerchantCredential;
 use App\Services\MerchantCredentialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
@@ -18,17 +18,17 @@ class CredentialController extends MerchantBaseController
     }
 
     /**
-     * Display a listing of vendor credentials.
+     * Display a listing of merchant credentials.
      */
     public function index()
     {
         $user = $this->user;
-        $credentials = VendorCredential::where('user_id', $user->id)
+        $credentials = MerchantCredential::where('user_id', $user->id)
             ->orderBy('service_name')
             ->orderBy('key_name')
             ->get();
 
-        $availableServices = VendorCredential::getAvailableServices();
+        $availableServices = MerchantCredential::getAvailableServices();
 
         return view('merchant.credentials.index', compact('user', 'credentials', 'availableServices'));
     }
@@ -39,7 +39,7 @@ class CredentialController extends MerchantBaseController
     public function create()
     {
         $user = $this->user;
-        $availableServices = VendorCredential::getAvailableServices();
+        $availableServices = MerchantCredential::getAvailableServices();
 
         return view('merchant.credentials.create', compact('user', 'availableServices'));
     }
@@ -61,7 +61,7 @@ class CredentialController extends MerchantBaseController
         $user = $this->user;
 
         // Check if credential already exists
-        $exists = VendorCredential::where('user_id', $user->id)
+        $exists = MerchantCredential::where('user_id', $user->id)
             ->where('service_name', $request->service_name)
             ->where('key_name', $request->key_name)
             ->where('environment', $request->environment)
@@ -72,7 +72,7 @@ class CredentialController extends MerchantBaseController
                 ->withInput();
         }
 
-        VendorCredential::create([
+        MerchantCredential::create([
             'user_id' => $user->id,
             'service_name' => $request->service_name,
             'key_name' => $request->key_name,
@@ -92,11 +92,11 @@ class CredentialController extends MerchantBaseController
     public function edit($id)
     {
         $user = $this->user;
-        $credential = VendorCredential::where('id', $id)
+        $credential = MerchantCredential::where('id', $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
-        $availableServices = VendorCredential::getAvailableServices();
+        $availableServices = MerchantCredential::getAvailableServices();
 
         return view('merchant.credentials.edit', compact('user', 'credential', 'availableServices'));
     }
@@ -113,7 +113,7 @@ class CredentialController extends MerchantBaseController
         ]);
 
         $user = $this->user;
-        $credential = VendorCredential::where('id', $id)
+        $credential = MerchantCredential::where('id', $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
@@ -142,7 +142,7 @@ class CredentialController extends MerchantBaseController
     public function toggle($id)
     {
         $user = $this->user;
-        $credential = VendorCredential::where('id', $id)
+        $credential = MerchantCredential::where('id', $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 
@@ -161,7 +161,7 @@ class CredentialController extends MerchantBaseController
     public function destroy($id)
     {
         $user = $this->user;
-        $credential = VendorCredential::where('id', $id)
+        $credential = MerchantCredential::where('id', $id)
             ->where('user_id', $user->id)
             ->firstOrFail();
 

@@ -24,14 +24,14 @@ class ShippingQuoteController extends Controller
     }
 
     /**
-     * Get shipping quote for a product
+     * Get shipping quote for a catalogItem
      */
     public function getQuote(Request $request): JsonResponse
     {
         $request->validate([
             'merchant_id' => 'required|integer|exists:users,id',
             'weight' => 'nullable|numeric|min:0.01|max:100',
-            'product_id' => 'nullable|integer',
+            'catalog_item_id' => 'nullable|integer',
             'city_id' => 'nullable|integer|exists:cities,id',
         ]);
 
@@ -39,25 +39,25 @@ class ShippingQuoteController extends Controller
         $weight = (float) ($request->weight ?? 0.5);
         $cityId = $request->city_id ? (int) $request->city_id : null;
 
-        // If product_id provided, get weight from product
-        if ($request->product_id) {
-            $product = DB::table('products')
-                ->where('id', $request->product_id)
+        // If catalog_item_id provided, get weight from catalogItem
+        if ($request->catalog_item_id) {
+            $catalogItem = DB::table('catalog_items')
+                ->where('id', $request->catalog_item_id)
                 ->first();
 
-            if ($product && $product->weight > 0) {
-                $weight = (float) $product->weight;
+            if ($catalogItem && $catalogItem->weight > 0) {
+                $weight = (float) $catalogItem->weight;
             }
         }
 
-        $result = $this->quoteService->getProductQuote($merchantId, $weight, $cityId);
+        $result = $this->quoteService->getCatalogItemQuote($merchantId, $weight, $cityId);
 
         return response()->json($result);
     }
 
     /**
      * Get quick estimate (cheapest option only)
-     * Used for product cards
+     * Used for catalogItem cards
      */
     public function quickEstimate(Request $request): JsonResponse
     {
@@ -71,7 +71,7 @@ class ShippingQuoteController extends Controller
         $weight = (float) ($request->weight ?? 0.5);
         $cityId = $request->city_id ? (int) $request->city_id : null;
 
-        $result = $this->quoteService->getProductQuote($merchantId, $weight, $cityId);
+        $result = $this->quoteService->getCatalogItemQuote($merchantId, $weight, $cityId);
 
         if (!$result['success']) {
             return response()->json([

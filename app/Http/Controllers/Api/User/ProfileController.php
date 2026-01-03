@@ -80,11 +80,6 @@ class ProfileController extends Controller
                 unset($input['is_merchant']);
             }
 
-            // Backward compatibility
-            if ($request->is_vendor) {
-                unset($input['is_vendor']);
-            }
-
             if ($request->email) {
                 unset($input['email']);
             }
@@ -151,11 +146,16 @@ class ProfileController extends Controller
         try {
             $input = $request->all();
             $user = Auth::guard('api')->user();
-            $ck = FavoriteSeller::where('user_id', $user->id)->where('merchant_id', $input['merchant_id'])->exists();
+            $ck = FavoriteSeller::where('user_id', $user->id)->where('merchant_item_id', $input['merchant_item_id'])->exists();
             if (!$ck) {
                 $fav = new FavoriteSeller();
                 $fav->user_id = $user->id;
-                $fav->merchant_id = $input['merchant_id'];
+                $fav->merchant_item_id = $input['merchant_item_id'];
+                // Get catalog_item_id from MerchantItem
+                $merchantItem = \App\Models\MerchantItem::find($input['merchant_item_id']);
+                if ($merchantItem) {
+                    $fav->catalog_item_id = $merchantItem->catalog_item_id;
+                }
                 $fav->save();
                 return response()->json(['status' => true, 'data' => ['message' => 'Successfully Added To Favorite Seller.'], 'error' => []]);
             } else {
@@ -172,17 +172,19 @@ class ProfileController extends Controller
 
         try {
             $user = Auth::guard('api')->user();
-            $favorites = FavoriteSeller::where('user_id', '=', $user->id)->get();
+            $favorites = FavoriteSeller::where('user_id', '=', $user->id)
+                ->with(['merchantItem.user'])
+                ->get();
             $merchants = array();
             foreach ($favorites as $key => $favorite) {
-                $seller = User::find($favorite->merchant_id);
+                $seller = $favorite->merchantItem?->user;
                 if ($seller) {
                     $merchants[$key]['id'] = $favorite->id;
                     $merchants[$key]['shop_id'] = $seller->id;
                     $merchants[$key]['shop_name'] = $seller->shop_name;
                     $merchants[$key]['owner_name'] = $seller->owner_name;
                     $merchants[$key]['shop_address'] = $seller->shop_address;
-                    $merchants[$key]['shop_link'] = route('front.vendor', str_replace(' ', '-', ($seller->shop_name)));
+                    $merchants[$key]['shop_link'] = route('front.merchant', str_replace(' ', '-', ($seller->shop_name)));
                 }
             }
             return response()->json(['status' => true, 'data' => $merchants, 'error' => []]);

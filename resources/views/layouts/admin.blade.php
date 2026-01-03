@@ -124,7 +124,7 @@
 								<li class="bell-area">
 									<a id="notf_product" class="dropdown-toggle-1" href="javascript:;">
 										<i class="icofont-cart"></i>
-										<span id="product-notf-count">{{ App\Models\CatalogEvent::countCatalogItem()
+										<span id="catalogItem-notf-count">{{ App\Models\CatalogEvent::countCatalogItem()
 											}}</span>
 									</a>
 									<div class="dropdown-menu">

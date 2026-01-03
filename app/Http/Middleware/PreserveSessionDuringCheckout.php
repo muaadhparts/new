@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * Middleware to preserve session and auth state during checkout
  *
- * This middleware prevents session ID regeneration during vendor checkout
+ * This middleware prevents session ID regeneration during merchant checkout
  * to ensure user remains logged in throughout the entire checkout process.
  */
 class PreserveSessionDuringCheckout

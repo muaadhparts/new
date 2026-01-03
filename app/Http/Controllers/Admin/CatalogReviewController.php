@@ -16,8 +16,8 @@ class CatalogReviewController extends AdminBaseController
 	         	->get();
 
 	         return Datatables::of($datas)
-	                            ->addColumn('product', function(CatalogReview $data) {
-									$name = $data->catalogItem ? getLocalizedProductName($data->catalogItem, 50) : __('N/A');
+	                            ->addColumn('catalogItem', function(CatalogReview $data) {
+									$name = $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : __('N/A');
 
 									// Build link to catalog item
 									if ($data->merchantItem && $data->merchantItem->id && $data->catalogItem) {
@@ -43,11 +43,11 @@ class CatalogReviewController extends AdminBaseController
 										? getLocalizedQualityName($data->merchantItem->qualityBrand)
 										: __('N/A');
 								})
-								->addColumn('vendor', function (CatalogReview $data) {
+								->addColumn('merchant', function (CatalogReview $data) {
 									// Display merchant info
 									if ($data->merchantItem && $data->merchantItem->user) {
 										$shopName = $data->merchantItem->user->shop_name ?: $data->merchantItem->user->name;
-										return '<a href="' . route('admin-vendor-show', $data->merchantItem->user_id) . '" target="_blank">' . $shopName . '</a>';
+										return '<a href="' . route('admin-merchant-show', $data->merchantItem->user_id) . '" target="_blank">' . $shopName . '</a>';
 									}
 									return __('N/A');
 								})
@@ -64,7 +64,7 @@ class CatalogReviewController extends AdminBaseController
 	                            ->addColumn('action', function(CatalogReview $data) {
 	                                return '<div class="action-list"><a data-href="' . route('admin-rating-show',$data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i>'.__('Details').'</a><a href="javascript:;" data-href="' . route('admin-rating-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
 	                            })
-	                            ->rawColumns(['product', 'vendor', 'rating', 'action'])
+	                            ->rawColumns(['catalogItem', 'merchant', 'rating', 'action'])
 	                            ->toJson();
 		}
 

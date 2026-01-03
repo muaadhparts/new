@@ -11,10 +11,10 @@
   .row-cards-one .mycard::after {
     right: -145px;
   }
-  .add-product-content .product-description .body-area {
+  .add-catalogItem-content .catalogItem-description .body-area {
     padding: 30px 30px 30px 30px;
   }
-  .add-product-content .product-description .body-area .table tr td:first-child {
+  .add-catalogItem-content .catalogItem-description .body-area .table tr td:first-child {
     width: 300px;
 }
 canvas.canvasjs-chart-canvas {
@@ -64,7 +64,7 @@ div#preview-crop-image {
   .row-cards-one .mycard .right .icon {
     font-size: 50px;
   }
-  .add-product-content .product-description .body-area .table tr td:first-child {
+  .add-catalogItem-content .catalogItem-description .body-area .table tr td:first-child {
     width: 200px;
   }
   #sidebar {
@@ -99,7 +99,7 @@ div#preview-crop-image {
     right: -40px;
     transform: rotate(20deg);
   }
-  .add-product-content1 .product-description .body-area .left-area {
+  .add-catalogItem-content1 .catalogItem-description .body-area .left-area {
     text-align: left; }
   .row-cards-one .mycard .right .icon {
     font-size: 70px;
@@ -111,13 +111,13 @@ div#preview-crop-image {
   #modal1 .modal-dialog {
     max-width: 98%;
   }
-  .add-product-content .product-description .body-area .left-area {
+  .add-catalogItem-content .catalogItem-description .body-area .left-area {
     text-align: l;
   }
-  .add-product-content .product-description .body-area .left-area{
+  .add-catalogItem-content .catalogItem-description .body-area .left-area{
     text-align: left;
   }
-  .add-product-content .product-description .body-area .set-gallery {
+  .add-catalogItem-content .catalogItem-description .body-area .set-gallery {
     margin-top: 15px;
     display: inline-block;
 }
@@ -169,10 +169,10 @@ div#preview-crop-image {
  }
 
 
- .add-product-content1 .product-description .body-area {
+ .add-catalogItem-content1 .catalogItem-description .body-area {
   padding: 0px 0px 0px 0px;
 }
- .add-product-content2 .product-description .body-area {
+ .add-catalogItem-content2 .catalogItem-description .body-area {
   padding: 30px 100px 30px 30px;
 }
 
@@ -190,13 +190,13 @@ div#preview-crop-image {
     width: 100%;
     left: 0;
 }
-  .add-product-content .product-description .body-area .table tr td:first-child .heading {
+  .add-catalogItem-content .catalogItem-description .body-area .table tr td:first-child .heading {
       font-size: 16px;
   }
-  .add-product-content .product-description .body-area .table tr td:first-child {
+  .add-catalogItem-content .catalogItem-description .body-area .table tr td:first-child {
     width: 170px;
   }
-  .add-product-content .product-description .body-area {
+  .add-catalogItem-content .catalogItem-description .body-area {
     padding: 30px 24px 30px 25px;
   }
 .table-contents {

@@ -17,10 +17,10 @@
                         </div>
 
                         <div class="row gy-4">
-                            <div class="deposit-area vendor-deposit-area mx-auto">
+                            <div class="deposit-area merchant-deposit-area mx-auto">
 
                                 <form id="subscribe-form" class="pay-form"
-                                    action="{{ $subs->price == 0 ? route('user-vendor-request-submit') : '' }}"
+                                    action="{{ $subs->price == 0 ? route('user-merchant-request-submit') : '' }}"
                                     method="POST">
                                     @csrf
                                     <div>
@@ -39,7 +39,7 @@
                                                 <span class="content">{{ $subs->days }} Day(s)</span>
                                             </li>
                                             <li>
-                                                <span class="title">@lang('Product(s) Allowed:') </span>
+                                                <span class="title">@lang('CatalogItem(s) Allowed:') </span>
                                                 <span
                                                     class="content">{{ $subs->allowed_products == 0 ? 'Unlimited' : $subs->allowed_products }}</span>
                                             </li>

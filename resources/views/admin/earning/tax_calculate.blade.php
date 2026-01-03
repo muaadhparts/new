@@ -23,7 +23,7 @@
    </div>
 </div>
 <form action="{{route('admin-tax-calculate-income')}}" method="GET">
-   <div class="product-area">
+   <div class="catalogItem-area">
    <div class="row text-center p-3">
       @include('includes.admin.form-both')  
       <div class="col-sm-6 col-lg-4 offset-lg-2 col-md-6  mt-3">

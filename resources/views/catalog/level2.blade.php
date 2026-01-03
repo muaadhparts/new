@@ -70,7 +70,7 @@
 
                         {{-- Card Body --}}
                         <div class="card-body p-2 p-md-3 text-center">
-                            <h6 class="product-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
+                            <h6 class="catalogItem-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
                                 {{ $node->key2 }}
                             </h6>
                             @if(!empty($node->label))

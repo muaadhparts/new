@@ -24,7 +24,7 @@
                         <h4 class="text-center">@lang('Welcome Back! Please login') </h4>
                         <form action="{{ route('user.login.submit') }}" method="POST">
                             @csrf
-                            <input type="hidden" name="vendor" value="1">
+                            <input type="hidden" name="merchant" value="1">
                             <div class="form-group">
 
                                 <div>
@@ -89,7 +89,7 @@
 
                                 <button type="submit" class="template-btn btn-forms">@lang('Login')</button>
 
-                                @if ($gs->reg_vendor == 1)
+                                @if ($gs->reg_merchant == 1)
                                     <p class="login-redirect">@lang("Don't have an account?") <span>
                                             <a href="{{ route('merchant.register') }}">@lang('Create New Account')</a></span></p>
                                 @endif

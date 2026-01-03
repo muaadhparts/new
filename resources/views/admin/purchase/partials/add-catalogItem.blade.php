@@ -1,4 +1,4 @@
-<div class="modal fade" id="add-product" tabindex="-1" role="dialog" aria-labelledby="billing-details-edit"
+<div class="modal fade" id="add-catalogItem" tabindex="-1" role="dialog" aria-labelledby="billing-details-edit"
     aria-hidden="true">
 
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -7,7 +7,7 @@
                 <img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
             </div>
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Add Product') }} |  <code class="text-center show_vendor_message">
+                <h5 class="modal-title">{{ __('Add CatalogItem') }} |  <code class="text-center show_merchant_message">
                     
                 </code></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -18,17 +18,17 @@
 
                 <div class="content-area">
 
-                    <div class="add-product-content1">
+                    <div class="add-catalogItem-content1">
                         <div class="row">
                            
                             <div class="col-lg-12">
                                
-                                <div class="product-description">
+                                <div class="catalogItem-description">
                                     <div class="body-area">
-                                        <form id="show-product" action="{{ route('admin-purchase-product-submit') }}"
+                                        <form id="show-catalogItem" action="{{ route('admin-purchase-catalogItem-submit') }}"
                                             method="POST" enctype="multipart/form-data">
                                             {{csrf_field()}}
-                                            <input type="hidden" name="vendor_id" id="add_vendor_id" value="">
+                                            <input type="hidden" name="merchant_id" id="add_merchant_id" value="">
                                             <div class="row">
                                                 <div class="col-lg-4">
                                                     <div class="left-area">
@@ -37,7 +37,7 @@
                                                 </div>
                                                 <div class="col-lg-7">
                                                     <input type="text" class="form-control" name="sku"
-                                                        placeholder="{{ __('Enter Product Sku') }}" required=""
+                                                        placeholder="{{ __('Enter CatalogItem Sku') }}" required=""
                                                         value="">
                                                 </div>
                                             </div>
@@ -61,7 +61,7 @@
                             </div>
                         </div>
 
-                        <div class="row d-block text-center" id="product-show">
+                        <div class="row d-block text-center" id="catalogItem-show">
 
                         </div>
 

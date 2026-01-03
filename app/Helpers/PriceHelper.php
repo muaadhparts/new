@@ -600,19 +600,19 @@ class PriceHelper
 
     /**
      * Calculate shipping cost based on size and weight
-     * @param array $products Array of products with qty and weight
+     * @param array $catalogItems Array of catalogItems with qty and weight
      * @param string $shippingMethod Shipping method (standard, express, etc)
      * @return float Calculated shipping cost
      */
-    public static function calculateShippingByWeight($products, $shippingMethod = 'standard')
+    public static function calculateShippingByWeight($catalogItems, $shippingMethod = 'standard')
     {
         $totalWeight = 0;
         $totalVolume = 0;
 
-        foreach ($products as $product) {
-            $qty = $product['qty'] ?? 1;
-            $weight = (float)($product['item']['weight'] ?? 1);
-            $size = $product['item']['size'] ?? null;
+        foreach ($catalogItems as $catalogItem) {
+            $qty = $catalogItem['qty'] ?? 1;
+            $weight = (float)($catalogItem['item']['weight'] ?? 1);
+            $size = $catalogItem['item']['size'] ?? null;
 
             // Calculate total weight
             $totalWeight += $qty * $weight;
@@ -648,23 +648,23 @@ class PriceHelper
     }
 
     /**
-     * Calculate shipping dimensions for products
-     * @param array $products Array of products
+     * Calculate shipping dimensions for catalogItems
+     * @param array $catalogItems Array of catalogItems
      * @return array Combined dimensions and weight
      */
-    public static function calculateShippingDimensions($products)
+    public static function calculateShippingDimensions($catalogItems)
     {
         $totalWeight = 0;
         $maxLength = 0;
         $maxWidth = 0;
         $totalHeight = 0;
 
-        foreach ($products as $product) {
-            $qty = $product['qty'] ?? 1;
-            $weight = (float)($product['item']['weight'] ?? 1);
+        foreach ($catalogItems as $catalogItem) {
+            $qty = $catalogItem['qty'] ?? 1;
+            $weight = (float)($catalogItem['item']['weight'] ?? 1);
 
             // Try to get dimensions from multiple possible sources
-            $size = $product['item']['size'] ?? null;
+            $size = $catalogItem['item']['size'] ?? null;
 
             // If size is stored as JSON string, decode it
             if (is_string($size)) {

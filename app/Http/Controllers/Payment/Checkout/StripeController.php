@@ -8,7 +8,7 @@
  * Modified: 2025-01-19 for Merchant Checkout System
  * - Uses HandlesMerchantCheckout trait
  * - Reads from merchant_step1/step2 ONLY
- * - Filters cart for merchant products
+ * - Filters cart for merchant catalogItems
  * ====================================================================
  */
 
@@ -69,7 +69,7 @@ class StripeController extends CheckoutBaseControlller
         }
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         try {
@@ -141,7 +141,7 @@ class StripeController extends CheckoutBaseControlller
             $new_cart['totalPrice'] = $cart->totalPrice;
             $new_cart['items'] = $cart->items;
             $new_cart = json_encode($new_cart);
-            $temp_affilate_users = \PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+            $temp_affilate_users = \PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
             
             // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller

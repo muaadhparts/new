@@ -16,10 +16,10 @@
                 </div>
             </div>
         </div>
-        <div class="add-product-content1 add-product-content2">
+        <div class="add-catalogItem-content1 add-catalogItem-content2">
             <div class="row">
                 <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                         <div class="body-area">
 
                             <div class="gocover"
@@ -38,7 +38,7 @@
                                 @endif
                             </div>
                             <hr />
-                            <div class="add-product-footer text-center">
+                            <div class="add-catalogItem-footer text-center">
                                 <button name="addProduct_btn" id="generateBkup" type="button"
                                     class="btn btn-primary">{{ __('Generate Backup') }}</button>
                             </div>

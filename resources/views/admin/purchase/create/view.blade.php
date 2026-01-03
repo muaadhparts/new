@@ -40,15 +40,15 @@
           <div class="col-lg-12 order-details-table">
             <div class="mr-table">
                 <h4 class="title">
-                    {{ __('Products') }}
+                    {{ __('CatalogItems') }}
                 </h4>
                 <div class="table-responsive">
                     <table class="table table-hover dt-responsive" cellspacing="0" width="100%">
                         <thead>
                            <tr>
                            <tr>
-                              <th>{{ __('Product ID#') }}</th>
-                              <th>{{ __('Product Title') }}</th>
+                              <th>{{ __('CatalogItem ID#') }}</th>
+                              <th>{{ __('CatalogItem Title') }}</th>
                               <th>{{ __('Price') }}</th>
                               <th>{{ __('Details') }}</th>
                               <th>{{ __('Subtotal') }}</th>
@@ -56,62 +56,62 @@
                            </tr>
                         </thead>
                         <tbody>
-                           @foreach($cart->items as $key1 => $product)
+                           @foreach($cart->items as $key1 => $catalogItem)
                           
                            <tr>
-                              <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
+                              <td><input type="hidden" value="{{$key1}}">{{ $catalogItem['item']['id'] }}</td>
                               <td>
-                                <img src="{{ filter_var($product['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $product['item']['photo'] : ($product['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
+                                <img src="{{ filter_var($catalogItem['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $catalogItem['item']['photo'] : ($catalogItem['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                                 <br>
-                                 <input type="hidden" value="{{ $product['license'] }}">
+                                 <input type="hidden" value="{{ $catalogItem['license'] }}">
                                  @php
                                     $createViewProductUrl = '#';
-                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
+                                    if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
                                         $createViewProductUrl = route('front.catalog-item', [
-                                            'slug' => $product['item']['slug'],
-                                            'merchant_id' => $product['user_id'],
-                                            'merchant_item_id' => $product['merchant_item_id']
+                                            'slug' => $catalogItem['item']['slug'],
+                                            'merchant_id' => $catalogItem['user_id'],
+                                            'merchant_item_id' => $catalogItem['merchant_item_id']
                                         ]);
-                                    } elseif (isset($product['item']['slug'])) {
-                                        $createViewProductUrl = route('front.catalog-item.legacy', $product['item']['slug']);
+                                    } elseif (isset($catalogItem['item']['slug'])) {
+                                        $createViewProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                     }
                                  @endphp
-                                <a target="_blank" href="{{ $createViewProductUrl }}">{{ getLocalizedProductName($product['item'], 30) }}</a>
+                                <a target="_blank" href="{{ $createViewProductUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
                               </td>
-                              <td class="product-price">
-                                 <span>{{ App\Models\CatalogItem::convertPrice($product['item_price']) }}
+                              <td class="catalogItem-price">
+                                 <span>{{ App\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}
                                  </span>
                               </td>
                               <td>
-                                 @if($product['size'])
+                                 @if($catalogItem['size'])
                                  <p>
-                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$product['size'])}}
+                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$catalogItem['size'])}}
                                  </p>
                                  @endif
-                                 @if($product['color'])
+                                 @if($catalogItem['color'])
                                  <p>
                                     <strong>{{ __('color') }} :</strong> <span
-                                       style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                       style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$catalogItem['color']}};"></span>
                                  </p>
                                  @endif
                                  <p>
-                                    <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{ $product['item']['measure'] }}
+                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
                                  </p>
-                                 @if(!empty($product['keys']))
-                                 @foreach( array_combine(explode(',', $product['keys']), explode(',', $product['values']))  as $key => $value)
+                                 @if(!empty($catalogItem['keys']))
+                                 @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
                                  <p>
                                     <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} 
                                  </p>
                                  @endforeach
                                  @endif
                               </td>
-                              <td class="product-subtotal">
+                              <td class="catalogItem-subtotal">
                                  <p class="d-inline-block"
-                                    id="prc{{$product['item']['id'].$product['size'].$product['color'].str_replace(str_split(' ,'),'',$product['values'])}}">
-                                    {{ App\Models\CatalogItem::convertPrice($product['price']) }}
+                                    id="prc{{$catalogItem['item']['id'].$catalogItem['size'].$catalogItem['color'].str_replace(str_split(' ,'),'',$catalogItem['values'])}}">
+                                    {{ App\Models\CatalogItem::convertPrice($catalogItem['price']) }}
                                  </p>
-                                 @if ($product['discount'] != 0)
-                                 <strong>{{$product['discount']}} %{{__('off')}}</strong>
+                                 @if ($catalogItem['discount'] != 0)
+                                 <strong>{{$catalogItem['discount']}} %{{__('off')}}</strong>
                                  @endif
                               </td>
                            </tr>
@@ -190,7 +190,7 @@
                    <table class="table">
                       <tbody>
                          <tr>
-                            <th width="45%">{{ __('Total Products') }}</th>
+                            <th width="45%">{{ __('Total CatalogItems') }}</th>
                             <th width="10%">:</th>
                             <td width="45%">{{count($cart->items)}}</td>
                          </tr>

@@ -21,10 +21,10 @@
                                 </div>
                             </div>
                         </div>
-                            <div class="add-product-content1 customar-details-area add-product-content2">
+                            <div class="add-catalogItem-content1 customar-details-area add-catalogItem-content2">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <div class="product-description">
+                                        <div class="catalogItem-description">
                                             <div class="body-area">
                                             <div class="row">
                                                     <div class="col-md-4">
@@ -34,7 +34,7 @@
                                                             @else
                                                             <img src="{{ $data->photo ? asset('assets/images/users/'.$data->photo):asset('assets/images/'.$gs->user_image)}}" alt="No Image">                                            
                                                             @endif
-                                                        <a href="javascript:;" class="btn btn-primary send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
+                                                        <a href="javascript:;" class="btn btn-primary send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#merchantform">{{ __("Send Message") }}</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -98,7 +98,7 @@
                                             <div class="order-table-wrap">
                                                 <div class="order-details-table">
                                                     <div class="mr-table">
-                                                        <h4 class="title">{{ __("Products Ordered") }}</h4>
+                                                        <h4 class="title">{{ __("Items Ordered") }}</h4>
                                                         <div class="table-responsive">
                                                                 <table id="example2" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                                     <thead>
@@ -139,11 +139,11 @@
 
 {{-- MESSAGE MODAL --}}
 <div class="sub-categori">
-    <div class="modal" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+    <div class="modal" id="merchantform" tabindex="-1" role="dialog" aria-labelledby="merchantformLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
+                    <h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                             
                         </button>

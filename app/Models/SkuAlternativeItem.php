@@ -12,7 +12,7 @@ class SkuAlternativeItem extends Model
     /**
      * @deprecated Use catalogItems() instead
      */
-    public function products()
+    public function catalogItems()
     {
         return $this->hasMany(CatalogItem::class, 'sku', 'sku');
     }

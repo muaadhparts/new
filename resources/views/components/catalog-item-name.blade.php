@@ -35,7 +35,7 @@
                 : ($itemData['item']['id'] ?? $itemData['id'] ?? null);
         }
         // Use centralized helper for localized name
-        $displayName = getLocalizedProductName($itemData['item']);
+        $displayName = getLocalizedCatalogItemName($itemData['item']);
     } else {
         // Direct catalog item object format: $catalogItem->name
         $sku = $itemData->sku ?? $itemData['sku'] ?? '';
@@ -48,13 +48,13 @@
             if ($itemData instanceof \App\Models\MerchantItem) {
                 $mpId = $itemData->id;
             } elseif ($itemData instanceof \App\Models\CatalogItem && $userId) {
-                // Fetch first active MI for this catalog item and vendor
+                // Fetch first active MI for this catalog item and merchant
                 $mp = $itemData->merchantItems()->where('user_id', $userId)->where('status', 1)->first();
                 $mpId = $mp->id ?? null;
             }
         }
         // Use centralized helper for localized name
-        $displayName = getLocalizedProductName($itemData);
+        $displayName = getLocalizedCatalogItemName($itemData);
     }
 
     // SKU display
@@ -76,12 +76,12 @@
 
         // Keep catalog-item route for:
         // 1. search-results-page and category pages (front.category)
-        // 2. vendor dashboard (all vendor pages)
+        // 2. merchant dashboard (all merchant pages)
         // 3. admin purchases and invoices (merchant-specific pages)
         // 4. cart, checkout, and purchase pages (user)
         $keepCatalogItemRoute =
             in_array($currentRouteName, ['search.result', 'front.category']) ||
-            str_starts_with($currentPath, 'vendor/') ||
+            str_starts_with($currentPath, 'merchant/') ||
             $isAdminPurchaseOrInvoice ||
             str_starts_with($currentPath, 'user/purchase') ||
             str_contains($currentPath, '/cart') ||

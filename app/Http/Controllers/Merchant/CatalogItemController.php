@@ -23,10 +23,10 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
-        // Get CatalogItems that belong to this vendor via merchant_items
+        // Get CatalogItems that belong to this merchant via merchant_items
         $datas = CatalogItem::whereHas('merchantItems', function($query) use ($user) {
                 $query->where('user_id', $user->id)
-                      ->where('product_type', 'normal');
+                      ->where('item_type', 'normal');
             })
             ->with([
                 'brand',
@@ -51,7 +51,7 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 Session::flash('unsuccess', __('You must complete your verfication first.'));
                 return redirect()->route('merchant-verify');
@@ -87,7 +87,7 @@ class CatalogItemController extends MerchantBaseController
             ]);
         }
 
-        // Check if vendor already has an offer for this catalog item
+        // Check if merchant already has an offer for this catalog item
         $existingOffer = MerchantItem::where('catalog_item_id', $catalogItem->id)
             ->where('user_id', $user->id)
             ->first();
@@ -111,7 +111,7 @@ class CatalogItemController extends MerchantBaseController
             if (filter_var($catalogItem->photo, FILTER_VALIDATE_URL)) {
                 $photoUrl = $catalogItem->photo;
             } else {
-                $photoUrl = asset('assets/images/products/' . $catalogItem->photo);
+                $photoUrl = asset('assets/images/catalogItems/' . $catalogItem->photo);
             }
         }
 
@@ -134,7 +134,7 @@ class CatalogItemController extends MerchantBaseController
         $user = $this->user;
 
         $datas = CatalogItem::whereHas('merchantItems', function($q) {
-                $q->where('product_type', 'normal');
+                $q->where('item_type', 'normal');
             })
             ->where('is_catalog', '=', 1)
             ->status(1)
@@ -149,7 +149,7 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 Session::flash('unsuccess', __('You must complete your verfication first.'));
                 return redirect()->route('merchant-verify');
@@ -170,7 +170,7 @@ class CatalogItemController extends MerchantBaseController
             case 'listing':
                 return view('merchant.catalog-item.create.listing', compact('cats', 'sign'));
             default:
-                Session::flash('unsuccess', __('Invalid product type.'));
+                Session::flash('unsuccess', __('Invalid catalogItem type.'));
                 return redirect()->route('merchant-catalog-item-types');
         }
     }
@@ -179,7 +179,7 @@ class CatalogItemController extends MerchantBaseController
     public function createOffer($catalog_item_id)
     {
         $user = $this->user;
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 Session::flash('unsuccess', __('You must complete your verfication first.'));
                 return redirect()->route('merchant-verify');
@@ -191,7 +191,7 @@ class CatalogItemController extends MerchantBaseController
             ->where('is_catalog', 1)
             ->firstOrFail();
 
-        // Check if vendor already has an offer for this catalog item
+        // Check if merchant already has an offer for this catalog item
         $existingOffer = MerchantItem::where('catalog_item_id', $catalog_item_id)
             ->where('user_id', $user->id)
             ->first();
@@ -237,11 +237,11 @@ class CatalogItemController extends MerchantBaseController
         list(, $image) = explode(',', $image);
         $image = base64_decode($image);
         $image_name = time() . Str::random(8) . '.png';
-        $path = 'assets/images/products/' . $image_name;
+        $path = 'assets/images/catalogItems/' . $image_name;
         file_put_contents($path, $image);
         if ($data->photo != null) {
-            if (file_exists(public_path() . '/assets/images/products/' . $data->photo)) {
-                unlink(public_path() . '/assets/images/products/' . $data->photo);
+            if (file_exists(public_path() . '/assets/images/catalogItems/' . $data->photo)) {
+                unlink(public_path() . '/assets/images/catalogItems/' . $data->photo);
             }
         }
         $input['photo'] = $image_name;
@@ -252,7 +252,7 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        $img = Image::make(public_path() . '/assets/images/products/' . $data->photo)->resize(285, 285);
+        $img = Image::make(public_path() . '/assets/images/catalogItems/' . $data->photo)->resize(285, 285);
         $thumbnail = time() . Str::random(8) . '.jpg';
         $img->save(public_path() . '/assets/images/thumbnails/' . $thumbnail);
         $data->thumbnail = $thumbnail;
@@ -278,7 +278,7 @@ class CatalogItemController extends MerchantBaseController
         // Count merchant items
         $prods = $user->merchantItems()->count();
 
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 return back()->with('unsuccess', __('You must complete your verfication first.'));
             }
@@ -358,7 +358,7 @@ class CatalogItemController extends MerchantBaseController
                         'price' => $price / $sign->value,
                         'previous_price' => !empty($line[3]) ? (floatval($line[3]) / $sign->value) : null,
                         'stock' => $stock,
-                        'product_condition' => intval($line[4] ?? 2),
+                        'item_condition' => intval($line[4] ?? 2),
                         'minimum_qty' => !empty($line[5]) ? $line[5] : null,
                         'ship' => !empty($line[6]) ? $line[6] : null,
                         'preordered' => intval($line[7] ?? 0),
@@ -449,7 +449,7 @@ class CatalogItemController extends MerchantBaseController
             'catalog_item_id' => 'required|exists:catalog_items,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'product_condition' => 'required|in:1,2',
+            'item_condition' => 'required|in:1,2',
             'brand_quality_id' => 'required|exists:brand_qualities,id',
         ];
 
@@ -476,7 +476,7 @@ class CatalogItemController extends MerchantBaseController
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
             'stock' => $request->stock,
             'minimum_qty' => $request->minimum_qty ?: null,
-            'product_condition' => $request->product_condition,
+            'item_condition' => $request->item_condition,
             'ship' => $request->ship ?: null,
             'preordered' => $request->preordered ? 1 : 0,
             'status' => 1,
@@ -525,7 +525,7 @@ class CatalogItemController extends MerchantBaseController
         $rules = [
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
-            'product_condition' => 'required|in:1,2',
+            'item_condition' => 'required|in:1,2',
             'brand_quality_id' => 'required|exists:brand_qualities,id',
         ];
 
@@ -551,7 +551,7 @@ class CatalogItemController extends MerchantBaseController
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
             'stock' => $request->stock,
             'minimum_qty' => $request->minimum_qty ?: null,
-            'product_condition' => $request->product_condition,
+            'item_condition' => $request->item_condition,
             'ship' => $request->ship ?: null,
             'preordered' => $request->preordered ? 1 : 0,
         ];
@@ -593,7 +593,7 @@ class CatalogItemController extends MerchantBaseController
         $package = $user->subscribes()->latest('id')->first();
         $prods   = $user->merchantItems()->count();
 
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 return back()->with('unsuccess', __('You must complete your verfication first.'));
             }
@@ -605,7 +605,7 @@ class CatalogItemController extends MerchantBaseController
                 'part_number' => 'required|string',
                 'price' => 'required|numeric|min:0',
                 'stock' => 'required|integer|min:0',
-                'product_condition' => 'required|in:1,2',
+                'item_condition' => 'required|in:1,2',
             ];
             $request->validate($rules);
 
@@ -632,7 +632,7 @@ class CatalogItemController extends MerchantBaseController
                 'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
                 'stock' => $request->stock,
                 'minimum_qty' => $request->minimum_qty ?: null,
-                'product_condition' => $request->product_condition,
+                'item_condition' => $request->item_condition,
                 'ship' => $request->ship ?: null,
                 'preordered' => $request->preordered ? 1 : 0,
                 'status' => 1,
@@ -751,7 +751,7 @@ class CatalogItemController extends MerchantBaseController
                 return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
 
-            unset($input['product_condition'], $input['preordered'], $input['minimum_qty'], $input['ship']);
+            unset($input['item_condition'], $input['preordered'], $input['minimum_qty'], $input['ship']);
             unset($input['stock_check']);
             unset($input['color_all']);
             unset($input['whole_sell_qty'], $input['whole_sell_discount']);
@@ -839,7 +839,7 @@ class CatalogItemController extends MerchantBaseController
         $mp['minimum_qty']    = $request->input('minimum_qty') ?: $merchant->minimum_qty;
         $mp['stock_check']    = $request->input('stock_check', $merchant->stock_check);
         $mp['ship']           = $request->input('ship') ?: $merchant->ship;
-        $mp['product_condition'] = $request->input('product_condition', $merchant->product_condition);
+        $mp['item_condition'] = $request->input('item_condition', $merchant->item_condition);
 
         $merchant->update($mp);
 
@@ -873,7 +873,7 @@ class CatalogItemController extends MerchantBaseController
         $package = $user->subscribes()->latest('id')->first();
         $prods = $user->merchantItems()->count();
 
-        if (Muaadhsetting::find(1)->verify_product == 1) {
+        if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->checkStatus()) {
                 return back()->with('unsuccess', __('You must complete your verfication first.'));
             }
@@ -901,7 +901,7 @@ class CatalogItemController extends MerchantBaseController
             'minimum_qty'    => $request->input('minimum_qty') ?: null,
             'stock_check'    => $request->input('stock_check', 0),
             'ship'           => $request->input('ship') ?: null,
-            'product_condition' => (int) $request->input('product_condition', 0),
+            'item_condition' => (int) $request->input('item_condition', 0),
             'status'         => 1,
         ];
 

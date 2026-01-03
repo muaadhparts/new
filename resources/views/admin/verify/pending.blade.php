@@ -11,7 +11,7 @@
 											<li>
 												<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 											</li>
-											<li><a href="javascript:;">{{ __('Vendor Verifications') }}</a></li>
+											<li><a href="javascript:;">{{ __('Merchant Verifications') }}</a></li>
 											<li>
 												<a href="{{ route('admin-vr-index','pending') }}">{{ __("Pending Verifications") }}</a>
 											</li>
@@ -19,7 +19,7 @@
 								</div>
 							</div>
 						</div>
-						<div class="product-area">
+						<div class="catalogItem-area">
 							<div class="row">
 								<div class="col-lg-12">
 
@@ -29,8 +29,8 @@
 											<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 												<thead>
 													<tr>
-														<th>{{ __("Vendor Name") }}</th>
-														<th>{{ __("Vendor Email") }}</th>
+														<th>{{ __("Merchant Name") }}</th>
+														<th>{{ __("Merchant Email") }}</th>
 														<th>{{ __("Descriptions") }}</th>
 														<th>{{ __("Status") }}</th>
 														<th>{{ __("Options") }}</th>

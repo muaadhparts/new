@@ -165,12 +165,12 @@ class ThemeGenerateCss extends Command
         $inputPlaceholder = $gs->theme_input_placeholder ?? '#9a8e8c';
 
         // ==================================
-        // PRODUCT CARDS
+        // ITEM CARDS
         // ==================================
-        $productTitleSize = $gs->theme_product_title_size ?? '14px';
-        $productTitleWeight = $gs->theme_product_title_weight ?? '500';
-        $productPriceSize = $gs->theme_product_price_size ?? '16px';
-        $productHoverScale = $gs->theme_product_hover_scale ?? '1.02';
+        $itemTitleSize = $gs->theme_item_title_size ?? '14px';
+        $itemTitleWeight = $gs->theme_item_title_weight ?? '500';
+        $itemPriceSize = $gs->theme_item_price_size ?? '16px';
+        $itemHoverScale = $gs->theme_item_hover_scale ?? '1.02';
 
         // ==================================
         // MODALS
@@ -365,11 +365,11 @@ class ThemeGenerateCss extends Command
     --theme-input-focus-shadow: {$inputFocusShadow};
     --theme-input-placeholder: {$inputPlaceholder};
 
-    /* ===== PRODUCT CARDS ===== */
-    --theme-product-title-size: {$productTitleSize};
-    --theme-product-title-weight: {$productTitleWeight};
-    --theme-product-price-size: {$productPriceSize};
-    --theme-product-hover-scale: {$productHoverScale};
+    /* ===== ITEM CARDS ===== */
+    --theme-catalogItem-title-size: {$itemTitleSize};
+    --theme-catalogItem-title-weight: {$itemTitleWeight};
+    --theme-catalogItem-price-size: {$itemPriceSize};
+    --theme-catalogItem-hover-scale: {$itemHoverScale};
 
     /* ===== MODALS ===== */
     --theme-modal-bg: {$modalBg};

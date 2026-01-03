@@ -59,7 +59,7 @@ class FrontendController extends FrontBaseController
     // HOME PAGE SECTION
     // ================================================================================================
     // Architecture: Section-based rendering controlled by HomePageTheme model
-    // All product data is merchant-only (is_merchant = 2)
+    // All catalogItem data is merchant-only (is_merchant = 2)
     // Each section loads data ONLY if enabled in the active theme
     // ================================================================================================
 
@@ -114,7 +114,7 @@ class FrontendController extends FrontBaseController
         if ($theme->show_categories) {
             // TODO: Removed - old category system
             $data['featured_categories'] = Cache::remember('featured_categories_with_count', 3600, function () {
-                return collect(); // Category::withCount('products')->where('is_featured', 1)->get();
+                return collect(); // Category::withCount('catalogItems')->where('is_featured', 1)->get();
             });
         }
 
@@ -563,7 +563,7 @@ class FrontendController extends FrontBaseController
                         $mailer->sendAutoMail($data);
                     } else {
                         $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";
-                        mail($user->email, __('Your subscription plan duration will end after five days. Please renew your plan otherwise all of your products will be deactivated.Thank You.'), $headers);
+                        mail($user->email, __('Your subscription plan duration will end after five days. Please renew your plan otherwise all of your catalogItems will be deactivated.Thank You.'), $headers);
                     }
                     DB::table('users')->where('id', $user->id)->update(['mail_sent' => 0]);
                 }

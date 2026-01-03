@@ -1,61 +1,61 @@
-{{-- resources/views/partials/product.blade.php - Quick View Modal --}}
+{{-- resources/views/partials/catalogItem.blade.php - Quick View Modal --}}
 {{-- Uses catalog-unified.css for styling --}}
 
 @php
     /**
-     * اختيار البائع لعمليات السلة/العرض في المودال:
+     * اختيار التاجر لعمليات السلة/العرض في المودال:
      * - أولًا من ?user= في الاستعلام
-     * - أو من product->vendor_user_id (إذا حقنه الكنترولر)
-     * - أو من product->user_id كـ fallback أخير
+     * - أو من catalogItem->merchant_user_id (إذا حقنه الكنترولر)
+     * - أو من catalogItem->user_id كـ fallback أخير
      */
-    // Alias: الكنترولر يرسل $product لكن المتغير الجديد هو $catalogItem
-    $catalogItem = $product;
-    $merchantUserId = (int) (request()->get('user') ?? ($catalogItem->vendor_user_id ?? $catalogItem->user_id ?? 0));
+    // Alias: الكنترولر يرسل $catalogItem لكن المتغير الجديد هو $catalogItem
+    $catalogItem = $catalogItem;
+    $merchantUserId = (int) (request()->get('user') ?? ($catalogItem->merchant_user_id ?? $catalogItem->user_id ?? 0));
 
     // صورة أساسية
-    $mainPhoto = filter_var($product->photo ?? '', FILTER_VALIDATE_URL)
-        ? $product->photo
-        : (($product->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png'));
+    $mainPhoto = filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL)
+        ? $catalogItem->photo
+        : (($catalogItem->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
 
     // MerchantItem من الكنترولر
     $mp = $mp ?? null;
     $brand = $brand ?? null;
 
     // السعر
-    $rawPrice = $product->price ?? null;
-    $rawPrev  = $product->previous_price ?? null;
+    $rawPrice = $catalogItem->price ?? null;
+    $rawPrev  = $catalogItem->previous_price ?? null;
 
-    $forceVendor = request()->has('user') || isset($product->vendor_user_id);
-    if ($forceVendor) {
+    $forceMerchant = request()->has('user') || isset($catalogItem->merchant_user_id);
+    if ($forceMerchant) {
         $priceHtml = $rawPrice !== null ? \App\Models\CatalogItem::convertPrice($rawPrice) : '-';
         $prevHtml  = $rawPrev  !== null ? \App\Models\CatalogItem::convertPrice($rawPrev)  : null;
     } else {
-        $priceHtml = method_exists($product, 'showPrice')
-            ? $product->showPrice()
+        $priceHtml = method_exists($catalogItem, 'showPrice')
+            ? $catalogItem->showPrice()
             : (\App\Models\CatalogItem::convertPrice($rawPrice ?? 0));
-        $prevHtml  = (method_exists($product, 'showPreviousPrice') && $product->showPreviousPrice())
-            ? $product->showPreviousPrice()
+        $prevHtml  = (method_exists($catalogItem, 'showPreviousPrice') && $catalogItem->showPreviousPrice())
+            ? $catalogItem->showPreviousPrice()
             : ($rawPrev !== null ? \App\Models\CatalogItem::convertPrice($rawPrev) : null);
     }
 
     // تقييمات
-    $avg   = $product->catalog_reviews_avg_rating ?? null;
+    $avg   = $catalogItem->catalog_reviews_avg_rating ?? null;
     $count = class_exists('App\\Models\\CatalogReview') && method_exists('App\\Models\\CatalogReview', 'reviewCount')
-        ? \App\Models\CatalogReview::reviewCount($product->id)
+        ? \App\Models\CatalogReview::reviewCount($catalogItem->id)
         : null;
 
     // Quality Brand
     $qualityBrand = $mp?->qualityBrand;
 
-    // Vendor
-    $vendor = $mp?->user;
+    // Merchant
+    $merchant = $mp?->user;
 
     // الحد الأدنى للكمية
     $minQty = $mp ? (int)($mp->minimum_qty ?? 1) : 1;
     if ($minQty < 1) $minQty = 1;
 
     // المخزون
-    $stock = $mp ? (int)($mp->stock ?? 999) : (int)($product->stock ?? 999);
+    $stock = $mp ? (int)($mp->stock ?? 999) : (int)($catalogItem->stock ?? 999);
     $inStock = $stock > 0;
 
     // Preorder
@@ -65,21 +65,21 @@
     $canBuy = $inStock || $preordered;
 @endphp
 
-<div class="catalog-quickview ill-product" data-catalog-item-id="{{ $catalogItem->id }}" data-merchant-user-id="{{ $merchantUserId }}">
+<div class="catalog-quickview ill-catalogItem" data-catalog-item-id="{{ $catalogItem->id }}" data-merchant-user-id="{{ $merchantUserId }}">
     <div class="row g-3 g-md-4">
         {{-- Image Column --}}
         <div class="col-12 col-md-5">
             <div class="catalog-quickview-image">
                 @if($mainPhoto)
                     <img src="{{ $mainPhoto }}"
-                         alt="{{ $product->name ?? $product->sku }}"
+                         alt="{{ $catalogItem->name ?? $catalogItem->sku }}"
                          class="catalog-quickview-main-img"
                          loading="lazy">
                 @endif
 
-                {{-- Gallery Thumbnails (vendor-specific) --}}
+                {{-- Gallery Thumbnails (merchant-specific) --}}
                 @php
-                    $merchantGalleries = $catalogItem->galleriesForVendor($merchantUserId, 4);
+                    $merchantGalleries = $catalogItem->galleriesForMerchant($merchantUserId, 4);
                 @endphp
                 @if($merchantGalleries->count() > 0)
                     <div class="catalog-quickview-gallery">
@@ -90,7 +90,7 @@
                                     : asset('assets/images/galleries/'.$gallery->photo);
                             @endphp
                             <img src="{{ $gUrl }}"
-                                 alt="{{ $product->name ?? '' }}"
+                                 alt="{{ $catalogItem->name ?? '' }}"
                                  class="catalog-quickview-thumb"
                                  loading="lazy">
                         @endforeach
@@ -127,23 +127,23 @@
                 @endif
             </div>
 
-            {{-- Product Info Table --}}
+            {{-- CatalogItem Info Table --}}
             <div class="catalog-quickview-info">
                 <table class="catalog-info-table">
                     <tbody>
                         {{-- SKU --}}
-                        @if($product->sku)
+                        @if($catalogItem->sku)
                             <tr>
                                 <td class="catalog-info-label"><i class="fas fa-barcode"></i> @lang('SKU')</td>
-                                <td class="catalog-info-value"><code>{{ $product->sku }}</code></td>
+                                <td class="catalog-info-value"><code>{{ $catalogItem->sku }}</code></td>
                             </tr>
                         @endif
 
                         {{-- Brand --}}
-                        @if($product->brand)
+                        @if($catalogItem->brand)
                             <tr>
                                 <td class="catalog-info-label"><i class="fas fa-tag"></i> @lang('Brand')</td>
-                                <td class="catalog-info-value">{{ getLocalizedBrandName($product->brand) }}</td>
+                                <td class="catalog-info-value">{{ getLocalizedBrandName($catalogItem->brand) }}</td>
                             </tr>
                         @endif
 
@@ -164,11 +164,11 @@
                             </tr>
                         @endif
 
-                        {{-- Vendor --}}
-                        @if($vendor)
+                        {{-- Merchant --}}
+                        @if($merchant)
                             <tr>
-                                <td class="catalog-info-label"><i class="fas fa-store"></i> @lang('Vendor')</td>
-                                <td class="catalog-info-value">{{ getLocalizedShopName($vendor) }}</td>
+                                <td class="catalog-info-label"><i class="fas fa-store"></i> @lang('Merchant')</td>
+                                <td class="catalog-info-value">{{ getLocalizedShopName($merchant) }}</td>
                             </tr>
                         @endif
 
@@ -190,7 +190,7 @@
             </div>
 
             {{-- Quantity Selector --}}
-            @if(($product->type ?? 'Physical') === 'Physical' && $canBuy)
+            @if(($catalogItem->type ?? 'Physical') === 'Physical' && $canBuy)
                 <div class="catalog-quickview-quantity">
                     <label class="catalog-quickview-qty-label">@lang('Quantity'):</label>
                     <div class="catalog-quickview-qty-control">
@@ -261,7 +261,7 @@
             </div>
 
             {{-- Shipping Quote Button --}}
-            @if(($product->type ?? 'Physical') == 'Physical' && $mp)
+            @if(($catalogItem->type ?? 'Physical') == 'Physical' && $mp)
                 <div class="mt-3">
                     <x-shipping-quote-button
                         :merchant-user-id="$merchantUserId"

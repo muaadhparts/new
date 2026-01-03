@@ -323,7 +323,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $new_cart['totalPrice'] = $t_cart->totalPrice;
         $new_cart['items'] = $t_cart->items;
         $new_cart = json_encode($new_cart);
-        $temp_affilate_users = PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $temp_affilate_users = PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام المبلغ المحفوظ من input_data بدلاً من إعادة الحساب

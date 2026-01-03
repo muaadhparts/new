@@ -5,7 +5,7 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Vendor Credentials') }} <i class="fas fa-store"></i></h4>
+                <h4 class="heading">{{ __('Merchant Credentials') }} <i class="fas fa-store"></i></h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
@@ -14,17 +14,17 @@
                         <a href="javascript:;">{{ __('Settings') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.vendor-credentials.index') }}">{{ __('Vendor Credentials') }}</a>
+                        <a href="{{ route('admin.merchant-credentials.index') }}">{{ __('Merchant Credentials') }}</a>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <div class="add-product-content1">
+    <div class="add-catalogItem-content1">
         <div class="row">
             <div class="col-lg-12">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
 
                         @include('alerts.admin.form-both')
@@ -34,14 +34,14 @@
                             <div class="col-lg-6">
                                 <div class="alert alert-info">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    <strong>{{ __('Vendor Payment & Shipping Credentials') }}</strong>
+                                    <strong>{{ __('Merchant Payment & Shipping Credentials') }}</strong>
                                     <br>
-                                    <small>{{ __('Manage MyFatoorah, Tryoto, and other payment/shipping credentials for each vendor.') }}</small>
+                                    <small>{{ __('Manage MyFatoorah, Tryoto, and other payment/shipping credentials for each merchant.') }}</small>
                                 </div>
                             </div>
                             <div class="col-lg-6 text-end">
-                                <a href="{{ route('admin.vendor-credentials.create') }}" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i> {{ __('Add Vendor Credential') }}
+                                <a href="{{ route('admin.merchant-credentials.create') }}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i> {{ __('Add Merchant Credential') }}
                                 </a>
                             </div>
                         </div>
@@ -49,13 +49,13 @@
                         {{-- Filters --}}
                         <div class="row mb-4">
                             <div class="col-lg-12">
-                                <form action="{{ route('admin.vendor-credentials.index') }}" method="GET" class="row g-3">
+                                <form action="{{ route('admin.merchant-credentials.index') }}" method="GET" class="row g-3">
                                     <div class="col-md-4">
-                                        <select name="vendor_id" class="form-control">
-                                            <option value="">{{ __('All Vendors') }}</option>
-                                            @foreach($merchants as $vendor)
-                                                <option value="{{ $vendor->id }}" {{ request('vendor_id') == $vendor->id ? 'selected' : '' }}>
-                                                    {{ $vendor->shop_name ?: $vendor->name }}
+                                        <select name="merchant_id" class="form-control">
+                                            <option value="">{{ __('All Merchants') }}</option>
+                                            @foreach($merchants as $merchant)
+                                                <option value="{{ $merchant->id }}" {{ request('merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                                    {{ $merchant->shop_name ?: $merchant->name }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -75,9 +75,9 @@
                                             <i class="fas fa-filter me-1"></i> {{ __('Filter') }}
                                         </button>
                                     </div>
-                                    @if(request()->hasAny(['vendor_id', 'service']))
+                                    @if(request()->hasAny(['merchant_id', 'service']))
                                         <div class="col-md-2">
-                                            <a href="{{ route('admin.vendor-credentials.index') }}" class="btn btn-outline-secondary w-100">
+                                            <a href="{{ route('admin.merchant-credentials.index') }}" class="btn btn-outline-secondary w-100">
                                                 <i class="fas fa-times me-1"></i> {{ __('Clear') }}
                                             </a>
                                         </div>
@@ -90,7 +90,7 @@
                         @if($credentials->isEmpty())
                             <div class="alert alert-warning text-center">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                {{ __('No vendor credentials found. Click "Add Vendor Credential" to add payment/shipping keys for vendors.') }}
+                                {{ __('No merchant credentials found. Click "Add Merchant Credential" to add payment/shipping keys for merchants.') }}
                             </div>
                         @else
                             <div class="table-responsive">
@@ -98,7 +98,7 @@
                                     <thead class="table-dark">
                                         <tr>
                                             <th width="5%">#</th>
-                                            <th width="15%">{{ __('Vendor') }}</th>
+                                            <th width="15%">{{ __('Merchant') }}</th>
                                             <th width="12%">{{ __('Service') }}</th>
                                             <th width="12%">{{ __('Key Name') }}</th>
                                             <th width="8%">{{ __('Environment') }}</th>
@@ -170,11 +170,11 @@
                                                 </td>
                                                 <td>
                                                     <div class="btn-group btn-group-sm">
-                                                        <a href="{{ route('admin.vendor-credentials.edit', $credential->id) }}"
+                                                        <a href="{{ route('admin.merchant-credentials.edit', $credential->id) }}"
                                                            class="btn btn-info" title="{{ __('Edit') }}">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
-                                                        <form action="{{ route('admin.vendor-credentials.toggle', $credential->id) }}"
+                                                        <form action="{{ route('admin.merchant-credentials.toggle', $credential->id) }}"
                                                               method="POST" style="display: inline;">
                                                             @csrf
                                                             <button type="submit" class="btn btn-{{ $credential->is_active ? 'warning' : 'success' }}"
@@ -182,14 +182,14 @@
                                                                 <i class="fas fa-{{ $credential->is_active ? 'pause' : 'play' }}"></i>
                                                             </button>
                                                         </form>
-                                                        <form action="{{ route('admin.vendor-credentials.test', $credential->id) }}"
+                                                        <form action="{{ route('admin.merchant-credentials.test', $credential->id) }}"
                                                               method="POST" style="display: inline;">
                                                             @csrf
                                                             <button type="submit" class="btn btn-secondary" title="{{ __('Test') }}">
                                                                 <i class="fas fa-check-circle"></i>
                                                             </button>
                                                         </form>
-                                                        <form action="{{ route('admin.vendor-credentials.destroy', $credential->id) }}"
+                                                        <form action="{{ route('admin.merchant-credentials.destroy', $credential->id) }}"
                                                               method="POST" style="display: inline;"
                                                               onsubmit="return confirm('{{ __('Are you sure you want to delete this credential?') }}')">
                                                             @csrf

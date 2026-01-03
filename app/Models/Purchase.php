@@ -126,8 +126,8 @@ class Purchase extends Model
 //        dd($cart);
         $merchant_shipping_id = 0;
         $user = array();
-        foreach ($cart->items as $prod) {
-                $user[] = $prod['item']['user_id'];
+        foreach ($cart->items as $cartItem) {
+                $user[] = $cartItem['item']['user_id'];
         }
         $users = array_unique($user);
         if(count($users) == 1)
@@ -152,8 +152,8 @@ class Purchase extends Model
     {
         $merchant_packing_id = 0;
         $user = array();
-        foreach ($cart->items as $prod) {
-                $user[] = $prod['item']['user_id'];
+        foreach ($cart->items as $cartItem) {
+                $user[] = $cartItem['item']['user_id'];
         }
         $users = array_unique($user);
         if(count($users) == 1)
@@ -215,14 +215,6 @@ class Purchase extends Model
     }
 
     /**
-     * @deprecated Use getMerchantShippingStatus() instead
-     */
-    public function getVendorShippingStatus($merchantId)
-    {
-        return $this->getMerchantShippingStatus($merchantId);
-    }
-
-    /**
      * Update shipping status for a merchant
      *
      * @param int $merchantId
@@ -235,14 +227,6 @@ class Purchase extends Model
         $statuses[$merchantId] = array_merge($statuses[$merchantId] ?? [], $statusData);
         $this->shipping_status = $statuses;
         $this->save();
-    }
-
-    /**
-     * @deprecated Use updateMerchantShippingStatus() instead
-     */
-    public function updateVendorShippingStatus($merchantId, array $statusData)
-    {
-        return $this->updateMerchantShippingStatus($merchantId, $statusData);
     }
 
     /**

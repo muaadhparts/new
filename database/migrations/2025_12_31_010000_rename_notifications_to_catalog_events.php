@@ -39,7 +39,7 @@ return new class extends Migration
         // 4. Add catalog_item_id to catalog_events if missing
         if (Schema::hasTable('catalog_events') && !Schema::hasColumn('catalog_events', 'catalog_item_id')) {
             Schema::table('catalog_events', function (Blueprint $table) {
-                $table->integer('catalog_item_id')->nullable()->after('vendor_id');
+                $table->integer('catalog_item_id')->nullable()->after('merchant_id');
             });
         }
     }

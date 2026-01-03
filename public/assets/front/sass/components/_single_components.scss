@@ -77,8 +77,8 @@
   }
 }
 
-// single-offer-product
-.single-offer-product {
+// single-offer-catalogItem
+.single-offer-catalogItem {
   position: relative;
   overflow: hidden;
 
@@ -184,20 +184,20 @@
   }
 }
 
-// single-product
-.single-product {
+// single-catalogItem
+.single-catalogItem {
   .img-wrapper {
     overflow: hidden;
     position: relative;
 
-    .product-img {
+    .catalogItem-img {
       transition: $transition;
       width: 100%;
       height: 312px;
       object-fit: cover;
     }
 
-    .product-badge,
+    .catalogItem-badge,
     .add-to-wishlist-btn {
       display: flex;
       justify-content: center;
@@ -207,7 +207,7 @@
       z-index: 5;
     }
 
-    .product-badge {
+    .catalogItem-badge {
       width: 62px;
       height: 29px;
       padding: 4px 16px;
@@ -264,7 +264,7 @@
     background-color: $white-color;
   }
 
-  .product-title {
+  .catalogItem-title {
     color: $text-color-950;
     font-size: 16px;
     font-style: normal;
@@ -368,7 +368,7 @@
   &.list-view {
     display: flex;
 
-    .product-title {
+    .catalogItem-title {
       font-size: 32px;
       font-style: normal;
       font-weight: 400;
@@ -391,11 +391,11 @@
   }
 
   &:hover {
-    .product-img {
+    .catalogItem-img {
       transform: scale(1.04);
     }
 
-    .product-title {
+    .catalogItem-title {
       color: $primary-color-500;
 
       a {
@@ -410,16 +410,16 @@
   }
 }
 
-// single-product-list-view
-.single-product-list-view {
-  @extend .single-product;
+// single-catalogItem-list-view
+.single-catalogItem-list-view {
+  @extend .single-catalogItem;
   display: flex;
   width: 100%;
 
   .img-wrapper {
     width: 400px;
 
-    .product-img {
+    .catalogItem-img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -431,7 +431,7 @@
     flex-grow: 1;
   }
 
-  .product-title,
+  .catalogItem-title,
   .price-wrapper h4 {
     font-size: 32px; 
     del {
@@ -489,7 +489,7 @@
     }
   }
   @include screen-1200 {
-    .product-title,
+    .catalogItem-title,
     .price-wrapper h4 {
       font-size: 24px;
     }
@@ -510,7 +510,7 @@
   }
 
   @include screen-768 {
-    .product-title,
+    .catalogItem-title,
     .price-wrapper h4 {
       font-size: 20px;
     }
@@ -650,13 +650,13 @@
       }
     }
 
-    .deal-of-day-product {
+    .deal-of-day-catalogItem {
       display: flex;
       gap: 24px;
 
-      .single-product {
+      .single-catalogItem {
         .img-wrapper {
-          .product-badge {
+          .catalogItem-badge {
             left: 12px;
           }
 
@@ -668,7 +668,7 @@
         .content-wrapper {
           padding: 16px;
 
-          .product-title {
+          .catalogItem-title {
             font-size: 14px;
           }
 
@@ -1123,8 +1123,8 @@
   }
 }
 
-// single-product-widget
-.single-product-widget {
+// single-catalogItem-widget
+.single-catalogItem-widget {
   padding: 24px 16px;
   // border-radius: 12px;
   background: $white-color;
@@ -1225,8 +1225,8 @@
 // }
 // for checkout step 3 end
 
-// single-recent-product-widget
-.gs-single-recent-product-widget {
+// single-recent-catalogItem-widget
+.gs-single-recent-catalogItem-widget {
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -1630,11 +1630,11 @@
               padding-right: 10px;
             }
 
-            .cart-product-area {
+            .cart-catalogItem-area {
               width: 290px;
             }
 
-            .cart-product {
+            .cart-catalogItem {
               width: 290px;
               gap: 12px;
 
@@ -1643,7 +1643,7 @@
                 width: 100px;
               }
 
-              .cart-product-info {
+              .cart-catalogItem-info {
                 text-align: left;
 
                 .cart-title {
@@ -1765,11 +1765,11 @@
                 padding-top: 24px;
               }
 
-              .cart-product-area {
+              .cart-catalogItem-area {
                 width: 200px;
               }
 
-              .cart-product {
+              .cart-catalogItem {
                 width: 250px;
 
                 img {
@@ -1777,7 +1777,7 @@
                   width: 80px;
                 }
 
-                .cart-product-info {
+                .cart-catalogItem-info {
                   .cart-title {
                     font-size: 14px;
                     margin-bottom: 10px;
@@ -1866,11 +1866,11 @@
                 padding-top: 20px;
               }
 
-              .cart-product-area {
+              .cart-catalogItem-area {
                 width: 200px;
               }
 
-              .cart-product {
+              .cart-catalogItem {
                 width: 200px;
 
                 img {
@@ -1878,7 +1878,7 @@
                   width: 70px;
                 }
 
-                .cart-product-info {
+                .cart-catalogItem-info {
                   .cart-title {
                     font-size: 12px;
                     margin-bottom: 10px;
@@ -1964,11 +1964,11 @@
                 padding-top: 16px;
               }
 
-              .cart-product-area {
+              .cart-catalogItem-area {
                 width: 200px;
               }
 
-              .cart-product {
+              .cart-catalogItem {
                 width: 200px;
 
                 img {
@@ -1976,7 +1976,7 @@
                   width: 60px;
                 }
 
-                .cart-product-info {
+                .cart-catalogItem-info {
                   .cart-title {
                     font-size: 12px;
                     margin-bottom: 8px;
@@ -2124,7 +2124,7 @@
       }
     }
 
-    .ordered-products {
+    .ordered-catalogItems {
       span {
         font-weight: 500;
       }
@@ -2168,7 +2168,7 @@
             border-bottom: none;
           }
 
-          .product-img {
+          .catalogItem-img {
             width: 200px;
           }
 
@@ -2194,7 +2194,7 @@
             }
           }
 
-          .product-details {
+          .catalogItem-details {
             width: 500px;
 
             h6 {
@@ -2213,7 +2213,7 @@
       padding: 40px 30px;
     }
 
-    .ordered-products {
+    .ordered-catalogItems {
       h6 {
         font-size: 16px;
         padding-bottom: 4px !important;
@@ -2227,7 +2227,7 @@
   }
 
   @include screen-768 {
-    .ordered-products {
+    .ordered-catalogItems {
       table {
         tbody {
           td {
@@ -2722,7 +2722,7 @@
   }
 }
 
-.gs-product-type-card {
+.gs-catalogItem-type-card {
   padding: 40px;
   border-radius: 8px;
   background-color: $white-color;

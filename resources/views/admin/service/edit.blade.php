@@ -3,10 +3,10 @@
 @section('content')
             <div class="content-area">
 
-              <div class="add-product-content1">
+              <div class="add-catalogItem-content1">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                       <div class="body-area">
                         @include('alerts.admin.form-error') 
                       <form id="muaadhformdata" action="{{route('admin-service-update',$data->id)}}" method="POST" enctype="multipart/form-data">

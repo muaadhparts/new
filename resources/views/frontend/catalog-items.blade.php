@@ -44,17 +44,17 @@
             [dir="rtl"] .category-step-selector .form-select {
                 padding: 12px 12px 12px 35px;
             }
-            /* Make sidebar appear ABOVE products on mobile */
-            .gs-blog-wrapper .row.products-layout {
+            /* Make sidebar appear ABOVE catalogItems on mobile */
+            .gs-blog-wrapper .row.catalogItems-layout {
                 display: flex;
                 flex-direction: column;
             }
-            .gs-blog-wrapper .row.products-layout .sidebar-column {
+            .gs-blog-wrapper .row.catalogItems-layout .sidebar-column {
                 order: 1;
                 margin-top: 0;
                 margin-bottom: 20px;
             }
-            .gs-blog-wrapper .row.products-layout .products-column {
+            .gs-blog-wrapper .row.catalogItems-layout .catalogItems-column {
                 order: 2;
             }
         }
@@ -63,10 +63,10 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Product')</h2>
+                    <h2 class="breadcrumb-title">@lang('CatalogItem')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="javascript:;">@lang('Product')</a></li>
+                        <li><a href="javascript:;">@lang('CatalogItem')</a></li>
                     </ul>
                 </div>
             </div>
@@ -74,16 +74,16 @@
     </section>
     <!-- breadcrumb end -->
 
-    <!-- product wrapper start -->
+    <!-- catalogItem wrapper start -->
     <div class="muaadh-section muaadh-section-gray">
         <div class="container">
-            <div class="row products-layout">
+            <div class="row catalogItems-layout">
                 <div class="col-12 col-lg-4 col-xl-3 sidebar-column">
-                    <div class="gs-product-sidebar-wrapper">
-                        <!-- product categories wrapper - Multi-Step Selector -->
-                        <div class="single-product-widget">
-                            <h5 class="widget-title">@lang('Product categories')</h5>
-                            <div class="product-cat-widget">
+                    <div class="gs-catalogItem-sidebar-wrapper">
+                        <!-- catalogItem categories wrapper - Multi-Step Selector -->
+                        <div class="single-catalogItem-widget">
+                            <h5 class="widget-title">@lang('CatalogItem categories')</h5>
+                            <div class="catalogItem-cat-widget">
 
                                 {{-- Multi-Step Category Selector (5 Levels - Lightweight) --}}
                                 <div class="category-step-selector">
@@ -228,7 +228,7 @@
                             <!-- Warranty Type-->
                             @if (!empty($cat) && !empty(json_decode($cat->attributes, true)))
                                 @foreach ($cat->attributes as $key => $attr)
-                                    <div class="single-product-widget">
+                                    <div class="single-catalogItem-widget">
                                         <h5 class="widget-title">{{ $attr->name }}</h5>
                                         <div class="warranty-type">
                                             @if (!empty($attr->attribute_options))
@@ -263,7 +263,7 @@
 
                             @if (!empty($subcat) && !empty(json_decode($subcat->attributes, true)))
                                 @foreach ($subcat->attributes as $key => $attr)
-                                    <div class="single-product-widget">
+                                    <div class="single-catalogItem-widget">
                                         <h5 class="widget-title">{{ $attr->name }}</h5>
                                         <div class="warranty-type">
                                             @if (!empty($attr->attribute_options))
@@ -296,7 +296,7 @@
 
                             @if (!empty($childcat) && !empty(json_decode($childcat->attributes, true)))
                                 @foreach ($childcat->attributes as $key => $attr)
-                                    <div class="single-product-widget">
+                                    <div class="single-catalogItem-widget">
                                         <h5 class="widget-title">{{ $attr->name }}</h5>
                                         <div class="warranty-type">
                                             @if (!empty($attr->attribute_options))
@@ -331,7 +331,7 @@
 
                         <!-- Merchant Filter -->
                         @if(isset($merchants) && $merchants->count() > 0)
-                        <div class="single-product-widget">
+                        <div class="single-catalogItem-widget">
                             <h5 class="widget-title">@lang('Merchant')</h5>
                             <div class="warranty-type m-filter-scroll-box">
                                 <ul>
@@ -361,7 +361,7 @@
 
                         <!-- Brand Quality Filter -->
                         @if(isset($brand_qualities) && $brand_qualities->count() > 0)
-                        <div class="single-product-widget">
+                        <div class="single-catalogItem-widget">
                             <h5 class="widget-title">@lang('Brand Quality')</h5>
                             <div class="warranty-type m-filter-scroll-box">
                                 <ul>
@@ -391,7 +391,7 @@
 
                     </div>
                 </div>
-                <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper products-column">
+                <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper catalogItems-column">
 
                     @php
                         // Default to list-view for first visit
@@ -402,17 +402,17 @@
                         }
                     @endphp
 
-                    <!-- product nav wrapper -->
-                    <div class=" product-nav-wrapper">
-                        <h5>@lang('Total Products Found:') {{ $prods->total() }}</h5>
+                    <!-- catalogItem nav wrapper -->
+                    <div class=" catalogItem-nav-wrapper">
+                        <h5>@lang('Total Items Found:') {{ $prods->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
 
                                 @php $currentSort = request('sort', 'date_desc'); @endphp
                                 <select class="nice-select" id="sortby" name="sort">
-                                    <option value="date_desc" {{ $currentSort === 'date_desc' ? 'selected' : '' }}>{{ __('Latest Product') }}</option>
-                                    <option value="date_asc" {{ $currentSort === 'date_asc' ? 'selected' : '' }}>{{ __('Oldest Product') }}</option>
+                                    <option value="date_desc" {{ $currentSort === 'date_desc' ? 'selected' : '' }}>{{ __('Latest CatalogItem') }}</option>
+                                    <option value="date_asc" {{ $currentSort === 'date_asc' ? 'selected' : '' }}>{{ __('Oldest CatalogItem') }}</option>
                                     <option value="price_asc" {{ $currentSort === 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
                                     <option value="price_desc" {{ $currentSort === 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
                                 </select>
@@ -449,13 +449,13 @@
 
                     @if ($prods->total() == 0)
                         {{-- Zero Results Box with Filter Summary --}}
-                        <div class="category-products-box">
-                            <div class="category-products-scroll" id="products-container">
+                        <div class="category-catalogItems-box">
+                            <div class="category-catalogItems-scroll" id="catalogItems-container">
                                 <div class="m-no-results-box">
                                     <div class="m-no-results-box__icon">
                                         <i class="fas fa-search"></i>
                                     </div>
-                                    <h4 class="m-no-results-box__title">@lang('No matching products')</h4>
+                                    <h4 class="m-no-results-box__title">@lang('No matching catalogItems')</h4>
                                     <p class="m-no-results-box__subtitle">@lang('Try adjusting your filters to find what you are looking for.')</p>
 
                                     @if(isset($filterSummary) && $filterSummary['hasFilters'])
@@ -498,7 +498,7 @@
                                 </div>
                             </div>
                             {{-- Empty pagination for consistency --}}
-                            <div class="category-products-pagination">
+                            <div class="category-catalogItems-pagination">
                                 <div class="m-pagination-simple" data-current="1" data-last="1" data-total="0">
                                     <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev m-pagination-simple__btn--disabled" disabled>
                                         <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
@@ -516,10 +516,10 @@
                         </div>
                     @else
                         <!-- main content inside scrollable box -->
-                        <div class="category-products-box">
-                            <div class="category-products-scroll">
+                        <div class="category-catalogItems-box">
+                            <div class="category-catalogItems-scroll">
                                 <div class="tab-content" id="myTabContent">
-                                    <!-- product list view start  -->
+                                    <!-- catalogItem list view start  -->
                                     <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                         id="layout-list-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
@@ -537,11 +537,11 @@
                                             @endforeach
                                         </div>
                                     </div>
-                                    <!-- product grid view end  -->
+                                    <!-- catalogItem grid view end  -->
                                 </div>
                             </div>
                             <!-- Pagination outside scroll area -->
-                            <div class="category-products-pagination">
+                            <div class="category-catalogItems-pagination">
                                 <div class="m-pagination-simple"
                                      data-current="{{ $prods->currentPage() }}"
                                      data-last="{{ $prods->lastPage() }}"
@@ -578,7 +578,7 @@
             </div>
         </div>
     </div>
-    <!-- product wrapper end -->
+    <!-- catalogItem wrapper end -->
 
     <input type="hidden" id="update_min_price" value="">
     <input type="hidden" id="update_max_price" value="">
@@ -595,13 +595,13 @@
             "use strict";
 
             // ========================================
-            // Category Products AJAX System
+            // Category Items AJAX System
             // ========================================
             const baseUrl = '{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
-            const $scrollContainer = $('.category-products-scroll');
-            const $productsContainer = $('.category-products-scroll');
+            const $scrollContainer = $('.category-catalogItems-scroll');
+            const $itemsContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
-            const $totalProducts = $('.product-nav-wrapper h5').first();
+            const $totalItems = $('.catalogItem-nav-wrapper h5').first();
 
             let isLoading = false;
             let currentPage = parseInt($paginationContainer.data('current')) || 1;
@@ -683,10 +683,10 @@
                     success: function(response) {
                         // Parse response
                         const $response = $('<div>').html(response);
-                        const $ajaxContent = $response.find('#ajax-products-content');
+                        const $ajaxContent = $response.find('#ajax-catalogItems-content');
                         const $paginationData = $response.find('#ajax-pagination-data');
 
-                        // Update products content (handles both products and no-results box)
+                        // Update catalogItems content (handles both catalogItems and no-results box)
                         if ($ajaxContent.length) {
                             // Get the inner content from AJAX response
                             const innerContent = $ajaxContent.html();
@@ -701,8 +701,8 @@
                                 currentPage = data.currentPage;
                                 lastPage = data.lastPage;
 
-                                // Update total products count
-                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                                // Update total catalogItems count
+                                $totalItems.html('@lang("Total Items Found:") ' + data.total);
                             } catch(e) {
                                 currentPage = page;
                             }
@@ -930,9 +930,9 @@
             const categoryBaseUrl = apiUrls.category || '{{ route("front.category") }}';
 
             // Reference to AJAX system
-            const $scrollContainer = $('.category-products-scroll');
+            const $scrollContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
-            const $totalProducts = $('.product-nav-wrapper h5').first();
+            const $totalItems = $('.catalogItem-nav-wrapper h5').first();
 
             // Build URL with current filters preserved
             function buildCategoryUrl(basePath) {
@@ -980,7 +980,7 @@
                     dataType: 'html',
                     success: function(response) {
                         const $response = $('<div>').html(response);
-                        const $ajaxContent = $response.find('#ajax-products-content');
+                        const $ajaxContent = $response.find('#ajax-catalogItems-content');
                         const $paginationData = $response.find('#ajax-pagination-data');
 
                         if ($ajaxContent.length) {
@@ -991,7 +991,7 @@
                         if ($paginationData.length) {
                             try {
                                 const data = JSON.parse($paginationData.text());
-                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                                $totalItems.html('@lang("Total Items Found:") ' + data.total);
 
                                 // Update global pagination state and refresh UI
                                 if (window.categoryPagination) {

@@ -23,7 +23,7 @@
             </div>
         </div>
 
-        <div class="add-product-content">
+        <div class="add-catalogItem-content">
             <div class="row">
                 <div class="col-lg-12 p-5">
 

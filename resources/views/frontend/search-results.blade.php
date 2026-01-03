@@ -82,7 +82,7 @@
                         <div class="card shadow-sm">
                             <div class="card-body py-5">
                                 <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                                <h4 class="text-muted">@lang('No Product Found')</h4>
+                                <h4 class="text-muted">@lang('No CatalogItem Found')</h4>
                                 <p class="text-muted mb-0">@lang('Try searching with a different SKU or keyword')</p>
                             </div>
                         </div>
@@ -90,7 +90,7 @@
                 @else
                     <!-- main content -->
                     <div class="tab-content" id="myTabContent">
-                        <!-- product list view start  -->
+                        <!-- catalogItem list view start  -->
                         <div class="tab-pane fade show active" id="layout-list-pane" role="tabpanel" tabindex="0">
                             <div class="row gy-4 gy-lg-5">
                                 {{-- Main Products --}}
@@ -124,9 +124,9 @@
                                 </div>
                             @endif
                         </div>
-                        <!-- product list view end  -->
+                        <!-- catalogItem list view end  -->
 
-                        <!-- product grid view start  -->
+                        <!-- catalogItem grid view start  -->
                         <div class="tab-pane fade" id="layout-grid-pane" role="tabpanel" tabindex="0">
                             <div class="row gy-4">
                                 {{-- Main Products --}}
@@ -160,7 +160,7 @@
                                 </div>
                             @endif
                         </div>
-                        <!-- product grid view end  -->
+                        <!-- catalogItem grid view end  -->
                     </div>
                 @endif
 

@@ -4,10 +4,10 @@
 
             <div class="content-area">
 
-              <div class="add-product-content1">
+              <div class="add-catalogItem-content1">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                       <div class="body-area">
                         @include('alerts.admin.form-error')  
                       <form id="muaadhformdata" action="{{route('admin-subscription-create')}}" method="POST" enctype="multipart/form-data">
@@ -49,7 +49,7 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __("Product Limitations") }}*</h4>
+                                <h4 class="heading">{{ __("CatalogItem Limitations") }}*</h4>
                             </div>
                           </div>
                           <div class="col-lg-7">
@@ -65,11 +65,11 @@
                           <div class="row">
                             <div class="col-lg-4">
                               <div class="left-area">
-                                  <h4 class="heading">{{ __("Allowed Products") }} *</h4>
+                                  <h4 class="heading">{{ __("Allowed CatalogItems") }} *</h4>
                               </div>
                             </div>
                             <div class="col-lg-7">
-                              <input type="number" min="1" class="form-control" id="allowed_products" name="allowed_products" placeholder="{{ __("Enter Allowed Products") }}" value="1">
+                              <input type="number" min="1" class="form-control" id="allowed_catalogitems" name="allowed_catalogitems" placeholder="{{ __("Enter Allowed CatalogItems") }}" value="1">
                             </div>
                           </div>
                         </div>

@@ -98,23 +98,23 @@ class CatalogItemDetailsController extends FrontBaseController
         // ======================================================================
         // STEP 6: Get CatalogItem (READONLY - catalog data only)
         // ======================================================================
-        $productt = $merchantItem->catalogItem;
+        $catalogItem = $merchantItem->catalogItem;
 
-        if (!$productt) {
+        if (!$catalogItem) {
             abort(404, 'Catalog item not found for this merchant listing');
         }
 
         // Load catalogReviews (catalog-level data) - count, avg, and full list for reviews
-        $productt->loadCount('catalogReviews');
-        $productt->loadAvg('catalogReviews', 'rating');
-        $productt->load(['catalogReviews' => fn($q) => $q->with('user')->orderBy('review_date', 'desc')]);
+        $catalogItem->loadCount('catalogReviews');
+        $catalogItem->loadAvg('catalogReviews', 'rating');
+        $catalogItem->load(['catalogReviews' => fn($q) => $q->with('user')->orderBy('review_date', 'desc')]);
 
         // ======================================================================
         // STEP 7: Verify slug matches (SEO redirect if changed)
         // ======================================================================
-        if ($productt->slug !== $slug) {
+        if ($catalogItem->slug !== $slug) {
             return redirect()->route('front.catalog-item', [
-                'slug' => $productt->slug,
+                'slug' => $catalogItem->slug,
                 'merchant_id' => $merchantItem->user_id,
                 'merchant_item_id' => $merchantItem->id
             ], 301);
@@ -124,7 +124,7 @@ class CatalogItemDetailsController extends FrontBaseController
         // STEP 8: Affiliate tracking (optional)
         // ======================================================================
         $affilate_user = 0;
-        if ($gs->product_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
+        if ($gs->item_affilate == 1 && $request->has('ref') && !empty($request->ref)) {
             $userRef = User::where('affilate_code', $request->ref)->first();
             if ($userRef && (!Auth::check() || Auth::id() != $userRef->id)) {
                 $affilate_user = $userRef->id;
@@ -135,7 +135,7 @@ class CatalogItemDetailsController extends FrontBaseController
         // STEP 9: Other sellers (same catalog item, different merchants)
         // ======================================================================
         $otherSellers = MerchantItem::query()
-            ->where('catalog_item_id', $productt->id)
+            ->where('catalog_item_id', $catalogItem->id)
             ->where('status', 1)
             ->where('id', '<>', $merchantItem->id)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
@@ -155,16 +155,16 @@ class CatalogItemDetailsController extends FrontBaseController
             ->get();
 
         // ======================================================================
-        // STEP 10b: Related Items (same type/product_type, different catalog item)
+        // STEP 10b: Related Items (same type/item_type, different catalog item)
         // Optimized: Query MerchantItem directly with catalog item filters
         // ======================================================================
-        // product_type is now on merchant_items, not catalog_items
+        // item_type is now on merchant_items, not catalog_items
         $relatedMerchantItems = MerchantItem::where('status', 1)
             ->where('stock', '>', 0)
-            ->where('product_type', $merchantItem->product_type)
-            ->whereHas('catalogItem', function($q) use ($productt) {
-                $q->where('type', $productt->type)
-                  ->where('id', '!=', $productt->id);
+            ->where('item_type', $merchantItem->item_type)
+            ->whereHas('catalogItem', function($q) use ($catalogItem) {
+                $q->where('type', $catalogItem->type)
+                  ->where('id', '!=', $catalogItem->id);
             })
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with(['catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'), 'user', 'qualityBrand'])
@@ -176,25 +176,25 @@ class CatalogItemDetailsController extends FrontBaseController
         // ======================================================================
         // STEP 11: Track catalog item click
         // ======================================================================
-        if (!session()->has('click_' . $productt->id)) {
+        if (!session()->has('click_' . $catalogItem->id)) {
             CatalogItemClick::create([
-                'catalog_item_id' => $productt->id,
+                'catalog_item_id' => $catalogItem->id,
                 'date' => Carbon::now()->format('Y-m-d'),
                 'clicks' => 1,
             ]);
-            session()->put('click_' . $productt->id, 1);
+            session()->put('click_' . $catalogItem->id, 1);
         }
 
         // ======================================================================
         // STEP 12: PASS TO VIEW
         // $merchant is the AUTHORITATIVE source for price/stock/qty
-        // $productt is READONLY catalog data (name, description, images)
+        // $catalogItem is READONLY catalog data (name, description, images)
         // ======================================================================
         $merchant = $merchantItem;
         $merchantId = $merchantItem->user_id;
 
         return view('frontend.catalog-item', compact(
-            'productt',               // CatalogItem (READONLY - catalog only)
+            'catalogItem',            // CatalogItem (READONLY - catalog only)
             'merchant',               // MerchantItem (AUTHORITATIVE - price/stock/qty)
             'merchantId',             // Verified merchant user ID
             'otherSellers',           // Alternative sellers
@@ -212,13 +212,13 @@ class CatalogItemDetailsController extends FrontBaseController
     public function showByUser($slug, $user)
     {
         // Load catalog item by slug
-        $productt = CatalogItem::where('slug', $slug)->first();
-        if (!$productt) {
+        $catalogItem = CatalogItem::where('slug', $slug)->first();
+        if (!$catalogItem) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 
         // Find merchant item for this user (in-stock then lowest price)
-        $merchantItem = MerchantItem::where('catalog_item_id', $productt->id)
+        $merchantItem = MerchantItem::where('catalog_item_id', $catalogItem->id)
             ->where('user_id', $user)
             ->where('status', 1)
             ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
@@ -244,13 +244,13 @@ class CatalogItemDetailsController extends FrontBaseController
     public function show($slug)
     {
         // Load catalog item by slug
-        $productt = CatalogItem::where('slug', $slug)->first();
-        if (!$productt) {
+        $catalogItem = CatalogItem::where('slug', $slug)->first();
+        if (!$catalogItem) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 
         // Find best merchant item globally (in-stock then lowest price)
-        $merchantItem = MerchantItem::where('catalog_item_id', $productt->id)
+        $merchantItem = MerchantItem::where('catalog_item_id', $catalogItem->id)
             ->where('status', 1)
             ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
             ->orderBy('price')
@@ -274,13 +274,13 @@ class CatalogItemDetailsController extends FrontBaseController
     public function showByUserQuality($slug, $user, $brand_quality_id)
     {
         // Load catalog item by slug
-        $productt = CatalogItem::where('slug', $slug)->first();
-        if (!$productt) {
+        $catalogItem = CatalogItem::where('slug', $slug)->first();
+        if (!$catalogItem) {
             return response()->view('errors.404')->setStatusCode(404);
         }
 
         // Find merchant item by user and brand quality
-        $merchantItem = MerchantItem::where('catalog_item_id', $productt->id)
+        $merchantItem = MerchantItem::where('catalog_item_id', $catalogItem->id)
             ->where('user_id', $user)
             ->where('brand_quality_id', $brand_quality_id)
             ->where('status', 1)
@@ -323,8 +323,8 @@ class CatalogItemDetailsController extends FrontBaseController
             $brand = \App\Models\Brand::find($catalogItem->brand_id);
         }
 
-        // Note: 'product' kept for backward compatibility in views
-        return response()->view('partials.catalog-item', ['product' => $catalogItem, 'mp' => $mp, 'brand' => $brand]);
+        // Note: 'catalogItem' kept for backward compatibility in views
+        return response()->view('partials.catalog-item', ['catalogItem' => $catalogItem, 'mp' => $mp, 'brand' => $brand]);
     }
 
 
@@ -333,8 +333,8 @@ class CatalogItemDetailsController extends FrontBaseController
         $catalogItem = CatalogItem::where('sku', $key)->first()
                 ?: CatalogItem::where('slug', $key)->firstOrFail();
 
-        // Note: 'product' kept for backward compatibility in views
-        return response()->view('partials.catalog-item', ['product' => $catalogItem]);
+        // Note: 'catalogItem' kept for backward compatibility in views
+        return response()->view('partials.catalog-item', ['catalogItem' => $catalogItem]);
     }
 
     public function compatibilityFragment(string $key)
@@ -368,8 +368,8 @@ class CatalogItemDetailsController extends FrontBaseController
     {
         $catalogItem = CatalogItem::findOrFail($id);
         $curr = $this->curr;
-        // Note: 'product' kept for backward compatibility in views
-        return view('load.quick', ['product' => $catalogItem, 'curr' => $curr]);
+        // Note: 'catalogItem' kept for backward compatibility in views
+        return view('load.quick', ['catalogItem' => $catalogItem, 'curr' => $curr]);
     }
 
     public function affCatalogItemRedirect($slug)
@@ -532,8 +532,7 @@ class CatalogItemDetailsController extends FrontBaseController
     public function reviews($id)
     {
         $catalogItem = CatalogItem::find($id);
-        // Note: 'productt' kept for backward compatibility in views
-        return view('load.reviews', ['productt' => $catalogItem, 'id' => $id]);
+        return view('load.reviews', ['catalogItem' => $catalogItem, 'id' => $id]);
     }
 
     /**
@@ -542,8 +541,7 @@ class CatalogItemDetailsController extends FrontBaseController
     public function sideReviews($id)
     {
         $catalogItem = CatalogItem::find($id);
-        // Note: 'productt' kept for backward compatibility in views
-        return view('load.side-load', ['productt' => $catalogItem]);
+        return view('load.side-load', ['catalogItem' => $catalogItem]);
     }
 
     public function showCrossCatalogItem($id)

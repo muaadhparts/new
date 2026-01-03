@@ -21,10 +21,10 @@
       </div>
     </div>
   </div>
-  <div class="add-product-content1">
+  <div class="add-catalogItem-content1">
     <div class="row">
       <div class="col-lg-12">
-        <div class="product-description">
+        <div class="catalogItem-description">
           <div class="social-links-area">
             <div class="gocover"
               style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
@@ -38,7 +38,7 @@
               <div class="row justify-content-center">
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="home">{{ __('Product') }} *</label>
+                  <label class="control-label" for="home">{{ __('CatalogItem') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="home" value="1" {{$data->home==1?"checked":""}}>
                     <span class="slider round"></span>

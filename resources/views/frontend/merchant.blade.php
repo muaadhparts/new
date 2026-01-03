@@ -20,8 +20,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-12 col-lg-4 col-xl-3 mt-40 mt-lg-0">
-                    <div class="gs-product-sidebar-wrapper">
-                        <div class="single-product-widget contact-merchant-wrapper">
+                    <div class="gs-catalogItem-sidebar-wrapper">
+                        <div class="single-catalogItem-widget contact-merchant-wrapper">
                             <h5 class="widget-title">@lang('Contact Merchant')</h5>
                             <div class="img-wrapper">
                                 <img src="{{ asset('assets/images/users/' . $merchant->photo) }}" alt="merchant img">
@@ -48,7 +48,7 @@
                                         <input class="input-cls" id="subject" name="subject" type="tel"
                                             placeholder="@lang('Subject')" />
                                     </div>
-                                    <input type="hidden" name="vendor_id" value="{{ auth()->id() }}">
+                                    <input type="hidden" name="merchant_id" value="{{ auth()->id() }}">
                                     <div class="input-wrapper">
                                         <textarea placeholder="@lang('Type Your Message...')" name="message" class="input-cls txtarea-cls" rows="3"></textarea>
                                     </div>
@@ -68,7 +68,7 @@
                         </div>
                         <!-- Brand Quality Filter -->
                         @if(isset($brand_qualities) && $brand_qualities->count() > 0)
-                        <div class="single-product-widget">
+                        <div class="single-catalogItem-widget">
                             <h5 class="widget-title">@lang('Brand Quality')</h5>
                             <div class="warranty-type m-filter-scroll-box">
                                 <ul>
@@ -110,16 +110,16 @@
                         }
                     @endphp
 
-                    <!-- product nav wrapper -->
-                    <div class=" product-nav-wrapper">
-                        <h5>@lang('Total Products Found:') {{ $vprods->total() }}</h5>
+                    <!-- catalogItem nav wrapper -->
+                    <div class=" catalogItem-nav-wrapper">
+                        <h5>@lang('Total Items Found:') {{ $vprods->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
 
                                 <select class="nice-select" id="sortby" name="sort">
-                                    <option value="date_desc">{{ __('Latest Product') }}</option>
-                                    <option value="date_asc">{{ __('Oldest Product') }}</option>
+                                    <option value="date_desc">{{ __('Latest CatalogItem') }}</option>
+                                    <option value="date_asc">{{ __('Oldest CatalogItem') }}</option>
                                     <option value="price_asc">{{ __('Lowest Price') }}</option>
                                     <option value="price_desc">{{ __('Highest Price') }}</option>
                                 </select>
@@ -155,16 +155,16 @@
 
 
                     @if ($vprods->total() == 0)
-                        <!-- product nav wrapper for no data found -->
-                        <div class="product-nav-wrapper d-flex justify-content-center ">
-                            <h5>@lang('No Product Found')</h5>
+                        <!-- catalogItem nav wrapper for no data found -->
+                        <div class="catalogItem-nav-wrapper d-flex justify-content-center ">
+                            <h5>@lang('No CatalogItem Found')</h5>
                         </div>
                     @else
                         <!-- main content inside scrollable box -->
-                        <div class="vendor-products-box">
-                            <div class="vendor-products-scroll">
+                        <div class="merchant-catalogItems-box">
+                            <div class="merchant-catalogItems-scroll">
                                 <div class="tab-content" id="myTabContent">
-                                    <!-- product list view start  -->
+                                    <!-- catalogItem list view start  -->
                                     <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                         id="layout-list-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
@@ -186,11 +186,11 @@
                                             @endforeach
                                         </div>
                                     </div>
-                                    <!-- product grid view end  -->
+                                    <!-- catalogItem grid view end  -->
                                 </div>
                             </div>
                             <!-- Pagination outside scroll area -->
-                            <div class="vendor-products-pagination">
+                            <div class="merchant-catalogItems-pagination">
                                 <div class="m-pagination-simple"
                                      data-current="{{ $vprods->currentPage() }}"
                                      data-last="{{ $vprods->lastPage() }}"
@@ -235,13 +235,13 @@
             "use strict";
 
             // ========================================
-            // Vendor Products AJAX System
+            // Merchant Items AJAX System
             // ========================================
             const baseUrl = '{{ route('front.merchant', str_replace(' ', '-', $merchant->shop_name)) }}';
-            const $scrollContainer = $('.vendor-products-scroll');
-            const $productsContainer = $('.vendor-products-scroll');
+            const $scrollContainer = $('.merchant-catalogItems-scroll');
+            const $itemsContainer = $('.merchant-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
-            const $totalProducts = $('.product-nav-wrapper h5').first();
+            const $totalItems = $('.catalogItem-nav-wrapper h5').first();
 
             let isLoading = false;
             let currentPage = parseInt($paginationContainer.data('current')) || 1;
@@ -304,9 +304,9 @@
                         const $newContent = $response.find('#myTabContent');
                         const $paginationData = $response.find('#ajax-pagination-data');
 
-                        // Update products content
+                        // Update catalogItems content
                         if ($newContent.length) {
-                            $productsContainer.find('#myTabContent').replaceWith($newContent);
+                            $itemsContainer.find('#myTabContent').replaceWith($newContent);
                         }
 
                         // Update pagination data from JSON
@@ -316,8 +316,8 @@
                                 currentPage = data.currentPage;
                                 lastPage = data.lastPage;
 
-                                // Update total products count
-                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                                // Update total catalogItems count
+                                $totalItems.html('@lang("Total Items Found:") ' + data.total);
                             } catch(e) {
                                 currentPage = page;
                             }

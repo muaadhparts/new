@@ -30,19 +30,19 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
         ? $actualProduct->photo
         : (($actualProduct->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($actualProduct->photo) : asset('assets/images/noimage.png'));
 
-    // Prices come from merchant_products
+    // Prices come from merchant_items
     $price = $mp->price ?? 0;
     $previousPrice = $mp->previous_price ?? null;
     $discountDate = $mp->discount_date ?? null;
 
-    // Build product URL with vendor context
-    $productUrl = route('front.catalog-item', [
+    // Build catalogItem URL with merchant context
+    $catalogItemUrl = route('front.catalog-item', [
         'slug' => $actualProduct->slug,
         'merchant_id' => $mp->user_id,
         'merchant_item_id' => $mp->id
     ]);
 
-    // Brand info (from product)
+    // Brand info (from catalogItem)
     $brandName = $actualProduct->brand?->localized_name;
     $brandLogo = $actualProduct->brand?->photo_url;
 
@@ -50,16 +50,16 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
     $qualityBrandName = $mp->qualityBrand?->localized_name;
     $qualityBrandLogo = $mp->qualityBrand?->logo_url;
 
-    // Vendor info (from merchant_product)
-    $vendorName = $mp->user ? getLocalizedShopName($mp->user) : null;
+    // Merchant info (from merchant_product)
+    $merchantName = $mp->user ? getLocalizedShopName($mp->user) : null;
 
     // Stock info for Add to Cart
     $stockQty = (int)($mp->stock ?? 0);
     $inStock = $stockQty > 0 || $mp->preordered;
     $minQty = max(1, (int)($mp->minimum_qty ?? 1));
     $preordered = $mp->preordered ?? false;
-    $productType = $actualProduct->type ?? 'Physical';
-    $affiliateProductType = $mp->product_type ?? null;
+    $catalogItemType = $actualProduct->type ?? 'Physical';
+    $affiliateItemType = $mp->item_type ?? null;
     $affiliateLink = $mp->affiliate_link ?? null;
 @endphp
 
@@ -67,7 +67,7 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
     <div class="row align-items-center">
         <div class="col-md-5">
             <div class="muaadh-deal-img">
-                <a href="{{ $productUrl }}">
+                <a href="{{ $catalogItemUrl }}">
                     <img src="{{ $mainPhoto }}" alt="{{ $actualProduct->name }}" loading="lazy">
                 </a>
                 @if($previousPrice && $previousPrice > $price)
@@ -81,10 +81,10 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
         <div class="col-md-7">
             <div class="muaadh-deal-content">
                 <h3 class="muaadh-deal-title">
-                    <a href="{{ $productUrl }}">{{ $actualProduct->showName() }}</a>
+                    <a href="{{ $catalogItemUrl }}">{{ $actualProduct->showName() }}</a>
                 </h3>
 
-                {{-- Brand, Quality Brand & Vendor Info --}}
+                {{-- Brand, Quality Brand & Merchant Info --}}
                 <div class="muaadh-deal-meta mb-2">
                     @if($brandName)
                         <span class="badge bg-secondary me-1">
@@ -102,10 +102,10 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                             {{ $qualityBrandName }}
                         </span>
                     @endif
-                    @if($vendorName)
+                    @if($merchantName)
                         <span class="badge bg-primary">
                             <i class="fas fa-store me-1"></i>
-                            {{ $vendorName }}
+                            {{ $merchantName }}
                         </span>
                     @endif
                 </div>
@@ -139,7 +139,7 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                 @endif
 
                 {{-- Add to Cart Button --}}
-                @if ($productType !== 'Listing' && $affiliateProductType !== 'affiliate')
+                @if ($catalogItemType !== 'Listing' && $affiliateItemType !== 'affiliate')
                     @if ($inStock)
                         <button type="button" class="muaadh-btn muaadh-btn-primary m-cart-add"
                             data-merchant-item-id="{{ $mp->id }}"
@@ -157,19 +157,19 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                             @lang('Out of Stock')
                         </button>
                     @endif
-                @elseif ($affiliateProductType === 'affiliate' && $affiliateLink)
+                @elseif ($affiliateItemType === 'affiliate' && $affiliateLink)
                     <a href="{{ $affiliateLink }}" class="muaadh-btn muaadh-btn-primary" target="_blank">
                         <i class="fas fa-external-link-alt me-2"></i>
                         @lang('Buy Now')
                     </a>
                 @else
-                    <a href="{{ $productUrl }}" class="muaadh-btn muaadh-btn-primary">
+                    <a href="{{ $catalogItemUrl }}" class="muaadh-btn muaadh-btn-primary">
                         @lang('View Details')
                     </a>
                 @endif
 
                 {{-- Shipping Quote Button --}}
-                @if($productType == 'Physical')
+                @if($catalogItemType == 'Physical')
                     <x-shipping-quote-button
                         :merchant-user-id="$mp->user_id"
                         :catalog-item-name="$actualProduct->showName()"

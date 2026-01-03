@@ -53,14 +53,14 @@ class MessageController extends UserBaseController
         //dd($request->all());
         $data = 1;
         $user = User::findOrFail($request->user_id);
-        $vendor = User::where('email', '=', $request->email)->first();
+        $merchant = User::where('email', '=', $request->email)->first();
         $seller = User::findOrFail($request->merchant_id);
 
-        if (!$vendor) {
-            return back()->with('unsuccess', 'Vendor Not Found');
+        if (!$merchant) {
+            return back()->with('unsuccess', 'Merchant Not Found');
         }
 
-        if ($vendor->email == $seller->email) {
+        if ($merchant->email == $seller->email) {
             return back()->with('unsuccess', 'You can not message yourself!!');
         }
 
@@ -91,7 +91,7 @@ class MessageController extends UserBaseController
             $message = new Conversation();
             $message->subject = $subject;
             $message->sent_user = $request->user_id;
-            $message->recieved_user = $vendor->id;
+            $message->recieved_user = $merchant->id;
             $message->message = $request->message;
             $message->save();
 

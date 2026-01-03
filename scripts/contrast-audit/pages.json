@@ -9,12 +9,12 @@
     {
       "name": "Category",
       "path": "/category/1",
-      "selectors": [".product-card", ".m-btn", ".btn", ".badge", ".breadcrumb", "a"]
+      "selectors": [".catalogItem-card", ".m-btn", ".btn", ".badge", ".breadcrumb", "a"]
     },
     {
-      "name": "Product",
-      "path": "/product/1",
-      "selectors": [".product-details", ".m-btn", ".btn", ".badge", ".alert", "a", ".price"]
+      "name": "CatalogItem",
+      "path": "/catalogItem/1",
+      "selectors": [".catalogItem-details", ".m-btn", ".btn", ".badge", ".alert", "a", ".price"]
     },
     {
       "name": "Cart",
@@ -54,7 +54,7 @@
     "alert": [".alert", ".m-alert"],
     "input": ["input", "select", "textarea", ".form-control"],
     "label": ["label", ".form-label"],
-    "card": [".card", ".m-card", ".product-card"],
+    "card": [".card", ".m-card", ".catalogItem-card"],
     "nav": ["nav a", ".nav-link", ".dropdown-item"],
     "text": ["p", "span", "h1", "h2", "h3", "h4", "h5", "h6", "li"]
   }

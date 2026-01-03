@@ -3,9 +3,9 @@
 
 @section('content')
     <!-- outlet start  -->
-    <div class="gs-vendor-outlet">
+    <div class="gs-merchant-outlet">
         <!-- breadcrumb start  -->
-        <div class="gs-vendor-breadcrumb has-mb">
+        <div class="gs-merchant-breadcrumb has-mb">
             <div class="d-flex align-items-center flex-wrap gap-4">
                 <a class="back-btn" href="{{route("merchant-purchase-index")}}">
                     <i class="fa-solid fa-arrow-left-long"></i>
@@ -16,7 +16,7 @@
                 <li>
                     <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" class="home-icon-vendor-panel-breadcrumb">
+                            stroke="currentColor" class="home-icon-merchant-panel-breadcrumb">
                             <path
                                 d="M9 21V13.6C9 13.0399 9 12.7599 9.109 12.546C9.20487 12.3578 9.35785 12.2049 9.54601 12.109C9.75993 12 10.04 12 10.6 12H13.4C13.9601 12 14.2401 12 14.454 12.109C14.6422 12.2049 14.7951 12.3578 14.891 12.546C15 12.7599 15 13.0399 15 13.6V21M2 9.5L11.04 2.72C11.3843 2.46181 11.5564 2.33271 11.7454 2.28294C11.9123 2.23902 12.0877 2.23902 12.2546 2.28295C12.4436 2.33271 12.6157 2.46181 12.96 2.72L22 9.5M4 8V17.8C4 18.9201 4 19.4802 4.21799 19.908C4.40974 20.2843 4.7157 20.5903 5.09202 20.782C5.51985 21 6.0799 21 7.2 21H16.8C17.9201 21 18.4802 21 18.908 20.782C19.2843 20.5903 19.5903 20.2843 19.782 19.908C20 19.4802 20 18.9201 20 17.8V8L13.92 3.44C13.2315 2.92361 12.8872 2.66542 12.5091 2.56589C12.1754 2.47804 11.8246 2.47804 11.4909 2.56589C11.1128 2.66542 10.7685 2.92361 10.08 3.44L4 8Z"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -57,7 +57,7 @@
                             <span class="info-type">@lang('Purchase ID')</span> <span class="info">{{ $purchase->purchase_number }}</span>
                         </li>
                         <li class="info-list-item">
-                            <span class="info-type">@lang('Total Product')</span> <span
+                            <span class="info-type">@lang('Total CatalogItem')</span> <span
                                 class="info">{{ $purchase->merchantPurchases()->where('user_id', '=', $user->id)->sum('qty') }}</span>
                         </li>
 
@@ -319,49 +319,49 @@
         <!-- Purchase info cards end  -->
 
         <!-- Table area start  -->
-        <div class="vendor-table-wrapper order-details-table-wrapper">
-            <h4 class="table-title">@lang('Products Purchased')</h4>
+        <div class="merchant-table-wrapper order-details-table-wrapper">
+            <h4 class="table-title">@lang('Items Purchased')</h4>
             <div class="user-table table-responsive  position-relative">
                 <table  class="gs-data-table w-100">
                     <thead>
                         <tr>
-                            <th><span class="header-title">@lang('Product ID#')</span></th>
+                            <th><span class="header-title">@lang('CatalogItem ID#')</span></th>
                             <th><span class="header-title">@lang('Shop Name')</span></th>
                             <th><span class="header-title">@lang('Status')</span></th>
-                            <th><span class="header-title">@lang('Product Title')</span></th>
+                            <th><span class="header-title">@lang('CatalogItem Title')</span></th>
                             <th><span class="header-title">@lang('Details')</span></th>
                             <th><span class="header-title">@lang('Total Price')</span></th>
                         </tr>
                     </thead>
                     <tbody>
 
-                        @foreach ($cart['items'] as $key => $product)
-                            @if ($product['item']['user_id'] != 0)
-                                @if ($product['item']['user_id'] == $user->id)
+                        @foreach ($cart['items'] as $key => $catalogItem)
+                            @if ($catalogItem['item']['user_id'] != 0)
+                                @if ($catalogItem['item']['user_id'] == $user->id)
                                     <tr>
-                                        <!-- Product ID# -->
-                                        <td class="text-start"><span class="content ">{{ $product['item']['id'] }}</span>
+                                        <!-- CatalogItem ID# -->
+                                        <td class="text-start"><span class="content ">{{ $catalogItem['item']['id'] }}</span>
                                         </td>
                                         <!-- Shop Name -->
                                         <td class="text-start">
-                                                @if ($product['item']['user_id'] != 0)
+                                                @if ($catalogItem['item']['user_id'] != 0)
                                                     @php
-                                                        $user = App\Models\User::find($product['item']['user_id']);
+                                                        $user = App\Models\User::find($catalogItem['item']['user_id']);
                                                     @endphp
                                                     @if (isset($user))
                                                         <a class="title-hover-color content" target="_blank"
                                                             href="{{ route('admin-merchant-show', $user->id) }}">{{ $user->shop_name }}</a>
                                                     @else
-                                                        {{ __('Vendor Removed') }}
+                                                        {{ __('Merchant Removed') }}
                                                     @endif
                                                 @endif
                                         </td>
                                         <!-- Status -->
                                         <td>
-                                            @if ($product['item']['user_id'] != 0)
+                                            @if ($catalogItem['item']['user_id'] != 0)
                                                 @php
                                                     $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id', '=', $purchase->id)
-                                                        ->where('user_id', '=', $product['item']['user_id'])
+                                                        ->where('user_id', '=', $catalogItem['item']['user_id'])
                                                         ->first();
                                                 @endphp
 
@@ -383,34 +383,34 @@
                                             @endif
                                         </td>
 
-                                        <!-- Product Title -->
+                                        <!-- CatalogItem Title -->
                                         <td>
 
-                                            @if ($product['item']['user_id'] != 0)
+                                            @if ($catalogItem['item']['user_id'] != 0)
                                             @php
                                                 $user = App\Models\User::find(
-                                                    $product['item']['user_id'],
+                                                    $catalogItem['item']['user_id'],
                                                 );
-                                                $vendorOrderProductUrl = '#';
-                                                if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
-                                                    $vendorOrderProductUrl = route('front.catalog-item', [
-                                                        'slug' => $product['item']['slug'],
-                                                        'merchant_id' => $product['user_id'],
-                                                        'merchant_item_id' => $product['merchant_item_id']
+                                                $merchantOrderProductUrl = '#';
+                                                if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
+                                                    $merchantOrderProductUrl = route('front.catalog-item', [
+                                                        'slug' => $catalogItem['item']['slug'],
+                                                        'merchant_id' => $catalogItem['user_id'],
+                                                        'merchant_item_id' => $catalogItem['merchant_item_id']
                                                     ]);
-                                                } elseif (isset($product['item']['slug'])) {
-                                                    $vendorOrderProductUrl = route('front.catalog-item.legacy', $product['item']['slug']);
+                                                } elseif (isset($catalogItem['item']['slug'])) {
+                                                    $merchantOrderProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                 }
                                             @endphp
-                                            <a class="title-hover-color content product-title d-inline-block" target="_blank"
-                                                href="{{ $vendorOrderProductUrl }}">
-                                                {{ getLocalizedProductName($product['item'], 30) }}
+                                            <a class="title-hover-color content catalogItem-title d-inline-block" target="_blank"
+                                                href="{{ $merchantOrderProductUrl }}">
+                                                {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                             </a>
-                                            <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                            <br><small class="text-muted">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
                                         @endif
 
 
-                                        @if ($product['license'] != '')
+                                        @if ($catalogItem['license'] != '')
                                             <a href="javascript:;" data-bs-toggle="modal"
                                                 data-bs-target="#confirm-delete"
                                                 class="m-btn m-btn--info m-btn--xs" id="license">
@@ -426,35 +426,35 @@
                                         <td class="text-start">
                                             <div class="rider">
 
-                                                @if ($product['size'])
+                                                @if ($catalogItem['size'])
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">@lang('Size :')</span>
-                                                    <span class="value">{{ str_replace('-','',$product['size'],) }}</span>
+                                                    <span class="value">{{ str_replace('-','',$catalogItem['size'],) }}</span>
                                                 </div>
                                                 @endif
 
-                                                @if ($product['color'])
+                                                @if ($catalogItem['color'])
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">{{ __('Color') }} :</span>
-                                                    <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};" class="value"></span>
+                                                    <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};" class="value"></span>
                                                 </div>
                                                 @endif
 
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">@lang('Price :')</span>
-                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice($product['item_price'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                                 </div>
 
 
 
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">@lang('Qty :')</span>
-                                                    <span class="value">{{ $product['qty'] }}
-                                                        {{ $product['item']['measure'] }}</span>
+                                                    <span class="value">{{ $catalogItem['qty'] }}
+                                                        {{ $catalogItem['item']['measure'] }}</span>
                                                 </div>
 
-                                                @if (!empty($product['keys']))
-                                                            @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                @if (!empty($catalogItem['keys']))
+                                                            @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">{{ ucwords(str_replace('_', ' ', $key)) }} :</span>
                                                     <span class="value">{{ $value }}</span>
@@ -467,8 +467,8 @@
                                         <!-- Total Price -->
                                         <td class="text-start">
                                             <span class="content ">
-                                                {{ \PriceHelper::showOrderCurrencyPrice($product['price'] * $purchase->currency_value, $purchase->currency_sign) }}
-                                                        <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small>
+                                                {{ \PriceHelper::showOrderCurrencyPrice($catalogItem['price'] * $purchase->currency_value, $purchase->currency_sign) }}
+                                                        <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                             </span>
                                         </td>
                                     </tr>

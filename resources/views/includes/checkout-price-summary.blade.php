@@ -23,7 +23,7 @@
 
     $currentStep = $step ?? 1;
     $isDigital = $digital ?? false;
-    $merchantId = $vendor_id ?? Session::get('checkout_vendor_id');
+    $merchantId = $merchant_id ?? Session::get('checkout_merchant_id');
 
     // ========================================================================
     // USE CHECKOUT PRICE SERVICE FOR CURRENCY CONVERSION
@@ -40,7 +40,7 @@
     );
 
     // Extract values from service response
-    $productsTotal = $prices['products_total'];
+    $catalogItemsTotal = $prices['catalog_items_total'];
     $discountAmount = $prices['discount_amount'];
     $discountCode = $prices['discount_code'];
     $discountPercentage = $prices['discount_percentage'];
@@ -78,12 +78,12 @@
     <div class="details-wrapper">
 
         {{-- ================================================================
-            ROW 1: Products Total (Original - NEVER changes)
+            ROW 1: CatalogItems Total (Original - NEVER changes)
         ================================================================= --}}
         <div class="price-details">
             <span>@lang('Total MRP')</span>
-            <span class="right-side products-total-display" id="products-total-display">
-                {{ $formatPrice($productsTotal) }}
+            <span class="right-side catalogItems-total-display" id="catalogItems-total-display">
+                {{ $formatPrice($catalogItemsTotal) }}
             </span>
         </div>
 
@@ -151,7 +151,7 @@
         @endif
 
         {{-- ================================================================
-            ROW 4: Shipping (Step 2 & 3 only, physical products)
+            ROW 4: Shipping (Step 2 & 3 only, physical catalogItems)
         ================================================================= --}}
         {{-- DEBUG: isDigital={{ $isDigital ? 'true' : 'false' }}, currentStep={{ $currentStep }} --}}
         @if($currentStep >= 2)
@@ -201,7 +201,7 @@
         @endif
 
         {{-- ================================================================
-            ROW 5: Packing (Step 2 & 3 only, physical products)
+            ROW 5: Packing (Step 2 & 3 only, physical catalogItems)
         ================================================================= --}}
         @if($currentStep >= 2)
             @if($currentStep == 2)
@@ -255,7 +255,7 @@
 {{-- ================================================================
     HIDDEN FIELDS FOR JAVASCRIPT
 ================================================================= --}}
-<input type="hidden" id="price-products-total" value="{{ $productsTotal }}">
+<input type="hidden" id="price-catalogItems-total" value="{{ $catalogItemsTotal }}">
 <input type="hidden" id="price-discount-amount" value="{{ $discountAmount }}">
 <input type="hidden" id="price-discount-code" value="{{ $discountCode }}">
 <input type="hidden" id="price-tax-rate" value="{{ $taxRate }}">
@@ -266,7 +266,7 @@
 <input type="hidden" id="price-subtotal-before-discount" value="{{ $subtotalBeforeDiscount }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
 <input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
-<input type="hidden" id="price-vendor-id" value="{{ $merchantId ?? '' }}">
+<input type="hidden" id="price-merchant-id" value="{{ $merchantId ?? '' }}">
 <input type="hidden" id="price-current-step" value="{{ $currentStep }}">
 
 <style>
@@ -343,7 +343,7 @@
     // Get current values from hidden fields
     function getValues() {
         return {
-            productsTotal: parseFloat($('#price-products-total').val()) || 0,
+            catalogItemsTotal: parseFloat($('#price-catalogItems-total').val()) || 0,
             discountAmount: parseFloat($('#price-discount-amount').val()) || 0,
             taxRate: parseFloat($('#price-tax-rate').val()) || 0,
             taxAmount: parseFloat($('#price-tax-amount').val()) || 0,
@@ -356,7 +356,7 @@
     // Calculate and update grand total
     function recalculateTotal() {
         var v = getValues();
-        var subtotal = v.productsTotal - v.discountAmount;
+        var subtotal = v.catalogItemsTotal - v.discountAmount;
         var grandTotal = subtotal + v.taxAmount + v.shippingCost + v.packingCost;
 
         // Update hidden field
@@ -370,7 +370,7 @@
         $('#grandtotal').val(grandTotal.toFixed(2));
 
         console.log('PriceSummary: Total updated', {
-            products: v.productsTotal,
+            catalogItems: v.catalogItemsTotal,
             discount: v.discountAmount,
             tax: v.taxAmount,
             shipping: v.shippingCost,
@@ -463,7 +463,7 @@
         // Get subtotal before discount (for discount calculations)
         getSubtotalBeforeDiscount: function() {
             var v = getValues();
-            return v.productsTotal + v.taxAmount + v.shippingCost + v.packingCost;
+            return v.catalogItemsTotal + v.taxAmount + v.shippingCost + v.packingCost;
         }
     };
 

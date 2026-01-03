@@ -33,7 +33,7 @@
     });
   });
 
-  // Product Add Qty
+  // CatalogItem Add Qty
   $(document).on("click", ".qtplus", function () {
     var $tselector = $("#order-qty");
     var stock = $("#stock").val();
@@ -51,7 +51,7 @@
     $($tselector).val(total);
   });
 
-  // Product Minus Qty
+  // CatalogItem Minus Qty
   $(document).on("click", ".qtminus", function () {
     var $tselector = $("#order-qty");
     var total = $($tselector).val();
@@ -245,7 +245,7 @@
     let prices = "";
 
     // get all the input values
-    pid = $("#product_id").val();
+    pid = $("#catalog_item_id").val();
     qty = $("#order-qty").val();
     size_key = $(".cart_size input:checked").val();
     size = $(".cart_size input:checked").attr("data-key");
@@ -329,7 +329,7 @@
     let prices = "";
 
     // get all the input values
-    pid = $("#product_id").val();
+    pid = $("#catalog_item_id").val();
     qty = $("#order-qty").val();
     size_key = $(".cart_size input:checked").val();
     size = $(".cart_size input:checked").attr("data-key");

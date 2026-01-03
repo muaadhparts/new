@@ -78,7 +78,7 @@ class PurchaseController extends AdminBaseController
             })
             ->addColumn('action', function (Purchase $data) {
                 $purchases = '<a href="javascript:;" data-href="' . route('admin-purchase-edit', $data->id) . '" class="delivery" data-bs-toggle="modal" data-bs-target="#modal1"><i class="fas fa-dollar-sign"></i> ' . __('Delivery Status') . '</a>';
-                return '<div class="godropdown"><button class="go-dropdown-toggle">' . __('Actions') . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-purchase-show', $data->id) . '" > <i class="fas fa-eye"></i> ' . __('View Details') . '</a><a href="javascript:;" class="send" data-email="' . $data->customer_email . '" data-bs-toggle="modal" data-bs-target="#vendorform"><i class="fas fa-envelope"></i> ' . __('Send') . '</a><a href="javascript:;" data-href="' . route('admin-purchase-timeline', $data->id) . '" class="track" data-bs-toggle="modal" data-bs-target="#modal1"><i class="fas fa-truck"></i> ' . __('Track Purchase') . '</a>' . $purchases . '</div></div>';
+                return '<div class="godropdown"><button class="go-dropdown-toggle">' . __('Actions') . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('admin-purchase-show', $data->id) . '" > <i class="fas fa-eye"></i> ' . __('View Details') . '</a><a href="javascript:;" class="send" data-email="' . $data->customer_email . '" data-bs-toggle="modal" data-bs-target="#merchantform"><i class="fas fa-envelope"></i> ' . __('Send') . '</a><a href="javascript:;" data-href="' . route('admin-purchase-timeline', $data->id) . '" class="track" data-bs-toggle="modal" data-bs-target="#modal1"><i class="fas fa-truck"></i> ' . __('Track Purchase') . '</a>' . $purchases . '</div></div>';
             })
             ->rawColumns(['id', 'action'])
             ->toJson(); //--- Returning Json Data To Client Side
@@ -237,39 +237,39 @@ class PurchaseController extends AdminBaseController
 
                     $cart = json_decode($data->cart, true);
 
-                    // Restore Product Stock If Any - Update merchant_products instead
-                    foreach ($cart->items as $prod) {
-                        $x = (string) $prod['stock'];
+                    // Restore CatalogItem Stock If Any - Update merchant_items instead
+                    foreach ($cart->items as $cartItem) {
+                        $x = (string) $cartItem['stock'];
                         if ($x != null) {
-                            // Find the merchant product that was used for this purchase item
-                            $merchantId = $prod['item']['user_id'] ?? null;
+                            // Find the merchant item that was used for this purchase item
+                            $merchantId = $cartItem['item']['user_id'] ?? null;
                             if ($merchantId) {
-                                $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $prod['item']['id'])
+                                $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
                                     ->where('user_id', $merchantId)
                                     ->first();
 
                                 if ($merchantItem) {
-                                    $merchantItem->stock = $merchantItem->stock + $prod['qty'];
+                                    $merchantItem->stock = $merchantItem->stock + $cartItem['qty'];
                                     $merchantItem->update();
                                 }
                             }
                         }
                     }
 
-                    // Restore Product Size Qty If Any - Update merchant_products instead
-                    foreach ($cart->items as $prod) {
-                        $x = (string) $prod['size_qty'];
+                    // Restore CatalogItem Size Qty If Any - Update merchant_items instead
+                    foreach ($cart->items as $cartItem) {
+                        $x = (string) $cartItem['size_qty'];
                         if (!empty($x)) {
-                            $merchantId = $prod['item']['user_id'] ?? null;
+                            $merchantId = $cartItem['item']['user_id'] ?? null;
                             if ($merchantId) {
-                                $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $prod['item']['id'])
+                                $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
                                     ->where('user_id', $merchantId)
                                     ->first();
 
                                 if ($merchantItem && $merchantItem->size_qty) {
                                     $x = (int) $x;
                                     $temp = explode(',', $merchantItem->size_qty);
-                                    $temp[$prod['size_key']] = $x;
+                                    $temp[$cartItem['size_key']] = $x;
                                     $temp1 = implode(',', $temp);
                                     $merchantItem->size_qty = $temp1;
                                     $merchantItem->update();
@@ -316,12 +316,12 @@ class PurchaseController extends AdminBaseController
         return redirect()->back()->with('success', $msg);
     }
 
-    public function product_submit(Request $request)
+    public function catalogItem_submit(Request $request)
     {
         $sku = $request->sku;
         $merchantId = $request->merchant_id;
 
-        // Find product through merchant_items relationship
+        // Find catalogItem through merchant_items relationship
         $merchantItem = \App\Models\MerchantItem::where('user_id', $merchantId)
             ->whereHas('catalogItem', function($query) use ($sku) {
                 $query->where('sku', $sku)->where('status', 1);
@@ -333,19 +333,19 @@ class PurchaseController extends AdminBaseController
         $data = array();
         if (!$merchantItem || !$merchantItem->catalogItem) {
             $data[0] = false;
-            $data[1] = __('No Product Found');
+            $data[1] = __('No CatalogItem Found');
         } else {
             $data[0] = true;
-            $data[1] = $merchantItem->product->id;
+            $data[1] = $merchantItem->catalogItem->id;
         }
         return response()->json($data);
     }
 
-    public function product_show($id)
+    public function catalogItem_show($id)
     {
-        $data['productt'] = CatalogItem::find($id);
+        $data['catalogItem'] = CatalogItem::find($id);
         $data['curr'] = $this->curr;
-        return view('admin.purchase.add-product', $data);
+        return view('admin.purchase.add-catalogItem', $data);
     }
 
     public function addcart($id)
@@ -369,8 +369,8 @@ class PurchaseController extends AdminBaseController
         $values = $values == "" ? '' : implode(',', $values);
         $size_price = ($size_price / $purchase->currency_value);
 
-        // Get product with merchant data
-        $product = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
+        // Get catalogItem with merchant data
+        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
 
         // Get merchant-specific data from merchant_items
         $merchantId = (int) ($_GET['merchant_id'] ?? 0);
@@ -383,11 +383,11 @@ class PurchaseController extends AdminBaseController
         }
 
         if (!$merchantItem) {
-            return redirect()->back()->with('unsuccess', __('Product not available from this vendor.'));
+            return redirect()->back()->with('unsuccess', __('CatalogItem not available from this merchant.'));
         }
 
-        // Create a combined product object with merchant data
-        $prod = (object) array_merge($product->toArray(), [
+        // Create a combined catalogItem object with merchant data
+        $cartItem = (object) array_merge($catalogItem->toArray(), [
             'user_id' => $merchantItem->user_id,
             'price' => $merchantItem->price,
             'stock' => $merchantItem->stock,
@@ -399,21 +399,21 @@ class PurchaseController extends AdminBaseController
             'whole_sell_discount' => $merchantItem->whole_sell_discount
         ]);
 
-        if ($prod->user_id != 0) {
-            $prc = $prod->price + $this->gs->fixed_commission + ($prod->price / 100) * $this->gs->percentage_commission;
-            $prod->price = round($prc, 2);
+        if ($cartItem->user_id != 0) {
+            $prc = $cartItem->price + $this->gs->fixed_commission + ($cartItem->price / 100) * $this->gs->percentage_commission;
+            $cartItem->price = round($prc, 2);
         }
         if (!empty($prices)) {
             if (!empty($prices[0])) {
                 foreach ($prices as $data) {
-                    $prod->price += ($data / $purchase->currency_value);
+                    $cartItem->price += ($data / $purchase->currency_value);
                 }
             }
         }
 
-        if (!empty($prod->license_qty)) {
+        if (!empty($cartItem->license_qty)) {
             $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
+            foreach ($cartItem->license_qty as $ttl => $dtl) {
                 if ($dtl < 1) {
                     $lcheck = 0;
                 } else {
@@ -427,15 +427,15 @@ class PurchaseController extends AdminBaseController
         }
 
         if (empty($size)) {
-            if (!empty($prod->size)) {
-                $size = trim($prod->size[0]);
+            if (!empty($cartItem->size)) {
+                $size = trim($cartItem->size[0]);
             }
             $size = str_replace(' ', '-', $size);
         }
 
         if (empty($color)) {
             // Get color from merchant colors (merchant_items.color_all)
-            $merchantColors = $prod->getMerchantColors();
+            $merchantColors = $cartItem->getMerchantColors();
             if (!empty($merchantColors)) {
                 $color = $merchantColors[0];
             }
@@ -447,28 +447,28 @@ class PurchaseController extends AdminBaseController
 
         if (!empty($cart->items)) {
             if (!empty($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
-                $minimum_qty = (int) $prod->minimum_qty;
+                $minimum_qty = (int) $cartItem->minimum_qty;
                 if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] < $minimum_qty) {
-                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $cartItem->minimum_qty);
                 }
             } else {
-                if ($prod->minimum_qty != null) {
-                    $minimum_qty = (int) $prod->minimum_qty;
+                if ($cartItem->minimum_qty != null) {
+                    $minimum_qty = (int) $cartItem->minimum_qty;
                     if ($qty < $minimum_qty) {
-                        return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                        return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $cartItem->minimum_qty);
                     }
                 }
             }
         } else {
-            $minimum_qty = (int) $prod->minimum_qty;
-            if ($prod->minimum_qty != null) {
+            $minimum_qty = (int) $cartItem->minimum_qty;
+            if ($cartItem->minimum_qty != null) {
                 if ($qty < $minimum_qty) {
-                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $cartItem->minimum_qty);
                 }
             }
         }
         $color_price = isset($request->color_price) ? (float) $_GET['color_price'] : 0;
-        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
+        $cart->addnum($cartItem, $cartItem->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
 
         if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
             return redirect()->back()->with('unsuccess', __('This item is already in the cart.'));
@@ -513,21 +513,21 @@ class PurchaseController extends AdminBaseController
         return redirect()->back()->with('success', __('Successfully Added To Cart.'));
     }
 
-    public function product_edit($id, $itemid, $purchaseid)
+    public function catalogItem_edit($id, $itemid, $purchaseid)
     {
 
-        $product = CatalogItem::find($itemid);
+        $catalogItem = CatalogItem::find($itemid);
 
         $purchase = Purchase::find($purchaseid);
         $cart = json_decode($purchase->cart, true);
-        $data['productt'] = $product;
+        $data['catalogItem'] = $catalogItem;
         $data['item_id'] = $id;
         $data['prod'] = $id;
         $data['purchase'] = $purchase;
         $data['item'] = $cart['items'][$id];
         $data['curr'] = $this->curr;
 
-        return view('admin.purchase.edit-product', $data);
+        return view('admin.purchase.edit-catalogItem', $data);
     }
 
     public function updatecart($id)
@@ -554,8 +554,8 @@ class PurchaseController extends AdminBaseController
 
         $size_price = ($size_price / $purchase->currency_value);
 
-        // Get product with merchant data
-        $product = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
+        // Get catalogItem with merchant data
+        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
 
         // Get merchant-specific data from merchant_items
         $merchantId = (int) ($_GET['merchant_id'] ?? 0);
@@ -568,11 +568,11 @@ class PurchaseController extends AdminBaseController
         }
 
         if (!$merchantItem) {
-            return redirect()->back()->with('unsuccess', __('Product not available from this vendor.'));
+            return redirect()->back()->with('unsuccess', __('CatalogItem not available from this merchant.'));
         }
 
-        // Create a combined product object with merchant data
-        $prod = (object) array_merge($product->toArray(), [
+        // Create a combined catalogItem object with merchant data
+        $cartItem = (object) array_merge($catalogItem->toArray(), [
             'user_id' => $merchantItem->user_id,
             'price' => $merchantItem->price,
             'stock' => $merchantItem->stock,
@@ -584,21 +584,21 @@ class PurchaseController extends AdminBaseController
             'whole_sell_discount' => $merchantItem->whole_sell_discount
         ]);
 
-        if ($prod->user_id != 0) {
-            $prc = $prod->price + $this->gs->fixed_commission + ($prod->price / 100) * $this->gs->percentage_commission;
-            $prod->price = round($prc, 2);
+        if ($cartItem->user_id != 0) {
+            $prc = $cartItem->price + $this->gs->fixed_commission + ($cartItem->price / 100) * $this->gs->percentage_commission;
+            $cartItem->price = round($prc, 2);
         }
         if (!empty($prices)) {
             if (!empty($prices[0])) {
                 foreach ($prices as $data) {
-                    $prod->price += ($data / $purchase->currency_value);
+                    $cartItem->price += ($data / $purchase->currency_value);
                 }
             }
         }
 
-        if (!empty($prod->license_qty)) {
+        if (!empty($cartItem->license_qty)) {
             $lcheck = 1;
-            foreach ($prod->license_qty as $ttl => $dtl) {
+            foreach ($cartItem->license_qty as $ttl => $dtl) {
                 if ($dtl < 1) {
                     $lcheck = 0;
                 } else {
@@ -611,15 +611,15 @@ class PurchaseController extends AdminBaseController
             }
         }
         if (empty($size)) {
-            if (!empty($prod->size)) {
-                $size = trim($prod->size[0]);
+            if (!empty($cartItem->size)) {
+                $size = trim($cartItem->size[0]);
             }
             $size = str_replace(' ', '-', $size);
         }
 
         if (empty($color)) {
             // Get color from merchant colors (merchant_items.color_all)
-            $merchantColors = $prod->getMerchantColors();
+            $merchantColors = $cartItem->getMerchantColors();
             if (!empty($merchantColors)) {
                 $color = $merchantColors[0];
             }
@@ -630,29 +630,29 @@ class PurchaseController extends AdminBaseController
 
         if (!empty($cart->items)) {
             if (!empty($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
-                $minimum_qty = (int) $prod->minimum_qty;
+                $minimum_qty = (int) $cartItem->minimum_qty;
                 if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] < $minimum_qty) {
-                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $cartItem->minimum_qty);
                 }
             } else {
-                if ($prod->minimum_qty != null) {
-                    $minimum_qty = (int) $prod->minimum_qty;
+                if ($cartItem->minimum_qty != null) {
+                    $minimum_qty = (int) $cartItem->minimum_qty;
                     if ($qty < $minimum_qty) {
-                        return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                        return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $cartItem->minimum_qty);
                     }
                 }
             }
         } else {
-            $minimum_qty = (int) $prod->minimum_qty;
-            if ($prod->minimum_qty != null) {
+            $minimum_qty = (int) $cartItem->minimum_qty;
+            if ($cartItem->minimum_qty != null) {
                 if ($qty < $minimum_qty) {
-                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $prod->minimum_qty);
+                    return redirect()->back()->with('unsuccess', __('Minimum Quantity is:') . ' ' . $cartItem->minimum_qty);
                 }
             }
         }
         $color_price = 0;
 
-        $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
+        $cart->addnum($cartItem, $cartItem->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
 
         if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
             return redirect()->back()->with('unsuccess', __('This item is already in the cart.'));
@@ -736,7 +736,7 @@ class PurchaseController extends AdminBaseController
         return redirect()->back()->with('success', __('Successfully Updated The Cart.'));
     }
 
-    public function product_delete($id, $purchaseid)
+    public function catalogItem_delete($id, $purchaseid)
     {
 
         $purchase = Purchase::find($purchaseid);

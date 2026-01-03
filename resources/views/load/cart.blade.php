@@ -1,18 +1,18 @@
 <div class="cart-popup">
     <ul class="cart_list product_list_widget ">
         @if (Session::has('cart'))
-            @foreach(Session::get('cart')->items as $rowKey => $product)
+            @foreach(Session::get('cart')->items as $rowKey => $catalogItem)
                 @php
-                    // المفتاح الحقيقي Vendor-aware كما هو في جلسة السلة
+                    // المفتاح الحقيقي Merchant-aware كما هو في جلسة السلة
                     $row    = (string) $rowKey;
                     // نسخة آمنة للـ DOM لتجنب محارف تُربك المحددات
                     $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', $row);
 
-                    $slug     = data_get($product, 'item.slug');
-                    $merchantUserId = data_get($product, 'item.user_id');
-                    $merchantItemId = data_get($product, 'item.id');
-                    $name     = data_get($product, 'item.name');
-                    $photo    = data_get($product, 'item.photo');
+                    $slug     = data_get($catalogItem, 'item.slug');
+                    $merchantUserId = data_get($catalogItem, 'item.user_id');
+                    $merchantItemId = data_get($catalogItem, 'item.id');
+                    $name     = data_get($catalogItem, 'item.name');
+                    $photo    = data_get($catalogItem, 'item.photo');
 
                     $catalogItemUrl = ($merchantUserId && $merchantItemId)
                         ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $merchantUserId, 'merchant_item_id' => $merchantItemId])
@@ -22,7 +22,7 @@
                 <li class="mini-cart-item">
                     <div class="cart-remove remove"
                          data-class="cremove{{ $domKey }}"
-                         data-href="{{ route('product.cart.remove', $row) }}"
+                         data-href="{{ route('catalogItem.cart.remove', $row) }}"
                          title="Remove this item">
                         <i class="fas fa-times"></i>
                     </div>
@@ -31,18 +31,18 @@
                         <img
                             src="{{ \Illuminate\Support\Facades\Storage::url($photo) ?? asset('assets/images/noimage.png') }}"
                             class="attachment-woocommerce_thumbnail size-woocommerce_thumbnail"
-                            alt="Cart product">
+                            alt="Cart catalogItem">
                     </a>
 
-                    <x-catalog-item-name :item="$product['item']" :merchant-user-id="$merchantUserId" :merchantItemId="$merchantItemId" target="_self" :useSearchRoute="false" class="catalog-item-name" />
+                    <x-catalog-item-name :item="$catalogItem['item']" :merchant-user-id="$merchantUserId" :merchantItemId="$merchantItemId" target="_self" :useSearchRoute="false" class="catalog-item-name" />
 
                     <div class="cart-item-quantity">
-                        <span class="cart-product-qty" id="cqt{{ $domKey }}">{{ $product['qty'] }}</span>
-                        <span>{{ data_get($product, 'item.measure') }}</span>
+                        <span class="cart-catalogItem-qty" id="cqt{{ $domKey }}">{{ $catalogItem['qty'] }}</span>
+                        <span>{{ data_get($catalogItem, 'item.measure') }}</span>
                         x
                         <span id="prct{{ $domKey }}">
-                            {{ App\Models\CatalogItem::convertPrice($product['item_price']) }}
-                            {{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}
+                            {{ App\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}
+                            {{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}
                         </span>
                     </div>
                 </li>
@@ -50,7 +50,7 @@
         @else
             <div class="card">
                 <div class="card-body">
-                    <h4 class="text-center">{{ __('Cart is Empty!! Add some products in your Cart') }}</h4>
+                    <h4 class="text-center">{{ __('Cart is Empty!! Add some catalogItems in your Cart') }}</h4>
                 </div>
             </div>
         @endif

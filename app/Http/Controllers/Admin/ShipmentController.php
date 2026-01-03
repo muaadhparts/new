@@ -69,7 +69,7 @@ class ShipmentController extends AdminBaseController
             ->orderBy('status_date', 'desc')
             ->paginate(25);
 
-        return view('admin.shipments.index', compact('stats', 'shipments', 'vendors', 'status', 'merchantId', 'dateFrom', 'dateTo', 'search'));
+        return view('admin.shipments.index', compact('stats', 'shipments', 'merchants', 'status', 'merchantId', 'dateFrom', 'dateTo', 'search'));
     }
 
     /**
@@ -86,12 +86,12 @@ class ShipmentController extends AdminBaseController
             ->get();
 
         $purchase = Purchase::with('user')->find($shipment->purchase_id);
-        $vendor = User::find($shipment->merchant_id);
+        $merchant = User::find($shipment->merchant_id);
 
         // Try to get live status
         $liveStatus = $this->tryotoService->trackShipment($trackingNumber);
 
-        return view('admin.shipments.show', compact('shipment', 'history', 'purchase', 'vendor', 'liveStatus'));
+        return view('admin.shipments.show', compact('shipment', 'history', 'purchase', 'merchant', 'liveStatus'));
     }
 
     /**
@@ -185,7 +185,7 @@ class ShipmentController extends AdminBaseController
                 'Tracking Number',
                 'Order Number',
                 'Customer',
-                'Vendor',
+                'Merchant',
                 'Company',
                 'Status',
                 'Status (AR)',
@@ -198,7 +198,7 @@ class ShipmentController extends AdminBaseController
                     $shipment->tracking_number,
                     $shipment->purchase->purchase_number ?? 'N/A',
                     $shipment->purchase->customer_name ?? 'N/A',
-                    $shipment->vendor->shop_name ?? 'N/A',
+                    $shipment->merchant->shop_name ?? 'N/A',
                     $shipment->company_name,
                     $shipment->status,
                     $shipment->status_ar,
@@ -272,7 +272,7 @@ class ShipmentController extends AdminBaseController
             ->toArray();
 
         // Top Merchants by Shipments
-        $topVendors = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
+        $topMerchants = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
             ->whereNotNull('merchant_id')
             ->select('merchant_id', DB::raw('COUNT(DISTINCT tracking_number) as total'))
             ->groupBy('merchant_id')
@@ -331,12 +331,12 @@ class ShipmentController extends AdminBaseController
 
         return view('admin.shipments.reports', compact(
             'overallStats',
-            'topVendors',
+            'topMerchants',
             'dailyShipments',
             'statusDistribution',
             'successRate',
             'companiesPerformance',
-            'vendors',
+            'merchants',
             'period',
             'merchantId',
             'total'

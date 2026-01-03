@@ -20,7 +20,7 @@
             <div class="muaadh-header-inner">
                 {{-- Left Side: Toggle + Logo --}}
                 <div class="muaadh-header-left">
-                    {{-- Mobile Toggle (hidden in vendor/admin where they have their own toggle) --}}
+                    {{-- Mobile Toggle (hidden in merchant/admin where they have their own toggle) --}}
                     @if (!($hideMobileToggle ?? false))
                         @php
                             $currentUrl = url()->current();
@@ -216,7 +216,7 @@
                     <li class="{{ request()->is('category*') ? 'active' : '' }}">
                         <a href="{{ route('front.category') }}">
                             <i class="fas fa-box-open"></i>
-                            <span>@lang('Products')</span>
+                            <span>@lang('CatalogItems')</span>
                         </a>
                     </li>
                     @if ($pages->where('header', '=', 1)->count() > 0)

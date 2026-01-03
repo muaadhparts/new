@@ -10,7 +10,7 @@ use Illuminate\Console\Command;
  *
  * POLICY:
  * - api_credentials: ONLY for Google Maps and DigitalOcean (system-level)
- * - vendor_credentials: For Tryoto (shipping) and MyFatoorah (payment) per vendor
+ * - merchant_credentials: For Tryoto (shipping) and MyFatoorah (payment) per merchant
  * - This command does NOT import payment or shipping credentials
  */
 class ImportApiCredentials extends Command
@@ -28,7 +28,7 @@ class ImportApiCredentials extends Command
         $this->warn('POLICY NOTICE:');
         $this->line('  • This imports SYSTEM-LEVEL credentials only');
         $this->line('  • Google Maps, DigitalOcean → api_credentials table');
-        $this->line('  • Tryoto, MyFatoorah → vendor_credentials table (per vendor)');
+        $this->line('  • Tryoto, MyFatoorah → merchant_credentials table (per merchant)');
         $this->newLine();
 
         if (!$this->option('force')) {
@@ -77,10 +77,10 @@ class ImportApiCredentials extends Command
         $this->line('   - GOOGLE_MAPS_API_KEY');
         $this->line('   - DO_ACCESS_KEY_ID / DO_SECRET_ACCESS_KEY');
         $this->newLine();
-        $this->line('2. For VENDOR credentials (Tryoto, MyFatoorah):');
-        $this->line('   - Use Admin Panel > Vendor Credentials');
-        $this->line('   - Or Vendor Dashboard > Settings');
-        $this->line('   - Each vendor MUST have their own credentials');
+        $this->line('2. For MERCHANT credentials (Tryoto, MyFatoorah):');
+        $this->line('   - Use Admin Panel > Merchant Credentials');
+        $this->line('   - Or Merchant Dashboard > Settings');
+        $this->line('   - Each merchant MUST have their own credentials');
         $this->newLine();
 
         return 0;

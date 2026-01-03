@@ -53,12 +53,12 @@ class PurchaseHelper
     public static function license_check($cart)
     {
 
-        foreach ($cart->items as $key => $prod) {
-            if (!empty($prod['item']['license']) && !empty($prod['item']['license_qty'])) {
-                foreach ($prod['item']['license_qty'] as $ttl => $dtl) {
+        foreach ($cart->items as $key => $cartItem) {
+            if (!empty($cartItem['item']['license']) && !empty($cartItem['item']['license_qty'])) {
+                foreach ($cartItem['item']['license_qty'] as $ttl => $dtl) {
                     if ($dtl != 0) {
                         $dtl--;
-                        $catalogItem = CatalogItem::find($prod['item']['id']);
+                        $catalogItem = CatalogItem::find($cartItem['item']['id']);
                         $temp = $catalogItem->license_qty;
                         $temp[$ttl] = $dtl;
                         $final = implode(',', $temp);
@@ -68,7 +68,7 @@ class PurchaseHelper
                         $license = $temp[$ttl];
                         $oldCart = Session::has('cart') ? Session::get('cart') : null;
                         $cart = new Cart($oldCart);
-                        $cart->updateLicense($prod['item']['id'], $license);
+                        $cart->updateLicense($cartItem['item']['id'], $license);
 
                         Session::put('cart', $cart);
                         break;
@@ -78,19 +78,19 @@ class PurchaseHelper
         }
     }
 
-    public static function product_affilate_check($cart)
+    public static function item_affilate_check($cart)
     {
         $affilate_users = null;
         $i = 0;
         $gs = \App\Models\Muaadhsetting::find(1);
         $percentage = $gs->affilate_charge / 100;
-        foreach ($cart->items as $prod) {
+        foreach ($cart->items as $cartItem) {
 
-            if ($prod['affilate_user'] != 0) {
-                if (Auth::user()->id != $prod['affilate_user']) {
-                    $affilate_users[$i]['user_id'] = $prod['affilate_user'];
-                    $affilate_users[$i]['product_id'] = $prod['item']['id'];
-                    $price = $prod['price'] * $percentage;
+            if ($cartItem['affilate_user'] != 0) {
+                if (Auth::user()->id != $cartItem['affilate_user']) {
+                    $affilate_users[$i]['user_id'] = $cartItem['affilate_user'];
+                    $affilate_users[$i]['catalog_item_id'] = $cartItem['item']['id'];
+                    $price = $cartItem['price'] * $percentage;
                     $affilate_users[$i]['charge'] = $price;
                     $i++;
                 }
@@ -107,7 +107,7 @@ class PurchaseHelper
             $oldCart = Session::get('cart');
             $cart = new Cart($oldCart);
 
-            foreach ($cart->items as $key => $prod) {
+            foreach ($cart->items as $key => $cartItem) {
 
                 $cart->items[$key]['price'] = $cart->items[$key]['price'] * $new_value;
                 $cart->items[$key]['item']['price'] = $cart->items[$key]['item']['price'] * $new_value;
@@ -157,20 +157,20 @@ class PurchaseHelper
     public static function size_qty_check($cart)
     {
         try {
-            foreach ($cart->items as $prod) {
-                $x = (string)$prod['size_qty'];
+            foreach ($cart->items as $cartItem) {
+                $x = (string)$cartItem['size_qty'];
 
                 if (!empty($x) && $x != "undefined") {
                     // Update size_qty in merchant_items instead of catalog_items
-                    $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $prod['item']['id'])
-                        ->where('user_id', $prod['user_id'])
+                    $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
+                        ->where('user_id', $cartItem['user_id'])
                         ->first();
 
                     if ($merchantItem) {
                         $x = (int)$x;
-                        $x = $x - $prod['qty'];
+                        $x = $x - $cartItem['qty'];
                         $temp = $merchantItem->size_qty;
-                        $temp[$prod['size_key']] = $x;
+                        $temp[$cartItem['size_key']] = $x;
                         $temp1 = implode(',', $temp);
                         $merchantItem->size_qty = $temp1;
                         $merchantItem->update();
@@ -184,16 +184,16 @@ class PurchaseHelper
     public static function stock_check($cart)
     {
         try {
-            foreach ($cart->items as $prod) {
-                $x = (string)$prod['stock'];
+            foreach ($cart->items as $cartItem) {
+                $x = (string)$cartItem['stock'];
                 if ($x != null) {
                     // Update stock in merchant_items instead of catalog_items
-                    $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $prod['item']['id'])
-                        ->where('user_id', $prod['user_id'])
+                    $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
+                        ->where('user_id', $cartItem['user_id'])
                         ->first();
 
                     if ($merchantItem) {
-                        $merchantItem->stock = $prod['stock'];
+                        $merchantItem->stock = $cartItem['stock'];
                         $merchantItem->update();
 
                         // Send low stock notification for this merchant's listing
@@ -216,16 +216,16 @@ class PurchaseHelper
         try {
             $notf = array();
 
-            foreach ($cart->items as $prod) {
-                if ($prod['item']['user_id'] != 0) {
+            foreach ($cart->items as $cartItem) {
+                if ($cartItem['item']['user_id'] != 0) {
                     $merchantPurchase =  new MerchantPurchase();
                     $merchantPurchase->purchase_id = $purchase->id;
-                    $merchantPurchase->user_id = $prod['item']['user_id'];
-                    $merchantPurchase->qty = $prod['qty'];
-                    $merchantPurchase->price = $prod['price'];
+                    $merchantPurchase->user_id = $cartItem['item']['user_id'];
+                    $merchantPurchase->qty = $cartItem['qty'];
+                    $merchantPurchase->price = $cartItem['price'];
                     $merchantPurchase->purchase_number = $purchase->purchase_number;
                     $merchantPurchase->save();
-                    $notf[] = $prod['item']['user_id'];
+                    $notf[] = $cartItem['item']['user_id'];
                 }
             }
 

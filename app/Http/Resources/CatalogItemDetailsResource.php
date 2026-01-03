@@ -18,13 +18,13 @@ class CatalogItemDetailsResource extends JsonResource
    */
   public function toArray($request)
   {
-    // // dd(['vendorId' => $request->get('user'), 'catalog_item_id' => $this->id]); // debug
+    // // dd(['merchantId' => $request->get('user'), 'catalog_item_id' => $this->id]); // debug
 
-    // 1) التعرّف على البائع (vendorId) من كويري سترنج ?user= أو من حقل حقناه مسبقًا على المنتج (vendor_user_id)
-    $merchantId = (int) ($request->get('user') ?? $this->getAttribute('vendor_user_id') ?? 0);
+    // 1) التعرّف على التاجر (merchantId) من كويري سترنج ?user= أو من حقل حقناه مسبقًا على المنتج (merchant_user_id)
+    $merchantId = (int) ($request->get('user') ?? $this->getAttribute('merchant_user_id') ?? 0);
 
-    // 2) جلب عرض البائع الفعّال عبر دالّة المنتج (مضافة لديك في الموديل)
-    //    إن لم يُمرَّر vendorId سنأخذ أول عرض فعّال.
+    // 2) جلب عرض التاجر الفعّال عبر دالّة المنتج (مضافة لديك في الموديل)
+    //    إن لم يُمرَّر merchantId سنأخذ أول عرض فعّال.
     $mp = method_exists($this, 'activeMerchant')
         ? $this->activeMerchant($merchantId ?: null)
         : null;
@@ -55,7 +55,7 @@ class CatalogItemDetailsResource extends JsonResource
       // هوية المنتج (هوية فقط من catalog_items)
       'id'            => $this->id,
       'catalog_item_id'    => $this->id,
-      'user_id'       => $mp ? $mp->user_id : ($this->user_id ?? 0), // إبقاء الحقل للتوافق، لكن يُفضّل اعتماد vendor.user_id
+      'user_id'       => $mp ? $mp->user_id : ($this->user_id ?? 0), // إبقاء الحقل للتوافق، لكن يُفضّل اعتماد merchant.user_id
       'title'         => $this->name,
       'slug'          => $this->slug,
       'sku'           => $this->sku,
@@ -78,8 +78,8 @@ class CatalogItemDetailsResource extends JsonResource
 
       // مخزون/حالة/شحن/مقاسات من عرض البائع (إن وُجد)، وإلا fallback لهوية المنتج
       'stock'          => $mp ? (int) $mp->stock : 0,
-      'condition'      => $mp && $mp->product_condition
-                            ? ($mp->product_condition == 2 ? 'New' : 'Used')
+      'condition'      => $mp && $mp->item_condition
+                            ? ($mp->item_condition == 2 ? 'New' : 'Used')
                             : null,
       'video'          => $this->youtube,
       'stock_check'    => $mp ? $mp->stock_check : 0,
@@ -110,11 +110,11 @@ class CatalogItemDetailsResource extends JsonResource
         'items' => $shopCount, // قد تكون null إن لم يُحمّل user
       ],
 
-      // معلومات البائع المستخدمة
-      'vendor' => $mp ? [
-        'user_id'             => $mp->user_id,
+      // معلومات التاجر المستخدمة
+      'merchant' => $mp ? [
+        'user_id'          => $mp->user_id,
         'merchant_item_id' => $mp->id,
-        'status'              => (int) $mp->status,
+        'status'           => (int) $mp->status,
       ] : null,
 
       'created_at'     => $this->created_at,

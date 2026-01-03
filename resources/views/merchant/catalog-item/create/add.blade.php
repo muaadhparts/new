@@ -1,42 +1,42 @@
 @extends('layouts.merchant')
 @php
     $isDashboard = true;
-    $isVendor = true;
+    $isMerchant = true;
 @endphp
 
 @section('content')
-<div class="gs-vendor-outlet">
+<div class="gs-merchant-outlet">
     <!-- breadcrumb start  -->
-    <div class="gs-vendor-breadcrumb has-mb">
+    <div class="gs-merchant-breadcrumb has-mb">
         <div class="gs-deposit-title ms-0 d-flex align-items-center gap-4">
             <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                 <i class="fa-solid fa-arrow-left-long"></i>
             </a>
-            <h4>@lang('Add Product')</h4>
+            <h4>@lang('Add CatalogItem')</h4>
         </div>
         <ul class="breadcrumb-menu">
             <li>
                 <a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a>
             </li>
             <li>
-                <a href="{{ route('merchant-catalog-item-index') }}">@lang('Products')</a>
+                <a href="{{ route('merchant-catalog-item-index') }}">@lang('CatalogItems')</a>
             </li>
             <li>
-                <a href="#">@lang('Add Product')</a>
+                <a href="#">@lang('Add CatalogItem')</a>
             </li>
         </ul>
     </div>
     <!-- breadcrumb end -->
 
-    <!-- Search Product Section -->
+    <!-- Search CatalogItem Section -->
     <div class="card mb-4">
         <div class="card-header bg-primary text-white">
-            <h5 class="mb-0"><i class="fas fa-search me-2"></i>@lang('Search Product by SKU / Part Number')</h5>
+            <h5 class="mb-0"><i class="fas fa-search me-2"></i>@lang('Search CatalogItem by SKU / Part Number')</h5>
         </div>
         <div class="card-body">
             <div class="row align-items-end">
                 <div class="col-md-8">
-                    <label class="form-label">@lang('Enter Product SKU / Part Number')</label>
+                    <label class="form-label">@lang('Enter CatalogItem SKU / Part Number')</label>
                     <input type="text" class="form-control form-control-lg" id="search_sku"
                            placeholder="@lang('Enter SKU or Part Number and press Enter or click Search')">
                 </div>
@@ -50,38 +50,38 @@
         </div>
     </div>
 
-    <!-- Product Info & Form (Hidden until product is found) -->
-    <div id="product_form_section" style="display: none;">
-        <form id="addProductForm" action="{{ route('merchant-catalog-item-store-offer') }}" method="POST">
+    <!-- CatalogItem Info & Form (Hidden until catalogItem is found) -->
+    <div id="item_form_section" style="display: none;">
+        <form id="addItemForm" action="{{ route('merchant-catalog-item-store-offer') }}" method="POST">
             @csrf
-            <input type="hidden" name="product_id" id="product_id" value="">
+            <input type="hidden" name="catalog_item_id" id="catalog_item_id" value="">
 
             <div class="row">
-                <!-- Product Info Preview -->
+                <!-- CatalogItem Info Preview -->
                 <div class="col-12 col-lg-4">
                     <div class="card">
                         <div class="card-header">
-                            <h5>@lang('Product Information')</h5>
+                            <h5>@lang('CatalogItem Information')</h5>
                             <small class="text-muted">@lang('This information is from the catalog and cannot be changed')</small>
                         </div>
                         <div class="card-body">
                             <div class="text-center mb-3">
-                                <img id="product_image" src="{{ asset('assets/images/noimage.png') }}"
+                                <img id="item_image" src="{{ asset('assets/images/noimage.png') }}"
                                      alt="" class="img-fluid rounded" style="max-height: 200px;">
                             </div>
-                            <h6 id="product_name" class="text-center mb-3"></h6>
+                            <h6 id="item_name" class="text-center mb-3"></h6>
                             <table class="table table-sm">
                                 <tr>
                                     <th>@lang('SKU'):</th>
-                                    <td id="product_sku"></td>
+                                    <td id="item_sku"></td>
                                 </tr>
                                 <tr>
                                     <th>@lang('Brand'):</th>
-                                    <td id="product_brand"></td>
+                                    <td id="item_brand"></td>
                                 </tr>
                                 <tr>
                                     <th>@lang('Type'):</th>
-                                    <td id="product_type"></td>
+                                    <td id="item_type"></td>
                                 </tr>
                             </table>
                         </div>
@@ -112,11 +112,11 @@
                                     </div>
                                 </div>
 
-                                <!-- Product Condition -->
+                                <!-- CatalogItem Condition -->
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label class="form-label">@lang('Product Condition*')</label>
-                                        <select class="form-control" name="product_condition" required>
+                                        <label class="form-label">@lang('CatalogItem Condition*')</label>
+                                        <select class="form-control" name="item_condition" required>
                                             <option value="2">@lang('New')</option>
                                             <option value="1">@lang('Used')</option>
                                         </select>
@@ -187,7 +187,7 @@
                                         <div class="form-check">
                                             <input class="form-check-input" type="checkbox" id="allow_colors" name="color_check" value="1">
                                             <label class="form-check-label" for="allow_colors">
-                                                @lang('Allow Product Colors')
+                                                @lang('Allow CatalogItem Colors')
                                             </label>
                                         </div>
                                     </div>
@@ -256,7 +256,7 @@
                                     <div class="mb-3">
                                         <label class="form-label">@lang('Your Return/Exchange Policy')</label>
                                         <textarea class="form-control" name="policy" rows="3"
-                                                  placeholder="@lang('Optional - Your specific policy for this product')"></textarea>
+                                                  placeholder="@lang('Optional - Your specific policy for this catalogItem')"></textarea>
                                     </div>
                                 </div>
 
@@ -278,7 +278,7 @@
                 <div class="col-12 text-end">
                     <a href="{{ route('merchant-catalog-item-index') }}" class="btn btn-secondary me-2">@lang('Cancel')</a>
                     <button type="submit" class="btn btn-success btn-lg">
-                        <i class="fas fa-plus me-2"></i>@lang('Add Product')
+                        <i class="fas fa-plus me-2"></i>@lang('Add CatalogItem')
                     </button>
                 </div>
             </div>
@@ -291,20 +291,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search_sku');
     const searchBtn = document.getElementById('search_btn');
     const searchResult = document.getElementById('search_result');
-    const productFormSection = document.getElementById('product_form_section');
+    const itemFormSection = document.getElementById('item_form_section');
 
     // Search on Enter key
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
-            searchProduct();
+            searchCatalogItem();
         }
     });
 
     // Search on button click
-    searchBtn.addEventListener('click', searchProduct);
+    searchBtn.addEventListener('click', searchCatalogItem);
 
-    function searchProduct() {
+    function searchCatalogItem() {
         const sku = searchInput.value.trim();
         if (!sku) {
             searchResult.innerHTML = '<div class="alert alert-warning">@lang("Please enter a SKU or Part Number")</div>';
@@ -312,39 +312,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         searchResult.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><br>@lang("Searching...")</div>';
-        productFormSection.style.display = 'none';
+        itemFormSection.style.display = 'none';
 
         fetch('{{ route("merchant-catalog-item-search-sku") }}?sku=' + encodeURIComponent(sku))
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    const product = data.product;
+                    const catalogItem = data.catalogItem;
 
-                    // Check if vendor already has this product
+                    // Check if merchant already has this catalogItem
                     if (data.already_exists) {
                         searchResult.innerHTML = `
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle me-2"></i>
-                                @lang("You already have an offer for this product.")
+                                @lang("You already have an offer for this catalogItem.")
                                 <a href="${data.edit_url}" class="btn btn-sm btn-primary ms-2">@lang("Edit Offer")</a>
                             </div>
                         `;
                         return;
                     }
 
-                    // Fill product info
-                    document.getElementById('product_id').value = product.id;
-                    document.getElementById('product_name').textContent = product.name;
-                    document.getElementById('product_sku').textContent = product.sku;
-                    document.getElementById('product_brand').textContent = product.brand || '@lang("N/A")';
-                    document.getElementById('product_type').textContent = product.type;
+                    // Fill catalogItem info
+                    document.getElementById('catalog_item_id').value = catalogItem.id;
+                    document.getElementById('item_name').textContent = catalogItem.name;
+                    document.getElementById('item_sku').textContent = catalogItem.sku;
+                    document.getElementById('item_brand').textContent = catalogItem.brand || '@lang("N/A")';
+                    document.getElementById('item_type').textContent = catalogItem.type;
 
-                    if (product.photo) {
-                        document.getElementById('product_image').src = product.photo;
+                    if (catalogItem.photo) {
+                        document.getElementById('item_image').src = catalogItem.photo;
                     }
 
-                    searchResult.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>@lang("Product found! Fill in your offer details below.")</div>';
-                    productFormSection.style.display = 'block';
+                    searchResult.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle me-2"></i>@lang("CatalogItem found! Fill in your offer details below.")</div>';
+                    itemFormSection.style.display = 'block';
                 } else {
                     searchResult.innerHTML = `<div class="alert alert-danger"><i class="fas fa-times-circle me-2"></i>${data.message}</div>`;
                 }

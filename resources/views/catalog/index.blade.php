@@ -84,15 +84,15 @@
                         'catalog' => $catalog->code,
                         'vin' => $vin
                     ]) }}">
-                        <div class="single-product card border-0 shadow-sm h-100">
+                        <div class="single-catalogItem card border-0 shadow-sm h-100">
                             <div class="img-wrapper position-relative">
                                 <img class="xproduct-img img-fluid rounded"
                                      src="{{ Storage::url($catalog->largeImagePath) }}"
-                                     alt="product img"
+                                     alt="catalogItem img"
                                      onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
                             </div>
                             <div class="ccontent-wrapper p-3 text-center">
-                                <h6 class="product-title text-dark fw-bold text-center">
+                                <h6 class="catalogItem-title text-dark fw-bold text-center">
                                     {{ getLocalizedLabel($catalog) }}
                                 </h6>
                                 <p class="text-muted small">{{ $catalog->code }}</p>

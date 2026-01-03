@@ -13,31 +13,31 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // 1. Rename vendor_id to merchant_id in catalog_events
-        if (Schema::hasColumn('catalog_events', 'vendor_id')) {
+        // 1. Rename merchant_id to merchant_id in catalog_events
+        if (Schema::hasColumn('catalog_events', 'merchant_id')) {
             Schema::table('catalog_events', function (Blueprint $table) {
-                $table->renameColumn('vendor_id', 'merchant_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
-        // 2. Rename vendor_id to merchant_id in delivery_riders
-        if (Schema::hasColumn('delivery_riders', 'vendor_id')) {
+        // 2. Rename merchant_id to merchant_id in delivery_riders
+        if (Schema::hasColumn('delivery_riders', 'merchant_id')) {
             Schema::table('delivery_riders', function (Blueprint $table) {
-                $table->renameColumn('vendor_id', 'merchant_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
-        // 3. Rename vendor_id to merchant_id in favorite_sellers
-        if (Schema::hasColumn('favorite_sellers', 'vendor_id')) {
+        // 3. Rename merchant_id to merchant_id in favorite_sellers
+        if (Schema::hasColumn('favorite_sellers', 'merchant_id')) {
             Schema::table('favorite_sellers', function (Blueprint $table) {
-                $table->renameColumn('vendor_id', 'merchant_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
-        // 4. Rename vendor_id to merchant_id in shipment_status_logs
-        if (Schema::hasColumn('shipment_status_logs', 'vendor_id')) {
+        // 4. Rename merchant_id to merchant_id in shipment_status_logs
+        if (Schema::hasColumn('shipment_status_logs', 'merchant_id')) {
             Schema::table('shipment_status_logs', function (Blueprint $table) {
-                $table->renameColumn('vendor_id', 'merchant_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
@@ -109,31 +109,31 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // 1. Rename merchant_id back to vendor_id in catalog_events
+        // 1. Rename merchant_id back to merchant_id in catalog_events
         if (Schema::hasColumn('catalog_events', 'merchant_id')) {
             Schema::table('catalog_events', function (Blueprint $table) {
-                $table->renameColumn('merchant_id', 'vendor_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
-        // 2. Rename merchant_id back to vendor_id in delivery_riders
+        // 2. Rename merchant_id back to merchant_id in delivery_riders
         if (Schema::hasColumn('delivery_riders', 'merchant_id')) {
             Schema::table('delivery_riders', function (Blueprint $table) {
-                $table->renameColumn('merchant_id', 'vendor_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
-        // 3. Rename merchant_id back to vendor_id in favorite_sellers
+        // 3. Rename merchant_id back to merchant_id in favorite_sellers
         if (Schema::hasColumn('favorite_sellers', 'merchant_id')) {
             Schema::table('favorite_sellers', function (Blueprint $table) {
-                $table->renameColumn('merchant_id', 'vendor_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 
-        // 4. Rename merchant_id back to vendor_id in shipment_status_logs
+        // 4. Rename merchant_id back to merchant_id in shipment_status_logs
         if (Schema::hasColumn('shipment_status_logs', 'merchant_id')) {
             Schema::table('shipment_status_logs', function (Blueprint $table) {
-                $table->renameColumn('merchant_id', 'vendor_id');
+                $table->renameColumn('merchant_id', 'merchant_id');
             });
         }
 

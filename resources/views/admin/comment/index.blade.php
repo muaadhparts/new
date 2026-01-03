@@ -12,7 +12,7 @@
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
                     </li>
                     <li>
-                        <a href="javascript:;">{{ __('Product Discussion') }} </a>
+                        <a href="javascript:;">{{ __('CatalogItem Discussion') }} </a>
                     </li>
                     <li>
                         <a href="{{ route('admin-comment-index') }}">{{ __('Comments') }}</a>
@@ -21,11 +21,11 @@
             </div>
         </div>
     </div>
-    <div class="product-area">
+    <div class="catalogItem-area">
         <div class="row">
             <div class="col-lg-12">
                 <div class="heading-area">
-                    <h4 class="title">{{ __('Product Comment') }} :</h4>
+                    <h4 class="title">{{ __('CatalogItem Comment') }} :</h4>
                     <div class="action-list">
                         <select class="process select droplinks {{ $gs->is_comment == 1 ? 'drop-success' : 'drop-danger' }}">
                             <option data-val="1" value="{{ route('admin-gs-status', ['is_comment', 1]) }}" {{ $gs->is_comment == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
@@ -39,10 +39,10 @@
                         <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Product') }}</th>
+                                    <th>{{ __('CatalogItem') }}</th>
                                     <th>{{ __('Brand') }}</th>
                                     <th>{{ __('Quality Brand') }}</th>
-                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Commenter') }}</th>
                                     <th>{{ __('Comment') }}</th>
                                     <th>{{ __('Options') }}</th>
@@ -73,10 +73,10 @@
         serverSide: true,
         ajax: '{{ route('admin-comment-datatables') }}',
         columns: [
-            { data: 'product', name: 'product', searchable: false, orderable: false },
+            { data: 'catalogItem', name: 'catalogItem', searchable: false, orderable: false },
             { data: 'brand', name: 'brand' },
             { data: 'quality_brand', name: 'quality_brand' },
-            { data: 'vendor', name: 'vendor' },
+            { data: 'merchant', name: 'merchant' },
             { data: 'commenter', name: 'commenter' },
             { data: 'text', name: 'text' },
             { data: 'action', searchable: false, orderable: false }

@@ -21,10 +21,10 @@
                   </div>
                 </div>
               </div>
-              <div class="add-product-content1 add-product-content2">
+              <div class="add-catalogItem-content1 add-catalogItem-content2">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description py-5">
+                    <div class="catalogItem-description py-5">
                       <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                         <form action="{{ route('admin-gs-update') }}" id="muaadhform" method="POST" enctype="multipart/form-data">
@@ -210,7 +210,7 @@
                               </div>
                               <div class="col-lg-6">
                                   <div >
-                                  <textarea class="form-control"  readonly="">{{ url('/vendor/subscription/check') }}</textarea>
+                                  <textarea class="form-control"  readonly="">{{ url('/merchant/subscription/check') }}</textarea>
                                   </div>
                               </div>
                             </div>

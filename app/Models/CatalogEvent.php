@@ -25,14 +25,6 @@ class CatalogEvent extends Model
         return $this->belongsTo('App\Models\User', 'merchant_id')->withDefault();
     }
 
-    /**
-     * @deprecated Use merchant() instead
-     */
-    public function vendor()
-    {
-        return $this->merchant();
-    }
-
     public function catalogItem()
     {
         return $this->belongsTo('App\Models\CatalogItem', 'catalog_item_id')->withDefault();

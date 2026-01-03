@@ -38,10 +38,10 @@ class UserController extends AdminBaseController
                 '<option data-val="1" value="'. route('admin-user-ban',['id1' => $data->id, 'id2' => 0]).'" '.$ns.'>'.__("UnBlock").'</option></select>';
 
                                     // Build merchant toggle action link
-                                    $merchant = $data->is_merchant != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-vendor" data-href="' . route('admin-user-vendor',$data->id) . '" >
-                                    <i class="fas fa-users"></i> '.__("Make Vendor").'
+                                    $merchant = $data->is_merchant != 2 ? '<a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="make-merchant" data-href="' . route('admin-user-merchant',$data->id) . '" >
+                                    <i class="fas fa-users"></i> '.__("Make Merchant").'
                                     </a>' : '<a href="javascript:;">
-                                    <i class="fas fa-users"></i> '.__("Vendor").'
+                                    <i class="fas fa-users"></i> '.__("Merchant").'
                                     </a>';
                                     return '<div class="action-list">
                                             <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="deposit" data-href="' . route('admin-user-deposit',$data->id) . '" >
@@ -54,7 +54,7 @@ class UserController extends AdminBaseController
                                             <a data-href="' . route('admin-user-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1">
                                             <i class="fas fa-edit"></i>'.__("Edit").
                                             '</a>
-                                            <a href="javascript:;" class="send" data-email="'. $data->email .'" data-bs-toggle="modal" data-bs-target="#vendorform">
+                                            <a href="javascript:;" class="send" data-email="'. $data->email .'" data-bs-toggle="modal" data-bs-target="#merchantform">
                                             <i class="fas fa-envelope"></i> '.__("Send").'
                                             </a>'
                                             .$ban.
@@ -306,11 +306,11 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->products->count() > 0)
+        if($user->catalogItems->count() > 0)
         {
 
 // CATALOG ITEMS
-            foreach ($user->products as $catalogItem) {
+            foreach ($user->catalogItems as $catalogItem) {
                 if($catalogItem->galleries->count() > 0)
                 {
                     foreach ($catalogItem->galleries as $gal) {
@@ -350,8 +350,8 @@ class UserController extends AdminBaseController
                         $gal->delete();
                     }
                 }
-                if (file_exists(public_path().'/assets/images/products/'.$catalogItem->photo)) {
-                    unlink(public_path().'/assets/images/products/'.$catalogItem->photo);
+                if (file_exists(public_path().'/assets/images/catalogItems/'.$catalogItem->photo)) {
+                    unlink(public_path().'/assets/images/catalogItems/'.$catalogItem->photo);
                 }
 
                 $catalogItem->delete();
@@ -572,17 +572,17 @@ class UserController extends AdminBaseController
 
 
         //*** GET Request - Set user as merchant
-        public function vendor($id)
+        public function merchant($id)
         {
             $data = User::findOrFail($id);
             if($data->is_merchant != 2){
-                return view('admin.user.setvendor',compact('data'));
+                return view('admin.user.setmerchant',compact('data'));
             }
 
         }
 
         // Set user as merchant with subscription
-        public function setVendor(Request $request, $id)
+        public function setMerchant(Request $request, $id)
         {
 
             //--- Validation Section
@@ -626,7 +626,7 @@ class UserController extends AdminBaseController
             $sub->status = 1;
             $sub->save();
 
-            $msg = __('Successfully Created Vendor');
+            $msg = __('Successfully Created Merchant');
             return response()->json($msg);
 
             // Logic Section Ends

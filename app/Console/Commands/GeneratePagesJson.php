@@ -30,11 +30,11 @@ class GeneratePagesJson extends Command
         // Dynamic pages - will be filled with DB samples
         '/category/{slug}' => 'Category',
         '/subcategory/{slug}' => 'Subcategory',
-        '/product/{slug}' => 'Product Detail',
+        '/catalogItem/{slug}' => 'CatalogItem Detail',
         '/catalog/{model}' => 'Catalog',
         '/brand/{slug}' => 'Brand',
         '/blog/{slug}' => 'Blog Post',
-        '/vendor/{id}' => 'Vendor Profile',
+        '/merchant/{id}' => 'Merchant Profile',
 
         // User dashboard pages
         '/user/dashboard' => 'User Dashboard',
@@ -98,22 +98,22 @@ class GeneratePagesJson extends Command
             $this->line("  + Subcategory: /subcategory/{$slug}");
         }
 
-        // Products (get featured/popular ones)
-        $products = DB::table('products')
+        // CatalogItems (get featured/popular ones)
+        $catalogItems = DB::table('catalogItems')
             ->whereNotNull('slug')
             ->where('slug', '!=', '')
             ->where('featured', 1)
             ->orderBy('views', 'desc')
             ->limit(3)
             ->pluck('slug');
-        foreach ($products as $slug) {
+        foreach ($catalogItems as $slug) {
             $pages[] = [
-                'name' => "Product: {$slug}",
-                'path' => "/product/{$slug}",
+                'name' => "CatalogItem: {$slug}",
+                'path' => "/catalogItem/{$slug}",
                 'requiresAuth' => false,
                 'priority' => 'high'
             ];
-            $this->line("  + Product: /product/{$slug}");
+            $this->line("  + CatalogItem: /catalogItem/{$slug}");
         }
 
         // Brands (use id since no slug)
@@ -145,7 +145,7 @@ class GeneratePagesJson extends Command
             $this->line("  + Blog: /blog/{$slug}");
         }
 
-        // Vendors
+        // Merchants
         $merchants = DB::table('users')
             ->where('is_merchant', 1)
             ->where('status', 1)
@@ -153,12 +153,12 @@ class GeneratePagesJson extends Command
             ->pluck('id');
         foreach ($merchants as $id) {
             $pages[] = [
-                'name' => "Vendor: {$id}",
-                'path' => "/vendor/{$id}",
+                'name' => "Merchant: {$id}",
+                'path' => "/merchant/{$id}",
                 'requiresAuth' => false,
                 'priority' => 'medium'
             ];
-            $this->line("  + Vendor: /vendor/{$id}");
+            $this->line("  + Merchant: /merchant/{$id}");
         }
 
         // 3. Build final JSON structure
@@ -186,7 +186,7 @@ class GeneratePagesJson extends Command
                 ],
                 'links' => ['a'],
                 'inputs' => ['input', 'select', 'textarea', '.form-control'],
-                'cards' => ['.card', '.m-card', '.product-card'],
+                'cards' => ['.card', '.m-card', '.catalogItem-card'],
                 'navigation' => ['.nav-link', '.dropdown-item', '.menu-link']
             ]
         ];

@@ -18,7 +18,7 @@ class UpdateShipmentStatuses extends Command
     protected $signature = 'shipments:update
                             {--status=* : Filter by status (default: pending,created,picked_up,in_transit,out_for_delivery)}
                             {--limit=100 : Maximum number of shipments to update}
-                            {--vendor= : Filter by vendor ID}
+                            {--merchant= : Filter by merchant ID}
                             {--force : Force update even recently updated shipments}';
 
     /**
@@ -50,7 +50,7 @@ class UpdateShipmentStatuses extends Command
         }
 
         $limit = (int) $this->option('limit');
-        $merchantId = $this->option('vendor');
+        $merchantId = $this->option('merchant');
         $force = $this->option('force');
 
         // Get unique tracking numbers with their latest status

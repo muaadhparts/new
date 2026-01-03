@@ -1,6 +1,6 @@
 {{-- Merchant Products Content (used in both full page and AJAX) --}}
 <div class="tab-content" id="myTabContent">
-    <!-- product list view start  -->
+    <!-- catalogItem list view start  -->
     <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
         id="layout-list-pane" role="tabpanel" tabindex="0">
         <div class="row gy-4">
@@ -22,5 +22,5 @@
             @endforeach
         </div>
     </div>
-    <!-- product grid view end  -->
+    <!-- catalogItem grid view end  -->
 </div>

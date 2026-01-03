@@ -18,7 +18,7 @@
             </div>
         </div>
     </div>
-    <div class="product-area">
+    <div class="catalogItem-area">
         <div class="row">
             <div class="col-lg-12">
                 <div class="mr-table allproduct">
@@ -31,7 +31,7 @@
                                     <th>{{ __('Type') }}</th>
                                     <th>{{ __('Amount') }}</th>
                                     <th>{{ __('Used') }}</th>
-                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Status') }}</th>
                                     <th>{{ __('Options') }}</th>
                                 </tr>
@@ -65,7 +65,7 @@
             { data: 'type', name: 'type' },
             { data: 'price', name: 'price' },
             { data: 'used', name: 'used' },
-            { data: 'vendor', name: 'vendor' },
+            { data: 'merchant', name: 'merchant' },
             { data: 'status', searchable: false, orderable: false },
             { data: 'action', searchable: false, orderable: false }
         ],

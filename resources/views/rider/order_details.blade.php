@@ -71,30 +71,30 @@
                                 </div>
                             </div>
                             <div class="col-md-6">
-                                <h5>@lang('Vendor Information')</h5>
+                                <h5>@lang('Merchant Information')</h5>
                                 <div class="delivery-address-info">
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Shop Name:') </span>
-                                        <span class="info-content">{{ $data->vendor->shop_name }}</span>
+                                        <span class="info-content">{{ $data->merchant->shop_name }}</span>
                                     </div>
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Email:') </span>
-                                        <span class="info-content">{{ $data->vendor->email }}</span>
+                                        <span class="info-content">{{ $data->merchant->email }}</span>
                                     </div>
                                     <div class="account-info-item">
                                         <span class="info-title">@lang('Phone:') </span>
-                                        <span class="info-content">{{ $data->vendor->phone }}</span>
+                                        <span class="info-content">{{ $data->merchant->phone }}</span>
                                     </div>
-                                    @if ($data->vendor->city)
+                                    @if ($data->merchant->city)
                                         <div class="account-info-item">
                                             <span class="info-title">@lang('City:') </span>
-                                            <span class="info-content">{{ $data->vendor->city }}</span>
+                                            <span class="info-content">{{ $data->merchant->city }}</span>
                                         </div>
                                     @endif
-                                    @if ($data->vendor->address)
+                                    @if ($data->merchant->address)
                                         <div class="account-info-item">
                                             <span class="info-title">@lang('Address:') </span>
-                                            <span class="info-content">{{ $data->vendor->address }}</span>
+                                            <span class="info-content">{{ $data->merchant->address }}</span>
                                         </div>
                                     @endif
 
@@ -108,53 +108,53 @@
                         </div>
                     </div>
 
-                    <div class="ordered-products">
-                        <h5>@lang('Ordered Products:') </h5>
+                    <div class="ordered-catalogItems">
+                        <h5>@lang('Ordered Items:') </h5>
                         <div class="user-table-wrapper all-orders-table-wrapper wow-replaced" data-wow-delay=".1s">
 
                             <div class="user-table table-responsive position-relative">
                                 <table class="gs-data-table custom-table-rider w-100">
                                     <tr class="ordered-tbg">
                                         <th><span class="title">@lang('ID#')</span></th>
-                                        <th><span class="title">@lang('Product Name')</span></th>
+                                        <th><span class="title">@lang('CatalogItem Name')</span></th>
                                         <th><span class="title">@lang('Details')</span></th>
 
                                     </tr>
                                     @php
                                         $extra_price = 0;
                                     @endphp
-                                    @foreach (json_decode($order->cart, true)['items'] as $product)
-                                        @if ($product['user_id'] == $data->merchant_id)
+                                    @foreach (json_decode($order->cart, true)['items'] as $catalogItem)
+                                        @if ($catalogItem['user_id'] == $data->merchant_id)
                                             <tr>
                                                 <td data-label="{{ __('ID#') }}">
                                                     <div>
                                                     <span class="title">
-                                                        {{ $product['item']['id'] }}
+                                                        {{ $catalogItem['item']['id'] }}
                                                     </span>
                                                     </div>
                                                 </td>
                                                 <td data-label="{{ __('Name') }}">
                                                   <span class="title">
-                                                    {{ getLocalizedProductName($product['item'], 50) }}
+                                                    {{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}
                                                   </span>
 
                                                 </td>
                                                 <td data-label="{{ __('Details') }}">
                                                     <div>
-                                                        <b>{{ __('Quantity') }}</b>: {{ $product['qty'] }} <br>
-                                                        @if (!empty($product['size']))
+                                                        <b>{{ __('Quantity') }}</b>: {{ $catalogItem['qty'] }} <br>
+                                                        @if (!empty($catalogItem['size']))
                                                             <b>{{ __('Size') }}</b>:
-                                                            {{ $product['item']['measure'] }}{{ str_replace('-', ' ', $product['size']) }}
+                                                            {{ $catalogItem['item']['measure'] }}{{ str_replace('-', ' ', $catalogItem['size']) }}
                                                             <br>
                                                         @endif
-                                                        @if (!empty($product['color']))
+                                                        @if (!empty($catalogItem['color']))
                                                             <div class="d-flex mt-2">
                                                                 <b>{{ __('Color') }}</b>: <span id="color-bar"
-                                                                    style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};"></span>
+                                                                    style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"></span>
                                                             </div>
                                                         @endif
-                                                        @if (!empty($product['keys']))
-                                                            @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                        @if (!empty($catalogItem['keys']))
+                                                            @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
                                                                 <b>{{ ucwords(str_replace('_', ' ', $key)) }} : </b>
                                                                 {{ $value }} <br>
                                                             @endforeach

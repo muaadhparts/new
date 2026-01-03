@@ -24,10 +24,10 @@
    </div>
 </div>
 
-<div class="add-product-content1 add-product-content2">
+<div class="add-catalogItem-content1 add-catalogItem-content2">
     <div class="row">
       <div class="col-lg-12">
-        <div class="product-description">
+        <div class="catalogItem-description">
           <form action="{{route('admin.purchase.create.view')}}" method="POST">
             @csrf
             <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
@@ -35,7 +35,7 @@
             @include('alerts.admin.form-both') 
           
            
-              <div class="product-area">
+              <div class="catalogItem-area">
                 <div class="row">
                   <div class="col-lg-3 border-right p-0">
                     <div class="mr-table allproduct">
@@ -44,7 +44,7 @@
                           <table id="order-muaadhtable"   class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                               <tr>
-                                <th >{{ __('Product') }}</th>
+                                <th >{{ __('CatalogItem') }}</th>
                                 <th>{{ __('Options') }}</th>
                               </tr>
                             </thead>
@@ -81,7 +81,7 @@
 
                     </div>
                     <div id="view_table_order">
-                      @include('admin.purchase.create.product_add_table')
+                      @include('admin.purchase.create.catalogItem_add_table')
                     </div>
                   </div>
                 </div>
@@ -95,7 +95,7 @@
 </div>
 
 
-  @include('admin.purchase.create.adds-product')
+  @include('admin.purchase.create.adds-catalogItem')
 
 
 @endsection    
@@ -118,7 +118,7 @@
         sorting: false,
         paging: false,
 
-        ajax: '{{ route('admin-purchase-product-datatables') }}',
+        ajax: '{{ route('admin-purchase-catalogItem-datatables') }}',
         columns: [
                 { data: 'name', name: 'name' },
                 { data: 'action', searchable: false, orderable: false }
@@ -139,7 +139,7 @@ if(admin_loader == 1)
   $('.submit-loader').show();
 }
 
-$('#product-show').html('').load(mainurl+"/admin/purchase/create/product-show/"+$(this).attr('data-href'),function(response, status, xhr){
+$('#catalogItem-show').html('').load(mainurl+"/admin/purchase/create/catalogItem-show/"+$(this).attr('data-href'),function(response, status, xhr){
             if(status == "success")
             {
                 if(admin_loader == 1)
@@ -172,7 +172,7 @@ $(document).on('change','#order_create_user',function(){
 
 
 $(document).on('click','.removeOrder',function(){
-  let status = confirm('Are you sure to remove this product?');
+  let status = confirm('Are you sure to remove this catalogItem?');
   if(status){
     let removeUrl = $(this).attr('data-href');
     $.ajax({

@@ -680,7 +680,7 @@ class GeocodingController extends Controller
         ];
 
         if ($merchantId) {
-            \Session::put('location_draft_vendor_' . $merchantId, $locationDraft);
+            \Session::put('location_draft_merchant_' . $merchantId, $locationDraft);
         } else {
             \Session::put('location_draft', $locationDraft);
         }

@@ -2,7 +2,7 @@
 
 namespace App\View\Composers;
 
-use App\Models\Favorite;
+use App\Models\FavoriteSeller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -29,7 +29,7 @@ class HeaderComposer
             $favoriteCount = Cache::remember(
                 'user_favorite_count_' . $authUser->id,
                 300,
-                fn() => Favorite::where('user_id', $authUser->id)->count()
+                fn() => FavoriteSeller::where('user_id', $authUser->id)->count()
             );
         }
 

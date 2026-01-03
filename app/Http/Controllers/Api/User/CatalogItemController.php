@@ -59,7 +59,7 @@ class CatalogItemController extends Controller
                 $review->save();
                 return response()->json(['status' => true, 'data' => new CatalogReviewResource($review), 'error' => []]);
             } else {
-                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Buy This Product First']]);
+                return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Buy This CatalogItem First']]);
             }
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

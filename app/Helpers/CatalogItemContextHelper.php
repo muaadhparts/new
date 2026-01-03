@@ -12,13 +12,13 @@ use Illuminate\Support\Facades\DB;
  * Helper مركزي لحقن سياق التاجر (Merchant Context) في كائن CatalogItem.
  *
  * المشكلة التي يحلها:
- * - CatalogItem model لديه __get() الذي يُعيد 'price' => 'vendorPrice()'
- * - vendorPrice() تستدعي activeMerchant() التي تُعيد أول merchant دائماً
+ * - CatalogItem model لديه __get() الذي يُعيد 'price' => 'merchantPrice()'
+ * - merchantPrice() تستدعي activeMerchant() التي تُعيد أول merchant دائماً
  * - هذا يؤدي لأخذ سعر خاطئ عند وجود عدة تجار لنفس المنتج
  *
  * الحل:
  * - حقن السعر والبيانات مباشرة في $attributes
- * - CatalogItem::__get() معدّل ليتحقق من $attributes أولاً قبل استدعاء vendorPrice()
+ * - CatalogItem::__get() معدّل ليتحقق من $attributes أولاً قبل استدعاء merchantPrice()
  * - كل combination من (catalog_item_id, user_id, brand_quality_id) يكون مستقل
  *
  * الاستخدام:
@@ -66,13 +66,13 @@ class CatalogItemContextHelper
      * حقن سياق merchant في CatalogItem instance موجود
      *
      * هذا Method يحقن:
-     * - السعر المحسوب من MerchantItem::vendorSizePrice()
+     * - السعر المحسوب من MerchantItem::merchantSizePrice()
      * - معلومات التاجر (user_id, merchant_item_id)
      * - معلومات الجودة (brand_quality_id)
      * - المخزون والأحجام والألوان
      *
      * CRITICAL: القيم المحقونة تُخزن في $attributes مباشرة
-     * وبفضل تعديل CatalogItem::__get()، هذه القيم لها الأولوية على vendorPrice()
+     * وبفضل تعديل CatalogItem::__get()، هذه القيم لها الأولوية على merchantPrice()
      *
      * @param CatalogItem $catalogItem
      * @param MerchantItem $mp
@@ -81,8 +81,8 @@ class CatalogItemContextHelper
     public static function apply(CatalogItem $catalogItem, MerchantItem $mp): void
     {
         // حساب السعر النهائي (مع العمولة والمقاسات)
-        $calculatedPrice = method_exists($mp, 'vendorSizePrice')
-            ? $mp->vendorSizePrice()
+        $calculatedPrice = method_exists($mp, 'merchantSizePrice')
+            ? $mp->merchantSizePrice()
             : (float)$mp->price;
 
         // حقن معلومات التاجر والسعر
@@ -91,10 +91,10 @@ class CatalogItemContextHelper
         $catalogItem->user_id = $mp->user_id;
         $catalogItem->merchant_item_id = $mp->id;
         $catalogItem->brand_quality_id = $mp->brand_quality_id; // مهم: لتمييز نفس المنتج بجودة مختلفة
-        $catalogItem->price = $calculatedPrice; // الآن __get() سيُعيد هذا بدلاً من vendorPrice()
+        $catalogItem->price = $calculatedPrice; // الآن __get() سيُعيد هذا بدلاً من merchantPrice()
         $catalogItem->previous_price = $mp->previous_price;
         $catalogItem->stock = $mp->stock;
-        $catalogItem->product_condition = $mp->product_condition;
+        $catalogItem->item_condition = $mp->item_condition;
 
         // معلومات المقاسات
         $catalogItem->size = $mp->size;
@@ -191,7 +191,7 @@ class CatalogItemContextHelper
             'price',
             'previous_price',
             'stock',
-            'product_condition',
+            'item_condition',
             'size',
             'size_qty',
             'size_price',

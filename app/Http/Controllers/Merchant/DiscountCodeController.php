@@ -93,7 +93,7 @@ class DiscountCodeController extends MerchantBaseController
         //--- Logic Section Ends
 
         //--- Redirect Section
-        $msg = __('New Data Added Successfully.') . '<a href="' . route("vendor-discount-code-index") . '">' . __("View Discount Code Lists") . '</a>';
+        $msg = __('New Data Added Successfully.') . '<a href="' . route("merchant-discount-code-index") . '">' . __("View Discount Code Lists") . '</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }
@@ -146,7 +146,7 @@ class DiscountCodeController extends MerchantBaseController
         //--- Logic Section Ends
 
         //--- Redirect Section
-        $msg = __('Data Updated Successfully.') . '<a href="' . route("vendor-discount-code-index") . '">' . __("View Discount Code Lists") . '</a>';
+        $msg = __('Data Updated Successfully.') . '<a href="' . route("merchant-discount-code-index") . '">' . __("View Discount Code Lists") . '</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }

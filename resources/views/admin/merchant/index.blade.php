@@ -1,41 +1,41 @@
 @extends('layouts.admin')
 
 @section('content')
-<input type="hidden" id="headerdata" value="{{ __(" VENDOR") }}">
+<input type="hidden" id="headerdata" value="{{ __(" MERCHANT") }}">
 <div class="content-area">
 	<div class="mr-breadcrumb">
 		<div class="row">
 			<div class="col-lg-12">
-				<h4 class="heading">{{ __("Vendors") }}</h4>
+				<h4 class="heading">{{ __("Merchants") }}</h4>
 				<ul class="links">
 					<li>
 						<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 					</li>
 					<li>
-						<a href="javascript:;">{{ __("Vendors") }}</a>
+						<a href="javascript:;">{{ __("Merchants") }}</a>
 					</li>
 					<li>
-						<a href="{{ route('admin-merchant-index') }}">{{ __("Vendors List") }}</a>
+						<a href="{{ route('admin-merchant-index') }}">{{ __("Merchants List") }}</a>
 					</li>
 				</ul>
 			</div>
 		</div>
 	</div>
-	<div class="product-area">
+	<div class="catalogItem-area">
 		<div class="row">
 			<div class="col-lg-12">
 
 				<div class="heading-area">
 					<h4 class="title">
-						{{ __("Vendor Registration") }} :
+						{{ __("Merchant Registration") }} :
 					</h4>
 					<div class="action-list">
 						<select
-							class="process select1 vdroplinks {{ $gs->reg_vendor == 1 ? 'drop-success' : 'drop-danger' }}">
-							<option data-val="1" value="{{route('admin-gs-status',['reg_vendor',1])}}" {{ $gs->
-								reg_vendor == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
-							<option data-val="0" value="{{route('admin-gs-status',['reg_vendor',0])}}" {{ $gs->
-								reg_vendor == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
+							class="process select1 vdroplinks {{ $gs->reg_merchant == 1 ? 'drop-success' : 'drop-danger' }}">
+							<option data-val="1" value="{{route('admin-gs-status',['reg_merchant',1])}}" {{ $gs->
+								reg_merchant == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
+							<option data-val="0" value="{{route('admin-gs-status',['reg_merchant',0])}}" {{ $gs->
+								reg_merchant == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
 						</select>
 					</div>
 				</div>
@@ -49,7 +49,7 @@
 							<thead>
 								<tr>
 									<th>{{ __("Store Name") }}</th>
-									<th>{{ __("Vendor Email") }}</th>
+									<th>{{ __("Merchant Email") }}</th>
 									<th>{{ __("Shop Number") }}</th>
 									<th>{{ __("Pending Commission") }}</th>
 									<th>{{ __("Status") }}</th>
@@ -167,8 +167,7 @@
 
 			<!-- Modal body -->
 			<div class="modal-body">
-				<p class="text-center">{{__("You are about to delete this Vendor. Every informtation under this vendor
-					will be deleted.")}}</p>
+				<p class="text-center">{{__("You are about to delete this Merchant. Every informtation under this merchant will be deleted.")}}</p>
 				<p class="text-center">{{ __("Do you want to proceed?") }}</p>
 			</div>
 
@@ -223,11 +222,11 @@
 {{-- MESSAGE MODAL --}}
 
 <div class="sub-categori">
-	<div class="modal" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+	<div class="modal" id="merchantform" tabindex="-1" role="dialog" aria-labelledby="merchantformLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
+					<h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 						
 					</button>
@@ -354,7 +353,7 @@ if(admin_loader == 1)
 	});
 
 
-	$(document).on('click','.vendor_commission',function(){
+	$(document).on('click','.merchant_commission',function(){
 		let status = confirm('Are you sure to release the commission?');
 		if(status){
 			return true;

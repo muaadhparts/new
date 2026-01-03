@@ -336,7 +336,7 @@
      * ============================================================================
      *
      * Data Flow:
-     * - subtotal_before_discount: Total BEFORE any discount (products + tax + shipping + packing)
+     * - subtotal_before_discount: Total BEFORE any discount (catalogItems + tax + shipping + packing)
      * - final_total: Total AFTER discount deduction
      *
      * When applying discount: newTotal = subtotalBeforeDiscount - discountAmount

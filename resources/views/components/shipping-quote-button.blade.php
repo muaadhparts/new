@@ -30,7 +30,7 @@
     if ($merchantItem) {
         $merchantUserId = $merchantUserId ?? ($merchantItem->user_id ?? null);
         $weight = $merchantItem->catalogItem?->weight ?? $weight;
-        $catalogItemName = $catalogItemName ?: (getLocalizedProductName($merchantItem->catalogItem) ?? '');
+        $catalogItemName = $catalogItemName ?: (getLocalizedCatalogItemName($merchantItem->catalogItem) ?? '');
     }
 @endphp
 

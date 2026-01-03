@@ -6,7 +6,7 @@
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __('Popular Products') }}</h4>
+										<h4 class="heading">{{ __('Popular CatalogItems') }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
@@ -15,13 +15,13 @@
 												<a href="javascript:;">{{ __('SEO Tools') }} </a>
 											</li>
 											<li>
-												<a href="javascript:;">{{ __('Popular Products') }}</a>
+												<a href="javascript:;">{{ __('Popular CatalogItems') }}</a>
 											</li>
 										</ul>
 								</div>
 							</div>
 						</div>
-						<div class="product-area">
+						<div class="catalogItem-area">
 							<div class="row">
 								<div class="col-lg-12">
 									<div class="mr-table allproduct">
@@ -34,36 +34,36 @@
 									                        <th>{{ __('Name') }}</th>
 									                        <th>{{ __('Brand') }}</th>
 									                        <th>{{ __('Quality Brand') }}</th>
-									                        <th>{{ __('Vendor') }}</th>
+									                        <th>{{ __('Merchant') }}</th>
 									                        <th>{{ __('Category') }}</th>
 									                        <th>{{ __('Clicks') }}</th>
 														</tr>
 													</thead>
 
                                               <tbody>
-                                                @foreach($productss as $productt)
-                    								@foreach($productt as $prod)
+                                                @foreach($productss as $catalogItem)
+                    								@foreach($catalogItem as $cartItem)
                                                         <tr>
 														<td>
-															{{ $prod->product ? getLocalizedProductName($prod->product, 60) : __('N/A') }}
+															{{ $cartItem->catalogItem ? getLocalizedCatalogItemName($cartItem->catalogItem, 60) : __('N/A') }}
 														</td>
                                                         <td>
-                                                            {{ $prod->product && $prod->product->brand ? getLocalizedBrandName($prod->product->brand) : __('N/A') }}
+                                                            {{ $cartItem->catalogItem && $cartItem->catalogItem->brand ? getLocalizedBrandName($cartItem->catalogItem->brand) : __('N/A') }}
                                                         </td>
                                                         <td>
-                                                            {{ $prod->merchantItem && $prod->merchantItem->qualityBrand ? getLocalizedQualityName($prod->merchantItem->qualityBrand) : __('N/A') }}
+                                                            {{ $cartItem->merchantItem && $cartItem->merchantItem->qualityBrand ? getLocalizedQualityName($cartItem->merchantItem->qualityBrand) : __('N/A') }}
                                                         </td>
                                                         <td>
-                                                            @if($prod->merchantItem && $prod->merchantItem->user)
-                                                                {{ $prod->merchantItem->user->shop_name ?: $prod->merchantItem->user->name }}
+                                                            @if($cartItem->merchantItem && $cartItem->merchantItem->user)
+                                                                {{ $cartItem->merchantItem->user->shop_name ?: $cartItem->merchantItem->user->name }}
                                                             @else
                                                                 {{ __('N/A') }}
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            {{ $prod->product && $prod->product->brand ? $prod->product->brand->localized_name : __('N/A') }}
+                                                            {{ $cartItem->catalogItem && $cartItem->catalogItem->brand ? $cartItem->catalogItem->brand->localized_name : __('N/A') }}
                                                         </td>
-                                                        <td>{{ $productt->count() }}</td>
+                                                        <td>{{ $catalogItem->count() }}</td>
                                                         </tr>
                                                         @break
                     								@endforeach
@@ -107,7 +107,7 @@ $( document ).ready(function() {
 
         $("#prevdate").change(function () {
         var sort = $("#prevdate").val();
-        window.location = "{{url('/admin/products/popular/')}}/"+sort;
+        window.location = "{{url('/admin/catalogItems/popular/')}}/"+sort;
     });                                                                      
 });
 

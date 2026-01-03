@@ -16,12 +16,12 @@ class Compare extends Model
     }
 
     /**
-     * Add a merchant product to comparison
-     * Uses merchant_product_id as the unique identifier
+     * Add a merchant catalogItem to comparison
+     * Uses merchant_item_id as the unique identifier
      */
     public function add($merchantItem, $merchantProductId)
     {
-        // Check if this merchant product is already in comparison
+        // Check if this merchant catalogItem is already in comparison
         if ($this->items && array_key_exists($merchantProductId, $this->items)) {
             // Mark as already exists and don't overwrite
             $this->items[$merchantProductId]['ck'] = 1;
@@ -58,9 +58,9 @@ class Compare extends Model
     }
 
     /**
-     * Get all items with their associated products and merchant data
+     * Get all items with their associated catalogItems and merchant data
      */
-    public function getItemsWithProducts()
+    public function getItemsWithCatalogItems()
     {
         if (!$this->items) {
             return [];
@@ -70,11 +70,11 @@ class Compare extends Model
         foreach ($this->items as $merchantProductId => $itemData) {
             if (isset($itemData['merchant_product'])) {
                 $merchantItem = $itemData['merchant_product'];
-                $product = $merchantItem->product ?? null;
+                $catalogItem = $merchantItem->catalogItem ?? null;
 
                 // Return in the format expected by the view (with 'item' key)
                 $items[$merchantProductId] = [
-                    'item' => $product, // The actual Product model
+                    'item' => $catalogItem, // The actual CatalogItem model
                     'merchant_product' => $merchantItem,
                     'ck' => $itemData['ck'] ?? 0
                 ];

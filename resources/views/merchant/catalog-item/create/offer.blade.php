@@ -1,18 +1,18 @@
 @extends('layouts.merchant')
 @php
     $isDashboard = true;
-    $isVendor = true;
+    $isMerchant = true;
 @endphp
 
 @section('content')
-<div class="gs-vendor-outlet">
+<div class="gs-merchant-outlet">
     <!-- breadcrumb start  -->
-    <div class="gs-vendor-breadcrumb has-mb">
-        <h4 class="text-capitalize">@lang('Create Offer for Product')</h4>
+    <div class="gs-merchant-breadcrumb has-mb">
+        <h4 class="text-capitalize">@lang('Create Offer for CatalogItem')</h4>
         <nav style="--bs-breadcrumb-divider: '';" aria-label="breadcrumb">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a></li>
-                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-index') }}">@lang('Products')</a></li>
+                <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-index') }}">@lang('CatalogItems')</a></li>
                 <li class="breadcrumb-item"><a href="{{ route('merchant-catalog-item-catalogs') }}">@lang('Catalog')</a></li>
                 <li class="breadcrumb-item active" aria-current="page">@lang('Create Offer')</li>
             </ol>
@@ -22,26 +22,26 @@
 
     <form id="muaadhform" action="{{ route('merchant-catalog-item-store-offer') }}" method="POST" enctype="multipart/form-data">
         @csrf
-        <input type="hidden" name="product_id" value="{{ $product->id }}">
+        <input type="hidden" name="catalog_item_id" value="{{ $catalogItem->id }}">
 
         <div class="row">
-            <!-- Product Info Preview -->
+            <!-- CatalogItem Info Preview -->
             <div class="col-12 col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h5>@lang('Product Information')</h5>
+                        <h5>@lang('CatalogItem Information')</h5>
                     </div>
                     <div class="card-body">
                         <div class="text-center mb-3">
-                            <img src="{{ $product->photo ? \Illuminate\Support\Facades\Storage::url($product->photo) : asset('assets/images/noimage.png') }}"
-                                 alt="{{ $product->name }}" class="img-fluid" style="max-height: 200px;">
+                            <img src="{{ $catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png') }}"
+                                 alt="{{ $catalogItem->name }}" class="img-fluid" style="max-height: 200px;">
                         </div>
-                        <h6>{{ $product->name }}</h6>
-                        <p><strong>@lang('SKU'):</strong> {{ $product->sku }}</p>
-                        <p><strong>@lang('Type'):</strong> {{ $product->type }}</p>
-                        <p><strong>@lang('Weight'):</strong> {{ $product->weight }} kg</p>
-                        @if($product->size)
-                            <p><strong>@lang('Sizes'):</strong> {{ is_array($product->size) ? implode(', ', $product->size) : $product->size }}</p>
+                        <h6>{{ $catalogItem->name }}</h6>
+                        <p><strong>@lang('SKU'):</strong> {{ $catalogItem->sku }}</p>
+                        <p><strong>@lang('Type'):</strong> {{ $catalogItem->type }}</p>
+                        <p><strong>@lang('Weight'):</strong> {{ $catalogItem->weight }} kg</p>
+                        @if($catalogItem->size)
+                            <p><strong>@lang('Sizes'):</strong> {{ is_array($catalogItem->size) ? implode(', ', $catalogItem->size) : $catalogItem->size }}</p>
                         @endif
                     </div>
                 </div>
@@ -91,11 +91,11 @@
                                 </div>
                             </div>
 
-                            <!-- Product Condition -->
+                            <!-- CatalogItem Condition -->
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Product Condition*')</label>
-                                    <select class="form-control" name="product_condition" required>
+                                    <label class="form-label">@lang('CatalogItem Condition*')</label>
+                                    <select class="form-control" name="item_condition" required>
                                         <option value="2">@lang('New')</option>
                                         <option value="1">@lang('Used')</option>
                                     </select>
@@ -132,7 +132,7 @@
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="allow_colors" name="color_check" value="1">
                                         <label class="form-check-label" for="allow_colors">
-                                            @lang('Allow Product Colors')
+                                            @lang('Allow CatalogItem Colors')
                                         </label>
                                     </div>
                                 </div>
@@ -205,18 +205,18 @@
                             <!-- Policy Override -->
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Policy (Override Product Policy)')</label>
+                                    <label class="form-label">@lang('Policy (Override CatalogItem Policy)')</label>
                                     <textarea class="form-control" name="policy" rows="3"
-                                              placeholder="@lang('Enter your specific policy for this product')"></textarea>
+                                              placeholder="@lang('Enter your specific policy for this catalogItem')"></textarea>
                                 </div>
                             </div>
 
                             <!-- Features Override -->
                             <div class="col-12">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Features (Override Product Features)')</label>
+                                    <label class="form-label">@lang('Features (Override CatalogItem Features)')</label>
                                     <textarea class="form-control" name="features" rows="3"
-                                              placeholder="@lang('Enter your specific features for this product')"></textarea>
+                                              placeholder="@lang('Enter your specific features for this catalogItem')"></textarea>
                                 </div>
                             </div>
 

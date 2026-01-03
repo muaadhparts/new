@@ -36,7 +36,7 @@ class VerificationController extends AdminBaseController
                                 $class = $data->status == 'Pending' ? '' : ($data->status == 'Verified' ? 'drop-success' : 'drop-danger');
                                 $s = $data->status == 'Verified' ? 'selected' : '';
                                 $ns = $data->status == 'Declined' ? 'selected' : '';
-                                return '<div class="action-list"><select class="process select vendor-droplinks '.$class.'">'.
+                                return '<div class="action-list"><select class="process select merchant-droplinks '.$class.'">'.
                                  '<option value="'. route('admin-vr-st',['id1' => $data->id, 'id2' => 'Pending']).'" '.$s.'>'.__("Pending").'</option>'.
                                 '<option value="'. route('admin-vr-st',['id1' => $data->id, 'id2' => 'Verified']).'" '.$s.'>'.__("Verified").'</option>'.
                                 '<option value="'. route('admin-vr-st',['id1' => $data->id, 'id2' => 'Declined']).'" '.$ns.'>'.__("Declined").'</option></select></div>';

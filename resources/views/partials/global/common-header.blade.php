@@ -119,7 +119,7 @@
                                 @if ($ps->home == 1)
                                 <li class="nav-item dropdown mega-dropdown">
                                     <a class="nav-link dropdown-toggle" href="{{ route('front.category') }}">{{
-                                        __('Product') }}</a>
+                                        __('CatalogItem') }}</a>
                                     <ul class="dropdown-menu mega-dropdown-menu">
                                         <li class="mega-container">
                                             <div class="row row-cols-lg-4 row-cols-sm-2 row-cols-1">
@@ -180,7 +180,7 @@
                 </div>
                 <div class="col-xl-5 col-lg-3">
                     <div class="margin-right-1 d-flex align-items-center justify-content-end h-100">
-                        <div class="product-search-one flex-grow-1 global-search touch-screen-view">
+                        <div class="catalogItem-search-one flex-grow-1 global-search touch-screen-view">
                             <form id="searchForm" class="search-form form-inline search-pill-shape"
                                 action="{{ route('front.category', [Request::route('category'),Request::route('subcategory'),Request::route('childcategory')]) }}"
                                 method="GET">
@@ -195,7 +195,7 @@
                                 <input type="hidden" name="maxprice" value="{{ request()->input('maxprice') }}">
                                 @endif
                                 <input type="text" id="prod_name" class="col form-control search-field " name="search"
-                                    placeholder="@lang('Search Product For')" value="{{ request()->input('search') }}">
+                                    placeholder="@lang('Search CatalogItem For')" value="{{ request()->input('search') }}">
                                 <div class=" categori-container select-appearance-none " id="catSelectForm">
                                     <select name="category" class="form-control categoris select2-js-search-init">
                                         <option selected="">{{ __('All Categories') }}</option>
@@ -434,7 +434,7 @@
                     </div>
                 </div>
                 <div class="col-xxl-7 col-xl-6 col-lg-6 col-12 order-lg-2">
-                    <div class="product-search-one">
+                    <div class="catalogItem-search-one">
 
                         <form id="searchForm" class="search-form form-inline search-pill-shape"
                             action="{{ route('front.category', [Request::route('category'),Request::route('subcategory'),Request::route('childcategory')]) }}"
@@ -450,7 +450,7 @@
                             <input type="hidden" name="maxprice" value="{{ request()->input('maxprice') }}">
                             @endif
                             <input type="text" id="prod_name" class="col form-control search-field " name="search"
-                                placeholder="@lang('Search Product For')" value="{{ request()->input('search') }}">
+                                placeholder="@lang('Search CatalogItem For')" value="{{ request()->input('search') }}">
                             <div class=" categori-container select-appearance-none " id="catSelectForm">
                                 <select name="category" class="form-control categoris select2-js-search-init">
                                     <option selected="">{{ __('All Categories') }}</option>

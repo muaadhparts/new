@@ -4,13 +4,13 @@
 @endphp
 
 {{-- Products Content Container for AJAX replacement --}}
-<div id="ajax-products-content">
+<div id="ajax-catalogItems-content">
     @if ($items->total() == 0)
         <div class="m-no-results-box">
             <div class="m-no-results-box__icon">
                 <i class="fas fa-search"></i>
             </div>
-            <h4 class="m-no-results-box__title">@lang('No matching products')</h4>
+            <h4 class="m-no-results-box__title">@lang('No matching catalogItems')</h4>
             <p class="m-no-results-box__subtitle">@lang('Try selecting a different category or browse all categories.')</p>
 
             @if($selectedCategory)
@@ -33,7 +33,7 @@
         </div>
     @else
         <div class="tab-content" id="myTabContent">
-            <!-- product list view start -->
+            <!-- catalogItem list view start -->
             <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                 id="layout-list-pane" role="tabpanel" tabindex="0">
                 <div class="row gy-4">

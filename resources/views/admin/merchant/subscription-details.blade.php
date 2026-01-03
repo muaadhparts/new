@@ -2,10 +2,10 @@
 @section('content')
 
                         <div class="content-area no-padding">
-                            <div class="add-product-content1">
+                            <div class="add-catalogItem-content1">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <div class="product-description">
+                                        <div class="catalogItem-description">
                                             <div class="body-area">
 
                                     <div class="table-responsive show-table">
@@ -58,27 +58,27 @@
                                             @endif
 
                                             <tr>
-                                                <th>{{ __("Vendor Name") }}</th>
+                                                <th>{{ __("Merchant Name") }}</th>
                                                 <td>{{$subs->user->owner_name}}</td>
                                             </tr>
 
                                             <tr>
-                                                <th>{{ __("Vendor Phone Number") }}</th>
+                                                <th>{{ __("Merchant Phone Number") }}</th>
                                                 <td>{{$subs->user->shop_number}}</td>
                                             </tr>
 
                                             <tr>
-                                                <th>{{ __("Vendor Shop Address") }}</th>
+                                                <th>{{ __("Merchant Shop Address") }}</th>
                                                 <td>{{$subs->user->shop_address}}</td>
                                             </tr>
 
                                             <tr>
-                                                <th>{{ __("Vendor Registration Number") }}</th>
+                                                <th>{{ __("Merchant Registration Number") }}</th>
                                                 <td>{{$subs->user->reg_number}}</td>
                                             </tr>
 
                                             <tr>
-                                                <th>{{ __("Vendor Message") }}</th>
+                                                <th>{{ __("Merchant Message") }}</th>
                                                 <td>{{$subs->user->shop_message}}</td>
                                             </tr>
 

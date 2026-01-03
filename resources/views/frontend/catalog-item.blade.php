@@ -6,13 +6,13 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">{{ $productt->localized_name }}</h2>
+                    <h2 class="breadcrumb-title">{{ $catalogItem->localized_name }}</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        @if ($productt->brand)
-                            <li><a href="{{ route('front.category', $productt->brand->slug) }}">{{ $productt->brand->localized_name }}</a></li>
+                        @if ($catalogItem->brand)
+                            <li><a href="{{ route('front.category', $catalogItem->brand->slug) }}">{{ $catalogItem->brand->localized_name }}</a></li>
                         @endif
-                        <li><a href="javascript:;">{{ Str::limit($productt->localized_name, 30) }}</a></li>
+                        <li><a href="javascript:;">{{ Str::limit($catalogItem->localized_name, 30) }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -21,28 +21,28 @@
     <!-- breadcrumb end -->
 
 
-    <!-- single product details content wrapper start -->
-    <div class="single-product-details-content-wrapper muaadh-section-gray">
+    <!-- single catalogItem details content wrapper start -->
+    <div class="single-catalogItem-details-content-wrapper muaadh-section-gray">
         <div class="container">
             <div class="row gy-4">
 
 
-                <!-- gs-product-details-gallery-wrapper -->
+                <!-- gs-catalogItem-details-gallery-wrapper -->
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".1s">
-                    <div class="gs-product-details-gallery-wrapper">
+                    <div class="gs-catalogItem-details-gallery-wrapper">
                         @php
                             // STRICT: $merchant MUST exist - NO FALLBACK
                             if (!$merchant) {
-                                throw new \LogicException('Product detail page requires $merchant (MerchantItem) to be set');
+                                throw new \LogicException('CatalogItem detail page requires $merchant (MerchantItem) to be set');
                             }
                             // Get merchant-specific galleries from $merchant
                             $galleryMerchantId = $merchant->user_id;
-                            $merchantGalleries = $productt->galleriesForMerchant($galleryMerchantId, 10);
+                            $merchantGalleries = $catalogItem->galleriesForMerchant($galleryMerchantId, 10);
                         @endphp
-                        <div class="product-main-slider">
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
+                        <div class="catalogItem-main-slider">
+                            <img src="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
+                                data-zoom-image="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 class="main-img" alt="gallery-img">
                             @foreach ($merchantGalleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
@@ -51,10 +51,10 @@
                             @endforeach
                         </div>
 
-                        <div class="product-nav-slider">
-                            <img src="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
+                        <div class="catalogItem-nav-slider">
+                            <img src="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
-                                data-zoom-image="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}"
+                                data-zoom-image="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 class="nav-img" alt="gallery-img">
                             @foreach ($merchantGalleries as $gal)
                                 <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
@@ -67,9 +67,9 @@
 
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".2s">
                     <form>
-                        <!-- product-info-wrapper  -->
-                        <div class="product-info-wrapper  {{ $productt->type != 'Physical' ? 'mb-3' : '' }}">
-                            <h3>{{ $productt->localized_name }}</h3>
+                        <!-- catalogItem-info-wrapper  -->
+                        <div class="catalogItem-info-wrapper  {{ $catalogItem->type != 'Physical' ? 'mb-3' : '' }}">
+                            <h3>{{ $catalogItem->localized_name }}</h3>
                             {{-- PRICE: From $merchant (MerchantItem) ONLY --}}
                             <div class="price-wrapper">
                                 @if($merchant)
@@ -83,7 +83,7 @@
                                             : 0;
                                     @endphp
                                     @if ($offPercent > 0)
-                                        <span class="product-badge">-{{ $offPercent }}%</span>
+                                        <span class="catalogItem-badge">-{{ $offPercent }}%</span>
                                     @endif
                                 @else
                                     <h5 id="sizeprice">{{ __('Price unavailable') }}</h5>
@@ -96,41 +96,41 @@
                                         d="M12 0.5L14.6942 8.7918H23.4127L16.3593 13.9164L19.0534 22.2082L12 17.0836L4.94658 22.2082L7.64074 13.9164L0.587322 8.7918H9.30583L12 0.5Z"
                                         fill="var(--action-warning, #EEAE0B)" />
                                 </svg>
-                                <span class="rating">{{ number_format($productt->catalog_reviews_avg_rating ?? 0, 1) }}
-                                    ({{ $productt->catalog_reviews_count ?? 0 }} @lang('Reviews'))</span>
+                                <span class="rating">{{ number_format($catalogItem->catalog_reviews_avg_rating ?? 0, 1) }}
+                                    ({{ $catalogItem->catalog_reviews_count ?? 0 }} @lang('Reviews'))</span>
                             </div>
 
-                            {{-- Catalog Item Info: SKU, Brand, Quality Brand, Vendor, Stock --}}
+                            {{-- Catalog Item Info: SKU, Brand, Quality Brand, Merchant, Stock --}}
                             {{-- $merchant is AUTHORITATIVE for stock info --}}
                             <x-catalog-item-info
-                                :catalog-item="$productt"
+                                :catalog-item="$catalogItem"
                                 :mp="$merchant"
                                 display-mode="badges"
                                 :show-sku="true"
                                 :show-brand="true"
                                 :show-quality-brand="true"
-                                :show-vendor="true"
+                                :show-merchant="true"
                                 :show-stock="true"
                             />
                         </div>
 
 
 
-                        <!-- product stocks -->
+                        <!-- catalogItem stocks -->
 
                         @if (
-                            $productt->ship != null ||
-                                $productt->sku != null ||
-                                $productt->platform != null ||
-                                $productt->region != null ||
-                                $productt->licence_type != null)
+                            $catalogItem->ship != null ||
+                                $catalogItem->sku != null ||
+                                $catalogItem->platform != null ||
+                                $catalogItem->region != null ||
+                                $catalogItem->licence_type != null)
                             <hr>
 
-                            <div class="product-stocks-wraper">
+                            <div class="catalogItem-stocks-wraper">
                                 <ul>
                                     <li>
                                         {{-- STOCK: From $merchant (MerchantItem) ONLY --}}
-                                        @if ($productt->type == 'Physical')
+                                        @if ($catalogItem->type == 'Physical')
                                             <span><b>@lang('Availability :') </b></span>
                                             @php
                                                 $merchantStock = $merchant ? (int) $merchant->stock : 0;
@@ -147,31 +147,31 @@
                                     </li>
 
 
-                                    @if ($productt->ship != null)
+                                    @if ($catalogItem->ship != null)
                                         <li>
                                             <span><b>@lang('Estimated Shipping Time :') </b></span>
-                                            <span>{{ $productt->ship }}</span>
+                                            <span>{{ $catalogItem->ship }}</span>
                                         </li>
                                     @endif
-                                    @if ($productt->sku != null)
+                                    @if ($catalogItem->sku != null)
                                         <li>
-                                            <span><b>@lang('Product SKU :') </b></span>
-                                            <span>{{ $productt->sku }} </span>
+                                            <span><b>@lang('CatalogItem SKU :') </b></span>
+                                            <span>{{ $catalogItem->sku }} </span>
                                         </li>
                                     @endif
 
-                                    @if ($productt->type == 'License')
-                                        @if ($productt->platform != null)
+                                    @if ($catalogItem->type == 'License')
+                                        @if ($catalogItem->platform != null)
                                             <span><b>@lang('Platform:') </b></span>
-                                            <span>{{ $productt->platform }} </span>
+                                            <span>{{ $catalogItem->platform }} </span>
                                         @endif
-                                        @if ($productt->region != null)
+                                        @if ($catalogItem->region != null)
                                             <span><b>@lang('Region:') </b></span>
-                                            <span>{{ $productt->region }} </span>
+                                            <span>{{ $catalogItem->region }} </span>
                                         @endif
-                                        @if ($productt->licence_type != null)
+                                        @if ($catalogItem->licence_type != null)
                                             <span><b>@lang('License Type:') </b></span>
-                                            <span>{{ $productt->licence_type }} </span>
+                                            <span>{{ $catalogItem->licence_type }} </span>
                                         @endif
                                     @endif
                                 </ul>
@@ -180,9 +180,9 @@
                         @endif
 
 
-                        @if (!empty($productt->attributes))
+                        @if (!empty($catalogItem->attributes))
                             @php
-                                $attrArr = json_decode($productt->attributes, true);
+                                $attrArr = json_decode($catalogItem->attributes, true);
                             @endphp
                         @endif
 
@@ -236,15 +236,15 @@
 
 
                         @php
-                            // Use merchant's stock_check and sizes (vendor-specific)
-                            $stockCheck = (int) ($merchant->stock_check ?? $productt->stock_check ?? 0);
+                            // Use merchant's stock_check and sizes (merchant-specific)
+                            $stockCheck = (int) ($merchant->stock_check ?? $catalogItem->stock_check ?? 0);
                             $merchantSizes = !empty($merchant->size) ? (is_array($merchant->size) ? $merchant->size : explode(',', $merchant->size)) : [];
                             $merchantSizeQty = !empty($merchant->size_qty) ? (is_array($merchant->size_qty) ? $merchant->size_qty : explode(',', $merchant->size_qty)) : [];
                             $merchantSizePrice = !empty($merchant->size_price) ? (is_array($merchant->size_price) ? $merchant->size_price : explode(',', $merchant->size_price)) : [];
                         @endphp
                         @if ($stockCheck == 1)
                             @if (!empty($merchantSizes))
-                                <!-- product size (from merchant) -->
+                                <!-- catalogItem size (from merchant) -->
                                 <div class="variation-wrapper variation-sizes">
                                     <span class="varition-title">@lang('Size :')</span>
                                     <ul>
@@ -270,12 +270,12 @@
                             @endif
 
 
-                            @if (!empty($productt->color_all))
-                                <!-- product colors -->
+                            @if (!empty($catalogItem->color_all))
+                                <!-- catalogItem colors -->
                                 <div class="variation-wrapper variation-colors">
                                     <span class="varition-title">@lang('Color :')</span>
                                     <ul>
-                                        @foreach ($productt->color_all as $ckey => $color1)
+                                        @foreach ($catalogItem->color_all as $ckey => $color1)
                                             <li class="{{ $loop->first ? 'active' : '' }} cart_color">
                                                 <input {{ $loop->first ? 'checked' : '' }} type="radio" data-price="0"
                                                     data-color="{{ $color1 }}" id="color_{{ $ckey }}"
@@ -306,7 +306,7 @@
                             $initialStock = !empty($merchantSizeQty) ? (int) ($merchantSizeQty[0] ?? $mpStock) : $mpStock;
                         @endphp
 
-                        @if ($productt->type == 'Physical')
+                        @if ($catalogItem->type == 'Physical')
 
                             {{-- Stock from $merchant only (size-specific or general) --}}
                             <input type="hidden" id="stock" value="{{ $initialStock }}">
@@ -315,7 +315,7 @@
                             <!-- add-qty-wrapper -->
                             <div class="add-qty-wrapper">
                                 <span class="varition-title">@lang('Quantity :')</span>
-                                <div class="product-input-wrapper">
+                                <div class="catalogItem-input-wrapper">
                                     <button class="action-btn qtminus" type="button">-</button>
 
                                     {{-- minimum_qty from $merchant --}}
@@ -336,7 +336,7 @@
                         {{-- Price from $merchant ONLY - NO FALLBACK --}}
                         <input type="hidden" id="product_price"
                             value="{{ round($mpPrice * $curr->value, 2) }}">
-                        <input type="hidden" id="catalog_item_id" value="{{ $productt->id }}">
+                        <input type="hidden" id="catalog_item_id" value="{{ $catalogItem->id }}">
                         <input type="hidden" id="merchant_item_id" value="{{ $merchant->id }}">
                         <input type="hidden" id="merchant_user_id" value="{{ $merchant->user_id }}">
                         <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
@@ -368,11 +368,11 @@
                         </div>
 
                         {{-- Shipping Quote Button --}}
-                        @if($productt->type == 'Physical')
+                        @if($catalogItem->type == 'Physical')
                             <div class="mt-3">
                                 <x-shipping-quote-button
                                     :merchant-user-id="$merchant->user_id"
-                                    :catalog-item-name="$productt->localized_name"
+                                    :catalog-item-name="$catalogItem->localized_name"
                                     class="m-btn--block"
                                 />
                             </div>
@@ -381,7 +381,7 @@
                         <!-- wish-compare-report-wrapper -->
                         <div class="wish-compare-report-wrapper">
                             @if (Auth::check())
-                                <a href="javascript:;" data-href="{{ route('user-favorite-add', $productt->id) }}"
+                                <a href="javascript:;" data-href="{{ route('user-favorite-add', $catalogItem->id) }}"
                                     class="link favorite">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none">
@@ -405,8 +405,8 @@
                                 </a>
                             @endif
 
-                            @if ($productt->type != 'Listing')
-                                <a data-href="{{ route('catalog-item.compare.add', $productt->id) }}" href="javascript:;"
+                            @if ($catalogItem->type != 'Listing')
+                                <a data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascript:;"
                                     class="link compare_product">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none">
@@ -454,7 +454,7 @@
                         <!-- share links -->
                         <div class="share-links social-linkss social-sharing a2a_kit a2a_kit_size_32">
                             <h4>@lang('Share:')</h4>
-                            <div class="share-links-wrapper social-icons py-1 share-product social-linkss">
+                            <div class="share-links-wrapper social-icons py-1 share-catalogItem social-linkss">
                                 <a class="facebook a2a_button_facebook" href="">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"
                                         viewBox="0 0 40 40" fill="none">
@@ -577,7 +577,7 @@
                                 @endif
 
                                 @if (Auth::check())
-                                    @if (Auth::user()->favoriteSellers()->where('merchant_id', '=', $merchant->user_id)->exists())
+                                    @if (Auth::user()->favoriteSellers()->where('merchant_item_id', '=', $merchant->id)->exists())
                                         <a class="m-btn m-btn--ghost" href="javascript:;" >
                                             <i class="fas fa-check"></i>
                                             {{ __('Favorite') }}
@@ -603,10 +603,10 @@
             </div>
         </div>
     </div>
-    <!-- single product details content wrapper end -->
+    <!-- single catalogItem details content wrapper end -->
 
-    <!--  tab-product-des-wrapper start -->
-    <div class="tab-product-des-wrapper wow-replaced" data-wow-delay=".1s">
+    <!--  tab-catalogItem-des-wrapper start -->
+    <div class="tab-catalogItem-des-wrapper wow-replaced" data-wow-delay=".1s">
         <div class="container">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
@@ -630,7 +630,7 @@
                     </button>
                 </li>
 
-                @if ($productt->whole_sell_qty != null && $productt->whole_sell_qty != '')
+                @if ($catalogItem->whole_sell_qty != null && $catalogItem->whole_sell_qty != '')
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="whole-sell-tab" data-bs-toggle="tab"
                             data-bs-target="#whole-sell-tab-pane" type="button" role="tab"
@@ -644,11 +644,11 @@
             <div class="tab-content" id="myTabContent">
                 <div class="tab-pane show active wow-replaced" data-wow-delay=".1s" id="description-tab-pane"
                     role="tabpanel" aria-labelledby="description-tab" tabindex="0">
-                    {!! clean($productt->details, ['Attr.EnableID' => true]) !!}
+                    {!! clean($catalogItem->details, ['Attr.EnableID' => true]) !!}
                 </div>
                 <div class="tab-pane fade" id="buy-return-policy-tab-pane" role="tabpanel"
                     aria-labelledby="buy-return-policy-tab" tabindex="0">
-                    {!! clean($productt->policy, ['Attr.EnableID' => true]) !!}
+                    {!! clean($catalogItem->policy, ['Attr.EnableID' => true]) !!}
                 </div>
 
                 <!-- Reviews tab content start  -->
@@ -659,7 +659,7 @@
                             <div id="comments">
                                 <h5 class="woocommerce-Reviews-titleDDD my-3"> @lang('Ratings & Reviews')</h5>
                                 <ul class="all-comments">
-                                    @forelse($productt->catalogReviews as $review)
+                                    @forelse($catalogItem->catalogReviews as $review)
                                         <li>
                                             <div class="single-comment">
                                                 <div class="left-area">
@@ -743,13 +743,13 @@
                                     <div class="write-comment-area">
 
                                         <form action="{{ route('front.review.submit') }}"
-                                            data-href="{{ route('front.catalog-item.reviews', $productt->id) }}"
-                                            data-side-href="{{ route('front.catalog-item.side.reviews', $productt->id) }}"
+                                            data-href="{{ route('front.catalog-item.reviews', $catalogItem->id) }}"
+                                            data-side-href="{{ route('front.catalog-item.side.reviews', $catalogItem->id) }}"
                                             method="POST">
                                             @csrf
                                             <input type="hidden" id="rating" name="rating" value="5">
                                             <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
-                                            <input type="hidden" name="product_id" value="{{ $productt->id }}">
+                                            <input type="hidden" name="catalog_item_id" value="{{ $catalogItem->id }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <textarea name="review" placeholder="{{ __('Write Your Review *') }}" required></textarea>
@@ -782,7 +782,7 @@
 
 
 
-                @if ($productt->whole_sell_qty != null && $productt->whole_sell_qty != '')
+                @if ($catalogItem->whole_sell_qty != null && $catalogItem->whole_sell_qty != '')
                     <!-- Wholesell Tab content start  -->
                     <div class="tab-pane fade" id="whole-sell-tab-pane" role="tabpanel" aria-labelledby="whole-sell-tab"
                         tabindex="0">
@@ -800,10 +800,10 @@
                                                     </p>
                                                 </li>
 
-                                                @foreach ($productt->whole_sell_qty as $key => $data1)
+                                                @foreach ($catalogItem->whole_sell_qty as $key => $data1)
                                                     <li class="selling-price">
-                                                        <label>{{ $productt->whole_sell_qty[$key] }}+</label> <span><span
-                                                                class="woocommerce-Price-amount amount">{{ $productt->whole_sell_discount[$key] }}%
+                                                        <label>{{ $catalogItem->whole_sell_qty[$key] }}+</label> <span><span
+                                                                class="woocommerce-Price-amount amount">{{ $catalogItem->whole_sell_discount[$key] }}%
                                                                 @lang('Off')
                                                             </span>
                                                         </span>
@@ -820,18 +820,18 @@
             </div>
         </div>
     </div>
-    <!--  tab-product-des-wrapper end -->
+    <!--  tab-catalogItem-des-wrapper end -->
 
 
 
 
-    <!-- Related Products slider start -->
+    <!-- Related Items slider start -->
     {{-- NOTE: $relatedMerchantItems is pre-loaded from Controller (optimized, no N+1) --}}
     @if($relatedMerchantItems->count() > 0)
-    <div class="gs-product-cards-slider-area wow-replaced" data-wow-delay=".1s">
+    <div class="gs-catalogItem-cards-slider-area wow-replaced" data-wow-delay=".1s">
         <div class="container">
-            <h2 class="title text-center">@lang('Related Products')</h2>
-            <div class="product-cards-slider">
+            <h2 class="title text-center">@lang('Related Items')</h2>
+            <div class="catalogItem-cards-slider">
                 @foreach ($relatedMerchantItems as $merchantItem)
                     @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
                 @endforeach
@@ -839,15 +839,15 @@
         </div>
     </div>
     @endif
-    <!-- Related Products slider end -->
+    <!-- Related Items slider end -->
 
-    <!-- More Products By Seller slider start -->
+    <!-- More Items By Seller slider start -->
     @if (isset($merchantListings) && $merchantListings->count() > 0)
-        <div class="gs-product-cards-slider-section more-products-by-seller  wow-replaced" data-wow-delay=".1s">
-            <div class="gs-product-cards-slider-area more-products-by-seller">
+        <div class="gs-catalogItem-cards-slider-section more-catalogItems-by-seller  wow-replaced" data-wow-delay=".1s">
+            <div class="gs-catalogItem-cards-slider-area more-catalogItems-by-seller">
                 <div class="container">
-                    <h2 class="title text-center">@lang('More Products By Seller')</h2>
-                    <div class="product-cards-slider">
+                    <h2 class="title text-center">@lang('More Items By Seller')</h2>
+                    <div class="catalogItem-cards-slider">
                         @foreach ($merchantListings as $merchantItem)
                             @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
                         @endforeach
@@ -856,24 +856,24 @@
             </div>
         </div>
     @endif
-    <!-- More Products By Seller slider end -->
+    <!-- More Items By Seller slider end -->
 
 
 
 
 
-    <!-- Product report Modal Start -->
+    <!-- CatalogItem report Modal Start -->
     @if (auth()->check())
         <div class="modal gs-modal fade" id="report-modal" tabindex="-1" aria-hidden="true">
             <form action="{{ route('catalog-item.report') }}" method="POST"
                 class="modal-dialog assign-rider-modal-dialog modal-dialog-centered">
                 {{ csrf_field() }}
                 <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
-                <input type="hidden" name="product_id" value="{{ $productt->id }}">
+                <input type="hidden" name="catalog_item_id" value="{{ $catalogItem->id }}">
 
                 <div class="modal-content assign-rider-modal-content form-group">
                     <div class="modal-header w-100">
-                        <h4 class="title">{{ __('REPORT PRODUCT') }}</h4>
+                        <h4 class="title">{{ __('REPORT ITEM') }}</h4>
                         <button type="button" data-bs-dismiss="modal">
                             <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                         </button>
@@ -900,7 +900,7 @@
             </form>
         </div>
     @endif
-    <!-- Product report Modal End -->
+    <!-- CatalogItem report Modal End -->
 
 
 

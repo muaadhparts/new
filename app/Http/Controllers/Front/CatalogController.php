@@ -293,8 +293,8 @@ class CatalogController extends FrontBaseController
 
         $data = new Report;
         // Security: Only allow specific fields, set user_id from authenticated user
-        $data->product_id = $request->input('product_id');
-        $data->merchant_product_id = $request->input('merchant_product_id');
+        $data->catalog_item_id = $request->input('catalog_item_id');
+        $data->merchant_item_id = $request->input('merchant_item_id');
         $data->title = $request->input('title');
         $data->note = $request->input('note');
         $data->user_id = auth()->id(); // Set from authenticated user, not from request

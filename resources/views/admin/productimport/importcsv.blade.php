@@ -10,28 +10,28 @@
 							<div class="mr-breadcrumb">
 								<div class="row">
 									<div class="col-lg-12">
-											<h4 class="heading">{{ __("Import CSV Product") }} <a class="add-btn" href="{{ route('admin-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
+											<h4 class="heading">{{ __("Import CSV CatalogItem") }} <a class="add-btn" href="{{ route('admin-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
 											<ul class="links">
 												<li>
 													<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 												</li>
 											<li>
-												<a href="javascript:;">{{ __("Import CSV Product") }} </a>
+												<a href="javascript:;">{{ __("Import CSV CatalogItem") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-import-index') }}">{{ __("All Products") }}</a>
+												<a href="{{ route('admin-import-index') }}">{{ __("All CatalogItems") }}</a>
 											</li>
 												<li>
-													<a href="{{ route('admin-import-csv') }}">{{ __("Import CSV Product") }}</a>
+													<a href="{{ route('admin-import-csv') }}">{{ __("Import CSV CatalogItem") }}</a>
 												</li>
 											</ul>
 									</div>
 								</div>
 							</div>
-							<div class="add-product-content">
+							<div class="add-catalogItem-content">
 								<div class="row">
 									<div class="col-lg-12">
-										<div class="product-description">
+										<div class="catalogItem-description">
 											<div class="body-area" id="modalEdit">
 
 					                      <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>

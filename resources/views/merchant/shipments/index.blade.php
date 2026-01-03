@@ -1,9 +1,9 @@
 @extends('layouts.merchant')
 
 @section('content')
-<div class="gs-vendor-outlet">
+<div class="gs-merchant-outlet">
     <!-- Breadcrumb -->
-    <div class="gs-vendor-breadcrumb has-mb">
+    <div class="gs-merchant-breadcrumb has-mb">
         <div class="gs-deposit-title d-flex align-items-center gap-4">
             <h4 class="text-capitalize">@lang('Shipments Management')</h4>
         </div>

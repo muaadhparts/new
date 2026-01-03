@@ -142,7 +142,7 @@
                             </div>
 
 
-                            <input type="hidden" name="vendor" value="1">
+                            <input type="hidden" name="merchant" value="1">
                             <div class="form-group">
                                 <button type="submit" class="template-btn btn-forms">@lang('Register')</button>
 

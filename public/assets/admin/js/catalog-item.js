@@ -15,7 +15,7 @@
         // Check Click1 Ends :)
 
 
-        // Product Measure :)
+        // CatalogItem Measure :)
 
         $("#product_measure").on( "change" ,function() {
             var val = $(this).val();
@@ -30,7 +30,7 @@
             }
         });
 
-        // Product Measure Ends :)
+        // CatalogItem Measure Ends :)
 
 	});
 

@@ -1,27 +1,27 @@
 @extends('layouts.admin') 
 
 @section('content')  
-					<input type="hidden" id="headerdata" value="{{ __("PRODUCT") }}">
+					<input type="hidden" id="headerdata" value="{{ __("CATALOG ITEM") }}">
 					<div class="content-area">
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __("Affiliate Products") }}</h4>
+										<h4 class="heading">{{ __("Affiliate Catalog Items") }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
 											</li>
 											<li>
-												<a href="javascript:;">{{ __("Products") }} </a>
+												<a href="javascript:;">{{ __("Catalog Items") }} </a>
 											</li>
 											<li>
-												<a href="{{ route('admin-catalog-item-index') }}">{{ __("Affiliate Products") }}</a>
+												<a href="{{ route('admin-catalog-item-index') }}">{{ __("Affiliate Catalog Items") }}</a>
 											</li>
 										</ul>
 								</div>
 							</div>
 						</div>
-						<div class="product-area">
+						<div class="catalogItem-area">
 							<div class="row">
 								<div class="col-lg-12">
 									<div class="mr-table allproduct">
@@ -36,7 +36,7 @@
 									                        <th>{{ __("Name") }}</th>
 									                        <th>{{ __("Brand") }}</th>
 									                        <th>{{ __("Quality Brand") }}</th>
-									                        <th>{{ __("Vendor") }}</th>
+									                        <th>{{ __("Merchant") }}</th>
 									                        <th>{{ __("Stock") }}</th>
 									                        <th>{{ __("Price") }}</th>
 									                        <th>{{ __("Status") }}</th>
@@ -97,7 +97,7 @@
 
       <!-- Modal body -->
       <div class="modal-body">
-            <p class="text-center">{{ __("You are about to delete this Product") }}.</p>
+            <p class="text-center">{{ __("You are about to delete this CatalogItem") }}.</p>
             <p class="text-center">{{ __("Do you want to proceed?") }}</p>
       </div>
 
@@ -136,7 +136,7 @@
 								<div class="upload-img-btn">
 									<form  method="POST" enctype="multipart/form-data" id="form-gallery">
 										@csrf
-									<input type="hidden" id="pid" name="product_id" value="">
+									<input type="hidden" id="pid" name="catalog_item_id" value="">
 									<input type="file" name="gallery[]" class="hidden" id="uploadgallery" accept="image/*" multiple>
 											<label for="image-upload" id="prod_gallery"><i class="icofont-upload-alt"></i>{{ __("Upload File") }}</label>
 									</form>
@@ -188,7 +188,7 @@
                         { data: 'name', name: 'name' },
                         { data: 'brand', name: 'brand' },
                         { data: 'quality_brand', name: 'quality_brand' },
-                        { data: 'vendor', name: 'vendor' },
+                        { data: 'merchant', name: 'merchant' },
                         { data: 'stock', name: 'stock' },
                         { data: 'price', name: 'price' },
                         { data: 'status', searchable: false, orderable: false},
@@ -206,7 +206,7 @@
       	$(function() {
         $(".btn-area").append('<div class="col-sm-4 table-contents">'+
         	'<a class="add-btn" href="{{route('admin-import-create')}}">'+
-          '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __("Add Product") }}<span>'+
+          '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __("Add CatalogItem") }}<span>'+
           '</a>'+
           '</div>');
       });											

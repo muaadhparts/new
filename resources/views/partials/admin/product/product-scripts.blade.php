@@ -46,7 +46,7 @@
             // Check Clickc Ends :)
 
 
-            // Product Measure :)
+            // CatalogItem Measure :)
 
             $("#product_measure").on("change", function() {
                 var val = $(this).val();
@@ -59,7 +59,7 @@
                 }
             });
 
-            // Product Measure Ends :)
+            // CatalogItem Measure Ends :)
 
         });
 
@@ -101,7 +101,7 @@
                 '<span>{{ __('(eg. S,M,L,XL,3XL,4XL)') }}</span>' +
                 '</label>' +
                 `<input type="text" name="size[]" class="form-control tsize"
-															placeholder="{{ __('Enter Product Size') }}"
+															placeholder="{{ __('Enter CatalogItem Size') }}"
 															value="" required="">` +
                 '</div>' +
                 '<div class="col-md-4 col-sm-4">' +

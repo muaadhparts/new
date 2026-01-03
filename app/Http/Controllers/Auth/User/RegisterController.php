@@ -50,7 +50,7 @@ class RegisterController extends Controller
         $input['verification_link'] = $token;
         $input['affilate_code'] = md5($request->name . $request->email);
 
-        if (!empty($request->vendor)) {
+        if (!empty($request->merchant)) {
 
             $request->validate([
                 'shop_name' => 'unique:users',

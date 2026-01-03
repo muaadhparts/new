@@ -25,7 +25,7 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Get Tryoto delivery options for a vendor
+     * Get Tryoto delivery options for a merchant
      */
     public function getTryotoOptions(Request $request)
     {
@@ -35,7 +35,7 @@ class ShippingApiController extends Controller
             if (!$merchantId) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Vendor ID is required',
+                    'error' => 'Merchant ID is required',
                 ], 400);
             }
 
@@ -49,7 +49,7 @@ class ShippingApiController extends Controller
             }
 
             // 2. Calculate shipping data using cart items
-            $shippingData = MerchantCartService::calculateVendorShipping($merchantId, $cart->items);
+            $shippingData = MerchantCartService::calculateMerchantShipping($merchantId, $cart->items);
 
             Log::debug('ShippingApiController: Shipping data calculated', [
                 'merchant_id' => $merchantId,
@@ -66,17 +66,17 @@ class ShippingApiController extends Controller
                 ]);
             }
 
-            // 3. Get vendor city
-            $vendorCityData = ShippingCalculatorService::getVendorCity($merchantId);
+            // 3. Get merchant city
+            $merchantCityData = ShippingCalculatorService::getMerchantCity($merchantId);
 
-            if (!$vendorCityData || empty($vendorCityData['city_name'])) {
+            if (!$merchantCityData || empty($merchantCityData['city_name'])) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Vendor city not configured',
+                    'error' => 'Merchant city not configured',
                 ]);
             }
 
-            $originCity = $this->normalizeCityName($vendorCityData['city_name']);
+            $originCity = $this->normalizeCityName($merchantCityData['city_name']);
 
             // 4. Get destination city from session
             $destinationCity = $this->getDestinationCity($merchantId);
@@ -100,9 +100,9 @@ class ShippingApiController extends Controller
                 'dimensions' => $dimensions
             ]);
 
-            // 6. Call Tryoto API with vendor-specific credentials
+            // 6. Call Tryoto API with merchant-specific credentials
             $result = $this->tryotoService
-                ->forVendor($merchantId)
+                ->forMerchant($merchantId)
                 ->getDeliveryOptions(
                     $originCity,
                     $destinationCity,
@@ -177,7 +177,7 @@ class ShippingApiController extends Controller
                 return response()->json([
                     'success' => false,
                     'error' => 'عذراً، لم يتم إعداد خدمة الشحن لهذا التاجر بعد. يرجى التواصل مع التاجر.',
-                    'error_code' => 'VENDOR_SHIPPING_NOT_CONFIGURED',
+                    'error_code' => 'MERCHANT_SHIPPING_NOT_CONFIGURED',
                 ]);
             }
 
@@ -198,25 +198,25 @@ class ShippingApiController extends Controller
         // Get currency from CheckoutPriceService (single source of truth)
         $curr = $this->priceService->getCurrency();
 
-        // Get free shipping threshold from vendor's Tryoto config
-        $vendorTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
+        // Get free shipping threshold from merchant's Tryoto config
+        $merchantTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
             ->where('provider', 'tryoto')
             ->first();
-        $freeAbove = $vendorTryotoShipping ? (float)$vendorTryotoShipping->free_above : 0;
+        $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
         $freeAboveConverted = $this->priceService->convert($freeAbove);
 
-        // Calculate vendor's products total from cart (converted)
+        // Calculate merchant's catalogItems total from cart (converted)
         $cart = Session::get('cart');
-        $vendorProductsTotal = 0;
+        $merchantCatalogitemsTotal = 0;
         if ($cart && !empty($cart->items)) {
             foreach ($cart->items as $item) {
-                $itemVendorId = data_get($item, 'item.user_id') ?? data_get($item, 'item.vendor_user_id') ?? 0;
-                if ($itemVendorId == $merchantId) {
-                    $vendorProductsTotal += (float)($item['price'] ?? 0);
+                $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? 0;
+                if ($itemMerchantId == $merchantId) {
+                    $merchantCatalogitemsTotal += (float)($item['price'] ?? 0);
                 }
             }
         }
-        $vendorProductsTotalConverted = $this->priceService->convert($vendorProductsTotal);
+        $merchantCatalogitemsTotalConverted = $this->priceService->convert($merchantCatalogitemsTotal);
 
         // Get the API response (already has converted prices)
         $apiResponse = $this->getTryotoOptions($request);
@@ -237,11 +237,11 @@ class ShippingApiController extends Controller
 
         $html = view('partials.api.tryoto-options', [
             'deliveryCompany' => $data['delivery_options'],
-            'vendorId' => $merchantId,
+            'merchantId' => $merchantId,
             'weight' => $data['weight'],
             'curr' => $curr,
             'freeAbove' => $freeAboveConverted,
-            'vendorProductsTotal' => $vendorProductsTotalConverted,
+            'merchantItemsTotal' => $merchantCatalogitemsTotalConverted,
         ])->render();
 
         return response()->json([
@@ -275,7 +275,7 @@ class ShippingApiController extends Controller
      */
     protected function getDestinationCity(int $merchantId): ?string
     {
-        $step1 = Session::get('vendor_step1_' . $merchantId) ?? Session::get('step1');
+        $step1 = Session::get('merchant_step1_' . $merchantId) ?? Session::get('step1');
 
         if (!$step1) {
             Log::warning('ShippingApiController: No step1 session found', [

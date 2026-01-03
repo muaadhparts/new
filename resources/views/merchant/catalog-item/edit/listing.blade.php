@@ -5,22 +5,22 @@
 @endsection
 
 @section('content')
-    <div class="gs-vendor-outlet">
+    <div class="gs-merchant-outlet">
         <!-- breadcrumb start  -->
-        <div class="gs-vendor-breadcrumb has-mb">
+        <div class="gs-merchant-breadcrumb has-mb">
 
             <div class="gs-deposit-title d-flex align-items-center gap-4">
                 <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>
-                <h4>@lang('Edit Product')</h4>
+                <h4>@lang('Edit CatalogItem')</h4>
             </div>
 
             <ul class="breadcrumb-menu">
                 <li>
                     <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" class="home-icon-vendor-panel-breadcrumb">
+                            fill="none" stroke="currentColor" class="home-icon-merchant-panel-breadcrumb">
                             <path
                                 d="M9 21V13.6C9 13.0399 9 12.7599 9.109 12.546C9.20487 12.3578 9.35785 12.2049 9.54601 12.109C9.75993 12 10.04 12 10.6 12H13.4C13.9601 12 14.2401 12 14.454 12.109C14.6422 12.2049 14.7951 12.3578 14.891 12.546C15 12.7599 15 13.0399 15 13.6V21M2 9.5L11.04 2.72C11.3843 2.46181 11.5564 2.33271 11.7454 2.28294C11.9123 2.23902 12.0877 2.23902 12.2546 2.28295C12.4436 2.33271 12.6157 2.46181 12.96 2.72L22 9.5M4 8V17.8C4 18.9201 4 19.4802 4.21799 19.908C4.40974 20.2843 4.7157 20.5903 5.09202 20.782C5.51985 21 6.0799 21 7.2 21H16.8C17.9201 21 18.4802 21 18.908 20.782C19.2843 20.5903 19.5903 20.2843 19.782 19.908C20 19.4802 20 18.9201 20 17.8V8L13.92 3.44C13.2315 2.92361 12.8872 2.66542 12.5091 2.56589C12.1754 2.47804 11.8246 2.47804 11.4909 2.56589C11.1128 2.66542 10.7685 2.92361 10.08 3.44L4 8Z"
                                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
@@ -33,33 +33,33 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('Products') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('CatalogItems') </a>
                 </li>
                 <li>
-                    <a href="#" class="text-capitalize"> @lang('Edit Product') </a>
+                    <a href="#" class="text-capitalize"> @lang('Edit CatalogItem') </a>
                 </li>
             </ul>
         </div>
         <!-- breadcrumb end -->
 
-        <!-- add product form start  -->
-        <form class="row gy-3 gy-lg-4 add-product-form" id="myForm" action="{{ route('merchant-catalog-item-update', $data->id) }}"
+        <!-- add catalogItem form start  -->
+        <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="myForm" action="{{ route('merchant-catalog-item-update', $data->id) }}"
             method="POST" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="type" value="Physical">
-            <!-- inputes of physical product start  -->
-            <div class="col-12 col-lg-8 physical-product-inputes-wrapper show">
+            <!-- inputes of physical catalogItem start  -->
+            <div class="col-12 col-lg-8 physical-catalogItem-inputes-wrapper show">
                 <div class="form-group">
-                    <!-- Product Name -->
+                    <!-- CatalogItem Name -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product Name* (In Any Language)')</label>
-                        <input type="text" class="form-control" name="name" placeholder="@lang('Enter Product Name') "
+                        <label>@lang('CatalogItem Name* (In Any Language)')</label>
+                        <input type="text" class="form-control" name="name" placeholder="@lang('Enter CatalogItem Name') "
                             value="{{ $data->name }}">
                     </div>
-                    <!-- Product SkU -->
+                    <!-- CatalogItem SkU -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product SkU*')</label>
-                        <input type="text" class="form-control" name="sku" placeholder="@lang('Enter Product SKU')"
+                        <label>@lang('CatalogItem SkU*')</label>
+                        <input type="text" class="form-control" name="sku" placeholder="@lang('Enter CatalogItem SKU')"
                             value="{{ $data->sku }}">
                     </div>
                     {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
@@ -73,29 +73,29 @@
 
 
 
-                    <!-- Allow Product Condition Checkbox -->
+                    <!-- Allow CatalogItem Condition Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_child-category" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_child-category">
-                        <input type="checkbox" id="allow-product-condition"
-                            {{ $data->product_condition != 0 ? 'checked' : '' }} name="product_condition_check"
+                        <input type="checkbox" id="allow-catalogItem-condition"
+                            {{ $data->item_condition != 0 ? 'checked' : '' }} name="item_condition_check"
                             value="1">
-                        <label class="icon-label check-box-label" for="allow-product-condition">
+                        <label class="icon-label check-box-label" for="allow-catalogItem-condition">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-product-condition">@lang('Allow Product
+                        <label class="check-box-label" for="allow-catalogItem-condition">@lang('Allow CatalogItem
                                                                                                                                                                             Condition')</label>
                     </div>
                     <!-- Child Category -->
-                    <div class="input-label-wrapper collapse {{ $data->product_condition != 0 ? 'show' : '' }}"
+                    <div class="input-label-wrapper collapse {{ $data->item_condition != 0 ? 'show' : '' }}"
                         id="show_child-category">
-                        <label for="child-category-select">@lang('Product Condition*')</label>
+                        <label for="child-category-select">@lang('CatalogItem Condition*')</label>
                         <div class="dropdown-container">
                             <select id="child-category-select" class="form-control nice-select form__control"
-                                name="product_condition">
+                                name="item_condition">
                                 <option value="2">{{ __('New') }}</option>
                                 <option value="1">{{ __('Used') }}</option>
                                 <!-- Add more options here if needed -->
@@ -105,27 +105,27 @@
 
 
 
-                    <!-- Allow Product Preorder Checkbox -->
+                    <!-- Allow CatalogItem Preorder Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_product-preorder" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_product-preorder">
-                        <input type="checkbox" id="allow-product-preorder" {{ $data->preordered != 0 ? 'checked' : '' }}
+                        <input type="checkbox" id="allow-catalogItem-preorder" {{ $data->preordered != 0 ? 'checked' : '' }}
                             name="preordered_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-product-preorder">
+                        <label class="icon-label check-box-label" for="allow-catalogItem-preorder">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-product-preorder">@lang('Allow Product
+                        <label class="check-box-label" for="allow-catalogItem-preorder">@lang('Allow CatalogItem
                                                                                                                                                                             Preorder')</label>
                     </div>
-                    <!-- Product Preorder -->
+                    <!-- CatalogItem Preorder -->
                     <div class="input-label-wrapper collapse  {{ $data->preordered != 0 ? 'show' : '' }}"
                         id="show_product-preorder">
-                        <label for="product-preorder-select">@lang('Product Preorder*')</label>
+                        <label for="catalogItem-preorder-select">@lang('CatalogItem Preorder*')</label>
                         <div class="dropdown-container">
-                            <select id="product-preorder-select" class="form-control nice-select form__control"
+                            <select id="catalogItem-preorder-select" class="form-control nice-select form__control"
                                 name="preordered">
                                 <option value="1">{{ __('Sale') }}</option>
                                 <option value="2">{{ __('Preordered') }}</option>
@@ -153,10 +153,10 @@
                         <label class="check-box-label" for="allow-minimum-order">@lang('Allow Minimum Order
                                                                                                                                                                             Qty')</label>
                     </div>
-                    <!-- Product Minimum Order Qty -->
+                    <!-- CatalogItem Minimum Order Qty -->
                     <div class="input-label-wrapper collapse {{ $data->minimum_qty != null ? 'show' : '' }}"
                         id="show_minimum-order">
-                        <label>@lang('Product Minimum Order Qty*')</label>
+                        <label>@lang('CatalogItem Minimum Order Qty*')</label>
                         <input type="text" class="form-control" name="minimum_qty" placeholder="@lang('Minimum Order Qty') "
                             value="{{ $data->minimum_qty }}">
                     </div>
@@ -185,25 +185,25 @@
                     </div>
 
 
-                    <!-- Allow Product Whole Sell Checkbox -->
+                    <!-- Allow CatalogItem Whole Sell Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_product-whole-sell" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_product-whole-sell">
                         <input type="checkbox" {{ !empty($data->whole_sell_qty) ? 'checked' : '' }} name="whole_check"
-                            id="allow-product-whole-sell">
-                        <label class="icon-label check-box-label" for="allow-product-whole-sell">
+                            id="allow-catalogItem-whole-sell">
+                        <label class="icon-label check-box-label" for="allow-catalogItem-whole-sell">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-product-whole-sell">@lang('Allow Product Whole
+                        <label class="check-box-label" for="allow-catalogItem-whole-sell">@lang('Allow CatalogItem Whole
                                                                                                                                                                             Sell')</label>
                     </div>
-                    <!-- Product Whole Sell -->
+                    <!-- CatalogItem Whole Sell -->
                     <div class="input-label-wrapper collapse {{ !empty($data->whole_sell_qty) ? 'show' : '' }}"
                         id="show_product-whole-sell">
-                        <label>@lang('Allow Product Whole Sell')</label>
+                        <label>@lang('Allow CatalogItem Whole Sell')</label>
 
                         <div class="d-flex flex-column g-4 gap-4" id="whole-section">
                             @if (!empty($data->whole_sell_qty))
@@ -253,25 +253,25 @@
                     </div>
 
 
-                    <!-- Allow Product Colors Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_allow-product-colors" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_allow-product-colors">
+                    <!-- Allow CatalogItem Colors Checkbox -->
+                    <div class="gs-checkbox-wrapper" aria-controls="show_allow-catalogItem-colors" role="region"
+                        data-bs-toggle="collapse" data-bs-target="#show_allow-catalogItem-colors">
                         <input type="checkbox" {{ !is_array($data->color_all) ? '' : ' checked' }} name="color_check"
-                            id="allow-allow-product-colors" class="checkclickc">
-                        <label class="icon-label check-box-label" for="allow-allow-product-colors">
+                            id="allow-allow-catalogItem-colors" class="checkclickc">
+                        <label class="icon-label check-box-label" for="allow-allow-catalogItem-colors">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-allow-product-colors">@lang('Allow Product
+                        <label class="check-box-label" for="allow-allow-catalogItem-colors">@lang('Allow CatalogItem
                                                                                                                                                                             Colors')</label>
                     </div>
-                    <!-- Product Colors -->
+                    <!-- CatalogItem Colors -->
                     <div class="input-label-wrapper collapse {{ !is_array($data->color_all) ? '' : 'show' }}"
-                        id="show_allow-product-colors">
-                        <label>@lang('Product Colors* (Choose Your Favorite
+                        id="show_allow-catalogItem-colors">
+                        <label>@lang('CatalogItem Colors* (Choose Your Favorite
                                                                                                                                                                             Colors)')</label>
                         <div class="row gy-4">
                             <div id="color-section" class="d-flex flex-column gap-4">
@@ -412,29 +412,29 @@
 
 
 
-                    <!-- Product Description -->
+                    <!-- CatalogItem Description -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product Description*')</label>
+                        <label>@lang('CatalogItem Description*')</label>
                         <textarea class="form-control w-100 nic-edit" id="details" name="details" rows="6">{{ $data->details }}</textarea>
                     </div>
-                    <!-- Product Buy/Return Policy -->
+                    <!-- CatalogItem Buy/Return Policy -->
                     <div class="input-label-wrapper">
-                        <label>@lang('Product Buy/Return Policy*')</label>
+                        <label>@lang('CatalogItem Buy/Return Policy*')</label>
                         <textarea class="form-control w-100 nic-edit" id="policy" name="policy" rows="6">{{ $data->policy }}</textarea>
                     </div>
-                    <!-- Allow Product SEO Checkbox -->
+                    <!-- Allow CatalogItem SEO Checkbox -->
                     <div class="gs-checkbox-wrapper" aria-controls="show_product-seo" role="region"
                         data-bs-toggle="collapse" data-bs-target="#show_product-seo">
-                        <input type="checkbox" id="allow-product-seo" name="seo_check" value="1"
+                        <input type="checkbox" id="allow-catalogItem-seo" name="seo_check" value="1"
                             {{ is_array($data->meta_tag) ? 'checked' : '' }}>
-                        <label class="icon-label check-box-label" for="allow-product-seo">
+                        <label class="icon-label check-box-label" for="allow-catalogItem-seo">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
                                 fill="none">
                                 <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
                                     stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-product-seo">@lang('Allow Product SEO')</label>
+                        <label class="check-box-label" for="allow-catalogItem-seo">@lang('Allow CatalogItem SEO')</label>
                     </div>
 
 
@@ -459,7 +459,7 @@
 
             <!-- form sidebar start  -->
             <div class="col-12 col-lg-4">
-                <div class="add-product-form-sidebar">
+                <div class="add-catalogItem-form-sidebar">
                     <div class="form-group">
                         <!-- Feature Image  -->
                         <div class="input-label-wrapper">
@@ -480,9 +480,9 @@
                                 <input type="hidden" id="feature_photo" name="photo" value="{{ $data->photo }}">
                             </div>
                         </div>
-                        <!-- Product Gallery Images  -->
+                        <!-- CatalogItem Gallery Images  -->
                         <div class="input-label-wrapper">
-                            <label for="gallery_upload">@lang('Product Gallery Images *')</label>
+                            <label for="gallery_upload">@lang('CatalogItem Gallery Images *')</label>
 
                             <div class="w-100">
                                 <label for="gallery_upload">
@@ -509,15 +509,15 @@
 
                             </div>
                         </div>
-                        <!-- Product Current Price -->
+                        <!-- CatalogItem Current Price -->
                         <div class="input-label-wrapper">
-                            <label>@lang('Product Current Price') ({{ $curr->name }})</label>
+                            <label>@lang('CatalogItem Current Price') ({{ $curr->name }})</label>
                             <input type="text" class="form-control" name="price"
                                 placeholder="{{ round($data->price * $sign->value, 2) }}">
                         </div>
-                        <!-- Product Discount Price -->
+                        <!-- CatalogItem Discount Price -->
                         <div class="input-label-wrapper">
-                            <label>@lang('Product Discount Price* (Optional)')</label>
+                            <label>@lang('CatalogItem Discount Price* (Optional)')</label>
                             <input type="text" class="form-control" name="previous_price"
                                 placeholder="{{ round($data->previous_price * $sign->value, 2) }}">
                         </div>
@@ -585,17 +585,17 @@
                         <div class="input-label-wrapper">
                             <label>@lang('Tags') *</label>
                             <input type="text" class="form-control" name="tags" id="tags"
-                                name="product-tags" placeholder="@lang('Enter YouTube Video URL')"
+                                name="catalogItem-tags" placeholder="@lang('Enter YouTube Video URL')"
                                 value="{{ is_array($data->tags) ? implode(',', $data->tags) : '' }}">
                         </div>
-                        <!-- Create Product Button  -->
-                        <button class="template-btn w-100 px-20" type="submit">@lang('Update Product')</button>
+                        <!-- Create CatalogItem Button  -->
+                        <button class="template-btn w-100 px-20" type="submit">@lang('Update CatalogItem')</button>
                     </div>
                 </div>
             </div>
             <!-- form sidebar end  -->
         </form>
-        <!-- add product form end -->
+        <!-- add catalogItem form end -->
 
     </div>
 @endsection

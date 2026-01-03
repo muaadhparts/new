@@ -3,7 +3,7 @@
 HOME PAGE - Section-Based Architecture (Theme System)
 ================================================================================
 Each section is controlled by the active HomePageTheme ($theme->*)
-All product data is merchant-only (is_merchant = 2)
+All catalogItem data is merchant-only (is_merchant = 2)
 Sections are rendered based on theme settings and order
 ================================================================================
 --}}
@@ -106,7 +106,7 @@ Sections are rendered based on theme settings and order
                         </div>
                         <div class="muaadh-category-info">
                             <h6 class="muaadh-category-name">{{ $fcategory->name }}</h6>
-                            <span class="muaadh-category-products">{{ $fcategory->products_count }} @lang('Products')</span>
+                            <span class="muaadh-category-catalogItems">{{ $fcategory->products_count }} @lang('Items')</span>
                         </div>
                     </a>
                 @endforeach
@@ -116,13 +116,13 @@ Sections are rendered based on theme settings and order
     @endif
 
     {{-- ===================================================================
-         SECTION: Featured Products (if enabled: $theme->show_featured_products)
-         Uses slider like Related Products - each card is a MerchantItem
+         SECTION: Featured Items (if enabled: $theme->show_featured_products)
+         Uses slider like Related Items - each card is a MerchantItem
          =================================================================== --}}
     @if(($theme->show_featured_products ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_featured_products ?? __('Featured Products') }}</h2>
+            <h2 class="title text-center">{{ $theme->title_featured_products ?? __('Featured Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $featured_merchants])
         </div>
     </section>
@@ -141,52 +141,52 @@ Sections are rendered based on theme settings and order
     @endif
 
     {{-- ===================================================================
-         SECTION: Top Rated Products (if enabled: $theme->show_top_rated)
-         Uses slider like Related Products
+         SECTION: Top Rated Items (if enabled: $theme->show_top_rated)
+         Uses slider like Related Items
          =================================================================== --}}
     @if(($theme->show_top_rated ?? false) && isset($top_merchants) && count($top_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_top_rated ?? __('Top Rated Products') }}</h2>
+            <h2 class="title text-center">{{ $theme->title_top_rated ?? __('Top Rated Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $top_merchants])
         </div>
     </section>
     @endif
 
     {{-- ===================================================================
-         SECTION: Big Save Products (if enabled: $theme->show_big_save)
-         Uses slider like Related Products
+         SECTION: Big Save Items (if enabled: $theme->show_big_save)
+         Uses slider like Related Items
          =================================================================== --}}
     @if(($theme->show_big_save ?? false) && isset($big_merchants) && count($big_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_big_save ?? __('Big Save Products') }}</h2>
+            <h2 class="title text-center">{{ $theme->title_big_save ?? __('Big Save Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $big_merchants])
         </div>
     </section>
     @endif
 
     {{-- ===================================================================
-         SECTION: Trending Products (if enabled: $theme->show_trending)
-         Uses slider like Related Products
+         SECTION: Trending Items (if enabled: $theme->show_trending)
+         Uses slider like Related Items
          =================================================================== --}}
     @if(($theme->show_trending ?? false) && isset($trending_merchants) && count($trending_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_trending ?? __('Trending Products') }}</h2>
+            <h2 class="title text-center">{{ $theme->title_trending ?? __('Trending Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $trending_merchants])
         </div>
     </section>
     @endif
 
     {{-- ===================================================================
-         SECTION: Best Selling Products (if enabled: $theme->show_best_sellers)
-         Uses slider like Related Products
+         SECTION: Best Selling Items (if enabled: $theme->show_best_sellers)
+         Uses slider like Related Items
          =================================================================== --}}
     @if(($theme->show_best_sellers ?? false) && isset($best_merchants) && count($best_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_best_sellers ?? __('Best Selling Products') }}</h2>
+            <h2 class="title text-center">{{ $theme->title_best_sellers ?? __('Best Selling Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $best_merchants])
         </div>
     </section>

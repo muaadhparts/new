@@ -39,15 +39,15 @@
         font-weight: 600;
         color: var(--theme-text-primary);
     }
-    .gs-compare-wrapper .compare-table .product-img-wrapper {
+    .gs-compare-wrapper .compare-table .catalogItem-img-wrapper {
         display: inline-block;
         position: relative;
         cursor: zoom-in;
     }
-    .gs-compare-wrapper .compare-table .product-img-wrapper:hover .zoom-icon {
+    .gs-compare-wrapper .compare-table .catalogItem-img-wrapper:hover .zoom-icon {
         opacity: 1;
     }
-    .gs-compare-wrapper .compare-table .product-img-wrapper .zoom-icon {
+    .gs-compare-wrapper .compare-table .catalogItem-img-wrapper .zoom-icon {
         position: absolute;
         bottom: 8px;
         right: 8px;
@@ -63,7 +63,7 @@
         opacity: 0;
         transition: opacity 0.3s;
     }
-    .gs-compare-wrapper .compare-table .product-img {
+    .gs-compare-wrapper .compare-table .catalogItem-img {
         width: 100px;
         height: 100px;
         object-fit: contain;
@@ -73,7 +73,7 @@
         background: var(--color-surface, #fff);
         transition: transform 0.3s;
     }
-    .gs-compare-wrapper .compare-table .product-img-wrapper:hover .product-img {
+    .gs-compare-wrapper .compare-table .catalogItem-img-wrapper:hover .catalogItem-img {
         border-color: var(--theme-primary);
     }
     /* Image Modal */
@@ -130,7 +130,7 @@
         from { transform: scale(0.8); opacity: 0; }
         to { transform: scale(1); opacity: 1; }
     }
-    .gs-compare-wrapper .compare-table .product-title {
+    .gs-compare-wrapper .compare-table .catalogItem-title {
         font-size: 15px;
         font-weight: 600;
         color: var(--theme-text-primary);
@@ -138,10 +138,10 @@
         line-height: 1.4;
         transition: color 0.3s;
     }
-    .gs-compare-wrapper .compare-table .product-title:hover {
+    .gs-compare-wrapper .compare-table .catalogItem-title:hover {
         color: var(--theme-primary);
     }
-    .gs-compare-wrapper .compare-table .product-price {
+    .gs-compare-wrapper .compare-table .catalogItem-price {
         font-size: 18px;
         font-weight: 700;
         color: var(--theme-primary);
@@ -226,7 +226,7 @@
             min-width: 120px;
             max-width: 120px;
         }
-        .gs-compare-wrapper .compare-table .product-img {
+        .gs-compare-wrapper .compare-table .catalogItem-img {
             width: 80px;
             height: 80px;
         }
@@ -251,25 +251,25 @@
 
     <div class="gs-compare-wrapper muaadh-section-gray">
         <div class="container">
-            @if (isset($products) && count($products) > 0)
+            @if (isset($catalogItems) && count($catalogItems) > 0)
                 @php
-                    $processedProducts = [];
-                    foreach ($products as $mpId => $product) {
-                        $merchantItem = $product['merchant_item'] ?? $product['merchant_product'] ?? null;
-                        $productItem = $product['item'];
+                    $processedCatalogItems = [];
+                    foreach ($catalogItems as $mpId => $catalogItem) {
+                        $merchantItem = $catalogItem['merchant_item'] ?? $catalogItem['merchant_product'] ?? null;
+                        $catalogItemData = $catalogItem['item'];
 
                         if ($merchantItem) {
-                            $compareProductUrl = $productItem->slug
-                                ? route('front.catalog-item', ['slug' => $productItem->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
+                            $compareCatalogItemUrl = $catalogItemData->slug
+                                ? route('front.catalog-item', ['slug' => $catalogItemData->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
                                 : '#';
                         } else {
-                            $compareProductUrl = $productItem->slug ? route('front.catalog-item.legacy', $productItem->slug) : '#';
+                            $compareCatalogItemUrl = $catalogItemData->slug ? route('front.catalog-item.legacy', $catalogItemData->slug) : '#';
                         }
 
-                        $processedProducts[$mpId] = [
-                            'item' => $productItem,
+                        $processedCatalogItems[$mpId] = [
+                            'item' => $catalogItemData,
                             'merchant_item' => $merchantItem,
-                            'url' => $compareProductUrl,
+                            'url' => $compareCatalogItemUrl,
                             'merchant_item_id' => $mpId,
                         ];
                     }
@@ -279,16 +279,16 @@
                     <table class="compare-table">
                         {{-- Image Row --}}
                         <tr>
-                            <td><h6 class="td-title">@lang('Product Image')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            <td><h6 class="td-title">@lang('CatalogItem Image')</h6></td>
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 @php
-                                    $imgSrc = filter_var($product['item']->photo, FILTER_VALIDATE_URL)
-                                        ? $product['item']->photo
-                                        : ($product['item']->photo ? \Illuminate\Support\Facades\Storage::url($product['item']->photo) : asset('assets/images/noimage.png'));
+                                    $imgSrc = filter_var($catalogItem['item']->photo, FILTER_VALIDATE_URL)
+                                        ? $catalogItem['item']->photo
+                                        : ($catalogItem['item']->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']->photo) : asset('assets/images/noimage.png'));
                                 @endphp
                                 <td>
-                                    <div class="product-img-wrapper" data-img="{{ $imgSrc }}" data-title="{{ getLocalizedProductName($product['item']) }}">
-                                        <img class="product-img" src="{{ $imgSrc }}" alt="{{ getLocalizedProductName($product['item']) }}">
+                                    <div class="catalogItem-img-wrapper" data-img="{{ $imgSrc }}" data-title="{{ getLocalizedCatalogItemName($catalogItem['item']) }}">
+                                        <img class="catalogItem-img" src="{{ $imgSrc }}" alt="{{ getLocalizedCatalogItemName($catalogItem['item']) }}">
                                         <span class="zoom-icon"><i class="fas fa-search-plus"></i></span>
                                     </div>
                                 </td>
@@ -297,11 +297,11 @@
 
                         {{-- Name Row --}}
                         <tr>
-                            <td><h6 class="td-title">@lang('Product Name')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            <td><h6 class="td-title">@lang('CatalogItem Name')</h6></td>
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <a href="{{ $product['url'] }}">
-                                        <h6 class="product-title">{{ getLocalizedProductName($product['item']) }}</h6>
+                                    <a href="{{ $catalogItem['url'] }}">
+                                        <h6 class="catalogItem-title">{{ getLocalizedCatalogItemName($catalogItem['item']) }}</h6>
                                     </a>
                                 </td>
                             @endforeach
@@ -310,13 +310,13 @@
                         {{-- Price Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Price')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <span class="product-price">
-                                        @if ($product['merchant_item'])
-                                            {{ PriceHelper::showPrice($product['merchant_item']->price) }}
+                                    <span class="catalogItem-price">
+                                        @if ($catalogItem['merchant_item'])
+                                            {{ PriceHelper::showPrice($catalogItem['merchant_item']->price) }}
                                         @else
-                                            {{ $product['item']->showPrice() }}
+                                            {{ $catalogItem['item']->showPrice() }}
                                         @endif
                                     </span>
                                 </td>
@@ -326,9 +326,9 @@
                         {{-- Merchant Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Merchant')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <span class="table-value">{{ $product['merchant_item'] && $product['merchant_item']->user ? getLocalizedShopName($product['merchant_item']->user) : __('N/A') }}</span>
+                                    <span class="table-value">{{ $catalogItem['merchant_item'] && $catalogItem['merchant_item']->user ? getLocalizedShopName($catalogItem['merchant_item']->user) : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -336,9 +336,9 @@
                         {{-- Brand Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Brand')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <span class="table-value">{{ $product['item']->brand ? getLocalizedBrandName($product['item']->brand) : __('N/A') }}</span>
+                                    <span class="table-value">{{ $catalogItem['item']->brand ? getLocalizedBrandName($catalogItem['item']->brand) : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -346,9 +346,9 @@
                         {{-- Quality Brand Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Quality Brand')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <span class="table-value">{{ $product['merchant_item'] && $product['merchant_item']->qualityBrand ? $product['merchant_item']->qualityBrand->display_name : __('N/A') }}</span>
+                                    <span class="table-value">{{ $catalogItem['merchant_item'] && $catalogItem['merchant_item']->qualityBrand ? $catalogItem['merchant_item']->qualityBrand->display_name : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -356,9 +356,9 @@
                         {{-- SKU Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('SKU')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    <span class="table-value" style="font-family: monospace;">{{ $product['item']->sku ?? __('N/A') }}</span>
+                                    <span class="table-value" style="font-family: monospace;">{{ $catalogItem['item']->sku ?? __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>
@@ -366,9 +366,9 @@
                         {{-- Stock Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Stock')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 @php
-                                    $compareStock = $product['merchant_item'] ? $product['merchant_item']->stock : null;
+                                    $compareStock = $catalogItem['merchant_item'] ? $catalogItem['merchant_item']->stock : null;
                                     if ($compareStock === null || $compareStock === '') {
                                         $stockText = __('Unlimited');
                                         $stockClass = 'stock-unlimited';
@@ -387,13 +387,13 @@
                         {{-- Rating Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Rating')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 @php
-                                    $productWithRatings = App\Models\CatalogItem::withCount('catalogReviews')
+                                    $catalogItemWithRatings = App\Models\CatalogItem::withCount('catalogReviews')
                                         ->withAvg('catalogReviews', 'rating')
-                                        ->find($product['item']->id);
-                                    $avgRating = $productWithRatings->catalog_reviews_avg_rating ?? 0;
-                                    $ratingCount = $productWithRatings->catalog_reviews_count ?? 0;
+                                        ->find($catalogItem['item']->id);
+                                    $avgRating = $catalogItemWithRatings->catalog_reviews_avg_rating ?? 0;
+                                    $ratingCount = $catalogItemWithRatings->catalog_reviews_count ?? 0;
                                 @endphp
                                 <td>
                                     <span class="table-value">
@@ -408,10 +408,10 @@
                         {{-- Description Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Description')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
                                     <span class="table-value" style="text-align: start; display: block;">
-                                        {{ Str::limit(strip_tags($product['item']->details), 150) }}
+                                        {{ Str::limit(strip_tags($catalogItem['item']->details), 150) }}
                                     </span>
                                 </td>
                             @endforeach
@@ -420,13 +420,13 @@
                         {{-- Add to Cart Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Action')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
                                     @php
-                                        $mp = $product['merchant_item'];
+                                        $mp = $catalogItem['merchant_item'];
                                     @endphp
-                                    {{-- product_type and affiliate_link are now on merchant_items --}}
-                                    @if ($mp && $mp->product_type == 'affiliate' && $mp->affiliate_link)
+                                    {{-- item_type and affiliate_link are now on merchant_items --}}
+                                    @if ($mp && $mp->item_type == 'affiliate' && $mp->affiliate_link)
                                         <a href="{{ $mp->affiliate_link }}" target="_blank" class="btn-cart">
                                             @lang('Buy Now')
                                         </a>
@@ -434,12 +434,12 @@
                                         @php
                                             $stockEmpty = $mp
                                                 ? (($mp->stock ?? 0) <= 0 && !$mp->preordered)
-                                                : $product['item']->emptyStock();
+                                                : $catalogItem['item']->emptyStock();
                                         @endphp
                                         @if ($stockEmpty)
                                             <span class="btn-cart disabled">@lang('Out Of Stock')</span>
                                         @else
-                                            @if ($product['item']->type != 'Listing' && $mp)
+                                            @if ($catalogItem['item']->type != 'Listing' && $mp)
                                                 {{-- UNIFIED: Use m-cart-add with merchant_item_id --}}
                                                 <button type="button"
                                                     class="m-cart-add btn-cart"
@@ -458,12 +458,12 @@
                         {{-- Shipping Quote Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Shipping')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    @if ($product['item']->type == 'Physical' && $product['merchant_item'])
+                                    @if ($catalogItem['item']->type == 'Physical' && $catalogItem['merchant_item'])
                                         <x-shipping-quote-button
-                                            :merchant-user-id="$product['merchant_item']->user_id"
-                                            :catalog-item-name="getLocalizedProductName($product['item'])"
+                                            :merchant-user-id="$catalogItem['merchant_item']->user_id"
+                                            :catalog-item-name="getLocalizedCatalogItemName($catalogItem['item'])"
                                         />
                                     @else
                                         <span class="table-value">-</span>
@@ -475,7 +475,7 @@
                         {{-- Remove Row --}}
                         <tr>
                             <td><h6 class="td-title">@lang('Remove')</h6></td>
-                            @foreach ($processedProducts as $mpId => $product)
+                            @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
                                     <a href="{{ route('catalog-item.compare.remove', $mpId) }}" class="btn-remove">
                                         <i class="fas fa-trash-alt"></i> @lang('Remove')
@@ -489,7 +489,7 @@
                 <div class="compare-empty">
                     <i class="fas fa-exchange-alt"></i>
                     <h2>@lang('Nothing to Compare')</h2>
-                    <p>@lang('Add products to compare their features and find the best one for you.')</p>
+                    <p>@lang('Add catalogItems to compare their features and find the best one for you.')</p>
                     <a href="{{ route('front.index') }}" class="template-btn">@lang('Continue Shopping')</a>
                 </div>
             @endif
@@ -512,7 +512,7 @@ $(document).ready(function() {
     var captionText = $('#modalCaption');
 
     // Open modal on image click
-    $('.product-img-wrapper').on('click', function() {
+    $('.catalogItem-img-wrapper').on('click', function() {
         var imgSrc = $(this).data('img');
         var title = $(this).data('title');
 

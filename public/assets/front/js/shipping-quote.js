@@ -3,7 +3,7 @@
  *
  * Shows shipping cost quotes without creating shipments.
  * Works with CustomerLocation.js for location context.
- * Uses catalog_item_id (new naming convention) instead of product_id.
+ * Uses catalog_item_id (new naming convention) instead of catalog_item_id.
  *
  * Usage:
  * - ShippingQuote.showQuoteModal(vendorId, weight) - Show modal with options
@@ -60,7 +60,7 @@ const ShippingQuote = (function() {
     }
 
     /**
-     * Get full product quote with all options
+     * Get full catalogItem quote with all options
      * Uses catalog_item_id (new naming convention)
      */
     async function getProductQuote(vendorId, weight = 0.5, catalogItemId = null) {

@@ -3,7 +3,7 @@
    ====================================== */
 
 /* === Responsive Table Wrapper === */
-.vendor-order-table-responsive {
+.merchant-order-table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     position: relative;
@@ -11,13 +11,13 @@
 }
 
 /* === Table Base Styles === */
-.vendor-order-table-enhanced {
+.merchant-order-table-enhanced {
     min-width: 100%;
     white-space: nowrap;
     margin-bottom: 0;
 }
 
-.vendor-order-table-enhanced thead th {
+.merchant-order-table-enhanced thead th {
     background: #f8f9fa;
     font-weight: 600;
     font-size: 13px;
@@ -26,14 +26,14 @@
     vertical-align: middle;
 }
 
-.vendor-order-table-enhanced tbody td {
+.merchant-order-table-enhanced tbody td {
     padding: 12px 10px !important;
     font-size: 13px;
     vertical-align: middle;
     border-bottom: 1px solid #f0f0f0;
 }
 
-.vendor-order-table-enhanced tbody tr:hover {
+.merchant-order-table-enhanced tbody tr:hover {
     background-color: #f8f9fa;
     transition: background-color 0.2s ease;
 }
@@ -122,23 +122,23 @@
 /* === Responsive Breakpoints === */
 
 @media (max-width: 1199px) {
-    .vendor-order-table-enhanced {
+    .merchant-order-table-enhanced {
         font-size: 12px;
     }
 }
 
 @media (max-width: 991px) {
-    .vendor-order-table-responsive {
+    .merchant-order-table-responsive {
         border: 1px solid #dee2e6;
         border-radius: 8px;
     }
 
-    .vendor-order-table-enhanced {
+    .merchant-order-table-enhanced {
         font-size: 11px;
     }
 
     /* Add scroll indicator */
-    .vendor-order-table-responsive::after {
+    .merchant-order-table-responsive::after {
         content: "← Scroll →";
         display: block;
         text-align: center;
@@ -152,12 +152,12 @@
 }
 
 @media (max-width: 767px) {
-    .vendor-order-table-enhanced {
+    .merchant-order-table-enhanced {
         font-size: 10px;
     }
 
-    .vendor-order-table-enhanced thead th,
-    .vendor-order-table-enhanced tbody td {
+    .merchant-order-table-enhanced thead th,
+    .merchant-order-table-enhanced tbody td {
         padding: 8px 5px !important;
     }
 

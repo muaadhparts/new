@@ -5,13 +5,13 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Add Vendor Credential') }} <i class="fas fa-plus-circle"></i></h4>
+                <h4 class="heading">{{ __('Add Merchant Credential') }} <i class="fas fa-plus-circle"></i></h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.vendor-credentials.index') }}">{{ __('Vendor Credentials') }}</a>
+                        <a href="{{ route('admin.merchant-credentials.index') }}">{{ __('Merchant Credentials') }}</a>
                     </li>
                     <li>
                         <a href="javascript:;">{{ __('Add New') }}</a>
@@ -21,32 +21,32 @@
         </div>
     </div>
 
-    <div class="add-product-content1">
+    <div class="add-catalogItem-content1">
         <div class="row">
             <div class="col-lg-8 offset-lg-2">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
                         @include('alerts.admin.form-both')
 
-                        <form action="{{ route('admin.vendor-credentials.store') }}" method="POST" id="credentialForm">
+                        <form action="{{ route('admin.merchant-credentials.store') }}" method="POST" id="credentialForm">
                             @csrf
 
-                            {{-- Vendor Selection --}}
+                            {{-- Merchant Selection --}}
                             <div class="row justify-content-center">
                                 <div class="col-lg-4">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Vendor') }} *</h4>
-                                        <p class="sub-heading">{{ __('Select the vendor/merchant') }}</p>
+                                        <h4 class="heading">{{ __('Merchant') }} *</h4>
+                                        <p class="sub-heading">{{ __('Select the merchant') }}</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
                                     <select name="user_id" id="user_id" class="form-control" required>
-                                        <option value="">{{ __('Select Vendor') }}</option>
-                                        @foreach($merchants as $vendor)
-                                            <option value="{{ $vendor->id }}" {{ old('user_id') == $vendor->id ? 'selected' : '' }}>
-                                                {{ $vendor->shop_name ?: $vendor->name }} (ID: {{ $vendor->id }})
+                                        <option value="">{{ __('Select Merchant') }}</option>
+                                        @foreach($merchants as $merchant)
+                                            <option value="{{ $merchant->id }}" {{ old('user_id') == $merchant->id ? 'selected' : '' }}>
+                                                {{ $merchant->shop_name ?: $merchant->name }} (ID: {{ $merchant->id }})
                                             </option>
                                         @endforeach
                                     </select>
@@ -176,7 +176,7 @@
                                 </div>
                                 <div class="col-lg-7">
                                     <textarea name="description" class="form-control" rows="2"
-                                              placeholder="{{ __('e.g., MyFatoorah live API key for vendor') }}">{{ old('description') }}</textarea>
+                                              placeholder="{{ __('e.g., MyFatoorah live API key for merchant') }}">{{ old('description') }}</textarea>
                                 </div>
                             </div>
 
@@ -189,7 +189,7 @@
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-save me-1"></i> {{ __('Save Credential') }}
                                     </button>
-                                    <a href="{{ route('admin.vendor-credentials.index') }}" class="btn btn-secondary">
+                                    <a href="{{ route('admin.merchant-credentials.index') }}" class="btn btn-secondary">
                                         <i class="fas fa-arrow-left me-1"></i> {{ __('Cancel') }}
                                     </a>
                                 </div>

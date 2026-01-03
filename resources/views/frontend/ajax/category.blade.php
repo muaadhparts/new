@@ -1,29 +1,29 @@
 {{-- AJAX Response for Category Products --}}
 @php
     $view = request()->input('view_check', session('view', 'grid-view'));
-    $products = $cards ?? $prods;
+    $catalogItems = $cards ?? $prods;
     $total = $prods->total();
 @endphp
 
 @if ($total > 0)
 {{-- Products Content --}}
-<div id="ajax-products-content">
+<div id="ajax-catalogItems-content">
     <div class="tab-content" id="myTabContent">
-        <!-- product list view -->
+        <!-- catalogItem list view -->
         <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
             id="layout-list-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4">
-                @foreach ($products as $card)
+                @foreach ($catalogItems as $card)
                     @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'list'])
                 @endforeach
             </div>
         </div>
 
-        <!-- product grid view -->
+        <!-- catalogItem grid view -->
         <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
             id="layout-grid-pane" role="tabpanel" tabindex="0">
             <div class="row gy-4">
-                @foreach ($products as $card)
+                @foreach ($catalogItems as $card)
                     @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                 @endforeach
             </div>
@@ -43,12 +43,12 @@
 </script>
 @else
 {{-- Zero Results Box with Filter Summary --}}
-<div id="ajax-products-content">
+<div id="ajax-catalogItems-content">
     <div class="m-no-results-box">
         <div class="m-no-results-box__icon">
             <i class="fas fa-search"></i>
         </div>
-        <h4 class="m-no-results-box__title">@lang('No matching products')</h4>
+        <h4 class="m-no-results-box__title">@lang('No matching catalogItems')</h4>
         <p class="m-no-results-box__subtitle">@lang('Try adjusting your filters to find what you are looking for.')</p>
 
         @if(isset($filterSummary) && $filterSummary['hasFilters'])

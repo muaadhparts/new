@@ -5,13 +5,13 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Edit Vendor Credential') }} <i class="fas fa-edit"></i></h4>
+                <h4 class="heading">{{ __('Edit Merchant Credential') }} <i class="fas fa-edit"></i></h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }}</a>
                     </li>
                     <li>
-                        <a href="{{ route('admin.vendor-credentials.index') }}">{{ __('Vendor Credentials') }}</a>
+                        <a href="{{ route('admin.merchant-credentials.index') }}">{{ __('Merchant Credentials') }}</a>
                     </li>
                     <li>
                         <a href="javascript:;">{{ __('Edit') }}</a>
@@ -21,24 +21,24 @@
         </div>
     </div>
 
-    <div class="add-product-content1">
+    <div class="add-catalogItem-content1">
         <div class="row">
             <div class="col-lg-8 offset-lg-2">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
                         @include('alerts.admin.form-both')
 
-                        <form action="{{ route('admin.vendor-credentials.update', $credential->id) }}" method="POST">
+                        <form action="{{ route('admin.merchant-credentials.update', $credential->id) }}" method="POST">
                             @csrf
                             @method('PUT')
 
-                            {{-- Vendor Info (Read Only) --}}
+                            {{-- Merchant Info (Read Only) --}}
                             <div class="row justify-content-center">
                                 <div class="col-lg-4">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Vendor') }}</h4>
+                                        <h4 class="heading">{{ __('Merchant') }}</h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
@@ -202,7 +202,7 @@
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-save me-1"></i> {{ __('Update Credential') }}
                                     </button>
-                                    <a href="{{ route('admin.vendor-credentials.index') }}" class="btn btn-secondary">
+                                    <a href="{{ route('admin.merchant-credentials.index') }}" class="btn btn-secondary">
                                         <i class="fas fa-arrow-left me-1"></i> {{ __('Cancel') }}
                                     </a>
                                 </div>

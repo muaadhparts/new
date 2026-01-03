@@ -100,7 +100,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         }
 
         if (!Session::has('cart')) {
-            return redirect()->route('front.cart')->with('success', __("You don't have any product to checkout."));
+            return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
 
         $oldCart = Session::get('cart');
@@ -117,7 +117,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         $new_cart['totalPrice'] = $t_cart->totalPrice;
         $new_cart['items'] = $t_cart->items;
         $new_cart = json_encode($new_cart);
-        $temp_affilate_users = PurchaseHelper::product_affilate_check($cart); // For Product Based Affilate Checking
+        $temp_affilate_users = PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
         // ✅ استخدام المبلغ القادم من step3 مباشرة (المبلغ الصحيح المحسوب مسبقاً)

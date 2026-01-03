@@ -14,7 +14,7 @@
                     <div class="ud-page-title-box d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <!-- mobile sidebar trigger btn -->
                         <h3 class="ud-page-title">@lang('Messages')</h3>
-                        <button data-bs-toggle="modal" data-bs-target="#vendorform"
+                        <button data-bs-toggle="modal" data-bs-target="#merchantform"
                             class="template-btn md-btn black-btn data-table-btn">
                             <i class="fas fa-plus"></i> @lang('Compose Message')</button>
                     </div>
@@ -97,7 +97,7 @@
 
 
 
-    <div class="modal gs-modal fade" id="vendorform" tabindex="-1" aria-modal="true" role="dialog">
+    <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
         <form action="{{ route('user-contact') }}" method="POST"
             class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
@@ -113,7 +113,7 @@
                 <!-- Select Rider -->
                 <div class="input-label-wrapper w-100">
 
-                    <input type="hidden" name="vendor_id" value="{{ auth()->id() }}">
+                    <input type="hidden" name="merchant_id" value="{{ auth()->id() }}">
                     <input type="text" class="form-control border px-3 mb-4" name="email"
                         placeholder="@lang('Enter Email')" required="">
 

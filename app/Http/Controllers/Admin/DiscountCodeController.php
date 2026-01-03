@@ -25,7 +25,7 @@ class DiscountCodeController extends AdminBaseController
                 $price = $data->type == 0 ? $data->price . '%' : \PriceHelper::showAdminCurrencyPrice($data->price * $this->curr->value);
                 return $price;
             })
-            ->addColumn('vendor', function (DiscountCode $data) {
+            ->addColumn('merchant', function (DiscountCode $data) {
                 // Get merchant info for display
                 if ($data->user_id) {
                     $merchant = User::find($data->user_id);
@@ -59,9 +59,9 @@ class DiscountCodeController extends AdminBaseController
         $categories = collect(); // Category::where('status', 1)->get();
         $sub_categories = collect(); // Subcategory::where('status', 1)->get();
         $child_categories = collect(); // Childcategory::where('status', 1)->get();
-        // Get active merchants for vendor dropdown (passed to view as 'vendors' - do not rename)
+        // Get active merchants for merchant dropdown
         $merchants = User::where('is_merchant', 2)->get();
-        return view('admin.discount-code.create', compact('categories', 'sub_categories', 'child_categories', 'vendors'));
+        return view('admin.discount-code.create', compact('categories', 'sub_categories', 'child_categories', 'merchants'));
     }
 
     //*** POST Request
@@ -108,10 +108,10 @@ class DiscountCodeController extends AdminBaseController
         $categories = collect(); // Category::where('status', 1)->get();
         $sub_categories = collect(); // Subcategory::where('status', 1)->get();
         $child_categories = collect(); // Childcategory::where('status', 1)->get();
-        // Get active merchants for vendor dropdown (passed to view as 'vendors' - do not rename)
+        // Get active merchants for merchant dropdown
         $merchants = User::where('is_merchant', 2)->get();
         $data = DiscountCode::findOrFail($id);
-        return view('admin.discount-code.edit', compact('data', 'categories', 'sub_categories', 'child_categories', 'vendors'));
+        return view('admin.discount-code.edit', compact('data', 'categories', 'sub_categories', 'child_categories', 'merchants'));
     }
 
 

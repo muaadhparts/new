@@ -12,22 +12,22 @@
         <div class="mr-breadcrumb">
             <div class="row">
                 <div class="col-lg-12">
-                        <h4 class="heading">{{ __('Listing Product') }} <a class="add-btn" href="{{ route('admin-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
+                        <h4 class="heading">{{ __('Listing CatalogItem') }} <a class="add-btn" href="{{ route('admin-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
                         <ul class="links">
                             <li>
                                 <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
                             </li>
                         <li>
-                            <a href="javascript:;">{{ __('Products') }} </a>
+                            <a href="javascript:;">{{ __('CatalogItems') }} </a>
                         </li>
                         <li>
-                            <a href="{{ route('admin-catalog-item-index') }}">{{ __('All Products') }}</a>
+                            <a href="{{ route('admin-catalog-item-index') }}">{{ __('All CatalogItems') }}</a>
                         </li>
                             <li>
-                                <a href="{{ route('admin-catalog-item-types') }}">{{ __('Add Product') }}</a>
+                                <a href="{{ route('admin-catalog-item-types') }}">{{ __('Add CatalogItem') }}</a>
                             </li>
                             <li>
-                                <a href="{{ route('admin-catalog-item-create','listing') }}">{{ __('Listing Product') }}</a>
+                                <a href="{{ route('admin-catalog-item-create','listing') }}">{{ __('Listing CatalogItem') }}</a>
                             </li>
                         </ul>
                 </div>
@@ -38,10 +38,10 @@
             @include('alerts.admin.form-both')
             <div class="row">
                 <div class="col-lg-8">
-                    <div class="add-product-content">
+                    <div class="add-catalogItem-content">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="product-description">
+                                <div class="catalogItem-description">
                                     <div class="body-area">
                                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
@@ -105,12 +105,12 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Name') }}* </h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Name') }}* </h4>
                                                         <p class="sub-heading">{{ __('(In Any Language)') }}</p>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="form-control" placeholder="{{ __('Enter Product Name') }}" name="name" required="">
+                                                <input type="text" class="form-control" placeholder="{{ __('Enter CatalogItem Name') }}" name="name" required="">
                                             </div>
                                         </div>
 
@@ -118,12 +118,12 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Name (English)') }}</h4>
+                                                    <h4 class="heading">{{ __('CatalogItem Name (English)') }}</h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
                                                 <input type="text" class="form-control"
-                                                    placeholder="{{ __('Enter Product Name in English') }}"
+                                                    placeholder="{{ __('Enter CatalogItem Name in English') }}"
                                                     name="label_en">
                                             </div>
                                         </div>
@@ -132,12 +132,12 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Name (Arabic)') }}</h4>
+                                                    <h4 class="heading">{{ __('CatalogItem Name (Arabic)') }}</h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
                                                 <input type="text" class="form-control" dir="rtl"
-                                                    placeholder="{{ __('Enter Product Name in Arabic') }}"
+                                                    placeholder="{{ __('Enter CatalogItem Name in Arabic') }}"
                                                     name="label_ar">
                                             </div>
                                         </div>
@@ -145,11 +145,11 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Sku') }}* </h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Sku') }}* </h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <input type="text" class="form-control" placeholder="{{ __('Enter Product Sku') }}" name="sku" required="" value="{{ Str::random(3).substr(time(), 6,8).Str::random(3) }}">
+                                                <input type="text" class="form-control" placeholder="{{ __('Enter CatalogItem Sku') }}" name="sku" required="" value="{{ Str::random(3).substr(time(), 6,8).Str::random(3) }}">
                                             </div>
                                         </div>
 
@@ -167,8 +167,8 @@
                                             <div class="col-lg-12">
                                                 <ul class="list">
                                                     <li>
-                                                        <input class="checkclick1" name="product_condition_check" type="checkbox" id="product_condition_check" value="1">
-                                                        <label for="product_condition_check">{{ __('Allow Product Condition') }}</label>
+                                                        <input class="checkclick1" name="item_condition_check" type="checkbox" id="item_condition_check" value="1">
+                                                        <label for="item_condition_check">{{ __('Allow CatalogItem Condition') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -178,11 +178,11 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                            <h4 class="heading">{{ __('Product Condition') }}*</h4>
+                                                            <h4 class="heading">{{ __('CatalogItem Condition') }}*</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
-                                                        <select name="product_condition">
+                                                        <select name="item_condition">
                                                             <option value="2">{{ __('New') }}</option>
                                                             <option value="1">{{ __('Used') }}</option>
                                                         </select>
@@ -201,7 +201,7 @@
                                                 <ul class="list">
                                                     <li>
                                                         <input class="checkclick1" name="preordered_check" type="checkbox" id="preorderedCheck" value="1">
-                                                        <label for="preorderedCheck">{{ __('Allow Product Preorder') }}</label>
+                                                        <label for="preorderedCheck">{{ __('Allow CatalogItem Preorder') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -212,7 +212,7 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                            <h4 class="heading">{{ __('Product Preorder') }}*</h4>
+                                                            <h4 class="heading">{{ __('CatalogItem Preorder') }}*</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -246,7 +246,7 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Minimum Order Qty') }}* </h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Minimum Order Qty') }}* </h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -280,7 +280,7 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Estimated Shipping Time') }}* </h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Estimated Shipping Time') }}* </h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -299,7 +299,7 @@
                                                 <ul class="list">
                                                     <li>
                                                         <input class="checkclickc" name="color_check" type="checkbox" id="check3" value="1">
-                                                        <label for="check3">{{ __('Allow Product Colors') }}</label>
+                                                        <label for="check3">{{ __('Allow CatalogItem Colors') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -311,7 +311,7 @@
                                                     <div  class="col-lg-12">
                                                         <div class="left-area">
                                                             <h4 class="heading">
-                                                                {{ __('Product Colors') }}*
+                                                                {{ __('CatalogItem Colors') }}*
                                                             </h4>
                                                             <p class="sub-heading">
                                                                 {{ __('(Choose Your Favorite Colors)') }}
@@ -344,7 +344,7 @@
                                                 <ul class="list">
                                                     <li>
                                                         <input class="checkclicks" name="size_check" type="checkbox" id="tcheck" value="1">
-                                                        <label for="tcheck">{{ __('Allow Product Sizes') }}</label>
+                                                        <label for="tcheck">{{ __('Allow CatalogItem Sizes') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -355,7 +355,7 @@
                                                     <div  class="col-lg-4">
                                                         <div class="left-area">
                                                             <h4 class="heading">
-                                                                {{ __('Product Size') }}*
+                                                                {{ __('CatalogItem Size') }}*
                                                             </h4>
                                                             <p class="sub-heading">
                                                                 {{ __('(eg. S,M,L,XL,XXL,3XL,4XL)') }}
@@ -366,7 +366,7 @@
                                                             <div class="select-input-tsize" id="tsize-section">
                                                                 <div class="tsize-area">
                                                                     <span class="remove tsize-remove"><i class="fas fa-times"></i></span>
-                                                                    <input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter Product Size') }}"  >
+                                                                    <input  type="text" name="size_all[]" class="form-control tsize" placeholder="{{ __('Enter CatalogItem Size') }}"  >
                                                                     
                                                                     </div>
                                                             </div>
@@ -386,7 +386,7 @@
                                                 <ul class="list">
                                                     <li>
                                                         <input class="checkclick1" name="whole_check" type="checkbox" id="whole_check" value="1">
-                                                        <label for="whole_check">{{ __('Allow Product Whole Sell') }}</label>
+                                                        <label for="whole_check">{{ __('Allow CatalogItem Whole Sell') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -433,7 +433,7 @@
                                                 <ul class="list">
                                                     <li>
                                                         <input class="checkclick1" name="measure_check" type="checkbox" id="measure_check" value="1">
-                                                        <label for="measure_check">{{ __('Allow Product Measurement') }}</label>
+                                                        <label for="measure_check">{{ __('Allow CatalogItem Measurement') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -444,7 +444,7 @@
                                             <div class="row">
                                                 <div class="col-lg-6">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Measurement') }}*</h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Measurement') }}*</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -486,7 +486,7 @@
                                                     <div  class="col-lg-12">
                                                     </div>
                                                     <div  class="col-lg-12">
-                                                        <div class="product-size-details" id="size-section">
+                                                        <div class="catalogItem-size-details" id="size-section">
                                                             <div class="size-area">
                                                                 <span class="remove size-remove"><i class="fas fa-times"></i></span>
                                                                 <div  class="row">
@@ -539,7 +539,7 @@
                                         <div class="row" id="default_stock">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('Product Stock') }}*</h4>
+                                                    <h4 class="heading">{{ __('CatalogItem Stock') }}*</h4>
                                                     <p class="sub-heading">{{ __('(Leave Empty will Show Always Available)') }}</p>
                                                 </div>
                                             </div>
@@ -552,7 +552,7 @@
                                             <div class="col-lg-12">
                                                 <div class="left-area">
                                                     <h4 class="heading">
-                                                        {{ __('Product Description') }}*
+                                                        {{ __('CatalogItem Description') }}*
                                                     </h4>
                                                 </div>
                                             </div>
@@ -567,7 +567,7 @@
                                             <div class="col-lg-12">
                                                 <div class="left-area">
                                                     <h4 class="heading">
-                                                        {{ __('Product Buy/Return Policy') }}*
+                                                        {{ __('CatalogItem Buy/Return Policy') }}*
                                                     </h4>
                                                 </div>
                                             </div>
@@ -582,7 +582,7 @@
                                             <div class="col-lg-12">
                                                 <div class="checkbox-wrapper">
                                                     <input type="checkbox" name="seo_check" value="1" class="checkclick" id="allowProductSEO" value="1">
-                                                    <label for="allowProductSEO">{{ __('Allow Product SEO') }}</label>
+                                                    <label for="allowProductSEO">{{ __('Allow CatalogItem SEO') }}</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -627,10 +627,10 @@
                 </div>
             </div>
                 <div class="col-lg-4">
-                    <div class="add-product-content">
+                    <div class="add-catalogItem-content">
                         <div class="row">
                             <div class="col-lg-12">
-                                <div class="product-description">
+                                <div class="catalogItem-description">
                                     <div class="body-area">
                                         <div class="row">
                                             <div class="col-lg-12">
@@ -656,7 +656,7 @@
                                             <div class="col-lg-12 mb-2">
                                                 <div class="left-area">
                                                     <h4 class="heading">
-                                                        {{ __('Product Gallery Images') }} *
+                                                        {{ __('CatalogItem Gallery Images') }} *
                                                     </h4>
                                                 </div>
                                             </div>
@@ -671,7 +671,7 @@
                                             <div class="col-lg-12">
                                                 <div class="left-area">
                                                     <h4 class="heading">
-                                                        {{ __('Product Current Price') }}*
+                                                        {{ __('CatalogItem Current Price') }}*
                                                     </h4>
                                                     <p class="sub-heading">
                                                         ({{ __('In') }} {{$sign->name}})
@@ -686,7 +686,7 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                        <h4 class="heading">{{ __('Product Discount Price') }}*</h4>
+                                                        <h4 class="heading">{{ __('CatalogItem Discount Price') }}*</h4>
                                                         <p class="sub-heading">{{ __('(Optional)') }}</p>
                                                 </div>
                                             </div>
@@ -756,7 +756,7 @@
 
                                             <div class="row text-center">
                                             <div class="col-6 offset-3">
-                                                <button class="btn btn-primary" type="submit">{{ __('Create Product') }}</button>
+                                                <button class="btn btn-primary" type="submit">{{ __('Create CatalogItem') }}</button>
                                             </div>
                                         </div>
 
@@ -880,5 +880,5 @@ $(document).on('click','#size-check',function(){
 </script>
 
 
-@include('partials.admin.product.product-scripts')
+@include('partials.admin.catalogItem.catalogItem-scripts')
 @endsection

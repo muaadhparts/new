@@ -51,7 +51,7 @@ class HomePageTheme extends Model
         'title_trending',
         'title_best_sellers',
         'title_blogs',
-        // Product Counts
+        // CatalogItem Counts
         'count_featured_products',
         'count_top_rated',
         'count_big_save',

@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\DB;
 return new class extends Migration
 {
     /**
-     * Rename products table to catalog_items
+     * Rename catalogItems table to catalog_items
      * SAFE APPROACH: Create new table, migrate data, rename old table with _old suffix
      */
     public function up(): void
     {
-        // Step 1: Create catalog_items table with same structure as products
+        // Step 1: Create catalog_items table with same structure as catalogItems
         Schema::create('catalog_items', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('brand_id')->default(2);
@@ -51,7 +51,7 @@ return new class extends Migration
             $table->string('cross_products', 255)->nullable();
             $table->string('length', 191)->nullable();
             $table->string('height', 191)->nullable();
-            $table->decimal('width', 10, 2)->nullable()->comment('Product width in cm for volumetric weight calculation');
+            $table->decimal('width', 10, 2)->nullable()->comment('CatalogItem width in cm for volumetric weight calculation');
 
             // Indexes
             $table->index('sku', 'idx_catalog_items_sku');
@@ -62,7 +62,7 @@ return new class extends Migration
         DB::statement('ALTER TABLE `catalog_items` ADD FULLTEXT KEY `name` (`name`)');
         DB::statement('ALTER TABLE `catalog_items` ADD FULLTEXT KEY `attributes` (`attributes`)');
 
-        // Step 2: Copy all data from products to catalog_items
+        // Step 2: Copy all data from catalogItems to catalog_items
         DB::statement('
             INSERT INTO `catalog_items` (
                 `id`, `brand_id`, `sku`, `parent_category`, `category_id`, `subcategory_id`,
@@ -79,17 +79,17 @@ return new class extends Migration
                 `meta_tag`, `meta_description`, `youtube`, `type`, `link`, `platform`,
                 `region`, `measure`, `hot`, `latest`, `sale`, `created_at`, `updated_at`,
                 `is_catalog`, `catalog_id`, `cross_products`, `length`, `height`, `width`
-            FROM `products`
+            FROM `catalogItems`
         ');
 
-        // Step 3: Reset auto_increment to match products table
+        // Step 3: Reset auto_increment to match catalogItems table
         $maxId = DB::table('catalog_items')->max('id');
         if ($maxId) {
             DB::statement("ALTER TABLE `catalog_items` AUTO_INCREMENT = " . ($maxId + 1));
         }
 
-        // Step 4: Rename products to products_old (NEVER DELETE!)
-        Schema::rename('products', 'products_old');
+        // Step 4: Rename catalogItems to products_old (NEVER DELETE!)
+        Schema::rename('catalogItems', 'products_old');
     }
 
     /**
@@ -97,12 +97,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Rename products_old back to products
+        // Rename products_old back to catalogItems
         if (Schema::hasTable('products_old')) {
-            Schema::rename('products_old', 'products');
+            Schema::rename('products_old', 'catalogItems');
         }
 
-        // Drop catalog_items table (safe because data is in products)
+        // Drop catalog_items table (safe because data is in catalogItems)
         Schema::dropIfExists('catalog_items');
     }
 };

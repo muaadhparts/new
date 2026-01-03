@@ -1,30 +1,30 @@
 @extends('layouts.merchant')
 
 @section('content')
-					<input type="hidden" id="headerdata" value="{{ __('PRODUCT') }}">
+					<input type="hidden" id="headerdata" value="{{ __('CATALOGITEM') }}">
 					<div class="content-area">
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __("Affiliate Products") }}</h4>
+										<h4 class="heading">{{ __("Affiliate CatalogItems") }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('merchant.dashboard') }}">{{ __("Dashboard") }}</a>
 											</li>
 											<li>
-												<a href="javascript:;">{{ __("Products") }}</a>
+												<a href="javascript:;">{{ __("CatalogItems") }}</a>
 											</li>
 											<li>
-												<a href="javascript:;">{{ __("Affiliate Products") }}</a>
+												<a href="javascript:;">{{ __("Affiliate CatalogItems") }}</a>
 											</li>
 										</ul>
 								</div>
 							</div>
 						</div>
-						<div class="product-area">
+						<div class="catalogItem-area">
 							<div class="row">
 								<div class="col-lg-12">
-									<div class="mr-table allproduct">
+									<div class="mr-table allcatalogitem">
                         				@include('alerts.admin.form-success')
 										<div class="table-responsive">
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
@@ -91,7 +91,7 @@
 
 		<!-- Modal body -->
 		<div class="modal-body">
-			  <p class="text-center">{{ __("You are about to delete this Product") }}.</p>
+			  <p class="text-center">{{ __("You are about to delete this CatalogItem") }}.</p>
 			  <p class="text-center">{{ __("Do you want to proceed?") }}</p>
 		</div>
 
@@ -130,7 +130,7 @@
 						<div class="upload-img-btn">
 							<form  method="POST" enctype="multipart/form-data" id="form-gallery">
 								@csrf
-							<input type="hidden" id="pid" name="product_id" value="">
+							<input type="hidden" id="pid" name="catalog_item_id" value="">
 							<input type="file" name="gallery[]" class="hidden" id="uploadgallery" accept="image/*" multiple>
 									<label for="image-upload" id="prod_gallery"><i class="icofont-upload-alt"></i>{{ __("Upload File") }}</label>
 							</form>
@@ -196,7 +196,7 @@
       	$(function() {
         $(".btn-area").append('<div class="col-sm-4 table-contents">'+
         	'<a class="add-btn" href="{{route('merchant-import-create')}}">'+
-          '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __("Add New Product") }}<span>'+
+          '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __("Add New CatalogItem") }}<span>'+
           '</a>'+
           '</div>');
       });

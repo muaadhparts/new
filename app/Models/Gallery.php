@@ -18,7 +18,7 @@ class Gallery extends Model
     }
 
     /**
-     * Get the vendor/user that owns this gallery image
+     * Get the merchant/user that owns this gallery image
      */
     public function user()
     {
@@ -31,14 +31,6 @@ class Gallery extends Model
     public function scopeForMerchant($query, $userId)
     {
         return $query->where('user_id', $userId);
-    }
-
-    /**
-     * @deprecated Use scopeForMerchant() instead
-     */
-    public function scopeForVendor($query, $userId)
-    {
-        return $this->scopeForMerchant($query, $userId);
     }
 
     /**

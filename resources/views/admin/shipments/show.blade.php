@@ -238,29 +238,29 @@
             </div>
             @endif
 
-            <!-- Vendor Info -->
-            @if($vendor)
+            <!-- Merchant Info -->
+            @if($merchant)
             <div class="card mb-4">
                 <div class="card-header bg-white">
-                    <h5 class="mb-0"><i class="fas fa-store mr-2"></i>{{ __('Vendor Information') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-store mr-2"></i>{{ __('Merchant Information') }}</h5>
                 </div>
                 <div class="card-body">
                     <table class="table table-sm table-borderless mb-0">
                         <tr>
                             <td class="text-muted">{{ __('Shop Name') }}</td>
-                            <td class="text-right font-weight-bold">{{ $vendor->shop_name ?? 'N/A' }}</td>
+                            <td class="text-right font-weight-bold">{{ $merchant->shop_name ?? 'N/A' }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Owner') }}</td>
-                            <td class="text-right">{{ $vendor->name }}</td>
+                            <td class="text-right">{{ $merchant->name }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Email') }}</td>
-                            <td class="text-right">{{ $vendor->email }}</td>
+                            <td class="text-right">{{ $merchant->email }}</td>
                         </tr>
                         <tr>
                             <td class="text-muted">{{ __('Phone') }}</td>
-                            <td class="text-right">{{ $vendor->phone ?? 'N/A' }}</td>
+                            <td class="text-right">{{ $merchant->phone ?? 'N/A' }}</td>
                         </tr>
                     </table>
                 </div>

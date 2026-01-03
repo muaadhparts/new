@@ -117,7 +117,7 @@
                         </div>
 
                         @php
-                            foreach ($products as $key => $item) {
+                            foreach ($catalogItems as $key => $item) {
                                 $userId = $item['user_id'];
                                 if (!isset($resultArray[$userId])) {
                                     $resultArray[$userId] = [];
@@ -145,80 +145,80 @@
                                     'tryoto' => __('Smart Shipping (Tryoto)'),
                                 ];
 
-                                // ✅ Calculate merchant's products total for free shipping check
+                                // ✅ Calculate merchant's catalogItems total for free shipping check
                                 $merchantProductsTotal = 0;
-                                foreach ($array_product as $product) {
-                                    $merchantProductsTotal += $product['price'] ?? 0;
+                                foreach ($array_product as $catalogItem) {
+                                    $merchantProductsTotal += $catalogItem['price'] ?? 0;
                                 }
                                 $merchantProductsTotalConverted = round($merchantProductsTotal * $curr->value, 2);
 
                             @endphp
-                            {{-- ✅ Hidden element for merchant's products total (for JavaScript) --}}
-                            <input type="hidden" data-merchant-products-total="{{ $loop_merchant_id }}" data-amount="{{ $merchantProductsTotalConverted }}" />
+                            {{-- ✅ Hidden element for merchant's catalogItems total (for JavaScript) --}}
+                            <input type="hidden" data-merchant-catalogItems-total="{{ $loop_merchant_id }}" data-amount="{{ $merchantProductsTotalConverted }}" />
 
-                            <div class="product-infos-wrapper wow-replaced" data-wow-delay=".2s">
+                            <div class="catalogItem-infos-wrapper wow-replaced" data-wow-delay=".2s">
                                 <!-- shop-info-wrapper -->
 
-                                <!-- product list  -->
-                                <div class="product-list">
-                                    @foreach ($array_product as $product)
+                                <!-- catalogItem list  -->
+                                <div class="catalogItem-list">
+                                    @foreach ($array_product as $catalogItem)
                                         @php
-                                            if ($product['dp'] == 0) {
+                                            if ($catalogItem['dp'] == 0) {
                                                 $is_Digital = 0;
                                             }
                                         @endphp
-                                        <div class="checkout-single-product wow-replaced" data-wow-delay=".1s">
+                                        <div class="checkout-single-catalogItem wow-replaced" data-wow-delay=".1s">
                                             <div class="img-wrapper">
                                                 <a href="#">
                                                     <img width="200" class="img-cls"
-                                                        src="{{ $product['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($product['item']['photo']) : asset('assets/images/noimage.png') }}"
-                                                        alt="product">
+                                                        src="{{ $catalogItem['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png') }}"
+                                                        alt="catalogItem">
                                                 </a>
                                             </div>
                                             <div class="content-wrapper">
                                                 @php
                                                     $checkoutProductUrl = '#';
-                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
+                                                    if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
                                                         $checkoutProductUrl = route('front.catalog-item', [
-                                                            'slug' => $product['item']['slug'],
-                                                            'merchant_id' => $product['user_id'],
-                                                            'merchant_item_id' => $product['merchant_item_id']
+                                                            'slug' => $catalogItem['item']['slug'],
+                                                            'merchant_id' => $catalogItem['user_id'],
+                                                            'merchant_item_id' => $catalogItem['merchant_item_id']
                                                         ]);
-                                                    } elseif (isset($product['item']['slug'])) {
-                                                        $checkoutProductUrl = route('front.catalog-item.legacy', $product['item']['slug']);
+                                                    } elseif (isset($catalogItem['item']['slug'])) {
+                                                        $checkoutProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                     }
                                                 @endphp
                                                 <h6>
-                                                    <a class="product-title"
+                                                    <a class="catalogItem-title"
                                                         href="{{ $checkoutProductUrl }}"
                                                         target="_blank">
-                                                        {{ getLocalizedProductName($product['item']) }}
+                                                        {{ getLocalizedCatalogItemName($catalogItem['item']) }}
                                                     </a>
                                                 </h6>
 
-                                                <ul class="product-specifications-list">
+                                                <ul class="catalogItem-specifications-list">
                                                     <li>
                                                         <span class="specification-name">@lang('Price :')</span>
                                                         <span class="specification">
-                                                            {{ App\Models\CatalogItem::convertPrice($product['item_price']) }}</span>
+                                                            {{ App\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}</span>
                                                     </li>
                                                     <li>
                                                         <span class="specification-name">@lang('Quantity :')</span>
-                                                        <span class="specification">{{ $product['qty'] }}</span>
+                                                        <span class="specification">{{ $catalogItem['qty'] }}</span>
                                                     </li>
-                                                    @if (!empty($product['size']))
+                                                    @if (!empty($catalogItem['size']))
                                                         <li>
                                                             <span class="specification-name">{{ __('Size') }} : </span>
                                                             <span
-                                                                class="specification">{{ str_replace('-', ' ', $product['size']) }}</span>
+                                                                class="specification">{{ str_replace('-', ' ', $catalogItem['size']) }}</span>
                                                         </li>
                                                     @endif
 
 
-                                                    @if (!empty($product['color']))
+                                                    @if (!empty($catalogItem['color']))
                                                         @php
                                                             // Handle color as string or array
-                                                            $colorValue = $product['color'];
+                                                            $colorValue = $catalogItem['color'];
                                                             if (is_array($colorValue)) {
                                                                 $colorValue = reset($colorValue) ?: ''; // Get first element
                                                             }
@@ -230,8 +230,8 @@
                                                         </li>
                                                     @endif
 
-                                                    @if (!empty($product['keys']))
-                                                        @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                    @if (!empty($catalogItem['keys']))
+                                                        @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
                                                             <li>
                                                                 <span
                                                                     class="specification-name">{{ ucwords(str_replace('_', ' ', $key)) }}
@@ -244,8 +244,8 @@
                                                     <li>
                                                         <span class="specification-name">@lang('Total Price :') </span>
                                                         <span
-                                                            class="specification">{{ App\Models\CatalogItem::convertPrice($product['price']) }}
-                                                            {{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '%' . __('Off') . ')' }}</span>
+                                                            class="specification">{{ App\Models\CatalogItem::convertPrice($catalogItem['price']) }}
+                                                            {{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '%' . __('Off') . ')' }}</span>
                                                     </li>
                                                 </ul>
                                             </div>
@@ -492,7 +492,7 @@
                             {{-- ✅ Unified Price Summary Component - Step 2 --}}
                             @include('includes.checkout-price-summary', [
                                 'step' => 2,
-                                'productsTotal' => $productsTotal ?? $totalPrice,
+                                'catalogItemsTotal' => $catalogItemsTotal ?? $totalPrice,
                                 'totalPrice' => $totalPrice, // Backward compatibility
                                 'digital' => $digital,
                                 'curr' => $curr,
@@ -563,7 +563,7 @@
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
                 @php
                     // Calculate total with tax for initial display
-                    // Support both regular checkout (total_tax_amount) and vendor checkout (tax_amount)
+                    // Support both regular checkout (total_tax_amount) and merchant checkout (tax_amount)
                     $taxAmount = $step1->total_tax_amount ?? $step1->tax_amount ?? 0;
                     $totalWithTax = $totalPrice + $taxAmount;
                 @endphp
@@ -686,7 +686,7 @@
             // ✅ Tax is already calculated in Step 1 and stored in session
             // NO need to call tax_submit API again - it overwrites correct values!
             // The tax values are already loaded from $step1 in checkout-price-summary.blade.php
-            // ✅ Merchant checkout uses merchant_id instead of vendor_id
+            // ✅ Merchant checkout uses merchant_id instead of merchant_id
 
             let is_state = $('#is_state').val();
             if (is_state == 1) {
@@ -816,9 +816,9 @@
             console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Free:', isFreeShipping);
         }
 
-        // Helper function to get merchant's products total (converted to current currency)
+        // Helper function to get merchant's catalogItems total (converted to current currency)
         window.getMerchantTotal = function getMerchantTotal(merchantId) {
-            const merchantTotalEl = $('[data-merchant-products-total="' + merchantId + '"]');
+            const merchantTotalEl = $('[data-merchant-catalogItems-total="' + merchantId + '"]');
             if (merchantTotalEl.length > 0) {
                 return parseFloat(merchantTotalEl.attr('data-amount')) || 0;
             }

@@ -6,13 +6,13 @@
                         <div class="mr-breadcrumb">
                             <div class="row">
                                 <div class="col-lg-12">
-                                        <h4 class="heading">{{ __("Vendor Details") }} <a class="add-btn" href="{{ url()->previous() }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
+                                        <h4 class="heading">{{ __("Merchant Details") }} <a class="add-btn" href="{{ url()->previous() }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
                                         <ul class="links">
                                             <li>
                                                 <a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }} </a>
                                             </li>
                                             <li>
-                                                <a href="{{ route('admin-merchant-index') }}">{{ __("Vendors") }}</a>
+                                                <a href="{{ route('admin-merchant-index') }}">{{ __("Merchants") }}</a>
                                             </li>
                                             <li>
                                                 <a href="{{ route('admin-merchant-show',$data->id) }}">{{ __("Details") }}</a>
@@ -21,10 +21,10 @@
                                 </div>
                             </div>
                         </div>
-                            <div class="add-product-content1 customar-details-area">
+                            <div class="add-catalogItem-content1 customar-details-area">
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <div class="product-description">
+                                        <div class="catalogItem-description">
                                             <div class="body-area">
                                             <div class="row">
                                                     <div class="col-md-4">
@@ -34,14 +34,14 @@
                                                             @else
                                                             <img src="{{ $data->photo ? asset('assets/images/users/'.$data->photo):asset('assets/images/noimage.png')}}" alt="{{ __("No Image") }}">                                            
                                                             @endif
-                                                        <a href="javascript:;" class="btn btn-primary send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#vendorform">{{ __("Send Message") }}</a>
+                                                        <a href="javascript:;" class="btn btn-primary send" data-email="{{ $data->email }}" data-bs-toggle="modal" data-bs-target="#merchantform">{{ __("Send Message") }}</a>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
                                                     <div class="table-responsive show-table">
                                                         <table class="table">
                                                         <tr>
-                                                            <th>{{ __("Vendor ID#") }}</th>
+                                                            <th>{{ __("Merchant ID#") }}</th>
                                                             <td>{{$data->id}}</td>
                                                         </tr>
                                                         <tr>
@@ -82,7 +82,7 @@
                                                             <td>{{ $data->shop_message }}</td>
                                                         </tr>
                                                         <tr>
-                                                            <th>{{ __("Total Product(s)") }}</th>
+                                                            <th>{{ __("Total CatalogItem(s)") }}</th>
                                                             <td>{{ $data->merchantItems()->count() }}</td>
                                                         </tr>
                                                         <tr>
@@ -113,7 +113,7 @@
                                             <div class="order-table-wrap">
                                                 <div class="order-details-table">
                                                     <div class="mr-table">
-                                                        <h4 class="title">{{ __("Products Added") }}</h4>
+                                                        <h4 class="title">{{ __("Items Added") }}</h4>
                                                         <div class="table-responsive">
                                                                 <table id="example2" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                                     <thead>
@@ -135,13 +135,13 @@
                                                                             // Get the actual catalog item
                                                                             $dt = $merchantItem->catalogItem;
 
-                                                                            $adminVendorUrl = $dt && $dt->slug
+                                                                            $adminMerchantUrl = $dt && $dt->slug
                                                                                 ? route('front.catalog-item', ['slug' => $dt->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
                                                                                 : '#';
 
 
                                                                             // حالة المنتج (جديد/مستعمل)
-                                                                            $condition = $merchantItem->product_condition == 1 ? __('Used') : __('New');
+                                                                            $condition = $merchantItem->item_condition == 1 ? __('Used') : __('New');
 
                                                                             // المخزون
                                                                             $stck = $merchantItem->stock;
@@ -158,18 +158,18 @@
                                                                             $finalPrice = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
                                                                         @endphp
                                                                         <tr>
-                                                                            <td><a href="{{ $adminVendorUrl }}" target="_blank">{{ sprintf("%'.06d", $merchantItem->id) }}</a></td>
-                                                                            <td>{{ $dt ? getLocalizedProductName($dt, 50) : __('N/A') }}</td>
+                                                                            <td><a href="{{ $adminMerchantUrl }}" target="_blank">{{ sprintf("%'.06d", $merchantItem->id) }}</a></td>
+                                                                            <td>{{ $dt ? getLocalizedCatalogItemName($dt, 50) : __('N/A') }}</td>
                                                                             <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A') }}</td>
                                                                             <td>{{ $merchantItem->qualityBrand ? getLocalizedQualityName($merchantItem->qualityBrand) : __('N/A') }}</td>
-                                                                            <td><span class="badge {{ $merchantItem->product_condition == 1 ? 'badge-warning' : 'badge-success' }}">{{ $condition }}</span></td>
+                                                                            <td><span class="badge {{ $merchantItem->item_condition == 1 ? 'badge-warning' : 'badge-success' }}">{{ $condition }}</span></td>
                                                                             <td>{!! $stckDisplay !!}</td>
                                                                             <td>{{ \PriceHelper::showAdminCurrencyPrice($finalPrice) }}</td>
                                                                             <td>
                                                                                 <div class="action-list">
                                                                                 <select class="process select droplinks {{ $merchantItem->status == 1 ? 'drop-success' : 'drop-danger' }}">
-                                                                                    <option data-val="1" value="{{ route('admin-merchant-product-status',['id' => $merchantItem->id, 'status' => 1]) }}" {{ $merchantItem->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
-                                                                                    <option data-val="0" value="{{ route('admin-merchant-product-status',['id' => $merchantItem->id, 'status' => 0]) }}" {{ $merchantItem->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
+                                                                                    <option data-val="1" value="{{ route('admin-merchant-catalogItem-status',['id' => $merchantItem->id, 'status' => 1]) }}" {{ $merchantItem->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
+                                                                                    <option data-val="0" value="{{ route('admin-merchant-catalogItem-status',['id' => $merchantItem->id, 'status' => 0]) }}" {{ $merchantItem->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
                                                                                 </select>
                                                                                 </div>
                                                                             </td>
@@ -194,11 +194,11 @@
 
 {{-- MESSAGE MODAL --}}
 <div class="sub-categori">
-    <div class="modal" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+    <div class="modal" id="merchantform" tabindex="-1" role="dialog" aria-labelledby="merchantformLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vendorformLabel">{{ __("Send Message") }}</h5>
+                    <h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                             
                         </button>

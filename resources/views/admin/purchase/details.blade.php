@@ -43,7 +43,7 @@
                                     <td class="45%" width="45%">{{$purchase->purchase_number}}</td>
                                 </tr>
                                 <tr>
-                                    <th width="45%">{{ __('Total Product') }}</th>
+                                    <th width="45%">{{ __('Total Items') }}</th>
                                     <td width="10%">:</td>
                                     <td width="45%">{{$purchase->totalQty}}</td>
                                 </tr>
@@ -376,7 +376,7 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>{{ __('Vendor') }}</th>
+                                    <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Shipping Company') }}</th>
                                     <th>{{ __('Tracking Number') }}</th>
                                     <th>{{ __('Status') }}</th>
@@ -416,10 +416,10 @@
 
                                 @foreach($deliveries as $delivery)
                                     @php
-                                        $vendor = App\Models\User::find($delivery->merchant_id);
+                                        $merchant = App\Models\User::find($delivery->merchant_id);
                                     @endphp
                                     <tr>
-                                        <td>{{ $vendor->shop_name ?? $vendor->name ?? 'Merchant #' . $delivery->merchant_id }}</td>
+                                        <td>{{ $merchant->shop_name ?? $merchant->name ?? 'Merchant #' . $delivery->merchant_id }}</td>
                                         <td>
                                             <span class="badge badge-secondary">{{ __('Local Rider') }}</span>
                                         </td>
@@ -460,23 +460,23 @@
         <div class="row">
             <div class="col-lg-12 order-details-table">
 
-                @foreach($resultArray as $key1 => $productt)
+                @foreach($resultArray as $key1 => $catalogItem)
 
                 @php
 
                 if($key1 == 0){
-                $vendor = App\Models\Admin::find(1);
+                $merchant = App\Models\Admin::find(1);
                 }else{
-                $vendor = App\Models\User::find($key1);
+                $merchant = App\Models\User::find($key1);
                 }
 
                 @endphp
                 <div class="mr-table">
                     <h4 class="title">
-                        <a href="javascript:;" data-bs-toggle="modal" vendor="{{$key1}}"
-                            vendor-store="{{$vendor->shop_name}}" class="btn btn-primary btn-sm pl-2 show_add_product"
-                            data-bs-target="#add-product"><i class="fas fa-plus"></i>{{ __("Add Product") }}</a> {{
-                        __('Products Purchased From') }} - <strong>{{$vendor->shop_name}}</strong>
+                        <a href="javascript:;" data-bs-toggle="modal" merchant="{{$key1}}"
+                            merchant-store="{{$merchant->shop_name}}" class="btn btn-primary btn-sm pl-2 show_add_product"
+                            data-bs-target="#add-catalogItem"><i class="fas fa-plus"></i>{{ __("Add Item") }}</a> {{
+                        __('Items Purchased From') }} - <strong>{{$merchant->shop_name}}</strong>
 
                     </h4>
                     <div class="table-responsive">
@@ -484,10 +484,10 @@
                             <thead>
 
                                 <tr>
-                                    <th>{{ __('Product ID#') }}</th>
+                                    <th>{{ __('Item ID#') }}</th>
                                     <th>{{ __('Shop Name') }}</th>
-                                    <th>{{ __('Vendor Status') }}</th>
-                                    <th>{{ __('Product Title') }}</th>
+                                    <th>{{ __('Merchant Status') }}</th>
+                                    <th>{{ __('Item Title') }}</th>
                                     <th>{{ __('Details') }}</th>
                                     <th>{{ __('Total Price') }}</th>
                                     <th>{{ __('Action') }}</th>
@@ -496,25 +496,25 @@
                             </thead>
                             <tbody>
                                 @php
-                                $vendor_total = 0;
+                                $merchant_total = 0;
                                 @endphp
-                                @foreach ($productt as $itemKey => $product)
+                                @foreach ($catalogItem as $itemKey => $catalogItem)
                                 @php
-                                $vendor_total += $product['price'];
+                                $merchant_total += $catalogItem['price'];
                                 @endphp
                                 <tr>
-                                    <td><input type="hidden" value="{{$key1}}">{{ $product['item']['id'] }}</td>
+                                    <td><input type="hidden" value="{{$key1}}">{{ $catalogItem['item']['id'] }}</td>
 
                                     <td>
-                                        @if($product['item']['user_id'] != 0)
+                                        @if($catalogItem['item']['user_id'] != 0)
                                         @php
-                                        $user = App\Models\User::find($product['item']['user_id']);
+                                        $user = App\Models\User::find($catalogItem['item']['user_id']);
                                         @endphp
                                         @if(isset($user))
                                         <a target="_blank"
                                             href="{{route('admin-merchant-show',$user->id)}}">{{$user->shop_name}}</a>
                                         @else
-                                        {{ __('Vendor Removed') }}
+                                        {{ __('Merchant Removed') }}
                                         @endif
                                         @else
                                         <a href="javascript:;">{{ App\Models\Admin::find(1)->shop_name }}</a>
@@ -522,9 +522,9 @@
 
                                     </td>
                                     <td>
-                                        @if($product['item']['user_id'] != 0)
+                                        @if($catalogItem['item']['user_id'] != 0)
                                         @php
-                                        $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$product['item']['user_id'])->first();
+                                        $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$catalogItem['item']['user_id'])->first();
 
 
                                         @endphp
@@ -552,46 +552,46 @@
 
 
                                     <td>
-                                        <input type="hidden" value="{{ $product['license'] }}">
+                                        <input type="hidden" value="{{ $catalogItem['license'] }}">
 
                                         @php
-                                        $detailsProductUrl = '#';
-                                        if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
-                                            $detailsProductUrl = route('front.catalog-item', [
-                                                'slug' => $product['item']['slug'],
-                                                'merchant_id' => $product['user_id'],
-                                                'merchant_item_id' => $product['merchant_item_id']
+                                        $detailsCatalogItemUrl = '#';
+                                        if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
+                                            $detailsCatalogItemUrl = route('front.catalog-item', [
+                                                'slug' => $catalogItem['item']['slug'],
+                                                'merchant_id' => $catalogItem['user_id'],
+                                                'merchant_item_id' => $catalogItem['merchant_item_id']
                                             ]);
-                                        } elseif (isset($product['item']['slug'])) {
-                                            $detailsProductUrl = route('front.catalog-item.legacy', $product['item']['slug']);
+                                        } elseif (isset($catalogItem['item']['slug'])) {
+                                            $detailsCatalogItemUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                         }
                                         @endphp
-                                        <a target="_blank" href="{{ $detailsProductUrl }}">{{ getLocalizedProductName($product['item'], 30) }}</a>
-                                        <br><small class="text-muted">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
+                                        <a target="_blank" href="{{ $detailsCatalogItemUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
+                                        <br><small class="text-muted">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
                                         @php
-                                        $user = isset($product['item']['user_id']) && $product['item']['user_id'] != 0
-                                            ? App\Models\User::find($product['item']['user_id'])
+                                        $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
+                                            ? App\Models\User::find($catalogItem['item']['user_id'])
                                             : null;
                                         @endphp
-                                        @if(isset($user) || isset($product['vendor_name']))
+                                        @if(isset($user) || isset($catalogItem['merchant_name']))
                                         <p class="mb-0 mt-1">
-                                            <strong>{{ __('Vendor') }}:</strong>
-                                            {{ $product['vendor_name'] ?? ($user->shop_name ?? $user->name ?? '') }}
+                                            <strong>{{ __('Merchant') }}:</strong>
+                                            {{ $catalogItem['merchant_name'] ?? ($user->shop_name ?? $user->name ?? '') }}
                                         </p>
                                         @endif
-                                        @if(isset($product['item']['brand_name']))
+                                        @if(isset($catalogItem['item']['brand_name']))
                                         <p class="mb-0">
-                                            <strong>{{ __('Brand') }}:</strong> {{ $product['item']['brand_name'] }}
+                                            <strong>{{ __('Brand') }}:</strong> {{ $catalogItem['item']['brand_name'] }}
                                         </p>
                                         @endif
                                         @php
                                             // جودة البراند والشركة المصنعة
                                             $qualityBrand = null;
-                                            if (isset($product['brand_quality_id']) && $product['brand_quality_id']) {
-                                                $qualityBrand = \App\Models\QualityBrand::find($product['brand_quality_id']);
+                                            if (isset($catalogItem['brand_quality_id']) && $catalogItem['brand_quality_id']) {
+                                                $qualityBrand = \App\Models\QualityBrand::find($catalogItem['brand_quality_id']);
                                             }
                                             // حالة المنتج (جديد/مستعمل)
-                                            $productCondition = isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? __('Used') : __('New');
+                                            $itemCondition = isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? __('Used') : __('New');
                                         @endphp
                                         @if($qualityBrand)
                                         <p class="mb-0">
@@ -600,48 +600,48 @@
                                         @endif
                                         <p class="mb-0">
                                             <strong>{{ __('Condition') }}:</strong>
-                                            <span class="badge {{ isset($product['item']['product_condition']) && $product['item']['product_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $productCondition }}</span>
+                                            <span class="badge {{ isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $itemCondition }}</span>
                                         </p>
 
-                                        @if($product['license'] != '')
+                                        @if($catalogItem['license'] != '')
                                         <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#confirm-delete"
-                                            class="btn btn-info btn-sm product-btn license"><i
+                                            class="btn btn-info btn-sm catalogItem-btn license"><i
                                                 class="fa fa-eye"></i> {{ __('View License') }}</a>
                                         @endif
 
-                                        @if($product['affilate_user'] != 0)
+                                        @if($catalogItem['affilate_user'] != 0)
                                         <p>
                                             <strong>{{ __('Referral User') }} :</strong> {{
-                                            \App\Models\User::find($product['affilate_user'])->name }}
+                                            \App\Models\User::find($catalogItem['affilate_user'])->name }}
                                         </p>
                                         @endif
 
                                     </td>
                                     <td>
-                                        @if($product['size'])
+                                        @if($catalogItem['size'])
                                         <p>
                                             <strong>{{ __('Size') }} :</strong> {{str_replace('-','
-                                            ',$product['size'])}}
+                                            ',$catalogItem['size'])}}
                                         </p>
                                         @endif
-                                        @if($product['color'])
+                                        @if($catalogItem['color'])
                                         <p>
-                                            <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$product['color']}};"></span>
+                                            <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$catalogItem['color']}};"></span>
                                         </p>
                                         @endif
                                         <p>
                                             <strong>{{ __('Price') }} :</strong> {{
-                                            \PriceHelper::showCurrencyPrice(($product['item_price'] ) *
+                                            \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) *
                                             $purchase->currency_value) }}
                                         </p>
                                         <p>
-                                            <strong>{{ __('Qty') }} :</strong> {{$product['qty']}} {{
-                                            $product['item']['measure'] }}
+                                            <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{
+                                            $catalogItem['item']['measure'] }}
                                         </p>
-                                        @if(!empty($product['keys']))
+                                        @if(!empty($catalogItem['keys']))
 
-                                        @foreach( array_combine(explode(',', $product['keys']), explode(',',
-                                        $product['values'])) as $key => $value)
+                                        @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',',
+                                        $catalogItem['values'])) as $key => $value)
                                         <p>
                                             <b>{{ ucwords(str_replace('_', ' ', $key)) }} : </b> {{ $value }}
                                         </p>
@@ -651,9 +651,9 @@
 
                                     </td>
 
-                                    <td> {{ \PriceHelper::showCurrencyPrice($product['price'] *
+                                    <td> {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] *
                                         $purchase->currency_value)
-                                        }} <small>{{ $product['discount'] == 0 ? '' : '('.$product['discount'].'%
+                                        }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'%
                                             '.__('Off').')' }}</small>
                                     </td>
 
@@ -662,16 +662,16 @@
 
                                         <div class="action-list">
 
-                                            @if (App\Models\CatalogItem::whereId($product['item']['id'])->exists())
-                                            <a class="btn btn-primary btn-sm edit-product" data-href="{{ route('admin-purchase-product-edit',[$itemKey, $product['item']['id'] ,$purchase->id]) }}"
-                                                data-bs-toggle="modal" data-bs-target="#edit-product-modal">
+                                            @if (App\Models\CatalogItem::whereId($catalogItem['item']['id'])->exists())
+                                            <a class="btn btn-primary btn-sm edit-catalogItem" data-href="{{ route('admin-purchase-catalogItem-edit',[$itemKey, $catalogItem['item']['id'] ,$purchase->id]) }}"
+                                                data-bs-toggle="modal" data-bs-target="#edit-catalogItem-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
                                             </a>
                                             @endif
 
-                                            <a class="btn btn-danger btn-sm delete-product"
-                                                data-href="{{ route('admin-purchase-product-delete',[$itemKey,$purchase->id]) }}"
-                                                data-bs-toggle="modal" data-bs-target="#delete-product-modal">
+                                            <a class="btn btn-danger btn-sm delete-catalogItem"
+                                                data-href="{{ route('admin-purchase-catalogItem-delete',[$itemKey,$purchase->id]) }}"
+                                                data-bs-toggle="modal" data-bs-target="#delete-catalogItem-modal">
                                                 <i class="fas fa-trash"></i>
                                             </a>
 
@@ -684,18 +684,18 @@
                                 @endforeach
                                 @php
 
-                                $purchase_shipping = @json_decode($purchase->vendor_shipping_id, true);
-                                $purchase_package = @json_decode($purchase->vendor_packing_id, true);
+                                $purchase_shipping = @json_decode($purchase->merchant_shipping_id, true);
+                                $purchase_package = @json_decode($purchase->merchant_packing_id, true);
 
-                                $vendor_shipping_id = @$purchase_shipping[$key1];
-                                $vendor_package_id = @$purchase_package[$key1];
-                                if($vendor_shipping_id){
-                                $shipping = App\Models\Shipping::findOrFail($vendor_shipping_id);
+                                $merchant_shipping_id = @$purchase_shipping[$key1];
+                                $merchant_package_id = @$purchase_package[$key1];
+                                if($merchant_shipping_id){
+                                $shipping = App\Models\Shipping::findOrFail($merchant_shipping_id);
                                 }else{
                                 $shipping = [];
                                 }
-                                if($vendor_package_id){
-                                $package = App\Models\Package::findOrFail($vendor_package_id);
+                                if($merchant_package_id){
+                                $package = App\Models\Package::findOrFail($merchant_package_id);
                                 }else{
                                 $package = [];
                                 }
@@ -724,7 +724,7 @@
                                         <p>
                                             {{ __('Total Amount') }} :
                                             <strong>
-                                                {{ \PriceHelper::showCurrencyPrice(($vendor_total +
+                                                {{ \PriceHelper::showCurrencyPrice(($merchant_total +
                                                 @$shipping->price + @$package->price ) *
                                                 $purchase->currency_value )}}
                                             </strong>
@@ -741,7 +741,7 @@
             </div>
             <div class="col-lg-12 text-center mt-2">
                 <a class="btn btn-primary sendEmail send" href="javascript:;" data-email="{{ $purchase->customer_email }}"
-                    data-bs-toggle="modal" data-bs-target="#vendorform">
+                    data-bs-toggle="modal" data-bs-target="#merchantform">
                     <i class="fa fa-send"></i> {{ __('Send Email') }}
                 </a>
             </div>
@@ -806,16 +806,16 @@
 
 {{-- SHIPPING DETAILS MODAL ENDS --}}
 
-{{-- ADD PRODUCT MODAL --}}
+{{-- ADD ITEM MODAL --}}
 
-@include('admin.purchase.partials.add-product')
+@include('admin.purchase.partials.add-catalogItem')
 
-{{-- ADD PRODUCT MODAL ENDS --}}
+{{-- ADD ITEM MODAL ENDS --}}
 
 
-{{-- EDIT PRODUCT MODAL --}}
+{{-- EDIT ITEM MODAL --}}
 
-<div class="modal fade" id="edit-product-modal" tabindex="-1" role="dialog" aria-labelledby="edit-product-modal"
+<div class="modal fade" id="edit-catalogItem-modal" tabindex="-1" role="dialog" aria-labelledby="edit-catalogItem-modal"
     aria-hidden="true">
 
     <div class="modal-dialog modal-dialog-centered" role="document">
@@ -844,11 +844,11 @@
 
 </div>
 
-{{-- EDIT PRODUCT MODAL ENDS --}}
+{{-- EDIT ITEM MODAL ENDS --}}
 
-{{-- DELETE PRODUCT MODAL --}}
+{{-- DELETE ITEM MODAL --}}
 
-<div class="modal fade" id="delete-product-modal" tabindex="-1" role="dialog" aria-labelledby="modal1"
+<div class="modal fade" id="delete-catalogItem-modal" tabindex="-1" role="dialog" aria-labelledby="modal1"
     aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -877,17 +877,17 @@
     </div>
 </div>
 
-{{-- DELETE PRODUCT MODAL ENDS --}}
+{{-- DELETE ITEM MODAL ENDS --}}
 
 
 
 {{-- MESSAGE MODAL --}}
 <div class="sub-categori">
-    <div class="modal" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+    <div class="modal" id="merchantform" tabindex="-1" role="dialog" aria-labelledby="merchantformLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
+                    <h5 class="modal-title" id="merchantformLabel">{{ __('Send Email') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                         
                     </button>
@@ -973,10 +973,10 @@
 
 
 $(document).on('click','.show_add_product',function(){
-    let vendor_id = $(this).attr('vendor');
-    $('#add_vendor_id').val(vendor_id);
-    let message = `You can add only <strong>(${$(this).attr('vendor-store')})</strong> Store Product`;
-    $('.show_vendor_message').html(message);
+    let merchant_id = $(this).attr('merchant');
+    $('#add_merchant_id').val(merchant_id);
+    let message = `You can add only <strong>(${$(this).attr('merchant-store')})</strong> Store Items`;
+    $('.show_merchant_message').html(message);
 })
 
 
@@ -1033,13 +1033,13 @@ $(document).on('click','.show_add_product',function(){
 
 // ADD OPERATION
 
-    $(document).on('click','.edit-product',function(){
+    $(document).on('click','.edit-catalogItem',function(){
 
         if(admin_loader == 1)
         {
             $('.submit-loader').show();
         }
-        $('#edit-product-modal .modal-content .modal-body').html('').load($(this).data('href'),function(response, status, xhr){
+        $('#edit-catalogItem-modal .modal-content .modal-body').html('').load($(this).data('href'),function(response, status, xhr){
             if(status == "success")
             {
                 if(admin_loader == 1)
@@ -1054,7 +1054,7 @@ $(document).on('click','.show_add_product',function(){
 
 // SHOW PRODUCT FORM SUBMIT
 
-$(document).on('submit','#show-product',function(e){
+$(document).on('submit','#show-catalogItem',function(e){
   e.preventDefault();
   if(admin_loader == 1)
   {
@@ -1073,7 +1073,7 @@ $(document).on('submit','#show-product',function(e){
        success:function(data)
        {
         if(data[0]){
-            $('#product-show').html('').load(mainurl+"/admin/order/product-show/"+data[1],function(response, status, xhr){
+            $('#catalogItem-show').html('').load(mainurl+"/admin/order/catalogItem-show/"+data[1],function(response, status, xhr){
                 if(status == "success")
                 {
                     if(admin_loader == 1)
@@ -1088,7 +1088,7 @@ $(document).on('submit','#show-product',function(e){
             {
                 $('.submit-loader').hide();
             }
-            $('#product-show').html('<div class="col-lg-12 text-center"><h4>'+data[1]+'.</h4></div>')
+            $('#catalogItem-show').html('<div class="col-lg-12 text-center"><h4>'+data[1]+'.</h4></div>')
         }
 
         $('button.btn.btn-primary').prop('disabled',false);
@@ -1100,10 +1100,10 @@ $(document).on('submit','#show-product',function(e){
 
 });
 
-// SHOW PRODUCT FORM SUBMIT ENDS
+// SHOW ITEM FORM SUBMIT ENDS
 
 
-$('#delete-product-modal').on('show.bs.modal', function(e) {
+$('#delete-catalogItem-modal').on('show.bs.modal', function(e) {
     $(this).find('.btn-ok').attr('href', $(e.relatedTarget).data('href'));
   });
 

@@ -6,37 +6,37 @@
             <div class="mr-breadcrumb">
               <div class="row">
                 <div class="col-lg-12">
-                    <h4 class="heading">{{ __("Add Product") }}</h4>
+                    <h4 class="heading">{{ __("Add CatalogItem") }}</h4>
                     <ul class="links">
                       <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __("Dashboard") }}</a>
                       </li>
                       <li>
-                        <a href="javascript:;">{{ __("Products") }} </a>
+                        <a href="javascript:;">{{ __("Catalog Items") }} </a>
                       </li>
                       <li>
-                        <a href="{{ route('admin-catalog-item-index') }}">{{ __("All Products") }}</a>
+                        <a href="{{ route('admin-catalog-item-index') }}">{{ __("All Catalog Items") }}</a>
                       </li>
                       <li>
-                        <a href="{{ route('admin-catalog-item-types') }}">{{ __("Add Product") }}</a>
+                        <a href="{{ route('admin-catalog-item-types') }}">{{ __("Add CatalogItem") }}</a>
                       </li>
                     </ul>
                 </div>
               </div>
             </div>
-            <div class="add-product-content">
+            <div class="add-catalogItem-content">
               <div class="row">
                 <div class="col-lg-12">
-                  <div class="product-description">
+                  <div class="catalogItem-description">
                     <div class="heading-area">
                       <h2 class="title">
-                          {{ __("Product Types") }}
+                          {{ __("Catalog Item Types") }}
                       </h2>
                     </div>
                   </div>
                 </div>
               </div>
-              <div class="ap-product-categories">
+              <div class="ap-catalogItem-categories">
                 <div class="row">
                   <div class="col-lg-4">
                     <a href="{{ route('admin-catalog-item-create','physical') }}">

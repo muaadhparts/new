@@ -22,10 +22,10 @@
 			</div>
 		</div>
 	</div>
-	<div class="add-product-content">
+	<div class="add-catalogItem-content">
 		<div class="row">
 			<div class="col-lg-12">
-				<div class="product-description">
+				<div class="catalogItem-description">
 					<div class="body-area">
 
 						<div class="gocover"
@@ -36,7 +36,7 @@
 							{{csrf_field()}}
 
 
-							@include('alerts.vendor.form-both')
+							@include('alerts.merchant.form-both')
 
 							<div class="row">
 								<div class="col-lg-4">
@@ -47,7 +47,7 @@
 								<div class="col-lg-7">
 									<div class="img-upload full-width-img">
 										<div id="image-preview" class="img-preview"
-											style="background: url({{ $data->shop_image ? asset('assets/images/vendorbanner/'.$data->shop_image):asset('assets/images/noimage.png') }});">
+											style="background: url({{ $data->shop_image ? asset('assets/images/merchantbanner/'.$data->shop_image):asset('assets/images/noimage.png') }});">
 											<label for="image-upload" class="img-label" id="image-label"><i
 													class="icofont-upload-alt"></i>{{ __('Upload Banner') }}</label>
 											<input type="file" name="shop_image" class="img-upload" id="image-upload">

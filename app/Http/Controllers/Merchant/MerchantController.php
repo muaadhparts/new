@@ -22,7 +22,7 @@ class MerchantController extends MerchantBaseController
 
                 $data['sales'] .= "'" . MerchantPurchase::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->sum("price") . "',";
             }
-            // Retrieve recent catalog items for this vendor using the merchantItems relationship.
+            // Retrieve recent catalog items for this merchant using the merchantItems relationship.
             // Limit to 5 entries to avoid overwhelming the dashboard when there are many items.
             $userId = $this->user->id;
             $data['pproducts'] = CatalogItem::whereHas('merchantItems', function ($q) use ($userId) {
@@ -72,7 +72,7 @@ class MerchantController extends MerchantBaseController
                 return response()->json(array('errors' => ['Image format not supported']));
             }
             $name = \PriceHelper::ImageCreateName($file);
-            $file->move('assets/images/vendorbanner', $name);
+            $file->move('assets/images/merchantbanner', $name);
             $input['shop_image'] = $name;
         }
 
@@ -121,7 +121,7 @@ class MerchantController extends MerchantBaseController
     public function ship()
     {
         $gs = Muaadhsetting::find(1);
-        if ($gs->vendor_ship_info == 0) {
+        if ($gs->merchant_ship_info == 0) {
             return redirect()->back();
         }
         $data = $this->user;

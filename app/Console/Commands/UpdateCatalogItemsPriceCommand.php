@@ -9,14 +9,14 @@ class UpdateCatalogItemsPriceCommand extends Command
 {
     /**
      * options:
-     *  --user_id=   : target vendor user_id (default: 59)
+     *  --user_id=   : target merchant user_id (default: 59)
      *  --margin=    : multiplier (e.g. 1.3 for +30%), default: 1.3
      */
     protected $signature = 'catalog-items:update-price
-                            {--user_id=59 : Vendor user_id to update}
+                            {--user_id=59 : Merchant user_id to update}
                             {--margin=1.3 : Price multiplier (e.g. 1.3 = +30%)}';
 
-    protected $description = 'Update merchant_items.price from stock_all.cost_price * margin (default +30%) for the given vendor.';
+    protected $description = 'Update merchant_items.price from stock_all.cost_price * margin (default +30%) for the given merchant.';
 
     public function handle(): int
     {

@@ -1,6 +1,6 @@
 {{--
     Unified Catalog Item Info Component
-    Displays: SKU, Brand, Quality Brand, Vendor, Stock
+    Displays: SKU, Brand, Quality Brand, Merchant, Stock
 
     Usage Examples:
     <x-catalog-item-info :catalog-item="$catalogItem" />
@@ -15,7 +15,7 @@
     'showSku' => true,
     'showBrand' => true,
     'showQualityBrand' => true,
-    'showVendor' => true,
+    'showMerchant' => true,
     'showStock' => true
 ])
 
@@ -35,7 +35,7 @@
     }
 
     // Extract all display values (using localized names)
-    // NO FALLBACK - if $mp is null, vendor-specific fields will be null
+    // NO FALLBACK - if $mp is null, merchant-specific fields will be null
     // NOTE: All relationships MUST be eager loaded by Controller before passing to view
     $sku = $catalogItem->sku ?? null;
     $brandName = $catalogItem->brand?->localized_name;
@@ -43,7 +43,7 @@
     $qualityBrand = $mp?->qualityBrand;
     $qualityBrandName = $qualityBrand?->localized_name;
     $qualityBrandLogo = $qualityBrand?->logo_url;
-    $vendorName = $mp?->user ? getLocalizedShopName($mp->user) : null;
+    $merchantName = $mp?->user ? getLocalizedShopName($mp->user) : null;
     $stock = $mp?->stock;
 
     // Format stock display with colors
@@ -93,9 +93,9 @@
             </span>
         @endif
 
-        @if($showVendor && $vendorName)
+        @if($showMerchant && $merchantName)
             <span class="badge bg-light text-dark">
-                <i class="fas fa-store me-1"></i>{{ $vendorName }}
+                <i class="fas fa-store me-1"></i>{{ $merchantName }}
             </span>
         @endif
 
@@ -135,9 +135,9 @@
             </li>
         @endif
 
-        @if($showVendor && $vendorName)
+        @if($showMerchant && $merchantName)
             <li class="small">
-                <strong>{{ __('Vendor') }}:</strong> {{ $vendorName }}
+                <strong>{{ __('Merchant') }}:</strong> {{ $merchantName }}
             </li>
         @endif
 
@@ -184,10 +184,10 @@
                     </tr>
                 @endif
 
-                @if($showVendor && $vendorName)
+                @if($showMerchant && $merchantName)
                     <tr>
-                        <td class="text-muted"><i class="fas fa-store me-1"></i>{{ __('Vendor') }}</td>
-                        <td>{{ $vendorName }}</td>
+                        <td class="text-muted"><i class="fas fa-store me-1"></i>{{ __('Merchant') }}</td>
+                        <td>{{ $merchantName }}</td>
                     </tr>
                 @endif
 
@@ -210,9 +210,9 @@
             </span>
         @endif
 
-        @if($showVendor && $vendorName)
-            <span class="catalog-item-info-compact__item catalog-item-info-compact__vendor">
-                <i class="fas fa-store"></i> {{ Str::limit($vendorName, 15) }}
+        @if($showMerchant && $merchantName)
+            <span class="catalog-item-info-compact__item catalog-item-info-compact__merchant">
+                <i class="fas fa-store"></i> {{ Str::limit($merchantName, 15) }}
             </span>
         @endif
 
@@ -257,9 +257,9 @@
             </span>
         @endif
 
-        @if($showVendor && $vendorName)
+        @if($showMerchant && $merchantName)
             <span class="me-2">
-                <i class="fas fa-store me-1"></i>{{ $vendorName }}
+                <i class="fas fa-store me-1"></i>{{ $merchantName }}
             </span>
         @endif
 

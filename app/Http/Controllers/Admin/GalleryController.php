@@ -30,7 +30,7 @@ class GalleryController extends Controller
     public function store(Request $request)
     { 
         $data = null;
-        $lastid = $request->catalog_item_id ?? $request->product_id;
+        $lastid = $request->catalog_item_id;
         if ($files = $request->file('gallery')){
             foreach ($files as  $key => $file){
                 $val = $file->getClientOriginalExtension();

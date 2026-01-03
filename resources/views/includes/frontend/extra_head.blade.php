@@ -10,16 +10,16 @@
     <meta name="keywords" content="{{ $blog->meta_tag }}">
     <meta name="description" content="{{ $blog->meta_description }}">
     <title>{{ $gs->title }}</title>
-@elseif(isset($productt))
-    <meta name="keywords" content="{{ $productt->meta_tag ?? '' }}">
+@elseif(isset($catalogItem) && is_object($catalogItem) && !empty($catalogItem->name))
+    <meta name="keywords" content="{{ $catalogItem->meta_tag ?? '' }}">
     <meta name="description"
-        content="{{ $productt->meta_description ?? strip_tags($productt->description ?? '') }}">
-    <meta property="og:title" content="{{ $productt->name }}" />
+        content="{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}">
+    <meta property="og:title" content="{{ $catalogItem->name }}" />
     <meta property="og:description"
-        content="{{ $productt->meta_description ?? strip_tags($productt->description ?? '') }}" />
-    <meta property="og:image" content="{{ filter_var($productt->photo, FILTER_VALIDATE_URL) ? $productt->photo : ($productt->photo ? \Illuminate\Support\Facades\Storage::url($productt->photo) : asset('assets/images/noimage.png')) }}" />
+        content="{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}" />
+    <meta property="og:image" content="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}" />
     <meta name="author" content="Muaadh">
-    <title>{{ substr($productt->name, 0, 11) . '-' }}{{ $gs->title }}</title>
+    <title>{{ substr($catalogItem->name, 0, 11) . '-' }}{{ $gs->title }}</title>
 @else
     <meta property="og:title" content="{{ $gs->title }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />

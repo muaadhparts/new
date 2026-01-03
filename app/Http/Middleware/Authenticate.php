@@ -17,7 +17,7 @@ class Authenticate extends Middleware
         }
 
         // إذا كان المستخدم يحاول الوصول لصفحات الفيندور
-        if ($request->is('vendor/*') || $request->is('vendor')) {
+        if ($request->is('merchant/*') || $request->is('merchant')) {
             return route('user.login');
         }
 

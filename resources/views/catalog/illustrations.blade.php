@@ -99,8 +99,8 @@
                     </div>
                 </div>
                 <div class="card-body p-2 p-md-3">
-                    <div class="products-view">
-                        <div class="products-view__options view-options">
+                    <div class="catalogItems-view">
+                        <div class="catalogItems-view__options view-options">
                             <div class="view-options__body">
                                 <div id="zoom_container">
                                     <img id="image"

@@ -22,7 +22,7 @@
                 </div>
             </div>
         </div>
-        <div class="product-area">
+        <div class="catalogItem-area">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="mr-table allproduct">
@@ -78,11 +78,11 @@
 
 
     {{-- MESSAGE MODAL --}}
-    <div class="modal fade" id="vendorform" tabindex="-1" role="dialog" aria-labelledby="vendorformLabel" aria-hidden="true">
+    <div class="modal fade" id="merchantform" tabindex="-1" role="dialog" aria-labelledby="merchantformLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="vendorformLabel">{{ __('Send Email') }}</h5>
+                    <h5 class="modal-title" id="merchantformLabel">{{ __('Send Email') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

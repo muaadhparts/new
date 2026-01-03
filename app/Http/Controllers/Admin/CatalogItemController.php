@@ -23,9 +23,9 @@ class CatalogItemController extends AdminBaseController
     public function datatables(Request $request)
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        // product_type is now on merchant_items, not catalog_items
+        // item_type is now on merchant_items, not catalog_items
         $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
-            ->where('product_type', 'normal');
+            ->where('item_type', 'normal');
 
         if ($request->type == 'deactive') {
             $query->where('status', 0);
@@ -61,9 +61,9 @@ class CatalogItemController extends AdminBaseController
                     'merchant_item_id' => $mp->id
                 ]);
 
-                $displayName = getLocalizedProductName($catalogItem);
+                $displayName = getLocalizedCatalogItemName($catalogItem);
                 $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
-                $condition = $mp->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $condition = $mp->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
                 return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
@@ -74,7 +74,7 @@ class CatalogItemController extends AdminBaseController
             ->addColumn('quality_brand', function (MerchantItem $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
-            ->addColumn('vendor', function (MerchantItem $mp) {
+            ->addColumn('merchant', function (MerchantItem $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
                 return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
@@ -120,14 +120,14 @@ class CatalogItemController extends AdminBaseController
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
-                        <a href="' . route('admin-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
+                        <a href="' . route('admin-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
                         <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
                         . $catalog .
                         '<a data-href="' . route('admin-catalog-item-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
-                        <a href="javascript:;" data-href="' . route('admin-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete Product") . '</a>
+                        <a href="javascript:;" data-href="' . route('admin-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete CatalogItem") . '</a>
                     </div></div>';
             })
-            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant'])
             ->toJson();
     }
 
@@ -171,9 +171,9 @@ class CatalogItemController extends AdminBaseController
                     'merchant_item_id' => $mp->id
                 ]);
 
-                $displayName = getLocalizedProductName($catalogItem);
+                $displayName = getLocalizedCatalogItemName($catalogItem);
                 $sku = $catalogItem->sku ? '<br><small class="text-muted">' . __('SKU') . ': ' . $catalogItem->sku . '</small>' : '';
-                $condition = $mp->product_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $condition = $mp->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
                 return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $sku . ' ' . $condition;
             })
@@ -184,7 +184,7 @@ class CatalogItemController extends AdminBaseController
             ->addColumn('quality_brand', function (MerchantItem $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
             })
-            ->addColumn('vendor', function (MerchantItem $mp) {
+            ->addColumn('merchant', function (MerchantItem $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
                 return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
@@ -220,27 +220,19 @@ class CatalogItemController extends AdminBaseController
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
-                        <a href="' . route('admin-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit Product") . '</a>
+                        <a href="' . route('admin-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
                         <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
                         <a data-href="' . route('admin-catalog-item-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
                         <a href="javascript:;" data-href="' . route('admin-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>
                     </div></div>';
             })
-            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'vendor'])
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant'])
             ->toJson();
     }
 
     public function catalogItemsCatalog()
     {
         return view('admin.catalog-item.catalog');
-    }
-
-    /**
-     * @deprecated Use catalogItemsCatalog instead
-     */
-    public function productscatalog()
-    {
-        return $this->catalogItemsCatalog();
     }
 
     public function index()
@@ -304,14 +296,6 @@ class CatalogItemController extends AdminBaseController
         //--- Redirect Section Ends
     }
 
-    /**
-     * @deprecated Use merchantItemStatus instead
-     */
-    public function merchantProductStatus($id, $status)
-    {
-        return $this->merchantItemStatus($id, $status);
-    }
-
     //*** POST Request
     public function uploadUpdate(Request $request, $id)
     {
@@ -332,11 +316,11 @@ class CatalogItemController extends AdminBaseController
         list(, $image) = explode(',', $image);
         $image = base64_decode($image);
         $image_name = time() . Str::random(8) . '.png';
-        $path = 'assets/images/products/' . $image_name;
+        $path = 'assets/images/catalogItems/' . $image_name;
         file_put_contents($path, $image);
         if ($data->photo != null) {
-            if (file_exists(public_path() . '/assets/images/products/' . $data->photo)) {
-                unlink(public_path() . '/assets/images/products/' . $data->photo);
+            if (file_exists(public_path() . '/assets/images/catalogItems/' . $data->photo)) {
+                unlink(public_path() . '/assets/images/catalogItems/' . $data->photo);
             }
         }
         $input['photo'] = $image_name;
@@ -347,7 +331,7 @@ class CatalogItemController extends AdminBaseController
             }
         }
 
-        $img = Image::make('assets/images/products/' . $data->photo)->resize(285, 285);
+        $img = Image::make('assets/images/catalogItems/' . $data->photo)->resize(285, 285);
         $thumbnail = time() . Str::random(8) . '.jpg';
         $img->save('assets/images/thumbnails/' . $thumbnail);
         $data->thumbnail = $thumbnail;
@@ -388,7 +372,7 @@ class CatalogItemController extends AdminBaseController
         list(, $image) = explode(',', $image);
         $image = base64_decode($image);
         $image_name = time() . Str::random(8) . '.png';
-        $path = 'assets/images/products/' . $image_name;
+        $path = 'assets/images/catalogItems/' . $image_name;
         file_put_contents($path, $image);
         $input['photo'] = $image_name;
 
@@ -488,7 +472,7 @@ class CatalogItemController extends AdminBaseController
                 'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
                 'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
                 'ship' => $request->input('ship') ?: null,
-                'product_condition' => $request->input('product_condition') ?? 0,
+                'item_condition' => $request->input('item_condition') ?? 0,
                 'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
                 'status' => 1
             ]);
@@ -503,7 +487,7 @@ class CatalogItemController extends AdminBaseController
         }
 
         // Set Thumbnail
-        $img = Image::make('assets/images/products/' . $catalogItem->photo)->resize(285, 285);
+        $img = Image::make('assets/images/catalogItems/' . $catalogItem->photo)->resize(285, 285);
         $thumbnail = time() . Str::random(8) . '.jpg';
         $img->save('assets/images/thumbnails/' . $thumbnail);
         $catalogItem->thumbnail = $thumbnail;
@@ -526,7 +510,7 @@ class CatalogItemController extends AdminBaseController
         //logic Section Ends
 
         //--- Redirect Section
-        $msg = __("New Product Added Successfully.") . '<a href="' . route('admin-catalog-item-index') . '">' . __("View Product Lists.") . '</a>';
+        $msg = __("New CatalogItem Added Successfully.") . '<a href="' . route('admin-catalog-item-index') . '">' . __("View CatalogItem Lists.") . '</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }
@@ -599,8 +583,8 @@ class CatalogItemController extends AdminBaseController
                         $input['meta_tag'] = $line[17];
                         $input['meta_description'] = $line[18];
                         $input['tags'] = $line[14];
-                        // product_type moved to merchant_items
-                        $csvProductType = $line[19] ?? 'normal';
+                        // item_type moved to merchant_items
+                        $csvItemType = $line[19] ?? 'normal';
                         // affiliate_link moved to merchant_items
                         $csvAffiliateLink = $line[20] ?? null;
                         $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['sku']);
@@ -624,13 +608,13 @@ class CatalogItemController extends AdminBaseController
                         if (strpos($contentType, 'image/') !== false) {
                             $fimg = Image::make($line[5])->resize(800, 800);
                             $fphoto = time() . Str::random(8) . '.jpg';
-                            $fimg->save(public_path() . '/assets/images/products/' . $fphoto);
+                            $fimg->save(public_path() . '/assets/images/catalogItems/' . $fphoto);
                             $input['photo'] = $fphoto;
                             $thumb_url = $line[5];
                         } else {
                             $fimg = Image::make(public_path() . '/assets/images/noimage.png')->resize(800, 800);
                             $fphoto = time() . Str::random(8) . '.jpg';
-                            $fimg->save(public_path() . '/assets/images/products/' . $fphoto);
+                            $fimg->save(public_path() . '/assets/images/catalogItems/' . $fphoto);
                             $input['photo'] = $fphoto;
                             $thumb_url = public_path() . '/assets/images/noimage.png';
                         }
@@ -651,7 +635,7 @@ class CatalogItemController extends AdminBaseController
                         MerchantItem::create([
                             'catalog_item_id' => $data->id,
                             'user_id' => 1, // Admin/default merchant
-                            'product_type' => $csvProductType,
+                            'item_type' => $csvItemType,
                             'price' => $convertedPrice,
                             'previous_price' => $convertedPreviousPrice,
                             'stock' => (int) $csvStock,
@@ -660,7 +644,7 @@ class CatalogItemController extends AdminBaseController
                         ]);
 
                 } else {
-                    $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('Duplicate Product Code!') . "<br>";
+                    $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('Duplicate CatalogItem Code!') . "<br>";
                 }
             }
 
@@ -669,7 +653,7 @@ class CatalogItemController extends AdminBaseController
         fclose($file);
 
         //--- Redirect Section
-        $msg = __('Bulk Product File Imported Successfully.') . $log;
+        $msg = __('Bulk CatalogItem File Imported Successfully.') . $log;
         return response()->json($msg);
     }
 
@@ -689,13 +673,13 @@ class CatalogItemController extends AdminBaseController
         $qualityBrands = \App\Models\QualityBrand::all();
 
         if ($data->type == 'Digital') {
-            return view('admin.catalog-item.edit.digital', compact('cats', 'data', 'merchantItem', 'sign', 'vendors', 'qualityBrands'));
+            return view('admin.catalog-item.edit.digital', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
         } elseif ($data->type == 'License') {
-            return view('admin.catalog-item.edit.license', compact('cats', 'data', 'merchantItem', 'sign', 'vendors', 'qualityBrands'));
+            return view('admin.catalog-item.edit.license', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
         } elseif ($data->type == 'Listing') {
-            return view('admin.catalog-item.edit.listing', compact('cats', 'data', 'merchantItem', 'sign', 'vendors', 'qualityBrands'));
+            return view('admin.catalog-item.edit.listing', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
         } else {
-            return view('admin.catalog-item.edit.physical', compact('cats', 'data', 'merchantItem', 'sign', 'vendors', 'qualityBrands'));
+            return view('admin.catalog-item.edit.physical', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
         }
     }
 
@@ -745,8 +729,8 @@ class CatalogItemController extends AdminBaseController
             //--- Validation Section Ends
 
             // Check Condition
-            if ($request->product_condition_check == "") {
-                $input['product_condition'] = 0;
+            if ($request->item_condition_check == "") {
+                $input['item_condition'] = 0;
             }
 
             // Check Preorderd
@@ -869,13 +853,13 @@ class CatalogItemController extends AdminBaseController
             'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
             'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
             'ship' => $request->input('ship') ?: null,
-            'product_condition' => $request->input('product_condition') ?? 0,
+            'item_condition' => $request->input('item_condition') ?? 0,
             'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
         ]);
         //-- Logic Section Ends
 
         //--- Redirect Section
-        $msg = __("Product Updated Successfully.") . '<a href="' . route('admin-catalog-item-index') . '">' . __("View Product Lists.") . '</a>';
+        $msg = __("CatalogItem Updated Successfully.") . '<a href="' . route('admin-catalog-item-index') . '">' . __("View CatalogItem Lists.") . '</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
     }
@@ -980,8 +964,8 @@ class CatalogItemController extends AdminBaseController
 
         if (!filter_var($data->photo, FILTER_VALIDATE_URL)) {
             if ($data->photo) {
-                if (file_exists(public_path() . '/assets/images/products/' . $data->photo)) {
-                    unlink(public_path() . '/assets/images/products/' . $data->photo);
+                if (file_exists(public_path() . '/assets/images/catalogItems/' . $data->photo)) {
+                    unlink(public_path() . '/assets/images/catalogItems/' . $data->photo);
                 }
             }
         }
@@ -997,7 +981,7 @@ class CatalogItemController extends AdminBaseController
         }
         $data->delete();
         //--- Redirect Section
-        $msg = __('Product Deleted Successfully.');
+        $msg = __('CatalogItem Deleted Successfully.');
         return response()->json($msg);
         //--- Redirect Section Ends
     }
@@ -1008,9 +992,9 @@ class CatalogItemController extends AdminBaseController
         $data->is_catalog = $id2;
         $data->update();
         if ($id2 == 1) {
-            $msg = "Product added to catalog successfully.";
+            $msg = "CatalogItem added to catalog successfully.";
         } else {
-            $msg = "Product removed from catalog successfully.";
+            $msg = "CatalogItem removed from catalog successfully.";
         }
         return response()->json($msg);
     }
@@ -1022,9 +1006,9 @@ class CatalogItemController extends AdminBaseController
         $data = \App\Models\Muaadhsetting::findOrFail(1);
 
         if (!empty($request->catalog_item_page)) {
-            $input['product_page'] = implode(',', $request->catalog_item_page);
+            $input['item_page'] = implode(',', $request->catalog_item_page);
         } else {
-            $input['product_page'] = null;
+            $input['item_page'] = null;
         }
 
         if (!empty($request->favorite_page)) {
@@ -1074,19 +1058,4 @@ class CatalogItemController extends AdminBaseController
         return view('load.cross_catalog_item', compact('crossCatalogItems'));
     }
 
-    /**
-     * @deprecated Use getCrossCatalogItem instead
-     */
-    public function getCrossProduct($catId)
-    {
-        return $this->getCrossCatalogItem($catId);
-    }
-
-    /**
-     * @deprecated Renamed from productsettings to catalogItemSettings
-     */
-    public function productsettings()
-    {
-        return $this->catalogItemSettings();
-    }
 }

@@ -21,28 +21,28 @@ class CompareController extends FrontBaseController
 
         $oldCompare = Session::get('compare');
         $compare = new Compare($oldCompare);
-        $compareItems = $compare->getItemsWithProducts();
+        $compareItems = $compare->getItemsWithCatalogItems();
 
-        // Note: 'products' kept for backward compatibility in views
-        return view('frontend.compare', ['products' => $compareItems]);
+        // Note: 'catalogItems' kept for backward compatibility in views
+        return view('frontend.compare', ['catalogItems' => $compareItems]);
     }
 
     /**
      * Add merchant item to comparison (New standardized method).
      */
-    public function addMerchantCompare($merchantProductId)
+    public function addMerchantCompare($merchantItemId)
     {
-        return $this->addcompare($merchantProductId);
+        return $this->addcompare($merchantItemId);
     }
 
     /**
      * Remove merchant item from comparison (New standardized method).
      */
-    public function removeMerchantCompare(Request $request, $merchantProductId)
+    public function removeMerchantCompare(Request $request, $merchantItemId)
     {
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
-        if (!$oldCompare || !isset($oldCompare->items[$merchantProductId])) {
+        if (!$oldCompare || !isset($oldCompare->items[$merchantItemId])) {
             if ($request->expectsJson() || $request->ajax()) {
                 return response()->json([
                     'ok' => false,
@@ -53,7 +53,7 @@ class CompareController extends FrontBaseController
         }
 
         $compare = new Compare($oldCompare);
-        $compare->removeItem($merchantProductId);
+        $compare->removeItem($merchantItemId);
 
         if (count($compare->items) > 0) {
             Session::put('compare', $compare);
@@ -76,19 +76,19 @@ class CompareController extends FrontBaseController
 
     /**
      * Add merchant item to comparison.
-     * Expects merchant_product_id (merchant_item_id) as parameter.
+     * Expects merchant_item_id as parameter.
      */
-    public function addcompare($merchantProductId)
+    public function addcompare($merchantItemId)
     {
         $data[0] = 0;
-        $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->findOrFail($merchantProductId);
+        $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->findOrFail($merchantItemId);
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
 
         $compare = new Compare($oldCompare);
-        $compare->add($merchantItem, $merchantProductId);
+        $compare->add($merchantItem, $merchantItemId);
         Session::put('compare', $compare);
 
-        if ($compare->items[$merchantProductId]['ck'] == 1) {
+        if ($compare->items[$merchantItemId]['ck'] == 1) {
             $data[0] = 1;
         }
 
@@ -129,7 +129,7 @@ class CompareController extends FrontBaseController
 
         if (!$merchantItem) {
             $data[0] = 1;
-            $data['error'] = __('Product not available from any merchant.');
+            $data['error'] = __('CatalogItem not available from any merchant.');
             return response()->json($data);
         }
 
@@ -147,7 +147,7 @@ class CompareController extends FrontBaseController
         return response()->json($data);
     }
 
-    public function removecompare(Request $request, $merchantProductId)
+    public function removecompare(Request $request, $merchantItemId)
     {
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;
         $isAjax = $request->expectsJson() || $request->ajax();
@@ -164,9 +164,9 @@ class CompareController extends FrontBaseController
         }
 
         // Check if item exists in compare list (handle both string and integer keys)
-        $itemExists = isset($oldCompare->items[$merchantProductId]) ||
-                      isset($oldCompare->items[(int)$merchantProductId]) ||
-                      isset($oldCompare->items[(string)$merchantProductId]);
+        $itemExists = isset($oldCompare->items[$merchantItemId]) ||
+                      isset($oldCompare->items[(int)$merchantItemId]) ||
+                      isset($oldCompare->items[(string)$merchantItemId]);
 
         if (!$itemExists) {
             if ($isAjax) {
@@ -179,10 +179,10 @@ class CompareController extends FrontBaseController
         }
 
         $compare = new Compare($oldCompare);
-        $compare->removeItem($merchantProductId);
+        $compare->removeItem($merchantItemId);
         // Also try removing with type casting
-        $compare->removeItem((int)$merchantProductId);
-        $compare->removeItem((string)$merchantProductId);
+        $compare->removeItem((int)$merchantItemId);
+        $compare->removeItem((string)$merchantItemId);
 
         $remainingCount = $compare->items ? count($compare->items) : 0;
 

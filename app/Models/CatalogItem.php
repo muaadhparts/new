@@ -15,7 +15,7 @@ class CatalogItem extends Model
 
     /**
      * CatalogItem model stores only catalogue-level attributes;
-     * vendor-specific data is stored on MerchantItem.
+     * merchant-specific data is stored on MerchantItem.
      */
     protected $fillable = [
         'brand_id', 'sku',
@@ -70,7 +70,7 @@ class CatalogItem extends Model
     }
 
     /**
-     * Vendor listings for this catalog item (each row is one seller).
+     * Merchant listings for this catalog item (each row is one seller).
      */
     public function merchantItems()
     {
@@ -79,7 +79,7 @@ class CatalogItem extends Model
 
     public function favorite()
     {
-        return $this->belongsTo('App\Models\Favorite')->withDefault();
+        return $this->belongsTo('App\Models\FavoriteSeller')->withDefault();
     }
 
     public function galleries()
@@ -88,14 +88,14 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get galleries filtered by vendor user_id.
-     * Use this for vendor-specific gallery display.
+     * Get galleries filtered by merchant user_id.
+     * Use this for merchant-specific gallery display.
      *
-     * @param int|null $userId Vendor user ID
+     * @param int|null $userId Merchant user ID
      * @param int $limit Max number of galleries
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function galleriesForVendor(?int $userId, int $limit = 3)
+    public function galleriesForMerchant(?int $userId, int $limit = 3)
     {
         if (!$userId) {
             return collect();
@@ -114,7 +114,7 @@ class CatalogItem extends Model
 
     public function favorites()
     {
-        return $this->hasMany('App\Models\Favorite', 'catalog_item_id');
+        return $this->hasMany('App\Models\FavoriteSeller', 'catalog_item_id');
     }
 
     public function comments()
@@ -133,23 +133,23 @@ class CatalogItem extends Model
     }
 
     /* =========================================================================
-     |  Helpers (Vendor-aware)
+     |  Helpers (Merchant-aware)
      | ========================================================================= */
 
     /**
-     * UI helper (admin): show first active vendor badge/link.
+     * UI helper (admin): show first active merchant badge/link.
      */
-    public function checkVendor(): string
+    public function checkMerchant(): string
     {
         $mi = $this->merchantItems()->where('status', 1)->first();
         return $mi
-            ? '<small class="ml-2"> ' . __("VENDOR") . ': <a href="' . route('admin-vendor-show', $mi->user_id) . '" target="_blank">' . optional($mi->user)->shop_name . '</a></small>'
+            ? '<small class="ml-2"> ' . __("MERCHANT") . ': <a href="' . route('admin-merchant-show', $mi->user_id) . '" target="_blank">' . optional($mi->user)->shop_name . '</a></small>'
             : '';
     }
 
     /**
      * Resolve active merchant listing for this catalog item.
-     * If $userId passed, resolve that vendor's listing; otherwise first active listing.
+     * If $userId passed, resolve that merchant's listing; otherwise first active listing.
      */
     public function activeMerchant(?int $userId = null): ?MerchantItem
     {
@@ -228,9 +228,9 @@ class CatalogItem extends Model
 
     /**
      * Legacy compatibility (base price incl. commission) for first active merchant.
-     * Prefer vendorSizePrice() which accounts for size/options via MerchantItem logic.
+     * Prefer merchantSizePrice() which accounts for size/options via MerchantItem logic.
      */
-    public function vendorPrice(?int $userId = null)
+    public function merchantPrice(?int $userId = null)
     {
         $merchant = $this->activeMerchant($userId);
         if (!$merchant) {
@@ -246,21 +246,21 @@ class CatalogItem extends Model
     }
 
     /**
-     * Vendor-aware size/options/commission price.
-     * Delegates to MerchantItem::vendorSizePrice() to avoid duplication.
+     * Merchant-aware size/options/commission price.
+     * Delegates to MerchantItem::merchantSizePrice() to avoid duplication.
      */
-    public function vendorSizePrice(?int $userId = null)
+    public function merchantSizePrice(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
-        return $mi ? $mi->vendorSizePrice() : null;
+        return $mi ? $mi->merchantSizePrice() : null;
     }
 
     /**
-     * Convert vendor-aware price to session currency and format.
+     * Convert merchant-aware price to session currency and format.
      */
     public function setCurrency()
     {
-        $rawPrice = $this->vendorSizePrice();
+        $rawPrice = $this->merchantSizePrice();
         if ($rawPrice === null) {
             return 0;
         }
@@ -275,11 +275,11 @@ class CatalogItem extends Model
     }
 
     /**
-     * Show formatted price (session currency) for a vendor-aware price.
+     * Show formatted price (session currency) for a merchant-aware price.
      */
     public function showPrice(?int $userId = null)
     {
-        $rawPrice = $this->vendorSizePrice($userId);
+        $rawPrice = $this->merchantSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
@@ -298,7 +298,7 @@ class CatalogItem extends Model
      */
     public function adminShowPrice(?int $userId = null)
     {
-        $rawPrice = $this->vendorSizePrice($userId);
+        $rawPrice = $this->merchantSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
@@ -311,7 +311,7 @@ class CatalogItem extends Model
     }
 
     /**
-     * Show previous price (vendor previous_price + adjustments + commission).
+     * Show previous price (merchant previous_price + adjustments + commission).
      * If none, return 0.
      */
     public function showPreviousPrice(?int $userId = null)
@@ -438,26 +438,26 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-aware stock quantity.
+     * Get merchant-aware stock quantity.
      * Returns stock from the active merchant listing.
      */
-    public function vendorSizeStock(?int $userId = null)
+    public function merchantSizeStock(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         return $mi ? $mi->stock : 0;
     }
 
     /**
-     * Get vendor-specific product condition.
+     * Get merchant-specific catalogItem condition.
      */
-    public function getProductCondition(?int $userId = null)
+    public function getItemCondition(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
-        return $mi ? $mi->product_condition : 0;
+        return $mi ? $mi->item_condition : 0;
     }
 
     /**
-     * Get vendor-specific minimum quantity.
+     * Get merchant-specific minimum quantity.
      */
     public function getMinimumQty(?int $userId = null)
     {
@@ -466,7 +466,7 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific stock check setting.
+     * Get merchant-specific stock check setting.
      */
     public function getStockCheck(?int $userId = null)
     {
@@ -475,9 +475,9 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific colors from merchant item.
+     * Get merchant-specific colors from merchant item.
      */
-    public function getVendorColors(?int $userId = null)
+    public function getMerchantColors(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         if (!$mi || empty($mi->color_all)) {
@@ -487,9 +487,9 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific color prices from merchant item.
+     * Get merchant-specific color prices from merchant item.
      */
-    public function getVendorColorPrices(?int $userId = null)
+    public function getMerchantColorPrices(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         if (!$mi || empty($mi->color_price)) {
@@ -499,27 +499,27 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific previous price from merchant item.
+     * Get merchant-specific previous price from merchant item.
      */
-    public function getVendorPreviousPrice(?int $userId = null)
+    public function getMerchantPreviousPrice(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         return $mi ? $mi->previous_price : null;
     }
 
     /**
-     * Get vendor-specific ship from merchant item.
+     * Get merchant-specific ship from merchant item.
      */
-    public function getVendorShip(?int $userId = null)
+    public function getMerchantShip(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         return $mi ? $mi->ship : null;
     }
 
     /**
-     * Get vendor-specific details from merchant item, fallback to catalog item policy.
+     * Get merchant-specific details from merchant item, fallback to catalog item policy.
      */
-    public function getVendorDetails(?int $userId = null)
+    public function getMerchantDetails(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         if ($mi && !empty($mi->details)) {
@@ -529,9 +529,9 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific policy from merchant item, fallback to catalog item policy.
+     * Get merchant-specific policy from merchant item, fallback to catalog item policy.
      */
-    public function getVendorPolicy(?int $userId = null)
+    public function getMerchantPolicy(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         if ($mi && !empty($mi->policy)) {
@@ -541,9 +541,9 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific features from merchant item, fallback to catalog item features.
+     * Get merchant-specific features from merchant item, fallback to catalog item features.
      */
-    public function getVendorFeatures(?int $userId = null)
+    public function getMerchantFeatures(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         if ($mi && !empty($mi->features)) {
@@ -553,30 +553,38 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get vendor-specific size from merchant item.
+     * Get merchant-specific size from merchant item.
      */
-    public function getVendorSize(?int $userId = null)
+    public function getMerchantSize(?int $userId = null)
     {
         $mi = $this->activeMerchant($userId);
         return $mi ? $mi->size : null;
     }
 
     /**
-     * Get vendor-specific size qty from merchant item.
+     * Get merchant-specific size qty from merchant item.
      */
-    public function getVendorSizeQty(?int $userId = null)
+    public function getMerchantSizeQty(?int $userId = null, ?int $key = null)
     {
         $mi = $this->activeMerchant($userId);
-        return $mi ? $mi->size_qty : null;
+        if (!$mi) return null;
+        if ($key !== null && is_array($mi->size_qty)) {
+            return $mi->size_qty[$key] ?? null;
+        }
+        return $mi->size_qty;
     }
 
     /**
-     * Get vendor-specific size price from merchant item.
+     * Get merchant-specific size price from merchant item.
      */
-    public function getVendorSizePrice(?int $userId = null)
+    public function getMerchantSizePrice(?int $userId = null, ?int $key = null)
     {
         $mi = $this->activeMerchant($userId);
-        return $mi ? $mi->size_price : null;
+        if (!$mi) return null;
+        if ($key !== null && is_array($mi->size_price)) {
+            return $mi->size_price[$key] ?? null;
+        }
+        return $mi->size_price;
     }
 
 
@@ -609,54 +617,54 @@ class CatalogItem extends Model
 
     /* =========================================================================
      |  Accessors (legacy)
-     |  NOTE: These accessors now redirect vendor-specific columns to merchant_items.
+     |  NOTE: These accessors now redirect merchant-specific columns to merchant_items.
      | ========================================================================= */
 
     /**
-     * Legacy accessors for vendor-specific columns.
+     * Legacy accessors for merchant-specific columns.
      * These now redirect to the active merchant item according to final schema.
      */
     public function __get($key)
     {
         // CRITICAL FIX: Check if attribute exists in $attributes array FIRST
         // This allows manually injected values (e.g., in cart context) to take precedence
-        // over computed vendor methods. Without this check, cart items would always
+        // over computed merchant methods. Without this check, cart items would always
         // get the price from activeMerchant() (first merchant), not the specific merchant.
         if (array_key_exists($key, $this->attributes)) {
             return $this->attributes[$key];
         }
 
-        // Handle vendor-specific columns that were moved to merchant_items
-        $vendorColumns = [
-            'product_condition' => 'getProductCondition',
+        // Handle merchant-specific columns that were moved to merchant_items
+        $merchantColumns = [
+            'item_condition' => 'getItemCondition',
             'minimum_qty' => 'getMinimumQty',
             'stock_check' => 'getStockCheck',
-            'stock' => 'vendorSizeStock',
-            'price' => 'vendorPrice',
-            'previous_price' => 'getVendorPreviousPrice',
-            'ship' => 'getVendorShip',
-            'size' => 'getVendorSize',
-            'size_qty' => 'getVendorSizeQty',
-            'size_price' => 'getVendorSizePrice'
+            'stock' => 'merchantSizeStock',
+            'price' => 'merchantPrice',
+            'previous_price' => 'getMerchantPreviousPrice',
+            'ship' => 'getMerchantShip',
+            'size' => 'getMerchantSize',
+            'size_qty' => 'getMerchantSizeQty',
+            'size_price' => 'getMerchantSizePrice'
         ];
 
-        if (array_key_exists($key, $vendorColumns)) {
-            $method = $vendorColumns[$key];
+        if (array_key_exists($key, $merchantColumns)) {
+            $method = $merchantColumns[$key];
             return $this->$method();
         }
 
-        // Colors: Always redirect to vendor-specific colors from merchant_items
+        // Colors: Always redirect to merchant-specific colors from merchant_items
         if ($key === 'color' || $key === 'colors' || $key === 'color_all') {
-            return $this->getVendorColors();
+            return $this->getMerchantColors();
         }
 
         if ($key === 'color_price') {
-            return $this->getVendorColorPrices();
+            return $this->getMerchantColorPrices();
         }
 
         // Policy/Features: Try merchant first, fallback to catalog item
         if ($key === 'details') {
-            return $this->getVendorDetails();
+            return $this->getMerchantDetails();
         }
 
         // Fall back to parent implementation
@@ -703,11 +711,11 @@ class CatalogItem extends Model
     }
 
     /* =========================================================================
-     |  Discount helpers (vendor-aware)
+     |  Discount helpers (merchant-aware)
      | ========================================================================= */
 
     /**
-     * Off percentage based on vendor current vs previous price (both vendor-aware).
+     * Off percentage based on current vs previous price (both merchant-aware).
      * Returns numeric percentage (not formatted).
      */
     public function offPercentage(?int $userId = null)
@@ -717,7 +725,7 @@ class CatalogItem extends Model
             return 0;
         }
 
-        $current = $this->vendorSizePrice($userId);
+        $current = $this->merchantSizePrice($userId);
         if ($current === null) {
             return 0;
         }
@@ -759,33 +767,33 @@ class CatalogItem extends Model
 
     /**
      * Filter a catalog item collection to those having an active merchant listing,
-     * and stamp a transient price property equal to vendorSizePrice().
+     * and stamp a transient price property equal to merchantSizePrice().
      */
     public static function filterCatalogItems($collection)
     {
         foreach ($collection as $key => $catalogItem) {
-            $vendorPrice = $catalogItem->vendorSizePrice();
-            if ($vendorPrice === null) {
+            $merchantPrice = $catalogItem->merchantSizePrice();
+            if ($merchantPrice === null) {
                 unset($collection[$key]);
                 continue;
             }
-            if (isset($_GET['max']) && $vendorPrice >= (float) $_GET['max']) {
+            if (isset($_GET['max']) && $merchantPrice >= (float) $_GET['max']) {
                 unset($collection[$key]);
                 continue;
             }
             // Stamp computed price (transient) for sorting/UI
-            $catalogItem->price = $vendorPrice;
+            $catalogItem->price = $merchantPrice;
         }
         return $collection;
     }
 
     /* =========================================================================
-     |  MOBILE API SECTION (vendor-aware)
+     |  MOBILE API SECTION (merchant-aware)
      | ========================================================================= */
 
     public function ApishowPrice(?int $userId = null)
     {
-        $rawPrice = $this->vendorSizePrice($userId);
+        $rawPrice = $this->merchantSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
@@ -800,7 +808,7 @@ class CatalogItem extends Model
 
     public function ApishowDetailsPrice(?int $userId = null)
     {
-        $rawPrice = $this->vendorSizePrice($userId);
+        $rawPrice = $this->merchantSizePrice($userId);
         if ($rawPrice === null) {
             return 0;
         }
@@ -880,14 +888,6 @@ class CatalogItem extends Model
             ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
             ->orderBy('price')
             ->first();
-    }
-
-    /**
-     * @deprecated Use bestMerchant() instead
-     */
-    public function bestVendorMerchant(): ?MerchantItem
-    {
-        return $this->bestMerchant();
     }
 
     /**

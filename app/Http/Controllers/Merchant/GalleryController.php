@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 class GalleryController extends MerchantBaseController
 {
     /**
-     * Show galleries for a product (filtered by current vendor)
+     * Show galleries for a catalogItem (filtered by current merchant)
      */
     public function show()
     {
@@ -21,7 +21,7 @@ class GalleryController extends MerchantBaseController
         $id = $_GET['id'];
         $catalogItem = CatalogItem::findOrFail($id);
 
-        // Filter galleries by current vendor's user_id
+        // Filter galleries by current merchant's user_id
         $galleries = Gallery::where('catalog_item_id', $id)
             ->where('user_id', $this->user->id)
             ->get();
@@ -34,12 +34,12 @@ class GalleryController extends MerchantBaseController
     }
 
     /**
-     * Store new gallery images (with vendor user_id)
+     * Store new gallery images (with merchant user_id)
      */
     public function store(Request $request)
     {
         $data = null;
-        $lastid = $request->product_id;
+        $lastid = $request->catalog_item_id;
 
         if ($files = $request->file('gallery')) {
             foreach ($files as $key => $file) {
@@ -53,7 +53,7 @@ class GalleryController extends MerchantBaseController
 
                     $gallery['photo'] = $thumbnail;
                     $gallery['catalog_item_id'] = $lastid;
-                    $gallery['user_id'] = $this->user->id; // Add vendor's user_id
+                    $gallery['user_id'] = $this->user->id; // Add merchant's user_id
                     $gallery->save();
                     $data[] = $gallery;
                 }
@@ -63,13 +63,13 @@ class GalleryController extends MerchantBaseController
     }
 
     /**
-     * Delete a gallery image (only if owned by current vendor)
+     * Delete a gallery image (only if owned by current merchant)
      */
     public function destroy()
     {
         $id = $_GET['id'];
         $gal = Gallery::where('id', $id)
-            ->where('user_id', $this->user->id) // Ensure vendor owns this gallery
+            ->where('user_id', $this->user->id) // Ensure merchant owns this gallery
             ->firstOrFail();
 
         if (file_exists(public_path() . '/assets/images/galleries/' . $gal->photo)) {

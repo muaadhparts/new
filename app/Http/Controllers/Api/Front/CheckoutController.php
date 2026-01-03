@@ -61,9 +61,9 @@ class CheckoutController extends Controller
                         $item['values'] ?? '',
                         $item['prices'] ?? 0,
                         $input['affilate_user'] ?? null,
-                        $item['user'] ?? $item['vendor_id'] ?? null // vendorId إلزامي
+                        $item['user'] ?? $item['merchant_id'] ?? null // merchantId إلزامي
                     );
-                    // // dd(['api_vendor' => $item['user'] ?? $item['vendor_id'] ?? null]); // اختباري
+                    // // dd(['api_merchant' => $item['user'] ?? $item['merchant_id'] ?? null]); // اختباري
                 }
             }
 
@@ -94,18 +94,18 @@ class CheckoutController extends Controller
             $new_cart_json = json_encode($cart_payload);
 
             // أفلييت
-            $temp_affilate_users = PurchaseHelper::product_affilate_check($cart);
+            $temp_affilate_users = PurchaseHelper::item_affilate_check($cart);
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
-            // إنقاص رخص MP (بدل products) وتعيين الترخيص بالسلة
-            foreach ($cart->items as $key => $prod) {
-                if (!empty($prod['item']['license']) && !empty($prod['item']['license_qty'])) {
-                    $merchantId = (int)($prod['item']['user_id'] ?? 0);
+            // إنقاص رخص MP (بدل catalogItems) وتعيين الترخيص بالسلة
+            foreach ($cart->items as $key => $cartItem) {
+                if (!empty($cartItem['item']['license']) && !empty($cartItem['item']['license_qty'])) {
+                    $merchantId = (int)($cartItem['item']['user_id'] ?? 0);
                     if (!$merchantId) {
                         continue;
                     }
 
-                    $mp = MerchantItem::where('catalog_item_id', $prod['item']['id'])
+                    $mp = MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
                         ->where('user_id', $merchantId)
                         ->first();
 
@@ -143,38 +143,38 @@ class CheckoutController extends Controller
                 $orderTotal          = $orderCalculate['total_amount'];
                 $shipping            = $orderCalculate['shipping'];
                 $packeing            = $orderCalculate['packeing'];
-                $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-                $vendor_packing_ids  = $orderCalculate['vendor_packing_ids'];
+                $merchant_shipping_ids = $orderCalculate['merchant_shipping_ids'];
+                $merchant_packing_ids  = $orderCalculate['merchant_packing_ids'];
                 $merchant_ids          = $orderCalculate['merchant_ids'];
 
                 $input['shipping_title']     = @$shipping->title;
-                $input['vendor_shipping_id'] = @$shipping->id;
+                $input['merchant_shipping_id'] = @$shipping->id;
                 $input['packing_title']      = @$packeing->title;
-                $input['vendor_packing_id']  = @$packeing->id;
+                $input['merchant_packing_id']  = @$packeing->id;
                 $input['shipping_cost']      = @$shipping->price ?? 0;
                 $input['packing_cost']       = @$packeing->price ?? 0;
-                $input['vendor_shipping_ids']= $vendor_shipping_ids;
-                $input['vendor_packing_ids'] = $vendor_packing_ids;
+                $input['merchant_shipping_ids']= $merchant_shipping_ids;
+                $input['merchant_packing_ids'] = $merchant_packing_ids;
                 $input['merchant_ids']         = $merchant_ids;
             } else {
                 // multi shipping
                 $orderTotal          = $orderCalculate['total_amount'];
                 $shipping            = $orderCalculate['shipping'];
                 $packeing            = $orderCalculate['packeing'];
-                $vendor_shipping_ids = $orderCalculate['vendor_shipping_ids'];
-                $vendor_packing_ids  = $orderCalculate['vendor_packing_ids'];
+                $merchant_shipping_ids = $orderCalculate['merchant_shipping_ids'];
+                $merchant_packing_ids  = $orderCalculate['merchant_packing_ids'];
                 $merchant_ids          = $orderCalculate['merchant_ids'];
                 $shipping_cost       = $orderCalculate['shipping_cost'];
                 $packing_cost        = $orderCalculate['packing_cost'];
 
-                $input['shipping_title']     = $vendor_shipping_ids;
-                $input['vendor_shipping_id'] = $vendor_shipping_ids;
-                $input['packing_title']      = $vendor_packing_ids;
-                $input['vendor_packing_id']  = $vendor_packing_ids;
+                $input['shipping_title']     = $merchant_shipping_ids;
+                $input['merchant_shipping_id'] = $merchant_shipping_ids;
+                $input['packing_title']      = $merchant_packing_ids;
+                $input['merchant_packing_id']  = $merchant_packing_ids;
                 $input['shipping_cost']      = $shipping_cost;
                 $input['packing_cost']       = $packing_cost;
-                $input['vendor_shipping_ids']= $vendor_shipping_ids;
-                $input['vendor_packing_ids'] = $vendor_packing_ids;
+                $input['merchant_shipping_ids']= $merchant_shipping_ids;
+                $input['merchant_packing_ids'] = $merchant_packing_ids;
                 $input['merchant_ids']         = $merchant_ids;
                 unset($input['shipping'], $input['packeging']);
             }
@@ -249,7 +249,7 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // بدّل منطق الخصم: خصم من merchant_products بدل PurchaseHelper على products
+            // بدّل منطق الخصم: خصم من merchant_items بدل PurchaseHelper على catalogItems
             // PurchaseHelper::size_qty_check($cart);
             // PurchaseHelper::stock_check($cart);
             $this->decrementMerchantStockAndSizes($cart);
@@ -316,7 +316,7 @@ class CheckoutController extends Controller
             } else {
                 if ($input['status'] == "completed") {
 
-                    foreach ($purchase->vendororders as $vorder) {
+                    foreach ($purchase->merchantPurchases as $vorder) {
                         $uprice = User::find($vorder->user_id);
                         $uprice->current_balance = $uprice->current_balance + $vorder->price;
                         $uprice->update();
@@ -358,7 +358,7 @@ class CheckoutController extends Controller
                         }
                     }
 
-                    // استرجاع مخزون/مقاسات MerchantItem بدل products
+                    // استرجاع مخزون/مقاسات MerchantItem بدل catalogItems
                     $this->restoreMerchantStockAndSizesFromPurchase($purchase);
                     // // dd('mp stock restored'); // اختباري
 
@@ -439,7 +439,7 @@ class CheckoutController extends Controller
     }
 
     /**
-     * إضافة للسلة — Vendor-aware: يعتمد على MerchantItem فقط
+     * إضافة للسلة — Merchant-aware: يعتمد على MerchantItem فقط
      */
     protected function addtocart($cart, $currency_code, $p_id, $p_qty, $p_size, $p_color, $p_size_qty, $p_size_price, $p_size_key, $p_keys, $p_values, $p_prices, $affilate_user, $merchantId)
     {
@@ -479,10 +479,10 @@ class CheckoutController extends Controller
             $size_price = ($size_price / $curr->value);
 
             // هوية العنصر فقط
-            $prod = CatalogItem::where('id', '=', $id)->first([
+            $cartItem = CatalogItem::where('id', '=', $id)->first([
                 'id','slug','name','photo','color','sku','weight','type','file','link','measure','attributes','color_all','color_price'
             ]);
-            if (!$prod) {
+            if (!$cartItem) {
                 return false;
             }
 
@@ -492,7 +492,7 @@ class CheckoutController extends Controller
                 return false;
             }
 
-            $mp = MerchantItem::where('catalog_item_id', $prod->id)
+            $mp = MerchantItem::where('catalog_item_id', $cartItem->id)
                 ->where('user_id', $merchantId)
                 ->where('status', 1)
                 ->first();
@@ -502,8 +502,8 @@ class CheckoutController extends Controller
             }
 
             // حقن سياق البائع بالقيم الصحيحة
-            $prod->user_id              = $merchantId;             // inject vendor context
-            $prod->merchant_product_id  = $mp->id;
+            $cartItem->user_id              = $merchantId;             // inject merchant context
+            $cartItem->merchant_item_id  = $mp->id;
 
             // سعر أساسي + عمولة + سعر مقاس إن وجد
             $gs  = Muaadhsetting::find(1);
@@ -519,48 +519,48 @@ class CheckoutController extends Controller
                 // لو تخزينك للـ size_price مصفوفة/CSV، عدّل هذا القسم لانتقاء السعر المناسب
             }
 
-            $prod->price          = round($withCommission, 2);
-            $prod->previous_price = $mp->previous_price;
-            $prod->stock          = $mp->stock;
+            $cartItem->price          = round($withCommission, 2);
+            $cartItem->previous_price = $mp->previous_price;
+            $cartItem->stock          = $mp->stock;
 
             // مقاسات/خصائص من MP
-            $prod->setAttribute('size',       $mp->size);
-            $prod->setAttribute('size_qty',   $mp->size_qty);
-            $prod->setAttribute('size_price', $mp->size_price);
-            $prod->setAttribute('stock_check',         $mp->stock_check ?? null);
-            $prod->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
-            $prod->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
-            $prod->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
-            $prod->setAttribute('color_all',           $mp->color_all ?? null);
+            $cartItem->setAttribute('size',       $mp->size);
+            $cartItem->setAttribute('size_qty',   $mp->size_qty);
+            $cartItem->setAttribute('size_price', $mp->size_price);
+            $cartItem->setAttribute('stock_check',         $mp->stock_check ?? null);
+            $cartItem->setAttribute('minimum_qty',         $mp->minimum_qty ?? null);
+            $cartItem->setAttribute('whole_sell_qty',      $mp->whole_sell_qty ?? null);
+            $cartItem->setAttribute('whole_sell_discount', $mp->whole_sell_discount ?? null);
+            $cartItem->setAttribute('color_all',           $mp->color_all ?? null);
 
             // أسعار خصائص إضافية (إن أرسلت)
             if (!empty($prices) && !empty($prices[0])) {
                 foreach ($prices as $data) {
-                    $prod->price += ((float)$data / $curr->value);
+                    $cartItem->price += ((float)$data / $curr->value);
                 }
             }
 
             // default size / color
-            if ($size === '' && !empty($prod->size)) {
+            if ($size === '' && !empty($cartItem->size)) {
                 // قد تكون مصفوفة/CSV — هنا نفترض أول قيمة
-                if (is_array($prod->size)) {
-                    $size = str_replace(' ', '-', trim($prod->size[0]));
+                if (is_array($cartItem->size)) {
+                    $size = str_replace(' ', '-', trim($cartItem->size[0]));
                 } else {
-                    $size = str_replace(' ', '-', trim((string)$prod->size));
+                    $size = str_replace(' ', '-', trim((string)$cartItem->size));
                 }
             }
 
-            if ($color === '' && !empty($prod->color)) {
+            if ($color === '' && !empty($cartItem->color)) {
                 // color من هوية المنتج كما كان
-                if (is_array($prod->color)) {
-                    $color = $prod->color[0];
+                if (is_array($cartItem->color)) {
+                    $color = $cartItem->color[0];
                 } else {
-                    $color = (string)$prod->color;
+                    $color = (string)$cartItem->color;
                 }
             }
             $color = str_replace('#', '', (string)$color);
 
-            $cart->addnum($prod, $prod->id, $qty, $size, $color, $size_qty, $size_price, $size_key, $keys, $values, $affilate_user);
+            $cart->addnum($cartItem, $cartItem->id, $qty, $size, $color, $size_qty, $size_price, $size_key, $keys, $values, $affilate_user);
             $cart->totalPrice = 0;
 
             foreach ($cart->items as $data) {
@@ -600,11 +600,11 @@ class CheckoutController extends Controller
         return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => $packaging], 'error' => []]);
     }
 
-    public function VendorWisegetShippingPackaging(Request $request)
+    public function MerchantWisegetShippingPackaging(Request $request)
     {
         $explode = explode(',', $request->merchant_ids);
         foreach ($explode as $key => $value) {
-            $shipping[$value]  = Shipping::forVendor($value)->get();
+            $shipping[$value]  = Shipping::forMerchant($value)->get();
             $packaging[$value] = Package::where('user_id', $value)->get();
         }
         return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => $packaging], 'error' => []]);
@@ -617,18 +617,18 @@ class CheckoutController extends Controller
     }
 
     /**
-     * خصم المخزون/المقاس من MerchantItem بدل Product
+     * خصم المخزون/المقاس من MerchantItem بدل CatalogItem
      */
     protected function decrementMerchantStockAndSizes(\App\Models\Cart $cart): void
     {
         // // dd(['items' => array_keys($cart->items ?? [])]); // اختباري
 
-        foreach ($cart->items as $prod) {
-            $catalogItemId = (int)($prod['item']['id'] ?? 0);
-            $merchantUserId  = (int)($prod['item']['user_id'] ?? 0);
-            $qty       = (int)($prod['qty'] ?? 0);
-            $sizeKey   = $prod['size_key'] ?? null;
-            $sizeQty   = $prod['size_qty'] ?? null; // قد تم تمريره من العميل (قيمة جديدة/مباشرة)
+        foreach ($cart->items as $cartItem) {
+            $catalogItemId = (int)($cartItem['item']['id'] ?? 0);
+            $merchantUserId  = (int)($cartItem['item']['user_id'] ?? 0);
+            $qty       = (int)($cartItem['qty'] ?? 0);
+            $sizeKey   = $cartItem['size_key'] ?? null;
+            $sizeQty   = $cartItem['size_qty'] ?? null; // قد تم تمريره من العميل (قيمة جديدة/مباشرة)
 
             if (!$catalogItemId || !$merchantUserId || $qty <= 0) {
                 continue;
@@ -669,12 +669,12 @@ class CheckoutController extends Controller
             return;
         }
 
-        foreach ($cart->items as $prod) {
-            $catalogItemId = (int)($prod['item']['id'] ?? 0);
-            $merchantUserId  = (int)($prod['item']['user_id'] ?? 0);
-            $qty       = (int)($prod['qty'] ?? 0);
-            $sizeKey   = $prod['size_key'] ?? null;
-            $sizeQty   = $prod['size_qty'] ?? null;
+        foreach ($cart->items as $cartItem) {
+            $catalogItemId = (int)($cartItem['item']['id'] ?? 0);
+            $merchantUserId  = (int)($cartItem['item']['user_id'] ?? 0);
+            $qty       = (int)($cartItem['qty'] ?? 0);
+            $sizeKey   = $cartItem['size_key'] ?? null;
+            $sizeQty   = $cartItem['size_qty'] ?? null;
 
             if (!$catalogItemId || !$merchantUserId || $qty <= 0) {
                 continue;
@@ -707,13 +707,13 @@ class CheckoutController extends Controller
 
     /**
      * Create an OTO shipment(s) after the purchase is successfully created.
-     * Store the results in vendor_shipping_id as JSON, and update the shipping/shipping_title for the view.
+     * Store the results in merchant_shipping_id as JSON, and update the shipping/shipping_title for the view.
      *
      * يستخدم TryotoService الموحد لإدارة التوكن وإنشاء الشحنات
      */
     private function createOtoShipments(\App\Models\Purchase $purchase, array $input): void
     {
-        // Check shipping selection — supports array (multi-vendor) or single-value scenarios
+        // Check shipping selection — supports array (multi-merchant) or single-value scenarios
         $shippingInput = $input['shipping'] ?? null;
         if (!$shippingInput) {
             return;
@@ -728,8 +728,8 @@ class CheckoutController extends Controller
             }
             [$deliveryOptionId, $company, $price] = explode('#', $value);
 
-            // Use vendor-specific credentials for each vendor
-            $tryotoService = app(\App\Services\TryotoService::class)->forVendor((int)$merchantId);
+            // Use merchant-specific credentials for each merchant
+            $tryotoService = app(\App\Services\TryotoService::class)->forMerchant((int)$merchantId);
             $result = $tryotoService->createShipment(
                 $purchase,
                 (int)$merchantId ?: 0,

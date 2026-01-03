@@ -5,7 +5,7 @@ namespace App\Services;
 use App\DataTransferObjects\CatalogItemCardDTO;
 use App\Models\MerchantItem;
 use App\Models\CatalogItem;
-use App\Models\Favorite;
+use App\Models\FavoriteSeller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -178,7 +178,7 @@ class CatalogItemCardDataBuilder
         $favorites = Cache::remember(
             "user_favorites_{$userId}",
             300,
-            fn() => Favorite::where('user_id', $userId)
+            fn() => FavoriteSeller::where('user_id', $userId)
                 ->select(['catalog_item_id', 'merchant_item_id'])
                 ->get()
         );

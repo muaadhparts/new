@@ -105,10 +105,10 @@ class MerchantController extends FrontBaseController
             } elseif ($sort === 'date_asc') {
                 return $query->oldest('catalog_items.id');
             } elseif ($sort === 'price_desc') {
-                // Sort by highest merchant price for this product (for current merchant)
+                // Sort by highest merchant price for this catalogItem (for current merchant)
                 return $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) desc', [$merchant->id]);
             } elseif ($sort === 'price_asc') {
-                // Sort by lowest merchant price for this product (for current merchant)
+                // Sort by lowest merchant price for this catalogItem (for current merchant)
                 return $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]);
             }
         });

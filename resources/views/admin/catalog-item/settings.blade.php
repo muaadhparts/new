@@ -7,26 +7,26 @@
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Product Settings') }}</h4>
+                <h4 class="heading">{{ __('CatalogItem Settings') }}</h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
                     </li>
                     <li>
-                        <a href="javascript:;">{{ __('Products') }}</a>
+                        <a href="javascript:;">{{ __('CatalogItems') }}</a>
                     </li>
                     <li>
-                        <a href="javascript:;">{{ __('Product Settings') }}</a>
+                        <a href="javascript:;">{{ __('CatalogItem Settings') }}</a>
                     </li>
                 </ul>
             </div>
         </div>
     </div>
 
-    <div class="add-product-content1 add-product-content2">
+    <div class="add-catalogItem-content1 add-catalogItem-content2">
         <div class="row">
             <div class="col-lg-12">
-                <div class="product-description">
+                <div class="catalogItem-description">
                     <div class="body-area">
                         <div class="gocover"
                             style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
@@ -63,13 +63,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Product Whole Sale Max Quantity') }} *
+                                        <h4 class="heading">{{ __('CatalogItem Whole Sale Max Quantity') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Product Whole Sale Max Quantity') }}" name="wholesell"
+                                        placeholder="{{ __('CatalogItem Whole Sale Max Quantity') }}" name="wholesell"
                                         value="{{ $gs->wholesell }}" required="" min="0">
                                 </div>
                             </div>
@@ -90,13 +90,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display New Products') }} *
+                                        <h4 class="heading">{{ __('Display New CatalogItems') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display New Products') }}" name="new_count"
+                                        placeholder="{{ __('Display New CatalogItems') }}" name="new_count"
                                         value="{{ $gs->new_count }}" required="" min="0">
                                 </div>
                             </div>
@@ -106,13 +106,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display Best Seller Products') }} *
+                                        <h4 class="heading">{{ __('Display Best Seller CatalogItems') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Best Seller Products') }}"
+                                        placeholder="{{ __('Display Best Seller CatalogItems') }}"
                                         name="best_seller_count" value="{{ $gs->best_seller_count }}" required=""
                                         min="0">
                                 </div>
@@ -122,13 +122,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display Popular Products') }} *
+                                        <h4 class="heading">{{ __('Display Popular CatalogItems') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Popular Products') }}" name="popular_count"
+                                        placeholder="{{ __('Display Popular CatalogItems') }}" name="popular_count"
                                         value="{{ $gs->popular_count }}" required="" min="0">
                                 </div>
                             </div>
@@ -140,13 +140,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display Trending Products') }} *
+                                        <h4 class="heading">{{ __('Display Trending CatalogItems') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Trending Products') }}" name="trending_count"
+                                        placeholder="{{ __('Display Trending CatalogItems') }}" name="trending_count"
                                         value="{{ $gs->trending_count }}" required="" min="0">
                                 </div>
                             </div>
@@ -162,13 +162,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display Products Per Page') }} *
+                                        <h4 class="heading">{{ __('Display CatalogItems Per Page') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Products Per Page') }}" name="page_count"
+                                        placeholder="{{ __('Display CatalogItems Per Page') }}" name="page_count"
                                         value="{{ $gs->page_count }}" required="" min="0">
                                 </div>
                             </div>
@@ -183,13 +183,13 @@
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display Products Per Page') }} *
+                                        <h4 class="heading">{{ __('Display CatalogItems Per Page') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Products Per Page') }}" name="merchant_page_count"
+                                        placeholder="{{ __('Display CatalogItems Per Page') }}" name="merchant_page_count"
                                         value="{{ $gs->merchant_page_count }}" required="" min="0">
                                 </div>
                             </div>
@@ -197,7 +197,7 @@
 
                             <hr>
 
-                            <h4 class="text-center">{{ __('PRODUCT DETAILS PAGE SECTION') }}</h4>
+                            <h4 class="text-center">{{ __('CATALOGITEM DETAILS PAGE SECTION') }}</h4>
       
                             <hr>
 
@@ -225,24 +225,24 @@
                             </div>
 
 
-                           
+
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display Product By Seller') }} *
+                                        <h4 class="heading">{{ __('Display CatalogItem By Seller') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display Products Per Page') }}" name="seller_product_count"
-                                        value="{{ $gs->seller_product_count }}" required="" min="0">
+                                        placeholder="{{ __('Display CatalogItems Per Page') }}" name="seller_item_count"
+                                        value="{{ $gs->seller_item_count }}" required="" min="0">
                                 </div>
                             </div>
 
 
                             <hr>
-                            <h4 class="text-center">{{ __('VENDOR PRODUCT CREATE ENABLE & DISABLE') }}</h4>
+                            <h4 class="text-center">{{ __('MERCHANT CATALOGITEM CREATE ENABLE & DISABLE') }}</h4>
       
                             <hr>
 
@@ -250,7 +250,7 @@
                                 <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">
-                                            {{ __('Vendor Physical Products') }}
+                                            {{ __('Merchant Physical CatalogItems') }}
                                         </h4>
                                     </div>
                                 </div>
@@ -273,7 +273,7 @@
                                 <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">
-                                            {{ __('Vendor Digital Products') }}
+                                            {{ __('Merchant Digital CatalogItems') }}
                                         </h4>
                                     </div>
                                 </div>
@@ -296,7 +296,7 @@
                                 <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">
-                                            {{ __('Vendor License Products') }}
+                                            {{ __('Merchant License CatalogItems') }}
                                         </h4>
                                     </div>
                                 </div>
@@ -319,7 +319,7 @@
                                 <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">
-                                            {{ __('Vendor Listing Products') }}
+                                            {{ __('Merchant Listing CatalogItems') }}
                                         </h4>
                                     </div>
                                 </div>
@@ -342,7 +342,7 @@
                                 <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">
-                                            {{ __('Vendor Affilite Products') }}
+                                            {{ __('Merchant Affiliate CatalogItems') }}
                                         </h4>
                                     </div>
                                 </div>
@@ -374,20 +374,20 @@
                                 <div class="row justify-content-center">
                                     <div class="col-lg-3">
                                         <div class="left-area">
-                                            <h4 class="heading">{{ __('Display Products Per Page') }} *
+                                            <h4 class="heading">{{ __('Display CatalogItems Per Page') }} *
                                             </h4>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
                                         <input type="number" class="form-control"
-                                            placeholder="{{ __('Display Products Per Page') }}" name="favorite_count"
+                                            placeholder="{{ __('Display CatalogItems Per Page') }}" name="favorite_count"
                                             value="{{ $gs->favorite_count }}" required="" min="0">
                                     </div>
                                 </div>
                                 <div class="row justify-content-center">
                                     <div class="col-lg-3">
                                         <div class="left-area">
-                                            <h4 class="heading">{{ __('View Favorites Product Per Page') }} *
+                                            <h4 class="heading">{{ __('View Favorites CatalogItem Per Page') }} *
                                             </h4>
                                         </div>
                                     </div>
@@ -441,13 +441,13 @@
                                 <div class="row justify-content-center">
                                     <div class="col-lg-3">
                                         <div class="left-area">
-                                            <h4 class="heading">{{ __('View Product Per Page') }} *
+                                            <h4 class="heading">{{ __('View CatalogItem Per Page') }} *
                                             </h4>
                                         </div>
                                     </div>
                                     <div class="col-lg-6">
-                                        <ul id="product_page" class="myTags">
-                                            @foreach (explode(',',$gs->product_page) as $element)
+                                        <ul id="item_page" class="myTags">
+                                            @foreach (explode(',',$gs->item_page) as $element)
                                               <li>{{  $element }}</li>
                                             @endforeach
                                         </ul>
@@ -484,9 +484,9 @@
 (function($) {
 		"use strict";
 
-          $("#product_page").tagit({
-            fieldName: "product_page[]",
-            allowSpaces: true 
+          $("#item_page").tagit({
+            fieldName: "item_page[]",
+            allowSpaces: true
           });
           $("#favorite_page").tagit({
             fieldName: "favorite_page[]",

@@ -1,9 +1,9 @@
 @extends('layouts.merchant')
 
 @section('content')
-    <div class="gs-vendor-outlet">
+    <div class="gs-merchant-outlet">
         <!-- breadcrumb start  -->
-        <div class="gs-vendor-breadcrumb has-mb">
+        <div class="gs-merchant-breadcrumb has-mb">
             <h4 class="text-capitalize">@lang('Dashboard Overview')</h4>
         </div>
         <!-- breadcrumb end -->
@@ -11,8 +11,8 @@
         <!-- Info cards area start -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 row-cols-xxl-4 gy-4">
             <div class="col">
-                <div class="vendor-panel-info-card order-pending">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_8.svg" alt="">
+                <div class="merchant-panel-info-card order-pending">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_8.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Pending')</p>
                         <h3 class="value">
@@ -22,8 +22,8 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card order-processing">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_7.svg" alt="">
+                <div class="merchant-panel-info-card order-processing">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_7.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Processing')</p>
                         <h3 class="value">
@@ -33,8 +33,8 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card order-delivered">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_6.svg" alt="">
+                <div class="merchant-panel-info-card order-delivered">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_6.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Completed!')</p>
                         <h3 class="value">
@@ -44,10 +44,10 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card total-order">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_5.svg" alt="">
+                <div class="merchant-panel-info-card total-order">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_5.svg" alt="">
                     <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Total Products!')</p>
+                        <p class="title">@lang('Total CatalogItems!')</p>
                         <h3 class="value">
                             <span class="counter">{{ $user->merchantItems()->count() }}</span>
                         </h3>
@@ -55,8 +55,8 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card total-item-sold">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_1.svg" alt="">
+                <div class="merchant-panel-info-card total-item-sold">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_1.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Total Item Sold!')</p>
                         <h3 class="value">
@@ -67,8 +67,8 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card current-balance">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_2.svg" alt="">
+                <div class="merchant-panel-info-card current-balance">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_2.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Current Balance')</p>
                         <h3 class="value">{{$curr->sign}}<span class="counter">
@@ -77,8 +77,8 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card total-earning">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_3.svg" alt="">
+                <div class="merchant-panel-info-card total-earning">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_3.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Total Earning')</p>
                         @php
@@ -91,8 +91,8 @@
                 </div>
             </div>
             <div class="col">
-                <div class="vendor-panel-info-card pending-commision">
-                    <img src="{{ asset('assets/front') }}/icons/vendor-dashboard-icon_4.svg" alt="">
+                <div class="merchant-panel-info-card pending-commision">
+                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_4.svg" alt="">
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Pending Commision')</p>
                         @php
@@ -111,19 +111,19 @@
 
         <!-- Table area start  -->
         <div class="row gy-4 table-area">
-            <!-- Recent Product(s) Table -->
+            <!-- Recent CatalogItem(s) Table -->
             <div class="col-xxl-8">
-                <div class="vendor-table-wrapper recent-products-table-wrapper">
-                    <h4 class="table-title">@lang('Recent Product(s)')</h4>
+                <div class="merchant-table-wrapper recent-catalogItems-table-wrapper">
+                    <h4 class="table-title">@lang('Recent CatalogItem(s)')</h4>
                     <div class="user-table table-responsive">
-                        <table id="recent-product-table" class="gs-data-table w-100">
+                        <table id="recent-catalogItem-table" class="gs-data-table w-100">
                             <thead>
                                 <tr>
                                     <th class="text-center">
                                         <span class="header-title text-center">@lang('Image')</span>
                                     </th>
                                     <th>
-                                        <span class="header-title">@lang('Product Name')</span>
+                                        <span class="header-title">@lang('CatalogItem Name')</span>
                                     </th>
                                     <th><span class="header-title">@lang('Brand')</span></th>
                                     <th><span class="header-title">@lang('Quality Brand')</span></th>
@@ -135,7 +135,7 @@
                             </thead>
                             <tbody>
 
-                                @forelse ($pproducts as $data)
+                                @forelse ($catalogItems as $data)
                                     @php
                                         $merchantItem = $data->merchantItems->first();
                                     @endphp
@@ -147,9 +147,9 @@
                                                 alt="">
                                         </td>
                                         <td class="text-start">
-                                            <div class="product-name">
+                                            <div class="catalogItem-name">
                                                 <span class="content">
-                                                    {{ getLocalizedProductName($data, 50) }}
+                                                    {{ getLocalizedCatalogItemName($data, 50) }}
                                                 </span>
                                             </div>
                                         </td>
@@ -191,7 +191,7 @@
                                     <!-- table data row 1 end  -->
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">@lang('No Products Found')</td>
+                                        <td colspan="6" class="text-center">@lang('No CatalogItems Found')</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -201,7 +201,7 @@
             </div>
             <!-- Recent Purchase(s) Table  -->
             <div class="col-xxl-4">
-                <div class="vendor-table-wrapper recent-orders-table-wrapper">
+                <div class="merchant-table-wrapper recent-orders-table-wrapper">
                     <h4 class="table-title">@lang('Recent Purchase(s)')</h4>
                     <div class="user-table table-responsive">
                         <table id="recent-order-table" class="gs-data-table w-100">
@@ -259,7 +259,7 @@
         <!-- Table area end  -->
 
         <!-- Chart area start -->
-        <div class="gs-chart-wrapper vendor-monthly-sales-chart d-none d-md-block">
+        <div class="gs-chart-wrapper merchant-monthly-sales-chart d-none d-md-block">
             <div class="chart-title-dropdown-wrapper">
                 <h4 class="chart-title">@lang('Monthly Sales Overview')</h4>
             </div>

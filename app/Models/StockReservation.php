@@ -169,7 +169,7 @@ class StockReservation extends Model
         if ($reservation) {
             // إرجاع المخزون فقط إذا لم يُطلب تخطيه
             if (!$skipStockReturn) {
-                self::returnStockToProduct($reservation);
+                self::returnStockToCatalogItem($reservation);
             }
             $reservation->delete();
             return true;
@@ -189,7 +189,7 @@ class StockReservation extends Model
         $count = 0;
 
         foreach ($reservations as $reservation) {
-            self::returnStockToProduct($reservation);
+            self::returnStockToCatalogItem($reservation);
             $reservation->delete();
             $count++;
         }
@@ -218,7 +218,7 @@ class StockReservation extends Model
         $count = 0;
 
         foreach ($expired as $reservation) {
-            self::returnStockToProduct($reservation);
+            self::returnStockToCatalogItem($reservation);
             $reservation->delete();
             $count++;
         }
@@ -229,7 +229,7 @@ class StockReservation extends Model
     /**
      * إرجاع المخزون للمنتج
      */
-    protected static function returnStockToProduct(self $reservation): void
+    protected static function returnStockToCatalogItem(self $reservation): void
     {
         DB::transaction(function () use ($reservation) {
             $mi = DB::table('merchant_items')

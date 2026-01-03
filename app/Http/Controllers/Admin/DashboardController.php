@@ -31,7 +31,7 @@ class DashboardController extends AdminBaseController
             $data['sales'] .= "'" . Purchase::where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->count() . "',";
         }
         $data['users'] = User::count();
-        $data['products'] = CatalogItem::count();
+        $data['catalogItems'] = CatalogItem::count();
         $data['blogs'] = Blog::count();
 
         // Get latest merchant items (active only)

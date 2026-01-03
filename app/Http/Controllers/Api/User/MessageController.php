@@ -47,14 +47,14 @@ class MessageController extends Controller
             if (!$user) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "User not found."]]);
             }
-            $vendor = User::where('email', '=', $request->email)->first();
-            if (!$vendor) {
+            $merchant = User::where('email', '=', $request->email)->first();
+            if (!$merchant) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Email not found."]]);
             }
 
             $gs = Muaadhsetting::find(1);
             $subject = $request->subject;
-            $to = $vendor->email;
+            $to = $merchant->email;
             $name = $user->name;
             $from = $user->email;
             $msg = "Name: " . $name . "\nEmail: " . $from . "\nMessage: " . $request->message;
@@ -83,7 +83,7 @@ class MessageController extends Controller
                 $message = new Conversation();
                 $message->subject = $subject;
                 $message->sent_user = $request->user_id;
-                $message->recieved_user = $vendor->id;
+                $message->recieved_user = $merchant->id;
                 $message->message = $request->message;
                 $message->save();
                 $msg = new Message();

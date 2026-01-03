@@ -76,7 +76,7 @@ ul.tagit li.tagit-choice .tagit-close {
   max-width: 100% !important;
 }
 
-.product-license-remove-btn {
+.catalogItem-license-remove-btn {
   width: 48px;
   height: 48px;
   background: $danger-color-500;
@@ -109,7 +109,7 @@ ul.tagit li.tagit-choice .tagit-close {
   }
 }
 
-.product-stocks-wraper {
+.catalogItem-stocks-wraper {
   margin-bottom: 24px;
 }
 
@@ -119,7 +119,7 @@ ul.tagit li.tagit-choice .tagit-close {
   object-fit: contain !important;
 }
 
-.product-main-slider {
+.catalogItem-main-slider {
   .slick-track {
     gap: 0;
   }

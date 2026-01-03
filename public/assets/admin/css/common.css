@@ -75,13 +75,13 @@ a:not([href]) {
 }
 .slider-title {
 }
-.product-description .panel-heading.text-center h3 {
+.catalogItem-description .panel-heading.text-center h3 {
   background-color: #1f224f;
   color: #ffffff;
   padding: 10px 0px 10px;
 }
 
-.product-description .panel.panel-default {
+.catalogItem-description .panel.panel-default {
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 .no-padding {
@@ -484,11 +484,11 @@ a.add-btn:hover {
 /* Products Order Area End */
 
 /* Customar Details Area Start */
-.product-description .user-image {
+.catalogItem-description .user-image {
   display: block;
   text-align: center;
 }
-.product-description .user-image img {
+.catalogItem-description .user-image img {
   width: 130px;
   height: 130px;
   border-radius: 50%;
@@ -498,7 +498,7 @@ a.add-btn:hover {
   display: block;
   margin: 0 auto;
 }
-.product-description .user-image .mybtn1 {
+.catalogItem-description .user-image .mybtn1 {
   display: inline-block;
   margin: 0 auto;
   margin-top: 10px;
@@ -509,27 +509,27 @@ a.add-btn:hover {
   /* line-height: 40px; */
   width: auto;
 }
-.product-description .show-table table tr th {
+.catalogItem-description .show-table table tr th {
   text-align: left;
 }
-.product-description .table td,
-.product-description .table th {
+.catalogItem-description .table td,
+.catalogItem-description .table th {
   border: 0px;
   border-bottom: 1px dashed #ddd;
   padding: 6px 0px;
 }
-.product-description .order-details-table .table td,
-.product-description .order-details-table .table th {
+.catalogItem-description .order-details-table .table td,
+.catalogItem-description .order-details-table .table th {
   border: 0px;
   padding: 6px 15px;
 }
 .customar-details-area .order-table-wrap {
   padding-top: 0px;
 }
-.customar-details-area .product-description .body-area .row {
+.customar-details-area .catalogItem-description .body-area .row {
   margin-bottom: 0px;
 }
-.customar-details-area .product-description .body-area {
+.customar-details-area .catalogItem-description .body-area {
   padding-bottom: 0px;
 }
 .customar-details-area .view-details {
@@ -557,13 +557,13 @@ table.dataTable thead th,
 table.dataTable thead td {
   border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
 }
-.product-description .review,
-.product-description .comment {
+.catalogItem-description .review,
+.catalogItem-description .comment {
   font-size: 18px;
   font-weight: 600;
 }
-.product-description .review-text,
-.product-description .comment-text {
+.catalogItem-description .review-text,
+.catalogItem-description .comment-text {
   font-size: 14px;
 }
 
@@ -872,22 +872,22 @@ span.price-curr {
   font-size: 15px;
 }
 
-#edit-product-modal .modal-dialog {
+#edit-catalogItem-modal .modal-dialog {
   max-width: 40%;
 }
-#add-product .modal-dialog {
+#add-catalogItem .modal-dialog {
   max-width: 40%;
 }
-.product-info .item-name {
+.catalogItem-info .item-name {
   font-size: 20px;
   font-weight: 600;
 }
 
-.product-info .price-and-discount {
+.catalogItem-info .price-and-discount {
   margin-top: 11px;
 }
 
-.product-info .price-and-discount .price {
+.catalogItem-info .price-and-discount .price {
   font-size: 18px;
   line-height: 38px;
   color: #143250;
@@ -895,13 +895,13 @@ span.price-curr {
   display: inline-block;
 }
 
-.product-info .product-color {
+.catalogItem-info .catalogItem-color {
   margin-top: 3px;
   margin-bottom: 5px;
   position: relative;
 }
 
-.product-info .product-color .title {
+.catalogItem-info .catalogItem-color .title {
   display: inline-block;
   position: absolute;
   top: 50%;
@@ -911,14 +911,14 @@ span.price-curr {
   font-weight: 600;
 }
 
-.product-info .product-color .color-list {
+.catalogItem-info .catalogItem-color .color-list {
   display: inline-block;
   padding-left: 60px;
   list-style: none;
   margin-bottom: 0px;
 }
 
-.product-info .product-color .color-list li .box {
+.catalogItem-info .catalogItem-color .color-list li .box {
   width: 16px;
   height: 16px;
   border-radius: 50%;
@@ -927,7 +927,7 @@ span.price-curr {
   cursor: pointer;
 }
 
-.product-info .product-color .color-list li .box::after {
+.catalogItem-info .catalogItem-color .color-list li .box::after {
   position: absolute;
   content: "";
   border: 1px solid rgba(0, 0, 0, 0.3);
@@ -941,46 +941,46 @@ span.price-curr {
   transition: all 0.3s ease-in;
 }
 
-.product-info .product-color .color-list li.active .box::after,
-.product-info .product-color .color-list li:hover .box::after {
+.catalogItem-info .catalogItem-color .color-list li.active .box::after,
+.catalogItem-info .catalogItem-color .color-list li:hover .box::after {
   opacity: 1;
 }
 
-.product-info .product-color .color-list li:last-child {
+.catalogItem-info .catalogItem-color .color-list li:last-child {
   margin-right: 0px;
 }
 
-.product-info .product-color .color-list li {
+.catalogItem-info .catalogItem-color .color-list li {
   display: none;
   margin-right: 10px;
 }
 
-.product-info .product-size {
+.catalogItem-info .catalogItem-size {
   padding: 9px 0px 0px;
 }
 
-.product-info .product-size .title {
+.catalogItem-info .catalogItem-size .title {
   display: inline-block;
   margin-right: 0px;
   font-size: 16px;
   font-weight: 600;
 }
 
-.product-info .product-size .siz-list {
+.catalogItem-info .catalogItem-size .siz-list {
   display: inline-block;
   padding-left: 5px;
 }
 
-.product-info .product-size .siz-list li {
+.catalogItem-info .catalogItem-size .siz-list li {
   display: inline-block;
   margin-right: 5px;
 }
 
-.product-info .product-size .siz-list li:last-child {
+.catalogItem-info .catalogItem-size .siz-list li:last-child {
   margin-right: 0px;
 }
 
-.product-info .product-size .siz-list li .box {
+.catalogItem-info .catalogItem-size .siz-list li .box {
   border: 1px solid rgba(0, 0, 0, 0.1);
   display: inline-block;
   text-align: center;
@@ -992,8 +992,8 @@ span.price-curr {
   transition: all 0.3s ease-in;
 }
 
-.product-info .product-size .siz-list li.active .box,
-.product-info .product-size .siz-list li:hover .box {
+.catalogItem-info .catalogItem-size .siz-list li.active .box,
+.catalogItem-info .catalogItem-size .siz-list li:hover .box {
   border: 1px solid #1f224f;
   background: #1f224f;
   color: #fff;

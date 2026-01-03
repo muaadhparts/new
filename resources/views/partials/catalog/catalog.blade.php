@@ -14,8 +14,8 @@
 
             <div id="woocommerce_product_categories-4"
                 class="widget woocommerce widget_product_categories widget-toggle">
-                <h2 class="widget-title">{{ __('Product categories') }}</h2>
-                <ul class="product-categories">
+                <h2 class="widget-title">{{ __('CatalogItem categories') }}</h2>
+                <ul class="catalogItem-categories">
                     @foreach ($categories as $category)
                         <li class="cat-item cat-parent">
                             <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
@@ -152,40 +152,40 @@
             <div class="col-12">
                 <div class="section-head border-bottom d-flex justify-content-between align-items-center">
                     <div class="d-flex section-head-side-title">
-                        <h5 class="font-700 text-dark mb-0">{{ __('Recent Product') }}</h5>
+                        <h5 class="font-700 text-dark mb-0">{{ __('Recent CatalogItem') }}</h5>
                     </div>
                 </div>
             </div>
             <div class="col-12">
                 <div
-                    class="product-style-2 owl-carousel owl-nav-hover-primary nav-top-right single-carousel dot-disable product-list e-bg-white">
+                    class="catalogItem-style-2 owl-carousel owl-nav-hover-primary nav-top-right single-carousel dot-disable catalogItem-list e-bg-white">
 
                     @foreach ($latest_products as $item)
 
                         <div class="item">
                             <div class="row row-cols-1">
 
-                                @foreach ($item as $prod)
+                                @foreach ($item as $cartItem)
                                     @php
                                         // ✅ N+1 FIX: Load catalog item with eager-loaded merchantItems
-                                        $catalogProdObj = \App\Models\CatalogItem::with(['merchantItems' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($prod['id']);
+                                        $catalogProdObj = \App\Models\CatalogItem::with(['merchantItems' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($cartItem['id']);
 
                                         // Use best_merchant_item from eager-loaded data
                                         $catalogMerchant = $catalogProdObj?->best_merchant_item;
 
-                                        $catalogProdUrl = $catalogMerchant && isset($prod['slug'])
-                                            ? route('front.catalog-item', ['slug' => $prod['slug'], 'merchant_id' => $catalogMerchant->user_id, 'merchant_item_id' => $catalogMerchant->id])
-                                            : (isset($prod['slug']) ? route('front.catalog-item.legacy', $prod['slug']) : '#');
+                                        $catalogProdUrl = $catalogMerchant && isset($cartItem['slug'])
+                                            ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_id' => $catalogMerchant->user_id, 'merchant_item_id' => $catalogMerchant->id])
+                                            : (isset($cartItem['slug']) ? route('front.catalog-item.legacy', $cartItem['slug']) : '#');
                                     @endphp
 
                                     <div class="col mb-1">
-                                        <div class="product type-product">
-                                            <div class="product-wrapper">
+                                        <div class="catalogItem type-catalogItem">
+                                            <div class="catalogItem-wrapper">
                                                 <div class="catalog-item-image">
                                                     <a href="{{ $catalogProdUrl }}"
                                                         class="woocommerce-LoopProduct-link"><img
-                                                            src="{{ filter_var($prod['photo'] ?? '', FILTER_VALIDATE_URL) ? $prod['photo'] : (($prod['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($prod['photo']) : asset('assets/images/noimage.png')) }}"
-                                                            alt="Product Image"></a>
+                                                            src="{{ filter_var($cartItem['photo'] ?? '', FILTER_VALIDATE_URL) ? $cartItem['photo'] : (($cartItem['photo'] ?? null) ? \Illuminate\Support\Facades\Storage::url($cartItem['photo']) : asset('assets/images/noimage.png')) }}"
+                                                            alt="CatalogItem Image"></a>
                                                     <div class="favorite-view">
                                                         <div class="quickview-button">
                                                             <a class="quickview-btn"
@@ -202,28 +202,28 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div class="product-info">
-                                                    <h3 class="product-title"><a
-                                                            href="{{ $catalogProdUrl }}">{{ $prod['name']  }}</a>
+                                                <div class="catalogItem-info">
+                                                    <h3 class="catalogItem-title"><a
+                                                            href="{{ $catalogProdUrl }}">{{ $cartItem['name']  }}</a>
                                                     </h3>
-                                                    <div class="product-price">
+                                                    <div class="catalogItem-price">
                                                         <div class="price">
-                                                            <ins>{{ PriceHelper::showPrice($prod['price'])  }}</ins>
-                                                            <del>{{ PriceHelper::showPrice($prod['previous_price'])  }}</del>
+                                                            <ins>{{ PriceHelper::showPrice($cartItem['price'])  }}</ins>
+                                                            <del>{{ PriceHelper::showPrice($cartItem['previous_price'])  }}</del>
                                                         </div>
                                                         <div class="on-sale">
-                                                            <span>{{ round($prod->offPercentage())}}</span><span>% off</span>
+                                                            <span>{{ round($cartItem->offPercentage())}}</span><span>% off</span>
                                                         </div>
                                                     </div>
                                                     <div class="shipping-feed-back">
                                                         <div class="star-rating">
                                                             <div class="rating-wrap">
                                                                 <p><i class="fas fa-star"></i><span>
-                                                                        {{ number_format($prod->catalog_reviews_avg_rating, 1) }}</span>
+                                                                        {{ number_format($cartItem->catalog_reviews_avg_rating, 1) }}</span>
                                                                 </p>
                                                             </div>
                                                             <div class="rating-counts-wrap">
-                                                                <p>({{ $prod->catalog_reviews_count }})</p>
+                                                                <p>({{ $cartItem->catalog_reviews_count }})</p>
                                                             </div>
                                                         </div>
                                                     </div>

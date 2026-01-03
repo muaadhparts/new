@@ -32,10 +32,10 @@
                   </div>
                 </div>
               </div>
-              <div class="add-product-content1 social-links-area">
+              <div class="add-catalogItem-content1 social-links-area">
                 <div class="row">
                   <div class="col-lg-12">
-                    <div class="product-description">
+                    <div class="catalogItem-description">
                       <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                         <form action="{{ route('admin-gs-update-payment') }}" id="muaadhform" method="POST" enctype="multipart/form-data">
@@ -50,8 +50,8 @@
                               <div class="nav nav-tabs nav-fill" id="nav-tab" role="tablist">
                                   <a class="nav-item nav-link active" id="nav-setting-tab" data-bs-toggle="tab" href="#nav-setting" role="tab"
                                   aria-controls="nav-setting" aria-selected="true">{{ __('Basic Informations') }}</a>
-                                  <a class="nav-item nav-link" id="nav-vendor-tab" data-bs-toggle="tab" href="#nav-vendor" role="tab"
-                                  aria-controls="nav-vendor" aria-selected="false">{{ __('Vendor Informations') }}</a>
+                                  <a class="nav-item nav-link" id="nav-merchant-tab" data-bs-toggle="tab" href="#nav-merchant" role="tab"
+                                  aria-controls="nav-merchant" aria-selected="false">{{ __('Merchant Informations') }}</a>
                               </div>
                             </nav>
                             <div class="tab-content py-3 px-3 px-sm-0" id="nav-tabContent">
@@ -164,13 +164,13 @@
                                   </div>
                               </div>
       
-                              <div class="tab-pane fade show" id="nav-vendor" role="tabpanel" aria-labelledby="nav-vendor-tab">
+                              <div class="tab-pane fade show" id="nav-merchant" role="tabpanel" aria-labelledby="nav-merchant-tab">
                                 <div class="row justify-content-center">
                                   <div class="col-lg-4">
                                     <div class="left-area">
                                         <h4 class="heading">{{ __('Fixed Commission') }} *
                                           </h4>
-                                          <p class="sub-heading">{{ __('Fixed Commission Charge(Product Price + Commission)') }}</p>
+                                          <p class="sub-heading">{{ __('Fixed Commission Charge(CatalogItem Price + Commission)') }}</p>
                                           <p class="sub-heading">{{ __("(If you don't want to add any fixed commission, just set it to 0)") }}</p>
                                     </div>
                                   </div>
@@ -185,7 +185,7 @@
                                     <div class="left-area">
                                         <h4 class="heading">{{ __('Percentage Commission(%)') }} *
                                           </h4>
-                                          <p class="sub-heading">{{ __('Percentage Commission Charge(Product Price + Commission(%))') }}</p>
+                                          <p class="sub-heading">{{ __('Percentage Commission Charge(CatalogItem Price + Commission(%))') }}</p>
                                           <p class="sub-heading">{{ __("(If you don't want to add any percentage commission, just set it to 0)") }}</p>
                                     </div>
                                   </div>
@@ -214,14 +214,14 @@
                                 <div class="row justify-content-center">
                                   <div class="col-lg-4">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Shipping Information For Vendor') }} *
+                                        <h4 class="heading">{{ __('Shipping Information For Merchant') }} *
                                           </h4>
                                     </div>
                                   </div>
         
                                   <div class="col-lg-6">
                                     <label class="switch">
-                                      <input type="checkbox" name="vendor_ship_info" value="1" {{ $gs->vendor_ship_info == 1 ? "checked" : "" }}>
+                                      <input type="checkbox" name="merchant_ship_info" value="1" {{ $gs->merchant_ship_info == 1 ? "checked" : "" }}>
                                       <span class="slider round"></span>
                                     </label>
                                   </div>

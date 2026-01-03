@@ -49,16 +49,16 @@
         }
         /* Mobile Responsive */
         @media (max-width: 991px) {
-            .gs-blog-wrapper .row.products-layout {
+            .gs-blog-wrapper .row.catalogItems-layout {
                 display: flex;
                 flex-direction: column;
             }
-            .gs-blog-wrapper .row.products-layout .sidebar-column {
+            .gs-blog-wrapper .row.catalogItems-layout .sidebar-column {
                 order: 1;
                 margin-top: 0;
                 margin-bottom: 20px;
             }
-            .gs-blog-wrapper .row.products-layout .products-column {
+            .gs-blog-wrapper .row.catalogItems-layout .catalogItems-column {
                 order: 2;
             }
         }
@@ -111,16 +111,16 @@
     </section>
     <!-- breadcrumb end -->
 
-    <!-- product wrapper start -->
+    <!-- catalogItem wrapper start -->
     <div class="muaadh-section muaadh-section-gray">
         <div class="container">
-            <div class="row products-layout">
+            <div class="row catalogItems-layout">
                 <div class="col-12 col-lg-4 col-xl-3 sidebar-column">
-                    <div class="gs-product-sidebar-wrapper">
+                    <div class="gs-catalogItem-sidebar-wrapper">
                         <!-- Category Tree Navigation -->
-                        <div class="single-product-widget category-tree-sidebar">
+                        <div class="single-catalogItem-widget category-tree-sidebar">
                             <h5 class="widget-title">@lang('Categories')</h5>
-                            <div class="product-cat-widget">
+                            <div class="catalogItem-cat-widget">
                                 @if($categoryTree->count() > 0)
                                     @include('partials.catalog.category-tree-recursive', [
                                         'categories' => $categoryTree,
@@ -151,22 +151,22 @@
                     </div>
                 </div>
 
-                <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper products-column">
+                <div class="col-12 col-lg-8 col-xl-9 gs-main-blog-wrapper catalogItems-column">
 
                     @php
                         $view = request()->input('view_check', 'list-view');
                     @endphp
 
-                    <!-- product nav wrapper -->
-                    <div class="product-nav-wrapper">
-                        <h5>@lang('Total Products Found:') {{ $items->total() }}</h5>
+                    <!-- catalogItem nav wrapper -->
+                    <div class="catalogItem-nav-wrapper">
+                        <h5>@lang('Total Items Found:') {{ $items->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
                                 @php $currentSort = request('sort', 'date_desc'); @endphp
                                 <select class="nice-select" id="sortby" name="sort">
-                                    <option value="date_desc" {{ $currentSort === 'date_desc' ? 'selected' : '' }}>{{ __('Latest Product') }}</option>
-                                    <option value="date_asc" {{ $currentSort === 'date_asc' ? 'selected' : '' }}>{{ __('Oldest Product') }}</option>
+                                    <option value="date_desc" {{ $currentSort === 'date_desc' ? 'selected' : '' }}>{{ __('Latest CatalogItem') }}</option>
+                                    <option value="date_asc" {{ $currentSort === 'date_asc' ? 'selected' : '' }}>{{ __('Oldest CatalogItem') }}</option>
                                     <option value="price_asc" {{ $currentSort === 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
                                     <option value="price_desc" {{ $currentSort === 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
                                 </select>
@@ -200,13 +200,13 @@
 
                     @if ($items->total() == 0)
                         {{-- Zero Results Box --}}
-                        <div class="category-products-box">
-                            <div class="category-products-scroll" id="products-container">
+                        <div class="category-catalogItems-box">
+                            <div class="category-catalogItems-scroll" id="catalogItems-container">
                                 <div class="m-no-results-box">
                                     <div class="m-no-results-box__icon">
                                         <i class="fas fa-search"></i>
                                     </div>
-                                    <h4 class="m-no-results-box__title">@lang('No matching products')</h4>
+                                    <h4 class="m-no-results-box__title">@lang('No matching catalogItems')</h4>
                                     <p class="m-no-results-box__subtitle">@lang('Try selecting a different category or browse all categories.')</p>
 
                                     @if($selectedCategory)
@@ -231,10 +231,10 @@
                         </div>
                     @else
                         <!-- main content inside scrollable box -->
-                        <div class="category-products-box">
-                            <div class="category-products-scroll">
+                        <div class="category-catalogItems-box">
+                            <div class="category-catalogItems-scroll">
                                 <div class="tab-content" id="myTabContent">
-                                    <!-- product list view start -->
+                                    <!-- catalogItem list view start -->
                                     <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                         id="layout-list-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
@@ -255,7 +255,7 @@
                                 </div>
                             </div>
                             <!-- Pagination -->
-                            <div class="category-products-pagination">
+                            <div class="category-catalogItems-pagination">
                                 <div class="m-pagination-simple"
                                      data-current="{{ $items->currentPage() }}"
                                      data-last="{{ $items->lastPage() }}"
@@ -292,7 +292,7 @@
             </div>
         </div>
     </div>
-    <!-- product wrapper end -->
+    <!-- catalogItem wrapper end -->
 
     <input type="hidden" id="update_min_price" value="">
     <input type="hidden" id="update_max_price" value="">
@@ -305,9 +305,9 @@
             "use strict";
 
             const baseUrl = '{{ route('front.catalog.category', ['brand_slug' => $brand_slug, 'catalog_slug' => $catalog_slug, 'cat1' => $cat1_slug, 'cat2' => $cat2_slug, 'cat3' => $cat3_slug]) }}';
-            const $scrollContainer = $('.category-products-scroll');
+            const $scrollContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
-            const $totalProducts = $('.product-nav-wrapper h5').first();
+            const $totalItems = $('.catalogItem-nav-wrapper h5').first();
 
             let isLoading = false;
             let currentPage = parseInt($paginationContainer.data('current')) || 1;
@@ -353,7 +353,7 @@
                     dataType: 'html',
                     success: function(response) {
                         const $response = $('<div>').html(response);
-                        const $ajaxContent = $response.find('#ajax-products-content');
+                        const $ajaxContent = $response.find('#ajax-catalogItems-content');
                         const $paginationData = $response.find('#ajax-pagination-data');
 
                         if ($ajaxContent.length) {
@@ -365,7 +365,7 @@
                                 const data = JSON.parse($paginationData.text());
                                 currentPage = data.currentPage;
                                 lastPage = data.lastPage;
-                                $totalProducts.html('@lang("Total Products Found:") ' + data.total);
+                                $totalItems.html('@lang("Total Items Found:") ' + data.total);
                             } catch(e) {
                                 currentPage = page;
                             }

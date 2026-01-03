@@ -20,7 +20,7 @@ class ReleaseExpiredReservations extends Command
 {
     protected $signature = 'reservations:release {--dry-run : Show what would be released without actually releasing}';
 
-    protected $description = 'Release expired stock reservations and return stock to products';
+    protected $description = 'Release expired stock reservations and return stock to catalogItems';
 
     public function handle(): int
     {
@@ -37,7 +37,7 @@ class ReleaseExpiredReservations extends Command
         if ($dryRun) {
             $this->warn("DRY RUN: Would release {$count} expired reservations:");
             foreach ($expired as $reservation) {
-                $this->line("  - MP#{$reservation->merchant_product_id} qty:{$reservation->qty} session:{$reservation->session_id}");
+                $this->line("  - MP#{$reservation->merchant_item_id} qty:{$reservation->qty} session:{$reservation->session_id}");
             }
             return self::SUCCESS;
         }

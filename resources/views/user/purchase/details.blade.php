@@ -354,11 +354,11 @@
 
                     </div>
 
-                    <h4 class="order-products-header d-flex align-items-center justify-content-center mb-24 wow-replaced"
-                        data-wow-delay=".1s">@lang('Purchased Products:')
+                    <h4 class="order-catalogItems-header d-flex align-items-center justify-content-center mb-24 wow-replaced"
+                        data-wow-delay=".1s">@lang('Purchased Items:')
                     </h4>
 
-                    <!-- ordered products table -->
+                    <!-- ordered catalogItems table -->
 
                     <div class="user-table-wrapper all-orders-table-wrapper wow-replaced" data-wow-delay=".1s">
 
@@ -366,63 +366,63 @@
                             <table class="gs-data-table w-100">
                                 <tr class="thead-bg">
                                     <th><span class="title">@lang('ID#')</span></th>
-                                    <th><span class="title">@lang('Product Name')</span></th>
+                                    <th><span class="title">@lang('CatalogItem Name')</span></th>
                                     <th><span class="title">@lang('Details')</span></th>
                                     <th><span class="title">@lang('Unit Price')</span></th>
                                     <th><span class="title">@lang('Total Price')</span></th>
                                 </tr>
 
-                                @foreach ($cart['items'] as $product)
-                                    <tr class="tbody-product">
-                                        <td><b><span class="td-title">{{ $product['item']['id'] }}</span></b></td>
+                                @foreach ($cart['items'] as $catalogItem)
+                                    <tr class="tbody-catalogItem">
+                                        <td><b><span class="td-title">{{ $catalogItem['item']['id'] }}</span></b></td>
 
-                                        <td class="td-product-name">
+                                        <td class="td-catalogItem-name">
 
-                                            <div class="td-title td-product-namee">
-                                                <input type="hidden" value="{{ $product['license'] }}">
+                                            <div class="td-title td-catalogItem-namee">
+                                                <input type="hidden" value="{{ $catalogItem['license'] }}">
                                                 @php
                                                     $userPurchaseProductUrl = '#';
-                                                    if (isset($product['item']['slug']) && isset($product['user_id']) && isset($product['merchant_item_id'])) {
+                                                    if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
                                                         $userPurchaseProductUrl = route('front.catalog-item', [
-                                                            'slug' => $product['item']['slug'],
-                                                            'merchant_id' => $product['user_id'],
-                                                            'merchant_item_id' => $product['merchant_item_id']
+                                                            'slug' => $catalogItem['item']['slug'],
+                                                            'merchant_id' => $catalogItem['user_id'],
+                                                            'merchant_item_id' => $catalogItem['merchant_item_id']
                                                         ]);
-                                                    } elseif (isset($product['item']['slug'])) {
-                                                        $userPurchaseProductUrl = route('front.catalog-item.legacy', $product['item']['slug']);
+                                                    } elseif (isset($catalogItem['item']['slug'])) {
+                                                        $userPurchaseProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                     }
                                                 @endphp
                                                 <b>
                                                     <a class="a_title_link d-block title-hover-color" target="_blank"
                                                         href="{{ $userPurchaseProductUrl }}">
-                                                        {{ getLocalizedProductName($product['item'], 50) }}
+                                                        {{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}
                                                     </a>
                                                 </b>
-                                                <small class="text-muted d-block">SKU: {{ $product['item']['sku'] ?? 'N/A' }}</small>
-                                                @if(isset($product['vendor_name']))
-                                                <small class="d-block"><strong>{{ __('Vendor') }}:</strong> {{ $product['vendor_name'] }}</small>
+                                                <small class="text-muted d-block">SKU: {{ $catalogItem['item']['sku'] ?? 'N/A' }}</small>
+                                                @if(isset($catalogItem['merchant_name']))
+                                                <small class="d-block"><strong>{{ __('Merchant') }}:</strong> {{ $catalogItem['merchant_name'] }}</small>
                                                 @endif
-                                                @if ($product['item']['type'] != 'Physical')
+                                                @if ($catalogItem['item']['type'] != 'Physical')
                                                     @if ($purchase->payment_status == 'Completed')
-                                                        @if ($product['item']['file'] != null)
+                                                        @if ($catalogItem['item']['file'] != null)
                                                             <a class="title-hover-color"
-                                                                href="{{ route('user-purchase-download', ['slug' => $purchase->purchase_number, 'id' => $product['item']['id']]) }}"
+                                                                href="{{ route('user-purchase-download', ['slug' => $purchase->purchase_number, 'id' => $catalogItem['item']['id']]) }}"
                                                                 class="btn btn-sm btn-primary">
                                                                 <i class="fa fa-download"></i>
                                                                 {{ __('Download') }}
                                                             </a>
                                                         @else
                                                             <a class="title-hover-color" target="_blank"
-                                                                href="{{ $product['item']['link'] }}"
+                                                                href="{{ $catalogItem['item']['link'] }}"
                                                                 class="btn btn-sm btn-primary">
                                                                 <i class="fa fa-download"></i>
                                                                 {{ __('Download') }}
                                                             </a>
                                                         @endif
-                                                        @if ($product['license'] != '')
+                                                        @if ($catalogItem['license'] != '')
                                                             <a href="javascript:;" data-bs-toggle="modal"
                                                                 data-bs-target="#licence"
-                                                                class="btn btn-sm btn-info product-btn" id="license"><i
+                                                                class="btn btn-sm btn-info catalogItem-btn" id="license"><i
                                                                     class="fa fa-eye"></i>
                                                                 {{ __('View License') }}</a>
                                                         @endif
@@ -435,21 +435,21 @@
 
                                         <td>
                                             <ul>
-                                                <li><b><span>@lang('Quantity:')</span></b> {{ $product['qty'] }}</li>
-                                                @if (!empty($product['size']))
+                                                <li><b><span>@lang('Quantity:')</span></b> {{ $catalogItem['qty'] }}</li>
+                                                @if (!empty($catalogItem['size']))
                                                     <li><b><span>@lang('Size:')</span></b>
-                                                        {{ $product['item']['measure'] }}{{ str_replace('-', '', $product['size']) }}
+                                                        {{ $catalogItem['item']['measure'] }}{{ str_replace('-', '', $catalogItem['size']) }}
                                                     </li>
                                                 @endif
-                                                @if (!empty($product['color']))
+                                                @if (!empty($catalogItem['color']))
                                                     <li><b><span>Color:</span></b>
                                                         <span id="color-bar"
-                                                            style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $product['color'] }};"></span>
+                                                            style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"></span>
                                                     </li>
                                                 @endif
 
-                                                @if (!empty($product['keys']))
-                                                    @foreach (array_combine(explode(',', $product['keys']), explode(',', $product['values'])) as $key => $value)
+                                                @if (!empty($catalogItem['keys']))
+                                                    @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
                                                         <li><b><span>{{ ucwords(str_replace('_', ' ', $key)) }}:</span></b>
                                                             {{ $value }}</li>
                                                     @endforeach
@@ -458,11 +458,11 @@
                                         </td>
 
                                         <td><b><span
-                                                    class="td-title">{{ \PriceHelper::showCurrencyPrice($product['item_price'] * $purchase->currency_value) }}</span></b>
+                                                    class="td-title">{{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value) }}</span></b>
                                         </td>
                                         <td>
-                                            <b><span class="td-title">{{ \PriceHelper::showCurrencyPrice($product['price'] * $purchase->currency_value) }}
-                                                    <small>{{ $product['discount'] == 0 ? '' : '(' . $product['discount'] . '% ' . __('Off') . ')' }}</small></small></span></b>
+                                            <b><span class="td-title">{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
+                                                    <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small></small></span></b>
                                         </td>
                                     </tr>
                                 @endforeach

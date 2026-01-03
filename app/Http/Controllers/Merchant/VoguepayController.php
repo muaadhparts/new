@@ -86,7 +86,7 @@ class VoguepayController extends Controller
                     {
                     $data = [
                         'to' => $user->email,
-                        'type' => "vendor_accept",
+                        'type' => "merchant_accept",
                         'cname' => $user->name,
                         'oamount' => "",
                         'aname' => "",
@@ -99,9 +99,9 @@ class VoguepayController extends Controller
                     else
                     {
                     $headers = "From: ".$settings->from_name."<".$settings->from_email.">";
-                    mail($user->email,'Your Vendor Account Activated','Your Vendor Account Activated Successfully. Please Login to your account and build your own shop.',$headers);
+                    mail($user->email,'Your Merchant Account Activated','Your Merchant Account Activated Successfully. Please Login to your account and build your own shop.',$headers);
                     }
 
-                    return redirect()->route('merchant-dashboard')->with('success','Vendor Account Activated Successfully');
+                    return redirect()->route('merchant-dashboard')->with('success','Merchant Account Activated Successfully');
          }
 }

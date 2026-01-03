@@ -19,8 +19,8 @@ class StockManagerCommand extends Command
      *  php artisan stock:manage check --user_id=59
      *
      * Options:
-     *  --all       : apply to all vendors (overrides --user_id)
-     *  --user_id   : target vendor (default 59)
+     *  --all       : apply to all merchants (overrides --user_id)
+     *  --user_id   : target merchant (default 59)
      *  --margin    : price multiplier (1.3 = +30%)
      *  --branch    : branch code (used as remote if --remote not provided)
      *  --remote    : explicit remote (download source)
@@ -28,8 +28,8 @@ class StockManagerCommand extends Command
      */
     protected $signature = 'stock:manage
                             {action : download|import|aggregate|update-stock|update-price|full-refresh|check}
-                            {--user_id=59 : Vendor user_id}
-                            {--all : Apply to all vendors}
+                            {--user_id=59 : Merchant user_id}
+                            {--all : Apply to all merchants}
                             {--margin=1.3 : Price multiplier (e.g., 1.3 = +30%)}
                             {--branch=ATWJRY : Branch code}
                             {--remote= : Remote source for download}
@@ -269,12 +269,12 @@ class StockManagerCommand extends Command
             $this->doAggregate();
 
             // 4) Updates
-            $this->line("🛠 Updating products from stock_all...");
+            $this->line("🛠 Updating catalogItems from stock_all...");
             if ($all) {
-                $this->line("Updating ALL vendors stock from stock_all...");
+                $this->line("Updating ALL merchants stock from stock_all...");
                 $this->updateStockForAll();
 
-                $this->line("Updating ALL vendors price from stock_all.cost_price * {$margin}...");
+                $this->line("Updating ALL merchants price from stock_all.cost_price * {$margin}...");
                 $this->updatePriceForAll($margin);
             } else {
                 $this->line("Updating merchant_items stock for user_id={$userId}...");
@@ -284,7 +284,7 @@ class StockManagerCommand extends Command
                 $this->updatePriceForOne($userId, $margin);
             }
 
-            $this->info("🎉 Full refresh + product update completed successfully.");
+            $this->info("🎉 Full refresh + catalogItem update completed successfully.");
 
             // تحديث السجل كـ مكتمل
             if ($stockUpdate) {
@@ -321,11 +321,11 @@ class StockManagerCommand extends Command
         if ($all) {
             $merchantIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
             if ($merchantIds->isEmpty()) {
-                $this->warn('No vendors found in merchant_items.');
+                $this->warn('No merchants found in merchant_items.');
                 return self::SUCCESS;
             }
             foreach ($merchantIds as $uid) {
-                $this->line("== Vendor {$uid} ==");
+                $this->line("== Merchant {$uid} ==");
                 $this->printStockDiff($uid);
                 $this->printPriceDiff($uid, $margin);
             }
@@ -424,7 +424,7 @@ class StockManagerCommand extends Command
     {
         $merchantIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
         if ($merchantIds->isEmpty()) {
-            $this->warn('No vendors found in merchant_items.');
+            $this->warn('No merchants found in merchant_items.');
             return self::SUCCESS;
         }
 
@@ -554,7 +554,7 @@ class StockManagerCommand extends Command
     {
         $merchantIds = DB::table('merchant_items')->distinct()->pluck('user_id')->filter()->values();
         if ($merchantIds->isEmpty()) {
-            $this->warn('No vendors found in merchant_items.');
+            $this->warn('No merchants found in merchant_items.');
             return self::SUCCESS;
         }
 

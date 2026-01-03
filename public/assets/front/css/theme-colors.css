@@ -197,13 +197,13 @@
     --theme-footer-border: #45382a;
 
     /* ===== PRODUCT CARDS ===== */
-    --theme-product-title-size: 14px;
-    --theme-product-title-weight: 500;
-    --theme-product-price-size: 16px;
-    --theme-product-price-weight: 700;
-    --theme-product-card-radius: 12px;
-    --theme-product-img-radius: 8px;
-    --theme-product-hover-scale: 1.01;
+    --theme-catalogItem-title-size: 14px;
+    --theme-catalogItem-title-weight: 500;
+    --theme-catalogItem-price-size: 16px;
+    --theme-catalogItem-price-weight: 700;
+    --theme-catalogItem-card-radius: 12px;
+    --theme-catalogItem-img-radius: 8px;
+    --theme-catalogItem-hover-scale: 1.01;
 
     /* ===== MODALS ===== */
     --theme-modal-bg: #ffffff;

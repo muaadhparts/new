@@ -2,7 +2,7 @@
     =====================================================================
     CART PAGE V2 - Modern Design
     =====================================================================
-    Uses $productsByMerchant passed from CartController.
+    Uses $catalogItemsByMerchant passed from CartController.
     - Responsive card-based layout
     - RTL support
     =====================================================================
@@ -13,7 +13,7 @@
     use App\Models\CatalogItem;
 
     // Use variables passed from CartController::cart()
-    // $productsByMerchant, $products, $totalPrice are already available
+    // $catalogItemsByMerchant, $catalogItems, $totalPrice are already available
 
     $currValue = $curr->value ?? 1;
     $currSign = $curr->sign ?? '$';
@@ -27,7 +27,7 @@
 
 <div class="m-cart">
     <div class="container">
-        @if (empty($products) || empty($productsByMerchant))
+        @if (empty($catalogItems) || empty($catalogItemsByMerchant))
             {{-- Empty Cart --}}
             <div class="m-cart__empty">
                 <div class="m-cart__empty-icon">
@@ -41,7 +41,7 @@
                 </a>
             </div>
         @else
-            @foreach ($productsByMerchant as $merchantId => $merchantGroup)
+            @foreach ($catalogItemsByMerchant as $merchantId => $merchantGroup)
             <div class="m-cart__merchant" data-merchant-user-id="{{ $merchantId }}">
                 {{-- Merchant Header --}}
                 <div class="m-cart__merchant-header">
@@ -55,34 +55,34 @@
                 <div class="m-cart__body">
                     {{-- Products List --}}
                     <div class="m-cart__items">
-                        @foreach ($merchantGroup['products'] as $rowKey => $product)
+                        @foreach ($merchantGroup['catalogItems'] as $rowKey => $catalogItem)
                             @php
                                 $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', (string)$rowKey);
 
-                                $itemName = data_get($product, 'item.name', '');
-                                $itemNameAr = data_get($product, 'item.name_ar', '');
+                                $itemName = data_get($catalogItem, 'item.name', '');
+                                $itemNameAr = data_get($catalogItem, 'item.name_ar', '');
                                 $displayName = app()->getLocale() == 'ar' && !empty($itemNameAr) ? $itemNameAr : $itemName;
 
-                                $itemSlug = data_get($product, 'item.slug');
-                                $itemSku = data_get($product, 'item.sku');
-                                $itemPhoto = data_get($product, 'item.photo');
+                                $itemSlug = data_get($catalogItem, 'item.slug');
+                                $itemSku = data_get($catalogItem, 'item.sku');
+                                $itemPhoto = data_get($catalogItem, 'item.photo');
                                 $photoUrl = $itemPhoto ? Storage::url($itemPhoto) : asset('assets/images/noimage.png');
 
-                                $itemMerchantId = $product['user_id'] ?? data_get($product, 'item.user_id') ?? 0;
-                                $itemMpId = $product['merchant_item_id'] ?? data_get($product, 'item.merchant_item_id') ?? 0;
+                                $itemMerchantId = $catalogItem['user_id'] ?? data_get($catalogItem, 'item.user_id') ?? 0;
+                                $itemMpId = $catalogItem['merchant_item_id'] ?? data_get($catalogItem, 'item.merchant_item_id') ?? 0;
                                 $hasAllParams = $itemSlug && $itemMerchantId && $itemMpId;
 
-                                $productUrl = $hasAllParams
+                                $catalogItemUrl = $hasAllParams
                                     ? route('front.catalog-item', ['slug' => $itemSlug, 'merchant_id' => $itemMerchantId, 'merchant_item_id' => $itemMpId])
                                     : '#';
 
-                                $itemPrice = $product['item_price'] ?? 0;
-                                $totalItemPrice = $product['price'] ?? 0;
-                                $qty = (int)($product['qty'] ?? 1);
-                                $discount = $product['discount'] ?? 0;
+                                $itemPrice = $catalogItem['item_price'] ?? 0;
+                                $totalItemPrice = $catalogItem['price'] ?? 0;
+                                $qty = (int)($catalogItem['qty'] ?? 1);
+                                $discount = $catalogItem['discount'] ?? 0;
 
                                 // Brand with logo
-                                $brand = data_get($product, 'item.brand');
+                                $brand = data_get($catalogItem, 'item.brand');
                                 $brandName = $brand ? getLocalizedBrandName($brand) : null;
                                 $brandLogo = $brand?->photo_url ?? null;
 
@@ -98,7 +98,7 @@
                                     $mp = \App\Models\MerchantItem::with('qualityBrand')->find($itemMpId);
                                     if ($mp) {
                                         // Real-time stock (المخزون المتبقي الفعلي)
-                                        $sizeVal = $product['size'] ?? '';
+                                        $sizeVal = $catalogItem['size'] ?? '';
                                         $sizeStr = is_array($sizeVal) ? ($sizeVal[0] ?? '') : (string)$sizeVal;
                                         if ($sizeStr && !empty($mp->size) && !empty($mp->size_qty)) {
                                             $sizes = array_map('trim', explode(',', $mp->size));
@@ -119,25 +119,25 @@
                                     }
                                 }
 
-                                $size = $product['size'] ?? '';
+                                $size = $catalogItem['size'] ?? '';
                                 $size = is_array($size) ? implode(', ', $size) : (string)$size;
 
-                                $color = $product['color'] ?? '';
+                                $color = $catalogItem['color'] ?? '';
                                 $color = is_array($color) ? ($color[0] ?? '') : (string)$color;
                             @endphp
 
                             <div class="m-cart__item" id="cart-row-{{ $domKey }}" data-row-key="{{ $rowKey }}">
-                                {{-- Product Image --}}
+                                {{-- CatalogItem Image --}}
                                 <div class="m-cart__item-image">
-                                    <a href="{{ $productUrl }}">
+                                    <a href="{{ $catalogItemUrl }}">
                                         <img src="{{ $photoUrl }}" alt="{{ $displayName }}" loading="lazy"
                                              onerror="this.onerror=null; this.src='{{ asset('assets/images/noimage.png') }}';">
                                     </a>
                                 </div>
 
-                                {{-- Product Details --}}
+                                {{-- CatalogItem Details --}}
                                 <div class="m-cart__item-details">
-                                    <a href="{{ $productUrl }}" class="m-cart__item-name">
+                                    <a href="{{ $catalogItemUrl }}" class="m-cart__item-name">
                                         {{ Str::limit($displayName, 60) }}
                                     </a>
 
@@ -181,13 +181,13 @@
                                     @endif
 
                                     {{-- Reservation Timer --}}
-                                    @if (!empty($product['reservation']) && !$product['reservation']['is_expired'])
+                                    @if (!empty($catalogItem['reservation']) && !$catalogItem['reservation']['is_expired'])
                                         <div class="m-cart__reservation-timer"
-                                             data-expires="{{ $product['reservation']['expires_at'] }}"
-                                             data-remaining="{{ $product['reservation']['remaining_seconds'] }}">
+                                             data-expires="{{ $catalogItem['reservation']['expires_at'] }}"
+                                             data-remaining="{{ $catalogItem['reservation']['remaining_seconds'] }}">
                                             <i class="fas fa-hourglass-half"></i>
                                             <span class="timer-text">
-                                                @lang('Reserved for') <span class="timer-value">{{ $product['reservation']['remaining_minutes'] }}</span> @lang('min')
+                                                @lang('Reserved for') <span class="timer-value">{{ $catalogItem['reservation']['remaining_minutes'] }}</span> @lang('min')
                                             </span>
                                         </div>
                                     @endif
@@ -206,7 +206,7 @@
 
                                 {{-- Quantity --}}
                                 <div class="m-cart__item-qty">
-                                    @if (data_get($product, 'item.type') == 'Physical')
+                                    @if (data_get($catalogItem, 'item.type') == 'Physical')
                                         <div class="m-cart__qty-control" data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
                                             <button type="button" class="m-cart__qty-btn quantity-down"
                                                 data-min-qty="{{ $minQty }}">
@@ -225,11 +225,11 @@
                                             <div class="m-cart__qty-hint"></div>
 
                                             {{-- Hidden inputs for JS --}}
-                                            <input type="hidden" class="prodid" value="{{ data_get($product, 'item.id') }}">
+                                            <input type="hidden" class="prodid" value="{{ data_get($catalogItem, 'item.id') }}">
                                             <input type="hidden" class="itemid" value="{{ $rowKey }}">
                                             <input type="hidden" class="domkey" value="{{ $domKey }}">
-                                            <input type="hidden" class="size_qty" value="{{ $product['size_qty'] ?? '' }}">
-                                            <input type="hidden" class="size_price" value="{{ $product['size_price'] ?? 0 }}">
+                                            <input type="hidden" class="size_qty" value="{{ $catalogItem['size_qty'] ?? '' }}">
+                                            <input type="hidden" class="size_price" value="{{ $catalogItem['size_price'] ?? 0 }}">
                                             <input type="hidden" class="minimum_qty" value="{{ $minQty }}">
                                             <input type="hidden" class="stock_val" value="{{ $stock }}">
                                             <input type="hidden" class="preordered_val" value="{{ $preordered }}">
@@ -271,10 +271,10 @@
                         @php
                             $merchantDiscount = 0;
                             $merchantTotal = $merchantGroup['total'] ?? 0;
-                            foreach ($merchantGroup['products'] as $product) {
-                                if (!empty($product['discount'])) {
-                                    $total_itemprice = (float)($product['item_price'] ?? 0) * (int)($product['qty'] ?? 1);
-                                    $tdiscount = ($total_itemprice * (float)$product['discount']) / 100;
+                            foreach ($merchantGroup['catalogItems'] as $catalogItem) {
+                                if (!empty($catalogItem['discount'])) {
+                                    $total_itemprice = (float)($catalogItem['item_price'] ?? 0) * (int)($catalogItem['qty'] ?? 1);
+                                    $tdiscount = ($total_itemprice * (float)$catalogItem['discount']) / 100;
                                     $merchantDiscount += $tdiscount;
                                 }
                             }

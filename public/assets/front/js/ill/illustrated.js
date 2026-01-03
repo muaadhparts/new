@@ -225,8 +225,8 @@
   }
 
   /* ========================= Table Renderer ========================= */
-  function renderProducts(products, pagination = null){
-    if(!Array.isArray(products)||products.length===0){
+  function renderProducts(catalogItems, pagination = null){
+    if(!Array.isArray(catalogItems)||catalogItems.length===0){
       const noData=t('messages.no_matches');
       return `<div class="text-center p-5 text-muted"><i class="bi bi-search display-6"></i><div class="mt-3 fw-bold">${escapeHtml(noData)}</div></div>`;
     }
@@ -267,7 +267,7 @@
       ? `<div class="d-flex flex-wrap gap-1">${arr.map(v=>`<span class="badge bg-light text-dark">${escapeHtml(v)}</span>`).join('')}</div>`
       : '';
 
-    const rows=products.map(p=>{
+    const rows=catalogItems.map(p=>{
       const name=localizedPartName(p);
 
       // ⛳️ تغيّر: إزالة fallback "—" للخلايا الفارغة
@@ -354,7 +354,7 @@
     // Mobile cards (نفس الأعمدة)
     const mobile = `
       <div class="d-block d-md-none">
-        ${products.map(p=>{
+        ${catalogItems.map(p=>{
           const name=localizedPartName(p);
           const qty=(p.part_qty != null && String(p.part_qty).trim() !== '') ? escapeHtml(p.part_qty) : '';
           const mv=Array.isArray(p.match_values)?p.match_values:(typeof p.match_values==='string'?p.match_values.split(',').map(s=>s.trim()).filter(Boolean):[]);
@@ -706,7 +706,7 @@
         setBackVisible();
         return;
       }
-      const prods = data.products || [];
+      const prods = data.catalogItems || [];
       const pagination = data.pagination || null;
 
       // اعرض الجدول مع pagination ثم سجّل "الجذر" كأول شاشة في المكدس
@@ -755,7 +755,7 @@
     return loadIntoModal(finalUrl, title);
   }
   function openProductInline(key) {
-    const base  = window.ILL_ROUTES?.product || '/modal/product/';
+    const base  = window.ILL_ROUTES?.catalogItem || '/modal/catalogItem/';
     const title = t('catalog.product_modal.title');
     return loadIntoModal(base + encodeURIComponent(key), title);
   }
@@ -1014,7 +1014,7 @@
           return;
         }
 
-        const prods = data.products || [];
+        const prods = data.catalogItems || [];
         const pagination = data.pagination || null;
         const html = renderProducts(prods, pagination);
 
@@ -1045,7 +1045,7 @@
       if (!id && !mpId) { console.warn('ill-add-to-cart: missing data-id or data-merchant-item-id'); return; }
 
       // كمية إن وُجدت داخل بطاقة المنتج، وإلا = 1 (جدول البدائل)
-      const $root = $(btn).closest('.ill-product');
+      const $root = $(btn).closest('.ill-catalogItem');
       let qty = 1;
       const $qty = $root.find('.ill-qty');
       if ($qty.length) {
@@ -1103,7 +1103,7 @@
       if (!id && !mpId) { console.warn('ill-buy-now: missing data-id or data-merchant-item-id'); return; }
 
       // كمية من الحقل إن وُجد، وإلا = 1
-      const $root = $(btn).closest('.ill-product');
+      const $root = $(btn).closest('.ill-catalogItem');
       let qty = 1;
       const $qty = $root.find('.ill-qty');
       if ($qty.length) {

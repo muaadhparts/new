@@ -114,7 +114,7 @@
                 <form class="search-form">
                     <div class="input-group input__group">
                         <input type="text" class="form-control form__control"
-                            placeholder="@lang('Search Any Product Here')">
+                            placeholder="@lang('Search Any CatalogItem Here')">
                         <div class="input-group-append">
                             <span class="search-separator"></span>
                             <button class="dropdown-toggle btn btn-secondary search-category-dropdown"
