@@ -159,6 +159,30 @@
 									</div>
 								</li>
 
+								{{-- Language Switcher --}}
+								<li class="bell-area">
+									<a class="dropdown-toggle-1" href="javascript:;">
+										<i class="fas fa-language"></i>
+									</a>
+									<div class="dropdown-menu">
+										<div class="dropdownmenu-wrapper">
+											<ul>
+												<h5>{{ __('Select Language') }}</h5>
+												@foreach($languges as $language)
+													<li>
+														<a href="{{ route('front.language', $language->id) }}"
+															class="{{ Session::has('language') && Session::get('language') == $language->id ? 'active' : '' }}
+																{{ !Session::has('language') && $language->is_default == 1 ? 'active' : '' }}">
+															<i class="fas fa-globe"></i>
+															{{ $language->language }}
+														</a>
+													</li>
+												@endforeach
+											</ul>
+										</div>
+									</div>
+								</li>
+
 								<li class="login-profile-area">
 									<a class="dropdown-toggle-1" href="javascript:;">
 										<div class="user-img">
