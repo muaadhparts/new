@@ -45,11 +45,17 @@ class MerchantBaseController extends Controller
                 App::setlocale($this->language->name);
             }
 
-            // Set Global Currency
-            $this->curr = DB::table('currencies')->where('is_default', '=', 1)->first();
+            // Set Global Currency (respect session preference)
+            if (Session::has('currency')) {
+                $this->curr = DB::table('currencies')->find(Session::get('currency'));
+            } else {
+                $this->curr = DB::table('currencies')->where('is_default', '=', 1)->first();
+            }
 
+            // Share common variables with views
             view()->share('curr', $this->curr);
             view()->share('gs', $this->gs);
+            view()->share('user', $this->user);
 
             return $next($request);
         });

@@ -17,13 +17,17 @@ class AdminBaseController extends Controller
         $this->middleware('auth:admin');
         $this->gs = DB::table('muaadhsettings')->find(1);
         $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
+        $this->curr = DB::table('currencies')->where('is_default', '=', 1)->first();
+
+        // Share common variables with views
         view()->share('langg', $this->language);
+        view()->share('gs', $this->gs);
+        view()->share('curr', $this->curr);
+
         if ($this->language) {
             App::setlocale($this->language->name);
         } else {
-            // Fallback to English if no default language is set
             App::setlocale('en');
         }
-        $this->curr = DB::table('currencies')->where('is_default', '=', 1)->first();
     }
 }

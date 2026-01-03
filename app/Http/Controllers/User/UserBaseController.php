@@ -53,6 +53,7 @@ class UserBaseController extends Controller
             // Share common variables with views
             view()->share('gs', $this->gs);
             view()->share('curr', $this->curr);
+            view()->share('user', $this->user);
 
             return $next($request);
         });

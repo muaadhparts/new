@@ -11,7 +11,8 @@ use Session;
 class SubscriptionBaseController extends Controller
 {
     protected $gs;
-    protected $language_id;
+    protected $curr;
+    protected $language;
     protected $user;
 
     public function __construct()
@@ -47,6 +48,10 @@ class SubscriptionBaseController extends Controller
                 $this->curr = DB::table('currencies')->where('is_default','=',1)->first();
             }
 
+            // Share common variables with views
+            view()->share('gs', $this->gs);
+            view()->share('curr', $this->curr);
+            view()->share('user', $this->user);
 
             return $next($request);
         });
