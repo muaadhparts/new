@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Classes\MuaadhMailer;
 use App\Models\Muaadhsetting;
-use App\Models\Subscription;
+use App\Models\MembershipPlan;
 use App\Models\User;
-use App\Models\UserSubscription;
+use App\Models\UserMembershipPlan;
 use App\Models\Withdraw;
 use Auth;
 use Carbon\Carbon;
@@ -253,51 +253,51 @@ class MerchantController extends AdminBaseController
     }
 
     //*** GET Request
-    public function addSubs($id)
+    public function addMembershipPlan($id)
     {
         $data = User::findOrFail($id);
-        return view('admin.merchant.add-subs', compact('data'));
+        return view('admin.merchant.add-membership-plan', compact('data'));
     }
 
     //*** POST Request
-    public function addSubsStore(Request $request, $id)
+    public function addMembershipPlanStore(Request $request, $id)
     {
         $user = User::findOrFail($id);
-        $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
-        $subs = Subscription::findOrFail($request->subs_id);
+        $package = $user->membershipPlans()->where('status', 1)->orderBy('id', 'desc')->first();
+        $plan = MembershipPlan::findOrFail($request->plan_id);
         $settings = Muaadhsetting::findOrFail(1);
         $today = Carbon::now()->format('Y-m-d');
         $user->is_merchant = 2;
         if (!empty($package)) {
-            if ($package->subscription_id == $request->subs_id) {
+            if ($package->membership_plan_id == $request->plan_id) {
                 $newday = strtotime($today);
                 $lastday = strtotime($user->date);
                 $secs = $lastday - $newday;
                 $days = $secs / 86400;
-                $total = $days + $subs->days;
+                $total = $days + $plan->days;
                 $user->date = date('Y-m-d', strtotime($today . ' + ' . $total . ' days'));
             } else {
-                $user->date = date('Y-m-d', strtotime($today . ' + ' . $subs->days . ' days'));
+                $user->date = date('Y-m-d', strtotime($today . ' + ' . $plan->days . ' days'));
             }
         } else {
-            $user->date = date('Y-m-d', strtotime($today . ' + ' . $subs->days . ' days'));
+            $user->date = date('Y-m-d', strtotime($today . ' + ' . $plan->days . ' days'));
         }
         $user->mail_sent = 1;
         $user->update();
-        $sub = new UserSubscription;
-        $sub->user_id = $user->id;
-        $sub->subscription_id = $subs->id;
-        $sub->title = $subs->title;
-        $sub->currency_sign = $this->curr->sign;
-        $sub->currency_code = $this->curr->name;
-        $sub->currency_value = $this->curr->value;
-        $sub->price = $subs->price * $this->curr->value;
-        $sub->price = $sub->price / $this->curr->value;
-        $sub->days = $subs->days;
-        $sub->allowed_products = $subs->allowed_products;
-        $sub->details = $subs->details;
-        $sub->status = 1;
-        $sub->save();
+        $userPlan = new UserMembershipPlan;
+        $userPlan->user_id = $user->id;
+        $userPlan->membership_plan_id = $plan->id;
+        $userPlan->title = $plan->title;
+        $userPlan->currency_sign = $this->curr->sign;
+        $userPlan->currency_code = $this->curr->name;
+        $userPlan->currency_value = $this->curr->value;
+        $userPlan->price = $plan->price * $this->curr->value;
+        $userPlan->price = $userPlan->price / $this->curr->value;
+        $userPlan->days = $plan->days;
+        $userPlan->allowed_items = $plan->allowed_items;
+        $userPlan->details = $plan->details;
+        $userPlan->status = 1;
+        $userPlan->save();
         if ($settings->is_smtp == 1) {
             $data = [
                 'to' => $user->email,
@@ -315,7 +315,7 @@ class MerchantController extends AdminBaseController
             mail($user->email, 'Your Merchant Account Activated', 'Your Merchant Account Activated Successfully. Please Login to your account and build your own shop.', $headers);
         }
 
-        $msg = 'Subscription Plan Added Successfully.';
+        $msg = 'Membership Plan Added Successfully.';
         return response()->json($msg);
     }
 

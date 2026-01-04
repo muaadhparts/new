@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Front;
 
 use App\Classes\MuaadhMailer;
-use App\Models\ArrivalSection;
-use App\Models\Blog;
-use App\Models\BlogCategory;
+use App\Models\FeaturedPromo;
+use App\Models\Publication;
+use App\Models\ArticleType;
 use App\Models\Muaadhsetting;
 use App\Models\HomePageTheme;
 use App\Models\MerchantItem;
 use App\Models\Purchase;
 use App\Models\CatalogItem;
 use App\Models\CatalogReview;
-use App\Models\Subscriber;
+use App\Models\MailingList;
 use Artisan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -246,12 +246,12 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Blogs (if enabled in theme)
+        // SECTION: Publications (if enabled in theme)
         // ============================================================================
         if ($theme->show_blogs) {
             $count = $theme->count_blogs ?? 3;
-            $data['blogs'] = Cache::remember('homepage_blogs_' . $count, 3600, function () use ($count) {
-                return Blog::latest()->take($count)->get();
+            $data['blogs'] = Cache::remember('homepage_publications_' . $count, 3600, function () use ($count) {
+                return Publication::latest()->take($count)->get();
             });
         }
 
@@ -271,141 +271,141 @@ class FrontendController extends FrontBaseController
     // HOME PAGE SECTION ENDS
     // ================================================================================================
 
-    // -------------------------------- BLOG SECTION ----------------------------------------
+    // -------------------------------- PUBLICATION SECTION ----------------------------------------
 
-    public function blog(Request $request)
+    public function publications(Request $request)
     {
 
-        if (DB::table('pagesettings')->first()->blog == 0) {
+        if (DB::table('frontend_settings')->first()->publication == 0) {
             return redirect()->back();
         }
 
-        // BLOG TAGS
+        // PUBLICATION TAGS
         $tags = null;
         $tagz = '';
-        $name = Blog::pluck('tags')->toArray();
+        $name = Publication::pluck('tags')->toArray();
         foreach ($name as $nm) {
             $tagz .= $nm . ',';
         }
         $tags = array_unique(explode(',', $tagz));
-        // BLOG CATEGORIES
-        $bcats = BlogCategory::withCount('blogs')->get();
+        // PUBLICATION CATEGORIES
+        $bcats = ArticleType::withCount('publications')->get();
 
-        // BLOGS
-        $blogs = Blog::latest()->paginate($this->gs->post_count);
+        // PUBLICATIONS
+        $publications = Publication::latest()->paginate($this->gs->post_count);
         if ($request->ajax()) {
-            return view('front.ajax.blog', compact('blogs'));
+            return view('front.ajax.publication', compact('publications'));
         }
-        return view('frontend.blog', compact('blogs', 'bcats', 'tags'));
+        return view('frontend.publication', compact('publications', 'bcats', 'tags'));
     }
 
-    public function blogcategory(Request $request, $slug)
+    public function publicationcategory(Request $request, $slug)
     {
 
-        // BLOG TAGS
+        // PUBLICATION TAGS
         $tags = null;
         $tagz = '';
-        $name = Blog::pluck('tags')->toArray();
+        $name = Publication::pluck('tags')->toArray();
         foreach ($name as $nm) {
             $tagz .= $nm . ',';
         }
         $tags = array_unique(explode(',', $tagz));
-        // BLOG CATEGORIES
-        $bcats = BlogCategory::withCount('blogs')->get();
-        // BLOGS
-        $bcat = BlogCategory::where('slug', '=', str_replace(' ', '-', $slug))->first();
-        $blogs = $bcat->blogs()->latest()->paginate($this->gs->post_count);
+        // PUBLICATION CATEGORIES
+        $bcats = ArticleType::withCount('publications')->get();
+        // PUBLICATIONS
+        $bcat = ArticleType::where('slug', '=', str_replace(' ', '-', $slug))->first();
+        $publications = $bcat->publications()->latest()->paginate($this->gs->post_count);
         if ($request->ajax()) {
-            return view('front.ajax.blog', compact('blogs'));
+            return view('front.ajax.publication', compact('publications'));
         }
-        return view('frontend.blog', compact('bcat', 'blogs', 'bcats', 'tags'));
+        return view('frontend.publication', compact('bcat', 'publications', 'bcats', 'tags'));
     }
 
-    public function blogtags(Request $request, $slug)
+    public function publicationtags(Request $request, $slug)
     {
 
-        // BLOG TAGS
+        // PUBLICATION TAGS
         $tags = null;
         $tagz = '';
-        $name = Blog::pluck('tags')->toArray();
+        $name = Publication::pluck('tags')->toArray();
         foreach ($name as $nm) {
             $tagz .= $nm . ',';
         }
         $tags = array_unique(explode(',', $tagz));
-        // BLOG CATEGORIES
-        $bcats = BlogCategory::withCount('blogs')->get();
-        // BLOGS
-        $blogs = Blog::where('tags', 'like', '%' . $slug . '%')->paginate($this->gs->post_count);
+        // PUBLICATION CATEGORIES
+        $bcats = ArticleType::withCount('publications')->get();
+        // PUBLICATIONS
+        $publications = Publication::where('tags', 'like', '%' . $slug . '%')->paginate($this->gs->post_count);
         if ($request->ajax()) {
-            return view('front.ajax.blog', compact('blogs'));
+            return view('front.ajax.publication', compact('publications'));
         }
-        return view('frontend.blog', compact('blogs', 'slug', 'bcats', 'tags'));
+        return view('frontend.publication', compact('publications', 'slug', 'bcats', 'tags'));
     }
 
-    public function blogsearch(Request $request)
+    public function publicationsearch(Request $request)
     {
 
         $tags = null;
         $tagz = '';
-        $name = Blog::pluck('tags')->toArray();
+        $name = Publication::pluck('tags')->toArray();
         foreach ($name as $nm) {
             $tagz .= $nm . ',';
         }
         $tags = array_unique(explode(',', $tagz));
-        // BLOG CATEGORIES
-        $bcats = BlogCategory::withCount('blogs')->get();
-        // BLOGS
+        // PUBLICATION CATEGORIES
+        $bcats = ArticleType::withCount('publications')->get();
+        // PUBLICATIONS
         $search = $request->search;
-        $blogs = Blog::where('title', 'like', '%' . $search . '%')->orWhere('details', 'like', '%' . $search . '%')->paginate($this->gs->post_count);
+        $publications = Publication::where('title', 'like', '%' . $search . '%')->orWhere('details', 'like', '%' . $search . '%')->paginate($this->gs->post_count);
         if ($request->ajax()) {
-            return view('frontend.ajax.blog', compact('blogs'));
+            return view('frontend.ajax.publication', compact('publications'));
         }
-        return view('frontend.blog', compact('blogs', 'search', 'bcats', 'tags'));
+        return view('frontend.publication', compact('publications', 'search', 'bcats', 'tags'));
     }
 
-    public function blogshow($slug)
+    public function publicationshow($slug)
     {
 
-        // BLOG TAGS
+        // PUBLICATION TAGS
         $tags = null;
         $tagz = '';
-        $name = Blog::pluck('tags')->toArray();
+        $name = Publication::pluck('tags')->toArray();
         foreach ($name as $nm) {
             $tagz .= $nm . ',';
         }
         $tags = array_unique(explode(',', $tagz));
-        // BLOG CATEGORIES
-        $bcats = BlogCategory::withCount('blogs')->get();
-        // BLOGS
+        // PUBLICATION CATEGORIES
+        $bcats = ArticleType::withCount('publications')->get();
+        // PUBLICATIONS
 
-        $blog = Blog::where('slug', $slug)->first();
+        $publication = Publication::where('slug', $slug)->first();
 
-        $blog->views = $blog->views + 1;
-        $blog->update();
-        // BLOG META TAG
-        $blog_meta_tag = $blog->meta_tag;
-        $blog_meta_description = $blog->meta_description;
-        return view('frontend.blogshow', compact('blog', 'bcats', 'tags', 'blog_meta_tag', 'blog_meta_description'));
+        $publication->views = $publication->views + 1;
+        $publication->update();
+        // PUBLICATION META TAG
+        $publication_meta_tag = $publication->meta_tag;
+        $publication_meta_description = $publication->meta_description;
+        return view('frontend.publicationshow', compact('publication', 'bcats', 'tags', 'publication_meta_tag', 'publication_meta_description'));
     }
 
-    // -------------------------------- BLOG SECTION ENDS----------------------------------------
+    // -------------------------------- PUBLICATION SECTION ENDS----------------------------------------
 
-    // -------------------------------- FAQ SECTION ----------------------------------------
-    public function faq()
+    // -------------------------------- HELP ARTICLE SECTION ----------------------------------------
+    public function helpArticle()
     {
-        if (DB::table('pagesettings')->first()->faq == 0) {
+        if (DB::table('frontend_settings')->first()->faq == 0) {
             return redirect()->back();
         }
-        $faqs = DB::table('faqs')->latest('id')->get();
-        $count = count(DB::table('faqs')->get()) / 2;
+        $helpArticles = DB::table('help_articles')->latest('id')->get();
+        $count = count(DB::table('help_articles')->get()) / 2;
         if (($count % 1) != 0) {
             $chunk = (int) $count + 1;
         } else {
             $chunk = $count;
         }
-        return view('frontend.faq', compact('faqs', 'chunk'));
+        return view('frontend.help-article', compact('helpArticles', 'chunk'));
     }
-    // -------------------------------- FAQ SECTION ENDS----------------------------------------
+    // -------------------------------- HELP ARTICLE SECTION ENDS----------------------------------------
 
     // -------------------------------- AUTOSEARCH SECTION ----------------------------------------
 
@@ -441,7 +441,7 @@ class FrontendController extends FrontBaseController
     public function contact()
     {
 
-        if (DB::table('pagesettings')->first()->contact == 0) {
+        if (DB::table('frontend_settings')->first()->contact == 0) {
             return redirect()->back();
         }
         $ps = $this->ps;
@@ -510,11 +510,11 @@ class FrontendController extends FrontBaseController
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
-        $subs = Subscriber::where('email', '=', $request->email)->first();
+        $subs = MailingList::where('email', '=', $request->email)->first();
         if (isset($subs)) {
             return back()->with('unsuccess', 'You have already subscribed.');
         }
-        $subscribe = new Subscriber;
+        $subscribe = new MailingList;
         $subscribe->fill($request->all());
         $subscribe->save();
         return back()->with('success', 'Subscribed Successfully.');

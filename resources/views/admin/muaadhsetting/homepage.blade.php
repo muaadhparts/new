@@ -49,7 +49,7 @@
 
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-5 mb-3">
-                                    <a href="{{ route('admin-ps-customize') }}" class="btn btn-outline-primary w-100">
+                                    <a href="{{ route('admin-fs-customize') }}" class="btn btn-outline-primary w-100">
                                         <i class="fas fa-sliders-h me-2"></i>
                                         {{ __('Legacy Customization') }}
                                     </a>

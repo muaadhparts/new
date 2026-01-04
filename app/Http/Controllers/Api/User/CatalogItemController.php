@@ -3,16 +3,16 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CommentResource;
+use App\Http\Resources\BuyerNoteResource;
 use App\Http\Resources\CatalogReviewResource;
-use App\Http\Resources\ReplyResource;
+use App\Http\Resources\NoteResponseResource;
 
-use App\Http\Resources\ReportResource;
-use App\Models\Comment;
+use App\Http\Resources\AbuseFlagResource;
+use App\Models\BuyerNote;
 use App\Models\Purchase;
 use App\Models\CatalogReview;
-use App\Models\Reply;
-use App\Models\Report;
+use App\Models\NoteResponse;
+use App\Models\AbuseFlag;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -47,7 +47,7 @@ class CatalogItemController extends Controller
             }
             if ($ck == 1) {
                 $user = auth()->user();
-                $prev = CatalogReview::where('catalog_item_id', '=', $request->catalog_item_id)->where('user_id', '=', $user->id)->get();
+                $prev = CatalogTestimonial::where('catalog_item_id', '=', $request->catalog_item_id)->where('user_id', '=', $user->id)->get();
                 if (count($prev) > 0) {
                     return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'You Have Reviewed Already.']]);
                 }
@@ -79,13 +79,13 @@ class CatalogItemController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $comment = new Comment;
-            $comment->user_id = auth()->user()->id;
-            $comment->catalog_item_id = $request->catalog_item_id;
-            $comment->text = $request->comment;
-            $comment->save();
+            $buyerNote = new BuyerNote;
+            $buyerNote->user_id = auth()->user()->id;
+            $buyerNote->catalog_item_id = $request->catalog_item_id;
+            $buyerNote->text = $request->comment;
+            $buyerNote->save();
 
-            return response()->json(['status' => true, 'data' => new CommentResource($comment), 'error' => []]);
+            return response()->json(['status' => true, 'data' => new BuyerNoteResource($buyerNote), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -104,11 +104,11 @@ class CatalogItemController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $comment = Comment::find($request->id);
-            $comment->text = $request->comment;
-            $comment->save();
+            $buyerNote = BuyerNote::find($request->id);
+            $buyerNote->text = $request->comment;
+            $buyerNote->save();
 
-            return response()->json(['status' => true, 'data' => new CommentResource($comment), 'error' => []]);
+            return response()->json(['status' => true, 'data' => new BuyerNoteResource($buyerNote), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -117,13 +117,13 @@ class CatalogItemController extends Controller
     public function commentdelete($id)
     {
         try {
-            $comment = Comment::find($id);
-            if ($comment->replies->count() > 0) {
-                foreach ($comment->replies as $reply) {
-                    $reply->delete();
+            $buyerNote = BuyerNote::find($id);
+            if ($buyerNote->noteResponses->count() > 0) {
+                foreach ($buyerNote->noteResponses as $noteResponse) {
+                    $noteResponse->delete();
                 }
             }
-            $comment->delete();
+            $buyerNote->delete();
 
             return response()->json(['status' => true, 'data' => ['message' => 'Comment Deleted Successfully!'], 'error' => []]);
         } catch (\Exception $e) {
@@ -135,7 +135,7 @@ class CatalogItemController extends Controller
     {
         try {
             $rules = [
-                'comment_id' => 'required',
+                'buyer_note_id' => 'required',
                 'reply' => 'required',
             ];
 
@@ -144,13 +144,13 @@ class CatalogItemController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $reply = new Reply;
-            $reply->user_id = auth()->user()->id;
-            $reply->comment_id = $request->comment_id;
-            $reply->text = $request->reply;
-            $reply->save();
+            $noteResponse = new NoteResponse;
+            $noteResponse->user_id = auth()->user()->id;
+            $noteResponse->buyer_note_id = $request->buyer_note_id;
+            $noteResponse->text = $request->reply;
+            $noteResponse->save();
 
-            return response()->json(['status' => true, 'data' => new ReplyResource($reply), 'error' => []]);
+            return response()->json(['status' => true, 'data' => new NoteResponseResource($noteResponse), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -169,11 +169,11 @@ class CatalogItemController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $reply = Reply::find($request->id);
-            $reply->text = $request->reply;
-            $reply->save();
+            $noteResponse = NoteResponse::find($request->id);
+            $noteResponse->text = $request->reply;
+            $noteResponse->save();
 
-            return response()->json(['status' => true, 'data' => new ReplyResource($reply), 'error' => []]);
+            return response()->json(['status' => true, 'data' => new NoteResponseResource($noteResponse), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -182,8 +182,8 @@ class CatalogItemController extends Controller
     public function replydelete($id)
     {
         try {
-            $reply = Reply::find($id);
-            $reply->delete();
+            $noteResponse = NoteResponse::find($id);
+            $noteResponse->delete();
 
             return response()->json(['status' => true, 'data' => ['message' => 'Reply Deleted Successfully!'], 'error' => []]);
         } catch (\Exception $e) {
@@ -208,16 +208,16 @@ class CatalogItemController extends Controller
             }
             //--- Validation Section Ends
             //--- Logic Section
-            $report = new Report;
-            $report->user_id = auth()->user()->id;
-            $report->catalog_item_id = $request->catalog_item_id;
-            $report->title = $request->title;
-            $report->note = $request->note;
-            $report->save();
+            $abuseFlag = new AbuseFlag;
+            $abuseFlag->user_id = auth()->user()->id;
+            $abuseFlag->catalog_item_id = $request->catalog_item_id;
+            $abuseFlag->title = $request->title;
+            $abuseFlag->note = $request->note;
+            $abuseFlag->save();
             //--- Logic Section Ends
 
             //--- Redirect Section
-            return response()->json(['status' => true, 'data' => new ReportResource($report), 'error' => []]);
+            return response()->json(['status' => true, 'data' => new AbuseFlagResource($abuseFlag), 'error' => []]);
             //--- Redirect Section Ends
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

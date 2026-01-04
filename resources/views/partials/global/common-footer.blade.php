@@ -1,6 +1,6 @@
 @php
     $categories = App\Models\Category::with('subs')->where('status', 1)->get();
-    $pages = App\Models\Page::get();
+    $static_content = App\Models\StaticContent::get();
 @endphp
 @if($ps->newsletter == 1)
     <!--==================== Newsleter Section Start ====================-->
@@ -87,12 +87,12 @@
                         @endif
                         @if($ps->blog == 1)
                             <li>
-                                <a href="{{ route('front.blog') }}">{{ __('Blog') }}</a>
+                                <a href="{{ route('front.publications') }}">{{ __('Publications') }}</a>
                             </li>
                         @endif
                         @if($ps->faq == 1)
                             <li>
-                                <a href="{{ route('front.faq') }}">{{ __('Faq') }}</a>
+                                <a href="{{ route('front.help-article') }}">{{ __('Help') }}</a>
                             </li>
                         @endif
                         {{-- Using cached $footerPages from AppServiceProvider --}}
@@ -111,20 +111,20 @@
                 <div class="footer-widget widget-nav my-5">
                     <h6 class="widget-title mb-sm-4">{{ __('Recent Post') }}</h6>
                     <ul>
-                        @foreach (($footer_blogs ?? []) as $footer_blog)
+                        @foreach (($footer_publications ?? []) as $footer_publication)
                             <li>
                                 <div class="post">
                                     <div class="post-img">
-                                        <img src="{{ asset('assets/images/blogs/' . $footer_blog->photo) }}" alt="">
+                                        <img src="{{ asset('assets/images/publications/' . $footer_publication->photo) }}" alt="">
                                     </div>
                                     <div class="post-details">
-                                        <a href="{{ route('front.blogshow', $footer_blog->slug) }}">
+                                        <a href="{{ route('front.publicationshow', $footer_publication->slug) }}">
                                             <h4 class="post-title">
-                                                {{mb_strlen($footer_blog->title, 'UTF-8') > 45 ? mb_substr($footer_blog->title, 0, 45, 'UTF-8') . " .." : $footer_blog->title}}
+                                                {{mb_strlen($footer_publication->title, 'UTF-8') > 45 ? mb_substr($footer_publication->title, 0, 45, 'UTF-8') . " .." : $footer_publication->title}}
                                             </h4>
                                         </a>
                                         <p class="date">
-                                            {{ date('M d - Y', (strtotime($footer_blog->created_at))) }}
+                                            {{ date('M d - Y', (strtotime($footer_publication->created_at))) }}
                                         </p>
                                     </div>
                                 </div>

@@ -83,7 +83,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
 
         // Get merchant's gateway settings (test_mode, country)
-        $gateway = \DB::table('payment_gateways')
+        $gateway = \DB::table('merchant_payments')
             ->where('user_id', $merchantId)
             ->where('keyword', 'myfatoorah')
             ->first();
@@ -472,7 +472,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+            PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
         }
 
         if (Auth::check()) {
@@ -584,7 +584,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             $paymentMethods = $mfObj->getCheckoutGateways($purchase['total'], $purchase['currency'], config('myfatoorah.register_apple_pay'));
 
             if (empty($paymentMethods['all'])) {
-                throw new Exception('noPaymentGateways');
+                throw new Exception('noMerchantPayments');
             }
 
             //Generate MyFatoorah session for embedded payment

@@ -94,7 +94,7 @@ class MerchantCredentialService
      *
      * Search purchase:
      * 1. merchant_credentials table (new encrypted storage)
-     * 2. payment_gateways.information JSON (legacy storage)
+     * 2. merchant_payments.information JSON (legacy storage)
      *
      * @param int $userId Merchant user ID
      * @return string|null API key or null if not configured
@@ -108,8 +108,8 @@ class MerchantCredentialService
             return $key;
         }
 
-        // 2. Fallback to legacy payment_gateways.information
-        return $this->getFromPaymentGateway($userId, 'myfatoorah', 'api_key');
+        // 2. Fallback to legacy merchant_payments.information
+        return $this->getFromMerchantPayment($userId, 'myfatoorah', 'api_key');
     }
 
     /**
@@ -122,19 +122,19 @@ class MerchantCredentialService
     }
 
     /**
-     * Get credential from legacy payment_gateways table
+     * Get credential from legacy merchant_payments table
      *
      * @param int $userId Merchant user ID
      * @param string $keyword Gateway keyword (e.g., 'myfatoorah', 'stripe')
      * @param string $keyName Key name in JSON (e.g., 'api_key', 'secret')
      * @return string|null
      */
-    protected function getFromPaymentGateway(int $userId, string $keyword, string $keyName): ?string
+    protected function getFromMerchantPayment(int $userId, string $keyword, string $keyName): ?string
     {
-        $cacheKey = "payment_gateway_cred:{$userId}:{$keyword}:{$keyName}";
+        $cacheKey = "merchant_payment_cred:{$userId}:{$keyword}:{$keyName}";
 
         return Cache::remember($cacheKey, $this->cacheTtl, function () use ($userId, $keyword, $keyName) {
-            $gateway = \DB::table('payment_gateways')
+            $gateway = \DB::table('merchant_payments')
                 ->where('user_id', $userId)
                 ->where('keyword', $keyword)
                 ->first();
@@ -185,7 +185,7 @@ class MerchantCredentialService
 
     /**
      * Check if merchant has payment credentials configured
-     * Checks both merchant_credentials and legacy payment_gateways
+     * Checks both merchant_credentials and legacy merchant_payments
      *
      * @param int $userId Merchant user ID
      * @return bool
@@ -197,8 +197,8 @@ class MerchantCredentialService
             return true;
         }
 
-        // Check legacy payment_gateways table
-        $key = $this->getFromPaymentGateway($userId, 'myfatoorah', 'api_key');
+        // Check legacy merchant_payments table
+        $key = $this->getFromMerchantPayment($userId, 'myfatoorah', 'api_key');
         return !empty($key);
     }
 

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Classes\MuaadhMailer;
 use App\Models\Muaadhsetting;
-use App\Models\Admin;
+use App\Models\Operator;
 use Illuminate\Support\Facades\Hash;
 
 use Illuminate\Http\Request;
@@ -60,13 +60,13 @@ class LoginController extends Controller
     {
       $gs = Muaadhsetting::findOrFail(1);
       $input =  $request->all();
-      if (Admin::where('email', '=', $request->email)->count() > 0) {
+      if (Operator::where('email', '=', $request->email)->count() > 0) {
       // user found
-      $admin = Admin::where('email', '=', $request->email)->firstOrFail();
-      $token = md5(time().$admin->name.$admin->email);
+      $operator = Operator::where('email', '=', $request->email)->firstOrFail();
+      $token = md5(time().$operator->name.$operator->email);
 
       $file = fopen(public_path().'/project/storage/tokens/'.$token.'.data','w+');
-      fwrite($file,$admin->id);
+      fwrite($file,$operator->id);
       fclose($file);
 
       $subject = "Reset Password Request";
@@ -105,11 +105,11 @@ class LoginController extends Controller
 
     public function changepass(Request $request)
     {
-        $id = $request->admin_id;
-        $admin =  Admin::findOrFail($id);
+        $id = $request->operator_id;
+        $operator = Operator::findOrFail($id);
         $token = $request->file_token;
         if ($request->cpass){
-            if (Hash::check($request->cpass, $admin->password)){
+            if (Hash::check($request->cpass, $operator->password)){
                 if ($request->newpass == $request->renewpass){
                     $input['password'] = Hash::make($request->newpass);
                 }else{
@@ -119,7 +119,7 @@ class LoginController extends Controller
                 return response()->json(array('errors' => [ 0 => 'Current password Does not match.' ]));
             }
         }
-        $admin->update($input);
+        $operator->update($input);
 
         unlink(public_path().'/project/storage/tokens/'.$token.'.data');
 

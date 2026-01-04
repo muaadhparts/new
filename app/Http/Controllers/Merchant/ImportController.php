@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\{
-    Models\Gallery,
+    Models\MerchantPhoto,
     Models\CatalogItem,
     Models\Muaadhsetting
 };
@@ -78,7 +78,7 @@ class ImportController extends MerchantBaseController
     public function index()
     {
         if ($this->gs->affilite == 1) {
-            return view('merchant.productimport.index');
+            return view('merchant.catalog-item-import.index');
         } else {
             return back();
         }
@@ -90,7 +90,7 @@ class ImportController extends MerchantBaseController
         $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
         if ($this->gs->affilite == 1) {
-            return view('merchant.productimport.createone', compact('cats', 'sign'));
+            return view('merchant.catalog-item-import.createone', compact('cats', 'sign'));
         } else {
             return back();
         }
@@ -101,7 +101,7 @@ class ImportController extends MerchantBaseController
     {
         $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
-        return view('merchant.productimport.importcsv', compact('cats', 'sign'));
+        return view('merchant.catalog-item-import.importcsv', compact('cats', 'sign'));
     }
 
     //*** POST Request
@@ -141,7 +141,7 @@ class ImportController extends MerchantBaseController
     {
         // BEGIN NEW MERCHANT ITEM HANDLING
         $user = $this->user;
-        $package = $user->subscribes()->latest('id')->first();
+        $package = $user->membershipPlans()->latest('id')->first();
         // عدد العروض الخاصة بالبائع (على merchant_items)
         $prods = $user->merchantItems()->latest('id')->count();
         // // dd(['merchant_items_count' => $prods]); // اختباري
@@ -152,7 +152,7 @@ class ImportController extends MerchantBaseController
             }
         }
 
-        if ($prods < $package->allowed_products) {
+        if ($prods < $package->allowed_items) {
             // تحقق الصورة والملف إن لزم
             if ($request->image_source == 'file') {
                 $rules = [
@@ -244,16 +244,16 @@ class ImportController extends MerchantBaseController
             $merchantItem = MerchantItem::create($merchantInput);
             // // dd(['mp_created' => $merchantItem->id]); // اختباري
 
-            // حفظ صور المعرض إن وجدت
+            // حفظ صور التاجر إن وجدت
             if ($files = $request->file('gallery')) {
                 foreach ($files as $key => $file) {
                     if (in_array($key, (array) $request->galval)) {
-                        $gallery = new Gallery;
+                        $merchantPhoto = new MerchantPhoto;
                         $name = \PriceHelper::ImageCreateName($file);
-                        $file->move('assets/images/galleries', $name);
-                        $gallery['photo'] = $name;
-                        $gallery['catalog_item_id'] = $catalogItem->id;
-                        $gallery->save();
+                        $file->move('assets/images/merchant-photos', $name);
+                        $merchantPhoto['photo'] = $name;
+                        $merchantPhoto['catalog_item_id'] = $catalogItem->id;
+                        $merchantPhoto->save();
                     }
                 }
             }
@@ -292,7 +292,7 @@ class ImportController extends MerchantBaseController
             ->first();
 
         $sign = $this->curr;
-        return view('merchant.productimport.editone', compact('cats', 'data', 'merchantItem', 'sign'));
+        return view('merchant.catalog-item-import.editone', compact('cats', 'data', 'merchantItem', 'sign'));
     }
 
     //*** POST Request

@@ -63,7 +63,7 @@
 
 </head>
 
-{{-- Header data ($categories, $pages, $currencies, $languges) provided by AppServiceProvider with caching --}}
+{{-- Header data ($categories, $static_content, $currencies, $languges) provided by AppServiceProvider with caching --}}
 <body class="m-theme-scope">
 
     <div class="frontend-header-wrapper">
@@ -150,7 +150,7 @@
         var mainurl = "{{ url('/') }}";
         var admin_loader = {{ $gs->is_admin_loader }};
         var whole_sell = {{ $gs->wholesell }};
-        var getattrUrl = '{{ route('merchant-catalog-item-getattributes') }}';
+        var getattrUrl = ''; // Attributes feature removed
         var curr = {!! json_encode($curr) !!};
         var lang = {
             'additional_price': '{{ __('0.00 (Additional Price)') }}'

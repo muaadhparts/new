@@ -54,7 +54,7 @@ use App\Models\Cart;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Services\MerchantCartService;
 use App\Services\CheckoutDataService;
 use App\Services\ShippingCalculatorService;
@@ -84,7 +84,7 @@ class CheckoutController extends FrontBaseController
         $pay_id = $slug2;
         $gateway = '';
         if ($pay_id != 0) {
-            $gateway = PaymentGateway::findOrFail($pay_id);
+            $gateway = MerchantPayment::findOrFail($pay_id);
         }
 //        dd($slug1, $slug2 ,$gateway);
         return view('load.payment', compact('payment', 'pay_id', 'gateway', 'curr'));
@@ -823,14 +823,14 @@ class CheckoutController extends FrontBaseController
         $merchant_shipping_id = 0;
         $merchant_packing_id = 0;
         $curr = $this->curr;
-        $gateways = PaymentGateway::scopeHasGateway($this->curr->id);
+        $gateways = MerchantPayment::scopeHasGateway($this->curr->id);
         $pickups = DB::table('pickups')->get();
 
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
         $cartItems = $cart->items;
 
-        $paystack = PaymentGateway::whereKeyword('paystack')->first();
+        $paystack = MerchantPayment::whereKeyword('paystack')->first();
         $paystackData = $paystack ? $paystack->convertAutoData() : [];
 
         // Check if cart has physical items
@@ -1704,7 +1704,7 @@ class CheckoutController extends FrontBaseController
         // Get payment gateways for THIS merchant ONLY (NO FALLBACK)
         // CRITICAL: Only show payment methods owned by this merchant
         // scopeHasGateway returns a Collection, so we filter it
-        $allGateways = PaymentGateway::scopeHasGateway($this->curr->id);
+        $allGateways = MerchantPayment::scopeHasGateway($this->curr->id);
         $gateways = $allGateways->where('user_id', $merchantId)
             ->where('checkout', 1); // checkout=1 means enabled for checkout
 
@@ -1723,7 +1723,7 @@ class CheckoutController extends FrontBaseController
         $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
-        $paystack = PaymentGateway::whereKeyword('paystack')->first();
+        $paystack = MerchantPayment::whereKeyword('paystack')->first();
         $paystackData = $paystack ? $paystack->convertAutoData() : [];
 
         // CRITICAL: Use total from step2 (catalogItems + shipping + any adjustments)

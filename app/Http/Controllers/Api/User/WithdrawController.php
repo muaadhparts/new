@@ -9,7 +9,7 @@ use App\Http\Resources\WithdrawDetailsResource;
 use App\Http\Resources\WithdrawResource;
 use App\Models\Currency;
 use App\Models\Muaadhsetting;
-use App\Models\Transaction;
+use App\Models\WalletLog;
 use App\Models\User;use App\Models\Withdraw;
 use Auth;
 
@@ -219,7 +219,7 @@ class WithdrawController extends Controller
         $user->reward = $user->reward - $request->reward_point;
         $user->balance = $user->balance + $dolar;
         $user->update();
-        $trans =  new Transaction();
+        $trans =  new WalletLog();
         $trans->user_id = $user->id;
         $trans->reward_point = $request->reward_point;
         $trans->reward_dolar = $dolar;
@@ -239,7 +239,7 @@ class WithdrawController extends Controller
     
     public function getReword(){
         $user = Auth::user();
-        $datas = Transaction::where('type','reward')->where('user_id',$user->id)->orderby('id','desc')->get();
+        $datas = WalletLog::where('type','reward')->where('user_id',$user->id)->orderby('id','desc')->get();
         $datas->toArray();
         return response()->json(['status' => true, 'data' => $datas, 'error' => []]);
     }

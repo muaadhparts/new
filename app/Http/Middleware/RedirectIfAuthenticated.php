@@ -24,9 +24,9 @@ class RedirectIfAuthenticated
         }
         break;
 
-      case 'rider':
+      case 'courier':
         if (Auth::guard($guard)->check()) {
-          return redirect()->route('rider-dashboard');
+          return redirect()->route('courier-dashboard');
         }
         break;
 

@@ -41,7 +41,8 @@
       "WebFetch(domain:oldnew.test)",
       "Bash(cd:*)",
       "Bash(git add:*)",
-      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\")"
+      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\")",
+      "Bash(Get-Content \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\storage\\\\logs\\\\laravel.log\" -Tail 100)"
     ]
   }
 }

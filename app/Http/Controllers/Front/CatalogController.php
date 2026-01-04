@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Models\Report;
+use App\Models\AbuseFlag;
 use App\Services\CatalogItemFilterService;
 use App\Services\NewCategoryTreeService;
 use Illuminate\Http\Request;
@@ -291,7 +291,7 @@ class CatalogController extends FrontBaseController
         
         $request->validate($rules, $customs);
 
-        $data = new Report;
+        $data = new AbuseFlag;
         // Security: Only allow specific fields, set user_id from authenticated user
         $data->catalog_item_id = $request->input('catalog_item_id');
         $data->merchant_item_id = $request->input('merchant_item_id');

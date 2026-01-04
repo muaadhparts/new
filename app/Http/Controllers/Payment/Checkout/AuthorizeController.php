@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Checkout;
 use App\{
     Models\Cart,
     Models\Purchase,
-    Models\PaymentGateway,
+    Models\MerchantPayment,
     Classes\MuaadhMailer
 };
 use App\Helpers\PriceHelper;
@@ -43,7 +43,7 @@ class AuthorizeController extends CheckoutBaseControlller
         }
 
         $input = array_merge($step1, $step2, $input);
-        $data = PaymentGateway::whereKeyword('authorize.net')->first();
+        $data = MerchantPayment::whereKeyword('authorize.net')->first();
 
         $total = $request->total;
 
@@ -220,7 +220,7 @@ class AuthorizeController extends CheckoutBaseControlller
                         $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
                         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+                            PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
                         }
 
                         //Sending Email To Buyer

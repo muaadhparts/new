@@ -12,7 +12,7 @@ class NotificationController extends AdminBaseController
       $user_count = DB::table('notifications')->where('user_id','!=',null)->where('is_read','=',0)->count();
       $purchase_count = DB::table('notifications')->where('purchase_id','!=',null)->where('is_read','=',0)->count();
       $product_count = DB::table('notifications')->where('catalog_item_id','!=',null)->where('is_read','=',0)->count();
-      $conv_count = DB::table('notifications')->where('conversation_id','!=',null)->where('is_read','=',0)->count();
+      $conv_count = DB::table('notifications')->where('chat_thread_id','!=',null)->where('is_read','=',0)->count();
 
       $data = array();        
       $data['user_count'] = $user_count;
@@ -79,13 +79,13 @@ class NotificationController extends AdminBaseController
 
   public function conv_notf_clear()
   {
-      $data = CatalogEvent::where('conversation_id','!=',null);
+      $data = CatalogEvent::where('chat_thread_id','!=',null);
       $data->delete();        
   } 
 
   public function conv_notf_show()
   {
-      $datas = CatalogEvent::where('conversation_id','!=',null)->latest('id')->get();
+      $datas = CatalogEvent::where('chat_thread_id','!=',null)->latest('id')->get();
       if($datas->count() > 0){
         foreach($datas as $data){
           $data->is_read = 1;

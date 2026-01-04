@@ -215,7 +215,7 @@
                         <div class="col-lg-4 d-flex justify-content-between">
                           <label class="control-label">{{ __('Messages') }} *</label>
                           <label class="switch">
-                            <input type="checkbox" name="section[]" value="messages">
+                            <input type="checkbox" name="section[]" value="chat_entries">
                             <span class="slider round"></span>
                           </label>
                         </div>
@@ -325,7 +325,7 @@
                         <div class="col-lg-4 d-flex justify-content-between">
                           <label class="control-label">{{ __('Subscribers') }} *</label>
                           <label class="switch">
-                            <input type="checkbox" name="section[]" value="subscribers">
+                            <input type="checkbox" name="section[]" value="mailing_list">
                             <span class="slider round"></span>
                           </label>
                         </div>

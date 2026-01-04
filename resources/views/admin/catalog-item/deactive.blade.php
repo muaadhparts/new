@@ -272,8 +272,8 @@
                                             '<span class="remove-img"><i class="fas fa-times"></i>'+
                                             '<input type="hidden" value="'+arr[k]['id']+'">'+
                                             '</span>'+
-                                            '<a href="'+'{{asset('assets/images/galleries').'/'}}'+arr[k]['photo']+'" target="_blank">'+
-                                            '<img src="'+'{{asset('assets/images/galleries').'/'}}'+arr[k]['photo']+'" alt="gallery image">'+
+                                            '<a href="'+'{{asset('assets/images/merchant-photos').'/'}}'+arr[k]['photo']+'" target="_blank">'+
+                                            '<img src="'+'{{asset('assets/images/merchant-photos').'/'}}'+arr[k]['photo']+'" alt="gallery image">'+
                                             '</a>'+
                                         '</div>'+
                                   	'</div>');
@@ -327,8 +327,8 @@
 								'<span class="remove-img"><i class="fas fa-times"></i>'+
 									'<input type="hidden" value="'+arr[k]['id']+'">'+
 								'</span>'+
-								'<a href="'+'{{asset('assets/images/galleries').'/'}}'+arr[k]['photo']+'" target="_blank">'+
-									'<img src="'+'{{asset('assets/images/galleries').'/'}}'+arr[k]['photo']+'" alt="gallery image">'+
+								'<a href="'+'{{asset('assets/images/merchant-photos').'/'}}'+arr[k]['photo']+'" target="_blank">'+
+									'<img src="'+'{{asset('assets/images/merchant-photos').'/'}}'+arr[k]['photo']+'" alt="gallery image">'+
 								'</a>'+
 							'</div>'+
 						'</div>');

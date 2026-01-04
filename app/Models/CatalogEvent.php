@@ -8,7 +8,7 @@ class CatalogEvent extends Model
 {
     protected $table = 'catalog_events';
 
-    protected $fillable = ['purchase_id', 'user_id', 'merchant_id', 'catalog_item_id', 'conversation_id'];
+    protected $fillable = ['purchase_id', 'user_id', 'merchant_id', 'catalog_item_id', 'chat_thread_id'];
 
     public function purchase()
     {
@@ -30,9 +30,9 @@ class CatalogEvent extends Model
         return $this->belongsTo('App\Models\CatalogItem', 'catalog_item_id')->withDefault();
     }
 
-    public function conversation()
+    public function chatThread()
     {
-        return $this->belongsTo('App\Models\Conversation')->withDefault();
+        return $this->belongsTo('App\Models\ChatThread', 'chat_thread_id')->withDefault();
     }
 
     public static function countRegistration()
@@ -50,8 +50,8 @@ class CatalogEvent extends Model
         return CatalogEvent::where('catalog_item_id', '!=', null)->where('is_read', '=', 0)->latest('id')->get()->count();
     }
 
-    public static function countConversation()
+    public static function countChatThread()
     {
-        return CatalogEvent::where('conversation_id', '!=', null)->where('is_read', '=', 0)->latest('id')->get()->count();
+        return CatalogEvent::where('chat_thread_id', '!=', null)->where('is_read', '=', 0)->latest('id')->get()->count();
     }
 }

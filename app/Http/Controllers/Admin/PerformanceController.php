@@ -84,11 +84,11 @@ class PerformanceController extends AdminBaseController
     public function downloadReport(Request $request)
     {
         $days = (int) $request->get('days', 7);
-        $report = $this->analyzer->generateReport($days);
+        $performanceReport = $this->analyzer->generateReport($days);
 
         $filename = 'performance-report-' . Carbon::now()->format('Y-m-d-His') . '.json';
 
-        return response()->json($report)
+        return response()->json($performanceReport)
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"')
             ->header('Content-Type', 'application/json');
     }

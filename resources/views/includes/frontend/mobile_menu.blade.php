@@ -22,7 +22,7 @@
         </button>
     </div>
 
-    {{-- User Info (if logged in) - Using $authUser/$riderUser from HeaderComposer --}}
+    {{-- User Info (if logged in) - Using $authUser/$courierUser from HeaderComposer --}}
     @if ($authUser)
         <div class="muaadh-mobile-user">
             <div class="muaadh-mobile-user-avatar">
@@ -37,14 +37,14 @@
                 <a href="{{ route('user-dashboard') }}" class="muaadh-mobile-user-link">@lang('View Dashboard')</a>
             </div>
         </div>
-    @elseif ($riderUser ?? null)
+    @elseif ($courierUser ?? null)
         <div class="muaadh-mobile-user">
             <div class="muaadh-mobile-user-avatar">
                 <i class="fas fa-motorcycle"></i>
             </div>
             <div class="muaadh-mobile-user-info">
-                <span class="muaadh-mobile-user-name">{{ $riderUser->name }}</span>
-                <a href="{{ route('rider-dashboard') }}" class="muaadh-mobile-user-link">@lang('Rider Dashboard')</a>
+                <span class="muaadh-mobile-user-name">{{ $courierUser->name }}</span>
+                <a href="{{ route('courier-dashboard') }}" class="muaadh-mobile-user-link">@lang('Courier Dashboard')</a>
             </div>
         </div>
     @else
@@ -89,7 +89,7 @@
                     <i class="fas fa-box-open"></i>
                     <span>@lang('CatalogItems')</span>
                 </a>
-                @if ($pages->where('header', '=', 1)->count() > 0)
+                @if ($static_content->where('header', '=', 1)->count() > 0)
                     <div class="muaadh-mobile-nav-accordion">
                         <button class="muaadh-mobile-nav-item muaadh-accordion-toggle">
                             <i class="fas fa-file-alt"></i>
@@ -97,23 +97,23 @@
                             <i class="fas fa-chevron-down muaadh-accordion-icon"></i>
                         </button>
                         <div class="muaadh-accordion-content">
-                            @foreach ($pages->where('header', '=', 1) as $page)
-                                <a href="{{ route('front.merchant', $page->slug) }}" class="muaadh-mobile-nav-subitem">
-                                    {{ $page->title }}
+                            @foreach ($static_content->where('header', '=', 1) as $content)
+                                <a href="{{ route('front.merchant', $content->slug) }}" class="muaadh-mobile-nav-subitem">
+                                    {{ $content->title }}
                                 </a>
                             @endforeach
                         </div>
                     </div>
                 @endif
                 @if ($ps->blog == 1)
-                    <a href="{{ route('front.blog') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'blog' ? 'active' : '' }}">
+                    <a href="{{ route('front.publications') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'publications' ? 'active' : '' }}">
                         <i class="fas fa-newspaper"></i>
-                        <span>@lang('Blog')</span>
+                        <span>@lang('Publications')</span>
                     </a>
                 @endif
-                <a href="{{ route('front.faq') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'faq' ? 'active' : '' }}">
+                <a href="{{ route('front.help-article') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'help-article' ? 'active' : '' }}">
                     <i class="fas fa-question-circle"></i>
-                    <span>@lang('FAQ')</span>
+                    <span>@lang('Help')</span>
                 </a>
                 <a href="{{ route('front.contact') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'contact' ? 'active' : '' }}">
                     <i class="fas fa-envelope"></i>
@@ -271,7 +271,7 @@
             <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileCategoriesJson) !!}</script>
         </div>
 
-        {{-- Account Tab - Using $authUser/$riderUser from HeaderComposer --}}
+        {{-- Account Tab - Using $authUser/$courierUser from HeaderComposer --}}
         <div class="muaadh-mobile-tab-pane" id="menu-account">
             @if ($authUser)
                 <nav class="muaadh-mobile-nav">
@@ -300,13 +300,13 @@
                         <span>@lang('Logout')</span>
                     </a>
                 </nav>
-            @elseif ($riderUser ?? null)
+            @elseif ($courierUser ?? null)
                 <nav class="muaadh-mobile-nav">
-                    <a href="{{ route('rider-dashboard') }}" class="muaadh-mobile-nav-item">
+                    <a href="{{ route('courier-dashboard') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-tachometer-alt"></i>
-                        <span>@lang('Rider Dashboard')</span>
+                        <span>@lang('Courier Dashboard')</span>
                     </a>
-                    <a href="{{ route('rider-logout') }}" class="muaadh-mobile-nav-item text-danger">
+                    <a href="{{ route('courier-logout') }}" class="muaadh-mobile-nav-item text-danger">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>@lang('Logout')</span>
                     </a>
@@ -337,9 +337,9 @@
                         <i class="fas fa-store"></i>
                         <span>@lang('Merchant Login')</span>
                     </a>
-                    <a href="{{ route('rider.login') }}" class="muaadh-mobile-nav-item">
+                    <a href="{{ route('courier.login') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-motorcycle"></i>
-                        <span>@lang('Rider Login')</span>
+                        <span>@lang('Courier Login')</span>
                     </a>
                 </div>
             @endif

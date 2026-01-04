@@ -6,12 +6,12 @@
     </head>
 
     <body dir="{{App::isLocale('ar') ? 'rtl' : 'ltr'}}">
-        <div class="mf-payment-methods-container" id="mf-noPaymentGateways">
+        <div class="mf-payment-methods-container" id="mf-noMerchantPayments">
             <div class="mf-danger-text">
-                {{__('myfatoorah.noPaymentGateways')}}
+                {{__('myfatoorah.noMerchantPayments')}}
             </div>
         </div>
-        <div class="mf-payment-methods-container" id="mf-paymentGateways" >
+        <div class="mf-payment-methods-container" id="mf-merchantPayments" >
             <div class="mf-grey-text">
                 {{__('myfatoorah.howWouldYouLikeToPay')}}
             </div>

@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Deposit;
-use App\Models\Transaction;
+use App\Models\TopUp;
+use App\Models\WalletLog;
 use App\Models\User;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,10 +18,10 @@ class DepositController extends Controller
 
     public function sendDeposit($number)
     {
-        $deposit = Deposit::where('deposit_number', $number)->first();
+        $deposit = TopUp::where('deposit_number', $number)->first();
         $curr = Currency::where('name', '=', $deposit->currency_code)->firstOrFail();
-        $gateways = PaymentGateway::scopeHasGateway($curr->id);
-        $paystack = PaymentGateway::whereKeyword('paystack')->first();
+        $gateways = MerchantPayment::scopeHasGateway($curr->id);
+        $paystack = MerchantPayment::whereKeyword('paystack')->first();
         $paystackData = $paystack->convertAutoData();
 
         if ($deposit->status == 1) {
@@ -83,7 +83,7 @@ class DepositController extends Controller
             //--- Validation Section Ends
 
             $id = $request->id;
-            $data = Transaction::find($id);
+            $data = WalletLog::find($id);
             if (!$data) {
                 return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'Invalid ID.']]);
             }

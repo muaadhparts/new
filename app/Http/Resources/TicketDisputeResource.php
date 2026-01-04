@@ -22,7 +22,7 @@ class TicketDisputeResource extends JsonResource
         'message' => $this->message,
         'type' => $this->type,
         'purchase_number' => $this->when($this->type == 'Dispute', $this->purchase_number),
-        'messages' => TicketDisputeMessageResource::collection($this->messages),
+        'chat_entries' => TicketDisputeMessageResource::collection($this->messages),
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at,
       ];

@@ -37,14 +37,14 @@
                                 <div class="conversation-box wow-replaced" data-wow-delay=".1s">
                                     <div>
                                         <div class="message-sender-box">
-                                            @if ($message->conversation->user->is_provider == 1)
-                                                <img src="{{ $message->conversation->user->photo != null ? $message->conversation->user->photo : asset('assets/images/noimage.png') }}"
+                                            @if ($message->chatThread->user->is_provider == 1)
+                                                <img src="{{ $message->chatThread->user->photo != null ? $message->chatThread->user->photo : asset('assets/images/noimage.png') }}"
                                                     alt="" class="avater">
                                             @else
-                                                <img src="{{ $message->conversation->user->photo != null ? asset('assets/images/users/' . $message->conversation->user->photo) : asset('assets/images/noimage.png') }}"
+                                                <img src="{{ $message->chatThread->user->photo != null ? asset('assets/images/users/' . $message->chatThread->user->photo) : asset('assets/images/noimage.png') }}"
                                                     alt="" class="avater">
                                             @endif
-                                            <p class="message-sender">{{ $message->conversation->user->name }}</p>
+                                            <p class="message-sender">{{ $message->chatThread->user->name }}</p>
                                         </div>
                                     </div>
                                     <div class="message-and-time-wrapper">
@@ -83,7 +83,7 @@
                     </div>
                     <!-- conversation boxes end -->
                     <!-- send message form  -->
-                    <form action="{{ route('user-message-store') }}" method="POST" class="send-message-form wow-replaced"
+                    <form action="{{ route('user-ticket-store') }}" method="POST" class="send-message-form wow-replaced"
                         data-wow-delay=".1s">
                         @csrf
 

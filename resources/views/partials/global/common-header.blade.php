@@ -16,8 +16,8 @@
                         <li><a class="border px-3 py-1" href="{{route('merchant.register')}}">{{__('Sell')}}</a></li>
                         @endif
 
-                        @if (!Auth::guard('rider')->check())
-                        <li><a class="border px-3 py-1" href="{{route('rider.login')}}">{{__('Rider Login')}}</a></li>
+                        @if (!Auth::guard('courier')->check())
+                        <li><a class="border px-3 py-1" href="{{route('courier.login')}}">{{__('Courier Login')}}</a></li>
                         @endif
 
                         {{-- Using cached $languges from AppServiceProvider --}}
@@ -70,17 +70,17 @@
                                 <li><a href="{{ route('user-logout') }}"><span class="menu-item-text">{{ __('Logout')
                                             }}</span></a></li>
 
-                                @elseif(Auth::guard('rider')->check())
-                                <li><a href="{{ route('rider-dashboard') }}"><span class="menu-item-text">{{ ('Rider
+                                @elseif(Auth::guard('courier')->check())
+                                <li><a href="{{ route('courier-dashboard') }}"><span class="menu-item-text">{{ ('Courier
                                             Panel') }}</span></a></li>
-                                <li><a href="{{ route('rider-profile') }}"><span class="menu-item-text">{{ __('Edit Profile') }}</span></a></li>
-                                <li><a href="{{ route('rider-logout') }}"><span class="menu-item-text">{{ __('Logout')
+                                <li><a href="{{ route('courier-profile') }}"><span class="menu-item-text">{{ __('Edit Profile') }}</span></a></li>
+                                <li><a href="{{ route('courier-logout') }}"><span class="menu-item-text">{{ __('Logout')
                                             }}</span></a></li>
 
                                 @else
                                 <li><a href="{{ route('user.login') }}"><span class="menu-item-text sign-in">{{ __('User Login') }}</span></a></li>
-                                <li><a href="{{ route('rider.login') }}"><span class="menu-item-text sign-in">{{
-                                            __('Rider Login') }}</span></a></li>
+                                <li><a href="{{ route('courier.login') }}"><span class="menu-item-text sign-in">{{
+                                            __('Courier Login') }}</span></a></li>
                                 <li><a href="{{ route('user.register') }}"><span class="menu-item-text join">{{
                                             __('Join') }}</span></a></li>
                                 @endif
@@ -95,7 +95,7 @@
 
     @php
     $categories = App\Models\Category::with('subs')->where('status',1)->get();
-    $pages = App\Models\Page::get();
+    $static_content = App\Models\StaticContent::get();
     @endphp
     <div class="main-nav py-4 d-none d-lg-block">
         <div class="container-fluid">
@@ -150,7 +150,7 @@
                                 <li class="nav-item dropdown ">
                                     <a class="nav-link dropdown-toggle" href="#">{{ __('Pages') }}</a>
                                     <ul class="dropdown-menu">
-                                        @foreach($pages->where('header','=',1) as $data)
+                                        @foreach($static_content->where('header','=',1) as $data)
                                         <li><a class="dropdown-item" href="{{ route('front.merchant',$data->slug) }}">{{
                                                 $data->title }}</a></li>
                                         @endforeach
@@ -158,14 +158,14 @@
                                 </li>
 
                                 @if ($ps->blog == 1)
-                                <li class="nav-item dropdown {{ request()->path()=='blog' ? 'active' : '' }}">
-                                    <a class="nav-link dropdown-toggle" href="{{ route('front.blog') }}">{{ __('Blog')
+                                <li class="nav-item dropdown {{ request()->path()=='publications' ? 'active' : '' }}">
+                                    <a class="nav-link dropdown-toggle" href="{{ route('front.publications') }}">{{ __('Publications')
                                         }}</a>
                                 </li>
                                 @endif
                                 @if ($ps->faq == 1)
-                                <li class="nav-item dropdown {{ request()->path()=='faq' ? 'active' : '' }}">
-                                    <a class="nav-link dropdown-toggle" href="{{ route('front.faq') }}">{{ __('FAQ')
+                                <li class="nav-item dropdown {{ request()->path()=='help-article' ? 'active' : '' }}">
+                                    <a class="nav-link dropdown-toggle" href="{{ route('front.help-article') }}">{{ __('Help')
                                         }}</a>
                                 </li>
                                 @endif
@@ -316,7 +316,7 @@
                                                             <a class="nav-link dropdown-toggle" href="#">{{ __('Pages')
                                                                 }}</a>
                                                             <ul class="dropdown-menu">
-                                                                @foreach($pages->where('header','=',1) as $data)
+                                                                @foreach($static_content->where('header','=',1) as $data)
                                                                 <li><a class="dropdown-item"
                                                                         href="{{ route('front.merchant',$data->slug) }}">{{
                                                                         $data->title }}</a></li>
@@ -324,13 +324,13 @@
                                                             </ul>
                                                         </li>
                                                         <li class="nav-item">
-                                                            <a class="nav-link" href="{{ route('front.blog') }}">{{
-                                                                __('Blog') }}</a>
+                                                            <a class="nav-link" href="{{ route('front.publications') }}">{{
+                                                                __('Publications') }}</a>
                                                         </li>
 
                                                         <li class="nav-item">
-                                                            <a class="nav-link" href="{{ route('front.faq') }}">{{
-                                                                __('FAQ') }}</a>
+                                                            <a class="nav-link" href="{{ route('front.help-article') }}">{{
+                                                                __('Help') }}</a>
                                                         </li>
                                                         <li class="nav-item"><a class="nav-link"
                                                                 href="{{ route('front.contact') }}">{{ __('Contact')
@@ -379,16 +379,16 @@
                                 <li><a href="{{ route('user-logout') }}"><span class="menu-item-text">{{ __('Logout')
                                             }}</span></a></li>
 
-                                @elseif(Auth::guard('rider')->check())
-                                <li><a href="{{ route('rider-dashboard') }}"><span class="menu-item-text">{{ ('User
+                                @elseif(Auth::guard('courier')->check())
+                                <li><a href="{{ route('courier-dashboard') }}"><span class="menu-item-text">{{ ('Courier
                                             Panel') }}</span></a></li>
-                                <li><a href="{{ route('rider-profile') }}"><span class="menu-item-text">{{ __('Edit Profile') }}</span></a></li>
-                                <li><a href="{{ route('rider-logout') }}"><span class="menu-item-text">{{ __('Logout')
+                                <li><a href="{{ route('courier-profile') }}"><span class="menu-item-text">{{ __('Edit Profile') }}</span></a></li>
+                                <li><a href="{{ route('courier-logout') }}"><span class="menu-item-text">{{ __('Logout')
                                             }}</span></a></li>
                                 @else
                                 <li><a href="{{ route('user.login') }}"><span class="menu-item-text sign-in">{{ __('User Login') }}</span></a></li>
-                                <li><a href="{{ route('rider.login') }}"><span class="menu-item-text sign-in">{{
-                                            __('Rider Login') }}</span></a></li>
+                                <li><a href="{{ route('courier.login') }}"><span class="menu-item-text sign-in">{{
+                                            __('Courier Login') }}</span></a></li>
                                 <li><a href="{{ route('user.register') }}"><span class="menu-item-text join">{{
                                             __('Join') }}</span></a></li>
                                 @endif

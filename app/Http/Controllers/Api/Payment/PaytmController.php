@@ -7,7 +7,7 @@ use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\Package;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Shipping;
 use Illuminate\Http\Request;
 
@@ -49,7 +49,7 @@ class PaytmController extends Controller
 
     public function getPaymentData()
     {
-        $data = PaymentGateway::whereKeyword('paytm')->first();
+        $data = MerchantPayment::whereKeyword('paytm')->first();
         return $data->convertAutoData();
     }
 

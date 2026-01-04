@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\Payment;
 
 use App\Http\Controllers\Front\FrontBaseController;
 use App\Models\Currency;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use DB;
 use Illuminate\Http\Request;
 
@@ -23,7 +23,7 @@ class CheckoutController extends FrontBaseController
             $pay_id = $slug2;
             $gateway = '';
             if ($pay_id != 0) {
-                $gateway = PaymentGateway::findOrFail($pay_id);
+                $gateway = MerchantPayment::findOrFail($pay_id);
             }
             return view('payment.load.payment', compact('payment', 'pay_id', 'gateway', 'curr'));
         }
@@ -34,13 +34,13 @@ class CheckoutController extends FrontBaseController
 
         if ($request->has('deposit_number')) {
             $deposit_number = $request->deposit_number;
-            $deposit = Deposit::where('deposit_number', $deposit_number)->firstOrFail();
+            $deposit = TopUp::where('deposit_number', $deposit_number)->firstOrFail();
             $curr = Currency::where('name', $deposit->currency_code)->firstOrFail();
             $payment = $slug1;
             $pay_id = $slug2;
             $gateway = '';
             if ($pay_id != 0) {
-                $gateway = PaymentGateway::findOrFail($pay_id);
+                $gateway = MerchantPayment::findOrFail($pay_id);
             }
             return view('payment.load.payment', compact('payment', 'pay_id', 'gateway', 'curr'));
         }
@@ -55,9 +55,9 @@ class CheckoutController extends FrontBaseController
             $shipping_data = DB::table('shippings')->where('user_id', '=', 0)->get();
 
             $curr = Currency::where('sign', '=', $purchase->currency_sign)->firstOrFail();
-            $gateways = PaymentGateway::scopeHasGateway($curr->id);
+            $gateways = MerchantPayment::scopeHasGateway($curr->id);
 
-            $paystack = PaymentGateway::whereKeyword('paystack')->first();
+            $paystack = MerchantPayment::whereKeyword('paystack')->first();
             $paystackData = $paystack->convertAutoData();
 
             if ($purchase->payment_status == 'Pending') {

@@ -111,7 +111,7 @@
 								<li class="bell-area">
 									<a id="notf_conv" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-envelope"></i>
-										<span id="conv-notf-count">{{ App\Models\CatalogEvent::countConversation()
+										<span id="conv-notf-count">{{ App\Models\CatalogEvent::countChatThread()
 											}}</span>
 									</a>
 									<div class="dropdown-menu">
@@ -245,7 +245,7 @@
 		var mainurl = "{{url('/')}}";
 		var admin_loader = {{ $gs->is_admin_loader }};
 		var whole_sell = {{ $gs->wholesell }};
-		var getattrUrl = '{{ route('admin-catalog-item-getattributes') }}';
+		var getattrUrl = ''; // Attributes feature removed
 		var curr = {!! json_encode($curr) !!};
 		var lang = {
 			'additional_price': '{{ __('0.00 (Additional Price)') }}'

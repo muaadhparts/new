@@ -3,7 +3,7 @@
 return [
     'pageCheckout'         => 'MyFatoorah - Checkout',
     'pageError'            => 'MyFatoorah Error',
-    'noPaymentGateways'    => 'There are no payment methods available on your account, please contact your account manager.',
+    'noMerchantPayments'   => 'There are no payment methods available on your account, please contact your account manager.',
     'howWouldYouLikeToPay' => 'How would you like to pay?',
     'or'                   => 'Or',
     'payWith'              => 'Pay With',

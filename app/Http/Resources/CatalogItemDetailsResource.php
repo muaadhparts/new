@@ -3,10 +3,10 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\GalleryResource;
+use App\Http\Resources\MerchantPhotoResource;
 use App\Http\Resources\CatalogReviewResource;
-use App\Http\Resources\CommentResource;
-use App\Models\Admin;
+use App\Http\Resources\BuyerNoteResource;
+use App\Models\Operator;
 
 class CatalogItemDetailsResource extends JsonResource
 {
@@ -48,7 +48,7 @@ class CatalogItemDetailsResource extends JsonResource
     } else {
       $shopName = ($this->user_id != 0 && $this->relationLoaded('user'))
           ? $this->user->shop_name
-          : Admin::first()->shop_name;
+          : Operator::first()->shop_name;
     }
 
     return [
@@ -65,7 +65,7 @@ class CatalogItemDetailsResource extends JsonResource
       // صور
       'thumbnail'     => \Illuminate\Support\Facades\Storage::url($this->thumbnail) ?? asset('assets/images/noimage.png'),
       'first_image'   => \Illuminate\Support\Facades\Storage::url($this->photo) ?? asset('assets/images/noimage.png'),
-      'images'        => GalleryResource::collection($this->whenLoaded('galleries', $this->galleries)),
+      'images'        => MerchantPhotoResource::collection($this->whenLoaded('merchantPhotos', $this->merchantPhotos)),
 
       // تقييم
       'rating'        => $this->catalogReviews()->avg('rating') > 0
@@ -98,8 +98,8 @@ class CatalogItemDetailsResource extends JsonResource
       'whole_sell_discount' => $mp ? $mp->whole_sell_discount : null,
 
       // علاقات
-      'reviews'        => CatalogReviewResource::collection($this->whenLoaded('catalogReviews', $this->catalogReviews)),
-      'comments'       => CommentResource::collection($this->whenLoaded('comments', $this->comments)),
+      'testimonials'        => CatalogReviewResource::collection($this->whenLoaded('catalogReviews', $this->catalogReviews)),
+      'buyer_notes'       => BuyerNoteResource::collection($this->whenLoaded('buyerNotes', $this->buyerNotes)),
 
       // منتجات ذات صلة (تبقى كما لديك إن رغبت لاحقًا بتقييدها على بائع معيّن ممكن نحدثها)
       // ملاحظة: في نسختك القديمة كانت: category->catalog_items()->where('status',1)->where('id','!=',$this->id)->take(8)

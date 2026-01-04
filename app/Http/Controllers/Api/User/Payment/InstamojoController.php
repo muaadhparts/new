@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Api\User\Payment;
 use App\Classes\Instamojo;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Muaadhsetting;
-use App\Models\PaymentGateway;
-use App\Models\Transaction;
+use App\Models\MerchantPayment;
+use App\Models\WalletLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -17,13 +17,13 @@ class InstamojoController extends Controller
 {
     public function store(Request $request)
     {
-        $data = PaymentGateway::whereKeyword('instamojo')->first();
+        $data = MerchantPayment::whereKeyword('instamojo')->first();
         if (!$request->has('deposit_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
         $deposit_number = $request->deposit_number;
-        $purchase = Deposit::where('deposit_number', $deposit_number)->firstOrFail();
+        $purchase = TopUp::where('deposit_number', $deposit_number)->firstOrFail();
         $curr = Currency::where('name', '=', $purchase->currency_code)->firstOrFail();
 
         if ($curr->name != "INR") {
@@ -63,21 +63,21 @@ class InstamojoController extends Controller
             $purchase['method'] = $request->method;
             $purchase->update();
 
-            // store in transaction table
+            // store in wallet_logs table
             if ($purchase->status == 1) {
-                $transaction = new Transaction;
-                $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $purchase->user_id;
-                $transaction->amount = $purchase->amount;
-                $transaction->user_id = $purchase->user_id;
-                $transaction->currency_sign = $purchase->currency;
-                $transaction->currency_code = $purchase->currency_code;
-                $transaction->currency_value = $purchase->currency_value;
-                $transaction->method = $purchase->method;
-                $transaction->txnid = $purchase->txnid;
-                $transaction->details = 'Payment Deposit';
-                $transaction->type = 'plus';
-                $transaction->save();
+                $walletLog = new WalletLog;
+                $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+                $walletLog->user_id = $purchase->user_id;
+                $walletLog->amount = $purchase->amount;
+                $walletLog->user_id = $purchase->user_id;
+                $walletLog->currency_sign = $purchase->currency;
+                $walletLog->currency_code = $purchase->currency_code;
+                $walletLog->currency_value = $purchase->currency_value;
+                $walletLog->method = $purchase->method;
+                $walletLog->txnid = $purchase->txnid;
+                $walletLog->details = 'Payment Deposit';
+                $walletLog->type = 'plus';
+                $walletLog->save();
             }
 
             return redirect($redirect_url);
@@ -92,7 +92,7 @@ class InstamojoController extends Controller
 
         $data = $request->all();
 
-        $purchase = Deposit::where('flutter_id', '=', $data['payment_request_id'])->first();
+        $purchase = TopUp::where('flutter_id', '=', $data['payment_request_id'])->first();
 
         $cancel_url = route('user.deposit.send', $purchase->deposit_number);
         $user = \App\Models\User::findOrFail($purchase->user_id);

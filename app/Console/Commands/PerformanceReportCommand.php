@@ -28,16 +28,16 @@ class PerformanceReportCommand extends Command
 
         try {
             $analyzer = new PerformanceAnalyzer();
-            $report = $analyzer->generateReport($days);
+            $performanceReport = $analyzer->generateReport($days);
 
             // Display summary
-            $this->displaySummary($report['summary']);
+            $this->displaySummary($performanceReport['summary']);
 
             // Display slow queries
-            $this->displaySlowQueries($report['slow_queries']);
+            $this->displaySlowQueries($performanceReport['slow_queries']);
 
             // Display slow requests
-            $this->displaySlowRequests($report['slow_requests']);
+            $this->displaySlowRequests($performanceReport['slow_requests']);
 
             // Prune old entries if requested
             if ($pruneDays) {
@@ -46,15 +46,15 @@ class PerformanceReportCommand extends Command
 
             // Send email if requested
             if ($email) {
-                $this->sendReport($email, $report);
+                $this->sendPerformanceReport($email, $performanceReport);
             }
 
             // Log report generation
             Log::channel('single')->info('Performance report generated', [
                 'days' => $days,
-                'slow_queries' => $report['summary']['slow_queries'],
-                'slow_requests' => $report['summary']['slow_requests'],
-                'exceptions' => $report['summary']['exceptions_count'],
+                'slow_queries' => $performanceReport['summary']['slow_queries'],
+                'slow_requests' => $performanceReport['summary']['slow_requests'],
+                'exceptions' => $performanceReport['summary']['exceptions_count'],
             ]);
 
             $this->info('Report generated successfully!');
@@ -143,12 +143,12 @@ class PerformanceReportCommand extends Command
         $this->info("Deleted {$deleted} old entries.");
     }
 
-    protected function sendReport(string $email, array $report): void
+    protected function sendPerformanceReport(string $email, array $performanceReport): void
     {
         $this->info("Sending report to {$email}...");
 
         try {
-            Mail::raw($this->formatReportForEmail($report), function ($message) use ($email) {
+            Mail::raw($this->formatPerformanceReportForEmail($performanceReport), function ($message) use ($email) {
                 $message->to($email)
                     ->subject('Performance Report - ' . config('app.name'));
             });
@@ -159,12 +159,12 @@ class PerformanceReportCommand extends Command
         }
     }
 
-    protected function formatReportForEmail(array $report): string
+    protected function formatPerformanceReportForEmail(array $performanceReport): string
     {
-        $summary = $report['summary'];
+        $summary = $performanceReport['summary'];
 
         return "
-Performance Report - {$report['generated_at']}
+Performance Report - {$performanceReport['generated_at']}
 ===============================================
 
 SUMMARY (Last {$summary['period_days']} days)

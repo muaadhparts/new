@@ -82,26 +82,29 @@ class CatalogItem extends Model
         return $this->belongsTo('App\Models\FavoriteSeller')->withDefault();
     }
 
-    public function galleries()
+    /**
+     * Get all merchant photos for this catalog item
+     */
+    public function merchantPhotos()
     {
-        return $this->hasMany('App\Models\Gallery', 'catalog_item_id');
+        return $this->hasMany(MerchantPhoto::class, 'catalog_item_id');
     }
 
     /**
-     * Get galleries filtered by merchant user_id.
-     * Use this for merchant-specific gallery display.
+     * Get merchant photos filtered by merchant user_id.
+     * Use this for merchant-specific photo display.
      *
      * @param int|null $userId Merchant user ID
-     * @param int $limit Max number of galleries
+     * @param int $limit Max number of photos
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function galleriesForMerchant(?int $userId, int $limit = 3)
+    public function merchantPhotosForMerchant(?int $userId, int $limit = 3)
     {
         if (!$userId) {
             return collect();
         }
 
-        return Gallery::where('catalog_item_id', $this->id)
+        return MerchantPhoto::where('catalog_item_id', $this->id)
             ->where('user_id', $userId)
             ->take($limit)
             ->get();
@@ -119,7 +122,7 @@ class CatalogItem extends Model
 
     public function comments()
     {
-        return $this->hasMany('App\Models\Comment', 'catalog_item_id');
+        return $this->hasMany('App\Models\BuyerNote', 'catalog_item_id');
     }
 
     public function clicks()
@@ -127,9 +130,9 @@ class CatalogItem extends Model
         return $this->hasMany('App\Models\CatalogItemClick', 'catalog_item_id');
     }
 
-    public function reports()
+    public function abuseFlags()
     {
-        return $this->hasMany('App\Models\Report', 'catalog_item_id');
+        return $this->hasMany('App\Models\AbuseFlag', 'catalog_item_id');
     }
 
     /* =========================================================================

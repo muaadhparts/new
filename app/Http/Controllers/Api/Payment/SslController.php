@@ -7,7 +7,7 @@ use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\Package;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Shipping;
 use Illuminate\Http\Request;
 
@@ -40,7 +40,7 @@ class SslController extends Controller
         $purchase->update();
 
 
-        $data = PaymentGateway::whereKeyword('sslcommerz')->first();
+        $data = MerchantPayment::whereKeyword('sslcommerz')->first();
         $paydata = $data->convertAutoData();
         $post_data = array();
         $post_data['store_id'] = $paydata['store_id'];

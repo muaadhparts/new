@@ -6,26 +6,27 @@ use App\Classes\MuaadhMailer;
 use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
-use App\Http\Resources\BlogResource;use App\Http\Resources\FaqResource;
+// use App\Http\Resources\BlogResource; // Removed - Blog replaced with Publication
+use App\Http\Resources\HelpArticleResource;
 use App\Http\Resources\FeaturedBannerResource;
 use App\Http\Resources\FeaturedLinkResource;
 use App\Http\Resources\PurchaseTrackResource;
-use App\Http\Resources\PageResource;
+use App\Http\Resources\StaticContentResource;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\ServiceResource;
-use App\Http\Resources\SliderResource;use App\Models\ArrivalSection;
-use App\Models\Banner;
-use App\Models\Blog;
+use App\Http\Resources\SliderResource;use App\Models\FeaturedPromo;
+use App\Models\Announcement;
+use App\Models\Publication;
 use App\Models\Currency;
-use App\Models\Faq;
+use App\Models\HelpArticle;
 use App\Models\FeaturedBanner;
 use App\Models\FeaturedLink;
 use App\Models\Muaadhsetting;
 use App\Models\Language;
 use App\Models\Purchase;
-use App\Models\Page;
-use App\Models\Pagesetting;
+use App\Models\StaticContent;
+use App\Models\FrontendSetting;
 use App\Models\Brand;
 use App\Models\CatalogItem;
 use App\Models\Service;
@@ -43,7 +44,7 @@ class FrontendController extends Controller
     public function section_customization()
     {
         try {
-            $data = Pagesetting::find(1)->toArray();
+            $data = FrontendSetting::find(1)->toArray();
             return response()->json(['status' => true, 'data' => $data, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => false, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -228,11 +229,11 @@ class FrontendController extends Controller
             }
 
             if ($request->type == 'TopSmall') {
-                $banners = Banner::where('type', '=', 'TopSmall')->get();
+                $banners = Announcement::where('type', '=', 'TopSmall')->get();
             } elseif ($request->type == 'BottomSmall') {
-                $banners = Banner::where('type', '=', 'BottomSmall')->get();
+                $banners = Announcement::where('type', '=', 'BottomSmall')->get();
             } elseif ($request->type == 'Large') {
-                $ps = Pagesetting::first();
+                $ps = FrontendSetting::first();
                 $large_banner['image'] = asset('assets/images/' . $ps->big_save_banner1);
                 $large_banner['title'] = $ps->big_save_banner_text;
                 $large_banner['text'] = $ps->big_save_banner_subtitle;
@@ -338,13 +339,13 @@ class FrontendController extends Controller
 
     // Display All Type Of CatalogItems Ends
 
-    // Display Faq, Blog, Page
+    // Display HelpArticle, Blog, Page
 
-    public function faqs()
+    public function helpArticles()
     {
         try {
-            $faqs = Faq::all();
-            return response()->json(['status' => true, 'data' => FaqResource::collection($faqs), 'error' => []]);
+            $helpArticles = HelpArticle::all();
+            return response()->json(['status' => true, 'data' => HelpArticleResource::collection($helpArticles), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -354,12 +355,12 @@ class FrontendController extends Controller
     {
         try {
             if($request->type == 'latest'){
-                $blogs = Blog::orderby('id','desc')->take(6)->get();
+                $publications = Publication::orderby('id','desc')->take(6)->get();
             }else{
-                $blogs = Blog::all();
+                $publications = Publication::all();
             }
-            
-            return response()->json(['status' => true, 'data' => BlogResource::collection($blogs), 'error' => []]);
+
+            return response()->json(['status' => true, 'data' => $publications, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -368,14 +369,14 @@ class FrontendController extends Controller
     public function pages()
     {
         try {
-            $pages = Page::all();
-            return response()->json(['status' => true, 'data' => PageResource::collection($pages), 'error' => []]);
+            $pages = StaticContent::all();
+            return response()->json(['status' => true, 'data' => StaticContentResource::collection($pages), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    // Display Faq, Blog, Page Ends
+    // Display HelpArticle, Blog, Page Ends
 
     // Display All Settings
 
@@ -394,7 +395,7 @@ class FrontendController extends Controller
             }
 
             $name = $request->name;
-            $checkSettings = in_array($name, ['muaadhsettings', 'pagesettings', 'socialsettings']);
+            $checkSettings = in_array($name, ['muaadhsettings', 'frontend_settings', 'socialsettings']);
             if (!$checkSettings) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "This setting doesn't exists."]]);
             }
@@ -463,7 +464,7 @@ class FrontendController extends Controller
             $gs = Muaadhsetting::find(1);
 
             // Login Section
-            $ps = DB::table('pagesettings')->where('id', '=', 1)->first();
+            $ps = DB::table('frontend_settings')->where('id', '=', 1)->first();
             $subject = "Email From Of " . $request->name;
             $to = $ps->contact_email;
             $name = $request->name;
@@ -507,12 +508,12 @@ class FrontendController extends Controller
 
     public function arrival()
     {
-        $ArrivalSection = ArrivalSection::get()->toArray();
-        foreach ($ArrivalSection as $key => $value) {
-            $ArrivalSection[$key]['photo'] = url('/') . '/assets/images/banners/' . $value['photo'];
+        $FeaturedPromo = FeaturedPromo::get()->toArray();
+        foreach ($FeaturedPromo as $key => $value) {
+            $FeaturedPromo[$key]['photo'] = url('/') . '/assets/images/banners/' . $value['photo'];
         }
 
-        return response()->json(['status' => true, 'data' => $ArrivalSection, 'error' => []]);
+        return response()->json(['status' => true, 'data' => $FeaturedPromo, 'error' => []]);
     }
 
 

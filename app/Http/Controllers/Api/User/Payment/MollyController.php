@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Muaadhsetting;
-use App\Models\Transaction;
+use App\Models\WalletLog;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -24,7 +24,7 @@ class MollyController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
         $curr = Currency::where('name', '=', $purchase->currency_code)->first();
 
         $available_currency = array(
@@ -78,7 +78,7 @@ class MollyController extends Controller
                 'value' => '' . sprintf('%0.2f', $purchase['amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
             'description' => $settings->title . " Deposit",
-            'redirectUrl' => route('api.user.deposit.molly.notify'),
+            'redirectUrl' => route('api.user.topup.molly.notify'),
         ]);
 
         Session::put('payment_id', $payment->id);
@@ -92,9 +92,9 @@ class MollyController extends Controller
     public function notify(Request $request)
     {
 
-        $purchase = Deposit::findOrFail(Session::get('molly_data'));
+        $purchase = TopUp::findOrFail(Session::get('molly_data'));
   
-        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
+        $cancel_url = route('user.topup.send', $purchase->deposit_number);
         $payment = Mollie::api()->payments()->get(Session::get('payment_id'));
 
         if ($payment->status == 'paid') {
@@ -107,21 +107,21 @@ class MollyController extends Controller
             $purchase['status'] = 1;
             $purchase->update();
 
-            // store in transaction table
+            // store in wallet_logs table
             if ($purchase->status == 1) {
-                $transaction = new Transaction;
-                $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $purchase->user_id;
-                $transaction->amount = $purchase->amount;
-                $transaction->user_id = $purchase->user_id;
-                $transaction->currency_sign = $purchase->currency;
-                $transaction->currency_code = $purchase->currency_code;
-                $transaction->currency_value = $purchase->currency_value;
-                $transaction->method = $purchase->method;
-                $transaction->txnid = $purchase->txnid;
-                $transaction->details = 'Payment Deposit';
-                $transaction->type = 'plus';
-                $transaction->save();
+                $walletLog = new WalletLog;
+                $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+                $walletLog->user_id = $purchase->user_id;
+                $walletLog->amount = $purchase->amount;
+                $walletLog->user_id = $purchase->user_id;
+                $walletLog->currency_sign = $purchase->currency;
+                $walletLog->currency_code = $purchase->currency_code;
+                $walletLog->currency_value = $purchase->currency_value;
+                $walletLog->method = $purchase->method;
+                $walletLog->txnid = $purchase->txnid;
+                $walletLog->details = 'Payment Deposit';
+                $walletLog->type = 'plus';
+                $walletLog->save();
             }
 
             return redirect(route('user.success', 1));

@@ -126,8 +126,8 @@
         </a>
     </li>
 
-    <li class="{{ Request::url() == route('user-messages') ? 'active' : '' }}">
-        <a href="{{ route('user-messages') }}">
+    <li class="{{ Request::url() == route('user-chats') ? 'active' : '' }}">
+        <a href="{{ route('user-chats') }}">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -138,8 +138,8 @@
         </a>
     </li>
 
-    <li class="{{ Request::url() == route('user-message-index') ? 'active' : '' }}">
-        <a href="{{ route('user-message-index') }}">
+    <li class="{{ Request::url() == route('user-ticket-index') ? 'active' : '' }}">
+        <a href="{{ route('user-ticket-index') }}">
             <svg width="22" height="18" viewBox="0 0 22 18" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <path
@@ -151,8 +151,8 @@
         </a>
     </li>
 
-    <li class="{{ Request::url() == route('user-dmessage-index') ? 'active' : '' }}">
-        <a href="{{ route('user-dmessage-index') }}">
+    <li class="{{ Request::url() == route('user-dispute-index') ? 'active' : '' }}">
+        <a href="{{ route('user-dispute-index') }}">
             <svg width="20" height="21" viewBox="0 0 20 21" fill="none"
                 xmlns="http://www.w3.org/2000/svg">
                 <path

@@ -19,7 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Reward;
 use App\Models\StockReservation;
 use App\Traits\HandlesMerchantCheckout;
@@ -94,7 +94,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         }
 
         // Get merchant's gateway settings (test_mode, country)
-        $gateway = \DB::table('payment_gateways')
+        $gateway = \DB::table('merchant_payments')
             ->where('user_id', $merchantId)
             ->where('keyword', 'myfatoorah')
             ->first();
@@ -264,7 +264,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
 //            dd($paymentMethods ,$purchase2);
             if (empty($paymentMethods['all'])) {
-                throw new Exception('noPaymentGateways');
+                throw new Exception('noMerchantPayments');
             }
 
             //Generate MyFatoorah session for embedded payment
@@ -307,7 +307,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
         if ($purchase->user_id && $purchase->wallet_price) {
-            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price);
+            PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
         }
     }
 
@@ -449,7 +449,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
 
 //            dd($paymentMethods ,$purchase2);
             if (empty($paymentMethods['all'])) {
-                throw new Exception('noPaymentGateways');
+                throw new Exception('noMerchantPayments');
             }
 
             //Generate MyFatoorah session for embedded payment

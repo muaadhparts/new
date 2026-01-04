@@ -65,26 +65,26 @@ class SearchController extends Controller
     }
 
     /**
-     * @deprecated Attributes for old categories removed - returns empty collection
+     * @deprecated Specs for old categories removed - returns empty collection
      */
-    public function attributes(Request $request, $id) {
+    public function specs(Request $request, $id) {
         return response()->json([
             'status' => true,
             'data' => [],
             'error' => [],
-            'message' => 'Attribute system deprecated. Use TreeCategories API instead.'
+            'message' => 'Spec system deprecated. Use TreeCategories API instead.'
         ]);
     }
 
     /**
-     * @deprecated AttributeOptions removed - returns empty collection
+     * @deprecated SpecValues removed - returns empty collection
      */
-    public function attributeoptions($id) {
+    public function specoptions($id) {
         return response()->json([
             'status' => true,
             'data' => [],
             'error' => [],
-            'message' => 'AttributeOptions system deprecated.'
+            'message' => 'SpecValues system deprecated.'
         ]);
     }
 

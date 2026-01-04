@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Payment;
 use App\Http\Controllers\Payment\Checkout\CheckoutBaseControlller;
 use App\Models\Currency;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Omnipay\Omnipay;
@@ -18,7 +18,7 @@ class PaypalController extends CheckoutBaseControlller
     public function __construct()
     {
         parent::__construct();
-        $data = PaymentGateway::whereKeyword('paypal')->first();
+        $data = MerchantPayment::whereKeyword('paypal')->first();
         $paydata = $data->convertAutoData();
 
         $this->gateway = Omnipay::create('PayPal_Rest');
@@ -82,18 +82,18 @@ class PaypalController extends CheckoutBaseControlller
             ];
         }
 
-        $transaction = $this->gateway->completePurchase(array(
+        $purchaseRequest = $this->gateway->completePurchase(array(
             'payer_id' => $responseData['PayerID'],
             'transactionReference' => $responseData['paymentId'],
         ));
 
-        $response = $transaction->send();
+        $response = $purchaseRequest->send();
 
         if ($response->isSuccessful()) {
             $purchase = Purchase::where('purchase_number', $purchase_number)->firstOrFail();
             $data['payment_status'] = 'Completed';
             $purchase->method = "Paypal";
-            $data['txnid'] = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
+            $data['txnid'] = $response->getData()['wallet_logs'][0]['related_resources'][0]['sale']['id'];
             $purchase->update($data);
             return redirect($success_url);
         }

@@ -305,11 +305,11 @@
                                     '<input type="hidden" value="' + arr[k]['id'] + '">' +
                                     '</span>' +
                                     '<a href="' +
-                                    '{{ asset('assets/images/galleries') . '/' }}' + arr[k][
+                                    '{{ asset('assets/images/merchant-photos') . '/' }}' + arr[k][
                                         'photo'
                                     ] + '" target="_blank">' +
                                     '<img src="' +
-                                    '{{ asset('assets/images/galleries') . '/' }}' + arr[k][
+                                    '{{ asset('assets/images/merchant-photos') . '/' }}' + arr[k][
                                         'photo'
                                     ] + '" alt="gallery image">' +
                                     '</a>' +
@@ -367,11 +367,11 @@
                                     '<input type="hidden" value="' + arr[k]['id'] + '">' +
                                     '</span>' +
                                     '<a href="' +
-                                    '{{ asset('assets/images/galleries') . '/' }}' + arr[k][
+                                    '{{ asset('assets/images/merchant-photos') . '/' }}' + arr[k][
                                         'photo'
                                     ] + '" target="_blank">' +
                                     '<img src="' +
-                                    '{{ asset('assets/images/galleries') . '/' }}' + arr[k][
+                                    '{{ asset('assets/images/merchant-photos') . '/' }}' + arr[k][
                                         'photo'
                                     ] + '" alt="gallery image">' +
                                     '</a>' +

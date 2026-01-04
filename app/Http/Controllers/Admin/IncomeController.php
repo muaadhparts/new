@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Purchase;
-use App\Models\UserSubscription;
+use App\Models\UserMembershipPlan;
 use App\Models\Withdraw;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -52,7 +52,7 @@ class IncomeController extends Controller
     }
 
 
-    public function subscriptionIncome(Request $request)
+    public function membershipPlanIncome(Request $request)
     {
 
         $current_date = Carbon::now();
@@ -61,24 +61,24 @@ class IncomeController extends Controller
         $implode= implode("-",$explode);
         $first_day = Carbon::parse($implode);
         $last30days = date('Y-m-d', strtotime('today - 30 days'));
-        
-        
-        $last_30_days =  $subscriptions = UserSubscription::whereDate('created_at','>=',$last30days)->whereDate('created_at','<=',$current_date)->where('price',"!=",0);
-        $current_month =  $subscriptions = UserSubscription::whereDate('created_at','>=',$first_day)->whereDate('created_at','<=',$current_date)->where('price',"!=",0);
+
+
+        $last_30_days =  $membershipPlans = UserMembershipPlan::whereDate('created_at','>=',$last30days)->whereDate('created_at','<=',$current_date)->where('price',"!=",0);
+        $current_month =  $membershipPlans = UserMembershipPlan::whereDate('created_at','>=',$first_day)->whereDate('created_at','<=',$current_date)->where('price',"!=",0);
 
 
         $sign = Currency::where('is_default','=',1)->first();
         if($request->start_date && $request->end_date){
            $start_date = Carbon::parse($request->start_date);
            $end_date = Carbon::parse($request->end_date);
-           $subscriptions = UserSubscription::with('user')->whereDate('created_at','>=',$start_date)->whereDate('created_at','<=',$end_date)->where('price',"!=",0);
+           $membershipPlans = UserMembershipPlan::with('user')->whereDate('created_at','>=',$start_date)->whereDate('created_at','<=',$end_date)->where('price',"!=",0);
        }else{
-           $subscriptions = UserSubscription::with('user')->where('price',"!=",0);
+           $membershipPlans = UserMembershipPlan::with('user')->where('price',"!=",0);
        }
 
-       return view('admin.earning.subscription_income',[
-           'subscriptions' => $subscriptions->count() > 0 ? $subscriptions->get() : [],
-           'total' => $subscriptions->count() > 0 ? $sign->sign . $subscriptions->sum('price') : 0,
+       return view('admin.earning.membership_plan_income',[
+           'membershipPlans' => $membershipPlans->count() > 0 ? $membershipPlans->get() : [],
+           'total' => $membershipPlans->count() > 0 ? $sign->sign . $membershipPlans->sum('price') : 0,
            'start_date' => isset($start_date) ? $start_date : '',
            'end_date' => isset($end_date) ? $end_date : '',
            'currency' => $sign,

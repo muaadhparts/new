@@ -130,19 +130,19 @@ class GeneratePagesJson extends Command
             $this->line("  + Brand: /brand/{$id}");
         }
 
-        // Blogs
-        $blogs = DB::table('blogs')
+        // Publications
+        $publications = DB::table('publications')
             ->where('status', 1)
             ->limit(2)
             ->pluck('slug');
-        foreach ($blogs as $slug) {
+        foreach ($publications as $slug) {
             $pages[] = [
-                'name' => "Blog: {$slug}",
-                'path' => "/blog/{$slug}",
+                'name' => "Publication: {$slug}",
+                'path' => "/publication/{$slug}",
                 'requiresAuth' => false,
                 'priority' => 'low'
             ];
-            $this->line("  + Blog: /blog/{$slug}");
+            $this->line("  + Publication: /publication/{$slug}");
         }
 
         // Merchants
@@ -166,7 +166,7 @@ class GeneratePagesJson extends Command
             'baseUrl' => $baseUrl,
             'generated' => now()->toIso8601String(),
             'totalPages' => count($pages),
-            'pages' => $pages,
+            'static_content' => $pages,
             'stateChecks' => [
                 'default' => true,
                 'hover' => true,

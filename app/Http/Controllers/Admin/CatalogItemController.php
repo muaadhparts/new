@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
+use App\Models\Spec;
+use App\Models\SpecValue;
 use App\Models\Currency;
-use App\Models\Gallery;
+use App\Models\MerchantPhoto;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use Datatables;
@@ -493,17 +493,17 @@ class CatalogItemController extends AdminBaseController
         $catalogItem->thumbnail = $thumbnail;
         $catalogItem->update();
 
-        // Add To Gallery If any
+        // Add To Merchant Photos If any
         $lastid = $data->id;
         if ($files = $request->file('gallery')) {
             foreach ($files as $key => $file) {
                 if (in_array($key, $request->galval)) {
-                    $gallery = new Gallery;
+                    $merchantPhoto = new MerchantPhoto;
                     $name = time() . \Str::random(8) . str_replace(' ', '', $file->getClientOriginalExtension());
-                    $file->move('assets/images/galleries', $name);
-                    $gallery['photo'] = $name;
-                    $gallery['catalog_item_id'] = $lastid;
-                    $gallery->save();
+                    $file->move('assets/images/merchant-photos', $name);
+                    $merchantPhoto['photo'] = $name;
+                    $merchantPhoto['catalog_item_id'] = $lastid;
+                    $merchantPhoto->save();
                 }
             }
         }
@@ -928,17 +928,17 @@ class CatalogItemController extends AdminBaseController
     public function destroy($id)
     {
         $data = CatalogItem::findOrFail($id);
-        if ($data->galleries->count() > 0) {
-            foreach ($data->galleries as $gal) {
-                if (file_exists(public_path() . '/assets/images/galleries/' . $gal->photo)) {
-                    unlink(public_path() . '/assets/images/galleries/' . $gal->photo);
+        if ($data->merchantPhotos->count() > 0) {
+            foreach ($data->merchantPhotos as $photo) {
+                if (file_exists(public_path() . '/assets/images/merchant-photos/' . $photo->photo)) {
+                    unlink(public_path() . '/assets/images/merchant-photos/' . $photo->photo);
                 }
-                $gal->delete();
+                $photo->delete();
             }
         }
 
-        if ($data->reports->count() > 0) {
-            foreach ($data->reports as $gal) {
+        if ($data->abuseFlags->count() > 0) {
+            foreach ($data->abuseFlags as $gal) {
                 $gal->delete();
             }
         }
@@ -1035,7 +1035,7 @@ class CatalogItemController extends AdminBaseController
         //--- Redirect Section Ends
     }
 
-    public function getAttributes(Request $request)
+    public function getSpecs(Request $request)
     {
         $model = '';
         if ($request->type == 'category') {
@@ -1046,13 +1046,13 @@ class CatalogItemController extends AdminBaseController
             $model = 'App\Models\Childcategory';
         }
 
-        $attributes = Attribute::where('attributable_id', $request->id)->where('attributable_type', $model)->get();
-        $attrOptions = [];
-        foreach ($attributes as $key => $attribute) {
-            $options = AttributeOption::where('attribute_id', $attribute->id)->get();
-            $attrOptions[] = ['attribute' => $attribute, 'options' => $options];
+        $specs = Spec::where('specable_id', $request->id)->where('specable_type', $model)->get();
+        $specOptions = [];
+        foreach ($specs as $key => $spec) {
+            $options = SpecValue::where('spec_id', $spec->id)->get();
+            $specOptions[] = ['spec' => $spec, 'options' => $options];
         }
-        return response()->json($attrOptions);
+        return response()->json($specOptions);
     }
 
     /**

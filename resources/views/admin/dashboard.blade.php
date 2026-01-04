@@ -98,8 +98,8 @@
             <div class="mycard bg6">
                 <div class="left">
                     <h5 class="title">{{ __('Total Posts!') }}</h5>
-                    <span class="number">{{$blogs}}</span>
-                    <a href="{{ route('admin-blog-index') }}" class="link">{{ __('View All') }}</a>
+                    <span class="number">{{$publications}}</span>
+                    <a href="{{ route('admin-publication-index') }}" class="link">{{ __('View All') }}</a>
                 </div>
                 <div class="right d-flex align-self-center">
                     <div class="icon">

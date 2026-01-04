@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
@@ -38,7 +38,7 @@ class AuthorizeController extends Controller
             'year' => 'required',
         ]);
 
-        $data = PaymentGateway::whereKeyword('authorize.net')->first();
+        $data = MerchantPayment::whereKeyword('authorize.net')->first();
         $paydata = $data->convertAutoData();
         if ($validator->passes()) {
 

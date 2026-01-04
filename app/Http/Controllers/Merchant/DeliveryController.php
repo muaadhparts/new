@@ -9,10 +9,10 @@ use App\{
 };
 use App\Helpers\PriceHelper;
 use App\Models\City;
-use App\Models\DeliveryRider;
+use App\Models\DeliveryCourier;
 use App\Models\Package;
-use App\Models\Rider;
-use App\Models\RiderServiceArea;
+use App\Models\Courier;
+use App\Models\CourierServiceArea;
 use App\Models\Shipping;
 use App\Models\ShipmentStatusLog;
 use App\Models\Muaadhsetting;
@@ -115,11 +115,11 @@ class DeliveryController extends MerchantBaseController
             })
 
 
-            ->editColumn('riders', function (Purchase $data) {
-                $delivery =  DeliveryRider::where('purchase_id', $data->id)->where('merchant_id', auth()->id())->first();
+            ->editColumn('couriers', function (Purchase $data) {
+                $delivery =  DeliveryCourier::where('purchase_id', $data->id)->where('merchant_id', auth()->id())->first();
 
                 if ($delivery) {
-                    $message = '<strong class="display-5">Rider : ' . $delivery->rider->name . ' </br>Delivery Cost : ' . PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price) . '</br>
+                    $message = '<strong class="display-5">Courier : ' . $delivery->courier->name . ' </br>Delivery Cost : ' . PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price) . '</br>
                     Pickup Point : ' . $delivery->pickup->location . '</br>
                     Status :
                     <span class="badge badge-dark p-1">' . $delivery->status . '</span>
@@ -144,28 +144,28 @@ class DeliveryController extends MerchantBaseController
 
 
             ->addColumn('action', function (Purchase $data) {
-                $delevery = DeliveryRider::where('merchant_id', auth()->id())->where('purchase_id', $data->id)->first();
+                $delevery = DeliveryCourier::where('merchant_id', auth()->id())->where('purchase_id', $data->id)->first();
                 if ($delevery && $delevery->status == 'delivered') {
                     $auction = '<div class="action-list">
                     <a href="' . route('merchant-purchase-show', $data->purchase_number) . '" class="btn btn-outline-primary btn-sm"><i class="fa fa-eye"></i> ' . __('Purchase View') . '</a>
                     </div>';
                 } else {
                     $auction = '<div class="action-list">
-                    <button data-bs-toggle="modal" data-bs-target="#riderList" customer-city="' . $data->customer_city . '" purchase_id="' . $data->id . '" class="mybtn1 searchDeliveryRider">
-                    <i class="fa fa-user"></i>  ' . __("Assign Rider") . ' </button>
+                    <button data-bs-toggle="modal" data-bs-target="#courierList" customer-city="' . $data->customer_city . '" purchase_id="' . $data->id . '" class="mybtn1 searchDeliveryCourier">
+                    <i class="fa fa-user"></i>  ' . __("Assign Courier") . ' </button>
                     </div>';
                 }
 
 
                 return $auction;
             })
-            ->rawColumns(['id', 'customer_info', 'riders', 'action','pay_amount'])
+            ->rawColumns(['id', 'customer_info', 'couriers', 'action','pay_amount'])
             ->toJson(); //--- Returning Json Data To Client Side
 
     }
 
 
-    public function findReider(Request $request)
+    public function findCourier(Request $request)
     {
         // البحث عن المدينة بالاسم أو بالـ ID (الاسم إنجليزي فقط - لا يوجد city_name_ar)
         $city = City::where('id', $request->city)
@@ -173,57 +173,57 @@ class DeliveryController extends MerchantBaseController
             ->first();
 
         if (!$city) {
-            return response()->json(['riders' => '<option value="">' . __('No riders available for this city') . '</option>']);
+            return response()->json(['couriers' => '<option value="">' . __('No couriers available for this city') . '</option>']);
         }
 
-        $areas = RiderServiceArea::where('city_id', $city->id)
-            ->whereHas('rider', function($q) {
+        $areas = CourierServiceArea::where('city_id', $city->id)
+            ->whereHas('courier', function($q) {
                 $q->where('status', 1);
             })
             ->get();
 
-        $ridersData = '<option value="">' . __('Select Rider') . '</option>';
+        $couriersData = '<option value="">' . __('Select Courier') . '</option>';
 
         foreach ($areas as $area) {
-            if ($area->rider) {
-                $ridersData .= '<option riderName="' . $area->rider->name . '" area="' . $city->city_name . '" riderCost="' . PriceHelper::showAdminCurrencyPrice($area->price) . '" value="' . $area->id . '">' . $area->rider->name . ' - ' . PriceHelper::showAdminCurrencyPrice($area->price) . '</option>';
+            if ($area->courier) {
+                $couriersData .= '<option courierName="' . $area->courier->name . '" area="' . $city->city_name . '" courierCost="' . PriceHelper::showAdminCurrencyPrice($area->price) . '" value="' . $area->id . '">' . $area->courier->name . ' - ' . PriceHelper::showAdminCurrencyPrice($area->price) . '</option>';
             }
         }
 
-        return response()->json(['riders' => $ridersData]);
+        return response()->json(['couriers' => $couriersData]);
     }
 
 
-    public function findReiderSubmit(Request $request)
+    public function findCourierSubmit(Request $request)
     {
-        $service_area = RiderServiceArea::find($request->rider_id);
+        $service_area = CourierServiceArea::find($request->courier_id);
 
         if (!$service_area) {
-            return redirect()->back()->with('error', __('Invalid rider selection'));
+            return redirect()->back()->with('error', __('Invalid courier selection'));
         }
 
-        $delivery = DeliveryRider::where('purchase_id', $request->purchase_id)
+        $delivery = DeliveryCourier::where('purchase_id', $request->purchase_id)
             ->where('merchant_id', auth()->id())
             ->first();
 
         if ($delivery) {
-            $delivery->rider_id = $service_area->rider_id;
+            $delivery->courier_id = $service_area->courier_id;
             $delivery->service_area_id = $service_area->id;
             $delivery->pickup_point_id = $request->pickup_point_id;
             $delivery->status = 'pending';
             $delivery->save();
         } else {
-            $delivery = new DeliveryRider();
+            $delivery = new DeliveryCourier();
             $delivery->purchase_id = $request->purchase_id;
             $delivery->merchant_id = auth()->id();
-            $delivery->rider_id = $service_area->rider_id;
+            $delivery->courier_id = $service_area->courier_id;
             $delivery->service_area_id = $service_area->id;
             $delivery->pickup_point_id = $request->pickup_point_id;
             $delivery->status = 'pending';
             $delivery->save();
         }
 
-        return redirect()->back()->with('success', __('Rider Assigned Successfully'));
+        return redirect()->back()->with('success', __('Courier Assigned Successfully'));
     }
 
     /**

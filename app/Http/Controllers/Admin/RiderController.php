@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\{
     Models\Rider,
     Models\Withdraw,
-    Models\Transaction,
+    Models\WalletLog,
     Classes\MuaadhMailer,
 };
 

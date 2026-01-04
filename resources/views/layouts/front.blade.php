@@ -71,7 +71,7 @@
 
 <body class="m-theme-scope">
 
-    {{-- Header data ($categories, $pages, $currencies, $languges) provided by AppServiceProvider with caching --}}
+    {{-- Header data ($categories, $static_content, $currencies, $languges) provided by AppServiceProvider with caching --}}
     <!-- header area -->
     @include('includes.frontend.header')
 
@@ -80,7 +80,7 @@
         $url = url()->current();
         $explodeUrl = explode('/',$url);
         $isUserPage = in_array('user', $explodeUrl);
-        $isRiderPage = in_array('rider', $explodeUrl);
+        $isCourierPage = in_array('courier', $explodeUrl);
     @endphp
 
     @if($isUserPage)
@@ -93,14 +93,14 @@
         @include('includes.user.mobile-header')
         <div class="overlay"></div>
 
-    @elseif($isRiderPage)
-        {{-- Rider pages need BOTH menus: Store menu + Rider menu --}}
+    @elseif($isCourierPage)
+        {{-- Courier pages need BOTH menus: Store menu + Courier menu --}}
         {{-- Store Mobile Menu (for shopping) --}}
         @include('includes.frontend.mobile_menu')
         <div class="muaadh-mobile-overlay"></div>
 
-        {{-- Rider Dashboard Mobile Sidebar --}}
-        @include('includes.rider.mobile-header')
+        {{-- Courier Dashboard Mobile Sidebar --}}
+        @include('includes.courier.mobile-header')
         <div class="overlay"></div>
 
     @else

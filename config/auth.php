@@ -41,9 +41,9 @@ return [
             'provider' => 'users',
         ],
 
-        'rider' => [
+        'courier' => [
             'driver' => 'session',
-            'provider' => 'riders',
+            'provider' => 'couriers',
         ],
 
         'api' => [
@@ -53,12 +53,12 @@ return [
 
         'admin' => [
             'driver' => 'session',
-            'provider' => 'admins',
+            'provider' => 'operators',
         ],
 
         'admin-api' => [
             'driver' => 'token',
-            'provider' => 'admins',
+            'provider' => 'operators',
         ],
 
     ],
@@ -85,13 +85,13 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-        'admins' => [
+        'operators' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
+            'model' => App\Models\Operator::class,
         ],
-        'riders' => [
+        'couriers' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Rider::class,
+            'model' => App\Models\Courier::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

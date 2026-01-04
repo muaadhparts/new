@@ -216,7 +216,7 @@
                       <div class="col-lg-4 d-flex justify-content-between">
                         <label class="control-label">{{ __('Messages') }} *</label>
                         <label class="switch">
-                          <input type="checkbox" name="section[]" value="messages" {{ $data->sectionCheck('messages') ? 'checked' : '' }}>
+                          <input type="checkbox" name="section[]" value="chat_entries" {{ $data->sectionCheck('chat_entries') ? 'checked' : '' }}>
                           <span class="slider round"></span>
                         </label>
                       </div>
@@ -326,7 +326,7 @@
                       <div class="col-lg-4 d-flex justify-content-between">
                         <label class="control-label">{{ __('Subscribers') }} *</label>
                         <label class="switch">
-                          <input type="checkbox" name="section[]" value="subscribers" {{ $data->sectionCheck('subscribers') ? 'checked' : '' }}>
+                          <input type="checkbox" name="section[]" value="mailing_list" {{ $data->sectionCheck('mailing_list') ? 'checked' : '' }}>
                           <span class="slider round"></span>
                         </label>
                       </div>

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -18,7 +18,7 @@ class StripeController extends Controller
     public function __construct()
     {
 
-        $data = PaymentGateway::whereKeyword('stripe')->first();
+        $data = MerchantPayment::whereKeyword('stripe')->first();
         $paydata = $data->convertAutoData();
         Config::set('services.stripe.key', $paydata['key']);
         Config::set('services.stripe.secret', $paydata['secret']);

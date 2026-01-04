@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Models\Muaadhsetting;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Http\Controllers\Controller;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Validator;
 use net\authorize\api\contract\v1 as AnetAPI;
 use net\authorize\api\controller as AnetController;
-use App\Models\Transaction;
+use App\Models\WalletLog;
 use Illuminate\Support\Str;
 
 class AuthorizeController extends Controller
@@ -18,7 +18,7 @@ class AuthorizeController extends Controller
 
     public function store(Request $request)
     {
-        $data = PaymentGateway::whereKeyword('authorize.net')->first();
+        $data = MerchantPayment::whereKeyword('authorize.net')->first();
         if (!$request->has('deposit_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
@@ -26,7 +26,7 @@ class AuthorizeController extends Controller
         $settings = Muaadhsetting::findOrFail(1);
         $item_name = $settings->title . " Deposit";
         $deposit_number = $request->deposit_number;
-        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
 
         $item_amount = $purchase->amount;
 
@@ -104,21 +104,21 @@ class AuthorizeController extends Controller
                     $purchase['status'] = 1;
                     $purchase->update();
 
-                    // store in transaction table
+                    // store in wallet_logs table
                     if ($purchase->status == 1) {
-                        $transaction = new Transaction;
-                        $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                        $transaction->user_id = $purchase->user_id;
-                        $transaction->amount = $purchase->amount;
-                        $transaction->user_id = $purchase->user_id;
-                        $transaction->currency_sign = $purchase->currency;
-                        $transaction->currency_code = $purchase->currency_code;
-                        $transaction->currency_value = $purchase->currency_value;
-                        $transaction->method = $purchase->method;
-                        $transaction->txnid = $purchase->txnid;
-                        $transaction->details = 'Payment Deposit';
-                        $transaction->type = 'plus';
-                        $transaction->save();
+                        $walletLog = new WalletLog;
+                        $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+                        $walletLog->user_id = $purchase->user_id;
+                        $walletLog->amount = $purchase->amount;
+                        $walletLog->user_id = $purchase->user_id;
+                        $walletLog->currency_sign = $purchase->currency;
+                        $walletLog->currency_code = $purchase->currency_code;
+                        $walletLog->currency_value = $purchase->currency_value;
+                        $walletLog->method = $purchase->method;
+                        $walletLog->txnid = $purchase->txnid;
+                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->type = 'plus';
+                        $walletLog->save();
                     }
 
                     return redirect(route('user.success', 1));

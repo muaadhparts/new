@@ -98,7 +98,7 @@
                                 <button type="submit" class="template-btn btn-forms">@lang('Login')</button>
                                 <p class="text-center login-or">@lang('Or')</p> <br>
 
-                                @if (addon("otp"))
+                                @if (module("otp"))
                                     <a href="{{ route('user.otp.login') }}"
                                         class="template-btn outline-btn login-outline">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">

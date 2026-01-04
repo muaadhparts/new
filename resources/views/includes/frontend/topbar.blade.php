@@ -9,7 +9,7 @@
     - $languges (Languages collection)
     - $currencies (Currencies collection)
     - $gs (MuaadhSettings)
-    - $authUser, $riderUser (from HeaderComposer)
+    - $authUser, $courierUser (from HeaderComposer)
 
     Usage:
     @include('includes.frontend.topbar')
@@ -105,10 +105,10 @@
                         </a>
                     @endif
 
-                    @if (!($riderUser ?? null))
-                        <a href="{{ route('rider.login') }}" class="muaadh-topbar-link">
+                    @if (!($courierUser ?? null))
+                        <a href="{{ route('courier.login') }}" class="muaadh-topbar-link">
                             <i class="fas fa-motorcycle"></i>
-                            <span>@lang('Rider')</span>
+                            <span>@lang('Courier')</span>
                         </a>
                     @endif
                 </div>

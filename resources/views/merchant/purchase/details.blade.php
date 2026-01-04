@@ -47,7 +47,7 @@
 
                         <h5 class="title">@lang('Purchase Details')
                         </h5>
-                        @if (@App\Models\DeliveryRider::where('merchant_id', auth()->id())->where('purchase_id', $purchase->id)->first()->status == 'delivered' && $purchase->merchantPurchases()->where('status', 'completed')->count() == 0)
+                        @if (@App\Models\DeliveryCourier::where('merchant_id', auth()->id())->where('purchase_id', $purchase->id)->first()->status == 'delivered' && $purchase->merchantPurchases()->where('status', 'completed')->count() == 0)
                             <a href="{{ route('merchant-purchase-status', ['id1' => $purchase->purchase_number, 'status' => 'completed']) }}"
                                 class="m-btn m-btn--success m-btn--sm">@lang('Make Complete')</a>
                         @endif
@@ -203,7 +203,7 @@
                     ->orderBy('created_at', 'desc')
                     ->first();
 
-                $delivery = App\Models\DeliveryRider::where('purchase_id', $purchase->id)
+                $delivery = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
                     ->where('merchant_id', $merchantId)
                     ->first();
 
@@ -262,14 +262,14 @@
                                 </li>
                                 @endif
                             @elseif ($delivery)
-                                {{-- Local Rider Info --}}
+                                {{-- Local Courier Info --}}
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Delivery Type')</span>
-                                    <span class="info"><span class="badge bg-secondary">@lang('Local Rider')</span></span>
+                                    <span class="info"><span class="badge bg-secondary">@lang('Local Courier')</span></span>
                                 </li>
                                 <li class="info-list-item">
-                                    <span class="info-type">@lang('Rider Name')</span>
-                                    <span class="info">{{ $delivery->rider->name ?? 'N/A' }}</span>
+                                    <span class="info-type">@lang('Courier Name')</span>
+                                    <span class="info">{{ $delivery->courier->name ?? 'N/A' }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Delivery Cost')</span>

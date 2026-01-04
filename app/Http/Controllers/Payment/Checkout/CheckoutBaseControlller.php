@@ -19,7 +19,7 @@ class CheckoutBaseControlller extends Controller
 
         $this->gs = DB::table('muaadhsettings')->find(1);
 
-        $this->ps = DB::table('pagesettings')->find(1);
+        $this->ps = DB::table('frontend_settings')->find(1);
 
         $this->middleware(function ($request, $next) {
 

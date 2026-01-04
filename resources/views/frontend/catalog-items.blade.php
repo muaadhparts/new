@@ -231,9 +231,9 @@
                                     <div class="single-catalogItem-widget">
                                         <h5 class="widget-title">{{ $attr->name }}</h5>
                                         <div class="warranty-type">
-                                            @if (!empty($attr->attribute_options))
+                                            @if (!empty($attr->specValues))
                                                 <ul>
-                                                    @foreach ($attr->attribute_options as $key => $option)
+                                                    @foreach ($attr->specValues as $key => $option)
                                                         <li class="gs-checkbox-wrapper">
                                                             <input type="checkbox" class="attribute-input"
                                                                 name="{{ $attr->input_name }}[]"
@@ -266,9 +266,9 @@
                                     <div class="single-catalogItem-widget">
                                         <h5 class="widget-title">{{ $attr->name }}</h5>
                                         <div class="warranty-type">
-                                            @if (!empty($attr->attribute_options))
+                                            @if (!empty($attr->specValues))
                                                 <ul>
-                                                    @foreach ($attr->attribute_options as $key => $option)
+                                                    @foreach ($attr->specValues as $key => $option)
                                                         <li class="gs-checkbox-wrapper">
                                                             <input type="checkbox" name="{{ $attr->input_name }}[]"
                                                                 id="{{ $attr->input_name }}{{ $option->id }}"
@@ -299,9 +299,9 @@
                                     <div class="single-catalogItem-widget">
                                         <h5 class="widget-title">{{ $attr->name }}</h5>
                                         <div class="warranty-type">
-                                            @if (!empty($attr->attribute_options))
+                                            @if (!empty($attr->specValues))
                                                 <ul>
-                                                    @foreach ($attr->attribute_options as $key => $option)
+                                                    @foreach ($attr->specValues as $key => $option)
                                                         <li class="gs-checkbox-wrapper">
                                                             <input type="checkbox" name="{{ $attr->input_name }}[]"
                                                                 id="{{ $attr->input_name }}{{ $option->id }}"

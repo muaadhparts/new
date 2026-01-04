@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Admin;
 use App\{
     Models\User,
     Models\Withdraw,
-    Models\Transaction,
-    Models\Subscription,
+    Models\WalletLog,
+    Models\MembershipPlan,
     Classes\MuaadhMailer,
-    Models\UserSubscription
+    Models\UserMembershipPlan
 };
 
 use Illuminate\{
@@ -195,9 +195,9 @@ class UserController extends AdminBaseController
         {
         $user = User::findOrFail($id);
 
-        if($user->reports->count() > 0)
+        if($user->abuseFlags->count() > 0)
         {
-            foreach ($user->reports as $gal) {
+            foreach ($user->abuseFlags as $gal) {
                 $gal->delete();
             }
         }
@@ -237,9 +237,9 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->conversations->count() > 0)
+        if($user->chatThreads->count() > 0)
         {
-            foreach ($user->conversations as $gal) {
+            foreach ($user->chatThreads as $gal) {
             if($gal->messages->count() > 0)
             {
                 foreach ($gal->messages as $key) {
@@ -311,13 +311,13 @@ class UserController extends AdminBaseController
 
 // CATALOG ITEMS
             foreach ($user->catalogItems as $catalogItem) {
-                if($catalogItem->galleries->count() > 0)
+                if($catalogItem->merchantPhotos->count() > 0)
                 {
-                    foreach ($catalogItem->galleries as $gal) {
-                            if (file_exists(public_path().'/assets/images/galleries/'.$gal->photo)) {
-                                unlink(public_path().'/assets/images/galleries/'.$gal->photo);
+                    foreach ($catalogItem->merchantPhotos as $photo) {
+                            if (file_exists(public_path().'/assets/images/merchant-photos/'.$photo->photo)) {
+                                unlink(public_path().'/assets/images/merchant-photos/'.$photo->photo);
                             }
-                        $gal->delete();
+                        $photo->delete();
                     }
                 }
                 if($catalogItem->catalogReviews->count() > 0)
@@ -388,9 +388,9 @@ class UserController extends AdminBaseController
             }
         }
 
-        if($user->conversations->count() > 0)
+        if($user->chatThreads->count() > 0)
         {
-            foreach ($user->conversations as $gal) {
+            foreach ($user->chatThreads as $gal) {
             if($gal->messages->count() > 0)
             {
                 foreach ($gal->messages as $key) {
@@ -537,14 +537,14 @@ class UserController extends AdminBaseController
 
 
         //*** GET Request
-        public function deposit($id)
+        public function topUp($id)
         {
             $sign = $this->curr;
             $data = User::findOrFail($id);
-            return view('admin.user.deposit',compact('data','sign'));
+            return view('admin.user.top-up',compact('data','sign'));
         }
 
-        public function depositupdate(Request $request, $id)
+        public function topUpUpdate(Request $request, $id)
         {
             $sign = $this->curr;
             $user = User::findOrFail($id);
@@ -554,18 +554,18 @@ class UserController extends AdminBaseController
                 $user->balance -= (double)$request->amount;
             }
             $user->update();
-            $transaction = new Transaction;
-            $transaction->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-            $transaction->amount = $request->amount;
-            $transaction->user_id = $id;
-            $transaction->currency_sign = $sign->sign;
-            $transaction->currency_code = $sign->name;
-            $transaction->currency_value = $sign->value;
-            $transaction->method = null;
-            $transaction->txnid = null;
-            $transaction->details = $request->details;
-            $transaction->type = $request->type;
-            $transaction->save();
+            $walletLog = new WalletLog;
+            $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
+            $walletLog->amount = $request->amount;
+            $walletLog->user_id = $id;
+            $walletLog->currency_sign = $sign->sign;
+            $walletLog->currency_code = $sign->name;
+            $walletLog->currency_value = $sign->value;
+            $walletLog->method = null;
+            $walletLog->txnid = null;
+            $walletLog->details = $request->details;
+            $walletLog->type = $request->type;
+            $walletLog->save();
             $msg = __('Data Updated Successfully.');
             return response()->json($msg);   
         }
@@ -602,29 +602,29 @@ class UserController extends AdminBaseController
             // Logic Section
 
             $user = User::findOrFail($id);
-            $subs = Subscription::findOrFail($request->subs_id);
+            $membershipPlan = MembershipPlan::findOrFail($request->subs_id);
             $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
             $user->is_merchant = 2;
-            $user->date = date('Y-m-d', strtotime($today.' + '.$subs->days.' days'));
+            $user->date = date('Y-m-d', strtotime($today.' + '.$membershipPlan->days.' days'));
             $user->mail_sent = 1;
             $user->update($input);
 
-            $sub = new UserSubscription;
-            $sub->user_id = $user->id;
-            $sub->subscription_id = $subs->id;
-            $sub->title = $subs->title;
-            $sub->currency_sign = $this->curr->sign;
-            $sub->currency_code = $this->curr->name;
-            $sub->currency_value = $this->curr->value;
-            $sub->price = $subs->price * $this->curr->value;
-            $sub->price = $sub->price / $this->curr->value;
-            $sub->days = $subs->days;
-            $sub->allowed_products = $subs->allowed_products;
-            $sub->details = $subs->details;
-            $sub->method = 'Free';
-            $sub->status = 1;
-            $sub->save();
+            $userPlan = new UserMembershipPlan;
+            $userPlan->user_id = $user->id;
+            $userPlan->membership_plan_id = $membershipPlan->id;
+            $userPlan->title = $membershipPlan->title;
+            $userPlan->currency_sign = $this->curr->sign;
+            $userPlan->currency_code = $this->curr->name;
+            $userPlan->currency_value = $this->curr->value;
+            $userPlan->price = $membershipPlan->price * $this->curr->value;
+            $userPlan->price = $userPlan->price / $this->curr->value;
+            $userPlan->days = $membershipPlan->days;
+            $userPlan->allowed_items = $membershipPlan->allowed_items;
+            $userPlan->details = $membershipPlan->details;
+            $userPlan->method = 'Free';
+            $userPlan->status = 1;
+            $userPlan->save();
 
             $msg = __('Successfully Created Merchant');
             return response()->json($msg);

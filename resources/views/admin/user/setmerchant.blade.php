@@ -90,7 +90,7 @@
 													</div>
                                                     <div class="col-lg-7">
                                                         <select name="subs_id" required="">
-                                                            @foreach(DB::table('subscriptions')->get() as $subdata)
+                                                            @foreach(DB::table('membership_plans')->get() as $subdata)
                                                                 <option value="{{ $subdata->id }}">{{ $subdata->title }}</option>
                                                             @endforeach
                                                         </select>

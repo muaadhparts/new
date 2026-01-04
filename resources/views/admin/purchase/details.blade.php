@@ -360,7 +360,7 @@
                 ->get()
                 ->groupBy('merchant_id');
 
-            $deliveries = App\Models\DeliveryRider::where('purchase_id', $purchase->id)->get();
+            $deliveries = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)->get();
         @endphp
 
         @if($shipments->count() > 0 || $deliveries->count() > 0)
@@ -421,9 +421,9 @@
                                     <tr>
                                         <td>{{ $merchant->shop_name ?? $merchant->name ?? 'Merchant #' . $delivery->merchant_id }}</td>
                                         <td>
-                                            <span class="badge badge-secondary">{{ __('Local Rider') }}</span>
+                                            <span class="badge badge-secondary">{{ __('Local Courier') }}</span>
                                         </td>
-                                        <td>{{ $delivery->rider->name ?? 'N/A' }}</td>
+                                        <td>{{ $delivery->courier->name ?? 'N/A' }}</td>
                                         <td>
                                             <span class="badge
                                                 @if($delivery->status == 'delivered') badge-success
@@ -465,7 +465,7 @@
                 @php
 
                 if($key1 == 0){
-                $merchant = App\Models\Admin::find(1);
+                $merchant = App\Models\Operator::find(1);
                 }else{
                 $merchant = App\Models\User::find($key1);
                 }
@@ -517,7 +517,7 @@
                                         {{ __('Merchant Removed') }}
                                         @endif
                                         @else
-                                        <a href="javascript:;">{{ App\Models\Admin::find(1)->shop_name }}</a>
+                                        <a href="javascript:;">{{ App\Models\Operator::find(1)->shop_name }}</a>
                                         @endif
 
                                     </td>

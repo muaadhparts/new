@@ -2,11 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\Blog;
 use App\Models\Brand;
 use App\Models\Currency;
 use App\Models\Language;
-use App\Models\Page;
+use App\Models\StaticContent;
 use Illuminate\{Support\Facades\DB,
     Support\Collection,
     Support\Facades\URL,
@@ -42,8 +41,8 @@ class AppServiceProvider extends ServiceProvider
                 return DB::table('muaadhsettings')->first();
             }));
 
-            $settings->with('ps', cache()->remember('pagesettings', 3600, function () {
-                return DB::table('pagesettings')->first();
+            $settings->with('ps', cache()->remember('frontend_settings', 3600, function () {
+                return DB::table('frontend_settings')->first();
             }));
 
             $settings->with('seo', cache()->remember('seotools', 3600, function () {
@@ -79,8 +78,8 @@ class AppServiceProvider extends ServiceProvider
                 return Brand::where('status', 1)->orderBy('name')->get(['id', 'slug', 'name', 'name_ar', 'status']);
             }));
 
-            $settings->with('pages', cache()->remember('header_pages', 3600, function () {
-                return Page::all();
+            $settings->with('static_content', cache()->remember('header_static_content', 3600, function () {
+                return StaticContent::all();
             }));
 
             $settings->with('currencies', cache()->remember('all_currencies', 3600, function () {
@@ -93,7 +92,7 @@ class AppServiceProvider extends ServiceProvider
 
             // Footer data - cached
             $settings->with('footerPages', cache()->remember('footer_pages', 3600, function () {
-                return Page::where('footer', 1)->get();
+                return StaticContent::where('footer', 1)->get();
             }));
 
             $settings->with('socialLinks', cache()->remember('footer_social_links', 3600, function () {
@@ -136,7 +135,7 @@ class AppServiceProvider extends ServiceProvider
 //
 //            $settings->with('gs', DB::table('muaadhsettings')->first());
 //
-//            $settings->with('ps', DB::table('pagesettings')->first());
+//            $settings->with('ps', DB::table('frontend_settings')->first());
 //
 //            $settings->with('seo',DB::table('seotools')->first());
 //            $settings->with('socialsetting', DB::table('socialsettings')->first());

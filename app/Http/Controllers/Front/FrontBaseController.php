@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\{
     Http\Controllers\Controller,
-    Models\Counter
+    Models\Metric
 };
 use App\Models\Currency;
 use App\Models\Language;
@@ -29,7 +29,7 @@ class FrontBaseController extends Controller
 //
 //        // Set Global PageSettings
 //
-        $this->ps = DB::table('pagesettings')->first();
+        $this->ps = DB::table('frontend_settings')->first();
         
 
         $this->middleware(function ($request, $next) {
@@ -72,39 +72,39 @@ class FrontBaseController extends Controller
             $referral = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
             if ($referral != $_SERVER['SERVER_NAME']) {
 
-                $brwsr = Counter::where('type', 'browser')->where('referral', $this->getOS());
+                $brwsr = Metric::where('type', 'browser')->where('referral', $this->getOS());
                 if ($brwsr->count() > 0) {
                     $brwsr = $brwsr->first();
                     $tbrwsr['total_count'] = $brwsr->total_count + 1;
                     $brwsr->update($tbrwsr);
                 } else {
-                    $newbrws = new Counter();
+                    $newbrws = new Metric();
                     $newbrws['referral'] = $this->getOS();
                     $newbrws['type'] = "browser";
                     $newbrws['total_count'] = 1;
                     $newbrws->save();
                 }
 
-                $count = Counter::where('referral', $referral);
+                $count = Metric::where('referral', $referral);
                 if ($count->count() > 0) {
                     $counts = $count->first();
                     $tcount['total_count'] = $counts->total_count + 1;
                     $counts->update($tcount);
                 } else {
-                    $newcount = new Counter();
+                    $newcount = new Metric();
                     $newcount['referral'] = $referral;
                     $newcount['total_count'] = 1;
                     $newcount->save();
                 }
             }
         } else {
-            $brwsr = Counter::where('type', 'browser')->where('referral', $this->getOS());
+            $brwsr = Metric::where('type', 'browser')->where('referral', $this->getOS());
             if ($brwsr->count() > 0) {
                 $brwsr = $brwsr->first();
                 $tbrwsr['total_count'] = $brwsr->total_count + 1;
                 $brwsr->update($tbrwsr);
             } else {
-                $newbrws = new Counter();
+                $newbrws = new Metric();
                 $newbrws['referral'] = $this->getOS();
                 $newbrws['type'] = "browser";
                 $newbrws['total_count'] = 1;

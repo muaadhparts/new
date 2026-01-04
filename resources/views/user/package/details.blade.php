@@ -41,7 +41,7 @@
                                             <li>
                                                 <span class="title">@lang('CatalogItem(s) Allowed:') </span>
                                                 <span
-                                                    class="content">{{ $subs->allowed_products == 0 ? 'Unlimited' : $subs->allowed_products }}</span>
+                                                    class="content">{{ $subs->allowed_items == 0 ? 'Unlimited' : $subs->allowed_items }}</span>
                                             </li>
 
 
@@ -50,7 +50,7 @@
 
 
                                             @if (!empty($package))
-                                                @if ($package->subscription_id != $subs->id)
+                                                @if ($package->membership_plan_id != $subs->id)
                                                     <li>
                                                         <span class="title">@lang('Note'): </span>
                                                         <span class="content">@lang('Your Previous Plan will be deactivated!')</span>

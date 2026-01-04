@@ -56,14 +56,14 @@
                         <!-- Existing Merchant Images -->
                         <div id="merchant-gallery-list" class="row g-2 mb-3">
                             @php
-                                $merchantGalleries = \App\Models\Gallery::where('catalog_item_id', $data->id)
+                                $merchantGalleries = \App\Models\MerchantPhoto::where('catalog_item_id', $data->id)
                                     ->where('user_id', auth()->id())
                                     ->get();
                             @endphp
                             @foreach($merchantGalleries as $gallery)
                                 <div class="col-4" id="gallery-item-{{ $gallery->id }}">
                                     <div class="position-relative">
-                                        <img src="{{ asset('assets/images/galleries/' . $gallery->photo) }}"
+                                        <img src="{{ asset('assets/images/merchant-photos/' . $gallery->photo) }}"
                                              class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 remove-gallery-btn"
                                                 data-id="{{ $gallery->id }}" title="@lang('Remove')">

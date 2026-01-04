@@ -83,8 +83,8 @@
                             @php
                                 $merchantId = auth()->id();
 
-                                // Check for local rider delivery
-                                $delivery = App\Models\DeliveryRider::where('purchase_id', $data->id)
+                                // Check for local courier delivery
+                                $delivery = App\Models\DeliveryCourier::where('purchase_id', $data->id)
                                     ->where('merchant_id', $merchantId)
                                     ->first();
 
@@ -185,10 +185,10 @@
                                             {{ $shipment->status_ar ?? $shipment->status }}
                                         </span>
                                     @elseif ($delivery)
-                                        {{-- Local Rider Delivery --}}
-                                        <span class="badge bg-secondary mb-1">@lang('Local Rider')</span>
+                                        {{-- Local Courier Delivery --}}
+                                        <span class="badge bg-secondary mb-1">@lang('Local Courier')</span>
                                         <br>
-                                        <small>{{ $delivery->rider->name ?? 'N/A' }}</small>
+                                        <small>{{ $delivery->courier->name ?? 'N/A' }}</small>
                                         <br>
                                         <span class="badge
                                             @if($delivery->status == 'delivered') bg-success
@@ -292,8 +292,8 @@
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="rider-tab" data-bs-toggle="tab" data-bs-target="#rider-content" type="button" role="tab">
-                                <i class="fas fa-motorcycle"></i> @lang('Local Rider')
+                            <button class="nav-link" id="courier-tab" data-bs-toggle="tab" data-bs-target="#courier-content" type="button" role="tab">
+                                <i class="fas fa-motorcycle"></i> @lang('Local Courier')
                             </button>
                         </li>
                     </ul>
@@ -344,16 +344,16 @@
                             </form>
                         </div>
 
-                        {{-- Local Rider Tab --}}
-                        <div class="tab-pane fade" id="rider-content" role="tabpanel">
-                            <form action="{{ route('merchant-rider-search-submit') }}" method="POST">
+                        {{-- Local Courier Tab --}}
+                        <div class="tab-pane fade" id="courier-content" role="tabpanel">
+                            <form action="{{ route('merchant-courier-search-submit') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="order_id" id="rider_order_id">
+                                <input type="hidden" name="order_id" id="courier_order_id">
 
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Select Rider')</label>
-                                    <select class="form-select" name="rider_id" id="riderSelect" required>
-                                        <option value="">@lang('Select Rider')</option>
+                                    <label class="form-label">@lang('Select Courier')</label>
+                                    <select class="form-select" name="courier_id" id="courierSelect" required>
+                                        <option value="">@lang('Select Courier')</option>
                                     </select>
                                 </div>
 
@@ -367,25 +367,25 @@
                                     </select>
                                 </div>
 
-                                <div id="riderDetails" class="d-none mb-3 p-3 bg-light rounded">
+                                <div id="courierDetails" class="d-none mb-3 p-3 bg-light rounded">
                                     <div class="row">
                                         <div class="col-6">
-                                            <strong>@lang('Rider:')</strong>
-                                            <span id="rider_name"></span>
+                                            <strong>@lang('Courier:')</strong>
+                                            <span id="courier_name"></span>
                                         </div>
                                         <div class="col-6">
                                             <strong>@lang('Cost:')</strong>
-                                            <span id="rider_cost"></span>
+                                            <span id="courier_cost"></span>
                                         </div>
                                         <div class="col-12 mt-2">
                                             <strong>@lang('Service Area:')</strong>
-                                            <span id="rider_area"></span>
+                                            <span id="courier_area"></span>
                                         </div>
                                     </div>
                                 </div>
 
                                 <button type="submit" class="template-btn w-100">
-                                    <i class="fas fa-user-check"></i> @lang('Assign Rider')
+                                    <i class="fas fa-user-check"></i> @lang('Assign Courier')
                                 </button>
                             </form>
                         </div>
@@ -466,7 +466,7 @@
 
         $('#modal_order_id').val(orderId);
         $('#tryoto_order_id').val(orderId);
-        $('#rider_order_id').val(orderId);
+        $('#courier_order_id').val(orderId);
 
         // ✅ Show customer choice alert if exists
         if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto') {
@@ -536,9 +536,9 @@
             console.error('Shipping API Error:', xhr);
         });
 
-        // Load riders
-        $.get("{{ route('merchant.find.rider') }}", { city: customerCity }, function(response) {
-            $('#riderSelect').html(response.riders);
+        // Load couriers
+        $.get("{{ route('merchant.find.courier') }}", { city: customerCity }, function(response) {
+            $('#courierSelect').html(response.couriers);
         });
     });
 
@@ -565,17 +565,17 @@
         }
     });
 
-    // Rider selection
-    $(document).on('change', '#riderSelect', function() {
+    // Courier selection
+    $(document).on('change', '#courierSelect', function() {
         const selected = $(this).find('option:selected');
 
         if ($(this).val()) {
-            $('#rider_name').text(selected.attr('riderName'));
-            $('#rider_cost').text(selected.attr('riderCost'));
-            $('#rider_area').text(selected.attr('area'));
-            $('#riderDetails').removeClass('d-none');
+            $('#courier_name').text(selected.attr('courierName'));
+            $('#courier_cost').text(selected.attr('courierCost'));
+            $('#courier_area').text(selected.attr('area'));
+            $('#courierDetails').removeClass('d-none');
         } else {
-            $('#riderDetails').addClass('d-none');
+            $('#courierDetails').addClass('d-none');
         }
     });
 

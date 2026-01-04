@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Api\User;
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Models\Muaadhsetting;
-use App\Models\Subscription;
-use App\Models\UserSubscription;
+use App\Models\MembershipPlan;
+use App\Models\UserMembershipPlan;
 use Auth;use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
@@ -20,9 +20,9 @@ class PackageController extends Controller
         try {
 
             $user = Auth::guard('api')->user();
-            $subs = Subscription::all();
+            $membershipPlans = MembershipPlan::all();
 
-            $package = $user->subscribes()->where('status', 1)->first();
+            $package = $user->membershipPlans()->where('status', 1)->first();
             if ($package) {
                 if (Carbon::now()->format('Y-m-d') > $user->date) {
                     $package->end_date = date('d/m/Y', strtotime($user->date));
@@ -31,7 +31,7 @@ class PackageController extends Controller
                 }
             }
 
-            return response()->json(['status' => true, 'data' => ['subs' => $subs, 'currrent_package' => $package], 'error' => []]);
+            return response()->json(['status' => true, 'data' => ['membershipPlans' => $membershipPlans, 'current_package' => $package], 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -63,13 +63,13 @@ class PackageController extends Controller
             }
 
             $user = Auth::guard('api')->user();
-            $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
+            $package = $user->membershipPlans()->where('status', 1)->orderBy('id', 'desc')->first();
             $id = $request->id;
-            $data = Subscription::find($id);
+            $data = MembershipPlan::find($id);
             if (!$data) {
                 return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'Invalid ID.']]);
             }
-            return response()->json(['status' => true, 'data' => ['sub' => $data, 'package' => $package], 'error' => []]);
+            return response()->json(['status' => true, 'data' => ['membershipPlan' => $data, 'package' => $package], 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -83,12 +83,12 @@ class PackageController extends Controller
             $rules = [
                 'method' => 'required',
                 'txnid' => 'required',
-                'subscription_id' => 'required',
+                'membership_plan_id' => 'required',
             ];
             $customs = [
                 'method.required' => 'Payment Method is required.',
                 'txnid.required' => 'Payment Transaction ID is required.',
-                'subscription_id.required' => 'Subscription ID is required',
+                'membership_plan_id.required' => 'Subscription ID is required',
             ];
             $validator = Validator::make($request->all(), $rules, $customs);
 
@@ -103,25 +103,25 @@ class PackageController extends Controller
             }
 
             $user = Auth::guard('api')->user();
-            $package = $user->subscribes()->where('status', 1)->orderBy('id', 'desc')->first();
-            $subs = Subscription::findOrFail($request->subscription_id);
+            $package = $user->membershipPlans()->where('status', 1)->orderBy('id', 'desc')->first();
+            $plan = MembershipPlan::findOrFail($request->membership_plan_id);
             $settings = Muaadhsetting::findOrFail(1);
             $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
 
             if (!empty($package)) {
-                if ($package->subscription_id == $request->subscription_id) {
+                if ($package->membership_plan_id == $request->membership_plan_id) {
                     $newday = strtotime($today);
                     $lastday = strtotime($user->date);
                     $secs = $lastday - $newday;
                     $days = $secs / 86400;
-                    $total = $days + $subs->days;
+                    $total = $days + $plan->days;
                     $user->date = date('Y-m-d', strtotime($today . ' + ' . $total . ' days'));
                 } else {
-                    $user->date = date('Y-m-d', strtotime($today . ' + ' . $subs->days . ' days'));
+                    $user->date = date('Y-m-d', strtotime($today . ' + ' . $plan->days . ' days'));
                 }
             } else {
-                $user->date = date('Y-m-d', strtotime($today . ' + ' . $subs->days . ' days'));
+                $user->date = date('Y-m-d', strtotime($today . ' + ' . $plan->days . ' days'));
             }
 
             if ($user->is_merchant == 0) {
@@ -154,20 +154,20 @@ class PackageController extends Controller
             $user->mail_sent = 1;
             $user->update($input);
 
-            $sub = new UserSubscription;
-            $sub->user_id = $user->id;
-            $sub->subscription_id = $subs->id;
-            $sub->title = $subs->title;
-            $sub->currency = $subs->currency;
-            $sub->currency_code = $subs->currency_code;
-            $sub->price = $subs->price;
-            $sub->days = $subs->days;
-            $sub->allowed_products = $subs->allowed_products;
-            $sub->details = $subs->details;
-            $sub->method = $request->method;
-            $sub->txnid = $request->txnid;
-            $sub->status = 1;
-            $sub->save();
+            $userPlan = new UserMembershipPlan;
+            $userPlan->user_id = $user->id;
+            $userPlan->membership_plan_id = $plan->id;
+            $userPlan->title = $plan->title;
+            $userPlan->currency = $plan->currency;
+            $userPlan->currency_code = $plan->currency_code;
+            $userPlan->price = $plan->price;
+            $userPlan->days = $plan->days;
+            $userPlan->allowed_items = $plan->allowed_items;
+            $userPlan->details = $plan->details;
+            $userPlan->method = $request->method;
+            $userPlan->txnid = $request->txnid;
+            $userPlan->status = 1;
+            $userPlan->save();
 
             if ($settings->is_smtp == 1) {
                 $data = [

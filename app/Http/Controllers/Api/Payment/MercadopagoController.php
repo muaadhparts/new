@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Purchase;
 use App\Models\Package;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Shipping;
 use Illuminate\Http\Request;
 use MercadoPago;
@@ -26,7 +26,7 @@ class MercadopagoController extends Controller
         if ($curr->name != "USD") {
             return redirect()->back()->with('unsuccess', 'Please Select USD Currency For Stripe.');
         }
-        $data = PaymentGateway::whereKeyword('mercadopago')->first();
+        $data = MerchantPayment::whereKeyword('mercadopago')->first();
         $item_amount = $purchase->pay_amount * $purchase->currency_value;
         $paydata = $data->convertAutoData();
 

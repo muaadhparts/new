@@ -55,7 +55,7 @@
             <a href="{{route('admin-tax-calculate-income')}}"> {{ __('Tax Calculate') }}</a>
         </li>
         <li>
-            <a href="{{route('admin-subscription-income')}}"> {{ __('Subscription Earning') }}</a>
+            <a href="{{route('admin-membership-plan-income')}}"> {{ __('Membership Plan Earning') }}</a>
         </li>
 
         <li>
@@ -139,7 +139,7 @@
         </li>
      
         <li>
-            <a href="{{ route('admin-report-index') }}"><span>{{ __('Reports') }}</span></a>
+            <a href="{{ route('admin-abuse-flag-index') }}"><span>{{ __('Reports') }}</span></a>
         </li>
     </ul>
 </li>
@@ -186,16 +186,8 @@
     </a>
     <ul class="collapse list-unstyled" id="customerDeposit" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-user-deposits','all') }}"><span>{{ __('Completed Deposits') }}</span></a>
+            <a href="{{ route('admin-wallet-log-index') }}"><span>{{ __('Transactions') }}</span></a>
         </li>
-        <li>
-            <a href="{{ route('admin-user-deposits','pending') }}"><span>{{ __('Pending Deposits') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('admin-trans-index') }}"><span>{{ __('Transactions') }}</span></a>
-        </li>
-
-
     </ul>
 </li>
 
@@ -225,16 +217,15 @@
 @if(Auth::guard('admin')->user()->sectionCheck('merchant_subscriptions'))
 
 <li>
-    <a href="#merchantSubs" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-user-suited"></i>{{ __('Merchant Subscriptions') }}
+    <a href="#merchantMembershipPlans" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="icofont-user-suited"></i>{{ __('Merchant Membership Plans') }}
     </a>
-    <ul class="collapse list-unstyled" id="merchantSubs" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="merchantMembershipPlans" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-merchant-subs','completed') }}"><span>{{ __('Completed Subscriptions') }}</span></a>
+            <a href="{{ route('admin-merchant-membership-plans','completed') }}"><span>{{ __('Completed Plans') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-merchant-pendings','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a>
-            {{-- <a href="{{ route('admin-merchant-subs','pending') }}"><span>{{ __('Pending Subscriptions') }}</span></a> --}}
+            <a href="{{ route('admin-merchant-membership-plans','pending') }}"><span>{{ __('Pending Plans') }}</span></a>
         </li>
     </ul>
 </li>
@@ -263,13 +254,13 @@
 @if(Auth::guard('admin')->user()->sectionCheck('merchant_subscription_plans'))
 
 <li>
-    <a href="{{ route('admin-subscription-index') }}" class=" wave-effect"><i class="fas fa-dollar-sign"></i>{{
-        __('Merchant Subscription Plans') }}</a>
+    <a href="{{ route('admin-membership-plan-index') }}" class=" wave-effect"><i class="fas fa-dollar-sign"></i>{{
+        __('Merchant Membership Plans') }}</a>
 </li>
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('messages'))
+@if(Auth::guard('admin')->user()->sectionCheck('chat_entries'))
 
 <li>
     <a href="#msg" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
@@ -277,10 +268,10 @@
     </a>
     <ul class="collapse list-unstyled" id="msg" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-message-index') }}"><span>{{ __('Tickets') }}</span></a>
+            <a href="{{ route('admin-support-ticket-index') }}"><span>{{ __('Tickets') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-message-dispute') }}"><span>{{ __('Disputes') }}</span></a>
+            <a href="{{ route('admin-support-ticket-dispute') }}"><span>{{ __('Disputes') }}</span></a>
         </li>
     </ul>
 </li>
@@ -293,15 +284,15 @@
     <a href="#blog" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
         <i class="fas fa-fw fa-newspaper"></i>{{ __('Blog') }}
     </a>
-    <ul class="collapse list-unstyled" id="blog" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="publication" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-cblog-index') }}"><span>{{ __('Categories') }}</span></a>
+            <a href="{{ route('admin-article-type-index') }}"><span>{{ __('Categories') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-blog-index') }}"><span>{{ __('Posts') }}</span></a>
+            <a href="{{ route('admin-publication-index') }}"><span>{{ __('Posts') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-gs-blog-settings') }}"><span>{{ __('Blog Settings') }}</span></a>
+            <a href="{{ route('admin-gs-publication-settings') }}"><span>{{ __('Publication Settings') }}</span></a>
         </li>
     </ul>
 </li>
@@ -364,22 +355,22 @@
             <a href="{{ route('admin-sl-index') }}"><span>{{ __('Sliders') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
+            <a href="{{ route('admin-fs-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-best-sellers') }}"><span>{{ __('Best Sellers') }}</span></a>
+            <a href="{{ route('admin-fs-best-sellers') }}"><span>{{ __('Best Sellers') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-top-rated') }}"><span>{{ __('Top Rated') }}</span></a>
+            <a href="{{ route('admin-fs-top-rated') }}"><span>{{ __('Top Rated') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-big-save') }}"><span>{{ __('Big Save') }}</span></a>
+            <a href="{{ route('admin-fs-big-save') }}"><span>{{ __('Big Save') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-trending') }}"><span>{{ __('Trending') }}</span></a>
+            <a href="{{ route('admin-fs-trending') }}"><span>{{ __('Trending') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-featured') }}"><span>{{ __('Featured CatalogItems') }}</span></a>
+            <a href="{{ route('admin-fs-featured') }}"><span>{{ __('Featured CatalogItems') }}</span></a>
         </li>
 
         <li>
@@ -389,7 +380,7 @@
             <a href="{{ route('admin-brand-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-customize') }}"><span>{{ __('Home Page Customization') }}</span></a>
+            <a href="{{ route('admin-fs-customize') }}"><span>{{ __('Home Page Customization') }}</span></a>
         </li>
     </ul>
 </li>
@@ -405,17 +396,17 @@
     </a>
     <ul class="collapse list-unstyled" id="menu" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('admin-faq-index') }}"><span>{{ __('FAQ Page') }}</span></a>
+            <a href="{{ route('admin-help-article-index') }}"><span>{{ __('Help Article Page') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-ps-contact') }}"><span>{{ __('Contact Us Page') }}</span></a>
+            <a href="{{ route('admin-fs-contact') }}"><span>{{ __('Contact Us Page') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('admin-page-index') }}"><span>{{ __('Other Pages') }}</span></a>
+            <a href="{{ route('admin-static-content-index') }}"><span>{{ __('Other Pages') }}</span></a>
         </li>
 
         <li>
-            <a href="{{ route('admin-ps-menu-links') }}"><span>{{ __('Customize Menu Links') }}</span></a>
+            <a href="{{ route('admin-fs-menu-links') }}"><span>{{ __('Customize Menu Links') }}</span></a>
         </li>
     </ul>
 </li>
@@ -447,7 +438,6 @@
     </a>
     <ul class="collapse list-unstyled" id="payments" data-bs-parent="#accordion">
         <li><a href="{{ route('admin-gs-payments') }}"><span>{{__('Payment Information')}}</span></a></li>
-        <li><a href="{{ route('admin-payment-index') }}"><span>{{ __('Payment Gateways') }}</span></a></li>
         <li><a href="{{ route('admin-currency-index') }}"><span>{{ __('Currencies') }}</span></a></li>
         <li><a href="{{route('admin-reward-index')}}"><span>{{__('Reward Information')}}</span></a></li>
     </ul>
@@ -511,17 +501,17 @@
 
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('addons'))
+@if(Auth::guard('admin')->user()->sectionCheck('modules'))
 <li>
-    <a href="{{ route('admin-addon-index') }}" class=" wave-effect"><i class="fas fa-list-alt"></i>{{ __('Addon
+    <a href="{{ route('admin-module-index') }}" class=" wave-effect"><i class="fas fa-list-alt"></i>{{ __('Module
         Manager') }}</a>
 </li>
 @endif
 
-@if(Auth::guard('admin')->user()->sectionCheck('subscribers'))
+@if(Auth::guard('admin')->user()->sectionCheck('mailing_list'))
 
 <li>
-    <a href="{{ route('admin-subs-index') }}" class=" wave-effect"><i class="fas fa-users-cog mr-2"></i>{{
+    <a href="{{ route('admin-mailing-list-index') }}" class=" wave-effect"><i class="fas fa-users-cog mr-2"></i>{{
         __('Subscribers') }}</a>
 </li>
 

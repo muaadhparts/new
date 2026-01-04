@@ -8,7 +8,7 @@ use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\Package;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Shipping;
 use Illuminate\Http\Request;
 
@@ -37,7 +37,7 @@ class InstamojoController extends Controller
         $item_amount = round($purchase->pay_amount * $purchase->currency_value, 2);
 
         $notify_url = action('Api\Payment\InstamojoController@notify');
-        $data = PaymentGateway::whereKeyword('instamojo')->first();
+        $data = MerchantPayment::whereKeyword('instamojo')->first();
 
         $paydata = $data->convertAutoData();
         if($paydata['sandbox_check'] == 1){

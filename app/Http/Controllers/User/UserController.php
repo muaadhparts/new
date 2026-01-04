@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\AffliateBonus;
+use App\Models\ReferralCommission;
 use App\Models\FavoriteSeller;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -95,7 +95,7 @@ class UserController extends UserBaseController
         $data['pay_id'] = $slug2;
         $data['gateway'] = '';
         if ($data['pay_id'] != 0) {
-            $data['gateway'] = PaymentGateway::findOrFail($data['pay_id']);
+            $data['gateway'] = MerchantPayment::findOrFail($data['pay_id']);
         }
         return view('load.payment-user', $data);
     }
@@ -128,7 +128,7 @@ class UserController extends UserBaseController
     public function affilate_code()
     {
         $user = $this->user;
-        $final_affilate_users =AffliateBonus::whereReferId(auth()->id())->get();
+        $final_affilate_users =ReferralCommission::whereReferId(auth()->id())->get();
         return view('user.affilate.affilate-program', compact('user', 'final_affilate_users'));
     }
 

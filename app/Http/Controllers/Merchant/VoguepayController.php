@@ -6,8 +6,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Classes\MuaadhMailer;
 use App\Models\Muaadhsetting;
-use App\Models\Subscription;
-use App\Models\UserSubscription;
+use App\Models\MembershipPlan;
+use App\Models\UserMembershipPlan;
 use Auth;
 use Carbon\Carbon;
 
@@ -39,15 +39,15 @@ class VoguepayController extends Controller
                'shop_name.unique' => 'This shop name has already been taken.'
             ]);
         $user = Auth::user();
-        $package = $user->subscribes()->where('status',1)->orderBy('id','desc')->first();
-        $subs = Subscription::findOrFail($request->subs_id);
+        $package = $user->membershipPlans()->where('status',1)->orderBy('id','desc')->first();
+        $subs = MembershipPlan::findOrFail($request->subs_id);
         $settings = Muaadhsetting::findOrFail(1);
         $today = Carbon::now()->format('Y-m-d');
         $input = $request->all();
         $user->is_merchant = 2;
                     if(!empty($package))
                     {
-                        if($package->subscription_id == $request->subs_id)
+                        if($package->membership_plan_id == $request->subs_id)
                         {
                             $newday = strtotime($today);
                             $lastday = strtotime($user->date);
@@ -67,15 +67,15 @@ class VoguepayController extends Controller
                     }
                     $user->mail_sent = 1;
                     $user->update($input);
-                    $sub = new UserSubscription;
+                    $sub = new UserMembershipPlan;
                     $sub->user_id = $user->id;
-                    $sub->subscription_id = $subs->id;
+                    $sub->membership_plan_id = $subs->id;
                     $sub->title = $subs->title;
                     $sub->currency = $subs->currency;
                     $sub->currency_code = $subs->currency_code;
                     $sub->price = $subs->price;
                     $sub->days = $subs->days;
-                    $sub->allowed_products = $subs->allowed_products;
+                    $sub->allowed_items = $subs->allowed_items;
                     $sub->details = $subs->details;
                     $sub->method = 'Voguepay';
                     $sub->txnid = $request->ref_id;

@@ -3,7 +3,7 @@
       {{ __('Ratings & Reviews') }}
     </h4>
     <div class="reating-area">
-      <div class="stars"><span id="star-rating">{{ App\Models\CatalogReview::averageScore($catalogItem->id) }}</span> <i class="fas fa-star"></i></div>
+      <div class="stars"><span id="star-rating">{{ App\Models\CatalogTestimonial::averageScore($catalogItem->id) }}</span> <i class="fas fa-star"></i></div>
     </div>
   </div>
 

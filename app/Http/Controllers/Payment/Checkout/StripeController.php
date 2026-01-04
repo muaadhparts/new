@@ -19,7 +19,7 @@ use App\Models\Cart;use App\Models\Country;use App\Models\Muaadhsetting;
 
 use App\Models\Purchase;
 
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Reward;
 use App\Models\StockReservation;
 use App\Traits\HandlesMerchantCheckout;
@@ -37,7 +37,7 @@ class StripeController extends CheckoutBaseControlller
     public function __construct()
     {
         parent::__construct();
-        $data = PaymentGateway::whereKeyword('stripe')->first();
+        $data = MerchantPayment::whereKeyword('stripe')->first();
         $paydata = $data->convertAutoData();
         \Config::set('services.stripe.key', $paydata['key']);
         \Config::set('services.stripe.secret', $paydata['secret']);
@@ -228,7 +228,7 @@ class StripeController extends CheckoutBaseControlller
             $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+                PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
             }
 
             //Sending Email To Buyer

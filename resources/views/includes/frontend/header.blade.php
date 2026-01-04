@@ -26,8 +26,8 @@
                             $currentUrl = url()->current();
                             $urlParts = explode('/', $currentUrl);
                             $isUserDashboard = in_array('user', $urlParts);
-                            $isRiderDashboard = in_array('rider', $urlParts);
-                            $isDashboardPage = $isUserDashboard || $isRiderDashboard;
+                            $isCourierDashboard = in_array('courier', $urlParts);
+                            $isDashboardPage = $isUserDashboard || $isCourierDashboard;
                         @endphp
 
                         @if($isDashboardPage)
@@ -64,12 +64,12 @@
                     <div class="muaadh-action-dropdown">
                         <button type="button" class="muaadh-action-btn" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i>
-                            {{-- Using $authUser/$riderUser from HeaderComposer --}}
+                            {{-- Using $authUser/$courierUser from HeaderComposer --}}
                             <span class="muaadh-action-label d-none d-md-block">
                                 @if ($authUser)
                                     {{ Str::limit($authUser->name, 10) }}
-                                @elseif($riderUser ?? null)
-                                    {{ Str::limit($riderUser->name, 10) }}
+                                @elseif($courierUser ?? null)
+                                    {{ Str::limit($courierUser->name, 10) }}
                                 @else
                                     @lang('Account')
                                 @endif
@@ -94,12 +94,12 @@
                                     <i class="fas fa-sign-out-alt"></i>
                                     <span>@lang('Logout')</span>
                                 </a>
-                            @elseif($riderUser ?? null)
-                                <a href="{{ route('rider-dashboard') }}" class="muaadh-action-menu-item">
+                            @elseif($courierUser ?? null)
+                                <a href="{{ route('courier-dashboard') }}" class="muaadh-action-menu-item">
                                     <i class="fas fa-tachometer-alt"></i>
                                     <span>@lang('Dashboard')</span>
                                 </a>
-                                <a href="{{ route('rider-logout') }}" class="muaadh-action-menu-item text-danger">
+                                <a href="{{ route('courier-logout') }}" class="muaadh-action-menu-item text-danger">
                                     <i class="fas fa-sign-out-alt"></i>
                                     <span>@lang('Logout')</span>
                                 </a>
@@ -219,7 +219,7 @@
                             <span>@lang('CatalogItems')</span>
                         </a>
                     </li>
-                    @if ($pages->where('header', '=', 1)->count() > 0)
+                    @if ($static_content->where('header', '=', 1)->count() > 0)
                         <li class="muaadh-nav-dropdown">
                             <a href="javascript:void(0)">
                                 <i class="fas fa-file-alt"></i>
@@ -227,26 +227,26 @@
                                 <i class="fas fa-chevron-down"></i>
                             </a>
                             <ul class="muaadh-nav-submenu">
-                                @foreach ($pages->where('header', '=', 1) as $page)
+                                @foreach ($static_content->where('header', '=', 1) as $content)
                                     <li>
-                                        <a href="{{ route('front.merchant', $page->slug) }}">{{ $page->title }}</a>
+                                        <a href="{{ route('front.merchant', $content->slug) }}">{{ $content->title }}</a>
                                     </li>
                                 @endforeach
                             </ul>
                         </li>
                     @endif
                     @if ($ps->blog == 1)
-                        <li class="{{ request()->path() == 'blog' ? 'active' : '' }}">
-                            <a href="{{ route('front.blog') }}">
+                        <li class="{{ request()->path() == 'publications' ? 'active' : '' }}">
+                            <a href="{{ route('front.publications') }}">
                                 <i class="fas fa-newspaper"></i>
-                                <span>@lang('Blog')</span>
+                                <span>@lang('Publications')</span>
                             </a>
                         </li>
                     @endif
-                    <li class="{{ request()->path() == 'faq' ? 'active' : '' }}">
-                        <a href="{{ route('front.faq') }}">
+                    <li class="{{ request()->path() == 'help-article' ? 'active' : '' }}">
+                        <a href="{{ route('front.help-article') }}">
                             <i class="fas fa-question-circle"></i>
-                            <span>@lang('FAQ')</span>
+                            <span>@lang('Help')</span>
                         </a>
                     </li>
                     <li class="{{ request()->path() == 'contact' ? 'active' : '' }}">

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Api\User\Payment;
 
 
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\PaymentGateway;
-use App\Models\Transaction;
+use App\Models\MerchantPayment;
+use App\Models\WalletLog;
 use Illuminate\Support\Str;
 
 
@@ -23,7 +23,7 @@ class FlutterWaveController extends Controller
   public function __construct()
     {
         
-        $data = PaymentGateway::whereKeyword('flutterwave')->first();
+        $data = MerchantPayment::whereKeyword('flutterwave')->first();
         $paydata = $data->convertAutoData();
         $this->public_key = $paydata['public_key'];
         $this->secret_key = $paydata['secret_key'];
@@ -36,7 +36,7 @@ class FlutterWaveController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $purchase = Deposit::where('deposit_number',$deposit_number)->first();
+        $purchase = TopUp::where('deposit_number',$deposit_number)->first();
         $curr = Currency::where('name','=',$purchase->currency_code)->first();
         $settings = Muaadhsetting::findOrFail(1);
         $item_amount = $purchase->amount * $purchase->currency_value;
@@ -97,14 +97,14 @@ class FlutterWaveController extends Controller
           die('Curl returned error: ' . $err);
         }
         
-        $transaction = json_decode($response);
-        
-        if(!$transaction->data && !$transaction->data->link){
+        $flutterwaveResponse = json_decode($response);
+
+        if(!$flutterwaveResponse->data && !$flutterwaveResponse->data->link){
           // there was an error from the API
-          print_r('API returned error: ' . $transaction->message);
+          print_r('API returned error: ' . $flutterwaveResponse->message);
         }
-        
-        return redirect($transaction->data->link);
+
+        return redirect($flutterwaveResponse->data->link);
 
    
     }
@@ -147,28 +147,28 @@ class FlutterWaveController extends Controller
     
             if (($chargeResponsecode == "00" || $chargeResponsecode == "0") && ($paymentStatus == "successful")) {
 
-            $purchase = Deposit::where('deposit_number',$resp['data']['txref'])->first();
+            $purchase = TopUp::where('deposit_number',$resp['data']['txref'])->first();
             $purchase['txnid'] = $txn;
             $purchase['status'] = 1;
             $user = \App\Models\User::findOrFail($purchase->user_id);
             $user->balance = $user->balance + ($purchase->amount);
             $user->save();
             $purchase->update();
-                              // store in transaction table
+                              // store in wallet_logs table
                     if ($purchase->status == 1) {
-                        $transaction = new Transaction;
-                        $transaction->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-                        $transaction->user_id = $purchase->user_id;
-                        $transaction->amount = $purchase->amount;
-                        $transaction->user_id = $purchase->user_id;
-                        $transaction->currency_sign = $purchase->currency;
-                        $transaction->currency_code = $purchase->currency_code;
-                        $transaction->currency_value= $purchase->currency_value;
-                        $transaction->method = $purchase->method;
-                        $transaction->txnid = $purchase->txnid;
-                        $transaction->details = 'Payment Deposit';
-                        $transaction->type = 'plus';
-                        $transaction->save();
+                        $walletLog = new WalletLog;
+                        $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
+                        $walletLog->user_id = $purchase->user_id;
+                        $walletLog->amount = $purchase->amount;
+                        $walletLog->user_id = $purchase->user_id;
+                        $walletLog->currency_sign = $purchase->currency;
+                        $walletLog->currency_code = $purchase->currency_code;
+                        $walletLog->currency_value= $purchase->currency_value;
+                        $walletLog->method = $purchase->method;
+                        $walletLog->txnid = $purchase->txnid;
+                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->type = 'plus';
+                        $walletLog->save();
                     }
                 
 

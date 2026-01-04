@@ -11,7 +11,7 @@ use App\Models\SupportMessage;
 use App\Models\Muaadhsetting;
 use App\Models\CatalogEvent;
 use App\Models\Purchase;
-use App\Models\Pagesetting;
+use App\Models\FrontendSetting;
 use Illuminate\Http\Request;
 use Validator;
 
@@ -75,7 +75,7 @@ class TicketDisputeController extends Controller
             $user = auth()->user();
             $gs = Muaadhsetting::find(1);
             $subject = $request->subject;
-            $to = Pagesetting::find(1)->contact_email;
+            $to = FrontendSetting::find(1)->contact_email;
             $from = $user->email;
             $msg = "Email: " . $from . "\nMessage: " . $request->message;
             if ($gs->is_smtp == 1) {
@@ -116,7 +116,7 @@ class TicketDisputeController extends Controller
                 $thread->save();
 
                 $notification = new CatalogEvent;
-                $notification->conversation_id = $thread->id;
+                $notification->chat_thread_id = $thread->id;
                 $notification->save();
 
                 $msg = new SupportMessage();
@@ -172,7 +172,7 @@ class TicketDisputeController extends Controller
             $input['user_id'] = auth()->user()->id;
             $msg->fill($input)->save();
             $notification = new CatalogEvent;
-            $notification->conversation_id = $msg->thread->id;
+            $notification->chat_thread_id = $msg->thread->id;
             $notification->save();
             //--- Redirect Section
 

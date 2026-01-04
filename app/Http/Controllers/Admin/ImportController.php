@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\{
     Models\CatalogItem,
     Models\Currency,
-    Models\Gallery
+    Models\MerchantPhoto
 };
 use App\Models\MerchantItem;
 
@@ -120,7 +120,7 @@ class ImportController extends AdminBaseController
     }
 
     public function index(){
-        return view('admin.productimport.index');
+        return view('admin.catalog-item-import.index');
     }
 
     //*** GET Request
@@ -128,7 +128,7 @@ class ImportController extends AdminBaseController
     {
         $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
-        return view('admin.productimport.createone',compact('cats','sign'));
+        return view('admin.catalog-item-import.createone',compact('cats','sign'));
     }
 
     //*** GET Request
@@ -136,7 +136,7 @@ class ImportController extends AdminBaseController
     {
         $cats = collect(); // Category system removed - using TreeCategories
         $sign = $this->curr;
-        return view('admin.productimport.importcsv',compact('cats','sign'));
+        return view('admin.catalog-item-import.importcsv',compact('cats','sign'));
     }
 
     //*** POST Request
@@ -377,20 +377,20 @@ class ImportController extends AdminBaseController
             ]
         );
 
-        // Add To Gallery If any
+        // Add To Merchant Photos If any
         $lastid = $data->id;
         if ($files = $request->file('gallery')){
             foreach ($files as  $key => $file){
                 if(in_array($key, (array)$request->galval))
                 {
-                    $gallery = new Gallery;
+                    $merchantPhoto = new MerchantPhoto;
                     $extension = $file->getClientOriginalExtension() ?: 'jpg';
                     $name = time() . Str::random(8) . '.' . $extension;
                     $img = Image::make($file->getRealPath())->resize(800, 800);
-                    $img->save(public_path() . '/assets/images/galleries/' . $name);
-                    $gallery['photo'] = $name;
-                    $gallery['catalog_item_id'] = $lastid;
-                    $gallery->save();
+                    $img->save(public_path() . '/assets/images/merchant-photos/' . $name);
+                    $merchantPhoto['photo'] = $name;
+                    $merchantPhoto['catalog_item_id'] = $lastid;
+                    $merchantPhoto->save();
                 }
             }
         }
@@ -408,7 +408,7 @@ class ImportController extends AdminBaseController
         $cats = collect(); // Category system removed - using TreeCategories
         $data = CatalogItem::findOrFail($id);
         $sign = $this->curr;
-        return view('admin.productimport.editone',compact('cats','data','sign'));
+        return view('admin.catalog-item-import.editone',compact('cats','data','sign'));
     }
 
     //*** POST Request

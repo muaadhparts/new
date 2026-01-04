@@ -37,7 +37,7 @@ failed_jobs
 faqs
 favorite_sellers
 fonts
-galleries
+merchant_photos
 home_page_themes
 illustrations
 ke_parts

@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\CatalogItemContextHelper;
-use App\Models\Comment;
+use App\Models\BuyerNote;
 use App\Models\Purchase;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use App\Models\CatalogItemClick;
 use App\Models\CatalogReview;
-use App\Models\Reply;
-use App\Models\Report;
+use App\Models\NoteResponse;
+use App\Models\AbuseFlag;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -53,7 +53,7 @@ class CatalogItemDetailsController extends FrontBaseController
         $merchantItem = MerchantItem::with([
             'user',
             'qualityBrand',
-            'catalogItem.galleries',
+            'catalogItem.merchantPhotos',
             'catalogItem.brand',
         ])->find($merchant_item_id);
 
@@ -359,7 +359,7 @@ class CatalogItemDetailsController extends FrontBaseController
             return response()->json(['errors' => $validator->getMessageBag()->toArray()]);
         }
 
-        $data = new Report;
+        $data = new AbuseFlag;
         $data->fill($request->all())->save();
         return response()->json(__('Report Sent Successfully.'));
     }
@@ -397,21 +397,21 @@ class CatalogItemDetailsController extends FrontBaseController
      */
     public function comment(Request $request)
     {
-        $comment = new Comment;
-        $comment->catalog_item_id = $request->input('catalog_item_id');
-        $comment->merchant_item_id = $request->input('merchant_item_id');
-        $comment->text = $request->input('text');
-        $comment->user_id = auth()->id(); // Set from authenticated user, not from request
-        $comment->save();
+        $buyerNote = new BuyerNote;
+        $buyerNote->catalog_item_id = $request->input('catalog_item_id');
+        $buyerNote->merchant_item_id = $request->input('merchant_item_id');
+        $buyerNote->text = $request->input('text');
+        $buyerNote->user_id = auth()->id(); // Set from authenticated user, not from request
+        $buyerNote->save();
 
-        $data[0] = $comment->user->photo ? url('assets/images/users/' . $comment->user->photo) : url('assets/images/' . $this->gs->user_image);
-        $data[1] = $comment->user->name;
-        $data[2] = $comment->created_at->diffForHumans();
-        $data[3] = $comment->text;
-        $data[5] = route('catalog-item.comment.delete', $comment->id);
-        $data[6] = route('catalog-item.comment.edit', $comment->id);
-        $data[7] = route('catalog-item.reply', $comment->id);
-        $data[8] = $comment->user->id;
+        $data[0] = $buyerNote->user->photo ? url('assets/images/users/' . $buyerNote->user->photo) : url('assets/images/' . $this->gs->user_image);
+        $data[1] = $buyerNote->user->name;
+        $data[2] = $buyerNote->created_at->diffForHumans();
+        $data[3] = $buyerNote->text;
+        $data[5] = route('catalog-item.comment.delete', $buyerNote->id);
+        $data[6] = route('catalog-item.comment.edit', $buyerNote->id);
+        $data[7] = route('catalog-item.reply', $buyerNote->id);
+        $data[8] = $buyerNote->user->id;
 
         $newdata = '<li>';
         $newdata .= '<div class="single-comment comment-section">';
@@ -431,37 +431,37 @@ class CatalogItemDetailsController extends FrontBaseController
 
     public function commentedit(Request $request, $id)
     {
-        $comment = Comment::findOrFail($id);
-        $comment->text = $request->text;
-        $comment->save();
+        $buyerNote = BuyerNote::findOrFail($id);
+        $buyerNote->text = $request->text;
+        $buyerNote->save();
 
-        return response()->json($comment->text);
+        return response()->json($buyerNote->text);
     }
 
     public function commentdelete($id)
     {
-        $comment = Comment::findOrFail($id);
-        if ($comment->replies->count() > 0) {
-            foreach ($comment->replies as $reply) { $reply->delete(); }
+        $buyerNote = BuyerNote::findOrFail($id);
+        if ($buyerNote->noteResponses->count() > 0) {
+            foreach ($buyerNote->noteResponses as $noteResponse) { $noteResponse->delete(); }
         }
-        $comment->delete();
+        $buyerNote->delete();
     }
 
     // -------------------------------- CATALOG ITEM REPLY SECTION ----------------------------------------
 
     public function reply(Request $request, $id)
     {
-        $reply = new Reply;
+        $noteResponse = new NoteResponse;
         $data = $request->all();
-        $data['comment_id'] = $id;
-        $reply->fill($data)->save();
+        $data['buyer_note_id'] = $id;
+        $noteResponse->fill($data)->save();
 
-        $resp[0] = $reply->user->photo ? url('assets/images/users/' . $reply->user->photo) : url('assets/images/' . $this->gs->user_image);
-        $resp[1] = $reply->user->name;
-        $resp[2] = $reply->created_at->diffForHumans();
-        $resp[3] = $reply->text;
-        $resp[4] = route('catalog-item.reply.delete', $reply->id);
-        $resp[5] = route('catalog-item.reply.edit', $reply->id);
+        $resp[0] = $noteResponse->user->photo ? url('assets/images/users/' . $noteResponse->user->photo) : url('assets/images/' . $this->gs->user_image);
+        $resp[1] = $noteResponse->user->name;
+        $resp[2] = $noteResponse->created_at->diffForHumans();
+        $resp[3] = $noteResponse->text;
+        $resp[4] = route('catalog-item.reply.delete', $noteResponse->id);
+        $resp[5] = route('catalog-item.reply.edit', $noteResponse->id);
 
         $newdata = '<div class="single-comment replay-review"><div class="left-area"><img src="' . $resp[0] . '" alt=""><h5 class="name">' . $resp[1] . '</h5><p class="date">' . $resp[2] . '</p></div>';
         $newdata .= '<div class="right-area"><div class="comment-body"><p>' . $resp[3] . '</p></div><div class="comment-footer"><div class="links">';
@@ -476,16 +476,16 @@ class CatalogItemDetailsController extends FrontBaseController
 
     public function replyedit(Request $request, $id)
     {
-        $reply = Reply::findOrFail($id);
-        $reply->text = $request->text;
-        $reply->save();
-        return response()->json($reply->text);
+        $noteResponse = NoteResponse::findOrFail($id);
+        $noteResponse->text = $request->text;
+        $noteResponse->save();
+        return response()->json($noteResponse->text);
     }
 
     public function replydelete($id)
     {
-        $reply = Reply::findOrFail($id);
-        $reply->delete();
+        $noteResponse = NoteResponse::findOrFail($id);
+        $noteResponse->delete();
     }
 
     // ------------------ CatalogReview SECTION --------------------
@@ -508,7 +508,7 @@ class CatalogItemDetailsController extends FrontBaseController
 
         if ($ck == 1) {
             $user = Auth::user();
-            $prev = CatalogReview::where('catalog_item_id', $request->catalog_item_id)->where('user_id', $user->id)->first();
+            $prev = CatalogTestimonial::where('catalog_item_id', $request->catalog_item_id)->where('user_id', $user->id)->first();
             $payload = $request->all();
             $payload['review_date'] = date('Y-m-d H:i:s');
 

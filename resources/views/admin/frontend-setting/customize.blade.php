@@ -1,0 +1,170 @@
+@extends('layouts.admin')
+
+@section('content')
+
+<div class="content-area">
+  <div class="mr-breadcrumb">
+    <div class="row">
+
+      <div class="col-lg-12">
+        <h4 class="heading">{{ __('Home Page Customization') }}</h4>
+        <ul class="links">
+          <li>
+            <a href="{{ route('admin.dashboard') }}">{{ __('Dashboard') }} </a>
+          </li>
+          <li>
+            <a href="javascript:;">{{ __('Home Page Settings') }}</a>
+          </li>
+          <li>
+            <a href="{{ route('admin-fs-customize') }}">{{ __('Home Page Customization') }}</a>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="add-catalogItem-content1">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="catalogItem-description">
+          <div class="social-links-area">
+            <div class="gocover"
+              style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
+            </div>
+            <form id="muaadhform" action="{{ route('admin-fs-homeupdate') }}" method="POST"
+              enctype="multipart/form-data">
+              @csrf
+
+              @include('alerts.admin.form-both')
+
+              <div class="row justify-content-center">
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="slider">{{ __('Slider') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="slider" value="1" {{ $data->slider == 1 ? "checked" : ""}}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="col-lg-2"></div>
+
+          
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="featured_promo">{{ __('Arrival Section') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="featured_promo" value="1" {{ $data->featured_promo == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+              </div>
+
+              <div class="row justify-content-center">
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="category">{{ __('Featured CatalogItems') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="category" value="1" {{ $data->category == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="col-lg-2"></div>
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="deal_of_the_day">{{ __('Deal Of The Day') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="deal_of_the_day" value="1" {{ $data->deal_of_the_day == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+              </div>
+
+              <div class="row justify-content-center">
+
+             
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="top_big_trending">{{ __('Top Rated, Big Save & Trending') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="top_big_trending" value="1" {{ $data->top_big_trending == 1 ? "checked" : ""}}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="col-lg-2"></div>
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="brand">{{ __('Brand') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="brand" value="1" {{ $data->brand == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+              </div>
+
+              <div class="row justify-content-center">
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="best_sellers">{{ __('Best Selling CatalogItem') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="best_sellers" value="1" {{ $data->best_sellers == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="col-lg-2"></div>
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="blog">{{ __('Blogs') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="blog" value="1" {{ $data->blog == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+              </div>
+
+            
+
+              <div class="row justify-content-center">
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="third_left_banner">{{ __('Newsletter') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="third_left_banner" value="1" {{ $data->third_left_banner == 1 ? "checked" : "" }}>
+                    <span class="slider round"></span>
+                  </label>
+                </div>
+
+                <div class="col-lg-2"></div>
+                <div class="col-lg-4 d-flex justify-content-between">
+                 
+                </div>
+              </div>
+
+      
+
+              <div class="row">
+                <div class="col-12 text-center">
+                  <button type="submit" class="btn btn-primary">{{ __('Submit') }}</button>
+                </div>
+              </div>
+
+            </form>
+
+              </div>
+
+              <br>
+
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection

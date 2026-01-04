@@ -7,7 +7,7 @@ use App\Models\Currency;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\Package;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use App\Models\Shipping;
 use Illuminate\Http\Request;
 use Razorpay\Api\Api;
@@ -23,7 +23,7 @@ class RazorpayController extends Controller
     public function __construct()
     {
 
-        $data = PaymentGateway::whereKeyword('razorpay')->first();
+        $data = MerchantPayment::whereKeyword('razorpay')->first();
         $paydata = $data->convertAutoData();
         $this->keyId = $paydata['key'];
         $this->keySecret = $paydata['secret'];

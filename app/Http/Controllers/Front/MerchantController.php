@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Front;
 
 use App\{
     Models\User,
-    Models\Message,
     Models\CatalogItem,
     Classes\MuaadhMailer,
-    Models\Conversation
+    Models\ChatThread,
+    Models\ChatEntry
 };
 use App\Models\QualityBrand;
 use Illuminate\{
@@ -28,11 +28,11 @@ class MerchantController extends FrontBaseController
 
         // If no merchant found, try static page or 404
         if (empty($merchant)) {
-            $page = DB::table('pages')->where('slug', $slug)->first();
+            $page = DB::table('static_content')->where('slug', $slug)->first();
             if (empty($page)) {
                 return response()->view('errors.404', [], 404);
             }
-            return view('frontend.page', compact('page'));
+            return view('frontend.static-content', compact('page'));
         }
 
         $data['merchant']     = $merchant;
@@ -187,24 +187,24 @@ class MerchantController extends FrontBaseController
             mail($to, $subject, $msg, $headers);
         }
 
-        $conv = Conversation::where('sent_user', '=', $user->id)->where('subject', '=', $subject)->first();
+        $conv = ChatThread::where('sent_user', '=', $user->id)->where('subject', '=', $subject)->first();
         if (isset($conv)) {
-            $msg = new Message();
-            $msg->conversation_id = $conv->id;
+            $msg = new ChatEntry();
+            $msg->chat_thread_id = $conv->id;
             $msg->message         = $request->message;
             $msg->sent_user       = $user->id;
             $msg->save();
             return response()->json(__('Message Sent!'));
         } else {
-            $message                 = new Conversation();
+            $message                 = new ChatThread();
             $message->subject        = $subject;
             $message->sent_user      = $request->user_id;
             $message->recieved_user  = $request->merchant_id;
             $message->message        = $request->message;
             $message->save();
 
-            $msg = new Message();
-            $msg->conversation_id = $message->id;
+            $msg = new ChatEntry();
+            $msg->chat_thread_id = $message->id;
             $msg->message         = $request->message;
             $msg->sent_user       = $request->user_id;
             $msg->save();

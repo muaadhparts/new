@@ -15,14 +15,14 @@
                       </a>
 
                       @php
-                        // Get merchant-specific galleries
+                        // Get merchant-specific photos
                         $quickMerchantUserId = request()->get('user', $catalogItem->user_id);
-                        $merchantGalleries = $catalogItem->galleriesForMerchant($quickMerchantUserId, 4);
+                        $merchantGalleries = $catalogItem->merchantPhotosForMerchant($quickMerchantUserId, 4);
                       @endphp
                       @foreach($merchantGalleries as $gal)
 
-                      <a href="{{asset('assets/images/galleries/'.$gal->photo)}}">
-                        <img class="xzoom-gallery5" width="80" src="{{asset('assets/images/galleries/'.$gal->photo)}}" >
+                      <a href="{{asset('assets/images/merchant-photos/'.$gal->photo)}}">
+                        <img class="xzoom-gallery5" width="80" src="{{asset('assets/images/merchant-photos/'.$gal->photo)}}" >
                       </a>
 
                       @endforeach
@@ -72,12 +72,12 @@
                     <div class="stars">
                         <div class="review-stars">
                             <div class="empty-stars"></div>
-                            <div class="full-stars" style="width:{{ App\Models\CatalogReview::scorePercentage($catalogItem->id) }}%"></div>
+                            <div class="full-stars" style="width:{{ App\Models\CatalogTestimonial::scorePercentage($catalogItem->id) }}%"></div>
                           </div>
                     </div>
 
                     <div class="review">
-                      <i class="far fa-comments"></i> {{ App\Models\CatalogReview::reviewCount($catalogItem->id) }} {{ __('Review') }}
+                      <i class="far fa-comments"></i> {{ App\Models\CatalogTestimonial::reviewCount($catalogItem->id) }} {{ __('Review') }}
                     </div>
 
                   {{-- REVIEW SECTION ENDS  --}}

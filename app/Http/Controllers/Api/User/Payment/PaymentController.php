@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Models\Muaadhsetting;
 use Illuminate\Http\Request;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Currency;
 use App\Http\Controllers\Controller;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Omnipay\Omnipay;
@@ -18,7 +18,7 @@ class PaymentController extends Controller
     public $gateway;
     public function __construct()
     {
-        $data = PaymentGateway::whereKeyword('paypal')->first();
+        $data = MerchantPayment::whereKeyword('paypal')->first();
         $paydata = $data->convertAutoData();
 
         $this->gateway = Omnipay::create('PayPal_Rest');
@@ -36,7 +36,7 @@ class PaymentController extends Controller
 
         $deposit_number = $request->deposit_number;
 
-        $deposit = Deposit::where('deposit_number', $deposit_number)->first();
+        $deposit = TopUp::where('deposit_number', $deposit_number)->first();
         $curr = Currency::where('name', '=', $deposit->currency_code)->first();
 
         $support = ['USD', 'EUR'];
@@ -85,40 +85,40 @@ class PaymentController extends Controller
             ];
         }
 
-        $transaction = $this->gateway->completePurchase(array(
+        $purchaseRequest = $this->gateway->completePurchase(array(
             'payer_id' => $responseData['PayerID'],
             'transactionReference' => $responseData['paymentId'],
         ));
 
-        $response = $transaction->send();
+        $response = $purchaseRequest->send();
 
         if ($response->isSuccessful()) {
 
-            $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+            $purchase = TopUp::where('deposit_number', $deposit_number)->first();
             $user = \App\Models\User::findOrFail($purchase->user_id);
             $user->balance = $user->balance + ($purchase->amount);
             $user->save();
 
             $purchase->method = "Paypal";
-            $purchase->txnid = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
+            $purchase->txnid = $response->getData()['wallet_logs'][0]['related_resources'][0]['sale']['id'];
             $purchase->status = 1;
             $purchase->update();
 
-            // store in transaction table
+            // store in wallet_logs table
             if ($purchase->status == 1) {
-                $transaction = new \App\Models\Transaction;
-                $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $purchase->user_id;
-                $transaction->amount = $purchase->amount;
-                $transaction->user_id = $purchase->user_id;
-                $transaction->currency_sign = $purchase->currency;
-                $transaction->currency_code = $purchase->currency_code;
-                $transaction->currency_value = $purchase->currency_value;
-                $transaction->method = $purchase->method;
-                $transaction->txnid = $purchase->txnid;
-                $transaction->details = 'Payment Deposit';
-                $transaction->type = 'plus';
-                $transaction->save();
+                $walletLog = new \App\Models\WalletLog;
+                $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+                $walletLog->user_id = $purchase->user_id;
+                $walletLog->amount = $purchase->amount;
+                $walletLog->user_id = $purchase->user_id;
+                $walletLog->currency_sign = $purchase->currency;
+                $walletLog->currency_code = $purchase->currency_code;
+                $walletLog->currency_value = $purchase->currency_value;
+                $walletLog->method = $purchase->method;
+                $walletLog->txnid = $purchase->txnid;
+                $walletLog->details = 'Payment Deposit';
+                $walletLog->type = 'plus';
+                $walletLog->save();
             }
 
             return redirect(route('user.success', 1));

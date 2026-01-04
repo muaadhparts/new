@@ -32,14 +32,14 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Purchase');
     }
 
-    public function comments()
+    public function buyerNotes()
     {
-        return $this->hasMany('App\Models\Comment');
+        return $this->hasMany('App\Models\BuyerNote');
     }
 
-    public function replies()
+    public function noteResponses()
     {
-        return $this->hasMany('App\Models\Reply');
+        return $this->hasMany('App\Models\NoteResponse');
     }
 
     public function catalogReviews()
@@ -70,27 +70,19 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(SupportThread::class);
     }
 
-    /**
-     * @deprecated Use supportThreads() instead
-     */
-    public function conversations()
-    {
-        return $this->supportThreads();
-    }
-
     public function catalogEvents()
     {
         return $this->hasMany('App\Models\CatalogEvent');
     }
 
-    public function deposits()
+    public function topUps()
     {
-        return $this->hasMany('App\Models\Deposit', 'user_id');
+        return $this->hasMany('App\Models\TopUp', 'user_id');
     }
 
-    public function transactions()
+    public function walletLogs()
     {
-        return $this->hasMany('App\Models\Transaction', 'user_id')->orderBy('id', 'desc');
+        return $this->hasMany('App\Models\WalletLog', 'user_id')->orderBy('id', 'desc');
     }
 
     // Multi Merchant
@@ -118,12 +110,12 @@ class User extends Authenticatable implements JWTSubject
 
     public function senders()
     {
-        return $this->hasMany('App\Models\Conversation', 'sent_user');
+        return $this->hasMany('App\Models\ChatThread', 'sent_user');
     }
 
     public function recievers()
     {
-        return $this->hasMany('App\Models\Conversation', 'recieved_user');
+        return $this->hasMany('App\Models\ChatThread', 'recieved_user');
     }
 
     public function notivications()
@@ -131,9 +123,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\UserCatalogEvent', 'user_id');
     }
 
-    public function subscribes()
+    public function membershipPlans()
     {
-        return $this->hasMany('App\Models\UserSubscription');
+        return $this->hasMany('App\Models\UserMembershipPlan');
     }
 
     public function favoriteSellers()
@@ -156,9 +148,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Package', 'user_id');
     }
 
-    public function reports()
+    public function abuseFlags()
     {
-        return $this->hasMany('App\Models\Report', 'user_id');
+        return $this->hasMany('App\Models\AbuseFlag', 'user_id');
     }
 
     public function verifies()

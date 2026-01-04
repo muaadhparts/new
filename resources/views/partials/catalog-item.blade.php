@@ -41,7 +41,7 @@
     // تقييمات
     $avg   = $catalogItem->catalog_reviews_avg_rating ?? null;
     $count = class_exists('App\\Models\\CatalogReview') && method_exists('App\\Models\\CatalogReview', 'reviewCount')
-        ? \App\Models\CatalogReview::reviewCount($catalogItem->id)
+        ? \App\Models\CatalogTestimonial::reviewCount($catalogItem->id)
         : null;
 
     // Quality Brand
@@ -77,9 +77,9 @@
                          loading="lazy">
                 @endif
 
-                {{-- Gallery Thumbnails (merchant-specific) --}}
+                {{-- Photo Thumbnails (merchant-specific) --}}
                 @php
-                    $merchantGalleries = $catalogItem->galleriesForMerchant($merchantUserId, 4);
+                    $merchantGalleries = $catalogItem->merchantPhotosForMerchant($merchantUserId, 4);
                 @endphp
                 @if($merchantGalleries->count() > 0)
                     <div class="catalog-quickview-gallery">
@@ -87,7 +87,7 @@
                             @php
                                 $gUrl = filter_var($gallery->photo ?? '', FILTER_VALIDATE_URL)
                                     ? $gallery->photo
-                                    : asset('assets/images/galleries/'.$gallery->photo);
+                                    : asset('assets/images/merchant-photos/'.$gallery->photo);
                             @endphp
                             <img src="{{ $gUrl }}"
                                  alt="{{ $catalogItem->name ?? '' }}"

@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Muaadhsetting;
-use App\Models\PaymentGateway;
-use App\Models\Transaction;
+use App\Models\MerchantPayment;
+use App\Models\WalletLog;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
@@ -20,7 +20,7 @@ class StripeController extends Controller
     public function __construct()
     {
 
-        $data = PaymentGateway::whereKeyword('stripe')->first();
+        $data = MerchantPayment::whereKeyword('stripe')->first();
         $paydata = $data->convertAutoData();
         \Config::set('services.stripe.key', $paydata['key']);
         \Config::set('services.stripe.secret', $paydata['secret']);
@@ -29,7 +29,7 @@ class StripeController extends Controller
     public function store(Request $request)
     {
 
-        $deposit = Deposit::where('deposit_number', $request->deposit_number)->first();
+        $deposit = TopUp::where('deposit_number', $request->deposit_number)->first();
         $item_amount = $deposit->amount * $deposit->currency_value;
         $curr = Currency::where('name', '=', $deposit->currency_code)->first();
         $gs = Muaadhsetting::findOrFail(1);
@@ -39,7 +39,7 @@ class StripeController extends Controller
             \Stripe\Stripe::setApiKey($stripe_secret_key);
             $checkout_session = \Stripe\Checkout\Session::create([
                 "mode" => "payment",
-                "success_url" => route('api.user.deposit.stripe.notify') . '?session_id={CHECKOUT_SESSION_ID}',
+                "success_url" => route('api.user.topup.stripe.notify') . '?session_id={CHECKOUT_SESSION_ID}',
                 "cancel_url" => route('front.payment.cancle'),
                 "locale" => "auto",
                 
@@ -71,7 +71,7 @@ class StripeController extends Controller
         $deposit_number = Session::get('deposit_id');
         $stripe = new \Stripe\StripeClient(Config::get('services.stripe.secret'));
         $response = $stripe->checkout->sessions->retrieve($request->session_id);
-        $deposit = Deposit::where('deposit_number', $deposit_number)->firstOrFail();
+        $deposit = TopUp::where('deposit_number', $deposit_number)->firstOrFail();
 
 
 
@@ -83,21 +83,21 @@ class StripeController extends Controller
             $deposit['method'] = 'Stripe';
             $deposit['txnid'] = $response->payment_intent;
             $deposit->update();
-            // store in transaction table
+            // store in wallet_logs table
             if ($deposit->status == 1) {
-                $transaction = new Transaction;
-                $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $transaction->user_id = $deposit->user_id;
-                $transaction->amount = $deposit->amount;
-                $transaction->user_id = $deposit->user_id;
-                $transaction->currency_sign = $deposit->currency;
-                $transaction->currency_code = $deposit->currency_code;
-                $transaction->currency_value = $deposit->currency_value;
-                $transaction->method = $deposit->method;
-                $transaction->txnid = $deposit->txnid;
-                $transaction->details = 'Payment Deposit';
-                $transaction->type = 'plus';
-                $transaction->save();
+                $walletLog = new WalletLog;
+                $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+                $walletLog->user_id = $deposit->user_id;
+                $walletLog->amount = $deposit->amount;
+                $walletLog->user_id = $deposit->user_id;
+                $walletLog->currency_sign = $deposit->currency;
+                $walletLog->currency_code = $deposit->currency_code;
+                $walletLog->currency_value = $deposit->currency_value;
+                $walletLog->method = $deposit->method;
+                $walletLog->txnid = $deposit->txnid;
+                $walletLog->details = 'Payment Deposit';
+                $walletLog->type = 'plus';
+                $walletLog->save();
             }
             return redirect(route('user.success', 1));
         } else {

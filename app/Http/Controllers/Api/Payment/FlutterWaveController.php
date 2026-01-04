@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\Payment;
 use App\Http\Controllers\Payment\Checkout\CheckoutBaseControlller;
 use App\Models\Currency;
 use App\Models\Purchase;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -17,7 +17,7 @@ class FlutterWaveController extends CheckoutBaseControlller
     public function __construct()
     {
         parent::__construct();
-        $data = PaymentGateway::whereKeyword('flutterwave')->first();
+        $data = MerchantPayment::whereKeyword('flutterwave')->first();
         $paydata = $data->convertAutoData();
         $this->public_key = $paydata['public_key'];
         $this->secret_key = $paydata['secret_key'];
@@ -79,14 +79,14 @@ class FlutterWaveController extends CheckoutBaseControlller
             return redirect($cancel_url)->with('unsuccess', 'Curl returned error: ' . $err);
         }
 
-        $transaction = json_decode($response);
+        $flutterwaveResponse = json_decode($response);
 
-        if (!$transaction->data && !$transaction->data->link) {
+        if (!$flutterwaveResponse->data && !$flutterwaveResponse->data->link) {
             // there was an error from the API
-            return redirect($cancel_url)->with('unsuccess', 'API returned error: ' . $transaction->message);
+            return redirect($cancel_url)->with('unsuccess', 'API returned error: ' . $flutterwaveResponse->message);
         }
 
-        return redirect($transaction->data->link);
+        return redirect($flutterwaveResponse->data->link);
     }
 
     public function notify(Request $request)

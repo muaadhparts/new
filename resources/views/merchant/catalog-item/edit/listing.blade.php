@@ -495,11 +495,11 @@
                             <input type="file" class="d-none" name="gallery[]" multiple id="gallery_upload">
 
                             <div class="row" id="view_gallery">
-                                @foreach ($data->galleries as $gallery)
+                                @foreach ($data->merchantPhotos as $gallery)
                                     <div class="col-6  col-sm-3 col-lg-6 col col-xxl-4  mt-2">
                                         <div class="position-relative img-wh-80">
                                             <img class="img-wh-80 rounded-4  object-fit-cover"
-                                                src="{{ asset('assets/images/galleries/' . $gallery->photo) }}"
+                                                src="{{ asset('assets/images/merchant-photos/' . $gallery->photo) }}"
                                                 alt="">
                                             <button class="gallery-extra-remove-btn position-abs-center"><i
                                                     class="fa-solid fa-xmark"></i></button>

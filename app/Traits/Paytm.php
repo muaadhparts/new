@@ -2,13 +2,13 @@
 
 namespace App\Traits;
 
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 
 
 trait Paytm {
 
     public function getPaymentData(){
-        $data = PaymentGateway::whereKeyword('paytm')->first();
+        $data = MerchantPayment::whereKeyword('paytm')->first();
         return $data->convertAutoData();
     }
 
@@ -32,8 +32,8 @@ trait Paytm {
                 $paramList["CALLBACK_URL"] = route('front.paytm.notify');
             }else if($type == 'subscription'){
                 $paramList["CALLBACK_URL"] = route('user.paytm.notify');
-            }else if($type == 'deposit'){
-                $paramList["CALLBACK_URL"] = route('deposit.paytm.notify');
+            }else if($type == 'topup'){
+                $paramList["CALLBACK_URL"] = route('topup.paytm.notify');
             }
 
             $paytm_merchant_key = $paydata['secret'];

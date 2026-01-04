@@ -6,7 +6,7 @@ use App\{
     Models\Cart,
     Models\Purchase,
     Classes\MuaadhMailer,
-    Models\PaymentGateway
+    Models\MerchantPayment
 };
 use App\Helpers\PriceHelper;
 use App\Models\Country;
@@ -28,7 +28,7 @@ class FlutterwaveController extends CheckoutBaseControlller
     public function __construct()
     {
         parent::__construct();
-        $data = PaymentGateway::whereKeyword('flutterwave')->first();
+        $data = MerchantPayment::whereKeyword('flutterwave')->first();
         $paydata = $data->convertAutoData();
         $this->public_key = $paydata['public_key'];
         $this->secret_key = $paydata['secret_key'];
@@ -53,7 +53,7 @@ class FlutterwaveController extends CheckoutBaseControlller
         }
 
         $input = array_merge($step1, $step2, $input);
-        $data = PaymentGateway::whereKeyword('flutterwave')->first();
+        $data = MerchantPayment::whereKeyword('flutterwave')->first();
         $curr = $this->curr;
         $total = $request->total;
 
@@ -123,14 +123,14 @@ class FlutterwaveController extends CheckoutBaseControlller
             return redirect($cancel_url)->with('unsuccess', 'Curl returned error: ' . $err);
         }
 
-        $transaction = json_decode($response);
+        $flutterwaveResponse = json_decode($response);
 
-        if (!$transaction->data && !$transaction->data->link) {
+        if (!$flutterwaveResponse->data && !$flutterwaveResponse->data->link) {
             // there was an error from the API
-            return redirect($cancel_url)->with('unsuccess', 'API returned error: ' . $transaction->message);
+            return redirect($cancel_url)->with('unsuccess', 'API returned error: ' . $flutterwaveResponse->message);
         }
 
-        return redirect($transaction->data->link);
+        return redirect($flutterwaveResponse->data->link);
     }
 
 
@@ -290,7 +290,7 @@ class FlutterwaveController extends CheckoutBaseControlller
                         $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
                         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+                            PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
                         }
 
                         //Sending Email To Buyer

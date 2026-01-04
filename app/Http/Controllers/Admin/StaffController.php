@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Admin;
+use App\Models\Operator;
 use Illuminate\Http\Request;
 use Auth;
 use Validator;
@@ -13,16 +13,16 @@ class StaffController extends AdminBaseController
     //*** JSON Request
     public function datatables()
     {
-         $datas = Admin::where('id','!=',1)->where('id','!=',Auth::guard('admin')->user()->id)->latest('id')->get();
+         $datas = Operator::where('id','!=',1)->where('id','!=',Auth::guard('admin')->user()->id)->latest('id')->get();
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
-                            ->addColumn('role', function(Admin $data) {
-                                $role = $data->role_id == 0 ? __('No Role') : $data->role->name;
+                            ->addColumn('role', function(Operator $operator) {
+                                $role = $operator->role_id == 0 ? __('No Role') : $operator->role->name;
                                 return $role;
-                            }) 
-                            ->addColumn('action', function(Admin $data) {
-                                $delete ='<a href="javascript:;" data-href="' . route('admin-staff-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
-                                return '<div class="action-list"><a data-href="' . route('admin-staff-show',$data->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i>'.__("Details").'</a><a data-href="' . route('admin-staff-edit',$data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a>'.$delete.'</div>';
+                            })
+                            ->addColumn('action', function(Operator $operator) {
+                                $delete ='<a href="javascript:;" data-href="' . route('admin-staff-delete',$operator->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a>';
+                                return '<div class="action-list"><a data-href="' . route('admin-staff-show',$operator->id) . '" class="view details-width" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-eye"></i>'.__("Details").'</a><a data-href="' . route('admin-staff-edit',$operator->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i>'.__('Edit').'</a>'.$delete.'</div>';
                             }) 
                             ->rawColumns(['action'])
                             ->toJson(); //--- Returning Json Data To Client Side
@@ -41,29 +41,29 @@ class StaffController extends AdminBaseController
     {
         //--- Validation Section
         $rules = [
-               'email'      => 'required|email|unique:admins',
+               'email'      => 'required|email|unique:operators',
                'photo'      => 'required|mimes:jpeg,jpg,png,svg',
                 ];
 
         $validator = Validator::make($request->all(), $rules);
-        
+
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = new Admin();
+        $operator = new Operator();
         $input = $request->all();
         if ($file = $request->file('photo')) 
          {      
             $name = \PriceHelper::ImageCreateName($file);
-            $file->move('assets/images/admins',$name);           
+            $file->move('assets/images/operators',$name);           
             $input['photo'] = $name;
         } 
         $input['role'] = 'Staff';
         $input['password'] = bcrypt($request['password']);
-        $data->fill($input)->save();
+        $operator->fill($input)->save();
         //--- Logic Section Ends
 
         //--- Redirect Section        
@@ -75,8 +75,8 @@ class StaffController extends AdminBaseController
 
     public function edit($id)
     {
-        $data = Admin::findOrFail($id);  
-        return view('admin.staff.edit',compact('data'));
+        $operator = Operator::findOrFail($id);
+        return view('admin.staff.edit',compact('operator'));
     }
 
     public function update(Request $request,$id)
@@ -87,36 +87,36 @@ class StaffController extends AdminBaseController
             $rules =
             [
                 'photo' => 'mimes:jpeg,jpg,png,svg',
-                'email' => 'required|unique:admins,email,'.$id
+                'email' => 'required|unique:operators,email,'.$id
             ];
 
             $validator = Validator::make($request->all(), $rules);
-            
+
             if ($validator->fails()) {
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
             //--- Validation Section Ends
-            $input = $request->all();  
-            $data = Admin::findOrFail($id);        
-                if ($file = $request->file('photo')) 
-                {              
+            $input = $request->all();
+            $operator = Operator::findOrFail($id);
+                if ($file = $request->file('photo'))
+                {
                     $name = \PriceHelper::ImageCreateName($file);
-                    $file->move('assets/images/admins/',$name);
-                    if($data->photo != null)
+                    $file->move('assets/images/operators/',$name);
+                    if($operator->photo != null)
                     {
-                        if (file_exists(public_path().'/assets/images/admins/'.$data->photo)) {
-                            unlink(public_path().'/assets/images/admins/'.$data->photo);
+                        if (file_exists(public_path().'/assets/images/operators/'.$operator->photo)) {
+                            unlink(public_path().'/assets/images/operators/'.$operator->photo);
                         }
-                    }            
+                    }
                 $input['photo'] = $name;
-                } 
+                }
             if($request->password == ''){
-                $input['password'] = $data->password;
+                $input['password'] = $operator->password;
             }
             else{
                 $input['password'] = Hash::make($request->password);
             }
-            $data->update($input);
+            $operator->update($input);
             $msg = __('Data Updated Successfully.');
             return response()->json($msg);
         }
@@ -130,8 +130,8 @@ class StaffController extends AdminBaseController
     //*** GET Request
     public function show($id)
     {
-        $data = Admin::findOrFail($id);
-        return view('admin.staff.show',compact('data'));
+        $operator = Operator::findOrFail($id);
+        return view('admin.staff.show',compact('operator'));
     }
 
     //*** GET Request Delete
@@ -139,22 +139,22 @@ class StaffController extends AdminBaseController
     {
     	if($id == 1)
     	{
-        return "You don't have access to remove this admin";
+        return "You don't have access to remove this operator";
     	}
-        $data = Admin::findOrFail($id);
+        $operator = Operator::findOrFail($id);
         //If Photo Doesn't Exist
-        if($data->photo == null){
-            $data->delete();
-            //--- Redirect Section     
+        if($operator->photo == null){
+            $operator->delete();
+            //--- Redirect Section
             $msg = __('Data Deleted Successfully.');
-            return response()->json($msg);      
-            //--- Redirect Section Ends     
+            return response()->json($msg);
+            //--- Redirect Section Ends
         }
         //If Photo Exist
-        if (file_exists(public_path().'/assets/images/admins/'.$data->photo)) {
-            unlink(public_path().'/assets/images/admins/'.$data->photo);
+        if (file_exists(public_path().'/assets/images/operators/'.$operator->photo)) {
+            unlink(public_path().'/assets/images/operators/'.$operator->photo);
         }
-        $data->delete();
+        $operator->delete();
         //--- Redirect Section     
         $msg = __('Data Deleted Successfully.');
         return response()->json($msg);      

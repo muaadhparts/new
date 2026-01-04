@@ -46,7 +46,7 @@
                                         </td>
 
                                         <td class="view-btn-wrapper">
-                                            <a href="{{ route('user-message-show', $conv->id) }}" class="view-btn mx-2">
+                                            <a href="{{ route('user-ticket-show', $conv->id) }}" class="view-btn mx-2">
                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <g clip-path="url(#clip0_548_16589)">
@@ -64,7 +64,7 @@
 
                                             <a href="javascript:;" class="view-btn delete-btn remove" data-bs-toggle="modal"
                                                 data-bs-target="#confirm-delete"
-                                                data-href="{{ route('user-message-delete1', $conv->id) }}">
+                                                data-href="{{ route('user-ticket-delete', $conv->id) }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">
                                                     <path
@@ -97,7 +97,7 @@
 
 
     <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
-        <form action="{{ route('user-send-message') }}" method="POST"
+        <form action="{{ route('user-send-ticket') }}" method="POST"
             class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
             <div class="modal-content assign-rider-modal-content form-group">

@@ -9,7 +9,7 @@ use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Currency;
 use App\Models\Purchase;
-use App\Models\Pagesetting;
+use App\Models\FrontendSetting;
 use App\Models\CatalogItem;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -372,7 +372,7 @@ class PurchaseCreateController extends AdminBaseController
 
 
         if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-            PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+            PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
         }
 
         //Sending Email To Buyer
@@ -389,7 +389,7 @@ class PurchaseCreateController extends AdminBaseController
 
         $mailer = new MuaadhMailer();
         $mailer->sendAutoPurchaseMail($data, $purchase->id);
-        $ps = Pagesetting::first();
+        $ps = FrontendSetting::first();
         //Sending Email To Admin
         $data = [
             'to' => $ps->contact_email,

@@ -40,7 +40,7 @@
 
 
                                         @if (!empty($package))
-                                            @if ($package->subscription_id == $sub->id && $sub->price != 0)
+                                            @if ($package->membership_plan_id == $sub->id && $sub->price != 0)
                                                 <a href="javascript:;"
                                                     class="template-btn outline-btn w-100">{{ __('Current Plan') }}</a>
                                                 <br>

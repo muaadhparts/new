@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\AdminRole;
+use App\Models\OperatorRole;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;
@@ -12,16 +12,16 @@ class RoleController extends AdminBaseController
     //*** JSON Request
     public function datatables()
     {
-         $datas = AdminRole::latest('id')->get();
+         $datas = OperatorRole::latest('id')->get();
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
-                            ->addColumn('section', function(AdminRole $data) {
-                                $details =  str_replace('_',' ',$data->section);
+                            ->addColumn('section', function(OperatorRole $operatorRole) {
+                                $details =  str_replace('_',' ',$operatorRole->section);
                                 $details =  ucwords($details);
                                 return  '<div>'.$details.'</div>';
                             })
-                            ->addColumn('action', function(AdminRole $data) {
-                                return '<div class="action-list"><a href="' . route('admin-role-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-role-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
+                            ->addColumn('action', function(OperatorRole $operatorRole) {
+                                return '<div class="action-list"><a href="' . route('admin-role-edit',$operatorRole->id) . '"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('admin-role-delete',$operatorRole->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';
                             })
                             ->rawColumns(['section','action'])
                             ->toJson(); //--- Returning Json Data To Client Side
@@ -55,7 +55,7 @@ class RoleController extends AdminBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = new AdminRole();
+        $operatorRole = new OperatorRole();
         $input = $request->all();
         if(!empty($request->section))
         {
@@ -65,11 +65,11 @@ class RoleController extends AdminBaseController
             $input['section'] = '';
         }
 
-        $data->fill($input)->save();
+        $operatorRole->fill($input)->save();
         //--- Logic Section Ends
 
         //--- Redirect Section
-        $msg = __('New Data Added Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Admin Role Lists.').'</a>';
+        $msg = __('New Data Added Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Operator Role Lists.').'</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
 
@@ -79,8 +79,8 @@ class RoleController extends AdminBaseController
     //*** GET Request
     public function edit($id)
     {
-        $data = AdminRole::findOrFail($id);
-        return view('admin.role.edit',compact('data'));
+        $operatorRole = OperatorRole::findOrFail($id);
+        return view('admin.role.edit',compact('operatorRole'));
     }
 
     //*** POST Request
@@ -99,7 +99,7 @@ class RoleController extends AdminBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        $data = AdminRole::findOrFail($id);
+        $operatorRole = OperatorRole::findOrFail($id);
         $input = $request->all();
         if(!empty($request->section))
         {
@@ -108,11 +108,11 @@ class RoleController extends AdminBaseController
         else{
             $input['section'] = '';
         }
-        $data->update($input);
+        $operatorRole->update($input);
         //--- Logic Section Ends
 
         //--- Redirect Section
-        $msg = __('Data Updated Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Admin Role Lists.').'</a>';
+        $msg = __('Data Updated Successfully.').'<a href="'.route('admin-role-index').'">'.__('View Operator Role Lists.').'</a>';
         return response()->json($msg);
         //--- Redirect Section Ends
 
@@ -120,8 +120,8 @@ class RoleController extends AdminBaseController
     //*** GET Request Delete
     public function destroy($id)
     {
-        $data = AdminRole::findOrFail($id);
-        $data->delete();
+        $operatorRole = OperatorRole::findOrFail($id);
+        $operatorRole->delete();
         //--- Redirect Section
         $msg = __('Data Deleted Successfully.');
         return response()->json($msg);

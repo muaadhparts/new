@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 use App\Models\Currency;
 use App\Models\Muaadhsetting;
-use App\Models\Transaction;
+use App\Models\WalletLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -14,7 +14,7 @@ class RewardController extends UserBaseController
     {
         $curr = Currency::where('is_default','=',1)->first();
         $user = Auth::user();
-        $datas = Transaction::where('reward_point',"!=",0)->where('user_id',$user->id)->orderby('id','desc')->paginate(12);
+        $datas = WalletLog::where('reward_point',"!=",0)->where('user_id',$user->id)->orderby('id','desc')->paginate(12);
         return view('user.reward.index',compact('user','datas','curr'));
     }
 
@@ -44,7 +44,7 @@ class RewardController extends UserBaseController
         $user->reward = $user->reward - $request->reward_point;
         $user->balance = $user->balance + $dolar;
         $user->update();
-        $trans =  new Transaction();
+        $trans =  new WalletLog();
         $trans->user_id = $user->id;
         $trans->amount = $dolar;
         $trans->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);

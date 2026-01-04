@@ -16,7 +16,7 @@ use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
 use App\Models\Package;
-use App\Models\Pagesetting;
+use App\Models\FrontendSetting;
 use App\Models\CatalogItem;
 use App\Models\Reward;
 use App\Models\Shipping;
@@ -258,7 +258,7 @@ class CheckoutController extends Controller
             PurchaseHelper::merchant_purchase_check($cart, $purchase);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+                PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
             }
 
             // Email للمشتري
@@ -276,7 +276,7 @@ class CheckoutController extends Controller
             $mailer->sendAutoPurchaseMail($data, $purchase->id);
 
             // Email للأدمن
-            $ps = Pagesetting::find(1);
+            $ps = FrontendSetting::find(1);
             $data = [
                 'to'      => $ps->contact_email,
                 'subject' => "New Purchase Recieved!!",

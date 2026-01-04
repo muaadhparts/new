@@ -105,10 +105,10 @@ Route::group(['prefix' => 'user'], function () {
 
         // ---------------------MESSAGE CONTROLLER ---------------------
 
-        Route::post('/message/store', 'Api\User\MessageController@usercontact');
-        Route::post('/message/post', 'Api\User\MessageController@postmessage');
-        Route::get('/messages', 'Api\User\MessageController@messages');
-        Route::get('/message/{id}/delete', 'Api\User\MessageController@messagedelete');
+        Route::post('/message/store', 'Api\User\ChatController@usercontact');
+        Route::post('/message/post', 'Api\User\ChatController@postmessage');
+        Route::get('/messages', 'Api\User\ChatController@messages');
+        Route::get('/message/{id}/delete', 'Api\User\ChatController@messagedelete');
 
         // ---------------------MESSAGE CONTROLLER ENDS ---------------------
 
@@ -165,14 +165,14 @@ Route::group(['prefix' => 'user'], function () {
 
         // ---------------------PACKAGE CONTROLLER ENDS ---------------------
 
-          // ---------------------DEPOSIT CONTROLLER ---------------------
+          // ---------------------TOPUP CONTROLLER ---------------------
 
-          Route::get('/deposits', 'Api\User\DepositController@deposits');
-          Route::post('/deposit/store', 'Api\User\DepositController@store');
-          Route::get('/transactions', 'Api\User\DepositController@transactions');
-          Route::get('/transaction/details', 'Api\User\DepositController@transactionDetails');
-  
-          // ---------------------DEPOSIT CONTROLLER ENDS ---------------------
+          Route::get('/topups', 'Api\User\TopUpController@topups');
+          Route::post('/topup/store', 'Api\User\TopUpController@store');
+          Route::get('/transactions', 'Api\User\TopUpController@transactions');
+          Route::get('/transaction/details', 'Api\User\TopUpController@transactionDetails');
+
+          // ---------------------TOPUP CONTROLLER ENDS ---------------------
   
 
     });
@@ -201,7 +201,7 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/catalog-items', 'Api\Front\FrontendController@catalogItems');
     Route::get('/vendor/catalog-items/{id}', 'Api\Front\FrontendController@vendor_catalog_items');
     Route::get('/settings', 'Api\Front\FrontendController@settings');
-    Route::get('/faqs', 'Api\Front\FrontendController@faqs');
+    Route::get('/help-articles', 'Api\Front\FrontendController@helpArticles');
     Route::get('/blogs', 'Api\Front\FrontendController@blogs');
     Route::get('/pages', 'Api\Front\FrontendController@pages');
     Route::get('/purchasetrack','Api\Front\FrontendController@purchasetrack');
@@ -217,8 +217,8 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('{id}/category', 'Api\Front\SearchController@category');
     Route::get('/{id}/subcategories', 'Api\Front\SearchController@subcategories')->name('subcategories');
     Route::get('/{id}/childcategories', 'Api\Front\SearchController@childcategories')->name('childcategories');
-    Route::get('/attributes/{id}', 'Api\Front\SearchController@attributes')->name('attibutes');
-    Route::get('/attributeoptions/{id}', 'Api\Front\SearchController@attributeoptions')->name('attibute.options');
+    Route::get('/specs/{id}', 'Api\Front\SearchController@specs')->name('specs');
+    Route::get('/specoptions/{id}', 'Api\Front\SearchController@specoptions')->name('spec.options');
 
     //------------ Search Controller Ends ------------
 

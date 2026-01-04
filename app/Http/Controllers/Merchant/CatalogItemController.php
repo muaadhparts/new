@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Attribute;
-use App\Models\AttributeOption;
+use App\Models\Spec;
+use App\Models\SpecValue;
 use App\Models\Currency;
-use App\Models\Gallery;
+use App\Models\MerchantPhoto;
 use App\Models\Muaadhsetting;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
@@ -273,7 +273,7 @@ class CatalogItemController extends MerchantBaseController
     public function importSubmit(Request $request)
     {
         $user = $this->user;
-        $package = $user->subscribes()->orderBy('id', 'desc')->first();
+        $package = $user->membershipPlans()->orderBy('id', 'desc')->first();
 
         // Count merchant items
         $prods = $user->merchantItems()->count();
@@ -284,7 +284,7 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        if ($prods < $package->allowed_products || $package->allowed_products == 0) {
+        if ($prods < $package->allowed_items || $package->allowed_items == 0) {
             $log = "";
             $successCount = 0;
             $errorCount = 0;
@@ -590,7 +590,7 @@ class CatalogItemController extends MerchantBaseController
     public function store(Request $request)
     {
         $user    = $this->user;
-        $package = $user->subscribes()->latest('id')->first();
+        $package = $user->membershipPlans()->latest('id')->first();
         $prods   = $user->merchantItems()->count();
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
@@ -599,7 +599,7 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        if ($prods < $package->allowed_products || $package->allowed_products == 0) {
+        if ($prods < $package->allowed_items || $package->allowed_items == 0) {
 
             $rules = [
                 'part_number' => 'required|string',
@@ -843,7 +843,7 @@ class CatalogItemController extends MerchantBaseController
 
         $merchant->update($mp);
 
-        // Gallery
+        // Merchant Photos
         $lastid = $data->id;
         if ($files = $request->file('gallery')) {
             foreach ($files as $key => $file) {
@@ -852,13 +852,13 @@ class CatalogItemController extends MerchantBaseController
                     return response()->json(array('errors' => ['Image format not supported']));
                 }
 
-                $gallery = new Gallery;
+                $merchantPhoto = new MerchantPhoto;
                 $name = \PriceHelper::ImageCreateName($file);
                 $img = Image::make($file->getRealPath())->resize(800, 800);
-                $img->save(public_path() . '/assets/images/galleries/' . $name);
-                $gallery['photo'] = $name;
-                $gallery['catalog_item_id'] = $lastid;
-                $gallery->save();
+                $img->save(public_path() . '/assets/images/merchant-photos/' . $name);
+                $merchantPhoto['photo'] = $name;
+                $merchantPhoto['catalog_item_id'] = $lastid;
+                $merchantPhoto->save();
             }
         }
 
@@ -870,7 +870,7 @@ class CatalogItemController extends MerchantBaseController
     public function catalogupdate(Request $request, $id)
     {
         $user = $this->user;
-        $package = $user->subscribes()->latest('id')->first();
+        $package = $user->membershipPlans()->latest('id')->first();
         $prods = $user->merchantItems()->count();
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
@@ -879,7 +879,7 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        if (!($prods < $package->allowed_products || $package->allowed_products == 0)) {
+        if (!($prods < $package->allowed_items || $package->allowed_items == 0)) {
             return back()->with('unsuccess', __('You Can\'t Add More Items.'));
         }
 
@@ -940,7 +940,7 @@ class CatalogItemController extends MerchantBaseController
         return back()->with('success', $msg);
     }
 
-    public function getAttributes(Request $request)
+    public function getSpecs(Request $request)
     {
         $model = '';
         if ($request->type == 'category') {
@@ -951,12 +951,12 @@ class CatalogItemController extends MerchantBaseController
             $model = 'App\Models\Childcategory';
         }
 
-        $attributes = Attribute::where('attributable_id', $request->id)->where('attributable_type', $model)->get();
-        $attrOptions = [];
-        foreach ($attributes as $key => $attribute) {
-            $options = AttributeOption::where('attribute_id', $attribute->id)->get();
-            $attrOptions[] = ['attribute' => $attribute, 'options' => $options];
+        $specs = Spec::where('specable_id', $request->id)->where('specable_type', $model)->get();
+        $specOptions = [];
+        foreach ($specs as $key => $spec) {
+            $options = SpecValue::where('spec_id', $spec->id)->get();
+            $specOptions[] = ['spec' => $spec, 'options' => $options];
         }
-        return response()->json($attrOptions);
+        return response()->json($specOptions);
     }
 }

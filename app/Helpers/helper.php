@@ -340,13 +340,13 @@ if (! function_exists('catLabel')) {
 }
 
 
-function addon($name)
+function module($name)
 {
 
     if ($name == "otp") {
-        $otp = file_exists(base_path("/vendor/markury/src/Adapter/addon/otp.txt"));
+        $otp = file_exists(base_path("/vendor/markury/src/Adapter/module/otp.txt"));
         if ($otp) {
-            $data = file_get_contents(base_path("/vendor/markury/src/Adapter/addon/otp.txt"));
+            $data = file_get_contents(base_path("/vendor/markury/src/Adapter/module/otp.txt"));
 
             if ($data) {
                 return true;

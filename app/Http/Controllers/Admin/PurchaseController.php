@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Classes\MuaadhMailer;use App\Models\AffliateBonus;
-use App\Models\Cart;use App\Models\DeliveryRider;
+use App\Classes\MuaadhMailer;use App\Models\ReferralCommission;
+use App\Models\Cart;use App\Models\DeliveryCourier;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
 use App\Models\Package;
 
 use App\Models\CatalogItem;
-use App\Models\Rider;
-use App\Models\RiderServiceArea;
+use App\Models\Courier;
+use App\Models\CourierServiceArea;
 use App\Models\Shipping;
 
 use App\Models\User;
@@ -202,14 +202,14 @@ class PurchaseController extends AdminBaseController
                         $auser->affilate_income += $data->affilate_charge;
                         $auser->update();
 
-                        $affiliate_bonus = new AffliateBonus();
-                        $affiliate_bonus->refer_id = $auser->id;
-                        $affiliate_bonus->bonus = $data->affilate_charge;
-                        $affiliate_bonus->type = 'Purchase';
-                        $affiliate_bonus->user_id = $data->user_id;
-                        $affiliate_bonus->created_at = Carbon::now();
-                        $affiliate_bonus->customer_email = $data->customer_email;
-                        $affiliate_bonus->save();
+                        $referral_commission = new ReferralCommission();
+                        $referral_commission->refer_id = $auser->id;
+                        $referral_commission->bonus = $data->affilate_charge;
+                        $referral_commission->type = 'Purchase';
+                        $referral_commission->user_id = $data->user_id;
+                        $referral_commission->created_at = Carbon::now();
+                        $referral_commission->customer_email = $data->customer_email;
+                        $referral_commission->save();
                     }
 
                     if ($data->affilate_users != null) {

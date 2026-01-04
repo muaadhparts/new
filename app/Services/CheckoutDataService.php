@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Admin;
+use App\Models\Operator;
 use App\Models\Country;
 use App\Models\Package;
 use App\Models\Shipping;
@@ -47,7 +47,7 @@ class CheckoutDataService
         $merchants = self::loadMerchants($merchantIds);
         $shippingByMerchant = self::loadShipping($merchantIds, $hasAdminItems);
         $packagingByMerchant = self::loadPackaging($merchantIds);
-        $admin = $hasAdminItems ? Admin::find(1) : null;
+        $operator = $hasAdminItems ? Operator::find(1) : null;
 
         // Provider labels (static)
         $providerLabels = [
@@ -70,14 +70,14 @@ class CheckoutDataService
             ];
         }
 
-        // Add admin data if needed
+        // Add operator data if needed
         if ($hasAdminItems) {
-            $adminShipping = $shippingByMerchant[0] ?? collect();
+            $operatorShipping = $shippingByMerchant[0] ?? collect();
             $result[0] = [
-                'merchant' => $admin,
-                'shipping' => $adminShipping,
+                'merchant' => $operator,
+                'shipping' => $operatorShipping,
                 'packaging' => collect(), // No global packaging
-                'grouped_shipping' => $adminShipping->groupBy('provider'),
+                'grouped_shipping' => $operatorShipping->groupBy('provider'),
                 'provider_labels' => $providerLabels,
             ];
         }

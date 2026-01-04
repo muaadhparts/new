@@ -24,7 +24,7 @@ use App\{
     Models\Cart,
     Models\Purchase,
     Classes\MuaadhMailer,
-    Models\PaymentGateway
+    Models\MerchantPayment
 };
 use App\Helpers\PriceHelper;
 use App\Models\Country;
@@ -49,7 +49,7 @@ class PaypalController extends CheckoutBaseControlller
     public function __construct()
     {
         parent::__construct();
-        $data = PaymentGateway::whereKeyword('paypal')->first();
+        $data = MerchantPayment::whereKeyword('paypal')->first();
         $paydata = $data->convertAutoData();
 
         $this->gateway = Omnipay::create('PayPal_Rest');
@@ -178,11 +178,11 @@ class PaypalController extends CheckoutBaseControlller
                 'message' => __('Unknown error occurred'),
             ];
         }
-        $transaction = $this->gateway->completePurchase(array(
+        $purchaseRequest = $this->gateway->completePurchase(array(
             'payer_id' => $responseData['PayerID'],
             'transactionReference' => $responseData['paymentId'],
         ));
-        $response = $transaction->send();
+        $response = $purchaseRequest->send();
 
         if ($response->isSuccessful()) {
 
@@ -216,7 +216,7 @@ class PaypalController extends CheckoutBaseControlller
             $input['tax'] = $step2['tax_amount'] ?? 0;
             $input['tax_location'] = $step2['tax_location'] ?? '';
 
-            $input['txnid'] = $response->getData()['transactions'][0]['related_resources'][0]['sale']['id'];
+            $input['txnid'] = $response->getData()['wallet_logs'][0]['related_resources'][0]['sale']['id'];
             if ($input['dp'] == 1) {
                 $input['status'] = 'completed';
             }
@@ -263,7 +263,7 @@ class PaypalController extends CheckoutBaseControlller
             $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
             if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                PurchaseHelper::add_to_transaction($purchase, $purchase->wallet_price); // Store To Transactions
+                PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
             }
 
             if (Auth::check()) {

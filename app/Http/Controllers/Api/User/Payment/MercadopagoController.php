@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\Deposit;
-use App\Models\PaymentGateway;
+use App\Models\TopUp;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use MercadoPago;
 
@@ -13,10 +13,10 @@ class MercadopagoController extends Controller
 
     public function store(Request $request)
     {
-        $deposit = Deposit::where('deposit_number', $request->deposit_number)->first();
+        $deposit = TopUp::where('deposit_number', $request->deposit_number)->first();
         $input = $request->all();
         $user = \App\Models\User::findOrFail($deposit->user_id);
-        $data = PaymentGateway::whereKeyword('mercadopago')->first();
+        $data = MerchantPayment::whereKeyword('mercadopago')->first();
         $paydata = $data->convertAutoData();
 
         MercadoPago\SDK::setAccessToken($paydata['token']);

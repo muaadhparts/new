@@ -12,8 +12,8 @@ class Withdraw extends Model
     {
         return $this->belongsTo('App\Models\User')->withDefault();
     }
-    public function rider()
+    public function courier()
     {
-        return $this->belongsTo('App\Models\Rider', 'user_id')->withDefault();
+        return $this->belongsTo('App\Models\Courier', 'user_id')->withDefault();
     }
 }

@@ -35,9 +35,9 @@
                             if (!$merchant) {
                                 throw new \LogicException('CatalogItem detail page requires $merchant (MerchantItem) to be set');
                             }
-                            // Get merchant-specific galleries from $merchant
+                            // Get merchant-specific photos from $merchant
                             $galleryMerchantId = $merchant->user_id;
-                            $merchantGalleries = $catalogItem->galleriesForMerchant($galleryMerchantId, 10);
+                            $merchantGalleries = $catalogItem->merchantPhotosForMerchant($galleryMerchantId, 10);
                         @endphp
                         <div class="catalogItem-main-slider">
                             <img src="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
@@ -45,8 +45,8 @@
                                 data-zoom-image="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 class="main-img" alt="gallery-img">
                             @foreach ($merchantGalleries as $gal)
-                                <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
-                                    data-image="{{ asset('assets/images/galleries/' . $gal->photo) }}" class="main-img"
+                                <img src="{{ asset('assets/images/merchant-photos/' . $gal->photo) }}"
+                                    data-image="{{ asset('assets/images/merchant-photos/' . $gal->photo) }}" class="main-img"
                                     alt="gallery-img">
                             @endforeach
                         </div>
@@ -57,8 +57,8 @@
                                 data-zoom-image="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 class="nav-img" alt="gallery-img">
                             @foreach ($merchantGalleries as $gal)
-                                <img src="{{ asset('assets/images/galleries/' . $gal->photo) }}"
-                                    data-image="{{ asset('assets/images/galleries/' . $gal->photo) }}" class="nav-img"
+                                <img src="{{ asset('assets/images/merchant-photos/' . $gal->photo) }}"
+                                    data-image="{{ asset('assets/images/merchant-photos/' . $gal->photo) }}" class="nav-img"
                                     alt="gallery-img">
                             @endforeach
                         </div>
@@ -656,7 +656,7 @@
                     tabindex="0">
                     <div class="row review-tab-content-wrapper">
                         <div class="col-xxl-8">
-                            <div id="comments">
+                            <div id="buyer_notes">
                                 <h5 class="woocommerce-Reviews-titleDDD my-3"> @lang('Ratings & Reviews')</h5>
                                 <ul class="all-comments">
                                     @forelse($catalogItem->catalogReviews as $review)
@@ -910,7 +910,7 @@
 
 
     <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
-        <form action="{{ route('user-send-message') }}" id="emailreply" method="POST"
+        <form action="{{ route('user-contact') }}" id="emailreply" method="POST"
             class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
             <div class="modal-content assign-rider-modal-content form-group">
@@ -952,7 +952,7 @@
 
 
     <div class="modal gs-modal fade" id="sendMessage" tabindex="-1" aria-modal="true" role="dialog">
-        <form action="{{ route('user-send-message') }}" method="POST"
+        <form action="{{ route('user-contact') }}" method="POST"
             class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
             <div class="modal-content assign-rider-modal-content form-group">

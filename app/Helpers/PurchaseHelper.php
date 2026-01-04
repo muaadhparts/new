@@ -7,12 +7,12 @@ use App\{
     Models\User,
     Models\DiscountCode,
     Models\CatalogItem,
-    Models\Transaction,
+    Models\WalletLog,
     Models\MerchantPurchase,
     Models\CatalogEvent,
     Models\UserCatalogEvent
 };
-use App\Models\AffliateBonus;
+use App\Models\ReferralCommission;
 use Auth;
 use Session;
 use Illuminate\Support\Str;
@@ -123,14 +123,14 @@ class PurchaseHelper
         try {
             $user = User::find($id);
             if ($dp == 1) {
-                $affiliate_bonus = new AffliateBonus();
-                $affiliate_bonus->refer_id = $user->id;
-                $affiliate_bonus->bonus = $sub;
-                $affiliate_bonus->type = 'Purchase';
+                $referral_commission = new ReferralCommission();
+                $referral_commission->refer_id = $user->id;
+                $referral_commission->bonus = $sub;
+                $referral_commission->type = 'Purchase';
                 if (Auth::user()) {
-                    $affiliate_bonus->refer_id = Auth::user()->id;
+                    $referral_commission->refer_id = Auth::user()->id;
                 }
-                $affiliate_bonus->save();
+                $referral_commission->save();
                 $user->affilate_income += $sub;
                 $user->update();
             }
@@ -242,21 +242,21 @@ class PurchaseHelper
         }
     }
 
-    public static function add_to_transaction($data, $price)
+    public static function add_to_wallet_log($data, $price)
     {
         try {
-            $transaction = new Transaction;
-            $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-            $transaction->user_id = $data->user_id;
-            $transaction->amount = $price;
-            $transaction->currency_sign = $data->currency_sign;
-            $transaction->currency_code = $data->currency_name;
-            $transaction->currency_value = $data->currency_value;
-            $transaction->details = 'Payment Via Wallet';
-            $transaction->type = 'minus';
-            $transaction->save();
+            $walletLog = new WalletLog;
+            $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+            $walletLog->user_id = $data->user_id;
+            $walletLog->amount = $price;
+            $walletLog->currency_sign = $data->currency_sign;
+            $walletLog->currency_code = $data->currency_name;
+            $walletLog->currency_value = $data->currency_value;
+            $walletLog->details = 'Payment Via Wallet';
+            $walletLog->type = 'minus';
+            $walletLog->save();
             $balance = $price;
-            $user = $transaction->user;
+            $user = $walletLog->user;
             $user->balance = $user->balance - $balance;
             $user->update();
         } catch (\Exception $e) {

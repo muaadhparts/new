@@ -7,13 +7,13 @@ Receives: $blogs (collection of Blog models)
 --}}
 
 <div class="row">
-    @foreach($blogs as $blog)
+    @foreach($publications as $publication)
     <div class="col-lg-4 col-md-6 mb-4">
         <div class="muaadh-blog-card">
             <div class="muaadh-blog-img">
-                <a href="{{ route('front.blogshow', $blog->slug) }}">
-                    <img src="{{ asset('assets/images/blogs/' . $blog->photo) }}"
-                         alt="{{ $blog->title }}"
+                <a href="{{ route('front.publicationshow', $publication->slug) }}">
+                    <img src="{{ asset('assets/images/publications/' . $publication->photo) }}"
+                         alt="{{ $publication->title }}"
                          loading="lazy">
                 </a>
             </div>
@@ -21,16 +21,16 @@ Receives: $blogs (collection of Blog models)
                 <div class="muaadh-blog-meta">
                     <span class="muaadh-blog-date">
                         <i class="far fa-calendar-alt"></i>
-                        {{ \Carbon\Carbon::parse($blog->created_at)->format('M d, Y') }}
+                        {{ \Carbon\Carbon::parse($publication->created_at)->format('M d, Y') }}
                     </span>
                 </div>
                 <h5 class="muaadh-blog-title">
-                    <a href="{{ route('front.blogshow', $blog->slug) }}">{{ $blog->title }}</a>
+                    <a href="{{ route('front.publicationshow', $publication->slug) }}">{{ $publication->title }}</a>
                 </h5>
                 <p class="muaadh-blog-excerpt">
-                    {{ \Illuminate\Support\Str::limit(strip_tags($blog->details), 100) }}
+                    {{ \Illuminate\Support\Str::limit(strip_tags($publication->details), 100) }}
                 </p>
-                <a href="{{ route('front.blogshow', $blog->slug) }}" class="muaadh-blog-link">
+                <a href="{{ route('front.publicationshow', $publication->slug) }}" class="muaadh-blog-link">
                     @lang('Read More') <i class="fas fa-arrow-right"></i>
                 </a>
             </div>

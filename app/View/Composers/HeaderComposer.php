@@ -22,7 +22,7 @@ class HeaderComposer
     public function compose(View $view): void
     {
         $authUser = Auth::guard('web')->check() ? Auth::guard('web')->user() : null;
-        $riderUser = Auth::guard('rider')->check() ? Auth::guard('rider')->user() : null;
+        $courierUser = Auth::guard('courier')->check() ? Auth::guard('courier')->user() : null;
 
         $favoriteCount = 0;
         if ($authUser) {
@@ -35,7 +35,7 @@ class HeaderComposer
 
         $view->with([
             'authUser' => $authUser,
-            'riderUser' => $riderUser,
+            'courierUser' => $courierUser,
             'favoriteCount' => $favoriteCount,
         ]);
     }

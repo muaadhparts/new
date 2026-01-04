@@ -8,9 +8,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\ServiceResource;
 use App\Http\Resources\MerchantResource;
-use App\Models\Conversation;
+use App\Models\ChatThread;
 use App\Models\Muaadhsetting;
-use App\Models\Message;
+use App\Models\ChatEntry;
 use App\Models\CatalogItem;
 use App\Models\User;
 
@@ -137,22 +137,22 @@ class MerchantController extends Controller
                 mail($to, $subject, $msg, $headers);
             }
 
-            $conv = Conversation::where('sent_user', '=', $user->id)->where('subject', '=', $subject)->first();
+            $conv = ChatThread::where('sent_user', '=', $user->id)->where('subject', '=', $subject)->first();
             if (isset($conv)) {
-                $msg = new Message();
-                $msg->conversation_id = $conv->id;
+                $msg = new ChatEntry();
+                $msg->chat_thread_id = $conv->id;
                 $msg->message = $request->message;
                 $msg->sent_user = $user->id;
                 $msg->save();
             } else {
-                $message = new Conversation();
+                $message = new ChatThread();
                 $message->subject = $subject;
                 $message->sent_user = $request->user_id;
                 $message->recieved_user = $request->merchant_id;
                 $message->message = $request->message;
                 $message->save();
-                $msg = new Message();
-                $msg->conversation_id = $message->id;
+                $msg = new ChatEntry();
+                $msg->chat_thread_id = $message->id;
                 $msg->message = $request->message;
                 $msg->sent_user = $request->user_id;
                 $msg->save();

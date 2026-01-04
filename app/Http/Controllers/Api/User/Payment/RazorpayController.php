@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\Deposit;
+use App\Models\TopUp;
 use App\Models\Muaadhsetting;
-use App\Models\PaymentGateway;
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Razorpay\Api\Api;
@@ -16,7 +16,7 @@ class RazorpayController extends Controller
 
     public function __construct()
     {
-        $data = PaymentGateway::whereKeyword('razorpay')->first();
+        $data = MerchantPayment::whereKeyword('razorpay')->first();
         $paydata = $data->convertAutoData();
         $this->keyId = $paydata['key'];
         $this->keySecret = $paydata['secret'];
@@ -32,7 +32,7 @@ class RazorpayController extends Controller
         }
 
         $deposit_number = $request->deposit_number;
-        $purchase = Deposit::where('deposit_number', $deposit_number)->first();
+        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
         $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Razorpay.');
@@ -115,7 +115,7 @@ class RazorpayController extends Controller
         $success = true;
         $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
         $purchase_id = $razorpayOrder['receipt'];
-        $purchase = Deposit::where('deposit_number', $purchase_id)->first();
+        $purchase = TopUp::where('deposit_number', $purchase_id)->first();
         $cancel_url = route('user.deposit.send', $purchase->deposit_number);
 
         $error = "Payment Failed";
@@ -147,7 +147,7 @@ class RazorpayController extends Controller
 
             $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
-            $purchase = Deposit::where('deposit_number', $purchase_id)->first();
+            $purchase = TopUp::where('deposit_number', $purchase_id)->first();
 
             $user = \App\Models\User::findOrFail($purchase->user_id);
             $user->balance = $user->balance + ($purchase->amount);
@@ -158,20 +158,21 @@ class RazorpayController extends Controller
                 $purchase['status'] = 1;
                 $purchase->update();
 
+                // store in wallet_logs table
                 if ($purchase->status == 1) {
-                    $transaction = new \App\Models\Transaction;
-                    $transaction->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                    $transaction->user_id = $purchase->user_id;
-                    $transaction->amount = $purchase->amount;
-                    $transaction->user_id = $purchase->user_id;
-                    $transaction->currency_sign = $purchase->currency;
-                    $transaction->currency_code = $purchase->currency_code;
-                    $transaction->currency_value = $purchase->currency_value;
-                    $transaction->method = $purchase->method;
-                    $transaction->txnid = $purchase->txnid;
-                    $transaction->details = 'Payment Deposit';
-                    $transaction->type = 'plus';
-                    $transaction->save();
+                    $walletLog = new \App\Models\WalletLog;
+                    $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
+                    $walletLog->user_id = $purchase->user_id;
+                    $walletLog->amount = $purchase->amount;
+                    $walletLog->user_id = $purchase->user_id;
+                    $walletLog->currency_sign = $purchase->currency;
+                    $walletLog->currency_code = $purchase->currency_code;
+                    $walletLog->currency_value = $purchase->currency_value;
+                    $walletLog->method = $purchase->method;
+                    $walletLog->txnid = $purchase->txnid;
+                    $walletLog->details = 'Payment Deposit';
+                    $walletLog->type = 'plus';
+                    $walletLog->save();
                 }
 
             }

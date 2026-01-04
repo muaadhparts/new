@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Models\Blog;
-use App\Models\Counter;
+use App\Models\Publication;
+use App\Models\Metric;
 use App\Models\License;
 use App\Models\Purchase;
 use App\Models\CatalogItem;
@@ -32,7 +32,7 @@ class DashboardController extends AdminBaseController
         }
         $data['users'] = User::count();
         $data['catalogItems'] = CatalogItem::count();
-        $data['blogs'] = Blog::count();
+        $data['publications'] = Publication::count();
 
         // Get latest merchant items (active only)
         $data['latestMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
@@ -59,8 +59,8 @@ class DashboardController extends AdminBaseController
             });
 
         $data['recentUsers'] = User::latest('id')->take(5)->get();
-        $data['referrals'] = Counter::where('type', 'referral')->latest('total_count')->take(5)->get();
-        $data['browsers'] = Counter::where('type', 'browser')->latest('total_count')->take(5)->get();
+        $data['referrals'] = Metric::where('type', 'referral')->latest('total_count')->take(5)->get();
+        $data['browsers'] = Metric::where('type', 'browser')->latest('total_count')->take(5)->get();
 
         // Check activation status
         $data['activation_notify'] = "";

@@ -27,12 +27,12 @@
           href="{{route('user-purchase-track')}}">{{ __('Purchase Tracking') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-favorites') ? 'active' : '' }}"
           href="{{route('user-favorites')}}">{{ __('Favourite Sellers') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('user-messages') ? 'active' : '' }}"
-          href="{{route('user-messages')}}">{{ __('Messages') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('user-message-index') ? 'active' : '' }}"
-          href="{{route('user-message-index')}}">{{ __('Tickets') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('user-dmessage-index') ? 'active' : '' }}"
-          href="{{ route('user-dmessage-index') }}">{{ __('Disputes') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('user-chats') ? 'active' : '' }}"
+          href="{{route('user-chats')}}">{{ __('Messages') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('user-ticket-index') ? 'active' : '' }}"
+          href="{{route('user-ticket-index')}}">{{ __('Tickets') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('user-dispute-index') ? 'active' : '' }}"
+          href="{{ route('user-dispute-index') }}">{{ __('Disputes') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-profile') ? 'active' : '' }}"
           href="{{ route('user-profile') }}">{{ __('Edit Profile') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-reset') ? 'active' : '' }}"

@@ -81,8 +81,8 @@
                             class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
-                                @if (!empty($attr->attribute_options))
-                                    @foreach ($attr->attribute_options as $key => $option)
+                                @if (!empty($attr->specValues))
+                                    @foreach ($attr->specValues as $key => $option)
                                         <div class="form-check ml-0 pl-0">
                                             <input name="{{$attr->input_name}}[]" class="form-check-input attribute-input" type="checkbox"
                                                 id="{{$attr->input_name}}{{$option->id}}" value="{{$option->name}}">
@@ -102,8 +102,8 @@
                             class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
-                                @if (!empty($attr->attribute_options))
-                                    @foreach ($attr->attribute_options as $key => $option)
+                                @if (!empty($attr->specValues))
+                                    @foreach ($attr->specValues as $key => $option)
                                         <div class="form-check ml-0 pl-0">
                                             <input name="{{$attr->input_name}}[]" class="form-check-input attribute-input" type="checkbox"
                                                 id="{{$attr->input_name}}{{$option->id}}" value="{{$option->name}}">
@@ -123,8 +123,8 @@
                             class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
                             <h2 class="widget-title">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
-                                @if (!empty($attr->attribute_options))
-                                    @foreach ($attr->attribute_options as $key => $option)
+                                @if (!empty($attr->specValues))
+                                    @foreach ($attr->specValues as $key => $option)
                                         <div class="form-check ml-0 pl-0">
                                             <input name="{{$attr->input_name}}[]" class="form-check-input attribute-input" type="checkbox"
                                                 id="{{$attr->input_name}}{{$option->id}}" value="{{$option->name}}">
@@ -213,10 +213,10 @@
                                                         <div class="star-rating">
                                                             <div class="rating-wrap">
                                                                 <p><i class="fas fa-star"></i><span>
-                                                                        {{ App\Models\CatalogReview::scorePercentage($cartItem['id']) }}</span></p>
+                                                                        {{ App\Models\CatalogTestimonial::scorePercentage($cartItem['id']) }}</span></p>
                                                             </div>
                                                             <div class="rating-counts-wrap">
-                                                                <p>({{ App\Models\CatalogReview::reviewCount($cartItem['id']) }})</p>
+                                                                <p>({{ App\Models\CatalogTestimonial::reviewCount($cartItem['id']) }})</p>
                                                             </div>
                                                         </div>
                                                     </div>

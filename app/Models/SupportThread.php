@@ -30,17 +30,17 @@ class SupportThread extends Model
     }
 
     /**
-     * Get the admin associated with the thread.
+     * Get the operator associated with the thread.
      */
-    public function admin()
+    public function operator()
     {
-        return $this->belongsTo(Admin::class)->withDefault();
+        return $this->belongsTo(Operator::class)->withDefault();
     }
 
     /**
-     * Get all messages for this thread.
+     * Get all support messages for this thread.
      */
-    public function messages()
+    public function supportMessages()
     {
         return $this->hasMany(SupportMessage::class, 'thread_id');
     }

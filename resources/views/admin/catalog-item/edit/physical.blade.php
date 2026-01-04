@@ -991,10 +991,10 @@
                                 '<span class="remove-img"><i class="fas fa-times"></i>' +
                                 '<input type="hidden" value="' + arr[k]['id'] + '">' +
                                 '</span>' +
-                                '<a href="' + '{{ asset('assets/images/galleries') . '/' }}' +
+                                '<a href="' + '{{ asset('assets/images/merchant-photos') . '/' }}' +
                                 arr[
                                     k]['photo'] + '" target="_blank">' +
-                                '<img src="' + '{{ asset('assets/images/galleries') . '/' }}' +
+                                '<img src="' + '{{ asset('assets/images/merchant-photos') . '/' }}' +
                                 arr[
                                     k]['photo'] + '" alt="gallery image">' +
                                 '</a>' +
@@ -1051,10 +1051,10 @@
                                 '<span class="remove-img"><i class="fas fa-times"></i>' +
                                 '<input type="hidden" value="' + arr[k]['id'] + '">' +
                                 '</span>' +
-                                '<a href="' + '{{ asset('assets/images/galleries') . '/' }}' +
+                                '<a href="' + '{{ asset('assets/images/merchant-photos') . '/' }}' +
                                 arr[
                                     k]['photo'] + '" target="_blank">' +
-                                '<img src="' + '{{ asset('assets/images/galleries') . '/' }}' +
+                                '<img src="' + '{{ asset('assets/images/merchant-photos') . '/' }}' +
                                 arr[
                                     k]['photo'] + '" alt="gallery image">' +
                                 '</a>' +

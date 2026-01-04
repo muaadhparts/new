@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Payment\Checkout;
 use App\{
     Models\Cart,
     Models\Purchase,
-    Models\PaymentGateway,
+    Models\MerchantPayment,
     Classes\MuaadhMailer
 };
 use App\Helpers\PriceHelper;
@@ -27,7 +27,7 @@ class RazorpayController extends CheckoutBaseControlller
     public function __construct()
     {
         parent::__construct();
-        $data = PaymentGateway::whereKeyword('razorpay')->first();
+        $data = MerchantPayment::whereKeyword('razorpay')->first();
         $paydata = $data->convertAutoData();
         $this->keyId = $paydata['key'];
         $this->keySecret = $paydata['secret'];
@@ -52,7 +52,7 @@ class RazorpayController extends CheckoutBaseControlller
         }
 
         $input = array_merge($step1, $step2, $request->all());
-        $data = PaymentGateway::whereKeyword('razorpay')->first();
+        $data = MerchantPayment::whereKeyword('razorpay')->first();
         $total = $request->total;
 
 
@@ -268,7 +268,7 @@ class RazorpayController extends CheckoutBaseControlller
                 $this->removeMerchantItemsFromCart($merchantId, $originalCart);
 
                 if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                    PurchaseHelper::add_to_transaction($purchase,$purchase->wallet_price); // Store To Transactions
+                    PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
                 }
 
                 if(Auth::check()){
