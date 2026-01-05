@@ -41,8 +41,8 @@
 
 <div class="modal gs-modal fade" id="purchase-tracking-modal" role="dialog" data-bs-backdrop="static"
     data-bs-keyboard="false" aria-labelledby="purchase-tracking-modal" aria-hidden="true">
-    <div class="modal-dialog assign-rider-modal-dialog modal-dialog-centered">
-        <div class="modal-content assign-rider-modal-content form-group">
+    <div class="modal-dialog assign-courier-modal-dialog modal-dialog-centered">
+        <div class="modal-content assign-courier-modal-content form-group">
             <div class="modal-header w-100">
                 <h4 class="title">{{ __('Purchase Tracking') }}</h4>
                 <button type="button" data-bs-dismiss="modal">

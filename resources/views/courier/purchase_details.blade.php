@@ -113,7 +113,7 @@
                         <div class="user-table-wrapper all-orders-table-wrapper wow-replaced" data-wow-delay=".1s">
 
                             <div class="user-table table-responsive position-relative">
-                                <table class="gs-data-table custom-table-rider w-100">
+                                <table class="gs-data-table custom-table-courier w-100">
                                     <tr class="ordered-tbg">
                                         <th><span class="title">@lang('ID#')</span></th>
                                         <th><span class="title">@lang('CatalogItem Name')</span></th>

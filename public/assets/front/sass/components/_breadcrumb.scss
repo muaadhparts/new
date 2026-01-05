@@ -54,7 +54,7 @@
   }
 }
 
-.gs-vendor-breadcrumb {
+.gs-merchant-breadcrumb {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -107,7 +107,7 @@
         }
       }
 
-      .home-icon-vendor-panel-breadcrumb {
+      .home-icon-merchant-panel-breadcrumb {
         transition: $transition;
         &:hover {
           stroke: $primary-color-500;

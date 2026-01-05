@@ -656,7 +656,7 @@ window.selectCityById = function(cityId, reinitCityNiceSelect) {
             console.log(`   Option ${index}:`, {value: optionValue, text: optionText});
         }
 
-        // Match by city ID (for user/rider profiles) OR city name (for warehouse/checkout)
+        // Match by city ID (for user/courier profiles) OR city name (for warehouse/checkout)
         const matchById = parseInt(optionValue) === parseInt(cityIdFromApi);
         const matchByEnName = optionValue.toLowerCase() === cityNameEn.toLowerCase();
         const matchByArName = optionValue.toLowerCase() === cityNameAr.toLowerCase();

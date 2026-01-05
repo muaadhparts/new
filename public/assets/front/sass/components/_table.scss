@@ -416,8 +416,8 @@ div.dt-container {
 
 //***** data table end *****
 
-//***** vendor panel tables start *****
-.vendor-table-wrapper,
+//***** merchant panel tables start *****
+.merchant-table-wrapper,
 .user-table-wrapper {
   padding: 32px;
   border-radius: 12px;
@@ -487,7 +487,7 @@ div.dt-container {
     }
 
     .customer,
-    .rider {
+    .courier {
       .key {
         font-weight: 600;
         line-height: 170%;
@@ -618,7 +618,7 @@ div.dt-container {
   }
 }
 
-//***** vendor panel tables end *****
+//***** merchant panel tables end *****
 
 .thead-bg {
   th {

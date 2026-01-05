@@ -98,9 +98,9 @@
 
     <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
         <form action="{{ route('user-send-ticket') }}" method="POST"
-            class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
+            class="modal-dialog assign-courier-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
-            <div class="modal-content assign-rider-modal-content form-group">
+            <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
                     <h4 class="title">@lang('Add Dispute')</h4>
                     <button type="button" data-bs-dismiss="modal">
@@ -109,7 +109,7 @@
 
                 </div>
                 <!-- modal body start  -->
-                <!-- Select Rider -->
+                <!-- Select Courier -->
                 <div class="input-label-wrapper w-100">
 
                     <input type="text" class="form-control  border px-3 mb-4" name="purchase"

@@ -6036,16 +6036,16 @@ div.dt-container .dt-paging .dt-paging-button.previous, div.dt-container .dt-pag
   max-width: 790px;
 }
 .merchant-table-wrapper .user-table td .customer .key,
-.merchant-table-wrapper .user-table td .rider .key,
+.merchant-table-wrapper .user-table td .courier .key,
 .user-table-wrapper .user-table td .customer .key,
-.user-table-wrapper .user-table td .rider .key {
+.user-table-wrapper .user-table td .courier .key {
   font-weight: 600;
   line-height: 170%;
 }
 .merchant-table-wrapper .user-table td .customer .value,
-.merchant-table-wrapper .user-table td .rider .value,
+.merchant-table-wrapper .user-table td .courier .value,
 .user-table-wrapper .user-table td .customer .value,
-.user-table-wrapper .user-table td .rider .value {
+.user-table-wrapper .user-table td .courier .value {
   line-height: 170%;
 }
 .merchant-table-wrapper .user-table td .status,
@@ -6693,7 +6693,7 @@ div.dt-container .dt-paging .dt-paging-button.previous, div.dt-container .dt-pag
 .gs-modal .modal-dialog {
   width: calc(100% - 16px);
 }
-.gs-modal .modal-dialog.assign-rider-modal-dialog {
+.gs-modal .modal-dialog.assign-courier-modal-dialog {
   max-width: 801px;
 }
 .gs-modal .modal-dialog.image-gallery-modal-dialog {
@@ -6766,14 +6766,14 @@ div.dt-container .dt-paging .dt-paging-button.previous, div.dt-container .dt-pag
   padding-bottom: 0;
   border-bottom: none;
 }
-.gs-modal .modal-dialog .modal-content.assign-rider-modal-content, .gs-modal .modal-dialog .modal-content.image-gallery-modal-content, .gs-modal .modal-dialog .modal-content.edit-service-modal-content, .gs-modal .modal-dialog .modal-content.send-message-modal-content {
+.gs-modal .modal-dialog .modal-content.assign-courier-modal-content, .gs-modal .modal-dialog .modal-content.image-gallery-modal-content, .gs-modal .modal-dialog .modal-content.edit-service-modal-content, .gs-modal .modal-dialog .modal-content.send-message-modal-content {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 32px;
 }
 @media (max-width: 991.97px) {
-  .gs-modal .modal-dialog .modal-content.assign-rider-modal-content, .gs-modal .modal-dialog .modal-content.image-gallery-modal-content, .gs-modal .modal-dialog .modal-content.edit-service-modal-content, .gs-modal .modal-dialog .modal-content.send-message-modal-content {
+  .gs-modal .modal-dialog .modal-content.assign-courier-modal-content, .gs-modal .modal-dialog .modal-content.image-gallery-modal-content, .gs-modal .modal-dialog .modal-content.edit-service-modal-content, .gs-modal .modal-dialog .modal-content.send-message-modal-content {
     gap: 16px;
   }
 }
@@ -7035,7 +7035,7 @@ div.dt-container .dt-paging .dt-paging-button.previous, div.dt-container .dt-pag
   font-weight: 500;
 }
 
-.custom-table-rider tr .title {
+.custom-table-courier tr .title {
   color: var(--theme-text-primary);
   font-size: 18px;
   font-style: normal;
@@ -7043,7 +7043,7 @@ div.dt-container .dt-paging .dt-paging-button.previous, div.dt-container .dt-pag
   line-height: 160%;
 }
 @media (max-width: 991.97px) {
-  .custom-table-rider tr .title {
+  .custom-table-courier tr .title {
     font-size: 16px;
   }
 }

@@ -177,12 +177,12 @@ class PurchaseController extends OperatorBaseController
                         $merchant_ids = json_decode($data->merchant_ids, true);
 
                         foreach ($merchant_ids as $mid) {
-                            $deliveryRider = DeliveryRider::where('purchase_id', $data->id)->where('merchant_id', $mid)->first();
-                            if ($deliveryRider) {
-                                $rider = Rider::findOrFail($deliveryRider->rider_id);
-                                $service_area = RiderServiceArea::findOrFail($deliveryRider->service_area_id);
-                                $rider->balance += $service_area->price;
-                                $rider->update();
+                            $deliveryCourier = DeliveryCourier::where('purchase_id', $data->id)->where('merchant_id', $mid)->first();
+                            if ($deliveryCourier) {
+                                $courier = Courier::findOrFail($deliveryCourier->courier_id);
+                                $service_area = CourierServiceArea::findOrFail($deliveryCourier->service_area_id);
+                                $courier->balance += $service_area->price;
+                                $courier->update();
                             }
                         }
                     }

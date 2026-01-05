@@ -31,7 +31,7 @@ $(document).ready(function () {
     const $muaadhOverlay = $('.muaadh-mobile-overlay');
     const $mobileClose = $('.muaadh-mobile-close');
 
-    // Legacy menu elements (for User/Vendor/Rider pages that use .mobile-menu)
+    // Legacy menu elements (for User/Vendor/Courier pages that use .mobile-menu)
     const $legacyMenu = $('.mobile-menu');
     const $legacyOverlay = $('.overlay');
 
@@ -142,7 +142,7 @@ $(document).ready(function () {
   //****** 2. MOBILE MENU (Unified Handler) ******//
   // This handles BOTH types of mobile menus:
   // 1. .muaadh-mobile-menu (Frontend/Store) - opened by .muaadh-mobile-toggle
-  // 2. .mobile-menu (Vendor/Admin/User/Rider dashboards) - opened by .header-toggle, .mobile-menu-toggle
+  // 2. .mobile-menu (Vendor/Admin/User/Courier dashboards) - opened by .header-toggle, .mobile-menu-toggle
   //
   // Each menu type works independently - no conflicts between them.
 
@@ -151,7 +151,7 @@ $(document).ready(function () {
   const $muaadhMobileMenu = $('.muaadh-mobile-menu');
   const $muaadhOverlay = $('.muaadh-mobile-overlay');
 
-  // Legacy toggles (.header-toggle, .mobile-menu-toggle) - for Vendor/Admin/User/Rider
+  // Legacy toggles (.header-toggle, .mobile-menu-toggle) - for Vendor/Admin/User/Courier
   // These should ONLY open .mobile-menu (legacy), NOT .muaadh-mobile-menu
   $(".header-toggle, .mobile-menu-toggle").on("click", function (e) {
     e.preventDefault();

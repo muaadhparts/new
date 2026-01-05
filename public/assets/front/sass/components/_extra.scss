@@ -160,7 +160,7 @@ ul.tagit li.tagit-choice .tagit-close {
     gap: 0.7rem !important;
   }
 } // This is equivalent to gap-2
-.gs-vendor-header-noti {
+.gs-merchant-header-noti {
   position: absolute;
   top: 124px;
   right: 37px;
@@ -245,7 +245,7 @@ ul.tagit li.tagit-choice .tagit-close {
   }
 }
 
-.vendor-res-header-logo {
+.merchant-res-header-logo {
   @include screen-425 {
     width: 100px;
     object-fit: contain;

@@ -99,9 +99,9 @@
 
     <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
         <form action="{{ route('user-contact') }}" method="POST"
-            class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
+            class="modal-dialog assign-courier-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
-            <div class="modal-content assign-rider-modal-content form-group">
+            <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
                     <h4 class="title">@lang('Send Message')</h4>
                     <button type="button" data-bs-dismiss="modal">
@@ -110,7 +110,7 @@
 
                 </div>
                 <!-- modal body start  -->
-                <!-- Select Rider -->
+                <!-- Select Courier -->
                 <div class="input-label-wrapper w-100">
 
                     <input type="hidden" name="merchant_id" value="{{ auth()->id() }}">
@@ -129,7 +129,7 @@
                 </div>
                 <!-- Select Pickup Point -->
 
-                <!-- Assign Rider Button  -->
+                <!-- Assign Courier Button  -->
                 <button class="template-btn"  type="submit">@lang('Send Message')</button>
                 <!-- modal body end  -->
             </div>

@@ -124,7 +124,7 @@ class AppServiceProvider extends ServiceProvider
             }));
         });
 
-        // HeaderComposer: provides $authUser, $riderUser, $favoriteCount
+        // HeaderComposer: provides $authUser, $courierUser, $favoriteCount
         // Scoped to header-related views only (not all views)
         // Expected: 1 user query + 1 favorite query (cached) - NOT an error in Telescope
         View::composer([

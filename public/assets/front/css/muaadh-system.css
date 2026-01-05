@@ -1906,7 +1906,7 @@ table .catalog-quality-badge img {
 /* ============================================================================
    SECTION: DASHBOARD TOGGLE BUTTONS
    ============================================================================
-   Styles for dual toggle buttons on User/Vendor/Rider dashboard pages.
+   Styles for dual toggle buttons on User/Vendor/Courier dashboard pages.
    - Store Menu Toggle: Opens store mobile menu (for shopping)
    - Dashboard Menu Toggle: Opens dashboard sidebar menu
    ============================================================================ */
@@ -4715,21 +4715,21 @@ select option {
     fill: var(--theme-primary, #006c35) !important;
 }
 
-/* Rider Sidebar Icons */
-.gs-rider-nav svg path,
-.gs-rider-nav svg rect,
-.gs-rider-nav svg circle {
+/* Courier Sidebar Icons */
+.gs-courier-nav svg path,
+.gs-courier-nav svg rect,
+.gs-courier-nav svg circle {
     stroke: var(--theme-text-secondary, #3d3429);
 }
 
-.gs-rider-nav a:hover svg path,
-.gs-rider-nav a.active svg path {
+.gs-courier-nav a:hover svg path,
+.gs-courier-nav a.active svg path {
     stroke: var(--theme-primary, #006c35) !important;
 }
 
 /* Dashboard Card SVG Icons */
 .gs-user-content .card svg path[fill],
-.gs-rider-content .card svg path[fill] {
+.gs-courier-content .card svg path[fill] {
     fill: var(--theme-primary, #006c35) !important;
 }
 

@@ -2,7 +2,7 @@
   .modal-dialog {
     width: calc(100% - 16px);
 
-    &.assign-rider-modal-dialog {
+    &.assign-courier-modal-dialog {
       max-width: 801px;
     }
 
@@ -87,7 +87,7 @@
         }
       }
 
-      &.assign-rider-modal-content,
+      &.assign-courier-modal-content,
       &.image-gallery-modal-content,
       &.edit-service-modal-content,
       &.send-message-modal-content {

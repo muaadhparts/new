@@ -866,12 +866,12 @@
     @if (auth()->check())
         <div class="modal gs-modal fade" id="report-modal" tabindex="-1" aria-hidden="true">
             <form action="{{ route('catalog-item.report') }}" method="POST"
-                class="modal-dialog assign-rider-modal-dialog modal-dialog-centered">
+                class="modal-dialog assign-courier-modal-dialog modal-dialog-centered">
                 {{ csrf_field() }}
                 <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
                 <input type="hidden" name="catalog_item_id" value="{{ $catalogItem->id }}">
 
-                <div class="modal-content assign-rider-modal-content form-group">
+                <div class="modal-content assign-courier-modal-content form-group">
                     <div class="modal-header w-100">
                         <h4 class="title">{{ __('REPORT ITEM') }}</h4>
                         <button type="button" data-bs-dismiss="modal">
@@ -880,7 +880,7 @@
 
                     </div>
                     <!-- modal body start  -->
-                    <!-- Select Rider -->
+                    <!-- Select Courier -->
                     <div class="input-label-wrapper w-100">
                         <label>{{ __('Please give the following details') }}</label>
                         <input type="text" name="title" class="form-control mb-3"
@@ -893,7 +893,7 @@
 
                     </div>
 
-                    <!-- Assign Rider Button  -->
+                    <!-- Assign Courier Button  -->
                     <button class="m-btn m-btn--primary" data-bs-dismiss="modal" type="submit">{{ __('SUBMIT') }}</button>
                     <!-- modal body end  -->
                 </div>
@@ -911,9 +911,9 @@
 
     <div class="modal gs-modal fade" id="merchantform" tabindex="-1" aria-modal="true" role="dialog">
         <form action="{{ route('user-contact') }}" id="emailreply" method="POST"
-            class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
+            class="modal-dialog assign-courier-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
-            <div class="modal-content assign-rider-modal-content form-group">
+            <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
                     <h4 class="title">@lang('Send Message')</h4>
                     <button type="button" data-bs-dismiss="modal">
@@ -922,11 +922,11 @@
 
                 </div>
                 <!-- modal body start  -->
-                <!-- Select Rider -->
+                <!-- Select Courier -->
                 <div class="input-label-wrapper w-100">
 
                     <input type="text" class="form-control  border px-3 mb-4" id="eml" name="email"
-                        name="subject" readonly placeholder="@lang('Select Rider')"
+                        name="subject" readonly placeholder="@lang('Select Courier')"
                         value="{{ auth()->user() ? auth()->user()->email : '' }}">
                     <input type="text" class="form-control  border px-3 mb-4" name="subject"
                         placeholder="@lang('Subject')" required="">
@@ -941,7 +941,7 @@
                 </div>
                 <!-- Select Pickup Point -->
 
-                <!-- Assign Rider Button  -->
+                <!-- Assign Courier Button  -->
                 <button class="m-btn m-btn--primary" data-bs-dismiss="modal" type="submit">@lang('Send Message')</button>
                 <!-- modal body end  -->
             </div>
@@ -953,9 +953,9 @@
 
     <div class="modal gs-modal fade" id="sendMessage" tabindex="-1" aria-modal="true" role="dialog">
         <form action="{{ route('user-contact') }}" method="POST"
-            class="modal-dialog assign-rider-modal-dialog modal-dialog-centered emailreply">
+            class="modal-dialog assign-courier-modal-dialog modal-dialog-centered emailreply">
             {{ csrf_field() }}
-            <div class="modal-content assign-rider-modal-content form-group">
+            <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
                     <h4 class="title">@lang('Send Message')</h4>
                     <button type="button" data-bs-dismiss="modal">

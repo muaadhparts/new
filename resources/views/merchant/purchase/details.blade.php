@@ -424,7 +424,7 @@
                                         </td>
                                         <!-- Details -->
                                         <td class="text-start">
-                                            <div class="rider">
+                                            <div class="courier">
 
                                                 @if ($catalogItem['size'])
                                                 <div class="d-flex align-items-center gap-2">

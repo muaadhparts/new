@@ -1,5 +1,5 @@
-//******** Vendor panel sidebar start *********
-.gs-vendor-sidebar-wrapper {
+//******** Merchant panel sidebar start *********
+.gs-merchant-sidebar-wrapper {
   background: $white-color;
   .gs-dashboard-user-sidebar-wrapper {
     padding: 40px 24px 40px 24px;
@@ -15,13 +15,13 @@
     }
   }
 
-  .gs-vendor-sidebar-logo-wrapper {
+  .gs-merchant-sidebar-logo-wrapper {
     a {
       transition: $transition;
     }
   }
   &.collapsed {
-    .gs-vendor-sidebar-logo-wrapper {
+    .gs-merchant-sidebar-logo-wrapper {
       a {
         position: absolute;
         opacity: 0;
@@ -59,7 +59,7 @@
   }
 }
 
-.gs-vendor-sidebar-logo-wrapper {
+.gs-merchant-sidebar-logo-wrapper {
   height: 124px;
   display: flex;
   justify-content: center;
@@ -69,10 +69,10 @@
     height: 92px;
   }
 }
-//******** Vendor panel sidebar end **********
+//******** Merchant panel sidebar end **********
 
-// vendor panel header and outlet wrapper
-.gs-vendor-header-outlet-wrapper {
+// merchant panel header and outlet wrapper
+.gs-merchant-header-outlet-wrapper {
   width: calc(100% - 312px);
   overflow: hidden;
   background: $text-color-50;
@@ -93,8 +93,8 @@
   }
 }
 
-//******* vendor panel header start *********
-.gs-vendor-header {
+//******* merchant panel header start *********
+.gs-merchant-header {
   padding: 32px 40px;
   background-color: $white-color;
 
@@ -111,12 +111,12 @@
   .header-toggle {
     display: inline-block;
   }
-  //******* vendor header search start *********
-  .vendor-header-search-wrapper {
+  //******* merchant header search start *********
+  .merchant-header-search-wrapper {
     width: 100%;
     max-width: 513px;
 
-    .vendor-header-search {
+    .merchant-header-search {
       display: flex;
       width: 100%;
       height: 60px;
@@ -159,9 +159,9 @@
       }
     }
   }
-  //******* vendor header search end **********
+  //******* merchant header search end **********
 
-  //******* vendor header dropdown start *******
+  //******* merchant header dropdown start *******
   .user-dropdown-wrapper {
     position: relative;
     cursor: pointer;
@@ -275,12 +275,12 @@
       }
     }
   }
-  //******* vendor header dropdown end *********
+  //******* merchant header dropdown end *********
 }
-//******* vendor panel header end ***********
+//******* merchant panel header end ***********
 
-// vendor panel outlet
-.gs-vendor-outlet {
+// merchant panel outlet
+.gs-merchant-outlet {
   padding: 40px;
   padding-bottom: 120px;
 
@@ -295,9 +295,9 @@
 }
 // table area end
 
-// Nice select vendor 
+// Nice select merchant
 .nice-select {
-  &.nice-select-vendor {
+  &.nice-select-merchant {
       background-color: $text-color-50;
       &::after {
           top: 50%;

@@ -28,12 +28,12 @@ License: Proprietary
 @import "components/mobilemenu";
 @import "components/user_dashboard";
 @import "components/table";
-@import "components/vendor-dashboard";
-@import "components/vendor-info-card";
+@import "components/merchant-dashboard";
+@import "components/merchant-info-card";
 @import "components/form";
 @import "components/modal";
 @import "components/chart";
-@import "components/rider_panel";
+@import "components/courier_panel";
 @import "components/overlay-image";
 @import "components/extra";
 
@@ -47,11 +47,11 @@ License: Proprietary
 @import "pages/compare";
 @import "pages/user-affiliate-program";
 @import "pages/user-conversation";
-@import "pages/vendor-edit-profile";
-@import "pages/vendor-verification";
-@import "pages/vendor-purchase-invoice";
-@import "pages/vendor-purchase-details";
-@import "pages/vendor-banner";
-@import "pages/vendor-bulk-catalogItem-upload";
-@import "pages/vendor-add-catalogItem";
-@import "pages/vendor-earning";
+@import "pages/merchant-edit-profile";
+@import "pages/merchant-verification";
+@import "pages/merchant-purchase-invoice";
+@import "pages/merchant-purchase-details";
+@import "pages/merchant-banner";
+@import "pages/merchant-bulk-catalogItem-upload";
+@import "pages/merchant-add-catalogItem";
+@import "pages/merchant-earning";

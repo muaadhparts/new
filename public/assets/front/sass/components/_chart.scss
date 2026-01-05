@@ -4,7 +4,7 @@
     background: $white-color;
     padding: 24px;
 
-    &.vendor-monthly-sales-chart {
+    &.merchant-monthly-sales-chart {
         margin-top: 32px;
 
         @include screen-992 {
@@ -38,7 +38,7 @@
         }
 
         .nice-select {
-            &.nice-select-vendor {
+            &.nice-select-merchant {
                 min-width: 157px;
             }
         }

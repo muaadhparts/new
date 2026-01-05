@@ -90,8 +90,8 @@
 
 <div class="modal gs-modal fade" id="trans-modal" tabindex="-1" role="dialog" aria-labelledby="trans-modal"
     aria-hidden="true">
-    <div class="modal-dialog assign-rider-modal-dialog modal-dialog-centered max-w-480">
-        <div class="modal-content assign-rider-modal-content form-group">
+    <div class="modal-dialog assign-courier-modal-dialog modal-dialog-centered max-w-480">
+        <div class="modal-content assign-courier-modal-content form-group">
             <div class="modal-header w-100 border-0 pb-0 mb-0">
                 <h4 class="title">{{ __(('Transaction Details'))}}</h4>
 

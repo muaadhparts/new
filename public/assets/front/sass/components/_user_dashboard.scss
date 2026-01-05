@@ -582,13 +582,13 @@
     }
   }
 
-  &.vendor-deposit-area {
+  &.merchant-deposit-area {
     max-width: 752px;
     width: 100%;
   }
 
-  &.vendor-deposit-area,
-  &.vendor-reset-password-area {
+  &.merchant-deposit-area,
+  &.merchant-reset-password-area {
     margin-top: 60px;
     @include screen-992 {
       margin-top: 30px;
