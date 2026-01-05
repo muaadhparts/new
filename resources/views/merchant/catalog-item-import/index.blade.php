@@ -1,4 +1,4 @@
-@extends('layouts.merchant')
+﻿@extends('layouts.merchant')
 
 @section('content')
 					<input type="hidden" id="headerdata" value="{{ __('CATALOGITEM') }}">
@@ -25,7 +25,7 @@
 							<div class="row">
 								<div class="col-lg-12">
 									<div class="mr-table allcatalogitem">
-                        				@include('alerts.admin.form-success')
+                        				@include('alerts.operator.form-success')
 										<div class="table-responsive">
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>

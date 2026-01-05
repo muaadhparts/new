@@ -146,7 +146,7 @@ class CatalogItem extends Model
     {
         $mi = $this->merchantItems()->where('status', 1)->first();
         return $mi
-            ? '<small class="ml-2"> ' . __("MERCHANT") . ': <a href="' . route('admin-merchant-show', $mi->user_id) . '" target="_blank">' . optional($mi->user)->shop_name . '</a></small>'
+            ? '<small class="ml-2"> ' . __("MERCHANT") . ': <a href="' . route('operator-merchant-show', $mi->user_id) . '" target="_blank">' . optional($mi->user)->shop_name . '</a></small>'
             : '';
     }
 

@@ -242,7 +242,7 @@ class AuthorizeController extends CheckoutBaseControlller
                         $data = [
                             'to' => $this->ps->contact_email,
                             'subject' => "New Purchase Recieved!!",
-                            'body' => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is " . $purchase->purchase_number . ".Please login to your panel to check. <br>Thank you.",
+                            'body' => "Hello Operator!<br>Your store has received a new purchase.<br>Purchase Number is " . $purchase->purchase_number . ".Please login to your panel to check. <br>Thank you.",
                         ];
                         $mailer = new MuaadhMailer();
                         $mailer->sendCustomMail($data);

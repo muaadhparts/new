@@ -1,4 +1,4 @@
-@extends('layouts.merchant')
+﻿@extends('layouts.merchant')
 @section('styles')
     <link href="{{ asset('assets/admin/css/catalog-item.css') }}" rel="stylesheet" />
     <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
@@ -37,7 +37,7 @@
         <form id="muaadhform" action="{{ route('merchant-import-store') }}" method="POST" enctype="multipart/form-data">
             {{ csrf_field() }}
 
-            @include('alerts.admin.form-both')
+            @include('alerts.operator.form-both')
             <div class="row">
                 <div class="col-lg-8">
                     <div class="add-catalogItem-content">
@@ -763,5 +763,5 @@
         })(jQuery);
     </script>
 
-    @include('partials.admin.catalogItem.catalogItem-scripts')
+    @include('partials.operator.catalogItem.catalogItem-scripts')
 @endsection

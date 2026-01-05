@@ -1,6 +1,6 @@
 <?php
 
-// ************************************ ADMIN SECTION **********************************************
+// ************************************ OPERATOR SECTION **********************************************
 
 use App\Livewire\Catlogs;
 use App\Models\Token;
@@ -147,179 +147,179 @@ Route::prefix('api')->middleware(['web', 'throttle:120,1'])->group(function () {
 
 Route::get('/under-maintenance', 'Front\FrontendController@maintenance')->name('front-maintenance');
 
-Route::prefix('admin')->group(function () {
+Route::prefix('operator')->group(function () {
 
-    //------------ ADMIN LOGIN SECTION ------------
+    //------------ OPERATOR LOGIN SECTION ------------
 
-    Route::get('/login', 'Auth\Admin\LoginController@showForm')->name('admin.login');
-    Route::post('/login', 'Auth\Admin\LoginController@login')->name('admin.login.submit');
-    Route::get('/logout', 'Auth\Admin\LoginController@logout')->name('admin.logout');
+    Route::get('/login', 'Auth\Operator\LoginController@showForm')->name('operator.login');
+    Route::post('/login', 'Auth\Operator\LoginController@login')->name('operator.login.submit');
+    Route::get('/logout', 'Auth\Operator\LoginController@logout')->name('operator.logout');
 
-    //------------ ADMIN LOGIN SECTION ENDS ------------
+    //------------ OPERATOR LOGIN SECTION ENDS ------------
 
-    //------------ ADMIN FORGOT SECTION ------------
+    //------------ OPERATOR FORGOT SECTION ------------
 
-    Route::get('/forgot', 'Auth\Admin\ForgotController@showForm')->name('admin.forgot');
-    Route::post('/forgot', 'Auth\Admin\ForgotController@forgot')->name('admin.forgot.submit');
-    Route::get('/change-password/{token}', 'Auth\Admin\ForgotController@showChangePassForm')->name('admin.change.token');
-    Route::post('/change-password', 'Auth\Admin\ForgotController@changepass')->name('admin.change.password');
+    Route::get('/forgot', 'Auth\Operator\ForgotController@showForm')->name('operator.forgot');
+    Route::post('/forgot', 'Auth\Operator\ForgotController@forgot')->name('operator.forgot.submit');
+    Route::get('/change-password/{token}', 'Auth\Operator\ForgotController@showChangePassForm')->name('operator.change.token');
+    Route::post('/change-password', 'Auth\Operator\ForgotController@changepass')->name('operator.change.password');
 
-    //------------ ADMIN FORGOT SECTION ENDS ------------
+    //------------ OPERATOR FORGOT SECTION ENDS ------------
 
-    //------------ PROTECTED ADMIN ROUTES (Require Authentication) ------------
-    Route::middleware(['auth:admin'])->group(function () {
+    //------------ PROTECTED OPERATOR ROUTES (Require Authentication) ------------
+    Route::middleware(['auth:operator'])->group(function () {
 
-        //------------ ADMIN NOTIFICATION SECTION ------------
-        Route::get('/all/notf/count', 'Admin\NotificationController@all_notf_count')->name('all-notf-count');
-        Route::get('/user/notf/show', 'Admin\NotificationController@user_notf_show')->name('user-notf-show');
-        Route::get('/user/notf/clear', 'Admin\NotificationController@user_notf_clear')->name('user-notf-clear');
-        Route::get('/purchase/notf/show', 'Admin\NotificationController@purchase_notf_show')->name('purchase-notf-show');
-        Route::get('/purchase/notf/clear', 'Admin\NotificationController@purchase_notf_clear')->name('purchase-notf-clear');
-        Route::get('/catalog-item/notf/show', 'Admin\NotificationController@catalog_item_notf_show')->name('catalog-item-notf-show');
-        Route::get('/catalog-item/notf/clear', 'Admin\NotificationController@catalog_item_notf_clear')->name('catalog-item-notf-clear');
-        Route::get('/conv/notf/show', 'Admin\NotificationController@conv_notf_show')->name('conv-notf-show');
-        Route::get('/conv/notf/clear', 'Admin\NotificationController@conv_notf_clear')->name('conv-notf-clear');
-        //------------ ADMIN NOTIFICATION SECTION ENDS ------------
+        //------------ OPERATOR NOTIFICATION SECTION ------------
+        Route::get('/all/notf/count', 'Operator\NotificationController@all_notf_count')->name('all-notf-count');
+        Route::get('/user/notf/show', 'Operator\NotificationController@user_notf_show')->name('user-notf-show');
+        Route::get('/user/notf/clear', 'Operator\NotificationController@user_notf_clear')->name('user-notf-clear');
+        Route::get('/purchase/notf/show', 'Operator\NotificationController@purchase_notf_show')->name('purchase-notf-show');
+        Route::get('/purchase/notf/clear', 'Operator\NotificationController@purchase_notf_clear')->name('purchase-notf-clear');
+        Route::get('/catalog-item/notf/show', 'Operator\NotificationController@catalog_item_notf_show')->name('catalog-item-notf-show');
+        Route::get('/catalog-item/notf/clear', 'Operator\NotificationController@catalog_item_notf_clear')->name('catalog-item-notf-clear');
+        Route::get('/conv/notf/show', 'Operator\NotificationController@conv_notf_show')->name('conv-notf-show');
+        Route::get('/conv/notf/clear', 'Operator\NotificationController@conv_notf_clear')->name('conv-notf-clear');
+        //------------ OPERATOR NOTIFICATION SECTION ENDS ------------
 
-        //------------ ADMIN DASHBOARD & PROFILE SECTION ------------
-        Route::get('/', 'Admin\DashboardController@index')->name('admin.dashboard');
-        Route::get('/profile', 'Admin\DashboardController@profile')->name('admin.profile');
-        Route::post('/profile/update', 'Admin\DashboardController@profileupdate')->name('admin.profile.update');
-        Route::get('/password', 'Admin\DashboardController@passwordreset')->name('admin.password');
-        Route::post('/password/update', 'Admin\DashboardController@changepass')->name('admin.password.update');
-        //------------ ADMIN DASHBOARD & PROFILE SECTION ENDS ------------
+        //------------ OPERATOR DASHBOARD & PROFILE SECTION ------------
+        Route::get('/', 'Operator\DashboardController@index')->name('operator.dashboard');
+        Route::get('/profile', 'Operator\DashboardController@profile')->name('operator.profile');
+        Route::post('/profile/update', 'Operator\DashboardController@profileupdate')->name('operator.profile.update');
+        Route::get('/password', 'Operator\DashboardController@passwordreset')->name('operator.password');
+        Route::post('/password/update', 'Operator\DashboardController@changepass')->name('operator.password.update');
+        //------------ OPERATOR DASHBOARD & PROFILE SECTION ENDS ------------
 
-        //------------ ADMIN PERFORMANCE MONITORING SECTION ------------
-        Route::get('/performance', 'Admin\PerformanceController@index')->name('admin-performance');
-        Route::get('/performance/slow-queries', 'Admin\PerformanceController@slowQueries')->name('admin-performance-slow-queries');
-        Route::get('/performance/slow-requests', 'Admin\PerformanceController@slowRequests')->name('admin-performance-slow-requests');
-        Route::get('/performance/repeated-queries', 'Admin\PerformanceController@repeatedQueries')->name('admin-performance-repeated-queries');
-        Route::get('/performance/report', 'Admin\PerformanceController@downloadReport')->name('admin-performance-report');
-        Route::get('/performance/api/summary', 'Admin\PerformanceController@apiSummary')->name('admin-performance-api-summary');
-        Route::post('/performance/prune', 'Admin\PerformanceController@pruneOldEntries')->name('admin-performance-prune');
-        //------------ ADMIN PERFORMANCE MONITORING SECTION ENDS ------------
+        //------------ OPERATORPERFORMANCE MONITORING SECTION ------------
+        Route::get('/performance', 'Operator\PerformanceController@index')->name('operator-performance');
+        Route::get('/performance/slow-queries', 'Operator\PerformanceController@slowQueries')->name('operator-performance-slow-queries');
+        Route::get('/performance/slow-requests', 'Operator\PerformanceController@slowRequests')->name('operator-performance-slow-requests');
+        Route::get('/performance/repeated-queries', 'Operator\PerformanceController@repeatedQueries')->name('operator-performance-repeated-queries');
+        Route::get('/performance/report', 'Operator\PerformanceController@downloadReport')->name('operator-performance-report');
+        Route::get('/performance/api/summary', 'Operator\PerformanceController@apiSummary')->name('operator-performance-api-summary');
+        Route::post('/performance/prune', 'Operator\PerformanceController@pruneOldEntries')->name('operator-performance-prune');
+        //------------ OPERATORPERFORMANCE MONITORING SECTION ENDS ------------
 
-        //------------ ADMIN API CREDENTIALS SECTION ------------
-        Route::get('/credentials', 'Admin\ApiCredentialController@index')->name('admin.credentials.index');
-        Route::get('/credentials/create', 'Admin\ApiCredentialController@create')->name('admin.credentials.create');
-        Route::post('/credentials', 'Admin\ApiCredentialController@store')->name('admin.credentials.store');
-        Route::get('/credentials/{id}/edit', 'Admin\ApiCredentialController@edit')->name('admin.credentials.edit');
-        Route::put('/credentials/{id}', 'Admin\ApiCredentialController@update')->name('admin.credentials.update');
-        Route::delete('/credentials/{id}', 'Admin\ApiCredentialController@destroy')->name('admin.credentials.destroy');
-        Route::post('/credentials/{id}/toggle', 'Admin\ApiCredentialController@toggle')->name('admin.credentials.toggle');
-        Route::post('/credentials/{id}/test', 'Admin\ApiCredentialController@test')->name('admin.credentials.test');
-        //------------ ADMIN API CREDENTIALS SECTION ENDS ------------
+        //------------ OPERATORAPI CREDENTIALS SECTION ------------
+        Route::get('/credentials', 'Operator\ApiCredentialController@index')->name('operator.credentials.index');
+        Route::get('/credentials/create', 'Operator\ApiCredentialController@create')->name('operator.credentials.create');
+        Route::post('/credentials', 'Operator\ApiCredentialController@store')->name('operator.credentials.store');
+        Route::get('/credentials/{id}/edit', 'Operator\ApiCredentialController@edit')->name('operator.credentials.edit');
+        Route::put('/credentials/{id}', 'Operator\ApiCredentialController@update')->name('operator.credentials.update');
+        Route::delete('/credentials/{id}', 'Operator\ApiCredentialController@destroy')->name('operator.credentials.destroy');
+        Route::post('/credentials/{id}/toggle', 'Operator\ApiCredentialController@toggle')->name('operator.credentials.toggle');
+        Route::post('/credentials/{id}/test', 'Operator\ApiCredentialController@test')->name('operator.credentials.test');
+        //------------ OPERATORAPI CREDENTIALS SECTION ENDS ------------
 
-        //------------ ADMIN MERCHANT CREDENTIALS SECTION ------------
-        Route::get('/merchant-credentials', 'Admin\MerchantCredentialController@index')->name('admin.merchant-credentials.index');
-        Route::get('/merchant-credentials/create', 'Admin\MerchantCredentialController@create')->name('admin.merchant-credentials.create');
-        Route::post('/merchant-credentials', 'Admin\MerchantCredentialController@store')->name('admin.merchant-credentials.store');
-        Route::get('/merchant-credentials/{id}/edit', 'Admin\MerchantCredentialController@edit')->name('admin.merchant-credentials.edit');
-        Route::put('/merchant-credentials/{id}', 'Admin\MerchantCredentialController@update')->name('admin.merchant-credentials.update');
-        Route::delete('/merchant-credentials/{id}', 'Admin\MerchantCredentialController@destroy')->name('admin.merchant-credentials.destroy');
-        Route::post('/merchant-credentials/{id}/toggle', 'Admin\MerchantCredentialController@toggle')->name('admin.merchant-credentials.toggle');
-        Route::post('/merchant-credentials/{id}/test', 'Admin\MerchantCredentialController@test')->name('admin.merchant-credentials.test');
-        //------------ ADMIN MERCHANT CREDENTIALS SECTION ENDS ------------
+        //------------ OPERATORMERCHANT CREDENTIALS SECTION ------------
+        Route::get('/merchant-credentials', 'Operator\MerchantCredentialController@index')->name('operator.merchant-credentials.index');
+        Route::get('/merchant-credentials/create', 'Operator\MerchantCredentialController@create')->name('operator.merchant-credentials.create');
+        Route::post('/merchant-credentials', 'Operator\MerchantCredentialController@store')->name('operator.merchant-credentials.store');
+        Route::get('/merchant-credentials/{id}/edit', 'Operator\MerchantCredentialController@edit')->name('operator.merchant-credentials.edit');
+        Route::put('/merchant-credentials/{id}', 'Operator\MerchantCredentialController@update')->name('operator.merchant-credentials.update');
+        Route::delete('/merchant-credentials/{id}', 'Operator\MerchantCredentialController@destroy')->name('operator.merchant-credentials.destroy');
+        Route::post('/merchant-credentials/{id}/toggle', 'Operator\MerchantCredentialController@toggle')->name('operator.merchant-credentials.toggle');
+        Route::post('/merchant-credentials/{id}/test', 'Operator\MerchantCredentialController@test')->name('operator.merchant-credentials.test');
+        //------------ OPERATORMERCHANT CREDENTIALS SECTION ENDS ------------
     });
 
-    //------------ ADMIN PURCHASE SECTION ------------
+    //------------ OPERATORPURCHASE SECTION ------------
 
     Route::group(['middleware' => 'permissions:purchases'], function () {
 
-        Route::get('/purchases/datatables/{slug}', 'Admin\PurchaseController@datatables')->name('admin-purchase-datatables'); //JSON REQUEST
-        Route::get('/purchases', 'Admin\PurchaseController@purchases')->name('admin-purchases-all');
-        Route::get('/purchase/edit/{id}', 'Admin\PurchaseController@edit')->name('admin-purchase-edit');
-        Route::post('/purchase/update/{id}', 'Admin\PurchaseController@update')->name('admin-purchase-update');
-        Route::get('/purchase/{id}/show', 'Admin\PurchaseController@show')->name('admin-purchase-show');
-        Route::get('/purchase/{id}/invoice', 'Admin\PurchaseController@invoice')->name('admin-purchase-invoice');
-        Route::get('/purchase/{id}/print', 'Admin\PurchaseController@printpage')->name('admin-purchase-print');
-        Route::get('/purchase/{id1}/status/{status}', 'Admin\PurchaseController@status')->name('admin-purchase-status');
-        Route::post('/purchase/email/', 'Admin\PurchaseController@emailsub')->name('admin-purchase-emailsub');
-        Route::post('/purchase/{id}/license', 'Admin\PurchaseController@license')->name('admin-purchase-license');
-        Route::post('/purchase/catalogItem-submit', 'Admin\PurchaseController@catalogItem_submit')->name('admin-purchase-catalogItem-submit');
-        Route::get('/purchase/catalogItem-show/{id}', 'Admin\PurchaseController@catalogItem_show');
-        Route::get('/purchase/addcart/{id}', 'Admin\PurchaseController@addcart');
-        Route::get('/purchasecart/catalogItem-edit/{id}/{itemid}/{purchaseid}', 'Admin\PurchaseController@catalogItem_edit')->name('admin-purchase-catalogItem-edit');
-        Route::get('/purchase/updatecart/{id}', 'Admin\PurchaseController@updatecart');
-        Route::get('/purchasecart/catalogItem-delete/{id}/{purchaseid}', 'Admin\PurchaseController@catalogItem_delete')->name('admin-purchase-catalogItem-delete');
+        Route::get('/purchases/datatables/{slug}', 'Operator\PurchaseController@datatables')->name('operator-purchase-datatables'); //JSON REQUEST
+        Route::get('/purchases', 'Operator\PurchaseController@purchases')->name('operator-purchases-all');
+        Route::get('/purchase/edit/{id}', 'Operator\PurchaseController@edit')->name('operator-purchase-edit');
+        Route::post('/purchase/update/{id}', 'Operator\PurchaseController@update')->name('operator-purchase-update');
+        Route::get('/purchase/{id}/show', 'Operator\PurchaseController@show')->name('operator-purchase-show');
+        Route::get('/purchase/{id}/invoice', 'Operator\PurchaseController@invoice')->name('operator-purchase-invoice');
+        Route::get('/purchase/{id}/print', 'Operator\PurchaseController@printpage')->name('operator-purchase-print');
+        Route::get('/purchase/{id1}/status/{status}', 'Operator\PurchaseController@status')->name('operator-purchase-status');
+        Route::post('/purchase/email/', 'Operator\PurchaseController@emailsub')->name('operator-purchase-emailsub');
+        Route::post('/purchase/{id}/license', 'Operator\PurchaseController@license')->name('operator-purchase-license');
+        Route::post('/purchase/catalogItem-submit', 'Operator\PurchaseController@catalogItem_submit')->name('operator-purchase-catalogItem-submit');
+        Route::get('/purchase/catalogItem-show/{id}', 'Operator\PurchaseController@catalogItem_show');
+        Route::get('/purchase/addcart/{id}', 'Operator\PurchaseController@addcart');
+        Route::get('/purchasecart/catalogItem-edit/{id}/{itemid}/{purchaseid}', 'Operator\PurchaseController@catalogItem_edit')->name('operator-purchase-catalogItem-edit');
+        Route::get('/purchase/updatecart/{id}', 'Operator\PurchaseController@updatecart');
+        Route::get('/purchasecart/catalogItem-delete/{id}/{purchaseid}', 'Operator\PurchaseController@catalogItem_delete')->name('operator-purchase-catalogItem-delete');
         // Purchase Tracking
 
         // CREATE PURCHASE
 
-        Route::get('/purchase/catalog-item/datatables', 'Admin\PurchaseCreateController@datatables')->name('admin-purchase-catalog-item-datatables');
-        Route::get('/purchase/create', 'Admin\PurchaseCreateController@create')->name('admin-purchase-create');
-        Route::get('/purchase/catalog-item/add/{catalog_item_id}', 'Admin\PurchaseCreateController@addCatalogItem')->name('admin-purchase-catalog-item-add');
-        Route::get('/purchase/catalog-item/add', 'Admin\PurchaseCreateController@purchaseStore')->name('admin.purchase.store.new');
-        Route::get('/purchase/catalog-item/remove/{catalog_item_id}', 'Admin\PurchaseCreateController@removePurchaseCatalogItem')->name('admin.purchase.catalog-item.remove');
-        Route::get('/purchase/create/catalog-item-show/{id}', 'Admin\PurchaseCreateController@catalog_item_show');
-        Route::get('/purchase/create/addcart/{id}', 'Admin\PurchaseCreateController@addcart');
-        Route::get('/purchase/remove/addcart/{id}', 'Admin\PurchaseCreateController@removeCart')->name('admin.purchase.remove.cart');
-        Route::get('/purchase/create/user-address', 'Admin\PurchaseCreateController@userAddress');
-        Route::post('/purchase/create/user-address', 'Admin\PurchaseCreateController@userAddressSubmit')->name('admin.purchase.create.user.address');
-        Route::post('/purchase/create/purchase/view', 'Admin\PurchaseCreateController@viewCreatePurchase')->name('admin.purchase.create.view');
-        Route::get('/purchase/create/purchase/submit', 'Admin\PurchaseCreateController@CreatePurchaseSubmit')->name('admin-purchase-create-submit');
+        Route::get('/purchase/catalog-item/datatables', 'Operator\PurchaseCreateController@datatables')->name('operator-purchase-catalog-item-datatables');
+        Route::get('/purchase/create', 'Operator\PurchaseCreateController@create')->name('operator-purchase-create');
+        Route::get('/purchase/catalog-item/add/{catalog_item_id}', 'Operator\PurchaseCreateController@addCatalogItem')->name('operator-purchase-catalog-item-add');
+        Route::get('/purchase/catalog-item/add', 'Operator\PurchaseCreateController@purchaseStore')->name('operator.purchase.store.new');
+        Route::get('/purchase/catalog-item/remove/{catalog_item_id}', 'Operator\PurchaseCreateController@removePurchaseCatalogItem')->name('operator.purchase.catalog-item.remove');
+        Route::get('/purchase/create/catalog-item-show/{id}', 'Operator\PurchaseCreateController@catalog_item_show');
+        Route::get('/purchase/create/addcart/{id}', 'Operator\PurchaseCreateController@addcart');
+        Route::get('/purchase/remove/addcart/{id}', 'Operator\PurchaseCreateController@removeCart')->name('operator.purchase.remove.cart');
+        Route::get('/purchase/create/user-address', 'Operator\PurchaseCreateController@userAddress');
+        Route::post('/purchase/create/user-address', 'Operator\PurchaseCreateController@userAddressSubmit')->name('operator.purchase.create.user.address');
+        Route::post('/purchase/create/purchase/view', 'Operator\PurchaseCreateController@viewCreatePurchase')->name('operator.purchase.create.view');
+        Route::get('/purchase/create/purchase/submit', 'Operator\PurchaseCreateController@CreatePurchaseSubmit')->name('operator-purchase-create-submit');
 
-        Route::get('/purchase/{id}/timeline', 'Admin\PurchaseTimelineController@index')->name('admin-purchase-timeline');
-        Route::get('/purchase/{id}/timelineload', 'Admin\PurchaseTimelineController@load')->name('admin-purchase-timeline-load');
-        Route::post('/purchase/timeline/store', 'Admin\PurchaseTimelineController@store')->name('admin-purchase-timeline-store');
-        Route::get('/purchase/timeline/add', 'Admin\PurchaseTimelineController@add')->name('admin-purchase-timeline-add');
-        Route::get('/purchase/timeline/edit/{id}', 'Admin\PurchaseTimelineController@edit')->name('admin-purchase-timeline-edit');
-        Route::post('/purchase/timeline/update/{id}', 'Admin\PurchaseTimelineController@update')->name('admin-purchase-timeline-update');
-        Route::delete('/purchase/timeline/delete/{id}', 'Admin\PurchaseTimelineController@delete')->name('admin-purchase-timeline-delete');
+        Route::get('/purchase/{id}/timeline', 'Operator\PurchaseTimelineController@index')->name('operator-purchase-timeline');
+        Route::get('/purchase/{id}/timelineload', 'Operator\PurchaseTimelineController@load')->name('operator-purchase-timeline-load');
+        Route::post('/purchase/timeline/store', 'Operator\PurchaseTimelineController@store')->name('operator-purchase-timeline-store');
+        Route::get('/purchase/timeline/add', 'Operator\PurchaseTimelineController@add')->name('operator-purchase-timeline-add');
+        Route::get('/purchase/timeline/edit/{id}', 'Operator\PurchaseTimelineController@edit')->name('operator-purchase-timeline-edit');
+        Route::post('/purchase/timeline/update/{id}', 'Operator\PurchaseTimelineController@update')->name('operator-purchase-timeline-update');
+        Route::delete('/purchase/timeline/delete/{id}', 'Operator\PurchaseTimelineController@delete')->name('operator-purchase-timeline-delete');
 
         // Purchase Tracking Ends
 
     });
 
-    //------------ ADMIN PURCHASE SECTION ENDS------------
+    //------------ OPERATORPURCHASE SECTION ENDS------------
 
-    //------------ ADMIN SHIPMENTS SECTION ------------
+    //------------ OPERATORSHIPMENTS SECTION ------------
 
     Route::group(['middleware' => 'permissions:purchases'], function () {
-        Route::get('/shipments', 'Admin\ShipmentController@index')->name('admin.shipments.index');
-        Route::get('/shipments/show/{tracking}', 'Admin\ShipmentController@show')->name('admin.shipments.show');
-        Route::get('/shipments/refresh/{tracking}', 'Admin\ShipmentController@refresh')->name('admin.shipments.refresh');
-        Route::post('/shipments/cancel/{tracking}', 'Admin\ShipmentController@cancel')->name('admin.shipments.cancel');
-        Route::get('/shipments/export', 'Admin\ShipmentController@export')->name('admin.shipments.export');
-        Route::post('/shipments/bulk-refresh', 'Admin\ShipmentController@bulkRefresh')->name('admin.shipments.bulk-refresh');
-        Route::get('/shipments/reports', 'Admin\ShipmentController@reports')->name('admin.shipments.reports');
+        Route::get('/shipments', 'Operator\ShipmentController@index')->name('operator.shipments.index');
+        Route::get('/shipments/show/{tracking}', 'Operator\ShipmentController@show')->name('operator.shipments.show');
+        Route::get('/shipments/refresh/{tracking}', 'Operator\ShipmentController@refresh')->name('operator.shipments.refresh');
+        Route::post('/shipments/cancel/{tracking}', 'Operator\ShipmentController@cancel')->name('operator.shipments.cancel');
+        Route::get('/shipments/export', 'Operator\ShipmentController@export')->name('operator.shipments.export');
+        Route::post('/shipments/bulk-refresh', 'Operator\ShipmentController@bulkRefresh')->name('operator.shipments.bulk-refresh');
+        Route::get('/shipments/reports', 'Operator\ShipmentController@reports')->name('operator.shipments.reports');
     });
 
-    //------------ ADMIN SHIPMENTS SECTION ENDS------------
+    //------------ OPERATORSHIPMENTS SECTION ENDS------------
 
     /////////////////////////////// ////////////////////////////////////////////
 
     // --------------- ADMIN COUNTRY & CITY SECTION (Protected) ---------------//
-    Route::middleware(['auth:admin'])->group(function () {
-        Route::get('/country/datatables', 'Admin\CountryController@datatables')->name('admin-country-datatables');
-        Route::get('/manage/country', 'Admin\CountryController@manageCountry')->name('admin-country-index');
-        Route::get('/manage/country/status/{id1}/{id2}', 'Admin\CountryController@status')->name('admin-country-status');
-        Route::get('/country/delete/{id}', 'Admin\CountryController@delete')->name('admin-country-delete');
-        Route::get('/country/tax/datatables', 'Admin\CountryController@taxDatatables')->name('admin-country-tax-datatables');
-        Route::get('/manage/country/tax', 'Admin\CountryController@country_tax')->name('admin-country-tax');
-        Route::get('/country/set-tax/{id}', 'Admin\CountryController@setTax')->name('admin-set-tax');
-        Route::post('/country/set-tax/store/{id}', 'Admin\CountryController@updateTax')->name('admin-tax-update');
+    Route::middleware(['auth:operator'])->group(function () {
+        Route::get('/country/datatables', 'Operator\CountryController@datatables')->name('operator-country-datatables');
+        Route::get('/manage/country', 'Operator\CountryController@manageCountry')->name('operator-country-index');
+        Route::get('/manage/country/status/{id1}/{id2}', 'Operator\CountryController@status')->name('operator-country-status');
+        Route::get('/country/delete/{id}', 'Operator\CountryController@delete')->name('operator-country-delete');
+        Route::get('/country/tax/datatables', 'Operator\CountryController@taxDatatables')->name('operator-country-tax-datatables');
+        Route::get('/manage/country/tax', 'Operator\CountryController@country_tax')->name('operator-country-tax');
+        Route::get('/country/set-tax/{id}', 'Operator\CountryController@setTax')->name('operator-set-tax');
+        Route::post('/country/set-tax/store/{id}', 'Operator\CountryController@updateTax')->name('operator-tax-update');
 
-        Route::get('/city/datatables/{country}', 'Admin\CityController@datatables')->name('admin-city-datatables');
-        Route::get('/manage/city/{country}', 'Admin\CityController@managecity')->name('admin-city-index');
-        Route::get('/city/create/{country}', 'Admin\CityController@create')->name('admin-city-create');
-        Route::post('/city/store/{country}', 'Admin\CityController@store')->name('admin-city-store');
-        Route::get('/city/status/{id1}/{id2}', 'Admin\CityController@status')->name('admin-city-status');
-        Route::get('/city/edit/{id}', 'Admin\CityController@edit')->name('admin-city-edit');
-        Route::post('/city/update/{id}', 'Admin\CityController@update')->name('admin-city-update');
-        Route::delete('/city/delete/{id}', 'Admin\CityController@delete')->name('admin-city-delete');
+        Route::get('/city/datatables/{country}', 'Operator\CityController@datatables')->name('operator-city-datatables');
+        Route::get('/manage/city/{country}', 'Operator\CityController@managecity')->name('operator-city-index');
+        Route::get('/city/create/{country}', 'Operator\CityController@create')->name('operator-city-create');
+        Route::post('/city/store/{country}', 'Operator\CityController@store')->name('operator-city-store');
+        Route::get('/city/status/{id1}/{id2}', 'Operator\CityController@status')->name('operator-city-status');
+        Route::get('/city/edit/{id}', 'Operator\CityController@edit')->name('operator-city-edit');
+        Route::post('/city/update/{id}', 'Operator\CityController@update')->name('operator-city-update');
+        Route::delete('/city/delete/{id}', 'Operator\CityController@delete')->name('operator-city-delete');
     });
     // --------------- ADMIN COUNTRY & CITY SECTION ENDS ---------------//
 
-    //------------ ADMIN CATEGORY SECTION ENDS------------
+    //------------ OPERATORCATEGORY SECTION ENDS------------
 
     Route::group(['middleware' => 'permissions:earning'], function () {
 
         // -------------------------- Admin Total Income Route --------------------------//
-        Route::get('tax/calculate', 'Admin\IncomeController@taxCalculate')->name('admin-tax-calculate-income');
-        Route::get('membership-plan/earning', 'Admin\IncomeController@membershipPlanIncome')->name('admin-membership-plan-income');
-        Route::get('withdraw/earning', 'Admin\IncomeController@withdrawIncome')->name('admin-withdraw-income');
-        Route::get('commission/earning', 'Admin\IncomeController@commissionIncome')->name('admin-commission-income');
+        Route::get('tax/calculate', 'Operator\IncomeController@taxCalculate')->name('operator-tax-calculate-income');
+        Route::get('membership-plan/earning', 'Operator\IncomeController@membershipPlanIncome')->name('operator-membership-plan-income');
+        Route::get('withdraw/earning', 'Operator\IncomeController@withdrawIncome')->name('operator-withdraw-income');
+        Route::get('commission/earning', 'Operator\IncomeController@commissionIncome')->name('operator-commission-income');
         // -------------------------- Admin Total Income Route --------------------------//
     });
 
@@ -327,151 +327,151 @@ Route::prefix('admin')->group(function () {
 
     // Note: Old Category/Subcategory/Childcategory and Attribute routes removed - now using TreeCategories
 
-    //------------ ADMIN CATALOG ITEM SECTION ------------
+    //------------ OPERATORCATALOG ITEM SECTION ------------
 
     Route::group(['middleware' => 'permissions:catalog_items'], function () {
-        Route::get('/catalog-items/datatables', 'Admin\CatalogItemController@datatables')->name('admin-catalog-item-datatables');
-        Route::get('/catalog-items', 'Admin\CatalogItemController@index')->name('admin-catalog-item-index');
-        Route::post('/catalog-items/upload/update/{id}', 'Admin\CatalogItemController@uploadUpdate')->name('admin-catalog-item-upload-update');
-        Route::get('/catalog-items/deactive', 'Admin\CatalogItemController@deactive')->name('admin-catalog-item-deactive');
-        Route::get('/catalog-items/catalogs/datatables', 'Admin\CatalogItemController@catalogdatatables')->name('admin-catalog-item-catalog-datatables');
-        Route::get('/catalog-items/catalogs/', 'Admin\CatalogItemController@catalogItemsCatalog')->name('admin-catalog-item-catalog-index');
+        Route::get('/catalog-items/datatables', 'Operator\CatalogItemController@datatables')->name('operator-catalog-item-datatables');
+        Route::get('/catalog-items', 'Operator\CatalogItemController@index')->name('operator-catalog-item-index');
+        Route::post('/catalog-items/upload/update/{id}', 'Operator\CatalogItemController@uploadUpdate')->name('operator-catalog-item-upload-update');
+        Route::get('/catalog-items/deactive', 'Operator\CatalogItemController@deactive')->name('operator-catalog-item-deactive');
+        Route::get('/catalog-items/catalogs/datatables', 'Operator\CatalogItemController@catalogdatatables')->name('operator-catalog-item-catalog-datatables');
+        Route::get('/catalog-items/catalogs/', 'Operator\CatalogItemController@catalogItemsCatalog')->name('operator-catalog-item-catalog-index');
 
         // CREATE SECTION
-        Route::get('/catalog-items/types', 'Admin\CatalogItemController@types')->name('admin-catalog-item-types');
-        Route::get('/catalog-items/{slug}/create', 'Admin\CatalogItemController@create')->name('admin-catalog-item-create');
-        Route::post('/catalog-items/store', 'Admin\CatalogItemController@store')->name('admin-catalog-item-store');
-        Route::get('/getspecs', 'Admin\CatalogItemController@getSpecs')->name('admin-catalog-item-getspecs');
-        Route::get('/get/crosscatalogitem/{catid}', 'Admin\CatalogItemController@getCrossCatalogItem');
+        Route::get('/catalog-items/types', 'Operator\CatalogItemController@types')->name('operator-catalog-item-types');
+        Route::get('/catalog-items/{slug}/create', 'Operator\CatalogItemController@create')->name('operator-catalog-item-create');
+        Route::post('/catalog-items/store', 'Operator\CatalogItemController@store')->name('operator-catalog-item-store');
+        Route::get('/getspecs', 'Operator\CatalogItemController@getSpecs')->name('operator-catalog-item-getspecs');
+        Route::get('/get/crosscatalogitem/{catid}', 'Operator\CatalogItemController@getCrossCatalogItem');
 
         // EDIT SECTION
-        Route::get('/catalog-items/edit/{merchantItemId}', 'Admin\CatalogItemController@edit')->name('admin-catalog-item-edit');
-        Route::post('/catalog-items/edit/{merchantItemId}', 'Admin\CatalogItemController@update')->name('admin-catalog-item-update');
+        Route::get('/catalog-items/edit/{merchantItemId}', 'Operator\CatalogItemController@edit')->name('operator-catalog-item-edit');
+        Route::post('/catalog-items/edit/{merchantItemId}', 'Operator\CatalogItemController@update')->name('operator-catalog-item-update');
 
         // DELETE SECTION
-        Route::delete('/catalog-items/delete/{id}', 'Admin\CatalogItemController@destroy')->name('admin-catalog-item-delete');
+        Route::delete('/catalog-items/delete/{id}', 'Operator\CatalogItemController@destroy')->name('operator-catalog-item-delete');
 
-        Route::get('/catalog-items/catalog/{id1}/{id2}', 'Admin\CatalogItemController@catalog')->name('admin-catalog-item-catalog');
-        Route::get('/catalog-items/feature/{id}', 'Admin\CatalogItemController@feature')->name('admin-catalog-item-feature');
-        Route::post('/catalog-items/feature/{id}', 'Admin\CatalogItemController@featuresubmit')->name('admin-catalog-item-feature.store');
-        Route::get('/catalog-items/status/{id1}/{id2}', 'Admin\CatalogItemController@status')->name('admin-catalog-item-status');
-        Route::get('/merchant-items/status/{id}/{status}', 'Admin\CatalogItemController@merchantItemStatus')->name('admin-merchant-item-status');
-        Route::get('/catalog-items/settings', 'Admin\CatalogItemController@catalogItemSettings')->name('admin-gs-catalog-item-settings');
-        Route::post('/catalog-items/settings/update', 'Admin\CatalogItemController@settingUpdate')->name('admin-gs-catalog-item-settings-update');
+        Route::get('/catalog-items/catalog/{id1}/{id2}', 'Operator\CatalogItemController@catalog')->name('operator-catalog-item-catalog');
+        Route::get('/catalog-items/feature/{id}', 'Operator\CatalogItemController@feature')->name('operator-catalog-item-feature');
+        Route::post('/catalog-items/feature/{id}', 'Operator\CatalogItemController@featuresubmit')->name('operator-catalog-item-feature.store');
+        Route::get('/catalog-items/status/{id1}/{id2}', 'Operator\CatalogItemController@status')->name('operator-catalog-item-status');
+        Route::get('/merchant-items/status/{id}/{status}', 'Operator\CatalogItemController@merchantItemStatus')->name('operator-merchant-item-status');
+        Route::get('/catalog-items/settings', 'Operator\CatalogItemController@catalogItemSettings')->name('operator-gs-catalog-item-settings');
+        Route::post('/catalog-items/settings/update', 'Operator\CatalogItemController@settingUpdate')->name('operator-gs-catalog-item-settings-update');
     });
 
-    //------------ ADMIN CATALOG ITEM SECTION ENDS------------
+    //------------ OPERATORCATALOG ITEM SECTION ENDS------------
 
-    //------------ ADMIN AFFILIATE CATALOG ITEM SECTION ------------
+    //------------ OPERATORAFFILIATE CATALOG ITEM SECTION ------------
 
     Route::group(['middleware' => 'permissions:affilate_catalog_items'], function () {
-        Route::get('/catalog-items/import/create', 'Admin\ImportController@createImport')->name('admin-import-create');
-        Route::get('/catalog-items/import/edit/{id}', 'Admin\ImportController@edit')->name('admin-import-edit');
-        Route::get('/catalog-items/import/datatables', 'Admin\ImportController@datatables')->name('admin-import-datatables');
-        Route::get('/catalog-items/import/index', 'Admin\ImportController@index')->name('admin-import-index');
-        Route::post('/catalog-items/import/store', 'Admin\ImportController@store')->name('admin-import-store');
-        Route::post('/catalog-items/import/update/{id}', 'Admin\ImportController@update')->name('admin-import-update');
-        Route::delete('/affiliate/catalog-items/delete/{id}', 'Admin\CatalogItemController@destroy')->name('admin-affiliate-catalog-item-delete');
+        Route::get('/catalog-items/import/create', 'Operator\ImportController@createImport')->name('operator-import-create');
+        Route::get('/catalog-items/import/edit/{id}', 'Operator\ImportController@edit')->name('operator-import-edit');
+        Route::get('/catalog-items/import/datatables', 'Operator\ImportController@datatables')->name('operator-import-datatables');
+        Route::get('/catalog-items/import/index', 'Operator\ImportController@index')->name('operator-import-index');
+        Route::post('/catalog-items/import/store', 'Operator\ImportController@store')->name('operator-import-store');
+        Route::post('/catalog-items/import/update/{id}', 'Operator\ImportController@update')->name('operator-import-update');
+        Route::delete('/affiliate/catalog-items/delete/{id}', 'Operator\CatalogItemController@destroy')->name('operator-affiliate-catalog-item-delete');
     });
 
-    //------------ ADMIN AFFILIATE CATALOG ITEM SECTION ENDS ------------
+    //------------ OPERATORAFFILIATE CATALOG ITEM SECTION ENDS ------------
 
-    //------------ ADMIN CSV IMPORT SECTION ------------
+    //------------ OPERATORCSV IMPORT SECTION ------------
 
     Route::group(['middleware' => 'permissions:bulk_catalog_item_upload'], function () {
-        Route::get('/catalog-items/import', 'Admin\CatalogItemController@import')->name('admin-catalog-item-import');
-        Route::post('/catalog-items/import-submit', 'Admin\CatalogItemController@importSubmit')->name('admin-catalog-item-importsubmit');
+        Route::get('/catalog-items/import', 'Operator\CatalogItemController@import')->name('operator-catalog-item-import');
+        Route::post('/catalog-items/import-submit', 'Operator\CatalogItemController@importSubmit')->name('operator-catalog-item-importsubmit');
     });
 
-    //------------ ADMIN CSV IMPORT SECTION ENDS ------------
+    //------------ OPERATORCSV IMPORT SECTION ENDS ------------
 
-    //------------ ADMIN CATALOGITEM DISCUSSION SECTION ------------
+    //------------ OPERATORCATALOGITEM DISCUSSION SECTION ------------
 
     Route::group(['middleware' => 'permissions:catalogItem_discussion'], function () {
 
         // CATALOG REVIEW SECTION ------------
 
-        Route::get('/catalog-reviews/datatables', 'Admin\CatalogReviewController@datatables')->name('admin-catalog-review-datatables'); //JSON REQUEST
-        Route::get('/catalog-reviews', 'Admin\CatalogReviewController@index')->name('admin-catalog-review-index');
-        Route::delete('/catalog-reviews/delete/{id}', 'Admin\CatalogReviewController@destroy')->name('admin-catalog-review-delete');
-        Route::get('/catalog-reviews/show/{id}', 'Admin\CatalogReviewController@show')->name('admin-catalog-review-show');
+        Route::get('/catalog-reviews/datatables', 'Operator\CatalogReviewController@datatables')->name('operator-catalog-review-datatables'); //JSON REQUEST
+        Route::get('/catalog-reviews', 'Operator\CatalogReviewController@index')->name('operator-catalog-review-index');
+        Route::delete('/catalog-reviews/delete/{id}', 'Operator\CatalogReviewController@destroy')->name('operator-catalog-review-delete');
+        Route::get('/catalog-reviews/show/{id}', 'Operator\CatalogReviewController@show')->name('operator-catalog-review-show');
 
         // CATALOG REVIEW SECTION ENDS------------
 
         // BUYER NOTE SECTION ------------
 
-        Route::get('/buyer-notes/datatables', 'Admin\BuyerNoteController@datatables')->name('admin-buyer-note-datatables'); //JSON REQUEST
-        Route::get('/buyer-notes', 'Admin\BuyerNoteController@index')->name('admin-buyer-note-index');
-        Route::delete('/buyer-notes/delete/{id}', 'Admin\BuyerNoteController@destroy')->name('admin-buyer-note-delete');
-        Route::get('/buyer-notes/show/{id}', 'Admin\BuyerNoteController@show')->name('admin-buyer-note-show');
+        Route::get('/buyer-notes/datatables', 'Operator\BuyerNoteController@datatables')->name('operator-buyer-note-datatables'); //JSON REQUEST
+        Route::get('/buyer-notes', 'Operator\BuyerNoteController@index')->name('operator-buyer-note-index');
+        Route::delete('/buyer-notes/delete/{id}', 'Operator\BuyerNoteController@destroy')->name('operator-buyer-note-delete');
+        Route::get('/buyer-notes/show/{id}', 'Operator\BuyerNoteController@show')->name('operator-buyer-note-show');
 
         // BUYER NOTE SECTION ENDS ------------
 
         // ABUSE FLAG SECTION ------------
 
-        Route::get('/abuse-flags/datatables', 'Admin\AbuseFlagController@datatables')->name('admin-abuse-flag-datatables'); //JSON REQUEST
-        Route::get('/abuse-flags', 'Admin\AbuseFlagController@index')->name('admin-abuse-flag-index');
-        Route::delete('/abuse-flags/delete/{id}', 'Admin\AbuseFlagController@destroy')->name('admin-abuse-flag-delete');
-        Route::get('/abuse-flags/show/{id}', 'Admin\AbuseFlagController@show')->name('admin-abuse-flag-show');
+        Route::get('/abuse-flags/datatables', 'Operator\AbuseFlagController@datatables')->name('operator-abuse-flag-datatables'); //JSON REQUEST
+        Route::get('/abuse-flags', 'Operator\AbuseFlagController@index')->name('operator-abuse-flag-index');
+        Route::delete('/abuse-flags/delete/{id}', 'Operator\AbuseFlagController@destroy')->name('operator-abuse-flag-delete');
+        Route::get('/abuse-flags/show/{id}', 'Operator\AbuseFlagController@show')->name('operator-abuse-flag-show');
 
         // ABUSE FLAG SECTION ENDS ------------
 
     });
 
-    //------------ ADMIN PRODUCT DISCUSSION SECTION ENDS ------------
+    //------------ OPERATORPRODUCT DISCUSSION SECTION ENDS ------------
 
-    //------------ ADMIN DISCOUNT CODE SECTION ------------
+    //------------ OPERATORDISCOUNT CODE SECTION ------------
 
     Route::group(['middleware' => 'permissions:set_discount_codes'], function () {
 
-        Route::get('/discount-code/datatables', 'Admin\DiscountCodeController@datatables')->name('admin-discount-code-datatables'); //JSON REQUEST
-        Route::get('/discount-code', 'Admin\DiscountCodeController@index')->name('admin-discount-code-index');
-        Route::get('/discount-code/create', 'Admin\DiscountCodeController@create')->name('admin-discount-code-create');
-        Route::post('/discount-code/create', 'Admin\DiscountCodeController@store')->name('admin-discount-code-store');
-        Route::get('/discount-code/edit/{id}', 'Admin\DiscountCodeController@edit')->name('admin-discount-code-edit');
-        Route::post('/discount-code/edit/{id}', 'Admin\DiscountCodeController@update')->name('admin-discount-code-update');
-        Route::delete('/discount-code/delete/{id}', 'Admin\DiscountCodeController@destroy')->name('admin-discount-code-delete');
-        Route::get('/discount-code/status/{id1}/{id2}', 'Admin\DiscountCodeController@status')->name('admin-discount-code-status');
+        Route::get('/discount-code/datatables', 'Operator\DiscountCodeController@datatables')->name('operator-discount-code-datatables'); //JSON REQUEST
+        Route::get('/discount-code', 'Operator\DiscountCodeController@index')->name('operator-discount-code-index');
+        Route::get('/discount-code/create', 'Operator\DiscountCodeController@create')->name('operator-discount-code-create');
+        Route::post('/discount-code/create', 'Operator\DiscountCodeController@store')->name('operator-discount-code-store');
+        Route::get('/discount-code/edit/{id}', 'Operator\DiscountCodeController@edit')->name('operator-discount-code-edit');
+        Route::post('/discount-code/edit/{id}', 'Operator\DiscountCodeController@update')->name('operator-discount-code-update');
+        Route::delete('/discount-code/delete/{id}', 'Operator\DiscountCodeController@destroy')->name('operator-discount-code-delete');
+        Route::get('/discount-code/status/{id1}/{id2}', 'Operator\DiscountCodeController@status')->name('operator-discount-code-status');
     });
 
-    //------------ ADMIN DISCOUNT CODE SECTION ENDS------------
+    //------------ OPERATORDISCOUNT CODE SECTION ENDS------------
 
-    //------------ ADMIN USER SECTION ------------
+    //------------ OPERATORUSER SECTION ------------
 
     Route::group(['middleware' => 'permissions:customers'], function () {
 
-        Route::get('/users/datatables', 'Admin\UserController@datatables')->name('admin-user-datatables'); //JSON REQUEST
-        Route::get('/users', 'Admin\UserController@index')->name('admin-user-index');
-        Route::get('/users/create', 'Admin\UserController@create')->name('admin-user-create');
-        Route::post('/users/store', 'Admin\UserController@store')->name('admin-user-store');
-        Route::get('/users/edit/{id}', 'Admin\UserController@edit')->name('admin-user-edit');
-        Route::post('/users/edit/{id}', 'Admin\UserController@update')->name('admin-user-update');
-        Route::delete('/users/delete/{id}', 'Admin\UserController@destroy')->name('admin-user-delete');
-        Route::get('/user/{id}/show', 'Admin\UserController@show')->name('admin-user-show');
-        Route::get('/users/ban/{id1}/{id2}', 'Admin\UserController@ban')->name('admin-user-ban');
-        Route::get('/user/default/image', 'Admin\MuaadhSettingController@user_image')->name('admin-user-image');
-        Route::get('/users/top-up/{id}', 'Admin\UserController@topUp')->name('admin-user-top-up');
-        Route::post('/user/top-up/{id}', 'Admin\UserController@topUpUpdate')->name('admin-user-top-up-update');
-        Route::get('/users/merchant/{id}', 'Admin\UserController@merchant')->name('admin-user-merchant');
-        Route::post('/user/merchant/{id}', 'Admin\UserController@setMerchant')->name('admin-user-merchant-update');
+        Route::get('/users/datatables', 'Operator\UserController@datatables')->name('operator-user-datatables'); //JSON REQUEST
+        Route::get('/users', 'Operator\UserController@index')->name('operator-user-index');
+        Route::get('/users/create', 'Operator\UserController@create')->name('operator-user-create');
+        Route::post('/users/store', 'Operator\UserController@store')->name('operator-user-store');
+        Route::get('/users/edit/{id}', 'Operator\UserController@edit')->name('operator-user-edit');
+        Route::post('/users/edit/{id}', 'Operator\UserController@update')->name('operator-user-update');
+        Route::delete('/users/delete/{id}', 'Operator\UserController@destroy')->name('operator-user-delete');
+        Route::get('/user/{id}/show', 'Operator\UserController@show')->name('operator-user-show');
+        Route::get('/users/ban/{id1}/{id2}', 'Operator\UserController@ban')->name('operator-user-ban');
+        Route::get('/user/default/image', 'Operator\MuaadhSettingController@user_image')->name('operator-user-image');
+        Route::get('/users/top-up/{id}', 'Operator\UserController@topUp')->name('operator-user-top-up');
+        Route::post('/user/top-up/{id}', 'Operator\UserController@topUpUpdate')->name('operator-user-top-up-update');
+        Route::get('/users/merchant/{id}', 'Operator\UserController@merchant')->name('operator-user-merchant');
+        Route::post('/user/merchant/{id}', 'Operator\UserController@setMerchant')->name('operator-user-merchant-update');
 
         //USER WITHDRAW SECTION
 
-        Route::get('/users/withdraws/datatables', 'Admin\UserController@withdrawdatatables')->name('admin-withdraw-datatables'); //JSON REQUEST
-        Route::get('/users/withdraws', 'Admin\UserController@withdraws')->name('admin-withdraw-index');
-        Route::get('/user/withdraw/{id}/show', 'Admin\UserController@withdrawdetails')->name('admin-withdraw-show');
-        Route::get('/users/withdraws/accept/{id}', 'Admin\UserController@accept')->name('admin-withdraw-accept');
-        Route::get('/user/withdraws/reject/{id}', 'Admin\UserController@reject')->name('admin-withdraw-reject');
+        Route::get('/users/withdraws/datatables', 'Operator\UserController@withdrawdatatables')->name('operator-withdraw-datatables'); //JSON REQUEST
+        Route::get('/users/withdraws', 'Operator\UserController@withdraws')->name('operator-withdraw-index');
+        Route::get('/user/withdraw/{id}/show', 'Operator\UserController@withdrawdetails')->name('operator-withdraw-show');
+        Route::get('/users/withdraws/accept/{id}', 'Operator\UserController@accept')->name('operator-withdraw-accept');
+        Route::get('/user/withdraws/reject/{id}', 'Operator\UserController@reject')->name('operator-withdraw-reject');
 
         // WITHDRAW SECTION ENDS
 
         //COURIER WITHDRAW SECTION
 
-        Route::get('/courier/withdraws/datatables', 'Admin\CourierController@withdrawdatatables')->name('admin-withdraw-courier-datatables'); //JSON REQUEST
-        Route::get('/courier/withdraws', 'Admin\CourierController@withdraws')->name('admin-withdraw-courier-index');
-        Route::get('/courier/withdraw/show/{id}', 'Admin\CourierController@withdrawdetails')->name('admin-withdraw-courier-show');
-        Route::get('/courier/withdraw/accept/{id}', 'Admin\CourierController@accept')->name('admin-withdraw-courier-accept');
-        Route::get('/courier/withdraw/reject/{id}', 'Admin\CourierController@reject')->name('admin-withdraw-courier-reject');
+        Route::get('/courier/withdraws/datatables', 'Operator\CourierController@withdrawdatatables')->name('operator-withdraw-courier-datatables'); //JSON REQUEST
+        Route::get('/courier/withdraws', 'Operator\CourierController@withdraws')->name('operator-withdraw-courier-index');
+        Route::get('/courier/withdraw/show/{id}', 'Operator\CourierController@withdrawdetails')->name('operator-withdraw-courier-show');
+        Route::get('/courier/withdraw/accept/{id}', 'Operator\CourierController@accept')->name('operator-withdraw-courier-accept');
+        Route::get('/courier/withdraw/reject/{id}', 'Operator\CourierController@reject')->name('operator-withdraw-courier-reject');
 
         // WITHDRAW SECTION ENDS
 
@@ -479,464 +479,464 @@ Route::prefix('admin')->group(function () {
 
     Route::group(['middleware' => 'permissions:couriers'], function () {
 
-        Route::get('/couriers/datatables', 'Admin\CourierController@datatables')->name('admin-courier-datatables'); //JSON REQUEST
-        Route::get('/couriers', 'Admin\CourierController@index')->name('admin-courier-index');
+        Route::get('/couriers/datatables', 'Operator\CourierController@datatables')->name('operator-courier-datatables'); //JSON REQUEST
+        Route::get('/couriers', 'Operator\CourierController@index')->name('operator-courier-index');
 
-        Route::delete('/couriers/delete/{id}', 'Admin\CourierController@destroy')->name('admin-courier-delete');
-        Route::get('/courier/{id}/show', 'Admin\CourierController@show')->name('admin-courier-show');
-        Route::get('/couriers/ban/{id1}/{id2}', 'Admin\CourierController@ban')->name('admin-courier-ban');
-        Route::get('/courier/default/image', 'Admin\MuaadhSettingController@courier_image')->name('admin-courier-image');
+        Route::delete('/couriers/delete/{id}', 'Operator\CourierController@destroy')->name('operator-courier-delete');
+        Route::get('/courier/{id}/show', 'Operator\CourierController@show')->name('operator-courier-show');
+        Route::get('/couriers/ban/{id1}/{id2}', 'Operator\CourierController@ban')->name('operator-courier-ban');
+        Route::get('/courier/default/image', 'Operator\MuaadhSettingController@courier_image')->name('operator-courier-image');
 
         // WITHDRAW SECTION
 
-        Route::get('/couriers/withdraws/datatables', 'Admin\CourierController@withdrawdatatables')->name('admin-courier-withdraw-datatables'); //JSON REQUEST
-        Route::get('/couriers/withdraws', 'Admin\CourierController@withdraws')->name('admin-courier-withdraw-index');
-        Route::get('/courier/withdraw/{id}/show', 'Admin\CourierController@withdrawdetails')->name('admin-courier-withdraw-show');
-        Route::get('/couriers/withdraws/accept/{id}', 'Admin\CourierController@accept')->name('admin-courier-withdraw-accept');
-        Route::get('/courier/withdraws/reject/{id}', 'Admin\CourierController@reject')->name('admin-courier-withdraw-reject');
+        Route::get('/couriers/withdraws/datatables', 'Operator\CourierController@withdrawdatatables')->name('operator-courier-withdraw-datatables'); //JSON REQUEST
+        Route::get('/couriers/withdraws', 'Operator\CourierController@withdraws')->name('operator-courier-withdraw-index');
+        Route::get('/courier/withdraw/{id}/show', 'Operator\CourierController@withdrawdetails')->name('operator-courier-withdraw-show');
+        Route::get('/couriers/withdraws/accept/{id}', 'Operator\CourierController@accept')->name('operator-courier-withdraw-accept');
+        Route::get('/courier/withdraws/reject/{id}', 'Operator\CourierController@reject')->name('operator-courier-withdraw-reject');
 
         // WITHDRAW SECTION ENDS
 
     });
 
-    //------------ ADMIN USER TOP UP & TRANSACTION SECTION ------------
+    //------------ OPERATORUSER TOP UP & TRANSACTION SECTION ------------
 
     Route::group(['middleware' => 'permissions:customer_top_ups'], function () {
 
-        Route::get('/users/top-up/datatables/{status}', 'Admin\UserTopUpController@datatables')->name('admin-user-top-up-datatables'); //JSON REQUEST
-        Route::get('/users/top-ups/{slug}', 'Admin\UserTopUpController@topUps')->name('admin-user-top-ups');
-        Route::get('/users/top-ups/status/{id1}/{id2}', 'Admin\UserTopUpController@status')->name('admin-user-top-up-status');
-        Route::get('/wallet-logs/datatables', 'Admin\WalletLogController@transdatatables')->name('admin-wallet-log-datatables'); //JSON REQUEST
-        Route::get('/wallet-logs', 'Admin\WalletLogController@index')->name('admin-wallet-log-index');
-        Route::get('/wallet-logs/{id}/show', 'Admin\WalletLogController@transhow')->name('admin-wallet-log-show');
+        Route::get('/users/top-up/datatables/{status}', 'Operator\UserTopUpController@datatables')->name('operator-user-top-up-datatables'); //JSON REQUEST
+        Route::get('/users/top-ups/{slug}', 'Operator\UserTopUpController@topUps')->name('operator-user-top-ups');
+        Route::get('/users/top-ups/status/{id1}/{id2}', 'Operator\UserTopUpController@status')->name('operator-user-top-up-status');
+        Route::get('/wallet-logs/datatables', 'Operator\WalletLogController@transdatatables')->name('operator-wallet-log-datatables'); //JSON REQUEST
+        Route::get('/wallet-logs', 'Operator\WalletLogController@index')->name('operator-wallet-log-index');
+        Route::get('/wallet-logs/{id}/show', 'Operator\WalletLogController@transhow')->name('operator-wallet-log-show');
     });
 
-    //------------ ADMIN USER DEPOSIT & TRANSACTION SECTION ------------
+    //------------ OPERATORUSER DEPOSIT & TRANSACTION SECTION ------------
 
-    //------------ ADMIN MERCHANT SECTION ------------
+    //------------ OPERATORMERCHANT SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendors'], function () {
 
-        Route::get('/merchants/datatables', 'Admin\MerchantController@datatables')->name('admin-merchant-datatables');
-        Route::get('/merchants', 'Admin\MerchantController@index')->name('admin-merchant-index');
+        Route::get('/merchants/datatables', 'Operator\MerchantController@datatables')->name('operator-merchant-datatables');
+        Route::get('/merchants', 'Operator\MerchantController@index')->name('operator-merchant-index');
 
-        Route::get('/merchants/{id}/show', 'Admin\MerchantController@show')->name('admin-merchant-show');
-        Route::get('/merchants/secret/login/{id}', 'Admin\MerchantController@secret')->name('admin-merchant-secret');
-        Route::get('/merchant/edit/{id}', 'Admin\MerchantController@edit')->name('admin-merchant-edit');
-        Route::post('/merchant/edit/{id}', 'Admin\MerchantController@update')->name('admin-merchant-update');
+        Route::get('/merchants/{id}/show', 'Operator\MerchantController@show')->name('operator-merchant-show');
+        Route::get('/merchants/secret/login/{id}', 'Operator\MerchantController@secret')->name('operator-merchant-secret');
+        Route::get('/merchant/edit/{id}', 'Operator\MerchantController@edit')->name('operator-merchant-edit');
+        Route::post('/merchant/edit/{id}', 'Operator\MerchantController@update')->name('operator-merchant-update');
 
-        Route::get('/merchant/verify/{id}', 'Admin\MerchantController@verify')->name('admin-merchant-verify');
-        Route::post('/merchant/verify/{id}', 'Admin\MerchantController@verifySubmit')->name('admin-merchant-verify-submit');
+        Route::get('/merchant/verify/{id}', 'Operator\MerchantController@verify')->name('operator-merchant-verify');
+        Route::post('/merchant/verify/{id}', 'Operator\MerchantController@verifySubmit')->name('operator-merchant-verify-submit');
 
-        Route::get('/add/membership-plan/{id}', 'Admin\MerchantController@addMembershipPlan')->name('admin-merchant-add-membership-plan');
-        Route::post('/add/membership-plan/{id}', 'Admin\MerchantController@addMembershipPlanStore')->name('admin-merchant-membership-plan-store');
+        Route::get('/add/membership-plan/{id}', 'Operator\MerchantController@addMembershipPlan')->name('operator-merchant-add-membership-plan');
+        Route::post('/add/membership-plan/{id}', 'Operator\MerchantController@addMembershipPlanStore')->name('operator-merchant-membership-plan-store');
 
-        Route::get('/merchant/color', 'Admin\MuaadhSettingController@merchant_color')->name('admin-merchant-color');
-        Route::get('/merchants/status/{id1}/{id2}', 'Admin\MerchantController@status')->name('admin-merchant-st');
-        Route::delete('/merchants/delete/{id}', 'Admin\MerchantController@destroy')->name('admin-merchant-delete');
-        Route::get('/merchant/commission/collect/{id}', 'Admin\MerchantController@commissionCollect')->name('admin-merchant-commission-collect');
+        Route::get('/merchant/color', 'Operator\MuaadhSettingController@merchant_color')->name('operator-merchant-color');
+        Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
+        Route::delete('/merchants/delete/{id}', 'Operator\MerchantController@destroy')->name('operator-merchant-delete');
+        Route::get('/merchant/commission/collect/{id}', 'Operator\MerchantController@commissionCollect')->name('operator-merchant-commission-collect');
 
-        Route::get('/merchants/withdraws/datatables', 'Admin\MerchantController@withdrawdatatables')->name('admin-merchant-withdraw-datatables'); //JSON REQUEST
-        Route::get('/merchants/withdraws', 'Admin\MerchantController@withdraws')->name('admin-merchant-withdraw-index');
-        Route::get('/merchants/withdraw/{id}/show', 'Admin\MerchantController@withdrawdetails')->name('admin-merchant-withdraw-show');
-        Route::get('/merchants/withdraws/accept/{id}', 'Admin\MerchantController@accept')->name('admin-merchant-withdraw-accept');
-        Route::get('/merchants/withdraws/reject/{id}', 'Admin\MerchantController@reject')->name('admin-merchant-withdraw-reject');
+        Route::get('/merchants/withdraws/datatables', 'Operator\MerchantController@withdrawdatatables')->name('operator-merchant-withdraw-datatables'); //JSON REQUEST
+        Route::get('/merchants/withdraws', 'Operator\MerchantController@withdraws')->name('operator-merchant-withdraw-index');
+        Route::get('/merchants/withdraw/{id}/show', 'Operator\MerchantController@withdrawdetails')->name('operator-merchant-withdraw-show');
+        Route::get('/merchants/withdraws/accept/{id}', 'Operator\MerchantController@accept')->name('operator-merchant-withdraw-accept');
+        Route::get('/merchants/withdraws/reject/{id}', 'Operator\MerchantController@reject')->name('operator-merchant-withdraw-reject');
     });
 
-    //------------ ADMIN MERCHANT SECTION ENDS ------------
+    //------------ OPERATORMERCHANT SECTION ENDS ------------
 
-    //------------ ADMIN MEMBERSHIP PLAN SECTION ------------
+    //------------ OPERATORMEMBERSHIP PLAN SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendor_membership_plans'], function () {
 
-        Route::get('/membership-plan/datatables', 'Admin\MembershipPlanController@datatables')->name('admin-membership-plan-datatables');
-        Route::get('/membership-plan', 'Admin\MembershipPlanController@index')->name('admin-membership-plan-index');
-        Route::get('/membership-plan/create', 'Admin\MembershipPlanController@create')->name('admin-membership-plan-create');
-        Route::post('/membership-plan/create', 'Admin\MembershipPlanController@store')->name('admin-membership-plan-store');
-        Route::get('/membership-plan/edit/{id}', 'Admin\MembershipPlanController@edit')->name('admin-membership-plan-edit');
-        Route::post('/membership-plan/edit/{id}', 'Admin\MembershipPlanController@update')->name('admin-membership-plan-update');
-        Route::delete('/membership-plan/delete/{id}', 'Admin\MembershipPlanController@destroy')->name('admin-membership-plan-delete');
+        Route::get('/membership-plan/datatables', 'Operator\MembershipPlanController@datatables')->name('operator-membership-plan-datatables');
+        Route::get('/membership-plan', 'Operator\MembershipPlanController@index')->name('operator-membership-plan-index');
+        Route::get('/membership-plan/create', 'Operator\MembershipPlanController@create')->name('operator-membership-plan-create');
+        Route::post('/membership-plan/create', 'Operator\MembershipPlanController@store')->name('operator-membership-plan-store');
+        Route::get('/membership-plan/edit/{id}', 'Operator\MembershipPlanController@edit')->name('operator-membership-plan-edit');
+        Route::post('/membership-plan/edit/{id}', 'Operator\MembershipPlanController@update')->name('operator-membership-plan-update');
+        Route::delete('/membership-plan/delete/{id}', 'Operator\MembershipPlanController@destroy')->name('operator-membership-plan-delete');
     });
 
-    //------------ ADMIN MEMBERSHIP PLAN SECTION ENDS ------------
+    //------------ OPERATORMEMBERSHIP PLAN SECTION ENDS ------------
 
-    //------------ ADMIN VENDOR VERIFICATION SECTION ------------
+    //------------ OPERATORVENDOR VERIFICATION SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendor_verifications'], function () {
 
-        Route::get('/verificatons/datatables/{status}', 'Admin\VerificationController@datatables')->name('admin-vr-datatables');
-        Route::get('/verificatons/{slug}', 'Admin\VerificationController@verificatons')->name('admin-vr-index');
-        Route::get('/verificatons/show/attachment', 'Admin\VerificationController@show')->name('admin-vr-show');
-        Route::get('/verificatons/edit/{id}', 'Admin\VerificationController@edit')->name('admin-vr-edit');
-        Route::post('/verificatons/edit/{id}', 'Admin\VerificationController@update')->name('admin-vr-update');
-        Route::get('/verificatons/status/{id1}/{id2}', 'Admin\VerificationController@status')->name('admin-vr-st');
-        Route::delete('/verificatons/delete/{id}', 'Admin\VerificationController@destroy')->name('admin-vr-delete');
+        Route::get('/verificatons/datatables/{status}', 'Operator\VerificationController@datatables')->name('operator-vr-datatables');
+        Route::get('/verificatons/{slug}', 'Operator\VerificationController@verificatons')->name('operator-vr-index');
+        Route::get('/verificatons/show/attachment', 'Operator\VerificationController@show')->name('operator-vr-show');
+        Route::get('/verificatons/edit/{id}', 'Operator\VerificationController@edit')->name('operator-vr-edit');
+        Route::post('/verificatons/edit/{id}', 'Operator\VerificationController@update')->name('operator-vr-update');
+        Route::get('/verificatons/status/{id1}/{id2}', 'Operator\VerificationController@status')->name('operator-vr-st');
+        Route::delete('/verificatons/delete/{id}', 'Operator\VerificationController@destroy')->name('operator-vr-delete');
     });
 
-    //------------ ADMIN VENDOR VERIFICATION SECTION ENDS ------------
+    //------------ OPERATORVENDOR VERIFICATION SECTION ENDS ------------
 
-    //------------ ADMIN MERCHANT MEMBERSHIP PLAN SECTION ------------
+    //------------ OPERATORMERCHANT MEMBERSHIP PLAN SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendor_membership_plans'], function () {
 
-        Route::get('/merchants/membership-plans/datatables/{status}', 'Admin\MerchantMembershipPlanController@datatables')->name('admin-merchant-membership-plan-datatables');
-        Route::get('/merchants/membership-plans/{slug}', 'Admin\MerchantMembershipPlanController@index')->name('admin-merchant-membership-plans');
-        Route::get('/merchants/membership-plans/status/{id1}/{id2}', 'Admin\MerchantMembershipPlanController@status')->name('admin-user-membership-plan-status');
-        Route::get('/merchants/membership-plan/{id}', 'Admin\MerchantMembershipPlanController@show')->name('admin-merchant-membership-plan');
+        Route::get('/merchants/membership-plans/datatables/{status}', 'Operator\MerchantMembershipPlanController@datatables')->name('operator-merchant-membership-plan-datatables');
+        Route::get('/merchants/membership-plans/{slug}', 'Operator\MerchantMembershipPlanController@index')->name('operator-merchant-membership-plans');
+        Route::get('/merchants/membership-plans/status/{id1}/{id2}', 'Operator\MerchantMembershipPlanController@status')->name('operator-user-membership-plan-status');
+        Route::get('/merchants/membership-plan/{id}', 'Operator\MerchantMembershipPlanController@show')->name('operator-merchant-membership-plan');
     });
 
-    //------------ ADMIN MERCHANT MEMBERSHIP PLAN SECTION ENDS ------------
+    //------------ OPERATORMERCHANT MEMBERSHIP PLAN SECTION ENDS ------------
 
-    //------------ ADMIN SUPPORT TICKET SECTION ------------
+    //------------ OPERATORSUPPORT TICKET SECTION ------------
 
     Route::group(['middleware' => 'permissions:messages'], function () {
 
-        Route::get('/support-tickets/datatables/{type}', 'Admin\SupportTicketController@datatables')->name('admin-support-ticket-datatables');
-        Route::get('/tickets', 'Admin\SupportTicketController@index')->name('admin-support-ticket-index');
-        Route::get('/disputes', 'Admin\SupportTicketController@dispute')->name('admin-support-ticket-dispute');
-        Route::get('/support-ticket/{id}', 'Admin\SupportTicketController@message')->name('admin-support-ticket-show');
-        Route::get('/support-ticket/load/{id}', 'Admin\SupportTicketController@messageshow')->name('admin-support-ticket-load');
-        Route::post('/support-ticket/post', 'Admin\SupportTicketController@postmessage')->name('admin-support-ticket-store');
-        Route::delete('/support-ticket/{id}/delete', 'Admin\SupportTicketController@messagedelete')->name('admin-support-ticket-delete');
-        Route::post('/user/send/support-ticket/admin', 'Admin\SupportTicketController@usercontact')->name('admin-send-support-ticket');
+        Route::get('/support-tickets/datatables/{type}', 'Operator\SupportTicketController@datatables')->name('operator-support-ticket-datatables');
+        Route::get('/tickets', 'Operator\SupportTicketController@index')->name('operator-support-ticket-index');
+        Route::get('/disputes', 'Operator\SupportTicketController@dispute')->name('operator-support-ticket-dispute');
+        Route::get('/support-ticket/{id}', 'Operator\SupportTicketController@message')->name('operator-support-ticket-show');
+        Route::get('/support-ticket/load/{id}', 'Operator\SupportTicketController@messageshow')->name('operator-support-ticket-load');
+        Route::post('/support-ticket/post', 'Operator\SupportTicketController@postmessage')->name('operator-support-ticket-store');
+        Route::delete('/support-ticket/{id}/delete', 'Operator\SupportTicketController@messagedelete')->name('operator-support-ticket-delete');
+        Route::post('/user/send/support-ticket/admin', 'Operator\SupportTicketController@usercontact')->name('operator-send-support-ticket');
     });
 
-    //------------ ADMIN SUPPORT TICKET SECTION ENDS ------------
+    //------------ OPERATORSUPPORT TICKET SECTION ENDS ------------
 
-    //------------ ADMIN PUBLICATION SECTION ------------
+    //------------ OPERATORPUBLICATION SECTION ------------
 
     Route::group(['middleware' => 'permissions:publication'], function () {
 
-        Route::get('/publication/datatables', 'Admin\PublicationController@datatables')->name('admin-publication-datatables'); //JSON REQUEST
-        Route::get('/publication', 'Admin\PublicationController@index')->name('admin-publication-index');
-        Route::get('/publication/create', 'Admin\PublicationController@create')->name('admin-publication-create');
-        Route::post('/publication/create', 'Admin\PublicationController@store')->name('admin-publication-store');
-        Route::get('/publication/edit/{id}', 'Admin\PublicationController@edit')->name('admin-publication-edit');
-        Route::post('/publication/edit/{id}', 'Admin\PublicationController@update')->name('admin-publication-update');
-        Route::delete('/publication/delete/{id}', 'Admin\PublicationController@destroy')->name('admin-publication-delete');
+        Route::get('/publication/datatables', 'Operator\PublicationController@datatables')->name('operator-publication-datatables'); //JSON REQUEST
+        Route::get('/publication', 'Operator\PublicationController@index')->name('operator-publication-index');
+        Route::get('/publication/create', 'Operator\PublicationController@create')->name('operator-publication-create');
+        Route::post('/publication/create', 'Operator\PublicationController@store')->name('operator-publication-store');
+        Route::get('/publication/edit/{id}', 'Operator\PublicationController@edit')->name('operator-publication-edit');
+        Route::post('/publication/edit/{id}', 'Operator\PublicationController@update')->name('operator-publication-update');
+        Route::delete('/publication/delete/{id}', 'Operator\PublicationController@destroy')->name('operator-publication-delete');
 
-        Route::get('/article-type/datatables', 'Admin\ArticleTypeController@datatables')->name('admin-article-type-datatables'); //JSON REQUEST
-        Route::get('/article-type', 'Admin\ArticleTypeController@index')->name('admin-article-type-index');
-        Route::get('/article-type/create', 'Admin\ArticleTypeController@create')->name('admin-article-type-create');
-        Route::post('/article-type/create', 'Admin\ArticleTypeController@store')->name('admin-article-type-store');
-        Route::get('/article-type/edit/{id}', 'Admin\ArticleTypeController@edit')->name('admin-article-type-edit');
-        Route::post('/article-type/edit/{id}', 'Admin\ArticleTypeController@update')->name('admin-article-type-update');
-        Route::delete('/article-type/delete/{id}', 'Admin\ArticleTypeController@destroy')->name('admin-article-type-delete');
+        Route::get('/article-type/datatables', 'Operator\ArticleTypeController@datatables')->name('operator-article-type-datatables'); //JSON REQUEST
+        Route::get('/article-type', 'Operator\ArticleTypeController@index')->name('operator-article-type-index');
+        Route::get('/article-type/create', 'Operator\ArticleTypeController@create')->name('operator-article-type-create');
+        Route::post('/article-type/create', 'Operator\ArticleTypeController@store')->name('operator-article-type-store');
+        Route::get('/article-type/edit/{id}', 'Operator\ArticleTypeController@edit')->name('operator-article-type-edit');
+        Route::post('/article-type/edit/{id}', 'Operator\ArticleTypeController@update')->name('operator-article-type-update');
+        Route::delete('/article-type/delete/{id}', 'Operator\ArticleTypeController@destroy')->name('operator-article-type-delete');
 
-        Route::get('/publication/publication-settings', 'Admin\PublicationController@settings')->name('admin-gs-publication-settings');
+        Route::get('/publication/publication-settings', 'Operator\PublicationController@settings')->name('operator-gs-publication-settings');
     });
 
-    //------------ ADMIN PUBLICATION SECTION ENDS ------------
+    //------------ OPERATORPUBLICATION SECTION ENDS ------------
 
-    //------------ ADMIN GENERAL SETTINGS SECTION ------------
+    //------------ OPERATORGENERAL SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:muaadh_settings'], function () {
 
-        Route::get('/general-settings/logo', 'Admin\MuaadhSettingController@logo')->name('admin-gs-logo');
-        Route::get('/general-settings/favicon', 'Admin\MuaadhSettingController@favicon')->name('admin-gs-fav');
-        Route::get('/general-settings/loader', 'Admin\MuaadhSettingController@loader')->name('admin-gs-load');
-        Route::get('/general-settings/contents', 'Admin\MuaadhSettingController@websitecontent')->name('admin-gs-contents');
-        Route::get('/general-settings/theme-colors', 'Admin\MuaadhSettingController@themeColors')->name('admin-theme-colors');
-        Route::post('/general-settings/theme-colors/update', 'Admin\MuaadhSettingController@updateThemeColors')->name('admin-theme-colors-update');
-        Route::get('/general-settings/affilate', 'Admin\MuaadhSettingController@affilate')->name('admin-gs-affilate');
-        Route::get('/general-settings/error-banner', 'Admin\MuaadhSettingController@error_banner')->name('admin-gs-error-banner');
-        Route::get('/general-settings/popup', 'Admin\MuaadhSettingController@popup')->name('admin-gs-popup');
+        Route::get('/general-settings/logo', 'Operator\MuaadhSettingController@logo')->name('operator-gs-logo');
+        Route::get('/general-settings/favicon', 'Operator\MuaadhSettingController@favicon')->name('operator-gs-fav');
+        Route::get('/general-settings/loader', 'Operator\MuaadhSettingController@loader')->name('operator-gs-load');
+        Route::get('/general-settings/contents', 'Operator\MuaadhSettingController@websitecontent')->name('operator-gs-contents');
+        Route::get('/general-settings/theme-colors', 'Operator\MuaadhSettingController@themeColors')->name('operator-theme-colors');
+        Route::post('/general-settings/theme-colors/update', 'Operator\MuaadhSettingController@updateThemeColors')->name('operator-theme-colors-update');
+        Route::get('/general-settings/affilate', 'Operator\MuaadhSettingController@affilate')->name('operator-gs-affilate');
+        Route::get('/general-settings/error-banner', 'Operator\MuaadhSettingController@error_banner')->name('operator-gs-error-banner');
+        Route::get('/general-settings/popup', 'Operator\MuaadhSettingController@popup')->name('operator-gs-popup');
         // Breadcrumb banner removed - using modern minimal design
-        Route::get('/general-settings/maintenance', 'Admin\MuaadhSettingController@maintain')->name('admin-gs-maintenance');
+        Route::get('/general-settings/maintenance', 'Operator\MuaadhSettingController@maintain')->name('operator-gs-maintenance');
 
         // Deal Of The Day
 
-        //------------ ADMIN PICKUP LOACTION ------------
+        //------------ OPERATORPICKUP LOACTION ------------
 
-        Route::get('/pickup/datatables', 'Admin\PickupController@datatables')->name('admin-pick-datatables'); //JSON REQUEST
-        Route::get('/pickup', 'Admin\PickupController@index')->name('admin-pick-index');
-        Route::get('/pickup/create', 'Admin\PickupController@create')->name('admin-pick-create');
-        Route::post('/pickup/create', 'Admin\PickupController@store')->name('admin-pick-store');
-        Route::get('/pickup/edit/{id}', 'Admin\PickupController@edit')->name('admin-pick-edit');
-        Route::post('/pickup/edit/{id}', 'Admin\PickupController@update')->name('admin-pick-update');
-        Route::delete('/pickup/delete/{id}', 'Admin\PickupController@destroy')->name('admin-pick-delete');
+        Route::get('/pickup/datatables', 'Operator\PickupController@datatables')->name('operator-pick-datatables'); //JSON REQUEST
+        Route::get('/pickup', 'Operator\PickupController@index')->name('operator-pick-index');
+        Route::get('/pickup/create', 'Operator\PickupController@create')->name('operator-pick-create');
+        Route::post('/pickup/create', 'Operator\PickupController@store')->name('operator-pick-store');
+        Route::get('/pickup/edit/{id}', 'Operator\PickupController@edit')->name('operator-pick-edit');
+        Route::post('/pickup/edit/{id}', 'Operator\PickupController@update')->name('operator-pick-update');
+        Route::delete('/pickup/delete/{id}', 'Operator\PickupController@destroy')->name('operator-pick-delete');
 
-        //------------ ADMIN PICKUP LOACTION ENDS ------------
+        //------------ OPERATORPICKUP LOACTION ENDS ------------
 
-        //------------ ADMIN SHIPPING ------------
+        //------------ OPERATORSHIPPING ------------
 
-        Route::get('/shipping/datatables', 'Admin\ShippingController@datatables')->name('admin-shipping-datatables');
-        Route::get('/shipping', 'Admin\ShippingController@index')->name('admin-shipping-index');
-        Route::get('/shipping/create', 'Admin\ShippingController@create')->name('admin-shipping-create');
-        Route::post('/shipping/create', 'Admin\ShippingController@store')->name('admin-shipping-store');
-        Route::get('/shipping/edit/{id}', 'Admin\ShippingController@edit')->name('admin-shipping-edit');
-        Route::post('/shipping/edit/{id}', 'Admin\ShippingController@update')->name('admin-shipping-update');
-        Route::delete('/shipping/delete/{id}', 'Admin\ShippingController@destroy')->name('admin-shipping-delete');
+        Route::get('/shipping/datatables', 'Operator\ShippingController@datatables')->name('operator-shipping-datatables');
+        Route::get('/shipping', 'Operator\ShippingController@index')->name('operator-shipping-index');
+        Route::get('/shipping/create', 'Operator\ShippingController@create')->name('operator-shipping-create');
+        Route::post('/shipping/create', 'Operator\ShippingController@store')->name('operator-shipping-store');
+        Route::get('/shipping/edit/{id}', 'Operator\ShippingController@edit')->name('operator-shipping-edit');
+        Route::post('/shipping/edit/{id}', 'Operator\ShippingController@update')->name('operator-shipping-update');
+        Route::delete('/shipping/delete/{id}', 'Operator\ShippingController@destroy')->name('operator-shipping-delete');
 
-        //------------ ADMIN SHIPPING ENDS ------------
+        //------------ OPERATORSHIPPING ENDS ------------
 
-        //------------ ADMIN PACKAGE ------------
+        //------------ OPERATORPACKAGE ------------
 
-        Route::get('/package/datatables', 'Admin\PackageController@datatables')->name('admin-package-datatables');
-        Route::get('/package', 'Admin\PackageController@index')->name('admin-package-index');
-        Route::get('/package/create', 'Admin\PackageController@create')->name('admin-package-create');
-        Route::post('/package/create', 'Admin\PackageController@store')->name('admin-package-store');
-        Route::get('/package/edit/{id}', 'Admin\PackageController@edit')->name('admin-package-edit');
-        Route::post('/package/edit/{id}', 'Admin\PackageController@update')->name('admin-package-update');
-        Route::delete('/package/delete/{id}', 'Admin\PackageController@destroy')->name('admin-package-delete');
+        Route::get('/package/datatables', 'Operator\PackageController@datatables')->name('operator-package-datatables');
+        Route::get('/package', 'Operator\PackageController@index')->name('operator-package-index');
+        Route::get('/package/create', 'Operator\PackageController@create')->name('operator-package-create');
+        Route::post('/package/create', 'Operator\PackageController@store')->name('operator-package-store');
+        Route::get('/package/edit/{id}', 'Operator\PackageController@edit')->name('operator-package-edit');
+        Route::post('/package/edit/{id}', 'Operator\PackageController@update')->name('operator-package-update');
+        Route::delete('/package/delete/{id}', 'Operator\PackageController@destroy')->name('operator-package-delete');
 
-        //------------ ADMIN PACKAGE ENDS------------
+        //------------ OPERATORPACKAGE ENDS------------
 
     });
 
-    //------------ ADMIN GENERAL SETTINGS SECTION ENDS ------------
+    //------------ OPERATORGENERAL SETTINGS SECTION ENDS ------------
 
-    //------------ ADMIN HOME PAGE SETTINGS SECTION ------------
+    //------------ OPERATORHOME PAGE SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:home_page_settings'], function () {
 
-        Route::get('/home-page-settings', 'Admin\MuaadhSettingController@homepage')->name('admin-home-page-index');
+        Route::get('/home-page-settings', 'Operator\MuaadhSettingController@homepage')->name('operator-home-page-index');
 
-        //------------ ADMIN SLIDER SECTION ------------
+        //------------ OPERATORSLIDER SECTION ------------
 
-        Route::get('/slider/datatables', 'Admin\SliderController@datatables')->name('admin-sl-datatables'); //JSON REQUEST
-        Route::get('/slider', 'Admin\SliderController@index')->name('admin-sl-index');
-        Route::get('/slider/create', 'Admin\SliderController@create')->name('admin-sl-create');
-        Route::post('/slider/create', 'Admin\SliderController@store')->name('admin-sl-store');
-        Route::get('/slider/edit/{id}', 'Admin\SliderController@edit')->name('admin-sl-edit');
-        Route::post('/slider/edit/{id}', 'Admin\SliderController@update')->name('admin-sl-update');
-        Route::delete('/slider/delete/{id}', 'Admin\SliderController@destroy')->name('admin-sl-delete');
+        Route::get('/slider/datatables', 'Operator\SliderController@datatables')->name('operator-sl-datatables'); //JSON REQUEST
+        Route::get('/slider', 'Operator\SliderController@index')->name('operator-sl-index');
+        Route::get('/slider/create', 'Operator\SliderController@create')->name('operator-sl-create');
+        Route::post('/slider/create', 'Operator\SliderController@store')->name('operator-sl-store');
+        Route::get('/slider/edit/{id}', 'Operator\SliderController@edit')->name('operator-sl-edit');
+        Route::post('/slider/edit/{id}', 'Operator\SliderController@update')->name('operator-sl-update');
+        Route::delete('/slider/delete/{id}', 'Operator\SliderController@destroy')->name('operator-sl-delete');
 
-        //------------ ADMIN SLIDER SECTION ENDS ------------
+        //------------ OPERATORSLIDER SECTION ENDS ------------
 
-        //------------ ADMIN HOME PAGE THEMES SECTION ------------
+        //------------ OPERATORHOME PAGE THEMES SECTION ------------
 
-        Route::get('/home-themes', 'Admin\HomePageThemeController@index')->name('admin-homethemes-index');
-        Route::get('/home-themes/create', 'Admin\HomePageThemeController@create')->name('admin-homethemes-create');
-        Route::post('/home-themes/store', 'Admin\HomePageThemeController@store')->name('admin-homethemes-store');
-        Route::get('/home-themes/edit/{id}', 'Admin\HomePageThemeController@edit')->name('admin-homethemes-edit');
-        Route::put('/home-themes/update/{id}', 'Admin\HomePageThemeController@update')->name('admin-homethemes-update');
-        Route::get('/home-themes/activate/{id}', 'Admin\HomePageThemeController@activate')->name('admin-homethemes-activate');
-        Route::get('/home-themes/duplicate/{id}', 'Admin\HomePageThemeController@duplicate')->name('admin-homethemes-duplicate');
-        Route::delete('/home-themes/delete/{id}', 'Admin\HomePageThemeController@destroy')->name('admin-homethemes-delete');
+        Route::get('/home-themes', 'Operator\HomePageThemeController@index')->name('operator-homethemes-index');
+        Route::get('/home-themes/create', 'Operator\HomePageThemeController@create')->name('operator-homethemes-create');
+        Route::post('/home-themes/store', 'Operator\HomePageThemeController@store')->name('operator-homethemes-store');
+        Route::get('/home-themes/edit/{id}', 'Operator\HomePageThemeController@edit')->name('operator-homethemes-edit');
+        Route::put('/home-themes/update/{id}', 'Operator\HomePageThemeController@update')->name('operator-homethemes-update');
+        Route::get('/home-themes/activate/{id}', 'Operator\HomePageThemeController@activate')->name('operator-homethemes-activate');
+        Route::get('/home-themes/duplicate/{id}', 'Operator\HomePageThemeController@duplicate')->name('operator-homethemes-duplicate');
+        Route::delete('/home-themes/delete/{id}', 'Operator\HomePageThemeController@destroy')->name('operator-homethemes-delete');
 
-        //------------ ADMIN HOME PAGE THEMES SECTION ENDS ------------
+        //------------ OPERATORHOME PAGE THEMES SECTION ENDS ------------
 
-        Route::get('/featured-promo/datatables', 'Admin\FeaturedPromoController@datatables')->name('admin-featured-promo-datatables');
-        Route::get('/featured-promo', 'Admin\FeaturedPromoController@index')->name('admin-featured-promo-index');
-        Route::get('/featured-promo/create', 'Admin\FeaturedPromoController@create')->name('admin-featured-promo-create');
-        Route::post('/featured-promo/create', 'Admin\FeaturedPromoController@store')->name('admin-featured-promo-store');
-        Route::get('/featured-promo/edit/{id}', 'Admin\FeaturedPromoController@edit')->name('admin-featured-promo-edit');
-        Route::post('/featured-promo/edit/{id}', 'Admin\FeaturedPromoController@update')->name('admin-featured-promo-update');
-        Route::delete('/featured-promo/delete/{id}', 'Admin\FeaturedPromoController@destroy')->name('admin-featured-promo-delete');
-        Route::get('/country/status/{id1}/{id2}', 'Admin\FeaturedPromoController@status')->name('admin-featured-promo-status');
+        Route::get('/featured-promo/datatables', 'Operator\FeaturedPromoController@datatables')->name('operator-featured-promo-datatables');
+        Route::get('/featured-promo', 'Operator\FeaturedPromoController@index')->name('operator-featured-promo-index');
+        Route::get('/featured-promo/create', 'Operator\FeaturedPromoController@create')->name('operator-featured-promo-create');
+        Route::post('/featured-promo/create', 'Operator\FeaturedPromoController@store')->name('operator-featured-promo-store');
+        Route::get('/featured-promo/edit/{id}', 'Operator\FeaturedPromoController@edit')->name('operator-featured-promo-edit');
+        Route::post('/featured-promo/edit/{id}', 'Operator\FeaturedPromoController@update')->name('operator-featured-promo-update');
+        Route::delete('/featured-promo/delete/{id}', 'Operator\FeaturedPromoController@destroy')->name('operator-featured-promo-delete');
+        Route::get('/country/status/{id1}/{id2}', 'Operator\FeaturedPromoController@status')->name('operator-featured-promo-status');
 
-        //------------ ADMIN SERVICE SECTION ------------
+        //------------ OPERATORSERVICE SECTION ------------
 
-        Route::get('/service/datatables', 'Admin\ServiceController@datatables')->name('admin-service-datatables'); //JSON REQUEST
-        Route::get('/service', 'Admin\ServiceController@index')->name('admin-service-index');
-        Route::get('/service/create', 'Admin\ServiceController@create')->name('admin-service-create');
-        Route::post('/service/create', 'Admin\ServiceController@store')->name('admin-service-store');
-        Route::get('/service/edit/{id}', 'Admin\ServiceController@edit')->name('admin-service-edit');
-        Route::post('/service/edit/{id}', 'Admin\ServiceController@update')->name('admin-service-update');
-        Route::delete('/service/delete/{id}', 'Admin\ServiceController@destroy')->name('admin-service-delete');
+        Route::get('/service/datatables', 'Operator\ServiceController@datatables')->name('operator-service-datatables'); //JSON REQUEST
+        Route::get('/service', 'Operator\ServiceController@index')->name('operator-service-index');
+        Route::get('/service/create', 'Operator\ServiceController@create')->name('operator-service-create');
+        Route::post('/service/create', 'Operator\ServiceController@store')->name('operator-service-store');
+        Route::get('/service/edit/{id}', 'Operator\ServiceController@edit')->name('operator-service-edit');
+        Route::post('/service/edit/{id}', 'Operator\ServiceController@update')->name('operator-service-update');
+        Route::delete('/service/delete/{id}', 'Operator\ServiceController@destroy')->name('operator-service-delete');
 
-        //------------ ADMIN SERVICE SECTION ENDS ------------
+        //------------ OPERATORSERVICE SECTION ENDS ------------
 
-        //------------ ADMIN ANNOUNCEMENT SECTION ------------
+        //------------ OPERATORANNOUNCEMENT SECTION ------------
 
-        Route::get('/announcement/datatables/{type}', 'Admin\AnnouncementController@datatables')->name('admin-announcement-datatables'); //JSON REQUEST
-        Route::get('large/announcement/', 'Admin\AnnouncementController@large')->name('admin-announcement-large');
-        Route::get('large/announcement/create', 'Admin\AnnouncementController@largecreate')->name('admin-announcement-create-large');
-        Route::post('/announcement/create', 'Admin\AnnouncementController@store')->name('admin-announcement-store');
-        Route::get('/announcement/edit/{id}', 'Admin\AnnouncementController@edit')->name('admin-announcement-edit');
-        Route::post('/announcement/edit/{id}', 'Admin\AnnouncementController@update')->name('admin-announcement-update');
-        Route::delete('/announcement/delete/{id}', 'Admin\AnnouncementController@destroy')->name('admin-announcement-delete');
+        Route::get('/announcement/datatables/{type}', 'Operator\AnnouncementController@datatables')->name('operator-announcement-datatables'); //JSON REQUEST
+        Route::get('large/announcement/', 'Operator\AnnouncementController@large')->name('operator-announcement-large');
+        Route::get('large/announcement/create', 'Operator\AnnouncementController@largecreate')->name('operator-announcement-create-large');
+        Route::post('/announcement/create', 'Operator\AnnouncementController@store')->name('operator-announcement-store');
+        Route::get('/announcement/edit/{id}', 'Operator\AnnouncementController@edit')->name('operator-announcement-edit');
+        Route::post('/announcement/edit/{id}', 'Operator\AnnouncementController@update')->name('operator-announcement-update');
+        Route::delete('/announcement/delete/{id}', 'Operator\AnnouncementController@destroy')->name('operator-announcement-delete');
 
-        //------------ ADMIN ANNOUNCEMENT SECTION ENDS ------------
+        //------------ OPERATORANNOUNCEMENT SECTION ENDS ------------
 
-        //------------ ADMIN BRAND SECTION ------------
+        //------------ OPERATORBRAND SECTION ------------
 
-        Route::get('/brand/datatables', 'Admin\BrandController@datatables')->name('admin-brand-datatables');
-        Route::get('/brand', 'Admin\BrandController@index')->name('admin-brand-index');
-        Route::get('/brand/create', 'Admin\BrandController@create')->name('admin-brand-create');
-        Route::post('/brand/create', 'Admin\BrandController@store')->name('admin-brand-store');
-        Route::get('/brand/edit/{id}', 'Admin\BrandController@edit')->name('admin-brand-edit');
-        Route::post('/brand/edit/{id}', 'Admin\BrandController@update')->name('admin-brand-update');
-        Route::delete('/brand/delete/{id}', 'Admin\BrandController@destroy')->name('admin-brand-delete');
+        Route::get('/brand/datatables', 'Operator\BrandController@datatables')->name('operator-brand-datatables');
+        Route::get('/brand', 'Operator\BrandController@index')->name('operator-brand-index');
+        Route::get('/brand/create', 'Operator\BrandController@create')->name('operator-brand-create');
+        Route::post('/brand/create', 'Operator\BrandController@store')->name('operator-brand-store');
+        Route::get('/brand/edit/{id}', 'Operator\BrandController@edit')->name('operator-brand-edit');
+        Route::post('/brand/edit/{id}', 'Operator\BrandController@update')->name('operator-brand-update');
+        Route::delete('/brand/delete/{id}', 'Operator\BrandController@destroy')->name('operator-brand-delete');
 
-        //------------ ADMIN BRAND SECTION ENDS ------------
+        //------------ OPERATORBRAND SECTION ENDS ------------
 
-        //------------ ADMIN PAGE SETTINGS SECTION ------------
+        //------------ OPERATORPAGE SETTINGS SECTION ------------
 
-        Route::get('/frontend-setting/customize', 'Admin\FrontendSettingController@customize')->name('admin-fs-customize');
-        Route::get('/frontend-setting/best-seller', 'Admin\FrontendSettingController@best_seller')->name('admin-fs-best-seller');
+        Route::get('/frontend-setting/customize', 'Operator\FrontendSettingController@customize')->name('operator-fs-customize');
+        Route::get('/frontend-setting/best-seller', 'Operator\FrontendSettingController@best_seller')->name('operator-fs-best-seller');
     });
 
-    //------------ ADMIN HOME PAGE SETTINGS SECTION ENDS ------------
+    //------------ OPERATORHOME PAGE SETTINGS SECTION ENDS ------------
 
     Route::group(['middleware' => 'permissions:menu_page_settings'], function () {
 
-        //------------ ADMIN MENU PAGE SETTINGS SECTION ------------
+        //------------ OPERATORMENU PAGE SETTINGS SECTION ------------
 
-        //------------ ADMIN HELP ARTICLE SECTION ------------
+        //------------ OPERATORHELP ARTICLE SECTION ------------
 
-        Route::get('/help-article/datatables', 'Admin\HelpArticleController@datatables')->name('admin-help-article-datatables'); //JSON REQUEST
-        Route::get('/help-article', 'Admin\HelpArticleController@index')->name('admin-help-article-index');
-        Route::get('/help-article/create', 'Admin\HelpArticleController@create')->name('admin-help-article-create');
-        Route::post('/help-article/create', 'Admin\HelpArticleController@store')->name('admin-help-article-store');
-        Route::get('/help-article/edit/{id}', 'Admin\HelpArticleController@edit')->name('admin-help-article-edit');
-        Route::post('/help-article/update/{id}', 'Admin\HelpArticleController@update')->name('admin-help-article-update');
-        Route::delete('/help-article/delete/{id}', 'Admin\HelpArticleController@destroy')->name('admin-help-article-delete');
+        Route::get('/help-article/datatables', 'Operator\HelpArticleController@datatables')->name('operator-help-article-datatables'); //JSON REQUEST
+        Route::get('/help-article', 'Operator\HelpArticleController@index')->name('operator-help-article-index');
+        Route::get('/help-article/create', 'Operator\HelpArticleController@create')->name('operator-help-article-create');
+        Route::post('/help-article/create', 'Operator\HelpArticleController@store')->name('operator-help-article-store');
+        Route::get('/help-article/edit/{id}', 'Operator\HelpArticleController@edit')->name('operator-help-article-edit');
+        Route::post('/help-article/update/{id}', 'Operator\HelpArticleController@update')->name('operator-help-article-update');
+        Route::delete('/help-article/delete/{id}', 'Operator\HelpArticleController@destroy')->name('operator-help-article-delete');
 
-        //------------ ADMIN HELP ARTICLE SECTION ENDS ------------
+        //------------ OPERATORHELP ARTICLE SECTION ENDS ------------
 
-        //------------ ADMIN STATIC CONTENT SECTION ------------
+        //------------ OPERATORSTATIC CONTENT SECTION ------------
 
-        Route::get('/static-content/datatables', 'Admin\StaticContentController@datatables')->name('admin-static-content-datatables'); //JSON REQUEST
-        Route::get('/static-content', 'Admin\StaticContentController@index')->name('admin-static-content-index');
-        Route::get('/static-content/create', 'Admin\StaticContentController@create')->name('admin-static-content-create');
-        Route::post('/static-content/create', 'Admin\StaticContentController@store')->name('admin-static-content-store');
-        Route::get('/static-content/edit/{id}', 'Admin\StaticContentController@edit')->name('admin-static-content-edit');
-        Route::post('/static-content/update/{id}', 'Admin\StaticContentController@update')->name('admin-static-content-update');
-        Route::delete('/static-content/delete/{id}', 'Admin\StaticContentController@destroy')->name('admin-static-content-delete');
-        Route::get('/static-content/header/{id1}/{id2}', 'Admin\StaticContentController@header')->name('admin-static-content-header');
-        Route::get('/static-content/footer/{id1}/{id2}', 'Admin\StaticContentController@footer')->name('admin-static-content-footer');
-        Route::get('/page/banner', 'Admin\FrontendSettingController@page_banner')->name('admin-fs-page-banner');
-        Route::get('/right/banner', 'Admin\FrontendSettingController@right_banner')->name('admin-fs-right-banner');
-        Route::get('/menu/links', 'Admin\FrontendSettingController@menu_links')->name('admin-fs-menu-links');
-        Route::get('/deal/of/day', 'Admin\FrontendSettingController@deal')->name('admin-fs-deal');
-        Route::post('/deal/of/day/toggle', 'Admin\FrontendSettingController@toggleDeal')->name('admin-fs-deal-toggle');
-        Route::get('/deal/of/day/search', 'Admin\FrontendSettingController@searchDealCatalogItems')->name('admin-fs-deal-search');
-        Route::get('/deal/of/day/merchants', 'Admin\FrontendSettingController@getCatalogItemMerchants')->name('admin-fs-deal-merchants');
+        Route::get('/static-content/datatables', 'Operator\StaticContentController@datatables')->name('operator-static-content-datatables'); //JSON REQUEST
+        Route::get('/static-content', 'Operator\StaticContentController@index')->name('operator-static-content-index');
+        Route::get('/static-content/create', 'Operator\StaticContentController@create')->name('operator-static-content-create');
+        Route::post('/static-content/create', 'Operator\StaticContentController@store')->name('operator-static-content-store');
+        Route::get('/static-content/edit/{id}', 'Operator\StaticContentController@edit')->name('operator-static-content-edit');
+        Route::post('/static-content/update/{id}', 'Operator\StaticContentController@update')->name('operator-static-content-update');
+        Route::delete('/static-content/delete/{id}', 'Operator\StaticContentController@destroy')->name('operator-static-content-delete');
+        Route::get('/static-content/header/{id1}/{id2}', 'Operator\StaticContentController@header')->name('operator-static-content-header');
+        Route::get('/static-content/footer/{id1}/{id2}', 'Operator\StaticContentController@footer')->name('operator-static-content-footer');
+        Route::get('/page/banner', 'Operator\FrontendSettingController@page_banner')->name('operator-fs-page-banner');
+        Route::get('/right/banner', 'Operator\FrontendSettingController@right_banner')->name('operator-fs-right-banner');
+        Route::get('/menu/links', 'Operator\FrontendSettingController@menu_links')->name('operator-fs-menu-links');
+        Route::get('/deal/of/day', 'Operator\FrontendSettingController@deal')->name('operator-fs-deal');
+        Route::post('/deal/of/day/toggle', 'Operator\FrontendSettingController@toggleDeal')->name('operator-fs-deal-toggle');
+        Route::get('/deal/of/day/search', 'Operator\FrontendSettingController@searchDealCatalogItems')->name('operator-fs-deal-search');
+        Route::get('/deal/of/day/merchants', 'Operator\FrontendSettingController@getCatalogItemMerchants')->name('operator-fs-deal-merchants');
 
         // Best Sellers Management
-        Route::get('/best-sellers', 'Admin\FrontendSettingController@bestSellers')->name('admin-fs-best-sellers');
-        Route::post('/best-sellers/toggle', 'Admin\FrontendSettingController@toggleBestSellers')->name('admin-fs-best-sellers-toggle');
-        Route::get('/best-sellers/search', 'Admin\FrontendSettingController@searchBestSellersCatalogItems')->name('admin-fs-best-sellers-search');
-        Route::get('/best-sellers/merchants', 'Admin\FrontendSettingController@getBestSellersMerchants')->name('admin-fs-best-sellers-merchants');
+        Route::get('/best-sellers', 'Operator\FrontendSettingController@bestSellers')->name('operator-fs-best-sellers');
+        Route::post('/best-sellers/toggle', 'Operator\FrontendSettingController@toggleBestSellers')->name('operator-fs-best-sellers-toggle');
+        Route::get('/best-sellers/search', 'Operator\FrontendSettingController@searchBestSellersCatalogItems')->name('operator-fs-best-sellers-search');
+        Route::get('/best-sellers/merchants', 'Operator\FrontendSettingController@getBestSellersMerchants')->name('operator-fs-best-sellers-merchants');
 
         // Top Rated Management
-        Route::get('/top-rated', 'Admin\FrontendSettingController@topRated')->name('admin-fs-top-rated');
-        Route::post('/top-rated/toggle', 'Admin\FrontendSettingController@toggleTopRated')->name('admin-fs-top-rated-toggle');
-        Route::get('/top-rated/search', 'Admin\FrontendSettingController@searchTopRated')->name('admin-fs-top-rated-search');
-        Route::get('/top-rated/merchants', 'Admin\FrontendSettingController@getTopRatedMerchants')->name('admin-fs-top-rated-merchants');
+        Route::get('/top-rated', 'Operator\FrontendSettingController@topRated')->name('operator-fs-top-rated');
+        Route::post('/top-rated/toggle', 'Operator\FrontendSettingController@toggleTopRated')->name('operator-fs-top-rated-toggle');
+        Route::get('/top-rated/search', 'Operator\FrontendSettingController@searchTopRated')->name('operator-fs-top-rated-search');
+        Route::get('/top-rated/merchants', 'Operator\FrontendSettingController@getTopRatedMerchants')->name('operator-fs-top-rated-merchants');
 
         // Big Save Management
-        Route::get('/big-save', 'Admin\FrontendSettingController@bigSave')->name('admin-fs-big-save');
-        Route::post('/big-save/toggle', 'Admin\FrontendSettingController@toggleBigSave')->name('admin-fs-big-save-toggle');
-        Route::get('/big-save/search', 'Admin\FrontendSettingController@searchBigSave')->name('admin-fs-big-save-search');
-        Route::get('/big-save/merchants', 'Admin\FrontendSettingController@getBigSaveMerchants')->name('admin-fs-big-save-merchants');
+        Route::get('/big-save', 'Operator\FrontendSettingController@bigSave')->name('operator-fs-big-save');
+        Route::post('/big-save/toggle', 'Operator\FrontendSettingController@toggleBigSave')->name('operator-fs-big-save-toggle');
+        Route::get('/big-save/search', 'Operator\FrontendSettingController@searchBigSave')->name('operator-fs-big-save-search');
+        Route::get('/big-save/merchants', 'Operator\FrontendSettingController@getBigSaveMerchants')->name('operator-fs-big-save-merchants');
 
         // Trending Management
-        Route::get('/trending', 'Admin\FrontendSettingController@trending')->name('admin-fs-trending');
-        Route::post('/trending/toggle', 'Admin\FrontendSettingController@toggleTrending')->name('admin-fs-trending-toggle');
-        Route::get('/trending/search', 'Admin\FrontendSettingController@searchTrending')->name('admin-fs-trending-search');
-        Route::get('/trending/merchants', 'Admin\FrontendSettingController@getTrendingMerchants')->name('admin-fs-trending-merchants');
+        Route::get('/trending', 'Operator\FrontendSettingController@trending')->name('operator-fs-trending');
+        Route::post('/trending/toggle', 'Operator\FrontendSettingController@toggleTrending')->name('operator-fs-trending-toggle');
+        Route::get('/trending/search', 'Operator\FrontendSettingController@searchTrending')->name('operator-fs-trending-search');
+        Route::get('/trending/merchants', 'Operator\FrontendSettingController@getTrendingMerchants')->name('operator-fs-trending-merchants');
 
         // Featured CatalogItems Management
-        Route::get('/featured', 'Admin\FrontendSettingController@featured')->name('admin-fs-featured');
-        Route::post('/featured/toggle', 'Admin\FrontendSettingController@toggleFeatured')->name('admin-fs-featured-toggle');
-        Route::get('/featured/search', 'Admin\FrontendSettingController@searchFeatured')->name('admin-fs-featured-search');
-        Route::get('/featured/merchants', 'Admin\FrontendSettingController@getFeaturedMerchants')->name('admin-fs-featured-merchants');
-        //------------ ADMIN PAGE SECTION ENDS------------
+        Route::get('/featured', 'Operator\FrontendSettingController@featured')->name('operator-fs-featured');
+        Route::post('/featured/toggle', 'Operator\FrontendSettingController@toggleFeatured')->name('operator-fs-featured-toggle');
+        Route::get('/featured/search', 'Operator\FrontendSettingController@searchFeatured')->name('operator-fs-featured-search');
+        Route::get('/featured/merchants', 'Operator\FrontendSettingController@getFeaturedMerchants')->name('operator-fs-featured-merchants');
+        //------------ OPERATORPAGE SECTION ENDS------------
 
-        Route::get('/frontend-setting/contact', 'Admin\FrontendSettingController@contact')->name('admin-fs-contact');
-        Route::post('/frontend-setting/update/all', 'Admin\FrontendSettingController@update')->name('admin-fs-update');
+        Route::get('/frontend-setting/contact', 'Operator\FrontendSettingController@contact')->name('operator-fs-contact');
+        Route::post('/frontend-setting/update/all', 'Operator\FrontendSettingController@update')->name('operator-fs-update');
     });
 
-    //------------ ADMIN MENU PAGE SETTINGS SECTION ENDS ------------
+    //------------ OPERATORMENU PAGE SETTINGS SECTION ENDS ------------
 
-    //------------ ADMIN EMAIL SETTINGS SECTION ------------
+    //------------ OPERATOREMAIL SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:email_settings'], function () {
 
-        Route::get('/email-templates/datatables', 'Admin\EmailController@datatables')->name('admin-mail-datatables');
-        Route::get('/email-templates', 'Admin\EmailController@index')->name('admin-mail-index');
-        Route::get('/email-templates/{id}', 'Admin\EmailController@edit')->name('admin-mail-edit');
-        Route::post('/email-templates/{id}', 'Admin\EmailController@update')->name('admin-mail-update');
-        Route::get('/email-config', 'Admin\EmailController@config')->name('admin-mail-config');
-        Route::get('/groupemail', 'Admin\EmailController@groupemail')->name('admin-group-show');
-        Route::post('/groupemailpost', 'Admin\EmailController@groupemailpost')->name('admin-group-submit');
+        Route::get('/email-templates/datatables', 'Operator\EmailController@datatables')->name('operator-mail-datatables');
+        Route::get('/email-templates', 'Operator\EmailController@index')->name('operator-mail-index');
+        Route::get('/email-templates/{id}', 'Operator\EmailController@edit')->name('operator-mail-edit');
+        Route::post('/email-templates/{id}', 'Operator\EmailController@update')->name('operator-mail-update');
+        Route::get('/email-config', 'Operator\EmailController@config')->name('operator-mail-config');
+        Route::get('/groupemail', 'Operator\EmailController@groupemail')->name('operator-group-show');
+        Route::post('/groupemailpost', 'Operator\EmailController@groupemailpost')->name('operator-group-submit');
     });
 
     if(module("otp")){
         
     Route::group(['middleware' => 'permissions:otp_setting'], function () {
-        Route::get('/opt/config', 'Admin\MuaadhSettingController@otpConfig')->name('admin-otp-config');
+        Route::get('/opt/config', 'Operator\MuaadhSettingController@otpConfig')->name('operator-otp-config');
     });
 
     }
 
-    //------------ ADMIN EMAIL SETTINGS SECTION ENDS ------------
+    //------------ OPERATOREMAIL SETTINGS SECTION ENDS ------------
 
-    //------------ ADMIN PAYMENT SETTINGS SECTION ------------
+    //------------ OPERATORPAYMENT SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:payment_settings'], function () {
 
         // Payment Informations
 
-        Route::get('/payment-informations', 'Admin\MuaadhSettingController@paymentsinfo')->name('admin-gs-payments');
+        Route::get('/payment-informations', 'Operator\MuaadhSettingController@paymentsinfo')->name('operator-gs-payments');
 
         // Merchant Payments
 
-        Route::get('/merchant-payment/datatables', 'Admin\MerchantPaymentController@datatables')->name('admin-merchant-payment-datatables'); //JSON REQUEST
-        Route::get('/merchant-payment', 'Admin\MerchantPaymentController@index')->name('admin-merchant-payment-index');
-        Route::get('/merchant-payment/create', 'Admin\MerchantPaymentController@create')->name('admin-merchant-payment-create');
-        Route::post('/merchant-payment/create', 'Admin\MerchantPaymentController@store')->name('admin-merchant-payment-store');
-        Route::get('/merchant-payment/edit/{id}', 'Admin\MerchantPaymentController@edit')->name('admin-merchant-payment-edit');
-        Route::post('/merchant-payment/update/{id}', 'Admin\MerchantPaymentController@update')->name('admin-merchant-payment-update');
-        Route::delete('/merchant-payment/delete/{id}', 'Admin\MerchantPaymentController@destroy')->name('admin-merchant-payment-delete');
-        Route::get('/merchant-payment/status/{field}/{id1}/{id2}', 'Admin\MerchantPaymentController@status')->name('admin-merchant-payment-status');
+        Route::get('/merchant-payment/datatables', 'Operator\MerchantPaymentController@datatables')->name('operator-merchant-payment-datatables'); //JSON REQUEST
+        Route::get('/merchant-payment', 'Operator\MerchantPaymentController@index')->name('operator-merchant-payment-index');
+        Route::get('/merchant-payment/create', 'Operator\MerchantPaymentController@create')->name('operator-merchant-payment-create');
+        Route::post('/merchant-payment/create', 'Operator\MerchantPaymentController@store')->name('operator-merchant-payment-store');
+        Route::get('/merchant-payment/edit/{id}', 'Operator\MerchantPaymentController@edit')->name('operator-merchant-payment-edit');
+        Route::post('/merchant-payment/update/{id}', 'Operator\MerchantPaymentController@update')->name('operator-merchant-payment-update');
+        Route::delete('/merchant-payment/delete/{id}', 'Operator\MerchantPaymentController@destroy')->name('operator-merchant-payment-delete');
+        Route::get('/merchant-payment/status/{field}/{id1}/{id2}', 'Operator\MerchantPaymentController@status')->name('operator-merchant-payment-status');
 
         // Currency Settings
 
         // MULTIPLE CURRENCY
 
-        Route::get('/currency/datatables', 'Admin\CurrencyController@datatables')->name('admin-currency-datatables'); //JSON REQUEST
-        Route::get('/currency', 'Admin\CurrencyController@index')->name('admin-currency-index');
-        Route::get('/currency/create', 'Admin\CurrencyController@create')->name('admin-currency-create');
-        Route::post('/currency/create', 'Admin\CurrencyController@store')->name('admin-currency-store');
-        Route::get('/currency/edit/{id}', 'Admin\CurrencyController@edit')->name('admin-currency-edit');
-        Route::post('/currency/update/{id}', 'Admin\CurrencyController@update')->name('admin-currency-update');
-        Route::delete('/currency/delete/{id}', 'Admin\CurrencyController@destroy')->name('admin-currency-delete');
-        Route::get('/currency/status/{id1}/{id2}', 'Admin\CurrencyController@status')->name('admin-currency-status');
+        Route::get('/currency/datatables', 'Operator\CurrencyController@datatables')->name('operator-currency-datatables'); //JSON REQUEST
+        Route::get('/currency', 'Operator\CurrencyController@index')->name('operator-currency-index');
+        Route::get('/currency/create', 'Operator\CurrencyController@create')->name('operator-currency-create');
+        Route::post('/currency/create', 'Operator\CurrencyController@store')->name('operator-currency-store');
+        Route::get('/currency/edit/{id}', 'Operator\CurrencyController@edit')->name('operator-currency-edit');
+        Route::post('/currency/update/{id}', 'Operator\CurrencyController@update')->name('operator-currency-update');
+        Route::delete('/currency/delete/{id}', 'Operator\CurrencyController@destroy')->name('operator-currency-delete');
+        Route::get('/currency/status/{id1}/{id2}', 'Operator\CurrencyController@status')->name('operator-currency-status');
 
         // -------------------- Reward Section Route ---------------------//
-        Route::get('rewards/datatables', 'Admin\RewardController@datatables')->name('admin-reward-datatables');
-        Route::get('rewards', 'Admin\RewardController@index')->name('admin-reward-index');
-        Route::get('/general-settings/reward/{status}', 'Admin\MuaadhSettingController@isreward')->name('admin-gs-is_reward');
-        Route::post('reward/update/', 'Admin\RewardController@update')->name('admin-reward-update');
-        Route::post('reward/information/update', 'Admin\RewardController@infoUpdate')->name('admin-reward-info-update');
+        Route::get('rewards/datatables', 'Operator\RewardController@datatables')->name('operator-reward-datatables');
+        Route::get('rewards', 'Operator\RewardController@index')->name('operator-reward-index');
+        Route::get('/general-settings/reward/{status}', 'Operator\MuaadhSettingController@isreward')->name('operator-gs-is_reward');
+        Route::post('reward/update/', 'Operator\RewardController@update')->name('operator-reward-update');
+        Route::post('reward/information/update', 'Operator\RewardController@infoUpdate')->name('operator-reward-info-update');
 
         // -------------------- Reward Section Route ---------------------//
 
     });
 
-    //------------ ADMIN PAYMENT SETTINGS SECTION ENDS------------
+    //------------ OPERATORPAYMENT SETTINGS SECTION ENDS------------
 
-    //------------ ADMIN SOCIAL SETTINGS SECTION ------------
+    //------------ OPERATORSOCIAL SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:social_settings'], function () {
 
-        //------------ ADMIN SOCIAL LINK ------------
+        //------------ OPERATORSOCIAL LINK ------------
 
-        Route::get('/social-link/datatables', 'Admin\SocialLinkController@datatables')->name('admin-sociallink-datatables'); //JSON REQUEST
-        Route::get('/social-link', 'Admin\SocialLinkController@index')->name('admin-sociallink-index');
-        Route::get('/social-link/create', 'Admin\SocialLinkController@create')->name('admin-sociallink-create');
-        Route::post('/social-link/create', 'Admin\SocialLinkController@store')->name('admin-sociallink-store');
-        Route::get('/social-link/edit/{id}', 'Admin\SocialLinkController@edit')->name('admin-sociallink-edit');
-        Route::post('/social-link/edit/{id}', 'Admin\SocialLinkController@update')->name('admin-sociallink-update');
-        Route::delete('/social-link/delete/{id}', 'Admin\SocialLinkController@destroy')->name('admin-sociallink-delete');
-        Route::get('/social-link/status/{id1}/{id2}', 'Admin\SocialLinkController@status')->name('admin-sociallink-status');
+        Route::get('/social-link/datatables', 'Operator\SocialLinkController@datatables')->name('operator-sociallink-datatables'); //JSON REQUEST
+        Route::get('/social-link', 'Operator\SocialLinkController@index')->name('operator-sociallink-index');
+        Route::get('/social-link/create', 'Operator\SocialLinkController@create')->name('operator-sociallink-create');
+        Route::post('/social-link/create', 'Operator\SocialLinkController@store')->name('operator-sociallink-store');
+        Route::get('/social-link/edit/{id}', 'Operator\SocialLinkController@edit')->name('operator-sociallink-edit');
+        Route::post('/social-link/edit/{id}', 'Operator\SocialLinkController@update')->name('operator-sociallink-update');
+        Route::delete('/social-link/delete/{id}', 'Operator\SocialLinkController@destroy')->name('operator-sociallink-delete');
+        Route::get('/social-link/status/{id1}/{id2}', 'Operator\SocialLinkController@status')->name('operator-sociallink-status');
 
-        //------------ ADMIN SOCIAL LINK ENDS ------------
-        Route::get('/social', 'Admin\SocialSettingController@index')->name('admin-social-index');
-        Route::post('/social/update', 'Admin\SocialSettingController@socialupdate')->name('admin-social-update');
-        Route::post('/social/update/all', 'Admin\SocialSettingController@socialupdateall')->name('admin-social-update-all');
-        Route::get('/social/facebook', 'Admin\SocialSettingController@facebook')->name('admin-social-facebook');
-        Route::get('/social/google', 'Admin\SocialSettingController@google')->name('admin-social-google');
-        Route::get('/social/facebook/{status}', 'Admin\SocialSettingController@facebookup')->name('admin-social-facebookup');
-        Route::get('/social/google/{status}', 'Admin\SocialSettingController@googleup')->name('admin-social-googleup');
+        //------------ OPERATORSOCIAL LINK ENDS ------------
+        Route::get('/social', 'Operator\SocialSettingController@index')->name('operator-social-index');
+        Route::post('/social/update', 'Operator\SocialSettingController@socialupdate')->name('operator-social-update');
+        Route::post('/social/update/all', 'Operator\SocialSettingController@socialupdateall')->name('operator-social-update-all');
+        Route::get('/social/facebook', 'Operator\SocialSettingController@facebook')->name('operator-social-facebook');
+        Route::get('/social/google', 'Operator\SocialSettingController@google')->name('operator-social-google');
+        Route::get('/social/facebook/{status}', 'Operator\SocialSettingController@facebookup')->name('operator-social-facebookup');
+        Route::get('/social/google/{status}', 'Operator\SocialSettingController@googleup')->name('operator-social-googleup');
     });
-    //------------ ADMIN SOCIAL SETTINGS SECTION ENDS------------
+    //------------ OPERATORSOCIAL SETTINGS SECTION ENDS------------
 
-    //------------ ADMIN LANGUAGE SETTINGS SECTION ------------
+    //------------ OPERATORLANGUAGE SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:language_settings'], function () {
 
@@ -944,94 +944,94 @@ Route::prefix('admin')->group(function () {
 
         //  Multiple Language Section Ends
 
-        Route::get('/languages/datatables', 'Admin\LanguageController@datatables')->name('admin-lang-datatables'); //JSON REQUEST
-        Route::get('/languages', 'Admin\LanguageController@index')->name('admin-lang-index');
-        Route::get('/languages/create', 'Admin\LanguageController@create')->name('admin-lang-create');
-        Route::get('/languages/import', 'Admin\LanguageController@import')->name('admin-lang-import');
-        Route::get('/languages/edit/{id}', 'Admin\LanguageController@edit')->name('admin-lang-edit');
-        Route::get('/languages/export/{id}', 'Admin\LanguageController@export')->name('admin-lang-export');
-        Route::post('/languages/create', 'Admin\LanguageController@store')->name('admin-lang-store');
-        Route::post('/languages/import/create', 'Admin\LanguageController@importStore')->name('admin-lang-import-store');
-        Route::post('/languages/edit/{id}', 'Admin\LanguageController@update')->name('admin-lang-update');
-        Route::get('/languages/status/{id1}/{id2}', 'Admin\LanguageController@status')->name('admin-lang-st');
-        Route::delete('/languages/delete/{id}', 'Admin\LanguageController@destroy')->name('admin-lang-delete');
+        Route::get('/languages/datatables', 'Operator\LanguageController@datatables')->name('operator-lang-datatables'); //JSON REQUEST
+        Route::get('/languages', 'Operator\LanguageController@index')->name('operator-lang-index');
+        Route::get('/languages/create', 'Operator\LanguageController@create')->name('operator-lang-create');
+        Route::get('/languages/import', 'Operator\LanguageController@import')->name('operator-lang-import');
+        Route::get('/languages/edit/{id}', 'Operator\LanguageController@edit')->name('operator-lang-edit');
+        Route::get('/languages/export/{id}', 'Operator\LanguageController@export')->name('operator-lang-export');
+        Route::post('/languages/create', 'Operator\LanguageController@store')->name('operator-lang-store');
+        Route::post('/languages/import/create', 'Operator\LanguageController@importStore')->name('operator-lang-import-store');
+        Route::post('/languages/edit/{id}', 'Operator\LanguageController@update')->name('operator-lang-update');
+        Route::get('/languages/status/{id1}/{id2}', 'Operator\LanguageController@status')->name('operator-lang-st');
+        Route::delete('/languages/delete/{id}', 'Operator\LanguageController@destroy')->name('operator-lang-delete');
 
 
-        //------------ ADMIN LANGUAGE SETTINGS SECTION ENDS ------------
+        //------------ OPERATORLANGUAGE SETTINGS SECTION ENDS ------------
 
     });
 
     //------------ADMIN FONT SECTION------------------
-    Route::get('/fonts/datatables', 'Admin\FontController@datatables')->name('admin.fonts.datatables');
-    Route::get('/fonts', 'Admin\FontController@index')->name('admin.fonts.index');
-    Route::get('/fonts/create', 'Admin\FontController@create')->name('admin.fonts.create');
-    Route::post('/fonts/create', 'Admin\FontController@store')->name('admin.fonts.store');
-    Route::get('/fonts/edit/{id}', 'Admin\FontController@edit')->name('admin.fonts.edit');
-    Route::post('/fonts/edit/{id}', 'Admin\FontController@update')->name('admin.fonts.update');
-    Route::delete('/fonts/delete/{id}', 'Admin\FontController@destroy')->name('admin.fonts.delete');
-    Route::get('/fonts/status/{id}', 'Admin\FontController@status')->name('admin.fonts.status');
+    Route::get('/fonts/datatables', 'Operator\FontController@datatables')->name('operator.fonts.datatables');
+    Route::get('/fonts', 'Operator\FontController@index')->name('operator.fonts.index');
+    Route::get('/fonts/create', 'Operator\FontController@create')->name('operator.fonts.create');
+    Route::post('/fonts/create', 'Operator\FontController@store')->name('operator.fonts.store');
+    Route::get('/fonts/edit/{id}', 'Operator\FontController@edit')->name('operator.fonts.edit');
+    Route::post('/fonts/edit/{id}', 'Operator\FontController@update')->name('operator.fonts.update');
+    Route::delete('/fonts/delete/{id}', 'Operator\FontController@destroy')->name('operator.fonts.delete');
+    Route::get('/fonts/status/{id}', 'Operator\FontController@status')->name('operator.fonts.status');
     //------------ADMIN FONT SECTION------------------
 
-    //------------ ADMIN SEOTOOL SETTINGS SECTION ------------
+    //------------ OPERATORSEOTOOL SETTINGS SECTION ------------
 
     Route::group(['middleware' => 'permissions:seo_tools'], function () {
 
-        Route::get('/seotools/analytics', 'Admin\SeoToolController@analytics')->name('admin-seotool-analytics');
-        Route::post('/seotools/analytics/update', 'Admin\SeoToolController@analyticsupdate')->name('admin-seotool-analytics-update');
-        Route::get('/seotools/keywords', 'Admin\SeoToolController@keywords')->name('admin-seotool-keywords');
-        Route::post('/seotools/keywords/update', 'Admin\SeoToolController@keywordsupdate')->name('admin-seotool-keywords-update');
-        Route::get('/catalog-items/popular/{id}', 'Admin\SeoToolController@popular')->name('admin-catalog-item-popular');
+        Route::get('/seotools/analytics', 'Operator\SeoToolController@analytics')->name('operator-seotool-analytics');
+        Route::post('/seotools/analytics/update', 'Operator\SeoToolController@analyticsupdate')->name('operator-seotool-analytics-update');
+        Route::get('/seotools/keywords', 'Operator\SeoToolController@keywords')->name('operator-seotool-keywords');
+        Route::post('/seotools/keywords/update', 'Operator\SeoToolController@keywordsupdate')->name('operator-seotool-keywords-update');
+        Route::get('/catalog-items/popular/{id}', 'Operator\SeoToolController@popular')->name('operator-catalog-item-popular');
     });
 
-    //------------ ADMIN SEOTOOL SETTINGS SECTION ------------
+    //------------ OPERATORSEOTOOL SETTINGS SECTION ------------
 
-    //------------ ADMIN STAFF SECTION ------------
+    //------------ OPERATORSTAFF SECTION ------------
 
     Route::group(['middleware' => 'permissions:manage_staffs'], function () {
 
-        Route::get('/staff/datatables', 'Admin\StaffController@datatables')->name('admin-staff-datatables');
-        Route::get('/staff', 'Admin\StaffController@index')->name('admin-staff-index');
-        Route::get('/staff/create', 'Admin\StaffController@create')->name('admin-staff-create');
-        Route::post('/staff/create', 'Admin\StaffController@store')->name('admin-staff-store');
-        Route::get('/staff/edit/{id}', 'Admin\StaffController@edit')->name('admin-staff-edit');
-        Route::post('/staff/update/{id}', 'Admin\StaffController@update')->name('admin-staff-update');
-        Route::get('/staff/show/{id}', 'Admin\StaffController@show')->name('admin-staff-show');
-        Route::delete('/staff/delete/{id}', 'Admin\StaffController@destroy')->name('admin-staff-delete');
+        Route::get('/staff/datatables', 'Operator\StaffController@datatables')->name('operator-staff-datatables');
+        Route::get('/staff', 'Operator\StaffController@index')->name('operator-staff-index');
+        Route::get('/staff/create', 'Operator\StaffController@create')->name('operator-staff-create');
+        Route::post('/staff/create', 'Operator\StaffController@store')->name('operator-staff-store');
+        Route::get('/staff/edit/{id}', 'Operator\StaffController@edit')->name('operator-staff-edit');
+        Route::post('/staff/update/{id}', 'Operator\StaffController@update')->name('operator-staff-update');
+        Route::get('/staff/show/{id}', 'Operator\StaffController@show')->name('operator-staff-show');
+        Route::delete('/staff/delete/{id}', 'Operator\StaffController@destroy')->name('operator-staff-delete');
     });
 
-    //------------ ADMIN STAFF SECTION ENDS------------
+    //------------ OPERATORSTAFF SECTION ENDS------------
 
-    //------------ ADMIN MAILING LIST SECTION ------------
+    //------------ OPERATORMAILING LIST SECTION ------------
 
     Route::group(['middleware' => 'permissions:mailing_list'], function () {
 
-        Route::get('/mailing-list/datatables', 'Admin\MailingListController@datatables')->name('admin-mailing-list-datatables'); //JSON REQUEST
-        Route::get('/mailing-list', 'Admin\MailingListController@index')->name('admin-mailing-list-index');
-        Route::get('/mailing-list/download', 'Admin\MailingListController@download')->name('admin-mailing-list-download');
+        Route::get('/mailing-list/datatables', 'Operator\MailingListController@datatables')->name('operator-mailing-list-datatables'); //JSON REQUEST
+        Route::get('/mailing-list', 'Operator\MailingListController@index')->name('operator-mailing-list-index');
+        Route::get('/mailing-list/download', 'Operator\MailingListController@download')->name('operator-mailing-list-download');
     });
 
-    //------------ ADMIN MAILING LIST ENDS ------------
+    //------------ OPERATORMAILING LIST ENDS ------------
 
     // ------------ GLOBAL ----------------------
-    Route::post('/general-settings/update/all', 'Admin\MuaadhSettingController@generalupdate')->name('admin-gs-update');
-    Route::post('/general-settings/update/te=heme', 'Admin\MuaadhSettingController@updateTheme')->name('admin-gs-update-theme');
-    Route::post('/general-settings/update/payment', 'Admin\MuaadhSettingController@generalupdatepayment')->name('admin-gs-update-payment');
-    Route::post('/general-settings/update/mail', 'Admin\MuaadhSettingController@generalMailUpdate')->name('admin-gs-update-mail');
-    Route::get('/general-settings/status/{field}/{status}', 'Admin\MuaadhSettingController@status')->name('admin-gs-status');
+    Route::post('/general-settings/update/all', 'Operator\MuaadhSettingController@generalupdate')->name('operator-gs-update');
+    Route::post('/general-settings/update/te=heme', 'Operator\MuaadhSettingController@updateTheme')->name('operator-gs-update-theme');
+    Route::post('/general-settings/update/payment', 'Operator\MuaadhSettingController@generalupdatepayment')->name('operator-gs-update-payment');
+    Route::post('/general-settings/update/mail', 'Operator\MuaadhSettingController@generalMailUpdate')->name('operator-gs-update-mail');
+    Route::get('/general-settings/status/{field}/{status}', 'Operator\MuaadhSettingController@status')->name('operator-gs-status');
 
     // Note: Status and Feature routes are now in the ADMIN CATALOG ITEM SECTION above
 
     // MERCHANT PHOTO SECTION ------------
 
-    Route::get('/merchant-photo/show', 'Admin\MerchantPhotoController@show')->name('admin-merchant-photo-show');
-    Route::post('/merchant-photo/store', 'Admin\MerchantPhotoController@store')->name('admin-merchant-photo-store');
-    Route::get('/merchant-photo/delete', 'Admin\MerchantPhotoController@destroy')->name('admin-merchant-photo-delete');
+    Route::get('/merchant-photo/show', 'Operator\MerchantPhotoController@show')->name('operator-merchant-photo-show');
+    Route::post('/merchant-photo/store', 'Operator\MerchantPhotoController@store')->name('operator-merchant-photo-store');
+    Route::get('/merchant-photo/delete', 'Operator\MerchantPhotoController@destroy')->name('operator-merchant-photo-delete');
 
     // MERCHANT PHOTO SECTION ENDS------------
 
-    Route::post('/frontend-setting/update/all', 'Admin\FrontendSettingController@update')->name('admin-fs-update');
-    Route::post('/frontend-setting/update/home', 'Admin\FrontendSettingController@homeupdate')->name('admin-fs-homeupdate');
-    Route::post('/frontend-setting/menu-update', 'Admin\FrontendSettingController@menuupdate')->name('admin-fs-menuupdate');
+    Route::post('/frontend-setting/update/all', 'Operator\FrontendSettingController@update')->name('operator-fs-update');
+    Route::post('/frontend-setting/update/home', 'Operator\FrontendSettingController@homeupdate')->name('operator-fs-homeupdate');
+    Route::post('/frontend-setting/menu-update', 'Operator\FrontendSettingController@menuupdate')->name('operator-fs-menuupdate');
 
     // ------------ GLOBAL ENDS ----------------------
 
@@ -1042,47 +1042,47 @@ Route::prefix('admin')->group(function () {
             Artisan::call('config:clear');
             Artisan::call('route:clear');
             Artisan::call('view:clear');
-            return redirect()->route('admin.dashboard')->with('cache', 'System Cache Has Been Removed.');
-        })->name('admin-cache-clear');
+            return redirect()->route('operator.dashboard')->with('cache', 'System Cache Has Been Removed.');
+        })->name('operator-cache-clear');
 
-        Route::get('/check/movescript', 'Admin\DashboardController@movescript')->name('admin-move-script');
-        Route::get('/generate/backup', 'Admin\DashboardController@generate_bkup')->name('admin-generate-backup');
-        Route::get('/clear/backup', 'Admin\DashboardController@clear_bkup')->name('admin-clear-backup');
+        Route::get('/check/movescript', 'Operator\DashboardController@movescript')->name('operator-move-script');
+        Route::get('/generate/backup', 'Operator\DashboardController@generate_bkup')->name('operator-generate-backup');
+        Route::get('/clear/backup', 'Operator\DashboardController@clear_bkup')->name('operator-clear-backup');
 
         // ------------ LICENSE SECTION ----------------------
-        Route::get('/license/datatables', 'Admin\LicenseController@datatables')->name('admin-license-datatables');
-        Route::get('/license', 'Admin\LicenseController@index')->name('admin-license-index');
-        Route::get('/license/create', 'Admin\LicenseController@create')->name('admin-license-create');
-        Route::post('/license/create', 'Admin\LicenseController@store')->name('admin-license-store');
-        Route::get('/license/edit/{id}', 'Admin\LicenseController@edit')->name('admin-license-edit');
-        Route::post('/license/edit/{id}', 'Admin\LicenseController@update')->name('admin-license-update');
-        Route::delete('/license/delete/{id}', 'Admin\LicenseController@destroy')->name('admin-license-delete');
-        Route::get('/license/activate/{id}', 'Admin\LicenseController@activateLicense')->name('admin-license-activate-license');
-        Route::get('/license/deactivate/{id}', 'Admin\LicenseController@deactivate')->name('admin-license-deactivate');
-        Route::get('/license/generate-key', 'Admin\LicenseController@generateKey')->name('admin-license-generate-key');
-        Route::get('/activation', 'Admin\LicenseController@activation')->name('admin-activation-form');
-        Route::post('/activation', 'Admin\LicenseController@activateWithKey')->name('admin-activate-purchase');
+        Route::get('/license/datatables', 'Operator\LicenseController@datatables')->name('operator-license-datatables');
+        Route::get('/license', 'Operator\LicenseController@index')->name('operator-license-index');
+        Route::get('/license/create', 'Operator\LicenseController@create')->name('operator-license-create');
+        Route::post('/license/create', 'Operator\LicenseController@store')->name('operator-license-store');
+        Route::get('/license/edit/{id}', 'Operator\LicenseController@edit')->name('operator-license-edit');
+        Route::post('/license/edit/{id}', 'Operator\LicenseController@update')->name('operator-license-update');
+        Route::delete('/license/delete/{id}', 'Operator\LicenseController@destroy')->name('operator-license-delete');
+        Route::get('/license/activate/{id}', 'Operator\LicenseController@activateLicense')->name('operator-license-activate-license');
+        Route::get('/license/deactivate/{id}', 'Operator\LicenseController@deactivate')->name('operator-license-deactivate');
+        Route::get('/license/generate-key', 'Operator\LicenseController@generateKey')->name('operator-license-generate-key');
+        Route::get('/activation', 'Operator\LicenseController@activation')->name('operator-activation-form');
+        Route::post('/activation', 'Operator\LicenseController@activateWithKey')->name('operator-activate-purchase');
         // ------------ LICENSE SECTION ENDS ----------------------
 
         // ------------ ADMIN ROLE SECTION ----------------------
 
-        Route::get('/admin-role/datatables', 'Admin\RoleController@datatables')->name('admin-role-datatables');
-        Route::get('/admin-role', 'Admin\RoleController@index')->name('admin-role-index');
-        Route::get('/admin-role/create', 'Admin\RoleController@create')->name('admin-role-create');
-        Route::post('/admin-role/create', 'Admin\RoleController@store')->name('admin-role-store');
-        Route::get('/admin-role/edit/{id}', 'Admin\RoleController@edit')->name('admin-role-edit');
-        Route::post('/admin-role/edit/{id}', 'Admin\RoleController@update')->name('admin-role-update');
-        Route::delete('/admin-role/delete/{id}', 'Admin\RoleController@destroy')->name('admin-role-delete');
+        Route::get('/admin-role/datatables', 'Operator\RoleController@datatables')->name('operator-role-datatables');
+        Route::get('/admin-role', 'Operator\RoleController@index')->name('operator-role-index');
+        Route::get('/admin-role/create', 'Operator\RoleController@create')->name('operator-role-create');
+        Route::post('/admin-role/create', 'Operator\RoleController@store')->name('operator-role-store');
+        Route::get('/admin-role/edit/{id}', 'Operator\RoleController@edit')->name('operator-role-edit');
+        Route::post('/admin-role/edit/{id}', 'Operator\RoleController@update')->name('operator-role-update');
+        Route::delete('/admin-role/delete/{id}', 'Operator\RoleController@destroy')->name('operator-role-delete');
 
         // ------------ ADMIN ROLE SECTION ENDS ----------------------
 
         // ------------ MODULE SECTION ----------------------
 
-        Route::get('/module/datatables', 'Admin\ModuleController@datatables')->name('admin-module-datatables');
-        Route::get('/module', 'Admin\ModuleController@index')->name('admin-module-index');
-        Route::get('/module/create', 'Admin\ModuleController@create')->name('admin-module-create');
-        Route::post('/module/install', 'Admin\ModuleController@install')->name('admin-module-install');
-        Route::get('/module/uninstall/{id}', 'Admin\ModuleController@uninstall')->name('admin-module-uninstall');
+        Route::get('/module/datatables', 'Operator\ModuleController@datatables')->name('operator-module-datatables');
+        Route::get('/module', 'Operator\ModuleController@index')->name('operator-module-index');
+        Route::get('/module/create', 'Operator\ModuleController@create')->name('operator-module-create');
+        Route::post('/module/install', 'Operator\ModuleController@install')->name('operator-module-install');
+        Route::get('/module/uninstall/{id}', 'Operator\ModuleController@uninstall')->name('operator-module-uninstall');
 
         // ------------ MODULE SECTION ENDS ----------------------
 
@@ -1090,7 +1090,7 @@ Route::prefix('admin')->group(function () {
 
 });
 
-// ************************************ ADMIN SECTION ENDS**********************************************
+// ************************************ OPERATOR SECTION ENDS**********************************************
 
 Route::group(['middleware' => 'maintenance'], function () {
 

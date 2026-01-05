@@ -78,7 +78,7 @@ class ImportApiCredentials extends Command
         $this->line('   - DO_ACCESS_KEY_ID / DO_SECRET_ACCESS_KEY');
         $this->newLine();
         $this->line('2. For MERCHANT credentials (Tryoto, MyFatoorah):');
-        $this->line('   - Use Admin Panel > Merchant Credentials');
+        $this->line('   - Use Operator Panel > Merchant Credentials');
         $this->line('   - Or Merchant Dashboard > Settings');
         $this->line('   - Each merchant MUST have their own credentials');
         $this->newLine();

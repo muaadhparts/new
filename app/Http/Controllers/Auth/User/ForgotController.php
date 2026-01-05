@@ -35,10 +35,10 @@ class ForgotController extends Controller
 
         if (User::where('email', '=', $request->email)->count() > 0) {
             // user found
-            $admin = User::where('email', '=', $request->email)->first();
-            $token = md5(time() . $admin->name . $admin->email);
+            $user = User::where('email', '=', $request->email)->first();
+            $token = md5(time() . $user->name . $user->email);
             $input['email_token'] = $token;
-            $admin->update($input);
+            $user->update($input);
             $subject = "Reset Password Request";
             $msg = "Please click this link : " . '<a href="' . route('user.change.token', $token) . '">' . route('user.change.token', $token) . '</a>' . ' to change your password.';
 
@@ -69,13 +69,13 @@ class ForgotController extends Controller
     public function changepass(Request $request)
     {
         $token = $request->token;
-        $admin = User::where('email_token', $token)->first();
-        if ($admin) {
+        $user = User::where('email_token', $token)->first();
+        if ($user) {
 
             if ($request->newpass == $request->renewpass) {
                 $input['password'] = Hash::make($request->newpass);
-                $admin->email_token = null;
-                $admin->update($input);
+                $user->email_token = null;
+                $user->update($input);
             } else {
               
                 

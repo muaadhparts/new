@@ -1,4 +1,4 @@
-@extends('layouts.load')
+﻿@extends('layouts.load')
 
 @section('content')
 
@@ -9,7 +9,7 @@
       <div class="col-lg-12">
         <div class="catalogItem-description">
           <div class="body-area">
-            @include('alerts.admin.form-error')
+            @include('alerts.operator.form-error')
             <form id="muaadhformdata" action="{{route('merchant-service-create')}}" method="POST"
               enctype="multipart/form-data">
               {{csrf_field()}}

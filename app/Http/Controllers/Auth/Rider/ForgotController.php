@@ -39,10 +39,10 @@ class ForgotController extends Controller
     {
       $input =  $request->all();
       if (Rider::where('email', '=', $request->email)->count() > 0) {
-      $admin = Rider::where('email', '=', $request->email)->first();
-      $token = md5(time().$admin->name.$admin->email);
+      $rider = Rider::where('email', '=', $request->email)->first();
+      $token = md5(time().$rider->name.$rider->email);
       $input['email_token'] = $token;
-      $admin->update($input);
+      $rider->update($input);
       $subject = "Reset Password Request";
       $msg = "Please click this link : ".'<a href="'.route('rider.change.token',$token).'">'.route('rider.change.token',$token).'</a>'.' to change your password.';
 
@@ -74,13 +74,13 @@ class ForgotController extends Controller
     public function changepass(Request $request)
     {
         $token = $request->token;
-        $admin =  Rider::where('email_token', $token)->first();
-        if($admin){
-        
+        $rider =  Rider::where('email_token', $token)->first();
+        if($rider){
+
         if ($request->newpass == $request->renewpass){
             $input['password'] = Hash::make($request->newpass);
-            $admin->email_token = null;
-            $admin->update($input);
+            $rider->email_token = null;
+            $rider->update($input);
         }else{
             return response()->json(array('errors' => [ 0 => __('Confirm password does not match.') ]));
         }

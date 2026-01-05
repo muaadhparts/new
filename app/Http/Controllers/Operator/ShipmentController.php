@@ -1,0 +1,406 @@
+<?php
+
+namespace App\Http\Controllers\Operator;
+
+use App\Models\Purchase;
+use App\Models\User;
+use App\Models\ShipmentStatusLog;
+use App\Services\TryotoService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class ShipmentController extends OperatorBaseController
+{
+    protected $tryotoService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->tryotoService = new TryotoService();
+    }
+
+    /**
+     * Operator Shipments Dashboard
+     */
+    public function index(Request $request)
+    {
+        $status = $request->get('status');
+        $merchantId = $request->get('merchant_id');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+        $search = $request->get('search');
+
+        // Get operator statistics
+        $stats = $this->tryotoService->getAdminStatistics();
+
+        // Get all merchants for filter dropdown
+        $merchants = User::where('is_merchant', 2)
+            ->select('id', 'shop_name', 'name')
+            ->orderBy('shop_name')
+            ->get();
+
+        // Get shipments with filters
+        $shipments = ShipmentStatusLog::whereIn('id', function ($sub) use ($status, $merchantId, $dateFrom, $dateTo, $search) {
+                $sub->selectRaw('MAX(id)')
+                    ->from('shipment_status_logs')
+                    ->when($status, function ($q) use ($status) {
+                        $q->where('status', $status);
+                    })
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
+                    })
+                    ->when($dateFrom, function ($q) use ($dateFrom) {
+                        $q->whereDate('status_date', '>=', $dateFrom);
+                    })
+                    ->when($dateTo, function ($q) use ($dateTo) {
+                        $q->whereDate('status_date', '<=', $dateTo);
+                    })
+                    ->when($search, function ($q) use ($search) {
+                        $q->where(function ($sq) use ($search) {
+                            $sq->where('tracking_number', 'LIKE', "%{$search}%")
+                               ->orWhereHas('purchase', function ($pq) use ($search) {
+                                   $pq->where('purchase_number', 'LIKE', "%{$search}%");
+                               });
+                        });
+                    })
+                    ->groupBy('tracking_number');
+            })
+            ->with(['purchase:id,purchase_number,customer_name,pay_amount,currency_sign', 'merchant:id,shop_name,name'])
+            ->orderBy('status_date', 'desc')
+            ->paginate(25);
+
+        return view('operator.shipments.index', compact('stats', 'shipments', 'merchants', 'status', 'merchantId', 'dateFrom', 'dateTo', 'search'));
+    }
+
+    /**
+     * View shipment details
+     */
+    public function show($trackingNumber)
+    {
+        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+            ->latest('status_date')
+            ->firstOrFail();
+
+        $history = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+            ->orderBy('status_date', 'desc')
+            ->get();
+
+        $purchase = Purchase::with('user')->find($shipment->purchase_id);
+        $merchant = User::find($shipment->merchant_id);
+
+        // Try to get live status
+        $liveStatus = $this->tryotoService->trackShipment($trackingNumber);
+
+        return view('operator.shipments.show', compact('shipment', 'history', 'purchase', 'merchant', 'liveStatus'));
+    }
+
+    /**
+     * Cancel shipment
+     */
+    public function cancel(Request $request, $trackingNumber)
+    {
+        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+            ->firstOrFail();
+
+        // Check if can be cancelled
+        if (in_array($shipment->status, ['delivered', 'cancelled', 'returned'])) {
+            return back()->with('error', __('This shipment cannot be cancelled'));
+        }
+
+        $reason = $request->get('reason', 'Cancelled by admin');
+        $result = $this->tryotoService->cancelShipment($trackingNumber, $reason);
+
+        if ($result['success']) {
+            return back()->with('success', __('Shipment cancelled successfully'));
+        }
+
+        return back()->with('error', $result['error'] ?? __('Failed to cancel shipment'));
+    }
+
+    /**
+     * Refresh shipment status
+     */
+    public function refresh($trackingNumber)
+    {
+        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+            ->firstOrFail();
+
+        // Use refreshShipmentStatus for better data (includes tracking number updates)
+        $result = $this->tryotoService->refreshShipmentStatus($trackingNumber);
+
+        if ($result['success']) {
+            $message = __('Shipment status updated');
+
+            // If tracking number was updated
+            if (!empty($result['tracking_updated'])) {
+                $message .= ' - ' . __('New tracking number: ') . $result['tracking_number'];
+            }
+
+            return back()->with('success', $message);
+        }
+
+        return back()->with('error', __('Failed to refresh status: ') . ($result['error'] ?? ''));
+    }
+
+    /**
+     * Export shipments
+     */
+    public function export(Request $request)
+    {
+        $status = $request->get('status');
+        $merchantId = $request->get('merchant_id');
+        $dateFrom = $request->get('date_from');
+        $dateTo = $request->get('date_to');
+
+        $query = ShipmentStatusLog::with(['purchase:id,purchase_number,customer_name,pay_amount', 'merchant:id,shop_name'])
+            ->when($status, function ($q) use ($status) {
+                $q->where('status', $status);
+            })
+            ->when($merchantId, function ($q) use ($merchantId) {
+                $q->where('merchant_id', $merchantId);
+            })
+            ->when($dateFrom, function ($q) use ($dateFrom) {
+                $q->whereDate('status_date', '>=', $dateFrom);
+            })
+            ->when($dateTo, function ($q) use ($dateTo) {
+                $q->whereDate('status_date', '<=', $dateTo);
+            })
+            ->orderBy('status_date', 'desc')
+            ->get();
+
+        $filename = 'all_shipments_' . date('Y-m-d_His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($query) {
+            $file = fopen('php://output', 'w');
+            // UTF-8 BOM for Excel
+            fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Headers
+            fputcsv($file, [
+                'Tracking Number',
+                'Purchase Number',
+                'Customer',
+                'Merchant',
+                'Company',
+                'Status',
+                'Status (AR)',
+                'Location',
+                'Date',
+            ]);
+
+            foreach ($query as $shipment) {
+                fputcsv($file, [
+                    $shipment->tracking_number,
+                    $shipment->purchase->purchase_number ?? 'N/A',
+                    $shipment->purchase->customer_name ?? 'N/A',
+                    $shipment->merchant->shop_name ?? 'N/A',
+                    $shipment->company_name,
+                    $shipment->status,
+                    $shipment->status_ar,
+                    $shipment->location,
+                    $shipment->status_date?->format('Y-m-d H:i'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Bulk refresh statuses
+     */
+    public function bulkRefresh(Request $request)
+    {
+        $trackingNumbers = $request->get('tracking_numbers', []);
+
+        $updated = 0;
+        $failed = 0;
+
+        foreach ($trackingNumbers as $tracking) {
+            $result = $this->tryotoService->trackShipment($tracking);
+            if ($result['success']) {
+                $updated++;
+            } else {
+                $failed++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => __(':updated updated, :failed failed', ['updated' => $updated, 'failed' => $failed]),
+        ]);
+    }
+
+    /**
+     * Shipment Reports
+     */
+    public function reports(Request $request)
+    {
+        $period = $request->get('period', 'month');
+        $merchantId = $request->get('merchant_id');
+
+        // Get date range based on period
+        $dateFrom = match($period) {
+            'today' => now()->startOfDay(),
+            'week' => now()->startOfWeek(),
+            'month' => now()->startOfMonth(),
+            'quarter' => now()->startOfQuarter(),
+            'year' => now()->startOfYear(),
+            default => now()->startOfMonth(),
+        };
+
+        // Overall Statistics
+        $overallStats = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
+                $sub->selectRaw('MAX(id)')
+                    ->from('shipment_status_logs')
+                    ->where('status_date', '>=', $dateFrom)
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
+                    })
+                    ->groupBy('tracking_number');
+            })
+            ->select('status', DB::raw('COUNT(*) as count'))
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // Top Merchants by Shipments
+        $topMerchants = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
+            ->whereNotNull('merchant_id')
+            ->select('merchant_id', DB::raw('COUNT(DISTINCT tracking_number) as total'))
+            ->groupBy('merchant_id')
+            ->orderBy('total', 'desc')
+            ->limit(10)
+            ->with('merchant:id,shop_name,name')
+            ->get();
+
+        // Daily Shipments Chart Data
+        $dailyShipments = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
+            ->when($merchantId, function ($q) use ($merchantId) {
+                $q->where('merchant_id', $merchantId);
+            })
+            ->select(
+                DB::raw('DATE(status_date) as date'),
+                DB::raw('COUNT(DISTINCT tracking_number) as count')
+            )
+            ->groupBy(DB::raw('DATE(status_date)'))
+            ->orderBy('date')
+            ->get();
+
+        // Status Distribution
+        $statusDistribution = [
+            'delivered' => $overallStats['delivered'] ?? 0,
+            'in_transit' => ($overallStats['in_transit'] ?? 0) + ($overallStats['out_for_delivery'] ?? 0),
+            'failed' => $overallStats['failed'] ?? 0,
+            'returned' => $overallStats['returned'] ?? 0,
+            'cancelled' => $overallStats['cancelled'] ?? 0,
+        ];
+
+        // Calculate success rate
+        $total = array_sum($statusDistribution);
+        $delivered = $statusDistribution['delivered'];
+        $successRate = $total > 0 ? round(($delivered / $total) * 100, 1) : 0;
+
+        // Companies Performance
+        $companiesPerformance = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
+                $sub->selectRaw('MAX(id)')
+                    ->from('shipment_status_logs')
+                    ->where('status_date', '>=', $dateFrom)
+                    ->when($merchantId, function ($q) use ($merchantId) {
+                        $q->where('merchant_id', $merchantId);
+                    })
+                    ->groupBy('tracking_number');
+            })
+            ->select('company_name', 'status', DB::raw('COUNT(*) as count'))
+            ->groupBy('company_name', 'status')
+            ->get()
+            ->groupBy('company_name');
+
+        // Get merchants for filter
+        $merchants = User::where('is_merchant', 2)
+            ->select('id', 'shop_name', 'name')
+            ->orderBy('shop_name')
+            ->get();
+
+        return view('operator.shipments.reports', compact(
+            'overallStats',
+            'topMerchants',
+            'dailyShipments',
+            'statusDistribution',
+            'successRate',
+            'companiesPerformance',
+            'merchants',
+            'period',
+            'merchantId',
+            'total'
+        ));
+    }
+
+    /**
+     * Webhook handler for Tryoto status updates
+     */
+    public function webhook(Request $request)
+    {
+        $payload = $request->all();
+
+        // Log the webhook
+        \Log::channel('tryoto')->info('Webhook received', $payload);
+
+        // Validate the webhook
+        $trackingNumber = $payload['trackingNumber'] ?? null;
+
+        if (!$trackingNumber) {
+            return response()->json(['error' => 'Missing tracking number'], 400);
+        }
+
+        // Find existing shipment
+        $existingLog = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+            ->latest('status_date')
+            ->first();
+
+        if (!$existingLog) {
+            return response()->json(['error' => 'Shipment not found'], 404);
+        }
+
+        // Create new status log
+        $newStatus = $payload['status'] ?? 'unknown';
+        $statusDate = isset($payload['statusDate']) ? \Carbon\Carbon::parse($payload['statusDate']) : now();
+
+        // Check if this status is newer
+        if ($existingLog->status_date && $statusDate->lte($existingLog->status_date)) {
+            return response()->json(['message' => 'Status already up to date']);
+        }
+
+        $oldStatus = $existingLog->status;
+
+        // Create new log entry
+        $newLog = ShipmentStatusLog::create([
+            'purchase_id' => $existingLog->purchase_id,
+            'merchant_id' => $existingLog->merchant_id,
+            'tracking_number' => $trackingNumber,
+            'shipment_id' => $payload['shipmentId'] ?? $existingLog->shipment_id,
+            'company_name' => $payload['companyName'] ?? $existingLog->company_name,
+            'status' => $newStatus,
+            'status_ar' => $payload['statusAr'] ?? ShipmentStatusLog::getStatusTranslations()[$newStatus] ?? $newStatus,
+            'message' => $payload['message'] ?? null,
+            'message_ar' => $payload['messageAr'] ?? null,
+            'location' => $payload['location'] ?? null,
+            'latitude' => $payload['latitude'] ?? null,
+            'longitude' => $payload['longitude'] ?? null,
+            'status_date' => $statusDate,
+            'raw_data' => $payload,
+        ]);
+
+        // Fire event to send notifications
+        event(new \App\Events\ShipmentStatusChanged($newLog, $oldStatus));
+
+        return response()->json(['success' => true]);
+    }
+}

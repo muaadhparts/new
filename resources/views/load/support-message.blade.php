@@ -15,7 +15,7 @@
         <img class="img-circle" src="{{$message->chatThread->user->photo != null ? asset('assets/images/users/'.$message->chatThread->user->photo) : asset('assets/images/noimage.png')}}" alt="">
 
         @endif
-                <a target="_blank" class="d-block profile-btn" href="{{ route('admin-user-show',$message->chatThread->user->id) }}" class="d-block">View Profile</a>
+                <a target="_blank" class="d-block profile-btn" href="{{ route('operator-user-show',$message->chatThread->user->id) }}" class="d-block">View Profile</a>
                 <p class="ticket-date">{{ $message->created_at->diffForHumans() }}</p>
             </div>
         </div>
@@ -32,7 +32,7 @@
     <div class="col-lg-12">
         <div class="reply-area">
             <div class="left">
-                <img class="img-circle" src="{{ Auth::guard('admin')->user()->photo ? asset('assets/images/admins/'.Auth::guard('admin')->user()->photo ):asset('assets/images/noimage.png') }}" alt="">
+                <img class="img-circle" src="{{ Auth::guard('operator')->user()->photo ? asset('assets/images/operators/'.Auth::guard('operator')->user()->photo ):asset('assets/images/noimage.png') }}" alt="">
                 <p class="ticket-date">{{ $message->created_at->diffForHumans() }}</p>
             </div>
             <div class="right">

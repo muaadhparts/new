@@ -52,7 +52,7 @@ Route::prefix('shipping')->middleware(['web'])->group(function () {
 // --------------------- GOOGLE MAPS GEOCODING ROUTES END ---------------------
 
 // --------------------- TRYOTO WEBHOOK ROUTES ---------------------
-Route::post('/tryoto/webhook', 'Admin\ShipmentController@webhook')->name('api.tryoto.webhook');
+Route::post('/tryoto/webhook', 'Operator\ShipmentController@webhook')->name('api.tryoto.webhook');
 // --------------------- TRYOTO WEBHOOK ROUTES END ---------------------
 
 

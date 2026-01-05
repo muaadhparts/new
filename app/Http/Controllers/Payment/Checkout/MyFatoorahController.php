@@ -89,7 +89,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
             throw new \Exception(
                 "MyFatoorah payment credentials not configured for merchant #{$merchantId}. " .
                 "Each merchant must have their own payment credentials. " .
-                "Configure via Admin Panel > Merchant Credentials or Merchant Dashboard."
+                "Configure via Operator Panel > Merchant Credentials or Merchant Dashboard."
             );
         }
 
@@ -332,7 +332,7 @@ class MyFatoorahController extends CheckoutBaseControlller {
         $adminData = [
             'to' => $this->ps->contact_email,
             'subject' => "New Purchase Received!!",
-            'body' => "Hello Admin!<br>Your store has received a new purchase.<br>Purchase Number is {$purchase->purchase_number}. Please login to your panel to check.<br>Thank you.",
+            'body' => "Hello Operator!<br>Your store has received a new purchase.<br>Purchase Number is {$purchase->purchase_number}. Please login to your panel to check.<br>Thank you.",
         ];
         (new MuaadhMailer())->sendCustomMail($adminData);
     }

@@ -1,4 +1,4 @@
-@extends('layouts.merchant')
+﻿@extends('layouts.merchant')
 
 
 @section('content')
@@ -350,7 +350,7 @@
                                                     @endphp
                                                     @if (isset($user))
                                                         <a class="title-hover-color content" target="_blank"
-                                                            href="{{ route('admin-merchant-show', $user->id) }}">{{ $user->shop_name }}</a>
+                                                            href="{{ route('operator-merchant-show', $user->id) }}">{{ $user->shop_name }}</a>
                                                     @else
                                                         {{ __('Merchant Removed') }}
                                                     @endif

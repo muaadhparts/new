@@ -1,4 +1,4 @@
-@extends('layouts.merchant')
+﻿@extends('layouts.merchant')
 
 @section('content')
 
@@ -26,7 +26,7 @@
               <form id="muaadhform" class="form-horizontal" action="{{ route('merchant-social-update') }}" method="POST">   
               @csrf
 
-              @include('alerts.admin.form-both')  
+              @include('alerts.operator.form-both')  
 
                 <div class="row">
                   <label class="control-label col-sm-3" for="facebook">{{ __('Facebook') }} *</label>

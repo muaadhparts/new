@@ -9,17 +9,17 @@ class Permissions
 
     public function handle($request, Closure $next,$data)
     {
-        if (Auth::guard('admin')->check()) {
-            if(Auth::guard('admin')->user()->id == 1){
+        if (Auth::guard('operator')->check()) {
+            if(Auth::guard('operator')->user()->id == 1){
                 return $next($request);
             }
-            if(Auth::guard('admin')->user()->role_id == 0){
-                return redirect()->route('admin.dashboard')->with('unsuccess',"You don't have access to that section"); 
+            if(Auth::guard('operator')->user()->role_id == 0){
+                return redirect()->route('operator.dashboard')->with('unsuccess',"You don't have access to that section"); 
             }
-            if (Auth::guard('admin')->user()->sectionCheck($data)){
+            if (Auth::guard('operator')->user()->sectionCheck($data)){
                 return $next($request);
             }
         }
-        return redirect()->route('admin.dashboard')->with('unsuccess',"You don't have access to that section"); 
+        return redirect()->route('operator.dashboard')->with('unsuccess',"You don't have access to that section"); 
     }
 }

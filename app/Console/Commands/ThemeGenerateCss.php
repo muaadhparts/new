@@ -228,7 +228,7 @@ class ThemeGenerateCss extends Command
  * ========================================
  * THEME BUILDER - Generated CSS Variables
  * ========================================
- * Generated from Admin Panel Theme Builder
+ * Generated from Operator Panel Theme Builder
  * Do not edit manually - changes will be overwritten
  * Generated at: {$timestamp}
  */

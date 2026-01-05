@@ -51,12 +51,12 @@ return [
             'provider' => 'users',
         ],
 
-        'admin' => [
+        'operator' => [
             'driver' => 'session',
             'provider' => 'operators',
         ],
 
-        'admin-api' => [
+        'operator-api' => [
             'driver' => 'token',
             'provider' => 'operators',
         ],

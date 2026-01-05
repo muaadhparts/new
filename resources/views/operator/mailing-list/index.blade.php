@@ -1,0 +1,72 @@
+﻿@extends('layouts.operator')
+
+@section('content')
+<div class="content-area">
+    <div class="mr-breadcrumb">
+        <div class="row">
+            <div class="col-lg-12">
+                <h4 class="heading">{{ __("Subscribers") }}</h4>
+                <ul class="links">
+                    <li>
+                        <a href="{{ route('operator.dashboard') }}">{{ __("Dashboard") }} </a>
+                    </li>
+                    <li>
+                        <a href="{{ route('operator-mailing-list-index') }}">{{ __("Subscribers") }}</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="catalogItem-area">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="mr-table allproduct">
+                    @include('alerts.operator.form-both')
+                    <div class="table-responsive">
+                        <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th>{{ __("#Sl") }}</th>
+                                    <th>{{ __("Email") }}</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@endsection
+
+@section('scripts')
+<script type="text/javascript">
+(function($) {
+    "use strict";
+
+    $('#muaadhtable').DataTable({
+        ordering: false,
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('operator-mailing-list-datatables') }}',
+        columns: [
+            { data: 'id', name: 'id' },
+            { data: 'email', name: 'email' }
+        ],
+        language: {
+            processing: '<img src="{{ asset('assets/images/' . $gs->admin_loader) }}">'
+        }
+    });
+
+    $(function() {
+        $(".btn-area").append('<div class="col-sm-4 table-contents">' +
+            '<a class="add-btn" href="{{ route('operator-mailing-list-download') }}">' +
+            '<i class="fa fa-download"></i> {{ __("Download") }}' +
+            '</a>' +
+            '</div>');
+    });
+
+})(jQuery);
+</script>
+@endsection

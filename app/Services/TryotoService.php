@@ -189,7 +189,7 @@ class TryotoService
             throw new \Exception(
                 "Tryoto shipping credentials not configured for merchant #{$this->merchantId}. " .
                 "Each merchant must have their own shipping credentials in merchant_credentials table. " .
-                "Configure via Admin Panel > Merchant Credentials or Merchant Dashboard."
+                "Configure via Operator Panel > Merchant Credentials or Merchant Dashboard."
             );
         }
 
@@ -1552,7 +1552,7 @@ class TryotoService
 
         if (!$hasMerchantCredential) {
             $issues[] = "REQUIRED: Merchant #{$merchantId} must have Tryoto credentials in merchant_credentials table. " .
-                       "Configure via Admin Panel > Merchant Credentials or Merchant Dashboard.";
+                       "Configure via Operator Panel > Merchant Credentials or Merchant Dashboard.";
         }
 
         if (empty($this->baseUrl)) {

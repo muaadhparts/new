@@ -34,10 +34,10 @@ class ForgotController extends Controller
         $input = $request->all();
         if (User::where('email', '=', $request->email)->count() > 0) {
             // user found
-            $admin = User::where('email', '=', $request->email)->firstOrFail();
+            $user = User::where('email', '=', $request->email)->firstOrFail();
             $autopass = Str::random(8);
             $input['password'] = bcrypt($autopass);
-            $admin->update($input);
+            $user->update($input);
             $subject = "Reset Password Request";
             $msg = "Your New Password is : " . $autopass;
             if ($gs->is_smtp == 1) {

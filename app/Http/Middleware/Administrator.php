@@ -10,16 +10,16 @@ class Administrator
 {
     /**
      * Handle an incoming request.
-     * Ensures only authenticated admins can access protected routes.
+     * Ensures only authenticated operators can access protected routes.
      */
     public function handle(Request $request, Closure $next)
     {
-        // Check if admin is authenticated
-        if (!Auth::guard('admin')->check()) {
+        // Check if operator is authenticated
+        if (!Auth::guard('operator')->check()) {
             if ($request->expectsJson()) {
                 return response()->json(['error' => 'Unauthorized'], 401);
             }
-            return redirect()->route('admin.login');
+            return redirect()->route('operator.login');
         }
 
         return $next($request);

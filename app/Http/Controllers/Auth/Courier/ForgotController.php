@@ -39,10 +39,10 @@ class ForgotController extends Controller
     {
       $input =  $request->all();
       if (Courier::where('email', '=', $request->email)->count() > 0) {
-      $admin = Courier::where('email', '=', $request->email)->first();
-      $token = md5(time().$admin->name.$admin->email);
+      $courier = Courier::where('email', '=', $request->email)->first();
+      $token = md5(time().$courier->name.$courier->email);
       $input['email_token'] = $token;
-      $admin->update($input);
+      $courier->update($input);
       $subject = "Reset Password Request";
       $msg = "Please click this link : ".'<a href="'.route('courier.change.token',$token).'">'.route('courier.change.token',$token).'</a>'.' to change your password.';
 
@@ -74,13 +74,13 @@ class ForgotController extends Controller
     public function changepass(Request $request)
     {
         $token = $request->token;
-        $admin =  Courier::where('email_token', $token)->first();
-        if($admin){
+        $courier =  Courier::where('email_token', $token)->first();
+        if($courier){
 
         if ($request->newpass == $request->renewpass){
             $input['password'] = Hash::make($request->newpass);
-            $admin->email_token = null;
-            $admin->update($input);
+            $courier->email_token = null;
+            $courier->update($input);
         }else{
             return response()->json(array('errors' => [ 0 => __('Confirm password does not match.') ]));
         }

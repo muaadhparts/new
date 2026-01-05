@@ -466,7 +466,7 @@ class GeocodingController extends Controller
             if (!$apiKey) {
                 return [
                     'success' => false,
-                    'message' => 'Google Maps API key not configured. Add it via Admin Panel > API Credentials.'
+                    'message' => 'Google Maps API key not configured. Add it via Operator Panel > API Credentials.'
                 ];
             }
 

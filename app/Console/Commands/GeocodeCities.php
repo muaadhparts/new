@@ -36,7 +36,7 @@ class GeocodeCities extends Command
         $this->googleApiKey = $credentialService->getGoogleMapsKey() ?? '';
 
         if (empty($this->googleApiKey)) {
-            $this->error('Google Maps API key not configured! Add it via Admin Panel > API Credentials.');
+            $this->error('Google Maps API key not configured! Add it via Operator Panel > API Credentials.');
             Log::error('GeocodeCities: Google Maps API key not configured');
             return 1;
         }

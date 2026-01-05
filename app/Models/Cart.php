@@ -240,7 +240,7 @@ class Cart extends Model
 
         $storedItem['affilate_user'] = $affilate_user;
 
-        if (Auth::guard('admin')->check()) {
+        if (Auth::guard('operator')->check()) {
             $storedItem['qty'] = $qty;
         } else {
             $storedItem['qty'] = $storedItem['qty'] + $qty;

@@ -8,7 +8,7 @@ class Operator extends Authenticatable
 {
     protected $table = 'operators';
 
-    protected $guard = 'admin';
+    protected $guard = 'operator';
 
     protected $fillable = [
         'name', 'email', 'phone', 'password', 'email_token', 'role_id', 'photo', 'created_at', 'updated_at', 'remember_token', 'shop_name'
