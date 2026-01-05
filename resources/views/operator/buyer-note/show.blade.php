@@ -12,7 +12,7 @@
                                                     <div class="table-responsive show-table">
                                                         <table class="table">
                                                             <tr>
-                                                                <th>{{ __('Commenter') }}</th>
+                                                                <th>{{ __('Buyer') }}</th>
                                                                 <td>{{$data->user->name}}</td>
                                                             </tr>
                                                             <tr>
@@ -27,7 +27,7 @@
                                                             @endif
 
                                                             <tr>
-                                                                <th>{{ __('Commented at') }}:</th>
+                                                                <th>{{ __('Posted at') }}:</th>
                                                                 <td>{{ date('d-M-Y h:i:s',strtotime($data->created_at))}}</td>
                                                             </tr>
                                                         </table>
@@ -60,10 +60,10 @@
                                                 </div>
                                                 <div class="row mt-3">
                                                     <div class="col-lg-12">
-                                                    <h5 class="comment">
-                                                        {{ __('Comment') }}:
+                                                    <h5 class="buyer-note-title">
+                                                        {{ __('Note') }}:
                                                         </h5>
-                                                        <p class="comment-text">
+                                                        <p class="buyer-note-text">
                                                             {{$data->text}}
                                                         </p>
                                                     </div>

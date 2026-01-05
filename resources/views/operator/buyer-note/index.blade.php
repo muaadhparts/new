@@ -1,12 +1,12 @@
 ﻿@extends('layouts.operator')
 
 @section('content')
-<input type="hidden" id="headerdata" value="{{ __('COMMENT') }}">
+<input type="hidden" id="headerdata" value="{{ __('BUYER NOTE') }}">
 <div class="content-area">
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ __('Comments') }}</h4>
+                <h4 class="heading">{{ __('Buyer Notes') }}</h4>
                 <ul class="links">
                     <li>
                         <a href="{{ route('operator.dashboard') }}">{{ __('Dashboard') }} </a>
@@ -15,7 +15,7 @@
                         <a href="javascript:;">{{ __('CatalogItem Discussion') }} </a>
                     </li>
                     <li>
-                        <a href="{{ route('operator-buyer-note-index') }}">{{ __('Comments') }}</a>
+                        <a href="{{ route('operator-buyer-note-index') }}">{{ __('Buyer Notes') }}</a>
                     </li>
                 </ul>
             </div>
@@ -25,11 +25,11 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="heading-area">
-                    <h4 class="title">{{ __('CatalogItem Comment') }} :</h4>
+                    <h4 class="title">{{ __('CatalogItem Buyer Note') }} :</h4>
                     <div class="action-list">
-                        <select class="process select droplinks {{ $gs->is_comment == 1 ? 'drop-success' : 'drop-danger' }}">
-                            <option data-val="1" value="{{ route('operator-gs-status', ['is_comment', 1]) }}" {{ $gs->is_comment == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-                            <option data-val="0" value="{{ route('operator-gs-status', ['is_comment', 0]) }}" {{ $gs->is_comment == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
+                        <select class="process select droplinks {{ $gs->is_buyer_note == 1 ? 'drop-success' : 'drop-danger' }}">
+                            <option data-val="1" value="{{ route('operator-gs-status', ['is_buyer_note', 1]) }}" {{ $gs->is_buyer_note == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
+                            <option data-val="0" value="{{ route('operator-gs-status', ['is_buyer_note', 0]) }}" {{ $gs->is_buyer_note == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
                         </select>
                     </div>
                 </div>
@@ -43,8 +43,8 @@
                                     <th>{{ __('Brand') }}</th>
                                     <th>{{ __('Quality Brand') }}</th>
                                     <th>{{ __('Merchant') }}</th>
-                                    <th>{{ __('Commenter') }}</th>
-                                    <th>{{ __('Comment') }}</th>
+                                    <th>{{ __('Buyer') }}</th>
+                                    <th>{{ __('Note') }}</th>
                                     <th>{{ __('Options') }}</th>
                                 </tr>
                             </thead>
@@ -58,7 +58,7 @@
 
 {{-- MODALS --}}
 @include('components.operator.modal-form', ['id' => 'modal1'])
-@include('components.operator.modal-delete', ['message' => __('You are about to delete this Comment.')])
+@include('components.operator.modal-delete', ['message' => __('You are about to delete this Buyer Note.')])
 
 @endsection
 
@@ -77,7 +77,7 @@
             { data: 'brand', name: 'brand' },
             { data: 'quality_brand', name: 'quality_brand' },
             { data: 'merchant', name: 'merchant' },
-            { data: 'commenter', name: 'commenter' },
+            { data: 'buyer', name: 'buyer' },
             { data: 'text', name: 'text' },
             { data: 'action', searchable: false, orderable: false }
         ],

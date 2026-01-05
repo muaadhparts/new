@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 
@@ -140,7 +140,7 @@ $(document).ready(function() {
         if (query.length < 2) { $('#searchResults').html('<p class="text-muted">{{ __("Start typing to search...") }}</p>'); return; }
         searchTimeout = setTimeout(function() {
             $('#searchResults').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
-            $.get('{{ route("admin-fs-top-rated-search") }}', { q: query }, function(data) {
+            $.get('{{ route("operator-fs-top-rated-search") }}', { q: query }, function(data) {
                 if (data.length === 0) { $('#searchResults').html('<p class="text-muted">{{ __("No catalogItems found") }}</p>'); return; }
                 let html = '<div class="list-group">';
                 data.forEach(function(p) {
@@ -161,7 +161,7 @@ $(document).ready(function() {
         $('#selectedCatalogItemImg').attr('src', $(this).data('photo'));
         $('#step1-search').hide(); $('#step2-merchants').show();
         $('#merchantsList').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
-        $.get('{{ route("admin-fs-top-rated-merchants") }}', { catalog_item_id: selectedCatalogItemId }, function(merchants) {
+        $.get('{{ route("operator-fs-top-rated-merchants") }}', { catalog_item_id: selectedCatalogItemId }, function(merchants) {
             if (merchants.length === 0) { $('#merchantsList').html('<p class="text-muted">{{ __("No merchants found") }}</p>'); return; }
             let html = '';
             merchants.forEach(function(mp) {
@@ -185,7 +185,7 @@ $(document).ready(function() {
     $(document).on('click', '.add-item', function() {
         const btn = $(this), card = btn.closest('.merchant-card');
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-        $.ajax({ url: '{{ route("admin-fs-top-rated-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_item_id: btn.data('id'), flag: 1 },
+        $.ajax({ url: '{{ route("operator-fs-top-rated-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_item_id: btn.data('id'), flag: 1 },
             success: function(r) { if (r.success) { btn.replaceWith('<span class="badge bg-success">{{ __("Already Added") }}</span>'); card.addClass('added'); } },
             error: function() { btn.prop('disabled', false).html('<i class="fas fa-plus"></i> {{ __("Add") }}'); }
         });
@@ -194,7 +194,7 @@ $(document).ready(function() {
     $(document).on('click', '.remove-item', function() {
         const btn = $(this), row = $('#row-' + btn.data('id'));
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
-        $.ajax({ url: '{{ route("admin-fs-top-rated-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_item_id: btn.data('id'), flag: 0 },
+        $.ajax({ url: '{{ route("operator-fs-top-rated-toggle") }}', type: 'POST', data: { _token: '{{ csrf_token() }}', merchant_item_id: btn.data('id'), flag: 0 },
             success: function(r) { if (r.success) { row.fadeOut(300, function() { $(this).remove(); if ($('#catalogItemsTable tbody tr').length === 0) { $('#catalogItemsTable').html('<div class="alert alert-info">{{ __("No catalogItems configured.") }}</div>'); } }); } },
             error: function() { btn.prop('disabled', false).html('<i class="fas fa-trash-alt"></i>'); }
         });

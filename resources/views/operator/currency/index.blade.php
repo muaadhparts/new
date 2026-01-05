@@ -62,14 +62,14 @@
 @section('scripts')
 @include('components.operator.datatable-scripts', [
     'tableId' => 'muaadhtable',
-    'route' => 'admin-currency-datatables',
+    'route' => 'operator-currency-datatables',
     'columns' => [
         ['data' => 'name', 'name' => 'name'],
         ['data' => 'sign', 'name' => 'sign'],
         ['data' => 'value', 'name' => 'value'],
         ['data' => 'action', 'searchable' => false, 'orderable' => false]
     ],
-    'addRoute' => 'admin-currency-create',
+    'addRoute' => 'operator-currency-create',
     'addLabel' => __('Add New Currency'),
     'modalId' => 'modal1'
 ])

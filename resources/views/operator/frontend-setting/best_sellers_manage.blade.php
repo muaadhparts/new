@@ -256,7 +256,7 @@ $(document).ready(function() {
         searchTimeout = setTimeout(function() {
             $('#searchResults').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
-            $.get('{{ route("admin-fs-best-sellers-search") }}', { q: query }, function(data) {
+            $.get('{{ route("operator-fs-best-sellers-search") }}', { q: query }, function(data) {
                 if (data.length === 0) {
                     $('#searchResults').html('<p class="text-muted">{{ __("No catalogItems found") }}</p>');
                     return;
@@ -305,7 +305,7 @@ $(document).ready(function() {
         $('#merchantsList').html('<div class="text-center py-3"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
         // Load merchants for this catalogItem
-        $.get('{{ route("admin-fs-best-sellers-merchants") }}', { catalog_item_id: selectedCatalogItemId }, function(merchants) {
+        $.get('{{ route("operator-fs-best-sellers-merchants") }}', { catalog_item_id: selectedCatalogItemId }, function(merchants) {
             if (merchants.length === 0) {
                 $('#merchantsList').html('<p class="text-muted">{{ __("No merchants found for this catalogItem") }}</p>');
                 return;
@@ -396,7 +396,7 @@ $(document).ready(function() {
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
 
         $.ajax({
-            url: '{{ route("admin-fs-best-sellers-toggle") }}',
+            url: '{{ route("operator-fs-best-sellers-toggle") }}',
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',
@@ -424,7 +424,7 @@ $(document).ready(function() {
         btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
 
         $.ajax({
-            url: '{{ route("admin-fs-best-sellers-toggle") }}',
+            url: '{{ route("operator-fs-best-sellers-toggle") }}',
             type: 'POST',
             data: {
                 _token: '{{ csrf_token() }}',

@@ -414,16 +414,16 @@ class CatalogItemDetailsController extends FrontBaseController
         $data[8] = $buyerNote->user->id;
 
         $newdata = '<li>';
-        $newdata .= '<div class="single-comment comment-section">';
+        $newdata .= '<div class="single-buyer-note buyer-note-section">';
         $newdata .= '<div class="left-area"><img src="' . $data[0] . '" alt=""><h5 class="name">' . $data[1] . '</h5><p class="date">' . $data[2] . '</p></div>';
-        $newdata .= '<div class="right-area"><div class="comment-body"><p>' . $data[3] . '</p></div>';
-        $newdata .= '<div class="comment-footer"><div class="links">';
-        $newdata .= '<a href="javascript:;" class="comment-link reply mr-2"><i class="fas fa-reply "></i>' . __('Reply') . '</a>';
-        $newdata .= '<a href="javascript:;" class="comment-link edit mr-2"><i class="fas fa-edit "></i>' . __('Edit') . '</a>';
-        $newdata .= '<a href="javascript:;" data-href="' . $data[5] . '" class="comment-link comment-delete mr-2"><i class="fas fa-trash"></i>' . __('Delete') . '</a>';
+        $newdata .= '<div class="right-area"><div class="buyer-note-body"><p>' . $data[3] . '</p></div>';
+        $newdata .= '<div class="buyer-note-footer"><div class="links">';
+        $newdata .= '<a href="javascript:;" class="buyer-note-link reply mr-2"><i class="fas fa-reply "></i>' . __('Reply') . '</a>';
+        $newdata .= '<a href="javascript:;" class="buyer-note-link edit mr-2"><i class="fas fa-edit "></i>' . __('Edit') . '</a>';
+        $newdata .= '<a href="javascript:;" data-href="' . $data[5] . '" class="buyer-note-link buyer-note-delete mr-2"><i class="fas fa-trash"></i>' . __('Delete') . '</a>';
         $newdata .= '</div></div></div></div>';
-        $newdata .= '<div class="replay-area edit-area d-none"><form class="update" action="' . $data[6] . '" method="POST">' . csrf_field() . '<textarea placeholder="' . __('Edit Your Comment') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
-        $newdata .= '<div class="replay-area reply-reply-area d-none"><form class="reply-form" action="' . $data[7] . '" method="POST"><input type="hidden" name="user_id" value="' . $data[8] . '">' . csrf_field() . '<textarea placeholder="' . __('Write Your Reply') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
+        $newdata .= '<div class="reply-area edit-area d-none"><form class="update" action="' . $data[6] . '" method="POST">' . csrf_field() . '<textarea placeholder="' . __('Edit Your Note') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
+        $newdata .= '<div class="reply-area reply-reply-area d-none"><form class="reply-form" action="' . $data[7] . '" method="POST"><input type="hidden" name="user_id" value="' . $data[8] . '">' . csrf_field() . '<textarea placeholder="' . __('Write Your Reply') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
         $newdata .= '</li>';
 
         return response()->json($newdata);
@@ -463,13 +463,13 @@ class CatalogItemDetailsController extends FrontBaseController
         $resp[4] = route('catalog-item.reply.delete', $noteResponse->id);
         $resp[5] = route('catalog-item.reply.edit', $noteResponse->id);
 
-        $newdata = '<div class="single-comment replay-review"><div class="left-area"><img src="' . $resp[0] . '" alt=""><h5 class="name">' . $resp[1] . '</h5><p class="date">' . $resp[2] . '</p></div>';
-        $newdata .= '<div class="right-area"><div class="comment-body"><p>' . $resp[3] . '</p></div><div class="comment-footer"><div class="links">';
-        $newdata .= '<a href="javascript:;" class="comment-link reply mr-2"><i class="fas fa-reply "></i>' . __('Reply') . '</a>';
-        $newdata .= '<a href="javascript:;" class="comment-link edit mr-2"><i class="fas fa-edit "></i>' . __('Edit') . '</a>';
-        $newdata .= '<a href="javascript:;" data-href="' . $resp[4] . '" class="comment-link reply-delete mr-2"><i class="fas fa-trash"></i>' . __('Delete') . '</a>';
+        $newdata = '<div class="single-buyer-note replay-buyer-note"><div class="left-area"><img src="' . $resp[0] . '" alt=""><h5 class="name">' . $resp[1] . '</h5><p class="date">' . $resp[2] . '</p></div>';
+        $newdata .= '<div class="right-area"><div class="buyer-note-body"><p>' . $resp[3] . '</p></div><div class="buyer-note-footer"><div class="links">';
+        $newdata .= '<a href="javascript:;" class="buyer-note-link reply mr-2"><i class="fas fa-reply "></i>' . __('Reply') . '</a>';
+        $newdata .= '<a href="javascript:;" class="buyer-note-link edit mr-2"><i class="fas fa-edit "></i>' . __('Edit') . '</a>';
+        $newdata .= '<a href="javascript:;" data-href="' . $resp[4] . '" class="buyer-note-link reply-delete mr-2"><i class="fas fa-trash"></i>' . __('Delete') . '</a>';
         $newdata .= '</div></div></div></div>';
-        $newdata .= '<div class="replay-area edit-area d-none"><form class="update" action="' . $resp[5] . '" method="POST">' . csrf_field() . '<textarea placeholder="' . __('Edit Your Reply') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
+        $newdata .= '<div class="reply-area edit-area d-none"><form class="update" action="' . $resp[5] . '" method="POST">' . csrf_field() . '<textarea placeholder="' . __('Edit Your Reply') . '" name="text" required=""></textarea><button type="submit">' . __('Submit') . '</button><a href="javascript:;" class="remove">' . __('Cancel') . '</a></form></div>';
 
         return response()->json($newdata);
     }

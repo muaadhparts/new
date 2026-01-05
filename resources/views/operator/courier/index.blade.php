@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 <input type="hidden" id="headerdata" value="{{ __(" COURIER") }}">
@@ -90,7 +90,7 @@
 					<div class="row">
 						<div class="col-md-12">
 							<div class="contact-form">
-								<form id="emailreply1" action="{{route("admin-send-message")}}">
+								<form id="emailreply1" action="{{route("operator-send-message")}}">
 									{{csrf_field()}}
 									<ul>
 

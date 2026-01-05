@@ -51,7 +51,7 @@ class BuyerNoteController extends OperatorBaseController
 				}
 				return __('N/A');
 			})
-			->addColumn('commenter', function (BuyerNote $data) {
+			->addColumn('buyer', function (BuyerNote $data) {
 				return $data->user->name;
 			})
 			->addColumn('text', function (BuyerNote $data) {

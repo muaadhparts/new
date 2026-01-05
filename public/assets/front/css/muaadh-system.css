@@ -5983,6 +5983,170 @@ select option {
 }
 
 /* ============================================================================
+   BUYER NOTE SECTION
+   New CSS classes for buyer notes (replaces old comment-* classes)
+   ============================================================================ */
+
+.all-buyer-notes {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.single-buyer-note {
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-default);
+}
+
+.single-buyer-note .left-area {
+    width: 150px;
+    text-align: center;
+}
+
+.single-buyer-note .left-area img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.single-buyer-note .left-area .name {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 5px;
+}
+
+.single-buyer-note .left-area .date {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.single-buyer-note .right-area {
+    flex: 1;
+    padding-inline-start: 20px;
+}
+
+.buyer-note-body {
+    margin-bottom: 16px;
+}
+
+.buyer-note-body p {
+    margin: 0;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.buyer-note-footer {
+    display: flex;
+    align-items: center;
+}
+
+.buyer-note-footer .links {
+    display: flex;
+    gap: 15px;
+}
+
+.buyer-note-link {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.buyer-note-link:hover {
+    color: var(--action-primary);
+}
+
+.buyer-note-link i {
+    margin-inline-end: 5px;
+}
+
+.buyer-note-section {
+    position: relative;
+}
+
+.write-buyer-note-area {
+    padding-top: 20px;
+}
+
+.write-buyer-note-area textarea {
+    width: 100%;
+    height: 190px;
+    background: var(--surface-page);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+    padding: 15px;
+    font-size: 14px;
+    resize: none;
+    outline: 0;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease-in;
+}
+
+.write-buyer-note-area textarea:focus {
+    border-color: var(--action-primary);
+}
+
+.reply-area {
+    padding: 15px;
+    margin-top: 10px;
+    background: var(--surface-subtle);
+    border-radius: var(--radius-md);
+}
+
+.reply-area textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px;
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-sm);
+    resize: none;
+    margin-bottom: 10px;
+}
+
+.reply-area button {
+    background: var(--action-primary);
+    color: var(--text-inverse);
+    border: none;
+    padding: 8px 20px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    margin-inline-end: 10px;
+}
+
+.reply-area button:hover {
+    background: var(--action-primary-hover);
+}
+
+.reply-area .remove {
+    color: var(--text-muted);
+    text-decoration: none;
+}
+
+.replay-buyer-note {
+    margin-inline-start: 50px;
+    padding-inline-start: 20px;
+    border-inline-start: 2px solid var(--border-default);
+}
+
+.buyer-note-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 10px;
+}
+
+.buyer-note-text {
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 
