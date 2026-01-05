@@ -67,7 +67,7 @@
                                                             <input type="text" name="subtitle_color"
                                                                 value="{{ $data->subtitle_color }}"
                                                                 class="form-control cp" />
-                                                            <span class="input-group-addon"><i></i></span>
+                                                            <span class="input-group-module"><i></i></span>
                                                         </div>
 
                                                     </div>
@@ -108,7 +108,7 @@
                                                         <div class="input-group colorpicker-component cp">
                                                             <input type="text" name="title_color"
                                                                 value="{{ $data->title_color }}" class="form-control cp" />
-                                                            <span class="input-group-addon"><i></i></span>
+                                                            <span class="input-group-module"><i></i></span>
                                                         </div>
                                                     </div>
 
@@ -150,7 +150,7 @@
                                                             <input type="text" name="details_color"
                                                                 value="{{ $data->details_color }}"
                                                                 class="form-control cp" />
-                                                            <span class="input-group-addon"><i></i></span>
+                                                            <span class="input-group-module"><i></i></span>
                                                         </div>
 
                                                     </div>

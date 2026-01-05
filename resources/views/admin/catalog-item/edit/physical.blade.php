@@ -369,7 +369,7 @@
                                                                                 value="{{ $color }}"
                                                                                 class="form-control cp tcolor" />
                                                                             <span
-                                                                                class="input-group-addon"><i></i></span>
+                                                                                class="input-group-module"><i></i></span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -841,7 +841,7 @@
                                                                                     value="{{ $data->colors[$key] }}"
                                                                                     class="form-control cp" />
                                                                                 <span
-                                                                                    class="input-group-addon"><i></i></span>
+                                                                                    class="input-group-module"><i></i></span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -862,7 +862,7 @@
                                                                         <div class="input-group colorpicker-component cp">
                                                                             <input type="text" name="colors[]"
                                                                                 value="#000000" class="form-control cp" />
-                                                                            <span class="input-group-addon"><i></i></span>
+                                                                            <span class="input-group-module"><i></i></span>
                                                                         </div>
                                                                     </div>
                                                                 </div>

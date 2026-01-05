@@ -144,7 +144,7 @@ $("#color-btn").on('click', function(){
                                 '<span class="remove color-remove"><i class="fas fa-times"></i></span>'+
                                     '<div class="input-group colorpicker-component cp">'+
                                         '<input type="text" name="color[]" value="#000000" class="input-field cp"/>'+
-                                        '<span class="input-group-addon"><i></i></span>'+
+                                        '<span class="input-group-module"><i></i></span>'+
                                     '</div>'+
 
                             '</div>'
@@ -163,7 +163,7 @@ $(document).on('click','.color-remove', function(){
                                 '<span class="remove color-remove"><i class="fas fa-times"></i></span>'+
                                     '<div class="input-group colorpicker-component cp">'+
                                         '<input type="text" name="color[]" value="#000000" class="input-field cp"/>'+
-                                        '<span class="input-group-addon"><i></i></span>'+
+                                        '<span class="input-group-module"><i></i></span>'+
                                     '</div>'+
 
                             '</div>'
@@ -190,7 +190,7 @@ $("#feature-btn").on('click', function(){
                                         '<div class="col-lg-6">'+
                                             '<div class="input-group colorpicker-component cp">'+
                                                 '<input type="text" name="colors[]" value="#000000" class="input-field cp"/>'+
-                                                '<span class="input-group-addon"><i></i></span>'+
+                                                '<span class="input-group-module"><i></i></span>'+
                                             '</div>'+
                                         '</div>'+
                                     '</div>'+
@@ -214,7 +214,7 @@ $(document).on('click','.feature-remove', function(){
                                         '<div class="col-lg-6">'+
                                             '<div class="input-group colorpicker-component cp">'+
                                                 '<input type="text" name="colors[]" value="#000000" class="input-field cp"/>'+
-                                                '<span class="input-group-addon"><i></i></span>'+
+                                                '<span class="input-group-module"><i></i></span>'+
                                             '</div>'+
                                         '</div>'+
                                     '</div>'+

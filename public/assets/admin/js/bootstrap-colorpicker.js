@@ -1210,13 +1210,13 @@ exports.default = {
    */
   input: 'input',
   /**
-   * Child CSS selector for the colorpicker addon.
+   * Child CSS selector for the colorpicker module.
    * If it exists, the child <i> element background will be changed on color change.
    *
    * @type {String}
-   * @default '.colorpicker-trigger, .colorpicker-input-addon'
+   * @default '.colorpicker-trigger, .colorpicker-input-module'
    */
-  addon: '.colorpicker-input-addon',
+  module: '.colorpicker-input-module',
   /**
    * If true, the input content will be replaced always with a valid color,
    * if false, the invalid color will be left in the input,
@@ -2893,7 +2893,7 @@ var Colorpicker = function () {
   _createClass(Colorpicker, [{
     key: 'init',
     value: function init() {
-      // Init addon
+      // Init module
       this.addonHandler.bind();
 
       // Init input
@@ -4009,7 +4009,7 @@ var PopupHandler = function () {
 
       cp.picker.addClass('colorpicker-popup colorpicker-hidden');
 
-      // there is no input or addon
+      // there is no input or module
       if (!this.hasInput && !this.hasAddon) {
         return;
       }
@@ -4019,22 +4019,22 @@ var PopupHandler = function () {
         this.createPopover();
       }
 
-      // bind addon show/hide events
+      // bind module show/hide events
       if (this.hasAddon) {
-        // enable focus on addons
-        if (!this.addon.attr('tabindex')) {
-          this.addon.attr('tabindex', 0);
+        // enable focus on modules
+        if (!this.module.attr('tabindex')) {
+          this.module.attr('tabindex', 0);
         }
 
-        this.addon.on({
+        this.module.on({
           'mousedown.colorpicker touchstart.colorpicker': _jquery2.default.proxy(this.toggle, this)
         });
 
-        this.addon.on({
+        this.module.on({
           'focus.colorpicker': _jquery2.default.proxy(this.show, this)
         });
 
-        this.addon.on({
+        this.module.on({
           'focusout.colorpicker': _jquery2.default.proxy(this.hide, this)
         });
       }
@@ -4073,13 +4073,13 @@ var PopupHandler = function () {
       }
 
       if (this.hasAddon) {
-        this.addon.off({
+        this.module.off({
           'mousedown.colorpicker touchstart.colorpicker': _jquery2.default.proxy(this.toggle, this)
         });
-        this.addon.off({
+        this.module.off({
           'focus.colorpicker': _jquery2.default.proxy(this.show, this)
         });
-        this.addon.off({
+        this.module.off({
           'focusout.colorpicker': _jquery2.default.proxy(this.hide, this)
         });
       }
@@ -4122,7 +4122,7 @@ var PopupHandler = function () {
     value: function createPopover() {
       var cp = this.colorpicker;
 
-      this.popoverTarget = this.hasAddon ? this.addon : this.input;
+      this.popoverTarget = this.hasAddon ? this.module : this.input;
 
       cp.picker.addClass('colorpicker-bs-popover-content');
 
@@ -4297,7 +4297,7 @@ var PopupHandler = function () {
     key: 'focus',
     value: function focus() {
       if (this.hasAddon) {
-        return this.addon.focus();
+        return this.module.focus();
       }
       if (this.hasInput) {
         return this.input.focus();
@@ -4353,9 +4353,9 @@ var PopupHandler = function () {
      */
 
   }, {
-    key: 'addon',
+    key: 'module',
     get: function get() {
-      return this.colorpicker.addonHandler.addon;
+      return this.colorpicker.addonHandler.module;
     }
 
     /**
@@ -6113,7 +6113,7 @@ exports.default = PickerHandler;
 
 
 /**
- * Handles everything related to the colorpicker addon
+ * Handles everything related to the colorpicker module
  * @ignore
  */
 
@@ -6139,13 +6139,13 @@ var AddonHandler = function () {
     /**
      * @type {jQuery}
      */
-    this.addon = null;
+    this.module = null;
   }
 
   _createClass(AddonHandler, [{
     key: 'hasAddon',
     value: function hasAddon() {
-      return !!this.addon;
+      return !!this.module;
     }
   }, {
     key: 'bind',
@@ -6153,23 +6153,23 @@ var AddonHandler = function () {
       /**
        * @type {*|jQuery}
        */
-      this.addon = this.colorpicker.options.addon ? this.colorpicker.element.find(this.colorpicker.options.addon) : null;
+      this.module = this.colorpicker.options.module ? this.colorpicker.element.find(this.colorpicker.options.module) : null;
 
-      if (this.addon && this.addon.length === 0) {
+      if (this.module && this.module.length === 0) {
         // not found
-        this.addon = null;
+        this.module = null;
       }
     }
   }, {
     key: 'unbind',
     value: function unbind() {
       if (this.hasAddon()) {
-        this.addon.off('.colorpicker');
+        this.module.off('.colorpicker');
       }
     }
 
     /**
-     * If the addon element is present, its background color is updated
+     * If the module element is present, its background color is updated
      */
 
   }, {
@@ -6182,12 +6182,12 @@ var AddonHandler = function () {
       var colorStr = this.colorpicker.colorHandler.getColorString();
       var styles = { 'background': colorStr };
 
-      var icn = this.addon.find('i').eq(0);
+      var icn = this.module.find('i').eq(0);
 
       if (icn.length > 0) {
         icn.css(styles);
       } else {
-        this.addon.css(styles);
+        this.module.css(styles);
       }
     }
   }]);

@@ -5383,10 +5383,10 @@ p.text-lg {
   transform: translateY(-50%);
   pointer-events: none;
 }
-.deposit-area .form-group .input-with-addon {
+.deposit-area .form-group .input-with-module {
   position: relative;
 }
-.deposit-area .form-group .currency-addon {
+.deposit-area .form-group .currency-module {
   font-size: 16px;
   position: absolute;
   top: 21px;
@@ -5441,7 +5441,7 @@ p.text-lg {
   .deposit-area .form-group .form__control {
     height: 39px;
   }
-  .deposit-area .form-group .currency-addon {
+  .deposit-area .form-group .currency-module {
     top: 8px;
   }
 }

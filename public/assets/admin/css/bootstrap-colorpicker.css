@@ -194,10 +194,10 @@
   margin: 0 0 6px 0;
   float: left; }
 
-.colorpicker-input-addon {
+.colorpicker-input-module {
   position: relative; }
 
-.colorpicker-input-addon i {
+.colorpicker-input-module i {
   display: inline-block;
   cursor: pointer;
   vertical-align: text-top;
@@ -205,7 +205,7 @@
   width: 16px;
   position: relative; }
 
-.colorpicker-input-addon:before {
+.colorpicker-input-module:before {
   content: "";
   position: absolute;
   width: 16px;

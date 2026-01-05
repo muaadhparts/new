@@ -224,7 +224,7 @@
 															<span class="remove color-remove"><i class="fas fa-times"></i></span>
 															<div class="input-group colorpicker-component cp">
 															  <input type="text" name="color_all[]" value="{{ $ct }}"  class="form-control cp tcolor"/>
-															  <span class="input-group-addon"><i></i></span>
+															  <span class="input-group-module"><i></i></span>
 															</div>
 														 </div>
 														 @endforeach
@@ -250,7 +250,7 @@
 															<span class="remove color-remove"><i class="fas fa-times"></i></span>
 															<div class="input-group colorpicker-component cp">
 															  <input type="text"  name="color_all[]"  class="form-control cp tcolor"/>
-															  <span class="input-group-addon"><i></i></span>
+															  <span class="input-group-module"><i></i></span>
 															</div>
 														 </div>
 													</div>
@@ -548,7 +548,7 @@
 																<div class="col-lg-6">
 																	<div class="input-group colorpicker-component cp">
 																	<input type="text" name="colors[]" value="{{ $data->colors[$key] }}" class="form-control cp"/>
-																	<span class="input-group-addon"><i></i></span>
+																	<span class="input-group-module"><i></i></span>
 																	</div>
 																</div>
 															</div>
@@ -565,7 +565,7 @@
 															<div class="col-lg-6">
 																<div class="input-group colorpicker-component cp">
 																<input type="text" name="colors[]" value="#000000" class="form-control cp"/>
-																<span class="input-group-addon"><i></i></span>
+																<span class="input-group-module"><i></i></span>
 																</div>
 															</div>
 														</div>

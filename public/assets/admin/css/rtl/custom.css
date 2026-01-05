@@ -43,7 +43,7 @@ td img {
 .modal-body p {
   color: #222;
 }
-span.input-group-addon {
+span.input-group-module {
   position: absolute;
   right: 0;
   top: 0;
@@ -789,7 +789,7 @@ a#crop-image,
   padding-right: 0px;
 }
 
-span.input-group-addon {
+span.input-group-module {
   left: 0px !important;
   right: auto !important;
 }

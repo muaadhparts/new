@@ -142,7 +142,7 @@
 .colorpicker-selectors i + i {
   margin-left: 3px;
 }
-.colorpicker-element .input-group-addon i,
+.colorpicker-element .input-group-module i,
 .colorpicker-element .add-on i {
   display: inline-block;
   cursor: pointer;

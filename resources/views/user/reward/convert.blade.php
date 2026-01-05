@@ -35,10 +35,10 @@
                   placeholder="@lang('Reward Point')">
 
                 <label for="convert_total">@lang('Convert Total')</label>
-                <div class="input-with-addon">
+                <div class="input-with-module">
                   <input type="text" class="form-control" id="convert_total" placeholder="@lang('Convert Total')"
                     disabled>
-                  <span class="currency-addon">@lang('USD')</span>
+                  <span class="currency-module">@lang('USD')</span>
                 </div>
                 <div class="multi-btn d-flex gap-4">
                   <button type="button" id="check" class="template-btn dark-btn flex-grow-1">
