@@ -73,9 +73,15 @@ class AppServiceProvider extends ServiceProvider
                 }));
             }
 
-            // Header data - Brands only (catalogs loaded on demand via AJAX)
+            // Header data - Brands with catalogs eager loaded (newCategories loaded on demand - too large)
             $settings->with('categories', cache()->remember('header_categories', 3600, function () {
-                return Brand::where('status', 1)->orderBy('name')->get(['id', 'slug', 'name', 'name_ar', 'status']);
+                return Brand::where('status', 1)
+                    ->with(['catalogs' => function($query) {
+                        $query->where('status', 1)
+                            ->select('id', 'brand_id', 'slug', 'name', 'name_ar', 'status');
+                    }])
+                    ->orderBy('name')
+                    ->get(['id', 'slug', 'name', 'name_ar', 'status', 'photo']);
             }));
 
             $settings->with('static_content', cache()->remember('header_static_content', 3600, function () {

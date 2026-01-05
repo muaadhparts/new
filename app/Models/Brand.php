@@ -23,9 +23,13 @@ class Brand extends Model
 
     /**
      * Alias: subs → catalogs (للتوافق مع $category->subs)
+     * Uses already loaded relation if available to prevent N+1 queries
      */
     public function getSubsAttribute()
     {
+        if ($this->relationLoaded('catalogs')) {
+            return $this->catalogs->where('status', 1)->values();
+        }
         return $this->catalogs()->where('status', 1)->get();
     }
 

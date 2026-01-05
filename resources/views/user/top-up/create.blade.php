@@ -12,7 +12,7 @@
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="gs-deposit-section">
                         <div class="gs-deposit-title d-flex align-items-center">
-                            <a href="{{ route('user-deposit-index') }}" class="back-btn">
+                            <a href="{{ route('user-top-up-index') }}" class="back-btn">
                                 <i class="fa-solid fa-arrow-left-long"></i>
                             </a>
 

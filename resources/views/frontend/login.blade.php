@@ -1,7 +1,8 @@
 @extends('layouts.front')
 
 @section('content')
-    <section class="gs-breadcrumb-section">
+    <section class="gs-breadcrumb-section bg-class"
+        data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
@@ -118,8 +119,8 @@
 
 
 
-                                @if ($socialsetting->f_check == 1)
-                                    <a href="{{ route('social-provider', 'facebook') }}"
+                                @if ($socialsetting->g_check == 1)
+                                    <a href="{{ route('social-provider', 'google') }}"
                                         class="template-btn outline-btn login-outline">
 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
@@ -149,8 +150,8 @@
                                         @lang('Login with Google')
                                     </a>
                                 @endif
-                                @if ($socialsetting->g_check == 1)
-                                    <a href="{{ route('social-provider', 'google') }}"
+                                @if ($socialsetting->f_check == 1)
+                                    <a href="{{ route('social-provider', 'facebook') }}"
                                         class="template-btn outline-btn login-outline">
 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -184,5 +185,8 @@
                             </div>
                         </form>
                     </div>
+                </div>
+            </div>
+        </div>
     </section>
 @endsection

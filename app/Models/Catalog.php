@@ -28,12 +28,14 @@ class Catalog extends Model
 
     /**
      * Alias: childs → newCategories Level 1 (للتوافق مع $subcategory->childs)
+     * Limited to 10 items for header performance
      */
     public function getChildsAttribute()
     {
         return $this->newCategories()
             ->where('level', 1)
             ->orderBy('label_en')
+            ->limit(10)
             ->get();
     }
 
