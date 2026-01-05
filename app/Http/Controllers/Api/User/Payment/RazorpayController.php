@@ -27,12 +27,12 @@ class RazorpayController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number', $topupNumber)->first();
         $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Razorpay.');
@@ -45,10 +45,10 @@ class RazorpayController extends Controller
 
         $item_amount = $purchase->amount * $curr->value;
 
-        $item_name = $settings->title . " Deposit";
+        $item_name = $settings->title . " TopUp";
 
         $purchaseData = [
-            'receipt' => $purchase->deposit_number,
+            'receipt' => $purchase->topup_number,
             'amount' => round($item_amount) * 100, // 2000 rupees in paise
             'currency' => 'INR',
             'payment_capture' => 1, // auto capture
@@ -90,7 +90,7 @@ class RazorpayController extends Controller
             ],
             "notes" => [
                 "address" => $request->address,
-                "merchant_deposit_id" => $purchase->deposit_number,
+                "merchant_topup_id" => $purchase->topup_number,
             ],
             "theme" => [
                 "color" => "{{$settings->colors}}",
@@ -115,8 +115,8 @@ class RazorpayController extends Controller
         $success = true;
         $razorpayOrder = $this->api->purchase->fetch(session('razorpay_order_id'));
         $purchase_id = $razorpayOrder['receipt'];
-        $purchase = TopUp::where('deposit_number', $purchase_id)->first();
-        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
+        $purchase = TopUp::where('topup_number', $purchase_id)->first();
+        $cancel_url = route('user.topup.send', $purchase->topup_number);
 
         $error = "Payment Failed";
 
@@ -147,7 +147,7 @@ class RazorpayController extends Controller
 
             $purchase_id = $razorpayOrder['receipt'];
             $transaction_id = $_POST['razorpay_payment_id'];
-            $purchase = TopUp::where('deposit_number', $purchase_id)->first();
+            $purchase = TopUp::where('topup_number', $purchase_id)->first();
 
             $user = \App\Models\User::findOrFail($purchase->user_id);
             $user->balance = $user->balance + ($purchase->amount);
@@ -170,7 +170,7 @@ class RazorpayController extends Controller
                     $walletLog->currency_value = $purchase->currency_value;
                     $walletLog->method = $purchase->method;
                     $walletLog->txnid = $purchase->txnid;
-                    $walletLog->details = 'Payment Deposit';
+                    $walletLog->details = 'Wallet TopUp';
                     $walletLog->type = 'plus';
                     $walletLog->save();
                 }

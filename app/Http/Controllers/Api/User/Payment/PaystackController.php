@@ -12,13 +12,13 @@ class PaystackController extends Controller
     public function store(Request $request)
     {
         
-         if(!$request->has('deposit_number')){
+         if(!$request->has('topup_number')){
              return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
          }
-         
-         
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number',$deposit_number)->first();
+
+
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number',$topupNumber)->first();
    
         $item_amount = $purchase->pay_amount ;
         $purchase['txnid'] = $request->ref_id;
@@ -43,7 +43,7 @@ class PaystackController extends Controller
             $walletLog->currency_value= $purchase->currency_value;
             $walletLog->method = $purchase->method;
             $walletLog->txnid = $purchase->txnid;
-            $walletLog->details = 'Payment Deposit';
+            $walletLog->details = 'Wallet TopUp';
             $walletLog->type = 'plus';
             $walletLog->save();
         }

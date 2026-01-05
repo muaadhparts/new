@@ -42,15 +42,15 @@ class CatalogItemController extends Controller
         }
     }
 
-    public function comments($id)
+    public function buyerNotes($id)
     {
         try {
             $catalogItem = CatalogItem::find($id);
             if (!$catalogItem) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Item not found."]]);
             }
-            $comments = $catalogItem->buyerNotes()->orderBy('id', 'DESC')->get();
-            return response()->json(['status' => true, 'data' => BuyerNoteResource::collection($comments), 'error' => []]);
+            $buyerNotes = $catalogItem->buyerNotes()->orderBy('id', 'DESC')->get();
+            return response()->json(['status' => true, 'data' => BuyerNoteResource::collection($buyerNotes), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -61,7 +61,7 @@ class CatalogItemController extends Controller
         try {
             $buyerNote = BuyerNote::find($id);
             if (!$buyerNote) {
-                return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Comment not found."]]);
+                return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Buyer Note not found."]]);
             }
             $replies = $buyerNote->noteResponses()->orderBy('id', 'DESC')->get();
             return response()->json(['status' => true, 'data' => NoteResponseResource::collection($replies), 'error' => []]);

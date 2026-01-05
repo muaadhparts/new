@@ -30,21 +30,21 @@ class PaymentController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
+        $topupNumber = $request->topup_number;
 
-        $deposit = TopUp::where('deposit_number', $deposit_number)->first();
-        $curr = Currency::where('name', '=', $deposit->currency_code)->first();
+        $topUp = TopUp::where('topup_number', $topupNumber)->first();
+        $curr = Currency::where('name', '=', $topUp->currency_code)->first();
 
         $support = ['USD', 'EUR'];
         if (!in_array($curr->name, $support)) {
             return redirect()->back()->with('unsuccess', 'Please Select USD Or EUR Currency For Paypal.');
         }
 
-        $item_amount = $deposit->amount * $deposit->currency_value;
+        $item_amount = $topUp->amount * $topUp->currency_value;
 
 
         $notify_url = action('Api\User\Payment\PaymentController@notify');
@@ -58,7 +58,7 @@ class PaymentController extends Controller
             ))->send();
 
             if ($response->isRedirect()) {
-                Session::put('deposit_number', $deposit_number);
+                Session::put('topup_number', $topupNumber);
                 if ($response->redirect()) {
                     return redirect($response->redirect());
                 }
@@ -77,7 +77,7 @@ class PaymentController extends Controller
     {
 
         $responseData = $request->all();
-        $deposit_number = Session::get('deposit_number');
+        $topupNumber = Session::get('topup_number');
         if (empty($responseData['PayerID']) || empty($responseData['token'])) {
             return [
                 'status' => false,
@@ -94,7 +94,7 @@ class PaymentController extends Controller
 
         if ($response->isSuccessful()) {
 
-            $purchase = TopUp::where('deposit_number', $deposit_number)->first();
+            $purchase = TopUp::where('topup_number', $topupNumber)->first();
             $user = \App\Models\User::findOrFail($purchase->user_id);
             $user->balance = $user->balance + ($purchase->amount);
             $user->save();
@@ -116,7 +116,7 @@ class PaymentController extends Controller
                 $walletLog->currency_value = $purchase->currency_value;
                 $walletLog->method = $purchase->method;
                 $walletLog->txnid = $purchase->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }

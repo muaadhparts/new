@@ -14,12 +14,12 @@ class SslController extends Controller
     public function store(Request $request)
     {
         $data = MerchantPayment::whereKeyword('sslcommerz')->first();
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number', $topupNumber)->first();
         $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "BDT") {
             return redirect()->back()->with('unsuccess', 'Please Select BDT Currency For Sslcommerz .');
@@ -41,8 +41,8 @@ class SslController extends Controller
         $post_data['currency'] = $curr->name;
         $post_data['tran_id'] = $txnid;
         $post_data['success_url'] = action('Api\User\Payment\SslController@notify');
-        $post_data['fail_url'] = route('user.deposit.send', $purchase->deposit_number);
-        $post_data['cancel_url'] = route('user.deposit.send', $purchase->deposit_number);
+        $post_data['fail_url'] = route('user.topup.send', $purchase->topup_number);
+        $post_data['cancel_url'] = route('user.topup.send', $purchase->topup_number);
         # $post_data['multi_card_name'] = "mastercard,visacard,amexcard";  # DISABLE TO DISPLAY ALL AVAILABLE
 
         # CUSTOMER INFORMATION
@@ -126,7 +126,7 @@ class SslController extends Controller
                 $walletLog->currency_value = $purchase->currency_value;
                 $walletLog->method = $purchase->method;
                 $walletLog->txnid = $purchase->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }

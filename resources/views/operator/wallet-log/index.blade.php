@@ -6,7 +6,7 @@
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __('Transactions') }}</h4>
+										<h4 class="heading">{{ __('Wallet Logs') }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('operator.dashboard') }}">{{ __('Dashboard') }} </a>
@@ -15,7 +15,7 @@
 												<a href="{{ route('operator-user-index') }}">{{ __('Customers') }}</a>
 											</li>
 											<li>
-												<a href="{{ route('operator-wallet-log-index') }}">{{ __('Transactions') }}</a>
+												<a href="{{ route('operator-wallet-log-index') }}">{{ __('Wallet Logs') }}</a>
 											</li>
 										</ul>
 								</div>

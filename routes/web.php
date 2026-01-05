@@ -511,7 +511,7 @@ Route::prefix('operator')->group(function () {
         Route::get('/wallet-logs/{id}/show', 'Operator\WalletLogController@transhow')->name('operator-wallet-log-show');
     });
 
-    //------------ OPERATORUSER DEPOSIT & TRANSACTION SECTION ------------
+    //------------ OPERATORUSER TOP-UP & TRANSACTION SECTION ------------
 
     //------------ OPERATORMERCHANT SECTION ------------
 
@@ -1498,12 +1498,10 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // USER MEMBERSHIP PLAN ENDS
 
-        // USER DEPOSIT
+        // USER TOP-UP & WALLET LOGS
 
-        // Top Up & Transaction
-
-        Route::get('/top-up/transactions', 'User\TopUpController@transactions')->name('user-transactions-index');
-        Route::get('/top-up/transactions/{id}/show', 'User\TopUpController@transhow')->name('user-trans-show');
+        Route::get('/top-up/wallet-logs', 'User\TopUpController@walletLogs')->name('user-wallet-logs-index');
+        Route::get('/top-up/wallet-logs/{id}/show', 'User\TopUpController@transhow')->name('user-wallet-log-show');
         Route::get('/top-up/index', 'User\TopUpController@index')->name('user-top-up-index');
         Route::get('/top-up/create', 'User\TopUpController@create')->name('user-top-up-create');
 
@@ -1597,47 +1595,47 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/favorite/{id1}/{id2}', 'User\UserController@favorite')->name('user-favorite');
         Route::get('/favorite/seller/{id}/delete', 'User\UserController@favdelete')->name('user-favorite-delete');
 
-        // Mobile Deposit Route section
+        // Mobile TopUp Route section
 
-        Route::get('/api/checkout/instamojo/notify', 'Api\User\Payment\InstamojoController@notify')->name('api.user.deposit.instamojo.notify');
+        Route::get('/api/checkout/instamojo/notify', 'Api\User\Payment\InstamojoController@notify')->name('api.user.topup.instamojo.notify');
 
-        Route::post('/api/paystack/submit', 'Api\User\Payment\PaystackController@store')->name('api.user.deposit.paystack.submit');
-        // Route::post('/api/voguepay/submit', 'Api\User\Payment\VoguepayController@store')->name('api.user.deposit.voguepay.submit'); // Controller file missing
+        Route::post('/api/paystack/submit', 'Api\User\Payment\PaystackController@store')->name('api.user.topup.paystack.submit');
+        // Route::post('/api/voguepay/submit', 'Api\User\Payment\VoguepayController@store')->name('api.user.topup.voguepay.submit'); // Controller file missing
 
-        Route::post('/api/instamojo/submit', 'Api\User\Payment\InstamojoController@store')->name('api.user.deposit.instamojo.submit');
-        Route::post('/api/paypal-submit', 'Api\User\Payment\PaymentController@store')->name('api.user.deposit.paypal.submit');
-        Route::get('/api/paypal/notify', 'Api\User\Payment\PaymentController@notify')->name('api.user.deposit.payment.notify');
-        Route::post('/api/authorize-submit', 'Api\User\Payment\AuthorizeController@store')->name('api.user.deposit.authorize.submit');
+        Route::post('/api/instamojo/submit', 'Api\User\Payment\InstamojoController@store')->name('api.user.topup.instamojo.submit');
+        Route::post('/api/paypal-submit', 'Api\User\Payment\PaymentController@store')->name('api.user.topup.paypal.submit');
+        Route::get('/api/paypal/notify', 'Api\User\Payment\PaymentController@notify')->name('api.user.topup.payment.notify');
+        Route::post('/api/authorize-submit', 'Api\User\Payment\AuthorizeController@store')->name('api.user.topup.authorize.submit');
 
-        Route::post('/api/payment/stripe-submit', 'Api\User\Payment\StripeController@store')->name('api.user.deposit.stripe.submit');
-        Route::get('/api/payment/stripe/notify', 'Api\User\Payment\StripeController@notify')->name('api.user.deposit.stripe.notify');
+        Route::post('/api/payment/stripe-submit', 'Api\User\Payment\StripeController@store')->name('api.user.topup.stripe.submit');
+        Route::get('/api/payment/stripe/notify', 'Api\User\Payment\StripeController@notify')->name('api.user.topup.stripe.notify');
 
         // ssl Routes
-        Route::post('/api/ssl/submit', 'Api\User\Payment\SslController@store')->name('api.user.deposit.ssl.submit');
-        Route::post('/api/ssl/notify', 'Api\User\Payment\SslController@notify')->name('api.user.deposit.ssl.notify');
-        Route::post('/api/ssl/cancle', 'Api\User\Payment\SslController@cancle')->name('api.user.deposit.ssl.cancle');
+        Route::post('/api/ssl/submit', 'Api\User\Payment\SslController@store')->name('api.user.topup.ssl.submit');
+        Route::post('/api/ssl/notify', 'Api\User\Payment\SslController@notify')->name('api.user.topup.ssl.notify');
+        Route::post('/api/ssl/cancle', 'Api\User\Payment\SslController@cancle')->name('api.user.topup.ssl.cancle');
 
         // Molly Routes
-        Route::post('/api/molly/submit', 'Api\User\Payment\MollyController@store')->name('api.user.deposit.molly.submit');
-        Route::get('/api/molly/notify', 'Api\User\Payment\MollyController@notify')->name('api.user.deposit.molly.notify');
+        Route::post('/api/molly/submit', 'Api\User\Payment\MollyController@store')->name('api.user.topup.molly.submit');
+        Route::get('/api/molly/notify', 'Api\User\Payment\MollyController@notify')->name('api.user.topup.molly.notify');
 
         //PayTM Routes
-        Route::post('/api/paytm-submit', 'Api\User\Payment\PaytmController@store')->name('api.user.deposit.paytm.submit');;
-        Route::post('/api/paytm-callback', 'Api\User\Payment\PaytmController@paytmCallback')->name('api.user.deposit.paytm.notify');
+        Route::post('/api/paytm-submit', 'Api\User\Payment\PaytmController@store')->name('api.user.topup.paytm.submit');;
+        Route::post('/api/paytm-callback', 'Api\User\Payment\PaytmController@paytmCallback')->name('api.user.topup.paytm.notify');
 
         //RazorPay Routes
-        Route::post('/api/razorpay-submit', 'Api\User\Payment\RazorpayController@store')->name('api.user.deposit.razorpay.submit');;
-        Route::post('/api/razorpay-callback', 'Api\User\Payment\RazorpayController@razorCallback')->name('api.user.deposit.razorpay.notify');
+        Route::post('/api/razorpay-submit', 'Api\User\Payment\RazorpayController@store')->name('api.user.topup.razorpay.submit');;
+        Route::post('/api/razorpay-callback', 'Api\User\Payment\RazorpayController@razorCallback')->name('api.user.topup.razorpay.notify');
 
         // Mercadopago Routes
-        Route::get('/api/checkout/mercadopago/return', 'Api\User\Payment\MercadopagoController@payreturn')->name('api.user.deposit.mercadopago.return');
-        Route::post('/api/checkout/mercadopago/notify', 'Api\User\Payment\MercadopagoController@notify')->name('api.user.deposit.mercadopago.notify');
-        Route::post('/api/checkout/mercadopago/submit', 'Api\User\Payment\MercadopagoController@store')->name('api.user.deposit.mercadopago.submit');
+        Route::get('/api/checkout/mercadopago/return', 'Api\User\Payment\MercadopagoController@payreturn')->name('api.user.topup.mercadopago.return');
+        Route::post('/api/checkout/mercadopago/notify', 'Api\User\Payment\MercadopagoController@notify')->name('api.user.topup.mercadopago.notify');
+        Route::post('/api/checkout/mercadopago/submit', 'Api\User\Payment\MercadopagoController@store')->name('api.user.topup.mercadopago.submit');
         // Flutterwave Routes
-        Route::post('/api/flutter/submit', 'Api\User\Payment\FlutterWaveController@store')->name('api.user.deposit.flutter.submit');
-        Route::post('/api/flutter/notify', 'Api\User\Payment\FlutterWaveController@notify')->name('api.user.deposit.flutter.notify');
+        Route::post('/api/flutter/submit', 'Api\User\Payment\FlutterWaveController@store')->name('api.user.topup.flutter.submit');
+        Route::post('/api/flutter/notify', 'Api\User\Payment\FlutterWaveController@notify')->name('api.user.topup.flutter.notify');
 
-        // Mobile Deposit Route section
+        // Mobile TopUp Route section
 
     });
 
@@ -1802,11 +1800,11 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/view/side/review/{id}', 'Front\CatalogItemDetailsController@sideReviews')->name('front.catalog-item.side.reviews');
     // CATALOG ITEM SECTION ENDS
 
-    // COMMENT SECTION
-    Route::post('/item/comment/store', 'Front\CatalogItemDetailsController@comment')->name('catalog-item.comment');
-    Route::post('/item/comment/edit/{id}', 'Front\CatalogItemDetailsController@commentedit')->name('catalog-item.comment.edit');
-    Route::get('/item/comment/delete/{id}', 'Front\CatalogItemDetailsController@commentdelete')->name('catalog-item.comment.delete');
-    // COMMENT SECTION ENDS
+    // BUYER NOTE SECTION
+    Route::post('/item/buyer-note/store', 'Front\CatalogItemDetailsController@buyerNoteStore')->name('catalog-item.buyer-note');
+    Route::post('/item/buyer-note/edit/{id}', 'Front\CatalogItemDetailsController@buyerNoteEdit')->name('catalog-item.buyer-note.edit');
+    Route::get('/item/buyer-note/delete/{id}', 'Front\CatalogItemDetailsController@buyerNoteDelete')->name('catalog-item.buyer-note.delete');
+    // BUYER NOTE SECTION ENDS
 
     // REPLY SECTION
     Route::post('/item/reply/{id}', 'Front\CatalogItemDetailsController@reply')->name('catalog-item.reply');

@@ -6,16 +6,16 @@
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __('Pending Deposits') }}</h4>
+										<h4 class="heading">{{ __('Pending Top Ups') }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('operator.dashboard') }}">{{ __('Dashboard') }} </a>
 											</li>
 											<li>
-												<a href="javascript:;">{{ __('Customer Deposits') }} </a>
+												<a href="javascript:;">{{ __('Customer Top Ups') }} </a>
 											</li>
 											<li>
-												<a href="{{ route('operator-sociallink-index') }}">{{ __('Pending Deposits') }}</a>
+												<a href="{{ route('operator-sociallink-index') }}">{{ __('Pending Top Ups') }}</a>
 											</li>
 										</ul>
 								</div>
@@ -65,7 +65,7 @@
   
         <!-- Modal body -->
         <div class="modal-body">
-              <p class="text-center">{{ __("You are about to change the status of this deposit. If you select completed, you won't be able to change it again.") }}</p>
+              <p class="text-center">{{ __("You are about to change the status of this top up. If you select completed, you won't be able to change it again.") }}</p>
               <p class="text-center">{{ __("Do you want to proceed?") }}</p>
         </div>
   
@@ -93,7 +93,7 @@
 			   ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('operator-user-deposit-datatables','0') }}',
+               ajax: '{{ route('operator-user-top-up-datatables','0') }}',
                columns: [
                         { data: 'name', name: 'name' },
                         { data: 'amount', name: 'amount' },

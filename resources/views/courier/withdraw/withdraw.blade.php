@@ -7,7 +7,7 @@
             @include('includes.courier.sidebar')
             <!-- main content -->
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                <div class="gs-deposit-section">
+                <div class="gs-topup-section">
                     <div class="d-flex align-items-center gap-4">
                         <a href="{{ route('courier-wwt-index') }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
@@ -15,8 +15,8 @@
 
                         <h3>@lang('My Withdraws')</h3>
                     </div>
-                    <div class="deposit-area">
-                        <div class="deposit-area-title">
+                    <div class="topup-area">
+                        <div class="topup-area-title">
                             <h4>@lang('Withdraw Now')</h4>
                         </div>
                         <form action="{{route('courier-wwt-store')}}" method="POST">

@@ -116,12 +116,12 @@ Route::group(['prefix' => 'user'], function () {
         // ---------------------CATALOG ITEM CONTROLLER ---------------------
 
         Route::post('/reviewsubmit', 'Api\User\CatalogItemController@reviewsubmit');
-        Route::post('/commentstore', 'Api\User\CatalogItemController@commentstore');
-        Route::post('/commentupdate', 'Api\User\CatalogItemController@commentupdate');
+        Route::post('/buyer-note/store', 'Api\User\CatalogItemController@buyerNoteStore');
+        Route::post('/buyer-note/update', 'Api\User\CatalogItemController@buyerNoteUpdate');
         Route::post('/replystore', 'Api\User\CatalogItemController@replystore');
         Route::post('/replyupdate', 'Api\User\CatalogItemController@replyupdate');
         Route::post('/reportstore', 'Api\User\CatalogItemController@reportstore');
-        Route::get('/comment/{id}/delete', 'Api\User\CatalogItemController@commentdelete');
+        Route::get('/buyer-note/{id}/delete', 'Api\User\CatalogItemController@buyerNoteDelete');
         Route::get('/reply/{id}/delete', 'Api\User\CatalogItemController@replydelete');
 
         // ---------------------CATALOG ITEM CONTROLLER ENDS ---------------------
@@ -169,8 +169,8 @@ Route::group(['prefix' => 'user'], function () {
 
           Route::get('/topups', 'Api\User\TopUpController@topups');
           Route::post('/topup/store', 'Api\User\TopUpController@store');
-          Route::get('/transactions', 'Api\User\TopUpController@transactions');
-          Route::get('/transaction/details', 'Api\User\TopUpController@transactionDetails');
+          Route::get('/wallet-logs', 'Api\User\TopUpController@walletLogs');
+          Route::get('/wallet-log/show', 'Api\User\TopUpController@walletLogShow');
 
           // ---------------------TOPUP CONTROLLER ENDS ---------------------
   
@@ -226,7 +226,7 @@ Route::group(['prefix' => 'front'], function () {
 
     Route::get('/catalog-item/{id}/details', 'Api\Front\CatalogItemController@catalogItemDetails');
     Route::get('/catalog-item/{id}/catalog-reviews', 'Api\Front\CatalogItemController@catalogReviews');
-    Route::get('/catalog-item/{id}/comments', 'Api\Front\CatalogItemController@comments');
+    Route::get('/catalog-item/{id}/buyer-notes', 'Api\Front\CatalogItemController@buyerNotes');
     Route::get('/catalog-item/{id}/replies', 'Api\Front\CatalogItemController@replies');
 
     //------------ Catalog Item Controller Ends ------------

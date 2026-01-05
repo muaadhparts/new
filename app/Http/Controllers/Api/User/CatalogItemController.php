@@ -66,7 +66,7 @@ class CatalogItemController extends Controller
         }
     }
 
-    public function commentstore(Request $request)
+    public function buyerNoteStore(Request $request)
     {
         try {
             $rules = [
@@ -91,7 +91,7 @@ class CatalogItemController extends Controller
         }
     }
 
-    public function commentupdate(Request $request)
+    public function buyerNoteUpdate(Request $request)
     {
         try {
             $rules = [
@@ -114,7 +114,7 @@ class CatalogItemController extends Controller
         }
     }
 
-    public function commentdelete($id)
+    public function buyerNoteDelete($id)
     {
         try {
             $buyerNote = BuyerNote::find($id);
@@ -125,7 +125,7 @@ class CatalogItemController extends Controller
             }
             $buyerNote->delete();
 
-            return response()->json(['status' => true, 'data' => ['message' => 'Comment Deleted Successfully!'], 'error' => []]);
+            return response()->json(['status' => true, 'data' => ['message' => 'Buyer Note Deleted Successfully!'], 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }

@@ -9,7 +9,7 @@
         <!-- breadcrumb start  -->
         <div class="gs-merchant-breadcrumb has-mb">
 
-            <div class="gs-deposit-title ms-0 d-flex align-items-center gap-4">
+            <div class="gs-topup-title ms-0 d-flex align-items-center gap-4">
                 <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>

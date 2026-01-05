@@ -120,7 +120,7 @@ class CatalogItem extends Model
         return $this->hasMany('App\Models\FavoriteSeller', 'catalog_item_id');
     }
 
-    public function comments()
+    public function buyerNotes()
     {
         return $this->hasMany('App\Models\BuyerNote', 'catalog_item_id');
     }

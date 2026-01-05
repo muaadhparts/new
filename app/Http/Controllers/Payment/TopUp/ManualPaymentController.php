@@ -17,22 +17,22 @@ class ManualPaymentController extends TopUpBaseController
         $user = $this->user;
         $curr = $this->curr;
   
-        $deposit = new TopUp;
-        $deposit->user_id = $user->id;
-        $deposit->currency = $curr->sign;
-        $deposit->currency_code = $curr->name;
-        $deposit->currency_value = $curr->value;
-        $deposit->amount = $request->amount / $curr->value;
-        $deposit->method = $request->method;
-        $deposit->txnid = $request->txnid;
-        $deposit->status = 0;
-        $deposit->save();
-  
+        $topUp = new TopUp;
+        $topUp->user_id = $user->id;
+        $topUp->currency = $curr->sign;
+        $topUp->currency_code = $curr->name;
+        $topUp->currency_value = $curr->value;
+        $topUp->amount = $request->amount / $curr->value;
+        $topUp->method = $request->method;
+        $topUp->txnid = $request->txnid;
+        $topUp->status = 0;
+        $topUp->save();
+
         $data = [
             'to' => $user->email,
-            'type' => "wallet_deposit",
+            'type' => "wallet_topup",
             'cname' => $user->name,
-            'damount' => $deposit->amount,
+            'damount' => $topUp->amount,
             'wbalance' => $user->balance,
             'oamount' => "",
             'aname' => "",

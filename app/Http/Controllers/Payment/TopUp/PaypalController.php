@@ -45,7 +45,7 @@ class PaypalController extends TopUpBaseController
             return redirect()->back()->with('unsuccess', __('Invalid Currency For Paypal Payment.'));
         }
 
-        $item_name = "Deposit via Paypal Payment";
+        $item_name = "TopUp via Paypal Payment";
         $cancel_url = route('topup.payment.cancle');
         $notify_url = route('topup.paypal.notify');
 
@@ -66,7 +66,7 @@ class PaypalController extends TopUpBaseController
 
             if ($response->isRedirect()) {
                 Session::put('input_data', $request->all());
-                Session::put('deposit', $dep);
+                Session::put('topup', $dep);
 
                 if ($response->redirect()) {
 
@@ -83,7 +83,7 @@ class PaypalController extends TopUpBaseController
     public function notify(Request $request)
     {
         $responseData = $request->all();
-        $dep = Session::get('deposit');
+        $dep = Session::get('topup');
 
         $success_url = route('topup.payment.return');
         $cancel_url = route('topup.payment.cancle');
@@ -104,43 +104,43 @@ class PaypalController extends TopUpBaseController
 
         if ($response->isSuccessful()) {
 
-            $deposit = new TopUp;
-            $deposit->user_id = $dep['user_id'];
-            $deposit->currency = $dep['currency'];
-            $deposit->currency_code = $dep['currency_code'];
-            $deposit->amount = $dep['amount'];
-            $deposit->currency_value = $dep['currency_value'];
-            $deposit->method = $dep['method'];
-            $deposit->txnid = $response->getData()['wallet_logs'][0]['related_resources'][0]['sale']['id'];
-            $deposit->status = 1;
-            $deposit->save();
+            $topUp = new TopUp;
+            $topUp->user_id = $dep['user_id'];
+            $topUp->currency = $dep['currency'];
+            $topUp->currency_code = $dep['currency_code'];
+            $topUp->amount = $dep['amount'];
+            $topUp->currency_value = $dep['currency_value'];
+            $topUp->method = $dep['method'];
+            $topUp->txnid = $response->getData()['wallet_logs'][0]['related_resources'][0]['sale']['id'];
+            $topUp->status = 1;
+            $topUp->save();
 
-            $user = \App\Models\User::findOrFail($deposit->user_id);
-            $user->balance = $user->balance + ($deposit->amount);
+            $user = \App\Models\User::findOrFail($topUp->user_id);
+            $user->balance = $user->balance + ($topUp->amount);
             $user->save();
 
             // store in wallet_logs table
-            if ($deposit->status == 1) {
+            if ($topUp->status == 1) {
                 $walletLog = new \App\Models\WalletLog;
                 $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $walletLog->user_id = $deposit->user_id;
-                $walletLog->amount = $deposit->amount;
-                $walletLog->user_id = $deposit->user_id;
-                $walletLog->currency_sign = $deposit->currency;
-                $walletLog->currency_code = $deposit->currency_code;
-                $walletLog->currency_value = $deposit->currency_value;
-                $walletLog->method = $deposit->method;
-                $walletLog->txnid = $deposit->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->user_id = $topUp->user_id;
+                $walletLog->amount = $topUp->amount;
+                $walletLog->user_id = $topUp->user_id;
+                $walletLog->currency_sign = $topUp->currency;
+                $walletLog->currency_code = $topUp->currency_code;
+                $walletLog->currency_value = $topUp->currency_value;
+                $walletLog->method = $topUp->method;
+                $walletLog->txnid = $topUp->txnid;
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }
 
             $maildata = [
                 'to' => $user->email,
-                'type' => "wallet_deposit",
+                'type' => "wallet_topup",
                 'cname' => $user->name,
-                'damount' => $deposit->amount,
+                'damount' => $topUp->amount,
                 'wbalance' => $user->balance,
                 'oamount' => "",
                 'aname' => "",
@@ -151,7 +151,7 @@ class PaypalController extends TopUpBaseController
             $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($maildata);
 
-            Session::forget('deposit');
+            Session::forget('topup');
             Session::forget('paypal_payment_id');
             return redirect($success_url);
         } else {

@@ -13,10 +13,10 @@
                 <!-- page title -->
                 <div class="ud-page-title-box d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <!-- mobile sidebar trigger btn -->
-                    <h3 class="ud-page-title">@lang('Deposite')</h3>
+                    <h3 class="ud-page-title">@lang('Top Up')</h3>
                     <a class="template-btn md-btn black-btn data-table-btn mb-0"
-                        href="{{ route('user-deposit-create') }}">
-                        <i class="fas fa-plus"></i> @lang('Add Deposit')</a>
+                        href="{{ route('user-top-up-create') }}">
+                        <i class="fas fa-plus"></i> @lang('Add Top Up')</a>
 
                 </div>
 
@@ -28,7 +28,7 @@
                         <thead>
                             <tr>
 
-                                <th>{{ __('Deposit Date') }}</th>
+                                <th>{{ __('Top Up Date') }}</th>
                                 <th>{{ __('Method') }}</th>
                                 <th>{{ __('Amount') }}</th>
                                 <th>{{ __('Status') }}</th>
@@ -36,10 +36,10 @@
 
                         </thead>
                         @php
-                        $deposites = App\Models\TopUp::where('user_id', Auth::user()->id)->latest()->paginate(12);
+                        $topUps = App\Models\TopUp::where('user_id', Auth::user()->id)->latest()->paginate(12);
                         @endphp
                         <tbody>
-                            @forelse ($deposites as $data)
+                            @forelse ($topUps as $data)
                             <!-- table data row 1 start  -->
                             <tr>
 
@@ -73,14 +73,14 @@
                             <!-- table data row 1 end  -->
                             @empty
                             <tr>
-                                <td colspan="4">{{ __('No Deposit Found') }}</td>
+                                <td colspan="4">{{ __('No Top Up Found') }}</td>
                             </tr>
                             @endforelse
                         </tbody>
                     </table>
 
                 </div>
-                {{ $deposites->links('includes.frontend.pagination') }}
+                {{ $topUps->links('includes.frontend.pagination') }}
             </div>
         </div>
     </div>

@@ -6,16 +6,16 @@
 						<div class="mr-breadcrumb">
 							<div class="row">
 								<div class="col-lg-12">
-										<h4 class="heading">{{ __('Completed Deposits') }}</h4>
+										<h4 class="heading">{{ __('Completed Top Ups') }}</h4>
 										<ul class="links">
 											<li>
 												<a href="{{ route('operator.dashboard') }}">{{ __('Dashboard') }} </a>
 											</li>
 											<li>
-												<a href="javascript:;">{{ __('Customer Deposits') }} </a>
+												<a href="javascript:;">{{ __('Customer Top Ups') }} </a>
 											</li>
 											<li>
-												<a href="{{ route('operator-sociallink-index') }}">{{ __('Completed Deposits') }}</a>
+												<a href="{{ route('operator-sociallink-index') }}">{{ __('Completed Top Ups') }}</a>
 											</li>
 										</ul>
 								</div>
@@ -64,7 +64,7 @@
 			   ordering: false,
                processing: true,
                serverSide: true,
-               ajax: '{{ route('operator-user-deposit-datatables','1') }}',
+               ajax: '{{ route('operator-user-top-up-datatables','1') }}',
                columns: [
                         { data: 'name', name: 'name' },
                         { data: 'amount', name: 'amount' },

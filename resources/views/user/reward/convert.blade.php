@@ -10,16 +10,16 @@
       @include('includes.user.sidebar')
       <!-- main content -->
       <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-        <div class="gs-deposit-section">
-          <div class="gs-deposit-title d-flex align-items-center">
+        <div class="gs-topup-section">
+          <div class="gs-topup-title d-flex align-items-center">
             <a href="{{ url()->previous() }}" class="back-btn">
               <i class="fa-solid fa-arrow-left-long"></i>
             </a>
 
             <h3>@lang('Reward Point')</h3>
           </div>
-          <div class="deposit-area">
-            <div class="deposit-area-title">
+          <div class="topup-area">
+            <div class="topup-area-title">
               <h4>@lang('Convert Point')</h4>
             </div>
             <form action="{{ route('user-reward-convert-submit') }}" method="POST">

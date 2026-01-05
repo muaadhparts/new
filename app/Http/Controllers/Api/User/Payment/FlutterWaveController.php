@@ -31,12 +31,12 @@ class FlutterWaveController extends Controller
 
     public function store(Request $request){
 
-         if(!$request->has('deposit_number')){
+         if(!$request->has('topup_number')){
              return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number',$deposit_number)->first();
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number',$topupNumber)->first();
         $curr = Currency::where('name','=',$purchase->currency_code)->first();
         $settings = Muaadhsetting::findOrFail(1);
         $item_amount = $purchase->amount * $purchase->currency_value;
@@ -64,7 +64,7 @@ class FlutterWaveController extends Controller
         $curl = curl_init();
 
         $currency = $curr->name;
-        $txref = $purchase->deposit_number; // ensure you generate unique references per transaction.
+        $txref = $purchase->topup_number; // ensure you generate unique references per transaction.
         $PBFPubKey = $this->public_key; // get your public key from the dashboard.
         $redirect_url = action('Api\User\Payment\FlutterWaveController@notify');
         $payment_plan = ""; // this is only required for recurring payments.
@@ -147,7 +147,7 @@ class FlutterWaveController extends Controller
     
             if (($chargeResponsecode == "00" || $chargeResponsecode == "0") && ($paymentStatus == "successful")) {
 
-            $purchase = TopUp::where('deposit_number',$resp['data']['txref'])->first();
+            $purchase = TopUp::where('topup_number',$resp['data']['txref'])->first();
             $purchase['txnid'] = $txn;
             $purchase['status'] = 1;
             $user = \App\Models\User::findOrFail($purchase->user_id);
@@ -166,7 +166,7 @@ class FlutterWaveController extends Controller
                         $walletLog->currency_value= $purchase->currency_value;
                         $walletLog->method = $purchase->method;
                         $walletLog->txnid = $purchase->txnid;
-                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->details = 'Wallet TopUp';
                         $walletLog->type = 'plus';
                         $walletLog->save();
                     }

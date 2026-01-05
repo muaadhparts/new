@@ -7,9 +7,9 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="gs-deposit-section">
+                    <div class="gs-topup-section">
 
-                        <div class="gs-deposit-title d-flex align-items-center gap-4 ms-0 mb-5">
+                        <div class="gs-topup-title d-flex align-items-center gap-4 ms-0 mb-5">
                             <a href="{{ route('user-package') }}" class="back-btn">
                                 <i class="fa-solid fa-arrow-left-long"></i>
                             </a>
@@ -17,7 +17,7 @@
                         </div>
 
                         <div class="row gy-4">
-                            <div class="deposit-area merchant-deposit-area mx-auto">
+                            <div class="topup-area merchant-topup-area mx-auto">
 
                                 <form id="subscribe-form" class="pay-form"
                                     action="{{ $subs->price == 0 ? route('user-merchant-request-submit') : '' }}"

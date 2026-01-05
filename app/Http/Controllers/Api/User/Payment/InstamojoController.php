@@ -18,12 +18,12 @@ class InstamojoController extends Controller
     public function store(Request $request)
     {
         $data = MerchantPayment::whereKeyword('instamojo')->first();
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number', $deposit_number)->firstOrFail();
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number', $topupNumber)->firstOrFail();
         $curr = Currency::where('name', '=', $purchase->currency_code)->firstOrFail();
 
         if ($curr->name != "INR") {
@@ -75,7 +75,7 @@ class InstamojoController extends Controller
                 $walletLog->currency_value = $purchase->currency_value;
                 $walletLog->method = $purchase->method;
                 $walletLog->txnid = $purchase->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }
@@ -94,7 +94,7 @@ class InstamojoController extends Controller
 
         $purchase = TopUp::where('flutter_id', '=', $data['payment_request_id'])->first();
 
-        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
+        $cancel_url = route('user.topup.send', $purchase->topup_number);
         $user = \App\Models\User::findOrFail($purchase->user_id);
         $user->balance = $user->balance + ($purchase->amount);
         $user->save();

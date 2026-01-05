@@ -22,7 +22,7 @@ class AuthorizeController extends TopUpBaseController
         $data = MerchantPayment::whereKeyword('authorize.net')->first();
         $user = $this->user;
         $item_amount = (string)$request->amount;
-        $item_name = "Deposit Via  Authorize.net";
+        $item_name = "TopUp Via Authorize.net";
         $item_number = Str::random(4) . time();
 
         $curr = $this->curr;
@@ -99,29 +99,29 @@ class AuthorizeController extends TopUpBaseController
                     $user->mail_sent = 1;
                     $user->save();
 
-                    $deposit = new TopUp;
-                    $deposit->user_id = $user->id;
-                    $deposit->currency = $this->curr->sign;
-                    $deposit->currency_code = $this->curr->name;
-                    $deposit->currency_value = $this->curr->value;
-                    $deposit->amount = $request->amount / $this->curr->value;
-                    $deposit->method = 'Authorize.net';
-                    $deposit->txnid = $tresponse->getTransId();
-                    $deposit->status = 1;
-                    $deposit->save();
+                    $topUp = new TopUp;
+                    $topUp->user_id = $user->id;
+                    $topUp->currency = $this->curr->sign;
+                    $topUp->currency_code = $this->curr->name;
+                    $topUp->currency_value = $this->curr->value;
+                    $topUp->amount = $request->amount / $this->curr->value;
+                    $topUp->method = 'Authorize.net';
+                    $topUp->txnid = $tresponse->getTransId();
+                    $topUp->status = 1;
+                    $topUp->save();
 
                     // store in wallet_logs table
-                    if ($deposit->status == 1) {
+                    if ($topUp->status == 1) {
                         $walletLog = new WalletLog;
-                        $walletLog->user_id = $deposit->user_id;
-                        $walletLog->amount = $deposit->amount;
-                        $walletLog->user_id = $deposit->user_id;
-                        $walletLog->currency_sign = $deposit->currency;
-                        $walletLog->currency_code = $deposit->currency_code;
-                        $walletLog->currency_value = $deposit->currency_value;
-                        $walletLog->method = $deposit->method;
-                        $walletLog->txnid = $deposit->txnid;
-                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->user_id = $topUp->user_id;
+                        $walletLog->amount = $topUp->amount;
+                        $walletLog->user_id = $topUp->user_id;
+                        $walletLog->currency_sign = $topUp->currency;
+                        $walletLog->currency_code = $topUp->currency_code;
+                        $walletLog->currency_value = $topUp->currency_value;
+                        $walletLog->method = $topUp->method;
+                        $walletLog->txnid = $topUp->txnid;
+                        $walletLog->details = 'Wallet TopUp';
                         $walletLog->type = 'plus';
                         $walletLog->save();
                     }
@@ -129,9 +129,9 @@ class AuthorizeController extends TopUpBaseController
 
                     $data = [
                         'to' => $user->email,
-                        'type' => "wallet_deposit",
+                        'type' => "wallet_topup",
                         'cname' => $user->name,
-                        'damount' => $deposit->amount,
+                        'damount' => $topUp->amount,
                         'wbalance' => $user->balance,
                         'oamount' => "",
                         'aname' => "",

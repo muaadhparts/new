@@ -29,9 +29,9 @@ class StripeController extends Controller
     public function store(Request $request)
     {
 
-        $deposit = TopUp::where('deposit_number', $request->deposit_number)->first();
-        $item_amount = $deposit->amount * $deposit->currency_value;
-        $curr = Currency::where('name', '=', $deposit->currency_code)->first();
+        $topUp = TopUp::where('topup_number', $request->topup_number)->first();
+        $item_amount = $topUp->amount * $topUp->currency_value;
+        $curr = Currency::where('name', '=', $topUp->currency_code)->first();
         $gs = Muaadhsetting::findOrFail(1);
 
         try {
@@ -42,7 +42,7 @@ class StripeController extends Controller
                 "success_url" => route('api.user.topup.stripe.notify') . '?session_id={CHECKOUT_SESSION_ID}',
                 "cancel_url" => route('front.payment.cancle'),
                 "locale" => "auto",
-                
+
                 "line_items" => [
                     [
                         "quantity" => 1,
@@ -50,14 +50,14 @@ class StripeController extends Controller
                             "currency" => $curr->name,
                             "unit_amount" => $item_amount * 100,
                             "product_data" => [
-                                "name" => $gs->title . 'Deposit'
+                                "name" => $gs->title . ' TopUp'
                             ]
                         ]
                     ],
                 ]
             ]);
 
-            Session::put('deposit_id', $request->deposit_number);
+            Session::put('topup_id', $request->topup_number);
             return redirect($checkout_session->url);
         } catch (Exception $e) {
             return back()->with('unsuccess', $e->getMessage());
@@ -67,35 +67,35 @@ class StripeController extends Controller
 
     public function notify(Request $request)
     {
-       
-        $deposit_number = Session::get('deposit_id');
+
+        $topupNumber = Session::get('topup_id');
         $stripe = new \Stripe\StripeClient(Config::get('services.stripe.secret'));
         $response = $stripe->checkout->sessions->retrieve($request->session_id);
-        $deposit = TopUp::where('deposit_number', $deposit_number)->firstOrFail();
+        $topUp = TopUp::where('topup_number', $topupNumber)->firstOrFail();
 
 
 
         if ($response->status == 'complete') {
-            $user = \App\Models\User::findOrFail($deposit->user_id);
-            $user->balance = $user->balance + ($deposit->amount);
+            $user = \App\Models\User::findOrFail($topUp->user_id);
+            $user->balance = $user->balance + ($topUp->amount);
             $user->save();
-            $deposit['status'] = 1;
-            $deposit['method'] = 'Stripe';
-            $deposit['txnid'] = $response->payment_intent;
-            $deposit->update();
+            $topUp['status'] = 1;
+            $topUp['method'] = 'Stripe';
+            $topUp['txnid'] = $response->payment_intent;
+            $topUp->update();
             // store in wallet_logs table
-            if ($deposit->status == 1) {
+            if ($topUp->status == 1) {
                 $walletLog = new WalletLog;
                 $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $walletLog->user_id = $deposit->user_id;
-                $walletLog->amount = $deposit->amount;
-                $walletLog->user_id = $deposit->user_id;
-                $walletLog->currency_sign = $deposit->currency;
-                $walletLog->currency_code = $deposit->currency_code;
-                $walletLog->currency_value = $deposit->currency_value;
-                $walletLog->method = $deposit->method;
-                $walletLog->txnid = $deposit->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->user_id = $topUp->user_id;
+                $walletLog->amount = $topUp->amount;
+                $walletLog->user_id = $topUp->user_id;
+                $walletLog->currency_sign = $topUp->currency;
+                $walletLog->currency_code = $topUp->currency_code;
+                $walletLog->currency_value = $topUp->currency_value;
+                $walletLog->method = $topUp->method;
+                $walletLog->txnid = $topUp->txnid;
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }

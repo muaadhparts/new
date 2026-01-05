@@ -29,11 +29,11 @@ class VerifyCsrfToken extends Middleware
         'user/razorpay-notify',
         'uflutter/notify',
         'user/ssl-notify',
-        // DEPOSIT
-        'user/deposit/paytm-notify',
-        'user/deposit/razorpay-notify',
+        // TOP-UP
+        'user/topup/paytm-notify',
+        'user/topup/razorpay-notify',
         'dflutter/notify',
-        'user/deposit/ssl-notify',
+        'user/topup/ssl-notify',
         // api
         '/api/flutter/notify',
         '/api/razorpay-callback',

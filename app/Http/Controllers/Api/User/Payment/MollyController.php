@@ -19,12 +19,12 @@ class MollyController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number', $topupNumber)->first();
         $curr = Currency::where('name', '=', $purchase->currency_code)->first();
 
         $available_currency = array(
@@ -69,7 +69,7 @@ class MollyController extends Controller
 
         $item_amount = round($purchase->pay_amount / $curr->value, 2);
 
-        $purchase['item_name'] = $settings->title . " Deposit";
+        $purchase['item_name'] = $settings->title . " TopUp";
         $purchase['item_amount'] = $item_amount;
 
         $payment = Mollie::api()->payments()->create([
@@ -77,7 +77,7 @@ class MollyController extends Controller
                 'currency' => $curr->name,
                 'value' => '' . sprintf('%0.2f', $purchase['amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
-            'description' => $settings->title . " Deposit",
+            'description' => $settings->title . " TopUp",
             'redirectUrl' => route('api.user.topup.molly.notify'),
         ]);
 
@@ -94,7 +94,7 @@ class MollyController extends Controller
 
         $purchase = TopUp::findOrFail(Session::get('molly_data'));
   
-        $cancel_url = route('user.topup.send', $purchase->deposit_number);
+        $cancel_url = route('user.topup.send', $purchase->topup_number);
         $payment = Mollie::api()->payments()->get(Session::get('payment_id'));
 
         if ($payment->status == 'paid') {
@@ -119,7 +119,7 @@ class MollyController extends Controller
                 $walletLog->currency_value = $purchase->currency_value;
                 $walletLog->method = $purchase->method;
                 $walletLog->txnid = $purchase->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }

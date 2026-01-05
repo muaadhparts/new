@@ -958,8 +958,8 @@ class CatalogItemController extends OperatorBaseController
                 $gal->delete();
             }
         }
-        if ($data->comments->count() > 0) {
-            foreach ($data->comments as $gal) {
+        if ($data->buyerNotes->count() > 0) {
+            foreach ($data->buyerNotes as $gal) {
                 if ($gal->replies->count() > 0) {
                     foreach ($gal->replies as $key) {
                         $key->delete();

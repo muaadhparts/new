@@ -35,7 +35,7 @@
 									                        <th width="20%">{{ __('Name') }}</th>
 									                        <th width="30%">{{ __('Details') }}</th>
 															<th width="10%">{{ __('Checkout') }}</th>
-															<th width="10%">{{ __('Deposit') }}</th>
+															<th width="10%">{{ __('Top Up') }}</th>
 															<th width="10%">{{ __('Subscription') }}</th>
 									                        <th>{{ __('Options') }}</th>
 														</tr>
@@ -135,7 +135,7 @@
                         { data: 'title', name: 'title' },
                         { data: 'details', name: 'details' },
             			{ data: 'checkout', searchable: false, orderable: false },
-						{ data: 'deposit', searchable: false, orderable: false },
+						{ data: 'topup', searchable: false, orderable: false },
 						{ data: 'subscription', searchable: false, orderable: false },
             			{ data: 'action', searchable: false, orderable: false }
 

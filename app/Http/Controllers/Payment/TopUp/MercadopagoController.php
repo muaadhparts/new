@@ -24,7 +24,7 @@ class MercadopagoController extends TopUpBaseController
 
         $input = $request->all();
         $user = $this->user;
-        $item_name = "Deposit Via Mercadopago";
+        $item_name = "TopUp Via Mercadopago";
 
         $supported_currency = json_decode($data->currency_id, true);
         if (!in_array($curr->id, $supported_currency)) {
@@ -48,43 +48,43 @@ class MercadopagoController extends TopUpBaseController
 
         if ($payment->status == 'approved') {
 
-            $user->balance = $user->balance + ($request->deposit_amount / $this->curr->value);
+            $user->balance = $user->balance + ($request->topup_amount / $this->curr->value);
             $user->mail_sent = 1;
             $user->save();
 
-            $deposit = new TopUp;
-            $deposit->user_id = $user->id;
-            $deposit->currency = $this->curr->sign;
-            $deposit->currency_code = $this->curr->name;
-            $deposit->currency_value = $this->curr->value;
-            $deposit->amount = $request->deposit_amount / $this->curr->value;
-            $deposit->method = 'Mercadopago';
-            $deposit->txnid = $payment->id;
-            $deposit->status = 1;
-            $deposit->save();
+            $topUp = new TopUp;
+            $topUp->user_id = $user->id;
+            $topUp->currency = $this->curr->sign;
+            $topUp->currency_code = $this->curr->name;
+            $topUp->currency_value = $this->curr->value;
+            $topUp->amount = $request->topup_amount / $this->curr->value;
+            $topUp->method = 'Mercadopago';
+            $topUp->txnid = $payment->id;
+            $topUp->status = 1;
+            $topUp->save();
 
             // store in wallet_logs table
-            if ($deposit->status == 1) {
+            if ($topUp->status == 1) {
                 $walletLog = new WalletLog;
                 $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-                $walletLog->user_id = $deposit->user_id;
-                $walletLog->amount = $deposit->amount;
-                $walletLog->user_id = $deposit->user_id;
-                $walletLog->currency_sign = $deposit->currency;
-                $walletLog->currency_code = $deposit->currency_code;
-                $walletLog->currency_value = $deposit->currency_value;
-                $walletLog->method = $deposit->method;
-                $walletLog->txnid = $deposit->txnid;
-                $walletLog->details = 'Payment Deposit';
+                $walletLog->user_id = $topUp->user_id;
+                $walletLog->amount = $topUp->amount;
+                $walletLog->user_id = $topUp->user_id;
+                $walletLog->currency_sign = $topUp->currency;
+                $walletLog->currency_code = $topUp->currency_code;
+                $walletLog->currency_value = $topUp->currency_value;
+                $walletLog->method = $topUp->method;
+                $walletLog->txnid = $topUp->txnid;
+                $walletLog->details = 'Wallet TopUp';
                 $walletLog->type = 'plus';
                 $walletLog->save();
             }
 
             $data = [
                 'to' => $user->email,
-                'type' => "wallet_deposit",
+                'type' => "wallet_topup",
                 'cname' => $user->name,
-                'damount' => $deposit->amount,
+                'damount' => $topUp->amount,
                 'wbalance' => $user->balance,
                 'oamount' => "",
                 'aname' => "",

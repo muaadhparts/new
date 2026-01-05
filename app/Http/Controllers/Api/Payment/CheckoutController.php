@@ -29,13 +29,13 @@ class CheckoutController extends FrontBaseController
         }
     }
 
-    public function depositloadpayment(Request $request, $slug1, $slug2)
+    public function topuploadpayment(Request $request, $slug1, $slug2)
     {
 
-        if ($request->has('deposit_number')) {
-            $deposit_number = $request->deposit_number;
-            $deposit = TopUp::where('deposit_number', $deposit_number)->firstOrFail();
-            $curr = Currency::where('name', $deposit->currency_code)->firstOrFail();
+        if ($request->has('topup_number')) {
+            $topupNumber = $request->topup_number;
+            $topUp = TopUp::where('topup_number', $topupNumber)->firstOrFail();
+            $curr = Currency::where('name', $topUp->currency_code)->firstOrFail();
             $payment = $slug1;
             $pay_id = $slug2;
             $gateway = '';

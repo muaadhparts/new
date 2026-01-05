@@ -13,31 +13,31 @@ class MercadopagoController extends Controller
 
     public function store(Request $request)
     {
-        $deposit = TopUp::where('deposit_number', $request->deposit_number)->first();
+        $topUp = TopUp::where('topup_number', $request->topup_number)->first();
         $input = $request->all();
-        $user = \App\Models\User::findOrFail($deposit->user_id);
+        $user = \App\Models\User::findOrFail($topUp->user_id);
         $data = MerchantPayment::whereKeyword('mercadopago')->first();
         $paydata = $data->convertAutoData();
 
         MercadoPago\SDK::setAccessToken($paydata['token']);
         $payment = new MercadoPago\Payment();
-        $payment->transaction_amount = (string) $deposit->amount;
+        $payment->transaction_amount = (string) $topUp->amount;
         $payment->token = $input['token'];
-        $payment->description = 'MercadoPago Payment';
+        $payment->description = 'MercadoPago TopUp';
         $payment->installments = 1;
         $payment->payer = array(
             "email" => $user['email'],
         );
         $payment->save();
 
-     
+
         if ($payment->status == 'approved') {
-            $user->balance = $user->balance + ($deposit->amount);
+            $user->balance = $user->balance + ($topUp->amount);
             $user->save();
-            $deposit['status'] = 1;
-            $deposit['method'] = 'Mercadopago';
-            $deposit['txnid'] =$payment->id;
-            $deposit->update();
+            $topUp['status'] = 1;
+            $topUp['method'] = 'Mercadopago';
+            $topUp['txnid'] = $payment->id;
+            $topUp->update();
             return redirect(route('user.success', 1));
         }
         return redirect(route('user.success', 0));

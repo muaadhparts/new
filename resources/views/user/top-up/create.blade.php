@@ -10,19 +10,19 @@
                 </div>
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="gs-deposit-section">
-                        <div class="gs-deposit-title d-flex align-items-center">
+                    <div class="gs-topup-section">
+                        <div class="gs-topup-title d-flex align-items-center">
                             <a href="{{ route('user-top-up-index') }}" class="back-btn">
                                 <i class="fa-solid fa-arrow-left-long"></i>
                             </a>
 
-                            <h3>@lang('Deposit')</h3>
+                            <h3>@lang('Top Up')</h3>
                         </div>
-                        <div class="deposit-area">
-                            <div class="deposit-area-title">
-                                <h4>@lang('Deposit')</h4>
+                        <div class="topup-area">
+                            <div class="topup-area-title">
+                                <h4>@lang('Top Up')</h4>
                             </div>
-                            <form action="" class="pay-form" id="deposit-form" method="POST">
+                            <form action="" class="pay-form" id="topup-form" method="POST">
                                 @csrf
                                 <div class="form-group">
 
@@ -31,7 +31,7 @@
                                         placeholder="{{ App\Models\CatalogItem::merchantConvertPrice(Auth::user()->balance) }}"
                                         disabled>
 
-                                    <label for="d_amount">@lang('Deposit Amount')</label>
+                                    <label for="d_amount">@lang('Top Up Amount')</label>
                                     <input type="text" class="form-control" placeholder="@lang('Amount')"
                                         name="amount">
 
@@ -125,12 +125,12 @@
                     $('#amount').prop('name', 'amount');
                 } else if (val == 'mercadopago') {
                     $('.pay-form').prop('id', 'mercadopago');
-                    $('#amount').prop('name', 'deposit_amount');
+                    $('#amount').prop('name', 'topup_amount');
                 } else if (val == '2checkout') {
                     $('.pay-form').prop('id', 'twocheckout');
                     $('#amount').prop('name', 'amount');
                 } else {
-                    $('.pay-form').prop('id', 'deposit-form');
+                    $('.pay-form').prop('id', 'topup-form');
                     $('#amount').prop('name', 'amount');
                 }
 

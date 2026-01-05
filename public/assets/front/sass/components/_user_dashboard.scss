@@ -407,7 +407,7 @@
   }
 }
 
-.gs-deposit-section {
+.gs-topup-section {
 }
 
 .back-btn {
@@ -425,7 +425,7 @@
     color: $white-color;
   }
 }
-.gs-deposit-title {
+.gs-topup-title {
   // margin-top: 50px
   margin-left: 40px;
 
@@ -434,7 +434,7 @@
   }
 }
 
-.deposit-area {
+.topup-area {
   background-color: $white-color;
   max-width: 610px;
   margin-top: 40px;
@@ -444,7 +444,7 @@
   border-radius: 12px;
   padding: 40px;
 
-  .deposit-area-title {
+  .topup-area-title {
     background-color: $text-color-50;
     margin-bottom: 8px;
 
@@ -582,12 +582,12 @@
     }
   }
 
-  &.merchant-deposit-area {
+  &.merchant-topup-area {
     max-width: 752px;
     width: 100%;
   }
 
-  &.merchant-deposit-area,
+  &.merchant-topup-area,
   &.merchant-reset-password-area {
     margin-top: 60px;
     @include screen-992 {
@@ -597,15 +597,15 @@
 }
 
 @include screen-768 {
-  .gs-deposit-title {
+  .gs-topup-title {
     margin-top: 20px;
   }
 
-  .deposit-area {
+  .topup-area {
     padding: 20px;
     margin-top: 20px;
 
-    .deposit-area-title {
+    .topup-area-title {
       h4 {
         padding: 15px 20px;
       }

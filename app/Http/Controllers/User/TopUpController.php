@@ -15,7 +15,7 @@ class TopUpController extends UserBaseController
       return view('user.top-up.index');
     }
 
-    public function transactions() {
+    public function walletLogs() {
       return view('user.wallet-logs');
     }
 
@@ -26,7 +26,7 @@ class TopUpController extends UserBaseController
 
     public function create() {
       $data['curr'] = $this->curr;
-      $data['gateway']  = MerchantPayment::whereDeposit(1)->where('currency_id', 'like', "%\"{$this->curr->id}\"%")->latest('id')->get();
+      $data['gateway']  = MerchantPayment::whereTopup(1)->where('currency_id', 'like', "%\"{$this->curr->id}\"%")->latest('id')->get();
       $paystackData = MerchantPayment::whereKeyword('paystack')->first();
       $data['paystack'] = $paystackData->convertAutoData();
       return view('user.top-up.create', $data);
@@ -43,7 +43,7 @@ class TopUpController extends UserBaseController
 
 
    function sendTopUp($number){
-    $topUp = TopUp::where('deposit_number',$number)->first();
+    $topUp = TopUp::where('topup_number',$number)->first();
 
     $curr = Currency::where('name', '=', $topUp->currency_code)->firstOrFail();
     $gateways = MerchantPayment::scopeHasGateway($curr->id);

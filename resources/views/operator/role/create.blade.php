@@ -159,9 +159,9 @@
                       <div class="row justify-content-center">
 
                         <div class="col-lg-4 d-flex justify-content-between">
-                          <label class="control-label">{{ __('Customer Deposits') }} *</label>
+                          <label class="control-label">{{ __('Customer Top Ups') }} *</label>
                           <label class="switch">
-                            <input type="checkbox" name="section[]" value="customer_deposits">
+                            <input type="checkbox" name="section[]" value="customer_topups">
                             <span class="slider round"></span>
                           </label>
                         </div>

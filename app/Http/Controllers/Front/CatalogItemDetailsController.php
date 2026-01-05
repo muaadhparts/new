@@ -389,13 +389,13 @@ class CatalogItemDetailsController extends FrontBaseController
         return redirect()->route('front.catalog-item', $catalogItem->slug);
     }
 
-    // -------------------------------- CATALOG ITEM COMMENT SECTION ----------------------------------------
+    // -------------------------------- CATALOG ITEM BUYER NOTE SECTION ----------------------------------------
 
     /**
-     * Submit a comment on a catalog item.
+     * Submit a buyer note on a catalog item.
      * Security: Only allow specific fields, set user_id from authenticated user.
      */
-    public function comment(Request $request)
+    public function buyerNoteStore(Request $request)
     {
         $buyerNote = new BuyerNote;
         $buyerNote->catalog_item_id = $request->input('catalog_item_id');
@@ -408,8 +408,8 @@ class CatalogItemDetailsController extends FrontBaseController
         $data[1] = $buyerNote->user->name;
         $data[2] = $buyerNote->created_at->diffForHumans();
         $data[3] = $buyerNote->text;
-        $data[5] = route('catalog-item.comment.delete', $buyerNote->id);
-        $data[6] = route('catalog-item.comment.edit', $buyerNote->id);
+        $data[5] = route('catalog-item.buyer-note.delete', $buyerNote->id);
+        $data[6] = route('catalog-item.buyer-note.edit', $buyerNote->id);
         $data[7] = route('catalog-item.reply', $buyerNote->id);
         $data[8] = $buyerNote->user->id;
 
@@ -429,7 +429,7 @@ class CatalogItemDetailsController extends FrontBaseController
         return response()->json($newdata);
     }
 
-    public function commentedit(Request $request, $id)
+    public function buyerNoteEdit(Request $request, $id)
     {
         $buyerNote = BuyerNote::findOrFail($id);
         $buyerNote->text = $request->text;
@@ -438,7 +438,7 @@ class CatalogItemDetailsController extends FrontBaseController
         return response()->json($buyerNote->text);
     }
 
-    public function commentdelete($id)
+    public function buyerNoteDelete($id)
     {
         $buyerNote = BuyerNote::findOrFail($id);
         if ($buyerNote->noteResponses->count() > 0) {

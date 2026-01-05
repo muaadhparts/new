@@ -7,11 +7,11 @@
                 @include('includes.courier.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="gs-deposit-section">
+                    <div class="gs-topup-section">
                         <h3>@lang('Reset Password')</h3>
 
-                        <div class="deposit-area">
-                            <div class="deposit-area-title">
+                        <div class="topup-area">
+                            <div class="topup-area-title">
                                 <h4>@lang('Change Password')</h4>
                             </div>
                             <form action="{{ route('courier-reset-submit') }}" method="POST">

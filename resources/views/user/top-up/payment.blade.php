@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $gs->title }} Deposit</title>
+    <title>{{ $gs->title }} Top Up</title>
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
 
@@ -36,7 +36,7 @@
 
                             <div class="list-wrapper mb-4">
                                 @foreach ($gateways as $gt)
-                                    @if ($gt->deposit == 1 && $gt->type != 'manual')
+                                    @if ($gt->topup == 1 && $gt->type != 'manual')
                                         <div class="gs-radio-wrapper payment" data-val="{{ $gt->keyword }}"
                                             data-show="{{ $gt->showForm() }}"
                                             data-form="{{ $gt->ApiShowTopUpLink() }}"
@@ -66,10 +66,10 @@
                             <div class="transection-wrapper pay-area mb-4">
                             </div>
 
-                            <input type="hidden" id="preamount" value="{{ $deposit->amount * $curr->value }}">
-                            <input type="hidden" name="deposit_number" value="{{ $deposit->deposit_number }}">
+                            <input type="hidden" id="preamount" value="{{ $topUp->amount * $curr->value }}">
+                            <input type="hidden" name="topup_number" value="{{ $topUp->topup_number }}">
                             <input type="hidden" name="email"
-                                value="{{ App\Models\User::findOrFail($deposit->user_id)->email }}">
+                                value="{{ App\Models\User::findOrFail($topUp->user_id)->email }}">
                             <input type="hidden" name="ref_id" id="ref_id" value="">
 
                             <button type="submit" class="template-btn inline-block">submit</button>
@@ -86,9 +86,9 @@
                                 <h6 class="summary-title">Amount</h6>
 
                                 @if ($gs->currency_format == 0)
-                                    <p>{{ $curr->sign }} {{ $deposit->amount * $curr->value }}</p>
+                                    <p>{{ $curr->sign }} {{ $topUp->amount * $curr->value }}</p>
                                 @else
-                                    <p>{{ $deposit->amount * $curr->value }} {{ $curr->sign }}</p>
+                                    <p>{{ $topUp->amount * $curr->value }} {{ $curr->sign }}</p>
                                 @endif
                             </div>
 

@@ -60,7 +60,7 @@ class StripeController extends TopUpBaseController
                             "currency" => $this->curr->name,
                             "unit_amount" => $item_amount * 100,
                             "product_data" => [
-                                "name" => $this->gs->title . ' Deposit'
+                                "name" => $this->gs->title . ' TopUp'
                             ]
                         ]
                     ],

@@ -33,7 +33,7 @@ class MollieController extends TopUpBaseController
             return redirect()->back()->with('unsuccess',__('Invalid Currency For Molly Payment.'));
         }
 
-        $item_name = "Deposit via Molly Payment";
+        $item_name = "TopUp via Molly Payment";
 
         $dep['user_id'] = $user->id;
         $dep['currency'] = $this->curr->sign;
@@ -69,43 +69,43 @@ class MollieController extends TopUpBaseController
         $payment = Mollie::api()->payments()->get(Session::get('payment_id'));
 
         if($payment->status == 'paid'){
-                    $deposit = new TopUp;
-                    $deposit->user_id = $dep['user_id'];
-                    $deposit->currency = $dep['currency'];
-                    $deposit->currency_code = $dep['currency_code'];
-                    $deposit->amount = $dep['amount'];
-                    $deposit->currency_value = $dep['currency_value'];
-                    $deposit->method = $dep['method'];
-                    $deposit->txnid = $payment->id;
-                    $deposit->status = 1;
-                    $deposit->save();
+                    $topUp = new TopUp;
+                    $topUp->user_id = $dep['user_id'];
+                    $topUp->currency = $dep['currency'];
+                    $topUp->currency_code = $dep['currency_code'];
+                    $topUp->amount = $dep['amount'];
+                    $topUp->currency_value = $dep['currency_value'];
+                    $topUp->method = $dep['method'];
+                    $topUp->txnid = $payment->id;
+                    $topUp->status = 1;
+                    $topUp->save();
 
-                    $user = \App\Models\User::findOrFail($deposit->user_id);
-                    $user->balance = $user->balance + ($deposit->amount);
+                    $user = \App\Models\User::findOrFail($topUp->user_id);
+                    $user->balance = $user->balance + ($topUp->amount);
                     $user->save();
 
                     // store in wallet_logs table
-                    if ($deposit->status == 1) {
+                    if ($topUp->status == 1) {
                         $walletLog = new WalletLog;
                         $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-                        $walletLog->user_id = $deposit->user_id;
-                        $walletLog->amount = $deposit->amount;
-                        $walletLog->user_id = $deposit->user_id;
-                        $walletLog->currency_sign = $deposit->currency;
-                        $walletLog->currency_code = $deposit->currency_code;
-                        $walletLog->currency_value= $deposit->currency_value;
-                        $walletLog->method = $deposit->method;
-                        $walletLog->txnid = $deposit->txnid;
-                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->user_id = $topUp->user_id;
+                        $walletLog->amount = $topUp->amount;
+                        $walletLog->user_id = $topUp->user_id;
+                        $walletLog->currency_sign = $topUp->currency;
+                        $walletLog->currency_code = $topUp->currency_code;
+                        $walletLog->currency_value= $topUp->currency_value;
+                        $walletLog->method = $topUp->method;
+                        $walletLog->txnid = $topUp->txnid;
+                        $walletLog->details = 'Wallet TopUp';
                         $walletLog->type = 'plus';
                         $walletLog->save();
                     }
-            
+
                     $maildata = [
                         'to' => $user->email,
-                        'type' => "wallet_deposit",
+                        'type' => "wallet_topup",
                         'cname' => $user->name,
-                        'damount' => $deposit->amount,
+                        'damount' => $topUp->amount,
                         'wbalance' => $user->balance,
                         'oamount' => "",
                         'aname' => "",

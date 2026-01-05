@@ -44,8 +44,8 @@ class UserController extends OperatorBaseController
                                     <i class="fas fa-users"></i> '.__("Merchant").'
                                     </a>';
                                     return '<div class="action-list">
-                                            <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="deposit" data-href="' . route('operator-user-deposit',$data->id) . '" >
-                                            <i class="fas fa-dollar-sign"></i> '.__("Manage Deposit").'
+                                            <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="topup" data-href="' . route('operator-user-top-up',$data->id) . '" >
+                                            <i class="fas fa-dollar-sign"></i> '.__("Manage Top Up").'
                                             </a>'
                                             .$merchant.
                                             '<a href="' . route('operator-user-show',$data->id) . '" >
@@ -249,9 +249,9 @@ class UserController extends OperatorBaseController
                 $gal->delete();
             }
         }
-        if($user->comments->count() > 0)
+        if($user->buyerNotes->count() > 0)
         {
-            foreach ($user->comments as $gal) {
+            foreach ($user->buyerNotes as $gal) {
             if($gal->replies->count() > 0)
             {
                 foreach ($gal->replies as $key) {
@@ -338,9 +338,9 @@ class UserController extends OperatorBaseController
                         $gal->delete();
                     }
                 }
-                if($catalogItem->comments->count() > 0)
+                if($catalogItem->buyerNotes->count() > 0)
                 {
-                    foreach ($catalogItem->comments as $gal) {
+                    foreach ($catalogItem->buyerNotes as $gal) {
                     if($gal->replies->count() > 0)
                     {
                         foreach ($gal->replies as $key) {

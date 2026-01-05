@@ -18,7 +18,7 @@ class TopUpController extends Controller
 
     public function sendTopUp($number)
     {
-        $topup = TopUp::where('deposit_number', $number)->first();
+        $topup = TopUp::where('topup_number', $number)->first();
         $curr = Currency::where('name', '=', $topup->currency_code)->firstOrFail();
         $gateways = MerchantPayment::scopeHasGateway($curr->id);
         $paystack = MerchantPayment::whereKeyword('paystack')->first();
@@ -34,12 +34,12 @@ class TopUpController extends Controller
     {
         try {
             $user = Auth::guard('api')->user();
-            if ($user->topups->count() == 0) {
+            if ($user->topUps->count() == 0) {
                 return response()->json(['status' => true, 'data' => [], 'error' => []]);
             }
-            foreach ($user->topups as $topup) {
+            foreach ($user->topUps as $topup) {
                 if ($topup->status != 1) {
-                    $topup['payment_url'] = route('user.topup.send', $topup->deposit_number);
+                    $topup['payment_url'] = route('user.topup.send', $topup->topup_number);
                     $topups_list[] = $topup;
                 } else {
                     $topups_list[] = $topup;
@@ -52,17 +52,17 @@ class TopUpController extends Controller
         }
     }
 
-    public function transactions()
+    public function walletLogs()
     {
         try {
             $user = Auth::guard('api')->user();
-            return response()->json(['status' => true, 'data' => $user->transactions, 'error' => []]);
+            return response()->json(['status' => true, 'data' => $user->walletLogs, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function transactionDetails(Request $request)
+    public function walletLogShow(Request $request)
     {
         try {
 
@@ -72,7 +72,7 @@ class TopUpController extends Controller
                 'id' => 'required',
             ];
             $customs = [
-                'id.required' => 'Transaction ID is required.',
+                'id.required' => 'Wallet Log ID is required.',
             ];
             $validator = Validator::make($request->all(), $rules, $customs);
 
@@ -85,7 +85,7 @@ class TopUpController extends Controller
             $id = $request->id;
             $data = WalletLog::find($id);
             if (!$data) {
-                return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'Invalid ID.']]);
+                return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'Invalid Wallet Log ID.']]);
             }
             return response()->json(['status' => true, 'data' => $data, 'error' => []]);
         } catch (\Exception $e) {
@@ -136,7 +136,7 @@ class TopUpController extends Controller
             $topup->method = $request->method;
             $topup->txnid = $request->txnid;
             $topup->status = 0;
-            $topup->deposit_number = $topup_number;
+            $topup->topup_number = $topup_number;
             $topup->save();
 
             return response()->json(['status' => true, 'data' => route('user.topup.send', $topup_number), 'error' => []]);

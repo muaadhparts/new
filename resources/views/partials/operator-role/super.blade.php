@@ -163,12 +163,12 @@
 </li>
 
 <li>
-    <a href="#customerDeposit" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-money"></i>{{ __('Customer Deposits') }}
+    <a href="#customerTopUp" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="icofont-money"></i>{{ __('Customer Top Ups') }}
     </a>
-    <ul class="collapse list-unstyled" id="customerDeposit" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="customerTopUp" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-wallet-log-index') }}"><span>{{ __('Transactions') }}</span></a>
+            <a href="{{ route('operator-wallet-log-index') }}"><span>{{ __('Wallet Logs') }}</span></a>
         </li>
     </ul>
 </li>

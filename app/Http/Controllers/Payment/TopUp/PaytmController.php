@@ -38,17 +38,17 @@ class PaytmController extends TopUpBaseController
      $return_url = route('topup.payment.return');
      $cancel_url = route('topup.payment.cancle');
      $notify_url = route('topup.paytm.notify');
-     $item_name = "Deposit via Paytm";
+     $item_name = "TopUp via Paytm";
      $item_number = Str::random(4).time();
 
-     $deposit = new TopUp;
-     $deposit->user_id = $user->id;
-     $deposit->currency = $this->curr->sign;
-     $deposit->currency_code = $this->curr->name;
-     $deposit->amount = $request->amount / $this->curr->value;
-     $deposit->currency_value = $this->curr->value;
-     $deposit->method = 'Paytm';
-     $deposit->save();
+     $topUp = new TopUp;
+     $topUp->user_id = $user->id;
+     $topUp->currency = $this->curr->sign;
+     $topUp->currency_code = $this->curr->name;
+     $topUp->amount = $request->amount / $this->curr->value;
+     $topUp->currency_value = $this->curr->value;
+     $topUp->method = 'Paytm';
+     $topUp->save();
 
         Session::put('item_number',$user->id); 
 
@@ -70,36 +70,36 @@ class PaytmController extends TopUpBaseController
 		if ( 'TXN_SUCCESS' === $request['STATUS'] ) {
 		$transaction_id = $request['TXNID'];
 
-        $deposit = TopUp::where('user_id','=',Session::get('item_number'))->orderBy('created_at','desc')->first();
-        $user = \App\Models\User::findOrFail($deposit->user_id);
-        $user->balance = $user->balance + ($deposit->amount);
+        $topUp = TopUp::where('user_id','=',Session::get('item_number'))->orderBy('created_at','desc')->first();
+        $user = \App\Models\User::findOrFail($topUp->user_id);
+        $user->balance = $user->balance + ($topUp->amount);
         $user->save();
-        $deposit->txnid = $transaction_id;
-        $deposit->status = 1;
-        $deposit->save();
+        $topUp->txnid = $transaction_id;
+        $topUp->status = 1;
+        $topUp->save();
 
         // store in wallet_logs table
-        if ($deposit->status == 1) {
+        if ($topUp->status == 1) {
 		  $walletLog = new WalletLog;
 		  $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-          $walletLog->user_id = $deposit->user_id;
-          $walletLog->amount = $deposit->amount;
-          $walletLog->user_id = $deposit->user_id;
-          $walletLog->currency_sign = $deposit->currency;
-		  $walletLog->currency_code = $deposit->currency_code;
-		  $walletLog->currency_value= $deposit->currency_value;
-          $walletLog->method = $deposit->method;
-          $walletLog->txnid = $deposit->txnid;
-          $walletLog->details = 'Payment Deposit';
+          $walletLog->user_id = $topUp->user_id;
+          $walletLog->amount = $topUp->amount;
+          $walletLog->user_id = $topUp->user_id;
+          $walletLog->currency_sign = $topUp->currency;
+		  $walletLog->currency_code = $topUp->currency_code;
+		  $walletLog->currency_value= $topUp->currency_value;
+          $walletLog->method = $topUp->method;
+          $walletLog->txnid = $topUp->txnid;
+          $walletLog->details = 'Wallet TopUp';
           $walletLog->type = 'plus';
           $walletLog->save();
         }
 
             $maildata = [
                 'to' => $user->email,
-                'type' => "wallet_deposit",
+                'type' => "wallet_topup",
                 'cname' => $user->name,
-                'damount' => $deposit->amount,
+                'damount' => $topUp->amount,
                 'wbalance' => $user->balance,
                 'oamount' => "",
                 'aname' => "",
@@ -111,8 +111,8 @@ class PaytmController extends TopUpBaseController
 
 		return redirect()->route('user-dashboard')->with('success',__('Balance has been added to your account.'));
     }else{
-        $deposit = TopUp::where('user_id','=',Session::get('item_number'))->orderBy('created_at','desc')->first();
-        $deposit->delete();
+        $topUp = TopUp::where('user_id','=',Session::get('item_number'))->orderBy('created_at','desc')->first();
+        $topUp->delete();
     }
 	return redirect()->back()->with('unsuccess',__('Payment Cancelled.'));
     }

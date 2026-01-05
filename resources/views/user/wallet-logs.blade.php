@@ -14,7 +14,7 @@
                 <div class="ud-page-title-box">
                     <!-- mobile sidebar trigger btn -->
 
-                    <h3 class="ud-page-title">@lang('Transactions')</h3>
+                    <h3 class="ud-page-title">@lang('Wallet Logs')</h3>
                 </div>
 
                 <!--  purchase status steps -->
@@ -34,11 +34,11 @@
                         </thead>
                         <tbody>
                             @php
-                            $transactions = App\Models\WalletLog::where('user_id', Auth::user()->id)
+                            $walletLogs = App\Models\WalletLog::where('user_id', Auth::user()->id)
                             ->latest()
                             ->paginate(12);
                             @endphp
-                            @foreach ($transactions as $data)
+                            @foreach ($walletLogs as $data)
                             <!-- table data row 1 start  -->
                             <tr>
 
@@ -57,7 +57,7 @@
 
 
                                 <td class="view-btn-wrapper">
-                                    <a href="javascript:;" data-href="{{ route('user-trans-show', $data->id) }}"
+                                    <a href="javascript:;" data-href="{{ route('user-wallet-log-show', $data->id) }}"
                                         data-bs-toggle="modal" data-bs-target="#trans-modal" class="view-btn txn-show">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                             xmlns="http://www.w3.org/2000/svg">
@@ -81,7 +81,7 @@
 
                 </div>
 
-                {{ $transactions->links('includes.frontend.pagination') }}
+                {{ $walletLogs->links('includes.frontend.pagination') }}
             </div>
         </div>
     </div>

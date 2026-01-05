@@ -1,7 +1,7 @@
 
     <h1>
         @if($status == 1)
-        Deposit Completed Successfully
+        Top Up Completed Successfully
         @else
         Payment Not Suceesfull.
         @endif

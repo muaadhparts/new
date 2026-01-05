@@ -19,14 +19,14 @@ class AuthorizeController extends Controller
     public function store(Request $request)
     {
         $data = MerchantPayment::whereKeyword('authorize.net')->first();
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
         $settings = Muaadhsetting::findOrFail(1);
-        $item_name = $settings->title . " Deposit";
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
+        $item_name = $settings->title . " TopUp";
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number', $topupNumber)->first();
 
         $item_amount = $purchase->amount;
 
@@ -63,7 +63,7 @@ class AuthorizeController extends Controller
 
             // Create purchase information
             $purchases = new AnetAPI\OrderType();
-            $purchases->setInvoiceNumber($deposit_number);
+            $purchases->setInvoiceNumber($topupNumber);
             $purchases->setDescription($item_name);
 
             // Create a TransactionRequestType object and add the previous objects to it
@@ -116,7 +116,7 @@ class AuthorizeController extends Controller
                         $walletLog->currency_value = $purchase->currency_value;
                         $walletLog->method = $purchase->method;
                         $walletLog->txnid = $purchase->txnid;
-                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->details = 'Wallet TopUp';
                         $walletLog->type = 'plus';
                         $walletLog->save();
                     }

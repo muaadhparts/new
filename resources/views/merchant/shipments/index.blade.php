@@ -4,7 +4,7 @@
 <div class="gs-merchant-outlet">
     <!-- Breadcrumb -->
     <div class="gs-merchant-breadcrumb has-mb">
-        <div class="gs-deposit-title d-flex align-items-center gap-4">
+        <div class="gs-topup-title d-flex align-items-center gap-4">
             <h4 class="text-capitalize">@lang('Shipments Management')</h4>
         </div>
     </div>

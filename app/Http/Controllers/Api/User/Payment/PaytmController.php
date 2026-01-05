@@ -16,12 +16,12 @@ class PaytmController extends Controller
     public function store(Request $request)
     {
 
-        if (!$request->has('deposit_number')) {
+        if (!$request->has('topup_number')) {
             return response()->json(['status' => false, 'data' => [], 'error' => 'Invalid Request']);
         }
 
-        $deposit_number = $request->deposit_number;
-        $purchase = TopUp::where('deposit_number', $deposit_number)->first();
+        $topupNumber = $request->topup_number;
+        $purchase = TopUp::where('topup_number', $topupNumber)->first();
         $curr = Currency::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Paytm.');
@@ -30,7 +30,7 @@ class PaytmController extends Controller
         $settings = Muaadhsetting::findOrFail(1);
         $item_amount = round($purchase->amount * $purchase->currency_value,2);
 
-        $data_for_request = $this->handlePaytmRequest($purchase->deposit_number, $item_amount);
+        $data_for_request = $this->handlePaytmRequest($purchase->topup_number, $item_amount);
         $paytm_txn_url = 'https://securegw-stage.paytm.in/theia/processTransaction';
         $paramList = $data_for_request['paramList'];
         $checkSum = $data_for_request['checkSum'];
@@ -59,7 +59,7 @@ class PaytmController extends Controller
         $paramList["CHANNEL_ID"] = 'WEB';
         $paramList["TXN_AMOUNT"] = $amount;
         $paramList["WEBSITE"] = $paydata['website'];
-        $paramList["CALLBACK_URL"] = route('api.user.deposit.paytm.notify');
+        $paramList["CALLBACK_URL"] = route('api.user.topup.paytm.notify');
         $paytm_merchant_key = $paydata['secret'];
         //Here checksum string will return by getChecksumFromArray() function.
         $checkSum = getChecksumFromArray($paramList, $paytm_merchant_key);
@@ -359,10 +359,10 @@ class PaytmController extends Controller
     {
 
         $purchase_id = $request['ORDERID'];
-        $purchase = TopUp::where('deposit_number', $purchase_id)->first();
+        $purchase = TopUp::where('topup_number', $purchase_id)->first();
 
-		
-        $cancel_url = route('user.deposit.send', $purchase->deposit_number);
+
+        $cancel_url = route('user.topup.send', $purchase->topup_number);
         if ('TXN_SUCCESS' === $request['STATUS']) {
             $user = \App\Models\User::findOrFail($purchase->user_id);
             $user->balance = $user->balance + ($purchase->amount);
@@ -387,7 +387,7 @@ class PaytmController extends Controller
                     $walletLog->currency_value = $purchase->currency_value;
                     $walletLog->method = $purchase->method;
                     $walletLog->txnid = $purchase->txnid;
-                    $walletLog->details = 'Payment Deposit';
+                    $walletLog->details = 'Wallet TopUp';
                     $walletLog->type = 'plus';
                     $walletLog->save();
                 }

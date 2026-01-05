@@ -14,9 +14,9 @@
       <li class=""><a class="{{ Request::url() == route('user-purchases') ? 'active' : '' }}"
           href="{{ route('user-purchases') }}">{{ __('Purchased Items') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-top-up-index') ? 'active' : '' }}"
-          href="{{route('user-top-up-index')}}">{{ __('Deposit') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('user-transactions-index') ? 'active' : '' }}"
-          href="{{route('user-transactions-index')}}">{{ __('Transactions') }}</a></li>
+          href="{{route('user-top-up-index')}}">{{ __('Top Up') }}</a></li>
+      <li class=""><a class="{{ Request::url() == route('user-wallet-logs-index') ? 'active' : '' }}"
+          href="{{route('user-wallet-logs-index')}}">{{ __('Wallet Logs') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-reward-index') ? 'active' : '' }}"
           href="{{route('user-reward-index')}}">{{ __('Rewards') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-affilate-program') ? 'active' : '' }}"

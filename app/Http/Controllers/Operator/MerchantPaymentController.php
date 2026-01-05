@@ -50,14 +50,14 @@ class MerchantPaymentController extends OperatorBaseController
                                             </select>
                                          </div>";
                             })
-                            ->addColumn('deposit', function(MerchantPayment $data) {
-                                $class = $data->deposit == 1 ? 'drop-success' : 'drop-danger';
-                                $activeSelected = $data->deposit == 1 ? 'selected' : '';
-                                $deactiveSelected = $data->deposit == 0 ? 'selected' : '';
+                            ->addColumn('topup', function(MerchantPayment $data) {
+                                $class = $data->topup == 1 ? 'drop-success' : 'drop-danger';
+                                $activeSelected = $data->topup == 1 ? 'selected' : '';
+                                $deactiveSelected = $data->topup == 0 ? 'selected' : '';
                                 $activeText = __('Showed');
                                 $deactiveText = __('Not Showed');
-                                $activeLink = route('operator-merchant-payment-status',['deposit',$data->id, 1]);
-                                $deactiveLink = route('operator-merchant-payment-status',['deposit',$data->id, 0]);
+                                $activeLink = route('operator-merchant-payment-status',['topup',$data->id, 1]);
+                                $deactiveLink = route('operator-merchant-payment-status',['topup',$data->id, 0]);
                                 if($data->keyword == 'cod'){
                                     return __("Not Available");
                                 }
@@ -101,7 +101,7 @@ class MerchantPaymentController extends OperatorBaseController
                                             {$delete}
                                         </div>";
                                 })
-                            ->rawColumns(['checkout','deposit','subscription','action'])
+                            ->rawColumns(['checkout','topup','subscription','action'])
                             ->toJson(); //--- Returning Json Data To Client Side
     }
 

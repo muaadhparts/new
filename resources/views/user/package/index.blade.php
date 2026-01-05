@@ -7,9 +7,9 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="gs-deposit-section">
+                    <div class="gs-topup-section">
 
-                        <div class="gs-deposit-title d-flex align-items-center gap-4 ms-0 mb-5">
+                        <div class="gs-topup-title d-flex align-items-center gap-4 ms-0 mb-5">
                             <h4>@lang('Pricing Plans')</h4>
                         </div>
 

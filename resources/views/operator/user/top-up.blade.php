@@ -8,7 +8,7 @@
 										<div class="catalogItem-description">
 											<div class="body-area" id="modalEdit">
                         					@include('alerts.operator.form-error') 
-											<form id="muaadhformdata" action="{{ route('operator-user-deposit-update',$data->id) }}" method="POST" enctype="multipart/form-data">
+											<form id="muaadhformdata" action="{{ route('operator-user-top-up-update',$data->id) }}" method="POST" enctype="multipart/form-data">
 												{{csrf_field()}}
 
 

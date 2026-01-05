@@ -34,7 +34,7 @@ class InstamojoController extends TopUpBaseController
 
         $cancel_url = route('topup.payment.cancle');
         $notify_url = route('topup.instamojo.notify');
-        $item_name = "Deposit via Instamojo";
+        $item_name = "TopUp via Instamojo";
 
         $paydata = $data->convertAutoData();
         if($paydata['sandbox_check'] == 1){
@@ -61,7 +61,7 @@ class InstamojoController extends TopUpBaseController
             $dep['currency_value'] = $this->curr->value;
             $dep['method'] = 'Instamojo';
             $dep['pay_id'] = $response['id'];
-            Session::put('deposit',$dep);  
+            Session::put('topup',$dep);  
             $data['total'] =  $item_amount;
             $data['return_url'] = $notify_url;
             $data['cancel_url'] = $cancel_url;
@@ -79,7 +79,7 @@ class InstamojoController extends TopUpBaseController
 
         $data = $request->all();
 
-        $dep = Session::get('deposit');
+        $dep = Session::get('topup');
 
         $success_url = route('topup.payment.return');
         $cancel_url  = route('topup.payment.cancle');
@@ -88,43 +88,43 @@ class InstamojoController extends TopUpBaseController
         if($dep['pay_id'] == $data['payment_request_id']){
 
 
-                    $deposit = new TopUp;
-                    $deposit->user_id = $dep['user_id'];
-                    $deposit->currency = $dep['currency'];
-                    $deposit->currency_code = $dep['currency_code'];
-                    $deposit->amount = $dep['amount'];
-                    $deposit->currency_value = $dep['currency_value'];
-                    $deposit->method = $dep['method'];
-                    $deposit->txnid = $dep['pay_id'];
-                    $deposit->status = 1;
-                    $deposit->save();
+                    $topUp = new TopUp;
+                    $topUp->user_id = $dep['user_id'];
+                    $topUp->currency = $dep['currency'];
+                    $topUp->currency_code = $dep['currency_code'];
+                    $topUp->amount = $dep['amount'];
+                    $topUp->currency_value = $dep['currency_value'];
+                    $topUp->method = $dep['method'];
+                    $topUp->txnid = $dep['pay_id'];
+                    $topUp->status = 1;
+                    $topUp->save();
 
-                    $user = \App\Models\User::findOrFail($deposit->user_id);
-                    $user->balance = $user->balance + ($deposit->amount);
+                    $user = \App\Models\User::findOrFail($topUp->user_id);
+                    $user->balance = $user->balance + ($topUp->amount);
                     $user->save();
 
                     // store in wallet_logs table
-                    if ($deposit->status == 1) {
+                    if ($topUp->status == 1) {
                         $walletLog = new WalletLog;
                         $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-                        $walletLog->user_id = $deposit->user_id;
-                        $walletLog->amount = $deposit->amount;
-                        $walletLog->user_id = $deposit->user_id;
-                        $walletLog->currency_sign = $deposit->currency;
-                        $walletLog->currency_code = $deposit->currency_code;
-                        $walletLog->currency_value= $deposit->currency_value;
-                        $walletLog->method = $deposit->method;
-                        $walletLog->txnid = $deposit->txnid;
-                        $walletLog->details = 'Payment Deposit';
+                        $walletLog->user_id = $topUp->user_id;
+                        $walletLog->amount = $topUp->amount;
+                        $walletLog->user_id = $topUp->user_id;
+                        $walletLog->currency_sign = $topUp->currency;
+                        $walletLog->currency_code = $topUp->currency_code;
+                        $walletLog->currency_value= $topUp->currency_value;
+                        $walletLog->method = $topUp->method;
+                        $walletLog->txnid = $topUp->txnid;
+                        $walletLog->details = 'Wallet TopUp';
                         $walletLog->type = 'plus';
                         $walletLog->save();
                     }
-            
+
                         $maildata = [
                             'to' => $user->email,
-                            'type' => "wallet_deposit",
+                            'type' => "wallet_topup",
                             'cname' => $user->name,
-                            'damount' => $deposit->amount,
+                            'damount' => $topUp->amount,
                             'wbalance' => $user->balance,
                             'oamount' => "",
                             'aname' => "",
@@ -136,7 +136,7 @@ class InstamojoController extends TopUpBaseController
 
 
 
-        Session::forget('deposit');
+        Session::forget('topup');
 
             return redirect($success_url);
         }

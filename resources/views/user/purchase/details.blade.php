@@ -9,7 +9,7 @@
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <!-- page title -->
-                    <div class="gs-deposit-title ms-0 mb-4 d-flex align-items-center">
+                    <div class="gs-topup-title ms-0 mb-4 d-flex align-items-center">
                         <a href="{{ route('user-purchases') }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>

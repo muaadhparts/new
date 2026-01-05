@@ -19,42 +19,42 @@ class VoguepayController extends TopUpBaseController
         $user = $this->user;
         $curr = $this->curr;
   
-        $deposit = new TopUp;
-        $deposit->user_id = $user->id;
-        $deposit->currency = $curr->sign;
-        $deposit->currency_code = $curr->name;
-        $deposit->currency_value = $curr->value;
-        $deposit->amount = $request->amount / $curr->value;
-        $deposit->method = 'Voguepay';
-        $deposit->txnid = $request->ref_id;
-        $deposit->status = 1;
-        $deposit->save();
-  
+        $topUp = new TopUp;
+        $topUp->user_id = $user->id;
+        $topUp->currency = $curr->sign;
+        $topUp->currency_code = $curr->name;
+        $topUp->currency_value = $curr->value;
+        $topUp->amount = $request->amount / $curr->value;
+        $topUp->method = 'Voguepay';
+        $topUp->txnid = $request->ref_id;
+        $topUp->status = 1;
+        $topUp->save();
+
         $user->balance = $user->balance + ($request->amount / $curr->value);
         $user->save();
-  
+
         // store in wallet_logs table
-        if ($deposit->status == 1) {
+        if ($topUp->status == 1) {
             $walletLog = new WalletLog;
             $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-            $walletLog->user_id = $deposit->user_id;
-            $walletLog->amount = $deposit->amount;
-            $walletLog->user_id = $deposit->user_id;
-            $walletLog->currency_sign = $deposit->currency;
-            $walletLog->currency_code = $deposit->currency_code;
-            $walletLog->currency_value= $deposit->currency_value;
-            $walletLog->method = $deposit->method;
-            $walletLog->txnid = $deposit->txnid;
-            $walletLog->details = 'Payment Deposit';
+            $walletLog->user_id = $topUp->user_id;
+            $walletLog->amount = $topUp->amount;
+            $walletLog->user_id = $topUp->user_id;
+            $walletLog->currency_sign = $topUp->currency;
+            $walletLog->currency_code = $topUp->currency_code;
+            $walletLog->currency_value= $topUp->currency_value;
+            $walletLog->method = $topUp->method;
+            $walletLog->txnid = $topUp->txnid;
+            $walletLog->details = 'Wallet TopUp';
             $walletLog->type = 'plus';
             $walletLog->save();
         }
-  
+
         $data = [
             'to' => $user->email,
-            'type' => "wallet_deposit",
+            'type' => "wallet_topup",
             'cname' => $user->name,
-            'damount' => $deposit->amount,
+            'damount' => $topUp->amount,
             'wbalance' => $user->balance,
             'oamount' => "",
             'aname' => "",
