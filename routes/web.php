@@ -317,7 +317,6 @@ Route::prefix('operator')->group(function () {
 
         // -------------------------- Admin Total Income Route --------------------------//
         Route::get('tax/calculate', 'Operator\IncomeController@taxCalculate')->name('operator-tax-calculate-income');
-        Route::get('membership-plan/earning', 'Operator\IncomeController@membershipPlanIncome')->name('operator-membership-plan-income');
         Route::get('withdraw/earning', 'Operator\IncomeController@withdrawIncome')->name('operator-withdraw-income');
         Route::get('commission/earning', 'Operator\IncomeController@commissionIncome')->name('operator-commission-income');
         // -------------------------- Admin Total Income Route --------------------------//
@@ -528,9 +527,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchant/verify/{id}', 'Operator\MerchantController@verify')->name('operator-merchant-verify');
         Route::post('/merchant/verify/{id}', 'Operator\MerchantController@verifySubmit')->name('operator-merchant-verify-submit');
 
-        Route::get('/add/membership-plan/{id}', 'Operator\MerchantController@addMembershipPlan')->name('operator-merchant-add-membership-plan');
-        Route::post('/add/membership-plan/{id}', 'Operator\MerchantController@addMembershipPlanStore')->name('operator-merchant-membership-plan-store');
-
         Route::get('/merchant/color', 'Operator\MuaadhSettingController@merchant_color')->name('operator-merchant-color');
         Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
         Route::delete('/merchants/delete/{id}', 'Operator\MerchantController@destroy')->name('operator-merchant-delete');
@@ -545,20 +541,17 @@ Route::prefix('operator')->group(function () {
 
     //------------ OPERATORMERCHANT SECTION ENDS ------------
 
-    //------------ OPERATORMEMBERSHIP PLAN SECTION ------------
+    //------------ MERCHANT COMMISSION SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendor_membership_plans'], function () {
-
-        Route::get('/membership-plan/datatables', 'Operator\MembershipPlanController@datatables')->name('operator-membership-plan-datatables');
-        Route::get('/membership-plan', 'Operator\MembershipPlanController@index')->name('operator-membership-plan-index');
-        Route::get('/membership-plan/create', 'Operator\MembershipPlanController@create')->name('operator-membership-plan-create');
-        Route::post('/membership-plan/create', 'Operator\MembershipPlanController@store')->name('operator-membership-plan-store');
-        Route::get('/membership-plan/edit/{id}', 'Operator\MembershipPlanController@edit')->name('operator-membership-plan-edit');
-        Route::post('/membership-plan/edit/{id}', 'Operator\MembershipPlanController@update')->name('operator-membership-plan-update');
-        Route::delete('/membership-plan/delete/{id}', 'Operator\MembershipPlanController@destroy')->name('operator-membership-plan-delete');
+        Route::get('/merchant-commissions/datatables', 'Operator\MerchantCommissionController@datatables')->name('operator-merchant-commission-datatables');
+        Route::get('/merchant-commissions', 'Operator\MerchantCommissionController@index')->name('operator-merchant-commission-index');
+        Route::get('/merchant-commissions/edit/{id}', 'Operator\MerchantCommissionController@edit')->name('operator-merchant-commission-edit');
+        Route::post('/merchant-commissions/update/{id}', 'Operator\MerchantCommissionController@update')->name('operator-merchant-commission-update');
+        Route::post('/merchant-commissions/bulk-update', 'Operator\MerchantCommissionController@bulkUpdate')->name('operator-merchant-commission-bulk-update');
     });
 
-    //------------ OPERATORMEMBERSHIP PLAN SECTION ENDS ------------
+    //------------ MERCHANT COMMISSION SECTION ENDS ------------
 
     //------------ OPERATORVENDOR VERIFICATION SECTION ------------
 
@@ -574,18 +567,6 @@ Route::prefix('operator')->group(function () {
     });
 
     //------------ OPERATORVENDOR VERIFICATION SECTION ENDS ------------
-
-    //------------ OPERATORMERCHANT MEMBERSHIP PLAN SECTION ------------
-
-    Route::group(['middleware' => 'permissions:vendor_membership_plans'], function () {
-
-        Route::get('/merchants/membership-plans/datatables/{status}', 'Operator\MerchantMembershipPlanController@datatables')->name('operator-merchant-membership-plan-datatables');
-        Route::get('/merchants/membership-plans/{slug}', 'Operator\MerchantMembershipPlanController@index')->name('operator-merchant-membership-plans');
-        Route::get('/merchants/membership-plans/status/{id1}/{id2}', 'Operator\MerchantMembershipPlanController@status')->name('operator-user-membership-plan-status');
-        Route::get('/merchants/membership-plan/{id}', 'Operator\MerchantMembershipPlanController@show')->name('operator-merchant-membership-plan');
-    });
-
-    //------------ OPERATORMERCHANT MEMBERSHIP PLAN SECTION ENDS ------------
 
     //------------ OPERATORSUPPORT TICKET SECTION ------------
 
@@ -1438,65 +1419,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/json/trans', 'User\PurchaseController@trans');
 
         // User Purchases Ends
-
-        // USER MEMBERSHIP PLAN
-
-        // Membership Plan Package
-        Route::get('/package', 'User\MembershipPlanController@package')->name('user-package');
-        Route::get('/membership-plan/{id}', 'User\MembershipPlanController@merchantrequest')->name('user-merchant-request');
-        Route::post('/merchant-request', 'User\MembershipPlanController@merchantrequestsub')->name('user-merchant-request-submit');
-
-        // Membership Plan Payment Redirect
-        Route::get('/payment/cancle', 'User\MembershipPlanController@paycancle')->name('user.payment.cancle');
-        Route::get('/payment/return', 'User\MembershipPlanController@payreturn')->name('user.payment.return');
-        Route::get('/shop/check', 'User\MembershipPlanController@check')->name('user.shop.check');
-        // Paypal
-        Route::post('/paypal-submit', 'Payment\MembershipPlan\PaypalController@store')->name('user.paypal.submit');
-        Route::get('/paypal-notify', 'Payment\MembershipPlan\PaypalController@notify')->name('user.paypal.notify');
-
-        // Stripe
-        Route::post('/stripe-submit', 'Payment\MembershipPlan\StripeController@store')->name('user.stripe.submit');
-        Route::get('/stripe-membership-plan/notify', 'Payment\MembershipPlan\StripeController@notify')->name('user.stripe.notify');
-
-        // Instamojo
-        Route::post('/instamojo-submit', 'Payment\MembershipPlan\InstamojoController@store')->name('user.instamojo.submit');
-        Route::get('/instamojo-notify', 'Payment\MembershipPlan\InstamojoController@notify')->name('user.instamojo.notify');
-
-        // Paystack
-        Route::post('/paystack-submit', 'Payment\MembershipPlan\PaystackController@store')->name('user.paystack.submit');
-
-        // PayTM
-        Route::post('/paytm-submit', 'Payment\MembershipPlan\PaytmController@store')->name('user.paytm.submit');;
-        Route::post('/paytm-notify', 'Payment\MembershipPlan\PaytmController@notify')->name('user.paytm.notify');
-
-        // Molly
-        Route::post('/molly-submit', 'Payment\MembershipPlan\MollieController@store')->name('user.molly.submit');
-        Route::get('/molly-notify', 'Payment\MembershipPlan\MollieController@notify')->name('user.molly.notify');
-
-        // RazorPay
-        Route::post('/razorpay-submit', 'Payment\MembershipPlan\RazorpayController@store')->name('user.razorpay.submit');
-        Route::post('/razorpay-notify', 'Payment\MembershipPlan\RazorpayController@notify')->name('user.razorpay.notify');
-
-        // Authorize.Net
-        Route::post('/authorize-submit', 'Payment\MembershipPlan\AuthorizeController@store')->name('user.authorize.submit');
-
-        // Mercadopago
-        Route::post('/mercadopago-submit', 'Payment\MembershipPlan\MercadopagoController@store')->name('user.mercadopago.submit');
-
-        // Flutter Wave
-        Route::post('/flutter-submit', 'Payment\MembershipPlan\FlutterwaveController@store')->name('user.flutter.submit');
-
-        // SSLCommerz
-        Route::post('/ssl-submit', 'Payment\MembershipPlan\SslController@store')->name('user.ssl.submit');
-        Route::post('/ssl-notify', 'Payment\MembershipPlan\SslController@notify')->name('user.ssl.notify');
-
-        // Voguepay
-        Route::post('/voguepay-submit', 'Payment\MembershipPlan\VoguepayController@store')->name('user.voguepay.submit');
-
-        // Manual
-        Route::post('/manual-submit', 'Payment\MembershipPlan\ManualPaymentController@store')->name('user.manual.submit');
-
-        // USER MEMBERSHIP PLAN ENDS
 
         // USER TOP-UP & WALLET LOGS
 

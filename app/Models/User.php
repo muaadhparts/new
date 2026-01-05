@@ -85,6 +85,14 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\WalletLog', 'user_id')->orderBy('id', 'desc');
     }
 
+    /**
+     * Get the commission settings for this merchant.
+     */
+    public function merchantCommission()
+    {
+        return $this->hasOne(MerchantCommission::class);
+    }
+
     // Multi Merchant
 
     /**
@@ -121,11 +129,6 @@ class User extends Authenticatable implements JWTSubject
     public function notivications()
     {
         return $this->hasMany('App\Models\UserCatalogEvent', 'user_id');
-    }
-
-    public function membershipPlans()
-    {
-        return $this->hasMany('App\Models\UserMembershipPlan');
     }
 
     public function favoriteSellers()

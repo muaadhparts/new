@@ -54,9 +54,6 @@
         <li>
             <a href="{{route('operator-tax-calculate-income')}}"> {{ __('Tax Calculate') }}</a>
         </li>
-        <li>
-            <a href="{{route('operator-membership-plan-income')}}"> {{ __('Membership Plan Earning') }}</a>
-        </li>
 
         <li>
             <a href="{{route('operator-withdraw-income')}}"> {{ __('Withdraw Earning') }}</a>
@@ -214,24 +211,6 @@
 
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('merchant_subscriptions'))
-
-<li>
-    <a href="#merchantMembershipPlans" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-user-suited"></i>{{ __('Merchant Membership Plans') }}
-    </a>
-    <ul class="collapse list-unstyled" id="merchantMembershipPlans" data-bs-parent="#accordion">
-        <li>
-            <a href="{{ route('operator-merchant-membership-plans','completed') }}"><span>{{ __('Completed Plans') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-merchant-membership-plans','pending') }}"><span>{{ __('Pending Plans') }}</span></a>
-        </li>
-    </ul>
-</li>
-
-@endif
-
 @if(Auth::guard('operator')->user()->sectionCheck('merchant_verifications'))
 
 <li>
@@ -248,14 +227,13 @@
     </ul>
 </li>
 
-
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('merchant_subscription_plans'))
+@if(Auth::guard('operator')->user()->sectionCheck('vendor_membership_plans'))
 
 <li>
-    <a href="{{ route('operator-membership-plan-index') }}" class=" wave-effect"><i class="fas fa-dollar-sign"></i>{{
-        __('Merchant Membership Plans') }}</a>
+    <a href="{{ route('operator-merchant-commission-index') }}" class=" wave-effect"><i class="fas fa-percentage"></i>{{
+        __('Merchant Commissions') }}</a>
 </li>
 
 @endif

@@ -240,12 +240,32 @@ class CatalogItem extends Model
             return null;
         }
 
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
         $price = (float) $merchant->price;
-        $price = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+        // Get per-merchant commission
+        $commission = $this->getMerchantCommissionFor($merchant->user_id);
+        if ($commission && $commission->is_active) {
+            $price = $price + (float) ($commission->fixed_commission ?? 0) + ($price * (float) ($commission->percentage_commission ?? 0) / 100);
+        }
 
         return $price;
+    }
+
+    /**
+     * Get commission settings for a specific merchant user.
+     * Uses cache for performance.
+     */
+    protected function getMerchantCommissionFor(?int $userId)
+    {
+        if (!$userId) {
+            return null;
+        }
+
+        return cache()->remember(
+            "merchant_commission_{$userId}",
+            now()->addHours(1),
+            fn () => MerchantCommission::where('user_id', $userId)->first()
+        );
     }
 
     /**
@@ -345,11 +365,14 @@ class CatalogItem extends Model
             }
         }
 
-        // Commission
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $price = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+        // Commission (per-merchant)
+        $commission = $this->getMerchantCommissionFor($mi->user_id);
+        if ($commission && $commission->is_active) {
+            $price = $price + (float) ($commission->fixed_commission ?? 0) + ($price * (float) ($commission->percentage_commission ?? 0) / 100);
+        }
 
         // Currency formatting
+        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
         $curr = Session::has('currency')
             ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
             : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
@@ -753,8 +776,11 @@ class CatalogItem extends Model
             }
         }
 
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $prev = $prev + (float) $gs->fixed_commission + ($prev * (float) $gs->percentage_commission / 100);
+        // Commission (per-merchant)
+        $commission = $this->getMerchantCommissionFor($mi->user_id);
+        if ($commission && $commission->is_active) {
+            $prev = $prev + (float) ($commission->fixed_commission ?? 0) + ($prev * (float) ($commission->percentage_commission ?? 0) / 100);
+        }
 
         if ($prev <= 0) {
             return 0;
@@ -850,8 +876,11 @@ class CatalogItem extends Model
             }
         }
 
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $price = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+        // Commission (per-merchant)
+        $commission = $this->getMerchantCommissionFor($mi->user_id);
+        if ($commission && $commission->is_active) {
+            $price = $price + (float) ($commission->fixed_commission ?? 0) + ($price * (float) ($commission->percentage_commission ?? 0) / 100);
+        }
 
         $curr = Session::has('currency')
             ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))

@@ -128,14 +128,13 @@ class MerchantItem extends Model
             return 0.0;
         }
 
-        // Add platform commission (fixed + percentage) to base price - with cache
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
+        // Get per-merchant commission or fall back to global settings
         $final = $base;
+        $commission = $this->getMerchantCommission();
 
-        if ($gs) {
-            $fixed    = (float) ($gs->fixed_commission ?? 0);
-            $percent  = (float) ($gs->percentage_commission ?? 0);
+        if ($commission && $commission->is_active) {
+            $fixed = (float) ($commission->fixed_commission ?? 0);
+            $percent = (float) ($commission->percentage_commission ?? 0);
 
             if ($fixed > 0) {
                 $final += $fixed;
@@ -146,6 +145,23 @@ class MerchantItem extends Model
         }
 
         return round($final, 2);
+    }
+
+    /**
+     * Get commission settings for this merchant item's user.
+     * Uses cache for performance.
+     */
+    protected function getMerchantCommission()
+    {
+        if (!$this->user_id) {
+            return null;
+        }
+
+        return cache()->remember(
+            "merchant_commission_{$this->user_id}",
+            now()->addHours(1),
+            fn () => MerchantCommission::where('user_id', $this->user_id)->first()
+        );
     }
 
     /**
@@ -192,9 +208,11 @@ class MerchantItem extends Model
             }
         }
 
-        // Add commission to previous price
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $prev = $prev + (float) $gs->fixed_commission + ($prev * (float) $gs->percentage_commission / 100);
+        // Add commission to previous price (using per-merchant commission)
+        $commission = $this->getMerchantCommission();
+        if ($commission && $commission->is_active) {
+            $prev = $prev + (float) ($commission->fixed_commission ?? 0) + ($prev * (float) ($commission->percentage_commission ?? 0) / 100);
+        }
 
         if ($prev <= 0) {
             return 0;

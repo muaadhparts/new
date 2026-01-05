@@ -85,21 +85,6 @@
 												<div class="row">
 													<div class="col-lg-4">
 														<div class="left-area">
-																<h4 class="heading">{{ __('Choose Plan') }} :</h4>
-														</div>
-													</div>
-                                                    <div class="col-lg-7">
-                                                        <select name="subs_id" required="">
-                                                            @foreach(DB::table('membership_plans')->get() as $subdata)
-                                                                <option value="{{ $subdata->id }}">{{ $subdata->title }}</option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-												</div>
-
-												<div class="row">
-													<div class="col-lg-4">
-														<div class="left-area">
 															
 														</div>
 													</div>
