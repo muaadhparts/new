@@ -26,7 +26,7 @@
 								<div class="col-lg-12">
 									<div class="mr-table allproduct">
 
-                        @include('includes.admin.form-success')  
+                        @include('alerts.operator.form-success')  
                         
 										<div class="table-responsive">
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">

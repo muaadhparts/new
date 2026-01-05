@@ -38,7 +38,7 @@
 					                      <form id="muaadhform" action="{{route('operator-import-csv-store')}}" method="POST" enctype="multipart/form-data">
 					                        {{csrf_field()}}
 
-                        @include('includes.admin.form-both')  
+                        @include('alerts.operator.form-both')  
 
 
 

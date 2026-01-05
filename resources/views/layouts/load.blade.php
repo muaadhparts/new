@@ -1,17 +1,21 @@
 {{--
 ================================================================================
-    MUAADH THEME - LOAD LAYOUT (AJAX/Modal Content)
+    MUAADH THEME - LOAD LAYOUT (AJAX/Modal Content for Operator/Merchant Panels)
 ================================================================================
     CSS GUIDELINES FOR AI AGENTS:
     -----------------------------
-    1. The ONLY file for adding/modifying custom CSS is: public/assets/front/css/style.css
-    2. DO NOT add <style> tags in Blade files - move all styles to style.css
-    3. DO NOT create new CSS files - use style.css sections instead
+    1. This layout is used for modal/AJAX content in Operator and Merchant panels
+    2. Uses Admin CSS (NOT frontend CSS) to match parent panel styling
+    3. DO NOT add <style> tags - use admin/css files instead
 ================================================================================
 --}}
-{{-- Main Theme File - Contains all styles --}}
-<link rel="stylesheet" href="{{ asset('assets/front/css/style.css') }}">
-{{-- Theme Colors - Generated from Admin Panel (MUST load LAST to override :root variables) --}}
+{{-- Admin Panel CSS - Used for Operator/Merchant modals --}}
+<link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/admin/css/fontawesome.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/admin/css/plugin.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/admin/css/style.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/admin/css/custom.css') }}">
+{{-- Theme Colors - Generated from Admin Panel --}}
 @themeStyles
 @yield('styles')
 

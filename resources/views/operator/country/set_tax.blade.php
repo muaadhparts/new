@@ -33,7 +33,7 @@
                       <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
                       <form id="muaadhform" action="{{route('operator-tax-update',$country->id)}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
-                      @include('includes.admin.form-both') 
+                      @include('alerts.operator.form-both') 
 
                       <div class="row">
                         <div class="col-lg-4">

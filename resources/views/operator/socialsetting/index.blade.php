@@ -28,7 +28,7 @@
               <form id="muaadhform" class="form-horizontal" action="{{ route('operator-social-update-all') }}" method="POST">   
               @csrf
 
-              {{-- @include('includes.admin.form-both')   --}}
+              {{-- @include('alerts.operator.form-both')   --}}
 
                 <div class="row">
                   <label class="control-label col-sm-3" for="facebook">{{ __('Facebook') }} *</label>

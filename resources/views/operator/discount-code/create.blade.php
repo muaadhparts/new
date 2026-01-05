@@ -36,7 +36,7 @@
                     <div class="catalogItem-description">
                       <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-                        @include('includes.admin.form-both') 
+                        @include('alerts.operator.form-both') 
                       <form id="muaadhform" action="{{route('operator-discount-code-create')}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 

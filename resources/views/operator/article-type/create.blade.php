@@ -8,7 +8,7 @@
 									<div class="col-lg-12">
 										<div class="catalogItem-description">
 											<div class="body-area" id="modalEdit">
-											@include('includes.admin.form-error') 
+											@include('alerts.operator.form-error') 
 											<form id="muaadhformdata" action="{{route('operator-article-type-create')}}" method="POST" enctype="multipart/form-data">
 												{{csrf_field()}}
 

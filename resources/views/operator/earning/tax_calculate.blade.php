@@ -25,7 +25,7 @@
 <form action="{{route('operator-tax-calculate-income')}}" method="GET">
    <div class="catalogItem-area">
    <div class="row text-center p-3">
-      @include('includes.admin.form-both')  
+      @include('alerts.operator.form-both')  
       <div class="col-sm-6 col-lg-4 offset-lg-2 col-md-6  mt-3">
          <input type="text"  autocomplete="off" class="form-control discount_date" value="{{$start_date != '' ? $start_date->format('d-m-Y') : ''}}"  name="start_date"  placeholder="{{ __("Enter Date") }}"  value="">
       </div>
@@ -43,7 +43,7 @@
       </div>
    </div>
 </form>
-@include('includes.admin.form-success') 
+@include('alerts.operator.form-success') 
 <div class="mr-table allproduct">
    <div class="table-responsive">
       <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">

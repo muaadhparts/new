@@ -28,7 +28,7 @@
                 <div class="row">
                   <div class="col-lg-12">
 					<div class="heading-area">
-						@include('includes.admin.form-both') 
+						@include('alerts.operator.form-both') 
 						<form id="muaadhform" action="{{route('operator-reward-info-update')}}" method="POST">
 							@csrf
 						<h4 class="title">
@@ -62,7 +62,7 @@
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
 
                         
-						@include('includes.admin.form-both') 
+						@include('alerts.operator.form-both') 
                       <form id="muaadhform" action="{{route('operator-reward-update')}}" method="POST">
 
                         @csrf
