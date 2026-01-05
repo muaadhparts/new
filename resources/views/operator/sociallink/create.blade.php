@@ -2,7 +2,7 @@
 
 @section('styles')
 
-<link href="{{ asset('assets/admin/css/jquery-ui.css') }}" rel="stylesheet" type="text/css">
+<link href="{{ asset('assets/operator/css/jquery-ui.css') }}" rel="stylesheet" type="text/css">
 
 @endsection
 
@@ -95,7 +95,7 @@
 
 @section('scripts')
 
-<script src="{{ asset('assets/admin/js/iconpicker.js') }}"></script>
+<script src="{{ asset('assets/operator/js/iconpicker.js') }}"></script>
 
 <script>
 

@@ -1,7 +1,7 @@
 @extends('layouts.merchant')
 @section('css')
-    <link href="{{ asset('assets/admin/css/jquery.Jcrop.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/admin/css/Jcrop-style.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/operator/css/jquery.Jcrop.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/operator/css/Jcrop-style.css') }}" rel="stylesheet" />
 @endsection
 
 @section('content')
@@ -601,10 +601,10 @@
 @endsection
 
 @section('script')
-    <script src="{{ asset('assets/admin/js/nicEdit.js') }}"></script>
-    <script src="{{ asset('assets/admin/js/jquery.Jcrop.js') }}"></script>
-    <script src="{{ asset('assets/admin/js/jquery.SimpleCropper.js') }}"></script>
-    <script src="{{ asset('assets/admin/js/select2.js') }}"></script>
+    <script src="{{ asset('assets/operator/js/nicEdit.js') }}"></script>
+    <script src="{{ asset('assets/operator/js/jquery.Jcrop.js') }}"></script>
+    <script src="{{ asset('assets/operator/js/jquery.SimpleCropper.js') }}"></script>
+    <script src="{{ asset('assets/operator/js/select2.js') }}"></script>
 
 
     <script>

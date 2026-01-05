@@ -172,7 +172,7 @@
                                     <div class="col-lg-7">
                                         <div class="img-upload full-width-img">
                                             <div id="image-preview" class="img-preview"
-                                                style="background: url({{ asset('assets/admin/images/upload.png') }});">
+                                                style="background: url({{ asset('assets/operator/images/upload.png') }});">
                                                 <label for="image-upload" class="img-label" id="image-label"><i
                                                         class="icofont-upload-alt"></i>{{ __('Upload Image') }}</label>
                                                 <input type="file" name="photo" class="img-upload"

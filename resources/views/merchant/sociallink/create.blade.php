@@ -72,7 +72,7 @@
 @endsection
 @section('script')
 
-<script src="{{ asset('assets/admin/js/iconpicker.js') }}"></script>
+<script src="{{ asset('assets/operator/js/iconpicker.js') }}"></script>
 
 <script>
 

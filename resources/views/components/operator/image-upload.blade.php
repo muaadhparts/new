@@ -27,7 +27,7 @@
     if ($current) {
         $bgImage = asset('assets/images/' . $current);
     } else {
-        $bgImage = asset('assets/admin/images/upload.png');
+        $bgImage = asset('assets/operator/images/upload.png');
     }
 @endphp
 

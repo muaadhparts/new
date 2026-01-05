@@ -10,11 +10,11 @@
 ================================================================================
 --}}
 {{-- Admin Panel CSS - Used for Operator/Merchant modals --}}
-<link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap.min.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/admin/css/fontawesome.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/admin/css/plugin.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/admin/css/style.css') }}">
-<link rel="stylesheet" href="{{ asset('assets/admin/css/custom.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/operator/css/bootstrap.min.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/operator/css/fontawesome.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/operator/css/plugin.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/operator/css/style.css') }}">
+<link rel="stylesheet" href="{{ asset('assets/operator/css/custom.css') }}">
 {{-- Theme Colors - Generated from Admin Panel --}}
 @themeStyles
 @yield('styles')
@@ -22,13 +22,13 @@
 
 @yield('content')
 
-<script src="{{asset('assets/admin/js/vendors/jquery-1.12.4.min.js')}}"></script>
-<script src="{{asset('assets/admin/js/jqueryui.min.js')}}"></script>
-<script src="{{asset('assets/admin/js/vendors/vue.js')}}"></script>
-<script src="{{asset('assets/admin/js/bootstrap-colorpicker.min.js') }}"></script>
-<script src="{{asset('assets/admin/js/plugin.js')}}"></script>
-<script src="{{asset('assets/admin/js/tag-it.js')}}"></script>
-<script src="{{asset('assets/admin/js/load.js')}}"></script>
+<script src="{{asset('assets/operator/js/vendors/jquery-1.12.4.min.js')}}"></script>
+<script src="{{asset('assets/operator/js/jqueryui.min.js')}}"></script>
+<script src="{{asset('assets/operator/js/vendors/vue.js')}}"></script>
+<script src="{{asset('assets/operator/js/bootstrap-colorpicker.min.js') }}"></script>
+<script src="{{asset('assets/operator/js/plugin.js')}}"></script>
+<script src="{{asset('assets/operator/js/tag-it.js')}}"></script>
+<script src="{{asset('assets/operator/js/load.js')}}"></script>
 
 
 

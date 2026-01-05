@@ -581,9 +581,9 @@
 
 </script>
 
-<script src="{{asset('assets/admin/js/jquery.Jcrop.js')}}"></script>
-<script src="{{asset('assets/admin/js/jquery.SimpleCropper.js')}}"></script>
-<script src="{{asset('assets/admin/js/select2.js')}}"></script>
+<script src="{{asset('assets/operator/js/jquery.Jcrop.js')}}"></script>
+<script src="{{asset('assets/operator/js/jquery.SimpleCropper.js')}}"></script>
+<script src="{{asset('assets/operator/js/select2.js')}}"></script>
 <script type="text/javascript">
 	    (function($) {
 		"use strict";

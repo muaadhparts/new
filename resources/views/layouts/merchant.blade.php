@@ -37,7 +37,7 @@
     <link rel="stylesheet" href="{{ asset('assets/front/css/toastr.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/datatables.min.css">
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/style.css?v={{ time() }}">
-    <link href="{{ asset('assets/admin/css/jquery.tagit.css') }}" rel="stylesheet" />
+    <link href="{{ asset('assets/operator/css/jquery.tagit.css') }}" rel="stylesheet" />
     {{-- Design System - New components with m- prefix --}}
     <link rel="stylesheet" href="{{ asset('assets/front/css/muaadh-system.css') }}?v={{ filemtime(public_path('assets/front/css/muaadh-system.css')) }}">
     @if($langg && $langg->rtl == 1)
@@ -141,7 +141,7 @@
     <script src="{{ asset('assets/front') }}/js/datatables.min.js"></script>
     <script src="{{ asset('assets/front') }}/js/jquery.waypoints.min.js"></script>
     <script src="{{ asset('assets/front') }}/js/apexcharts.js"></script>
-    <script src="{{ asset('assets/admin/js/tag-it.js') }}"></script>
+    <script src="{{ asset('assets/operator/js/tag-it.js') }}"></script>
     <script src="{{ asset('assets/front/js/toastr.min.js') }}"></script>
     <script src="{{ asset('assets/front') }}/js/jquery.counterup.js"></script>
     <script src="{{ asset('assets/front') }}/js/script.js?v={{ time() }}"></script>

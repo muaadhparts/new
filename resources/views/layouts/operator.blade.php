@@ -13,7 +13,7 @@
     FILE STRUCTURE:
     - style.css = MAIN THEME FILE (ALL CUSTOMIZATIONS HERE)
     - theme-colors.css = Generated from Admin Panel (overrides :root variables)
-    - Admin CSS files in assets/admin/css = DO NOT MODIFY
+    - Admin CSS files in assets/operator/css = DO NOT MODIFY
 ================================================================================
 --}}
 <!doctype html>
@@ -36,35 +36,35 @@
 	<!-- favicon -->
 	<link rel="icon" type="image/x-icon" href="{{asset('assets/images/' . $gs->favicon)}}" />
 	<!-- Bootstrap -->
-	<link href="{{asset('assets/admin/css/bootstrap.min.css')}}" rel="stylesheet" />
+	<link href="{{asset('assets/operator/css/bootstrap.min.css')}}" rel="stylesheet" />
 	<!-- Fontawesome -->
-	<link rel="stylesheet" href="{{asset('assets/admin/css/fontawesome.css')}}">
+	<link rel="stylesheet" href="{{asset('assets/operator/css/fontawesome.css')}}">
 	<!-- icofont -->
-	<link rel="stylesheet" href="{{asset('assets/admin/css/icofont.min.css')}}">
+	<link rel="stylesheet" href="{{asset('assets/operator/css/icofont.min.css')}}">
 	<!-- Sidemenu Css -->
-	<link href="{{asset('assets/admin/plugins/fullside-menu/css/dark-side-style.css')}}" rel="stylesheet" />
-	<link href="{{asset('assets/admin/plugins/fullside-menu/waves.min.css')}}" rel="stylesheet" />
+	<link href="{{asset('assets/operator/plugins/fullside-menu/css/dark-side-style.css')}}" rel="stylesheet" />
+	<link href="{{asset('assets/operator/plugins/fullside-menu/waves.min.css')}}" rel="stylesheet" />
 
-	<link href="{{asset('assets/admin/css/plugin.css')}}" rel="stylesheet" />
+	<link href="{{asset('assets/operator/css/plugin.css')}}" rel="stylesheet" />
 
-	<link href="{{asset('assets/admin/css/jquery.tagit.css')}}" rel="stylesheet" />
-	<link rel="stylesheet" href="{{ asset('assets/admin/css/bootstrap-colorpicker.css') }}">
+	<link href="{{asset('assets/operator/css/jquery.tagit.css')}}" rel="stylesheet" />
+	<link rel="stylesheet" href="{{ asset('assets/operator/css/bootstrap-colorpicker.css') }}">
 	<!-- Main Css -->
 
 	<!-- stylesheet -->
 	@if($adminLang && $adminLang->rtl == 1)
 
-		<link href="{{asset('assets/admin/css/rtl/style.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/rtl/custom.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/rtl/responsive.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/common.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/rtl/style.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/rtl/custom.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/rtl/responsive.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/common.css')}}" rel="stylesheet" />
 
 	@else
 
-		<link href="{{asset('assets/admin/css/style.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/custom.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/responsive.css')}}" rel="stylesheet" />
-		<link href="{{asset('assets/admin/css/common.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/style.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/custom.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/responsive.css')}}" rel="stylesheet" />
+		<link href="{{asset('assets/operator/css/common.css')}}" rel="stylesheet" />
 	@endif
 
 	{{-- Admin uses its own CSS - no frontend CSS needed --}}
@@ -253,30 +253,30 @@
 	</script>
 
 	<!-- Dashboard Core -->
-	<script src="{{asset('assets/admin/js/vendors/jquery-1.12.4.min.js')}}"></script>
-	<script src="{{asset('assets/admin/js/vendors/vue.js')}}"></script>
+	<script src="{{asset('assets/operator/js/vendors/jquery-1.12.4.min.js')}}"></script>
+	<script src="{{asset('assets/operator/js/vendors/vue.js')}}"></script>
 	{{-- Frontend Bootstrap 5 for dropdowns --}}
 	<script src="{{asset('assets/front/js/bootstrap.bundle.min.js')}}"></script>
-	<script src="{{asset('assets/admin/js/jqueryui.min.js')}}"></script>
+	<script src="{{asset('assets/operator/js/jqueryui.min.js')}}"></script>
 	<!-- Fullside-menu Js-->
-	<script src="{{asset('assets/admin/plugins/fullside-menu/jquery.slimscroll.min.js')}}"></script>
-	<script src="{{asset('assets/admin/plugins/fullside-menu/waves.min.js')}}"></script>
+	<script src="{{asset('assets/operator/plugins/fullside-menu/jquery.slimscroll.min.js')}}"></script>
+	<script src="{{asset('assets/operator/plugins/fullside-menu/waves.min.js')}}"></script>
 
-	<script src="{{asset('assets/admin/js/plugin.js')}}"></script>
-	<script src="{{asset('assets/admin/js/Chart.min.js')}}"></script>
-	<script src="{{asset('assets/admin/js/tag-it.js')}}"></script>
-	<script src="{{asset('assets/admin/js/nicEdit.js')}}"></script>
-	<script src="{{asset('assets/admin/js/bootstrap-colorpicker.min.js') }}"></script>
-	<script src="{{asset('assets/admin/js/notify.js') }}"></script>
+	<script src="{{asset('assets/operator/js/plugin.js')}}"></script>
+	<script src="{{asset('assets/operator/js/Chart.min.js')}}"></script>
+	<script src="{{asset('assets/operator/js/tag-it.js')}}"></script>
+	<script src="{{asset('assets/operator/js/nicEdit.js')}}"></script>
+	<script src="{{asset('assets/operator/js/bootstrap-colorpicker.min.js') }}"></script>
+	<script src="{{asset('assets/operator/js/notify.js') }}"></script>
 
-	<script src="{{asset('assets/admin/js/jquery.canvasjs.min.js')}}"></script>
+	<script src="{{asset('assets/operator/js/jquery.canvasjs.min.js')}}"></script>
 	<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-	<script src="{{asset('assets/admin/js/load.js')}}"></script>
+	<script src="{{asset('assets/operator/js/load.js')}}"></script>
 	<!-- Custom Js-->
-	<script src="{{asset('assets/admin/js/custom.js')}}"></script>
+	<script src="{{asset('assets/operator/js/custom.js')}}"></script>
 	<!-- AJAX Js-->
-	<script src="{{asset('assets/admin/js/myscript.js')}}"></script>
+	<script src="{{asset('assets/operator/js/myscript.js')}}"></script>
 
 	@yield('scripts')
 	@livewireScripts
