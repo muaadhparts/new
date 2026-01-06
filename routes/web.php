@@ -1888,9 +1888,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         // Voguepay
         Route::post('/payment/voguepay', 'Payment\Checkout\VoguepayController@store')->name('front.checkout.merchant.voguepay.submit');
 
-        // Location reset
-        Route::post('/location/reset', 'Front\CheckoutController@resetLocation')->name('front.checkout.merchant.location.reset');
-
         // Discount Code (merchant-specific)
         Route::get('/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.checkout.merchant.discount-code.check');
         Route::post('/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.checkout.merchant.discount-code.remove');

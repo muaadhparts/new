@@ -437,27 +437,6 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Reset location draft session (called when map modal opens)
-     * Only clears location_draft, preserves step1/step2/step3
-     */
-    public function resetLocation(Request $request)
-    {
-        $merchantId = $request->input('merchant_id');
-
-        // Clear location draft only (not step1/step2/step3)
-        if ($merchantId) {
-            Session::forget('location_draft_merchant_' . $merchantId);
-        } else {
-            Session::forget('location_draft');
-        }
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Location draft cleared'
-        ]);
-    }
-
-    /**
      * GENERAL CHECKOUT STEP 1 (Legacy - Merchant checkout preferred)
      * Collects customer data, coordinates from map, calculates tax.
      * Step 2 handles city resolution and shipping.

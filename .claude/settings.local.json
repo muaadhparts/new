@@ -43,7 +43,8 @@
       "Bash(git add:*)",
       "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\database\\\\schema\")",
       "Bash(Get-Content \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\storage\\\\logs\\\\laravel.log\" -Tail 100)",
-      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\merchant-commission\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\merchant-commission\")"
+      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\merchant-commission\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\merchant-commission\")",
+      "Bash(herd secure:*)"
     ]
   }
 }

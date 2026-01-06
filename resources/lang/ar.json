@@ -2613,7 +2613,34 @@
     "Green": "أخضر",
     "Purple": "بنفسجي",
     "Orange": "برتقالي",
-    "Teal": "أزرق مخضر"
+    "Teal": "أزرق مخضر",
+
+    "Select your location": "حدد موقعك",
+    "Search for a location...": "ابحث عن موقع...",
+    "Selected Location": "الموقع المحدد",
+    "Click on map or search to select location": "اضغط على الخريطة أو ابحث لتحديد الموقع",
+    "My Location": "موقعي",
+    "Confirm Location": "تأكيد الموقع",
+    "Select Your Delivery Location": "حدد موقع التوصيل",
+    "Please select your location from the map": "يرجى تحديد موقعك من الخريطة",
+    "Select Location from Map": "تحديد الموقع من الخريطة",
+    "Location Selected": "تم تحديد الموقع",
+    "Map service unavailable. Please enter address manually.": "خدمة الخريطة غير متوفرة. يرجى إدخال العنوان يدوياً.",
+    "Search for your address or click Use My Location": "ابحث عن عنوانك أو اضغط على تحديد موقعي",
+    "Detecting your location...": "جاري تحديد موقعك...",
+    "Location permission denied - please select manually": "تم رفض إذن الموقع - يرجى التحديد يدوياً",
+    "Loading address...": "جاري تحميل العنوان...",
+    "Browser does not support geolocation": "المتصفح لا يدعم تحديد الموقع",
+    "Could not get your location": "تعذر الحصول على موقعك",
+    "Location permission denied": "تم رفض إذن الموقع",
+    "Location unavailable": "الموقع غير متوفر",
+    "Location request timed out": "انتهت مهلة طلب الموقع",
+    "Failed to get location details. Please try again.": "فشل الحصول على تفاصيل الموقع. يرجى المحاولة مرة أخرى.",
+    "Location requires HTTPS. Please search for your address instead.": "تحديد الموقع يتطلب HTTPS. يرجى البحث عن عنوانك بدلاً من ذلك.",
+    "Please allow location access in your browser settings, or search for your address manually.": "يرجى السماح بالوصول للموقع في إعدادات المتصفح، أو ابحث عن عنوانك يدوياً.",
+    "Please search for your address manually.": "يرجى البحث عن عنوانك يدوياً.",
+    "Please try again or search for your address manually.": "يرجى المحاولة مرة أخرى أو البحث عن عنوانك يدوياً.",
+    "Location accuracy is low. Please verify or search for your address.": "دقة الموقع منخفضة. يرجى التحقق أو البحث عن عنوانك."
 }
 
 

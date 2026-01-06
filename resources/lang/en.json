@@ -2110,7 +2110,34 @@
     "Use This Location": "Use This Location",
     "Close": "Close",
     "Location selected successfully": "Location selected successfully",
-    "Selected Location:": "Selected Location:"
+    "Selected Location:": "Selected Location:",
+
+    "Select your location": "Select your location",
+    "Search for a location...": "Search for a location...",
+    "Selected Location": "Selected Location",
+    "Click on map or search to select location": "Click on map or search to select location",
+    "My Location": "My Location",
+    "Confirm Location": "Confirm Location",
+    "Select Your Delivery Location": "Select Your Delivery Location",
+    "Please select your location from the map": "Please select your location from the map",
+    "Select Location from Map": "Select Location from Map",
+    "Location Selected": "Location Selected",
+    "Map service unavailable. Please enter address manually.": "Map service unavailable. Please enter address manually.",
+    "Search for your address or click Use My Location": "Search for your address or click Use My Location",
+    "Detecting your location...": "Detecting your location...",
+    "Location permission denied - please select manually": "Location permission denied - please select manually",
+    "Loading address...": "Loading address...",
+    "Browser does not support geolocation": "Browser does not support geolocation",
+    "Could not get your location": "Could not get your location",
+    "Location permission denied": "Location permission denied",
+    "Location unavailable": "Location unavailable",
+    "Location request timed out": "Location request timed out",
+    "Failed to get location details. Please try again.": "Failed to get location details. Please try again.",
+    "Location requires HTTPS. Please search for your address instead.": "Location requires HTTPS. Please search for your address instead.",
+    "Please allow location access in your browser settings, or search for your address manually.": "Please allow location access in your browser settings, or search for your address manually.",
+    "Please search for your address manually.": "Please search for your address manually.",
+    "Please try again or search for your address manually.": "Please try again or search for your address manually.",
+    "Location accuracy is low. Please verify or search for your address.": "Location accuracy is low. Please verify or search for your address."
 
 }
 
