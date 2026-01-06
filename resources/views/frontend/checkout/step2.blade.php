@@ -312,6 +312,46 @@
                                                 </button>
                                             </div>
                                         @endif
+                                        {{-- ✅ LOCAL COURIER DELIVERY OPTION (if available) - Before Shipping Methods --}}
+                                        @if(isset($courier_available) && $courier_available && isset($available_couriers) && count($available_couriers) > 0)
+                                            <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
+                                                <span class="label mr-2">
+                                                    <b><i class="fas fa-motorcycle me-2"></i>{{ __('Local Courier:') }}</b>
+                                                </span>
+
+                                                {{-- Selected courier display --}}
+                                                <span id="selected-courier-display" class="d-none">
+                                                    <span class="badge bg-success">
+                                                        <i class="fas fa-check me-1"></i>
+                                                        <span id="selected-courier-name"></span>
+                                                        (<span id="selected-courier-price"></span>)
+                                                    </span>
+                                                    <button type="button" class="btn btn-sm btn-link p-0 ms-2" data-bs-toggle="modal" data-bs-target="#courierSelectionModal">
+                                                        @lang('Change')
+                                                    </button>
+                                                </span>
+
+                                                {{-- Select courier button --}}
+                                                <span id="select-courier-btn-wrapper">
+                                                    <button type="button" class="template-btn sm-btn" data-bs-toggle="modal" data-bs-target="#courierSelectionModal">
+                                                        @lang('Select Courier')
+                                                    </button>
+                                                </span>
+
+                                                <small class="text-muted ms-auto">
+                                                    <i class="fas fa-info-circle me-1"></i>
+                                                    @lang('Fast delivery in your area')
+                                                </small>
+                                            </div>
+
+                                            {{-- Hidden fields for courier data --}}
+                                            <input type="hidden" name="delivery_type" id="delivery_type" value="shipping">
+                                            <input type="hidden" name="courier_id" id="selected_courier_id" value="">
+                                            <input type="hidden" name="courier_fee" id="selected_courier_fee" value="0">
+                                            <input type="hidden" name="service_area_id" id="selected_service_area_id" value="">
+                                            <input type="hidden" name="customer_city_id" value="{{ $customer_city_id ?? '' }}">
+                                        @endif
+
                                         @if ($is_Digital == 0)
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
@@ -489,49 +529,6 @@
                             @endif
 
 
-                            {{-- ✅ LOCAL COURIER DELIVERY OPTION (if available) --}}
-                            {{-- DEBUG: courier_available={{ isset($courier_available) ? ($courier_available ? 'true' : 'false') : 'not set' }}, couriers={{ isset($available_couriers) ? count($available_couriers) : 'not set' }}, city_id={{ $customer_city_id ?? 'not set' }} --}}
-                            @if(isset($courier_available) && $courier_available && isset($available_couriers) && count($available_couriers) > 0)
-                                <div class="summary-inner-box courier-delivery-box">
-                                    <h6 class="summary-title">
-                                        <i class="fas fa-motorcycle me-2"></i>
-                                        @lang('Local Courier Delivery')
-                                    </h6>
-                                    <div class="courier-option-wrapper">
-                                        {{-- Show selected courier or button to select --}}
-                                        <div id="selected-courier-display" class="d-none">
-                                            <div class="d-flex justify-content-between align-items-center p-3 bg-success bg-opacity-10 rounded">
-                                                <div>
-                                                    <i class="fas fa-check-circle text-success me-2"></i>
-                                                    <span id="selected-courier-name"></span>
-                                                    <span class="badge bg-success ms-2" id="selected-courier-price"></span>
-                                                </div>
-                                                <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#courierSelectionModal">
-                                                    <i class="fas fa-edit"></i> @lang('Change')
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div id="select-courier-btn-wrapper">
-                                            <button type="button" class="template-btn sm-btn w-100" data-bs-toggle="modal" data-bs-target="#courierSelectionModal">
-                                                <i class="fas fa-motorcycle me-2"></i>
-                                                @lang('Select Local Courier')
-                                            </button>
-                                            <small class="text-muted d-block mt-2">
-                                                <i class="fas fa-info-circle me-1"></i>
-                                                @lang('Fast delivery by local courier in your area')
-                                            </small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {{-- Hidden fields for courier data --}}
-                                <input type="hidden" name="delivery_type" id="delivery_type" value="shipping">
-                                <input type="hidden" name="courier_id" id="selected_courier_id" value="">
-                                <input type="hidden" name="courier_fee" id="selected_courier_fee" value="0">
-                                <input type="hidden" name="service_area_id" id="selected_service_area_id" value="">
-                                <input type="hidden" name="customer_city_id" value="{{ $customer_city_id ?? '' }}">
-                            @endif
-
                             {{-- ✅ Unified Price Summary Component - Step 2 --}}
                             @include('includes.checkout-price-summary', [
                                 'step' => 2,
@@ -665,7 +662,7 @@
     {{-- ============================================== --}}
     @if(isset($courier_available) && $courier_available && isset($available_couriers) && count($available_couriers) > 0)
     <div class="modal fade" id="courierSelectionModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content" style="border: none; border-radius: 12px; overflow: hidden;">
                 <div class="modal-header" style="background: var(--action-success, #28a745); color: #fff; border: none;">
                     <h5 class="modal-title">
@@ -689,23 +686,51 @@
                                     ? $curr->sign . $courierPriceConverted
                                     : $courierPriceConverted . $curr->sign;
                             @endphp
-                            <div class="courier-item border rounded p-3 mb-2"
+                            <div class="courier-item border rounded p-3 mb-3"
                                  data-courier-id="{{ $courier['courier_id'] }}"
                                  data-courier-name="{{ $courier['courier_name'] }}"
                                  data-courier-fee="{{ $courierPriceConverted }}"
                                  data-service-area-id="{{ $courier['service_area_id'] }}"
                                  onclick="selectCourier(this)"
                                  style="cursor: pointer; transition: all 0.2s;">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-motorcycle me-3 text-success fa-lg"></i>
-                                        <div>
-                                            <strong>{{ $courier['courier_name'] }}</strong>
-                                            <small class="d-block text-muted">@lang('Local delivery')</small>
-                                        </div>
+                                <div class="row align-items-center">
+                                    {{-- Courier Photo --}}
+                                    <div class="col-auto">
+                                        <img src="{{ $courier['courier_photo'] ?? asset('assets/images/noimage.png') }}"
+                                             alt="{{ $courier['courier_name'] }}"
+                                             class="rounded-circle"
+                                             style="width: 60px; height: 60px; object-fit: cover; border: 3px solid var(--action-success);">
                                     </div>
-                                    <div>
-                                        <span class="badge bg-success fs-6">{{ $priceDisplay }}</span>
+                                    {{-- Courier Details --}}
+                                    <div class="col">
+                                        <h6 class="mb-1 fw-bold">{{ $courier['courier_name'] }}</h6>
+                                        <div class="text-muted small">
+                                            @if(!empty($courier['city_name']))
+                                                <span class="me-3">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                                    {{ $courier['city_name'] }}
+                                                </span>
+                                            @endif
+                                            @if(!empty($courier['courier_phone']))
+                                                <span>
+                                                    <i class="fas fa-phone me-1"></i>
+                                                    {{ $courier['courier_phone'] }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if(!empty($courier['distance_km']))
+                                            <small class="text-info">
+                                                <i class="fas fa-route me-1"></i>
+                                                {{ number_format($courier['distance_km'], 1) }} @lang('km away')
+                                            </small>
+                                        @endif
+                                    </div>
+                                    {{-- Price --}}
+                                    <div class="col-auto text-end">
+                                        <div class="mb-1">
+                                            <span class="badge bg-success fs-5 px-3 py-2">{{ $priceDisplay }}</span>
+                                        </div>
+                                        <small class="text-muted">@lang('Delivery Fee')</small>
                                     </div>
                                 </div>
                             </div>
@@ -719,11 +744,14 @@
         </div>
     </div>
     <style>
+        .courier-item {
+            border: 2px solid #e9ecef !important;
+        }
         .courier-item:hover {
             border-color: var(--action-success, #28a745) !important;
             background-color: rgba(40, 167, 69, 0.05);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
         .courier-item.selected {
             border-color: var(--action-success, #28a745) !important;
@@ -832,7 +860,7 @@
             $('#selected_service_area_id').val(serviceAreaId);
             $('#delivery_type').val('local_courier');
 
-            // Update display
+            // Update display in the header section
             const currSign = '{{ $curr->sign }}';
             const currFormat = {{ $gs->currency_format }};
             let priceDisplay = currFormat == 0
@@ -844,45 +872,84 @@
             $('#selected-courier-display').removeClass('d-none');
             $('#select-courier-btn-wrapper').addClass('d-none');
 
-            // Highlight selected item
+            // Highlight selected item in modal
             $('.courier-item').removeClass('selected');
             $(element).addClass('selected');
 
             // Clear shipping selections (courier replaces shipping)
             $('input.shipping').prop('checked', false);
+            // Clear shipping text display
+            $('[id^="shipping_text"]').text('{{ __("Not Selected") }}');
 
-            // Update total with courier fee
-            updateCourierFee(courierFee);
+            // Update price summary
+            updateCourierInSummary(courierName, courierFee);
 
             // Close modal
             $('#courierSelectionModal').modal('hide');
         };
 
         /**
-         * Update total with courier fee
+         * Update courier fee in price summary
          */
-        function updateCourierFee(fee) {
-            // Get base values
-            let baseTotal = parseFloat($('#ttotal').val()) || 0;
-            let taxAmount = parseFloat($('#tax_amount_value').val()) || 0;
-            let packingCost = 0;
+        function updateCourierInSummary(courierName, fee) {
+            const currSign = '{{ $curr->sign }}';
+            const currFormat = {{ $gs->currency_format }};
+            let priceDisplay = currFormat == 0
+                ? currSign + fee.toFixed(2)
+                : fee.toFixed(2) + currSign;
 
-            // Get packing cost if selected
-            $('input.packing:checked').each(function() {
-                packingCost += parseFloat($(this).data('price')) || 0;
-            });
+            // Show courier row, hide shipping row
+            $('#shipping-row').addClass('d-none');
+            $('#free-shipping-row').addClass('d-none');
+            $('#courier-row').removeClass('d-none');
 
-            // Calculate new total
-            let newTotal = baseTotal + taxAmount + packingCost + fee;
-            $('#grandtotal').val(newTotal.toFixed(2));
+            // Update courier display in summary
+            $('#courier-name-summary').text(' - ' + courierName);
+            $('#courier-fee-display').text(priceDisplay);
 
-            // Update display using PriceSummary
+            // Update the shipping cost hidden field with courier fee
+            // This ensures the total calculation includes the courier fee
+            $('#price-shipping-cost').val(fee);
+
+            // Recalculate total using PriceSummary
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.updateShipping(fee);
-                PriceSummary.recalculate();
-            }
+                console.log('✅ PriceSummary updated with courier fee:', fee);
+            } else {
+                // Fallback manual calculation
+                let catalogItemsTotal = parseFloat($('#price-catalogItems-total').val()) || 0;
+                let discountAmount = parseFloat($('#price-discount-amount').val()) || 0;
+                let taxAmount = parseFloat($('#price-tax-amount').val()) || 0;
+                let packingCost = parseFloat($('#price-packing-cost').val()) || 0;
 
-            console.log('💰 Total updated with courier fee:', newTotal);
+                let grandTotal = catalogItemsTotal - discountAmount + taxAmount + fee + packingCost;
+                $('#price-grand-total').val(grandTotal.toFixed(2));
+                $('#grand-total-display').text(currFormat == 0 ? currSign + grandTotal.toFixed(2) : grandTotal.toFixed(2) + currSign);
+                $('#grandtotal').val(grandTotal.toFixed(2));
+
+                console.log('💰 Manual total calculation with courier fee:', grandTotal);
+            }
+        }
+
+        /**
+         * Reset courier selection (when shipping is selected instead)
+         */
+        function resetCourierSelection() {
+            // Hide courier row, show shipping row
+            $('#courier-row').addClass('d-none');
+            $('#shipping-row').removeClass('d-none');
+
+            // Clear courier hidden fields
+            $('#selected_courier_id').val('');
+            $('#selected_courier_fee').val('0');
+            $('#selected_service_area_id').val('');
+            $('#delivery_type').val('shipping');
+
+            // Reset header display
+            $('#selected-courier-display').addClass('d-none');
+            $('#select-courier-btn-wrapper').removeClass('d-none');
+
+            console.log('🔄 Courier selection reset');
         }
 
 
@@ -940,6 +1007,9 @@
             let view = $(this).attr('view');
             let title = $(this).attr('data-form');
             $('#shipping_text' + ref).html(title + '+' + view);
+
+            // ✅ Reset courier selection when shipping is selected
+            resetCourierSelection();
 
             // ✅ Use centralized updateFinalTotal() function
             updateFinalTotal();

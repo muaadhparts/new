@@ -1472,17 +1472,6 @@ class CheckoutController extends FrontBaseController
         // ========================================================================
         $courierData = $this->getCourierDeliveryData($merchantId, $step1);
 
-        // DEBUG: Log courier data
-        \Log::info('Step2 Courier Data', [
-            'merchant_id' => $merchantId,
-            'step1_customer_city_id' => $step1->customer_city_id ?? 'NOT SET',
-            'step1_latitude' => $step1->latitude ?? 'NOT SET',
-            'step1_longitude' => $step1->longitude ?? 'NOT SET',
-            'courier_available' => $courierData['available'],
-            'couriers_count' => count($courierData['couriers']),
-            'customer_city_id' => $courierData['customer_city_id'],
-        ]);
-
         return view('frontend.checkout.step2', [
             'catalogItemsByMerchant' => $itemsByMerchant, // Grouped items (single merchant)
             'catalogItems' => $merchantItems, // Keep for backward compatibility
@@ -2240,15 +2229,20 @@ class CheckoutController extends FrontBaseController
             return $result;
         }
 
-        // Format couriers for view
+        // Format couriers for view with full details
         $couriers = [];
         foreach ($serviceAreas as $area) {
+            $courier = $area->courier;
             $couriers[] = [
                 'courier_id' => $area->courier_id,
-                'courier_name' => $area->courier->name,
+                'courier_name' => $courier->name,
+                'courier_photo' => $courier->photo ? asset('assets/images/couriers/' . $courier->photo) : asset('assets/images/noimage.png'),
+                'courier_phone' => $courier->phone,
+                'courier_address' => $courier->address,
                 'delivery_fee' => (float)$area->price,
                 'service_area_id' => $area->id,
-                'distance_km' => $area->distance_km ?? null, // Include distance if calculated
+                'city_name' => $area->city->city_name ?? '',
+                'distance_km' => $area->distance_km ?? null,
             ];
         }
 

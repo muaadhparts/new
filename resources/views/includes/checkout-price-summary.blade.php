@@ -156,7 +156,7 @@
         @endif
 
         {{-- ================================================================
-            ROW 4: Shipping (Step 2 & 3 only, physical catalogItems)
+            ROW 4: Shipping OR Courier (Step 2 & 3 only, physical catalogItems)
         ================================================================= --}}
         {{-- DEBUG: isDigital={{ $isDigital ? 'true' : 'false' }}, currentStep={{ $currentStep }} --}}
         @if($currentStep >= 2)
@@ -171,6 +171,15 @@
                         <i class="fas fa-gift"></i> @lang('Free Shipping')
                     </span>
                     <span class="right-side text-success free-shipping-discount-display" id="free-shipping-discount-display">-{{ $formatPrice(0) }}</span>
+                </div>
+                {{-- Courier Delivery Row (shown when courier selected) --}}
+                <div class="price-details courier-row d-none" id="courier-row">
+                    <span>
+                        <i class="fas fa-motorcycle me-1 text-success"></i>
+                        @lang('Courier Delivery')
+                        <small class="text-muted courier-name-display" id="courier-name-summary"></small>
+                    </span>
+                    <span class="right-side courier-fee-display text-success" id="courier-fee-display">{{ $formatPrice(0) }}</span>
                 </div>
             @else
                 {{-- Step 3: Shipping from session --}}
