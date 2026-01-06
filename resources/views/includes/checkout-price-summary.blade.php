@@ -182,7 +182,8 @@
                     <span class="right-side courier-fee-display text-success" id="courier-fee-display">{{ $formatPrice(0) }}</span>
                 </div>
             @else
-                {{-- Step 3: Shipping from session --}}
+                {{-- Step 3: Shipping from session (hide if courier/pickup selected) --}}
+                @if($deliveryType === 'shipping')
                 <div class="price-details">
                     <span>@lang('Shipping Cost')</span>
                     <span class="right-side">
@@ -211,23 +212,26 @@
                     <small class="text-muted">{{ $shippingCompany }}</small>
                 </div>
                 @endif
+                @endif
             @endif
         @endif
 
         {{-- ================================================================
             ROW 4.5: Courier Fee (Step 3 only, when courier delivery selected)
         ================================================================= --}}
-        @if($currentStep == 3 && $deliveryType === 'courier' && $courierFee > 0)
+        @if($currentStep == 3 && $deliveryType === 'local_courier' && $courierFee > 0)
             <div class="price-details">
                 <span>
-                    <i class="fas fa-motorcycle me-1"></i>
-                    @lang('Courier Delivery')
+                    <i class="fas fa-motorcycle me-1 text-success"></i>
+                    @lang('Local Courier')
                 </span>
-                <span class="right-side">{{ $formatPrice($courierFee) }}</span>
+                <span class="right-side text-success">{{ $formatPrice($courierFee) }}</span>
             </div>
             @if($courierName)
             <div class="price-details">
-                <small class="text-muted">{{ $courierName }}</small>
+                <small class="text-muted">
+                    <i class="fas fa-user me-1"></i>{{ $courierName }}
+                </small>
             </div>
             @endif
         @elseif($currentStep == 3 && $deliveryType === 'pickup')
@@ -302,6 +306,8 @@
 <input type="hidden" id="price-tax-amount" value="{{ $taxAmount }}">
 <input type="hidden" id="price-shipping-cost" value="{{ $shippingCost }}">
 <input type="hidden" id="price-packing-cost" value="{{ $packingCost }}">
+<input type="hidden" id="price-courier-fee" value="{{ $courierFee }}">
+<input type="hidden" id="price-delivery-type" value="{{ $deliveryType }}">
 <input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
 <input type="hidden" id="price-subtotal-before-discount" value="{{ $subtotalBeforeDiscount }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
@@ -389,6 +395,8 @@
             taxAmount: parseFloat($('#price-tax-amount').val()) || 0,
             shippingCost: parseFloat($('#price-shipping-cost').val()) || 0,
             packingCost: parseFloat($('#price-packing-cost').val()) || 0,
+            courierFee: parseFloat($('#price-courier-fee').val()) || 0,
+            deliveryType: $('#price-delivery-type').val() || 'shipping',
             subtotalBeforeDiscount: parseFloat($('#price-subtotal-before-discount').val()) || 0
         };
     }
@@ -397,7 +405,9 @@
     function recalculateTotal() {
         var v = getValues();
         var subtotal = v.catalogItemsTotal - v.discountAmount;
-        var grandTotal = subtotal + v.taxAmount + v.shippingCost + v.packingCost;
+        // Add courier fee OR shipping cost (not both)
+        var deliveryCost = v.deliveryType === 'local_courier' ? v.courierFee : v.shippingCost;
+        var grandTotal = subtotal + v.taxAmount + deliveryCost + v.packingCost;
 
         // Update hidden field
         $('#price-grand-total').val(grandTotal.toFixed(2));
@@ -413,7 +423,9 @@
             catalogItems: v.catalogItemsTotal,
             discount: v.discountAmount,
             tax: v.taxAmount,
+            deliveryType: v.deliveryType,
             shipping: v.shippingCost,
+            courierFee: v.courierFee,
             packing: v.packingCost,
             total: grandTotal
         });

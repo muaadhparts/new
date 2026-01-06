@@ -36,9 +36,27 @@ class Purchase extends Model
         return $this->hasMany('App\Models\CatalogEvent','purchase_id');
     }
 
+    /**
+     * Alias for catalogEvents() - backwards compatibility
+     * Used by payment controllers for purchase notifications
+     */
+    public function notifications()
+    {
+        return $this->catalogEvents();
+    }
+
     public function timelines()
     {
         return $this->hasMany('App\Models\PurchaseTimeline','purchase_id');
+    }
+
+    /**
+     * Alias for timelines() - backwards compatibility
+     * Used by many payment controllers
+     */
+    public function tracks()
+    {
+        return $this->timelines();
     }
 
     /**

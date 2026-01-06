@@ -12,113 +12,176 @@
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <!-- page title -->
                     <div class="ud-page-title-box">
-                        <!-- mobile sidebar trigger btn -->
-
-                        <h3 class="ud-page-title">
-                            @if (request()->input('type') == 'complete')
-                                {{ __('Complete Purchases') }}
-                            @else
-                                {{ __('Pending Purchases') }}
-                            @endif
-                        </h3>
+                        <h3 class="ud-page-title">{{ __('My Purchases') }}</h3>
                     </div>
 
-                    <!--  purchase status steps -->
+                    {{-- ✅ Order Status Tabs --}}
+                    <ul class="nav nav-tabs mb-4" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link {{ !request()->input('type') ? 'active' : '' }}"
+                               href="{{ route('courier-purchases') }}">
+                                <i class="fas fa-box-open"></i> @lang('Ready for Pickup')
+                                @php
+                                    $readyCount = \App\Models\DeliveryCourier::where('courier_id', auth('courier')->id())
+                                        ->whereIn('status', ['ready_for_pickup', 'accepted'])
+                                        ->count();
+                                @endphp
+                                @if($readyCount > 0)
+                                    <span class="badge bg-success ms-1">{{ $readyCount }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->input('type') == 'pending' ? 'active' : '' }}"
+                               href="{{ route('courier-purchases', ['type' => 'pending']) }}">
+                                <i class="fas fa-clock"></i> @lang('Pending')
+                                @php
+                                    $pendingCount = \App\Models\DeliveryCourier::where('courier_id', auth('courier')->id())
+                                        ->where('status', 'pending')
+                                        ->count();
+                                @endphp
+                                @if($pendingCount > 0)
+                                    <span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
+                                @endif
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->input('type') == 'complete' ? 'active' : '' }}"
+                               href="{{ route('courier-purchases', ['type' => 'complete']) }}">
+                                <i class="fas fa-check-circle"></i> @lang('Completed')
+                            </a>
+                        </li>
+                    </ul>
+
+                    {{-- ✅ Info Alert based on tab --}}
+                    @if(!request()->input('type'))
+                        <div class="alert alert-success mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            @lang('These orders are ready for pickup from merchants. Accept and deliver them to earn!')
+                        </div>
+                    @elseif(request()->input('type') == 'pending')
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-clock me-2"></i>
+                            @lang('These orders are assigned to you but merchants haven\'t marked them ready yet.')
+                        </div>
+                    @endif
 
                     <div class="user-table table-responsive position-relative">
 
                         <table class="gs-data-table w-100">
                             <thead>
                                 <tr>
-
                                     <th>{{ __('#Purchase') }}</th>
-                                    <th>{{ __('Service Area') }}</th>
+                                    <th>{{ __('Merchant') }}</th>
+                                    <th>{{ __('Delivery Area') }}</th>
                                     <th>{{ __('Pickup Point') }}</th>
-                                    <th>{{ __('Purchase Total') }}</th>
-                                    <th>{{ __('Purchase Status') }}</th>
-                                    <th>{{ __('View') }}</th>
+                                    <th>{{ __('Delivery Fee') }}</th>
+                                    <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Actions') }}</th>
                                 </tr>
-
                             </thead>
                             <tbody>
-                                @forelse ($purchases as $purchase)
+                                @forelse ($purchases as $delivery)
                                     <tr>
+                                        {{-- Purchase Number --}}
                                         <td data-label="{{ __('#Purchase') }}">
-                                            {{ $purchase->purchase->purchase_number }}
-                                        </td>
-                                        <td data-label="{{ __('Service Area') }}">
-                                            <p>
-                                                {{ $purchase->purchase->customer_city }}
-                                            </p>
+                                            <strong>{{ $delivery->purchase->purchase_number ?? 'N/A' }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ $delivery->purchase->created_at?->format('Y-m-d') }}</small>
                                         </td>
 
+                                        {{-- Merchant --}}
+                                        <td data-label="{{ __('Merchant') }}">
+                                            <strong>{{ $delivery->merchant->shop_name ?? $delivery->merchant->name ?? 'N/A' }}</strong>
+                                            @if($delivery->merchant?->shop_phone)
+                                                <br>
+                                                <small><i class="fas fa-phone"></i> {{ $delivery->merchant->shop_phone }}</small>
+                                            @endif
+                                        </td>
+
+                                        {{-- Delivery Area (Customer) --}}
+                                        <td data-label="{{ __('Delivery Area') }}">
+                                            <strong>{{ $delivery->purchase->customer_name ?? 'N/A' }}</strong>
+                                            <br>
+                                            <small><i class="fas fa-phone"></i> {{ $delivery->purchase->customer_phone ?? 'N/A' }}</small>
+                                            <br>
+                                            <small><i class="fas fa-city"></i> {{ $delivery->purchase->customer_city ?? 'N/A' }}</small>
+                                            <br>
+                                            <small title="{{ $delivery->purchase->customer_address }}">
+                                                <i class="fas fa-map-marker-alt"></i> {{ Str::limit($delivery->purchase->customer_address ?? '', 30) }}
+                                            </small>
+                                        </td>
+
+                                        {{-- Pickup Point --}}
                                         <td data-label="{{ __('Pickup Point') }}">
-                                            <p>
-                                                {{ $purchase->pickup->location }}
-                                            </p>
+                                            {{ $delivery->pickup->location ?? 'N/A' }}
                                         </td>
 
-                                        <td data-label="{{ __('Purchase Total') }}">
-
-                                            @php
-
-                                                $purchase_shipping = json_decode($purchase->purchase->merchant_shipping_id, true) ?? [];
-                                                $purchase_package = json_decode($purchase->purchase->merchant_packing_id, true) ?? [];
-
-                                                // Retrieve merchant-specific shipping and packing IDs
-                                                $merchant_shipping_id = $purchase_shipping[$purchase->merchant_id] ?? null;
-                                                $merchant_package_id = $purchase_package[$purchase->merchant_id] ?? null;
-
-                                                // Retrieve Shipping model or set to null if not found
-                                                $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
-
-                                                // Retrieve Package model or set to null if not found
-                                                $package = $merchant_package_id ? App\Models\Package::find($merchant_package_id) : null;
-
-                                                // Calculate costs if models are found, default to 0 if null
-                                                $shipping_cost = $shipping ? $shipping->price : 0;
-                                                $packing_cost = $package ? $package->price : 0;
-
-                                                // Total extra cost
-                                                $extra_price = $shipping_cost + $packing_cost;
-                                            @endphp
-
-                                            {{ \PriceHelper::showAdminCurrencyPrice(
-                                                ($purchase->purchase->merchantPurchases->where('user_id', $purchase->merchant_id)->sum('price') + $extra_price) *
-                                                    $purchase->purchase->currency_value,
-                                                $purchase->currency_sign,
-                                            ) }}
+                                        {{-- Delivery Fee --}}
+                                        <td data-label="{{ __('Delivery Fee') }}">
+                                            <strong class="text-success">
+                                                {{ \PriceHelper::showAdminCurrencyPrice($delivery->delivery_fee ?? 0) }}
+                                            </strong>
+                                            @if($delivery->payment_method === 'cod')
+                                                <br>
+                                                <span class="badge bg-warning text-dark">COD</span>
+                                                <br>
+                                                <small>@lang('Collect'): {{ \PriceHelper::showAdminCurrencyPrice($delivery->order_amount ?? 0) }}</small>
+                                            @endif
                                         </td>
-                                        <td data-label="{{ __('Purchase Status') }}">
-                                            <div class="">
-                                                <span
-                                                    class="px-3 py-2 md-btn rounded {{ $purchase->status == 'pending' ? 'bg-pending' : 'bg-complete' }} mx-auto">{{ ucwords($purchase->status) }}
+
+                                        {{-- Status --}}
+                                        <td data-label="{{ __('Status') }}">
+                                            @if($delivery->status == 'pending')
+                                                <span class="badge bg-warning text-dark">@lang('Pending Merchant')</span>
+                                            @elseif($delivery->status == 'ready_for_pickup')
+                                                <span class="badge bg-success">@lang('Ready for Pickup')</span>
+                                            @elseif($delivery->status == 'accepted')
+                                                <span class="badge bg-primary">@lang('Accepted')</span>
+                                            @elseif($delivery->status == 'delivered')
+                                                <span class="badge bg-info">@lang('Delivered')</span>
+                                            @elseif($delivery->status == 'rejected')
+                                                <span class="badge bg-danger">@lang('Rejected')</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ ucwords($delivery->status) }}</span>
+                                            @endif
+                                        </td>
+
+                                        {{-- Actions --}}
+                                        <td data-label="{{ __('Actions') }}">
+                                            @if($delivery->status == 'ready_for_pickup')
+                                                <a href="{{ route('courier-purchase-delivery-accept', $delivery->id) }}"
+                                                   class="btn btn-sm btn-success mb-1">
+                                                    <i class="fas fa-check"></i> @lang('Accept')
+                                                </a>
+                                                <br>
+                                                <a href="{{ route('courier-purchase-delivery-reject', $delivery->id) }}"
+                                                   class="btn btn-sm btn-danger mb-1">
+                                                    <i class="fas fa-times"></i> @lang('Reject')
+                                                </a>
+                                            @elseif($delivery->status == 'accepted')
+                                                <a href="{{ route('courier-purchase-delivery-complete', $delivery->id) }}"
+                                                   class="btn btn-sm btn-primary mb-1">
+                                                    <i class="fas fa-check-double"></i> @lang('Mark Delivered')
+                                                </a>
+                                            @elseif($delivery->status == 'pending')
+                                                <span class="text-muted">
+                                                    <i class="fas fa-clock"></i> @lang('Waiting for merchant')
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td data-label="{{ __('View') }}">
-
-                                            <a href="{{ route('courier-purchase-details', $purchase->id) }}" class="view-btn">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                    xmlns="http://www.w3.org/2000/svg">
-                                                    <g clip-path="url(#clip0_548_165891)">
-                                                        <path
-                                                            d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
-                                                            fill="white"></path>
-                                                    </g>
-                                                    <defs>
-                                                        <clipPath id="clip0_548_165891">
-                                                            <rect width="24" height="24" fill="white"></rect>
-                                                        </clipPath>
-                                                    </defs>
-                                                </svg>
+                                            @endif
+                                            <br>
+                                            <a href="{{ route('courier-purchase-details', $delivery->id) }}" class="btn btn-sm btn-secondary">
+                                                <i class="fas fa-eye"></i> @lang('View')
                                             </a>
-
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="6">{{ __('No purchases found') }}</td>
+                                        <td colspan="7" class="text-center py-4">
+                                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                            <br>
+                                            {{ __('No purchases found') }}
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>

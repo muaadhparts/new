@@ -174,18 +174,33 @@ class CourierController extends CourierBaseController
     public function orders(Request $request)
     {
         if ($request->type == 'complete') {
+            // ✅ Completed/delivered orders
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
-                ->with(['purchase', 'pickup'])
-                ->where('status', 'delivered')->orderby('id', 'desc')->paginate(10);
-            return view('courier.orders', compact('purchases'));
+                ->with(['purchase', 'pickup', 'merchant'])
+                ->where('status', 'delivered')
+                ->orderby('id', 'desc')
+                ->paginate(10);
+        } elseif ($request->type == 'pending') {
+            // ✅ Orders waiting for merchant to mark ready (courier can see but not act)
+            $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+                ->whereNotNull('purchase_id')
+                ->with(['purchase', 'pickup', 'merchant'])
+                ->where('status', 'pending')
+                ->orderby('id', 'desc')
+                ->paginate(10);
         } else {
+            // ✅ Ready orders: ready_for_pickup (new) + accepted (in progress)
+            // Only show orders that merchant has marked as ready
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
-                ->with(['purchase', 'pickup'])
-                ->where('status', '!=', 'delivered')->orderby('id', 'desc')->paginate(10);
-            return view('courier.orders', compact('purchases'));
+                ->with(['purchase', 'pickup', 'merchant'])
+                ->whereIn('status', ['ready_for_pickup', 'accepted'])
+                ->orderby('id', 'desc')
+                ->paginate(10);
         }
+
+        return view('courier.orders', compact('purchases'));
     }
 
     public function orderDetails($id)

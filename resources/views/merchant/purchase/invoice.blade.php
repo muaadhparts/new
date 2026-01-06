@@ -160,14 +160,62 @@
                         {{-- Delivery Type --}}
                         <li>
                             <span class="fw-semibold">@lang('Delivery Type :')</span>
-                            @if($shippingType === 'courier')
-                                <span class="m-badge m-badge--warning">@lang('Courier')</span>
+                            @if($shippingType === 'courier' || $shippingType === 'local_courier')
+                                <span class="m-badge m-badge--warning">@lang('Local Courier')</span>
                             @elseif($shippingType === 'pickup')
                                 <span class="m-badge m-badge--secondary">@lang('Pickup')</span>
                             @else
                                 <span class="m-badge m-badge--primary">@lang('Shipping')</span>
                             @endif
                         </li>
+
+                        {{-- ✅ Local Courier Details --}}
+                        @php
+                            $invoiceDeliveryCourier = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
+                                ->where('merchant_id', $invoiceMerchantId)
+                                ->with(['courier', 'pickup'])
+                                ->first();
+                        @endphp
+                        @if($invoiceDeliveryCourier && $invoiceDeliveryCourier->courier)
+                            <li>
+                                <span class="fw-semibold">@lang('Courier Name :')</span>
+                                <span class="fw-normal">{{ $invoiceDeliveryCourier->courier->name }}</span>
+                            </li>
+                            @if($invoiceDeliveryCourier->courier->phone)
+                            <li>
+                                <span class="fw-semibold">@lang('Courier Phone :')</span>
+                                <span class="fw-normal">{{ $invoiceDeliveryCourier->courier->phone }}</span>
+                            </li>
+                            @endif
+                            <li>
+                                <span class="fw-semibold">@lang('Delivery Fee :')</span>
+                                <span class="fw-normal">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                            </li>
+                            @if($invoiceDeliveryCourier->pickup)
+                            <li>
+                                <span class="fw-semibold">@lang('Pickup Point :')</span>
+                                <span class="fw-normal">{{ $invoiceDeliveryCourier->pickup->location }}</span>
+                            </li>
+                            @endif
+                            <li>
+                                <span class="fw-semibold">@lang('Delivery Status :')</span>
+                                @if($invoiceDeliveryCourier->status == 'delivered')
+                                    <span class="m-badge m-badge--success">@lang('Delivered')</span>
+                                @elseif($invoiceDeliveryCourier->status == 'accepted')
+                                    <span class="m-badge m-badge--primary">@lang('In Progress')</span>
+                                @elseif($invoiceDeliveryCourier->status == 'ready_for_pickup')
+                                    <span class="m-badge m-badge--info">@lang('Ready for Pickup')</span>
+                                @else
+                                    <span class="m-badge m-badge--warning">{{ ucfirst($invoiceDeliveryCourier->status) }}</span>
+                                @endif
+                            </li>
+                            @if($invoiceDeliveryCourier->payment_method === 'cod')
+                            <li>
+                                <span class="fw-semibold">@lang('COD Amount :')</span>
+                                <span class="fw-normal text-warning">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->order_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                            </li>
+                            @endif
+                        @endif
                     </ul>
                 </div>
 
@@ -476,6 +524,20 @@
                             $data += round($purchase->packing_cost, 2);
                         @endphp
                     @endif
+                @endif
+
+                {{-- ✅ Local Courier Delivery Fee --}}
+                @if(isset($invoiceDeliveryCourier) && $invoiceDeliveryCourier && $invoiceDeliveryCourier->delivery_fee > 0)
+                    <li class="calculation-list-item">
+                        <span class="amount-type">
+                            <i class="fas fa-motorcycle"></i>
+                            @lang('Courier Delivery Fee')
+                        </span>
+                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                    </li>
+                    @php
+                        $data += round($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, 2);
+                    @endphp
                 @endif
 
                 @if ($purchase->tax != 0)

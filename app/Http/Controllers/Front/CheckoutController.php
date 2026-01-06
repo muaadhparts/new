@@ -1535,26 +1535,36 @@ class CheckoutController extends FrontBaseController
             }
         }
 
-        // ✅ VALIDATION: Check if shipping method is selected (for physical catalogItems only)
+        // ✅ VALIDATION: Check if delivery method is selected (for physical catalogItems only)
+        // Accepts either: shipping company OR local courier
         if ($hasPhysicalProducts) {
-            $hasShipping = false;
+            $hasDeliveryMethod = false;
 
-            // Check for array format (multi-merchant shipping)
-            if (isset($step2['shipping']) && is_array($step2['shipping'])) {
-                // Check if this merchant has a shipping selection
-                if (isset($step2['shipping'][$merchantId]) && !empty($step2['shipping'][$merchantId])) {
-                    $hasShipping = true;
+            // Option 1: Local Courier selected
+            if (isset($step2['delivery_type']) && $step2['delivery_type'] === 'local_courier') {
+                if (!empty($step2['courier_id'])) {
+                    $hasDeliveryMethod = true;
                 }
             }
-            // Check for single shipping_id
-            elseif (isset($step2['shipping_id']) && !empty($step2['shipping_id'])) {
-                $hasShipping = true;
+            // Option 2: Shipping company selected
+            else {
+                // Check for array format (multi-merchant shipping)
+                if (isset($step2['shipping']) && is_array($step2['shipping'])) {
+                    // Check if this merchant has a shipping selection
+                    if (isset($step2['shipping'][$merchantId]) && !empty($step2['shipping'][$merchantId])) {
+                        $hasDeliveryMethod = true;
+                    }
+                }
+                // Check for single shipping_id
+                elseif (isset($step2['shipping_id']) && !empty($step2['shipping_id'])) {
+                    $hasDeliveryMethod = true;
+                }
             }
 
-            // If no shipping method selected, redirect back with error
-            if (!$hasShipping) {
+            // If no delivery method selected, redirect back with error
+            if (!$hasDeliveryMethod) {
                 return redirect()->back()
-                    ->with('unsuccess', __('Please select a shipping method before continuing.'))
+                    ->with('unsuccess', __('Please select a delivery method (shipping company or local courier) before continuing.'))
                     ->withInput();
             }
         }
@@ -1709,23 +1719,42 @@ class CheckoutController extends FrontBaseController
         $pickupPointId = null;
         $deliveryType = 'shipping'; // Default: regular shipping
 
-        // Check if courier delivery was selected
-        if (isset($step2['delivery_type']) && $step2['delivery_type'] === 'courier') {
-            $deliveryType = 'courier';
+        // Check if courier delivery was selected (local_courier = المندوب المحلي)
+        if (isset($step2['delivery_type']) && $step2['delivery_type'] === 'local_courier') {
+            $deliveryType = 'local_courier';
             $courierId = (int)($step2['courier_id'] ?? 0);
             $pickupPointId = (int)($step2['pickup_point_id'] ?? 0);
 
             if ($courierId > 0) {
-                // Get courier fee from service area
+                // Get courier fee from service area (try city_id first, then coordinates)
                 $customerCityId = (int)($step2['customer_city_id'] ?? 0);
+                $serviceArea = null;
+
+                // Strategy 1: Search by city_id
                 if ($customerCityId > 0) {
                     $serviceArea = CourierServiceArea::where('courier_id', $courierId)
                         ->where('city_id', $customerCityId)
                         ->first();
-                    if ($serviceArea) {
-                        $courierFee = (float)$serviceArea->price;
-                        $courierName = $serviceArea->courier->name ?? 'Courier';
+                }
+
+                // Strategy 2: If no city match, try coordinates (from step1 data)
+                if (!$serviceArea) {
+                    $step1Data = Session::get('merchant_step1_' . $merchantId, []);
+                    $customerLat = (float)($step1Data['latitude'] ?? 0);
+                    $customerLng = (float)($step1Data['longitude'] ?? 0);
+
+                    if ($customerLat && $customerLng) {
+                        $serviceArea = CourierServiceArea::where('courier_id', $courierId)
+                            ->whereNotNull('latitude')
+                            ->whereNotNull('longitude')
+                            ->withinRadius($customerLat, $customerLng, 20)
+                            ->first();
                     }
+                }
+
+                if ($serviceArea) {
+                    $courierFee = (float)$serviceArea->price;
+                    $courierName = $serviceArea->courier->name ?? 'Courier';
                 }
             }
 

@@ -681,9 +681,25 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('This purchase does not belong to you'));
         }
 
-        // تحديث حالة الطلب
+        // تحديث حالة الطلب في MerchantPurchase
         $merchantOrder->status = 'ready_for_pickup';
         $merchantOrder->save();
+
+        // ✅ تحديث حالة DeliveryCourier أيضاً
+        $deliveryCourier = DeliveryCourier::where('purchase_id', $purchase->id)
+            ->where('merchant_id', $merchantId)
+            ->first();
+
+        if ($deliveryCourier && $deliveryCourier->status === 'pending') {
+            $deliveryCourier->status = 'ready_for_pickup';
+            $deliveryCourier->save();
+
+            Log::info('DeliveryCourier marked ready for pickup', [
+                'delivery_courier_id' => $deliveryCourier->id,
+                'purchase_id' => $purchase->id,
+                'courier_id' => $deliveryCourier->courier_id,
+            ]);
+        }
 
         // إضافة تتبع
         $purchase->tracks()->create([
@@ -691,7 +707,7 @@ class DeliveryController extends MerchantBaseController
             'text' => __('Merchant :merchant has marked the purchase as ready for pickup', ['merchant' => $this->user->shop_name])
         ]);
 
-        return redirect()->back()->with('success', __('Purchase marked as ready for pickup'));
+        return redirect()->back()->with('success', __('Purchase marked as ready for pickup. Courier has been notified.'));
     }
 
     /**

@@ -228,6 +228,28 @@
                                         <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-success">
                                             <i class="fas fa-eye"></i> @lang('View')
                                         </a>
+                                    @elseif ($delivery && $delivery->status == 'pending')
+                                        {{-- ✅ Local Courier assigned - merchant needs to mark ready --}}
+                                        <form action="{{ route('merchant.ready.pickup') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="purchase_id" value="{{ $data->id }}">
+                                            <button type="submit" class="btn btn-sm btn-success mb-1">
+                                                <i class="fas fa-check-circle"></i> @lang('Ready for Pickup')
+                                            </button>
+                                        </form>
+                                        <br>
+                                        <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @elseif ($delivery && in_array($delivery->status, ['ready_for_pickup', 'accepted']))
+                                        {{-- Waiting for courier to pick up or deliver --}}
+                                        <span class="badge bg-info mb-1">
+                                            <i class="fas fa-clock"></i> @lang('Waiting for Courier')
+                                        </span>
+                                        <br>
+                                        <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
                                     @else
                                         <button type="button" class="btn btn-sm btn-primary mb-1 assignShippingBtn"
                                             data-purchase-id="{{ $data->id }}"
