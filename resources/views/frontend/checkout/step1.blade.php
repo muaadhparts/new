@@ -46,9 +46,43 @@
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow fadeInUp" data-wow-delay=".2s">
+
+                        {{-- ============================================== --}}
+                        {{-- STEP 1: SELECT LOCATION FROM MAP --}}
+                        {{-- ============================================== --}}
+                        @if($digital != 1)
+                        <div class="mb-40" id="location-selection-section">
+                            <h4 class="form-title">
+                                <i class="fas fa-map-marker-alt me-2"></i>
+                                @lang('Select Your Delivery Location')
+                            </h4>
+                            <div class="m-alert m-alert--info mb-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                @lang('Please select your location from the map')
+                            </div>
+
+                            <button type="button" class="m-btn m-btn--primary m-btn--lg w-100 mb-3" id="open-map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
+                                <i class="fas fa-map-marker-alt me-2"></i> @lang('Select Location from Map')
+                            </button>
+
+                            <div id="selected-location-info" class="m-alert m-alert--success d-none mb-3">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <span id="location-text"></span>
+                            </div>
+                        </div>
+                        @endif
+                        {{-- END: Location Selection Section --}}
+
+                        {{-- ============================================== --}}
+                        {{-- CUSTOMER DETAILS --}}
+                        {{-- ============================================== --}}
+                        <div id="customer-details-section">
+
                         <!-- personal information -->
                         <div class="mb-40">
-                            <h4 class="form-title">@lang('Personal Information')</h4>
+                            <h4 class="form-title">
+                                @lang('Personal Information')
+                            </h4>
                             <div class="row g-4">
                                 <div class="col-lg-6">
                                     <div class="input-wrapper">
@@ -118,6 +152,8 @@
                         <div class="mb-40">
                             <h4 class="form-title">@lang('Billing Details')</h4>
                             <div class="row g-4">
+                                {{-- OLD SHIPPING DROPDOWN - Hidden for merchant checkout (uses new delivery options) --}}
+                                @if(!(isset($is_merchant_checkout) && $is_merchant_checkout))
                                 <div class="col-lg-6 {{ $digital == 1 ? 'd-none' : '' }}">
                                     <div class="input-wrapper">
                                         <label class="label-cls" for="Shipping">@lang('Shipping')</label>
@@ -139,6 +175,8 @@
                                         </select>
                                     </div>
                                 </div>
+                                @endif
+                                {{-- END: Old shipping dropdown --}}
 
 
                                 <div class="col-lg-6">
@@ -222,22 +260,11 @@
                                     </div>
                                 </div>
 
-                                <!-- Google Maps Location Picker - Simple Version -->
-                                <div class="col-lg-12">
-                                    <div class="m-alert m-alert--info d-flex align-items-center" role="alert">
-                                        <i class="fas fa-map-marker-alt me-2"></i>
-                                        <strong>@lang('Please select your delivery location from the map')</strong>
-                                    </div>
-                                    <button type="button" class="m-btn m-btn--primary m-btn--outline w-100 mb-3" id="open-map-btn" data-bs-toggle="modal" data-bs-target="#mapModal">
-                                        <i class="fas fa-map-marker-alt"></i> @lang('Select Location from Map')
-                                    </button>
-                                    <div id="selected-location-info" class="m-alert m-alert--success d-none">
-                                        <i class="fas fa-check-circle"></i> <span id="location-text"></span>
-                                    </div>
-                                </div>
 
                             </div>
                         </div>
+                        </div>
+                        {{-- END: Customer Details Section (was hidden until delivery selected) --}}
                     </div>
                     <div class="col-lg-5 col-xl-4 wow fadeInUp" data-wow-delay=".2s">
                         <div class="summary-box">
@@ -314,6 +341,9 @@
                 <input type="hidden" name="city_name" id="city_name_hidden">
                 <input type="hidden" name="country_name" id="country_name_hidden">
                 <input type="hidden" name="state_name" id="state_name_hidden">
+
+                {{-- City ID for step2 courier check --}}
+                <input type="hidden" name="customer_city_id" id="customer_city_id" value="">
 
                 <input type="hidden" name="dp" value="{{ $digital }}">
                 <input type="hidden" id="input_tax" name="tax" value="">
@@ -418,6 +448,7 @@
             </div>
         </div>
     </div>
+
 @endsection
 
 
@@ -1071,6 +1102,11 @@
                 // Reset button for next time
                 confirmBtn.innerHTML = originalBtnText;
                 confirmBtn.disabled = false;
+
+                // Store city_id for step2
+                if (response.city_id) {
+                    $('#customer_city_id').val(response.city_id);
+                }
             },
             error: function(xhr) {
                 // Show error, keep modal open
@@ -1084,12 +1120,14 @@
         });
     }
 
-    // Form validation - require location
+    // Form validation - require location for physical products
     $('form.address-wrapper').on('submit', function(e) {
         const lat = $('#latitude').val();
         const lng = $('#longitude').val();
+        const isDigital = {{ $digital }};
 
-        if (!lat || !lng) {
+        // Only require location for physical products
+        if (!isDigital && (!lat || !lng)) {
             e.preventDefault();
 
             if (typeof toastr !== 'undefined') {

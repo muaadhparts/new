@@ -1129,13 +1129,14 @@
     var subject = $(this).find("input[name=subject]").val();
     var message = $(this).find("textarea[name=message]").val();
     var to = $(this).find("input[name=to]").val();
+    var actionUrl = $(this).attr("action") || mainurl + "/operator/purchase/email";
     $("#eml").prop("disabled", true);
     $("#subj").prop("disabled", true);
     $("#msg").prop("disabled", true);
     $("#emlsub").prop("disabled", true);
     $.ajax({
       type: "post",
-      url: mainurl + "/admin/purchase/email",
+      url: actionUrl,
       data: {
         _token: token,
         subject: subject,

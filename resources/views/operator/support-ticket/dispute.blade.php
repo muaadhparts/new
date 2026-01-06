@@ -100,8 +100,9 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="contact-form">
-                                <form id="emailreply1">
+                                <form id="emailreply1" action="{{route('operator-send-message')}}">
                                     {{csrf_field()}}
+                                    <input type="hidden" name="type" value="Dispute">
                                     <ul>
                                         <li>
                                             <input type="email" class="form-control eml-val" id="eml1" name="to" placeholder="{{ __('Email') }} *" value="" required="">
@@ -112,7 +113,6 @@
                                         <li>
                                             <textarea class="form-control textarea" name="message" id="msg1" placeholder="{{ __('Your Message') }} *" required=""></textarea>
                                         </li>
-                                        <input type="hidden" name="type" value="Dispute">
                                     </ul>
                                     <button class="btn btn-primary" id="emlsub1" type="submit">{{ __('Send Message') }}</button>
                                 </form>

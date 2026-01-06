@@ -104,6 +104,11 @@ class WalletPaymentController extends CheckoutBaseControlller
         // Clear stock reservations after successful purchase
         StockReservation::clearAfterPurchase();
 
+        // Create DeliveryCourier record if using local courier or pickup
+        if ($merchantId) {
+            $this->createDeliveryCourier($purchase, $merchantId, $step2, 'online');
+        }
+
         $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
         $purchase->notifications()->create();
 

@@ -12,63 +12,89 @@
                         <h3 class="ud-page-title">@lang('Dashboard')</h3>
                     </div>
 
-                    <div class="account-information">
-                        <div class="row g-4">
-                            <div class="col-lg-8">
-                                <div class="account-info-box">
-                                    <h5>@lang('Account Information')</h5>
-                                    <div class="account-info">
-                                        <div class="account-info-item">
-                                            <span class="info-title">@lang('Name:') </span>
-                                            <span class="info-content">{{ $user->name }}</span>
-                                        </div>
-                                        <div class="account-info-item">
-                                            <span class="info-title">@lang('Email:') </span>
-                                            <span class="info-content">
-                                                {{ $user->email }}
-                                            </span>
+                    <!-- Financial Summary Cards -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center {{ ($report['current_balance'] ?? 0) < 0 ? 'border-danger' : (($report['current_balance'] ?? 0) > 0 ? 'border-success' : '') }}">
+                                <h6>@lang('Current Balance')</h6>
+                                <h4 class="{{ ($report['current_balance'] ?? 0) < 0 ? 'text-danger' : 'text-success' }}">
+                                    {{ $currency->sign ?? 'SAR ' }}{{ number_format($report['current_balance'] ?? 0, 2) }}
+                                </h4>
+                                @if(($report['is_in_debt'] ?? false))
+                                    <small class="text-danger">@lang('You owe to platform')</small>
+                                @elseif(($report['has_credit'] ?? false))
+                                    <small class="text-success">@lang('Platform owes you')</small>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('COD Collected')</h6>
+                                <h4 class="text-warning">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_collected'] ?? 0, 2) }}</h4>
+                                <small class="text-muted">@lang('Total cash collected')</small>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Fees Earned')</h6>
+                                <h4 class="text-primary">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_fees_earned'] ?? 0, 2) }}</h4>
+                                <small class="text-muted">@lang('Delivery fees earned')</small>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Total Deliveries')</h6>
+                                <h4>{{ $report['deliveries_count'] ?? 0 }}</h4>
+                                <small class="text-muted">{{ $report['deliveries_completed'] ?? 0 }} @lang('completed')</small>
+                            </div>
+                        </div>
+                    </div>
 
-                                        </div>
-                                        <div class="account-info-item">
-                                            <span class="info-title">@lang('Phone:') </span>
-                                            <span class="info-content">{{ $user->phone }}</span>
-                                        </div>
-                                        <div class="account-info-item">
-                                            <span class="info-title">@lang('Address:') </span>
-                                            <span class="info-content">{{ $user->address }}</span>
-                                        </div>
+                    <!-- Delivery Stats -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-6">
+                            <div class="account-info-box">
+                                <h5>@lang('Delivery Statistics')</h5>
+                                <div class="account-info">
+                                    <div class="account-info-item d-flex justify-content-between">
+                                        <span class="info-title">@lang('COD Deliveries')</span>
+                                        <span class="badge bg-warning">{{ $report['cod_deliveries'] ?? 0 }}</span>
+                                    </div>
+                                    <div class="account-info-item d-flex justify-content-between">
+                                        <span class="info-title">@lang('Online Payment Deliveries')</span>
+                                        <span class="badge bg-info">{{ $report['online_deliveries'] ?? 0 }}</span>
+                                    </div>
+                                    <div class="account-info-item d-flex justify-content-between">
+                                        <span class="info-title">@lang('Pending Deliveries')</span>
+                                        <span class="badge bg-secondary">{{ $report['deliveries_pending'] ?? 0 }}</span>
+                                    </div>
+                                    <div class="account-info-item d-flex justify-content-between">
+                                        <span class="info-title">@lang('Unsettled Deliveries')</span>
+                                        <span class="badge bg-danger">{{ $report['unsettled_deliveries'] ?? 0 }}</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-lg-4">
-                                <div class="account-info-box">
-                                    <div class="icon-box">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="32"
-                                            viewBox="0 0 28 32" fill="none">
-                                            <path
-                                                d="M16.1766 21.2588C16.0571 21.128 15.9059 21.0301 15.7496 20.9485C15.4094 20.7711 15.0374 20.6635 14.668 20.5664V23.4289C15.2676 23.3612 15.9559 23.1435 16.2708 22.5838C16.421 22.3164 16.4509 21.9879 16.3897 21.6902C16.3565 21.5289 16.2879 21.3809 16.1766 21.2588Z"
-                                                fill="#FFB134" />
-                                            <path
-                                                d="M16.2676 22.5875C16.2688 22.5855 16.2695 22.5842 16.2707 22.582C16.2697 22.5838 16.2686 22.5856 16.2676 22.5875Z"
-                                                fill="black" />
-                                            <path
-                                                d="M11.8555 16.6824C11.7524 16.8329 11.6877 17.0039 11.6699 17.1857C11.652 17.3678 11.662 17.5705 11.7312 17.7419C11.7971 17.9053 11.9351 18.0259 12.0776 18.1231C12.2375 18.2318 12.4133 18.3167 12.5923 18.3887C12.7426 18.4492 12.9115 18.507 13.0937 18.5629V15.9727C12.6335 16.0708 12.1308 16.2805 11.8555 16.6824Z"
-                                                fill="#FFB134" />
-                                            <path
-                                                d="M16.2828 22.5586C16.2791 22.5653 16.275 22.5723 16.271 22.5797C16.2757 22.5711 16.2794 22.5648 16.2828 22.5586Z"
-                                                fill="black" />
-                                            <path d="M16.2974 22.5346C16.2985 22.5327 16.2983 22.5328 16.2974 22.5346Z"
-                                                fill="black" />
-                                            <path
-                                                d="M15.6762 6.96269C18.1105 4.91775 19.7371 0.310815 18.7361 0.109318C17.406 -0.158515 14.5178 1.0159 13.1217 1.22282C11.1417 1.46189 8.98519 -0.924293 7.77471 0.405765C6.79049 1.48719 8.48032 5.41999 11.1241 7.13331C3.23652 11.0099 -7.85001 30.4709 11.491 31.883C38.2526 33.8369 24.8521 10.7404 15.6762 6.96269ZM17.9745 22.3105C17.8922 23.0692 17.4901 23.7553 16.8891 24.2211C16.2545 24.713 15.4585 24.9417 14.6677 25.0058V25.8441C14.6677 26.0684 14.5697 26.2853 14.4018 26.4338C14.171 26.638 13.8319 26.6884 13.5518 26.5594C13.2752 26.4321 13.0935 26.1485 13.0935 25.8441V24.9279C12.9579 24.9021 12.8233 24.8715 12.6902 24.835C11.9511 24.6319 11.2655 24.236 10.7647 23.6504C10.5152 23.3585 10.3119 23.0272 10.1712 22.6696C10.1345 22.5762 10.1017 22.481 10.073 22.3848C10.047 22.2977 10.0202 22.2091 10.011 22.1183C9.99538 21.966 10.0256 21.8106 10.0966 21.6749C10.2425 21.3957 10.55 21.2272 10.864 21.2552C11.173 21.2826 11.4439 21.497 11.5412 21.7916C11.5711 21.8823 11.5915 21.9753 11.6251 22.0651C11.6585 22.1542 11.6988 22.2409 11.7461 22.3234C11.8397 22.4859 11.9568 22.6357 12.0917 22.7658C12.3699 23.0338 12.7242 23.2079 13.0935 23.3115V20.1971C12.3713 20.0101 11.6259 19.7686 11.0295 19.305C10.7397 19.0795 10.4938 18.7994 10.3327 18.4679C10.1628 18.118 10.0924 17.7281 10.0895 17.341C10.0866 16.9478 10.1613 16.5582 10.3253 16.2C10.4789 15.8646 10.7 15.5635 10.9712 15.3139C11.551 14.7802 12.3211 14.4826 13.0936 14.3733V14.3047V13.503C13.0936 13.2788 13.1915 13.0618 13.3595 12.9133C13.5903 12.7092 13.9293 12.6587 14.2095 12.7878C14.486 12.9151 14.6678 13.1987 14.6678 13.503V14.3047V14.3685C14.7707 14.3815 14.8733 14.397 14.9754 14.4155C15.734 14.5528 16.4759 14.866 17.0306 15.4129C17.2934 15.6719 17.5085 15.9806 17.6598 16.3171C17.702 16.411 17.739 16.5071 17.771 16.6051C17.8008 16.6964 17.8308 16.7905 17.845 16.8858C17.8678 17.038 17.8446 17.1952 17.7794 17.3344C17.646 17.6196 17.3468 17.8013 17.032 17.7878C16.7226 17.7743 16.4424 17.5729 16.3316 17.2837C16.2986 17.1977 16.2821 17.1067 16.2485 17.0209C16.2145 16.9341 16.1705 16.8513 16.1199 16.7731C16.0214 16.621 15.8938 16.4906 15.7481 16.3831C15.4326 16.1501 15.0499 16.0287 14.6675 15.9609V18.9413C15.1219 19.0501 15.5767 19.1688 16.0121 19.3405C16.6701 19.6 17.2937 19.9978 17.6529 20.6252C17.5971 20.5275 17.5429 20.4322 17.6547 20.6285C17.7645 20.8212 17.7121 20.7294 17.657 20.6327C17.9428 21.1363 18.0366 21.7385 17.9745 22.3105Z"
-                                                fill="#FFB134" />
-                                            <path
-                                                d="M16.2593 22.6035C16.2547 22.6117 16.2507 22.619 16.2476 22.6244C16.2503 22.6197 16.2543 22.6126 16.2593 22.6035Z"
-                                                fill="black" />
-                                        </svg>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="account-info-box">
+                                <h5>@lang('Account Information')</h5>
+                                <div class="account-info">
+                                    <div class="account-info-item">
+                                        <span class="info-title">@lang('Name:') </span>
+                                        <span class="info-content">{{ $user->name }}</span>
                                     </div>
-                                    <h6>@lang('Current Balance')</h6>
-                                    <h4>{{ App\Models\CatalogItem::merchantConvertPrice($user->balance) }}</h4>
+                                    <div class="account-info-item">
+                                        <span class="info-title">@lang('Email:') </span>
+                                        <span class="info-content">{{ $user->email }}</span>
+                                    </div>
+                                    <div class="account-info-item">
+                                        <span class="info-title">@lang('Phone:') </span>
+                                        <span class="info-content">{{ $user->phone }}</span>
+                                    </div>
+                                    <div class="account-info-item">
+                                        <span class="info-title">@lang('Address:') </span>
+                                        <span class="info-content">{{ $user->address }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

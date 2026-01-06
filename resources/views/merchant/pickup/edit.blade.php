@@ -41,11 +41,24 @@
                     @csrf
                     <div class="row">
 
-                        <div class="form-group">
-                            <label for="location">@lang('Location')</label>
-                            <input type="text" id="location" class="form-control" placeholder="@lang('Location')" value="{{$data->location}}"
-                                name="location">
-                            @error('title')
+                        <div class="form-group col-md-6 mb-3">
+                            <label for="city_id">@lang('City') <span class="text-danger">*</span></label>
+                            <select name="city_id" id="city_id" class="form-control" required>
+                                <option value="">@lang('Select City')</option>
+                                @foreach($cities as $city)
+                                    <option value="{{ $city->id }}" {{ $data->city_id == $city->id ? 'selected' : '' }}>{{ $city->city_name }}</option>
+                                @endforeach
+                            </select>
+                            @error('city_id')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group col-md-6 mb-3">
+                            <label for="location">@lang('Location / Address') <span class="text-danger">*</span></label>
+                            <input type="text" id="location" class="form-control" placeholder="@lang('Enter detailed address')" value="{{ $data->location }}"
+                                name="location" required>
+                            @error('location')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

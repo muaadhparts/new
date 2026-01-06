@@ -266,6 +266,9 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // Clear stock reservations after successful purchase (stock already sold)
         StockReservation::clearAfterPurchase();
 
+        // Create DeliveryCourier record if using local courier or pickup
+        $this->createDeliveryCourier($purchase, $merchantId, $step2, 'cod');
+
         // Create Tryoto shipment for COD purchases
         $this->createOtoShipments($purchase, $input);
 

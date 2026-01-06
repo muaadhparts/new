@@ -64,11 +64,17 @@
 
 
                 @php
-
-                    $price = $purchase
+                    $merchantPurchase = $purchase
                         ->merchantPurchases()
                         ->where('user_id', '=', $user->id)
-                        ->sum('price');
+                        ->first();
+
+                    $price = $merchantPurchase ? $merchantPurchase->price : 0;
+                    $commissionAmount = $merchantPurchase ? ($merchantPurchase->commission_amount ?? 0) : 0;
+                    $netAmount = $merchantPurchase ? ($merchantPurchase->net_amount ?? $price) : $price;
+                    $paymentType = $merchantPurchase ? ($merchantPurchase->payment_type ?? 'platform') : 'platform';
+                    $shippingType = $merchantPurchase ? ($merchantPurchase->shipping_type ?? 'shipping') : 'shipping';
+                    $moneyReceivedBy = $merchantPurchase ? ($merchantPurchase->money_received_by ?? 'platform') : 'platform';
                 @endphp
 
 
@@ -140,6 +146,26 @@
                                 <span class="m-badge m-badge--danger">@lang('Unpaid')</span>
                             @else
                                 <span class="m-badge m-badge--paid">@lang('Paid')</span>
+                            @endif
+                        </li>
+                        {{-- Payment Receiver Info --}}
+                        <li>
+                            <span class="fw-semibold">@lang('Payment Received By :')</span>
+                            @if($moneyReceivedBy === 'merchant')
+                                <span class="m-badge m-badge--success">@lang('Merchant')</span>
+                            @else
+                                <span class="m-badge m-badge--info">@lang('Platform')</span>
+                            @endif
+                        </li>
+                        {{-- Delivery Type --}}
+                        <li>
+                            <span class="fw-semibold">@lang('Delivery Type :')</span>
+                            @if($shippingType === 'courier')
+                                <span class="m-badge m-badge--warning">@lang('Courier')</span>
+                            @elseif($shippingType === 'pickup')
+                                <span class="m-badge m-badge--secondary">@lang('Pickup')</span>
+                            @else
+                                <span class="m-badge m-badge--primary">@lang('Shipping')</span>
                             @endif
                         </li>
                     </ul>
@@ -472,6 +498,36 @@
                     <span class="amount-type">@lang('Total')</span> <span
                         class="amount">{{ \PriceHelper::showOrderCurrencyPrice($subtotal + $data, $purchase->currency_sign) }}</span>
                 </li>
+
+                {{-- Commission & Net Amount Section --}}
+                @if($commissionAmount > 0)
+                    <li class="calculation-list-item" style="background-color: rgba(var(--theme-danger-rgb, 220, 53, 69), 0.1);">
+                        <span class="amount-type text-danger">@lang('Platform Commission')</span>
+                        <span class="amount text-danger">-{{ \PriceHelper::showOrderCurrencyPrice($commissionAmount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                    </li>
+                @endif
+
+                <li class="calculation-list-item" style="background-color: rgba(var(--theme-success-rgb, 25, 135, 84), 0.1); font-weight: bold;">
+                    <span class="amount-type text-success">@lang('Your Net Earnings')</span>
+                    <span class="amount text-success">{{ \PriceHelper::showOrderCurrencyPrice($netAmount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                </li>
+
+                {{-- Payment Status Note --}}
+                @if($moneyReceivedBy === 'platform')
+                    <li class="calculation-list-item" style="background-color: rgba(var(--theme-info-rgb, 13, 202, 240), 0.1);">
+                        <small class="text-info">
+                            <i class="fas fa-info-circle"></i>
+                            @lang('Payment received by platform. Settlement will be processed separately.')
+                        </small>
+                    </li>
+                @else
+                    <li class="calculation-list-item" style="background-color: rgba(var(--theme-success-rgb, 25, 135, 84), 0.1);">
+                        <small class="text-success">
+                            <i class="fas fa-check-circle"></i>
+                            @lang('Payment received directly through your payment gateway.')
+                        </small>
+                    </li>
+                @endif
             </ul>
         </div>
         <!-- Merchant Purchase Invoice end  -->

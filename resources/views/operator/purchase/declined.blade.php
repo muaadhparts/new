@@ -101,7 +101,7 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="contact-form">
-                                <form id="emailreply">
+                                <form id="emailreply" action="{{ route('operator-purchase-emailsub') }}">
                                     {{csrf_field()}}
                                     <ul>
                                         <li>

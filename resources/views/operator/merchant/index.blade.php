@@ -236,8 +236,9 @@
 						<div class="row">
 							<div class="col-md-12">
 								<div class="contact-form">
-									<form id="emailreply1">
+									<form id="emailreply1" action="{{route('operator-send-message')}}">
 										{{csrf_field()}}
+										<input type="hidden" name="type" value="merchant">
 										<ul>
 											<li>
 												<input type="email" class="form-control eml-val" id="eml1" name="to"

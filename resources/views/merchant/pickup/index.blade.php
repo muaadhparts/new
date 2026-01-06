@@ -48,6 +48,7 @@
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
+                                <th>{{ __('City') }}</th>
                                 <th>{{ __('Location') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th class="text-center">{{ __('Options') }}</th>
@@ -56,6 +57,11 @@
                         <tbody>
                             @forelse ($datas as $data)
                                 <tr>
+                                    <td>
+                                        <span class="content">
+                                            {{ $data->city ? $data->city->city_name : '-' }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <span class="content">
                                             {{ $data->location }}

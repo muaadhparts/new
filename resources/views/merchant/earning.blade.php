@@ -34,23 +34,129 @@
 
 
         <div class="gs-merchant-erning">
+            <!-- Summary Cards Start -->
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="m-card bg-white shadow-sm">
+                        <div class="m-card__body text-center">
+                            <h6 class="text-muted mb-2">@lang('Total Sales')</h6>
+                            <h4 class="mb-0" style="color: var(--theme-primary);">{{ $total_sales ?? $total }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="m-card bg-white shadow-sm">
+                        <div class="m-card__body text-center">
+                            <h6 class="text-muted mb-2">@lang('Platform Commission')</h6>
+                            <h4 class="mb-0 text-danger">-{{ $total_commission ?? '0' }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="m-card bg-white shadow-sm">
+                        <div class="m-card__body text-center">
+                            <h6 class="text-muted mb-2">@lang('Net Earnings')</h6>
+                            <h4 class="mb-0 text-success">{{ $total_net ?? $total }}</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-md-6 mb-3">
+                    <div class="m-card bg-white shadow-sm">
+                        <div class="m-card__body text-center">
+                            <h6 class="text-muted mb-2">@lang('Total Orders')</h6>
+                            <h4 class="mb-0">{{ $count_orders ?? 0 }}</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Detailed Breakdown -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-3">
+                    <div class="m-card bg-white shadow-sm">
+                        <div class="m-card__header">
+                            <h5 class="mb-0">@lang('Financial Breakdown')</h5>
+                        </div>
+                        <div class="m-card__body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td>@lang('Total Sales')</td>
+                                    <td class="text-end"><strong>{{ $total_sales ?? '0' }}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Platform Commission')</td>
+                                    <td class="text-end text-danger">-{{ $total_commission ?? '0' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Tax Collected')</td>
+                                    <td class="text-end">{{ $total_tax ?? '0' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Shipping Income')</td>
+                                    <td class="text-end">{{ $total_shipping ?? '0' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Packing Income')</td>
+                                    <td class="text-end">{{ $total_packing ?? '0' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Courier Fees')</td>
+                                    <td class="text-end">{{ $total_courier_fees ?? '0' }}</td>
+                                </tr>
+                                <tr class="border-top">
+                                    <td><strong>@lang('Net Earnings')</strong></td>
+                                    <td class="text-end text-success"><strong>{{ $total_net ?? '0' }}</strong></td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mb-3">
+                    <div class="m-card bg-white shadow-sm">
+                        <div class="m-card__header">
+                            <h5 class="mb-0">@lang('Payment & Delivery Stats')</h5>
+                        </div>
+                        <div class="m-card__body">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td>@lang('Via Merchant Gateway')</td>
+                                    <td class="text-end">{{ $merchant_payments ?? '0' }}</td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Via Platform Gateway')</td>
+                                    <td class="text-end">{{ $platform_payments ?? '0' }}</td>
+                                </tr>
+                                <tr class="border-top">
+                                    <td>@lang('Courier Deliveries')</td>
+                                    <td class="text-end">{{ $courier_deliveries ?? 0 }}</td>
+                                </tr>
+                                <tr>
+                                    <td>@lang('Pickup Orders')</td>
+                                    <td class="text-end">{{ $pickup_deliveries ?? 0 }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Summary Cards End -->
+
             <!-- Table area start  -->
             <div class="merchant-table-wrapper catalogItem-catalogs-table-wrapper">
                 <div class="d-flex justify-content-center">
                     <form class="total-erning-box" action="{{ route('merchant.income') }}" method="GET">
                         <div class="title-wrapper">
-                            <h5 class="title">@lang('Total Earning :')
-                                <small>{{ $start_date != '' ? $start_date->format('d-m-Y') : '' }}
-                                    {{ $start_date != '' && $end_date != '' ? 'To' : '' }}
-                                    {{ $end_date != '' ? $end_date->format('d-m-Y') : '' }}</small> :
-                                {{ $total }}
+                            <h5 class="title">@lang('Filter by Date')
+                                @if($start_date && $end_date)
+                                    <small>({{ $start_date }} @lang('To') {{ $end_date }})</small>
+                                @endif
                             </h5>
                         </div>
                         <div class="form-group filter-box">
                             <input type="text" class="form-control filter-input discount_date" name="start_date"
-                                placeholder="@lang('From Date')" value="{{ $start_date != '' ? $start_date->format('d-m-Y') : '' }}">
+                                placeholder="@lang('From Date')" value="{{ $start_date ?? '' }}">
                             <input type="text" class="form-control filter-input discount_date" name="end_date"
-                                placeholder="@lang('To Date') " value="{{ $end_date != '' ? $end_date->format('d-m-Y') : '' }}">
+                                placeholder="@lang('To Date') " value="{{ $end_date ?? '' }}">
                             <div class="fitler-reset-btns-wrapper">
                                 <button class="template-btn" type="submit">Filter</button>
                                 <button class="template-btn black-btn" id="reset" type="button">@lang('Reset')</button>
@@ -59,37 +165,52 @@
                     </form>
                 </div>
                 <div class="user-table table-responsive position-relative">
-                    
+
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
                                 <th>{{ __('Purchase Number') }}</th>
-                                <th>{{ __('Total Earning') }}</th>
-                                <th>{{ __('Payment Method') }}</th>
-                                <th>{{ __('Txn Id') }}</th>
-                                <th>{{ __('Purchase Date') }}</th>
+                                <th>{{ __('Sales') }}</th>
+                                <th>{{ __('Commission') }}</th>
+                                <th>{{ __('Net') }}</th>
+                                <th>{{ __('Payment') }}</th>
+                                <th>{{ __('Delivery') }}</th>
+                                <th>{{ __('Date') }}</th>
                             </tr>
                         </thead>
                         <tbody>
                             @forelse ($datas as $data)
+                                @php
+                                    $currSign = $data->purchase->currency_sign ?? 'SAR ';
+                                    $currVal = $data->purchase->currency_value ?? 1;
+                                @endphp
                                 <tr>
                                     <td>
                                         <a class="title-hover-color"
                                             href="{{ route('merchant-purchase-invoice', $data->purchase->purchase_number) }}">{{ $data->purchase->purchase_number }}</a>
                                     </td>
                                     <td>
-                                        {{ $data->purchase->currency_sign . round($data->price * $data->purchase->currency_value, 2) }}
+                                        {{ $currSign . number_format($data->price * $currVal, 2) }}
+                                    </td>
+                                    <td class="text-danger">
+                                        -{{ $currSign . number_format(($data->commission_amount ?? 0) * $currVal, 2) }}
+                                    </td>
+                                    <td class="text-success">
+                                        {{ $currSign . number_format(($data->net_amount ?? $data->price) * $currVal, 2) }}
                                     </td>
                                     <td>
-                                        <span class="content">
-                                            {{ $data->purchase->method }}
+                                        <span class="badge {{ ($data->payment_type ?? 'platform') === 'merchant' ? 'bg-success' : 'bg-info' }}">
+                                            {{ ($data->payment_type ?? 'platform') === 'merchant' ? __('Merchant') : __('Platform') }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="content">
-                                            {{ $data->purchase->txnid }}
-                                        </span>
-
+                                        @if(($data->shipping_type ?? 'shipping') === 'courier')
+                                            <span class="badge bg-warning">@lang('Courier')</span>
+                                        @elseif(($data->shipping_type ?? 'shipping') === 'pickup')
+                                            <span class="badge bg-secondary">@lang('Pickup')</span>
+                                        @else
+                                            <span class="badge bg-primary">@lang('Shipping')</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <span class="content">
@@ -99,7 +220,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">
+                                    <td colspan="7" class="text-center">
                                         @lang('No Data Found')
                                     </td>
                                 </tr>

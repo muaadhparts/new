@@ -220,6 +220,11 @@ class MyFatoorahController extends CheckoutBaseControlller {
         // Clear stock reservations after successful purchase (stock already sold)
         StockReservation::clearAfterPurchase();
 
+        // Create DeliveryCourier record if using local courier or pickup
+        if ($merchantId) {
+            $this->createDeliveryCourier($purchase, $merchantId, $step2, 'online');
+        }
+
         // Purchase Tracks and Notifications
         $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
         $purchase->notifications()->create();

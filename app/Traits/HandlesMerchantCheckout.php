@@ -3,6 +3,8 @@
 namespace App\Traits;
 
 use App\Models\Cart;
+use App\Models\DeliveryCourier;
+use App\Models\CourierServiceArea;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -162,5 +164,74 @@ trait HandlesMerchantCheckout
         }
 
         return $hasRemainingItems ? route('front.cart') : route('front.payment.return');
+    }
+
+    /**
+     * Create DeliveryCourier record for courier or pickup delivery
+     *
+     * Called after purchase creation when delivery_type is 'local_courier' or 'pickup'
+     *
+     * @param \App\Models\Purchase $purchase The created purchase
+     * @param int $merchantId The merchant ID from route
+     * @param array $step2 Step 2 data containing delivery info
+     * @param string $paymentMethod 'online' or 'cod'
+     * @return \App\Models\DeliveryCourier|null Created DeliveryCourier or null if not applicable
+     */
+    protected function createDeliveryCourier($purchase, $merchantId, $step2, $paymentMethod = 'online')
+    {
+        // Get delivery type from step2
+        $deliveryType = $step2['delivery_type'] ?? null;
+
+        // Only create record for courier or pickup delivery
+        if (!in_array($deliveryType, ['local_courier', 'pickup'])) {
+            return null;
+        }
+
+        $courierId = $step2['courier_id'] ?? null;
+        $pickupPointId = $step2['pickup_point_id'] ?? null;
+        $serviceAreaId = $step2['selected_service_area_id'] ?? null;
+        $courierFee = (float)($step2['courier_fee'] ?? 0);
+
+        // For courier delivery, both courier_id and service_area_id are required
+        if ($deliveryType === 'local_courier' && !$courierId) {
+            return null;
+        }
+
+        // For pickup, only pickup_point_id is required
+        if ($deliveryType === 'pickup' && !$pickupPointId) {
+            return null;
+        }
+
+        // Determine COD amount (for COD orders, this is the total amount to collect)
+        $codAmount = ($paymentMethod === 'cod') ? $purchase->pay_amount : 0;
+
+        // Create the DeliveryCourier record
+        $deliveryCourier = DeliveryCourier::create([
+            'purchase_id' => $purchase->id,
+            'merchant_id' => $merchantId,
+            'courier_id' => $courierId,
+            'pickup_point_id' => $pickupPointId,
+            'service_area_id' => $serviceAreaId,
+            'status' => 'pending',
+            'delivery_fee' => $courierFee,
+            'cod_amount' => $codAmount,
+            'order_amount' => $purchase->pay_amount,
+            'payment_method' => $paymentMethod,
+            'fee_status' => 'pending',
+            'settlement_status' => 'pending',
+            'notes' => $deliveryType === 'pickup' ? 'Pickup from store' : null,
+        ]);
+
+        \Log::info('DeliveryCourier created', [
+            'delivery_courier_id' => $deliveryCourier->id,
+            'purchase_id' => $purchase->id,
+            'merchant_id' => $merchantId,
+            'delivery_type' => $deliveryType,
+            'courier_id' => $courierId,
+            'courier_fee' => $courierFee,
+            'payment_method' => $paymentMethod,
+        ]);
+
+        return $deliveryCourier;
     }
 }

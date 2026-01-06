@@ -63,6 +63,11 @@
     $currencyFormat = $prices['currency_format'];
     $currencyValue = $prices['currency_value'];
 
+    // Courier delivery fields
+    $deliveryType = $prices['delivery_type'] ?? 'shipping';
+    $courierName = $prices['courier_name'] ?? '';
+    $courierFee = $prices['courier_fee'] ?? 0;
+
     // Helper function for price formatting ONLY (values are already converted)
     $formatPrice = function($amount) use ($currencySign, $currencyFormat) {
         $formatted = number_format((float)$amount, 2);
@@ -198,6 +203,32 @@
                 </div>
                 @endif
             @endif
+        @endif
+
+        {{-- ================================================================
+            ROW 4.5: Courier Fee (Step 3 only, when courier delivery selected)
+        ================================================================= --}}
+        @if($currentStep == 3 && $deliveryType === 'courier' && $courierFee > 0)
+            <div class="price-details">
+                <span>
+                    <i class="fas fa-motorcycle me-1"></i>
+                    @lang('Courier Delivery')
+                </span>
+                <span class="right-side">{{ $formatPrice($courierFee) }}</span>
+            </div>
+            @if($courierName)
+            <div class="price-details">
+                <small class="text-muted">{{ $courierName }}</small>
+            </div>
+            @endif
+        @elseif($currentStep == 3 && $deliveryType === 'pickup')
+            <div class="price-details">
+                <span>
+                    <i class="fas fa-store me-1"></i>
+                    @lang('Delivery Method')
+                </span>
+                <span class="right-side text-success">@lang('Pickup from Store')</span>
+            </div>
         @endif
 
         {{-- ================================================================

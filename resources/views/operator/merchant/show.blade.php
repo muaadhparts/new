@@ -168,8 +168,8 @@
                                                                             <td>
                                                                                 <div class="action-list">
                                                                                 <select class="process select droplinks {{ $merchantItem->status == 1 ? 'drop-success' : 'drop-danger' }}">
-                                                                                    <option data-val="1" value="{{ route('operator-merchant-catalogItem-status',['id' => $merchantItem->id, 'status' => 1]) }}" {{ $merchantItem->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
-                                                                                    <option data-val="0" value="{{ route('operator-merchant-catalogItem-status',['id' => $merchantItem->id, 'status' => 0]) }}" {{ $merchantItem->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
+                                                                                    <option data-val="1" value="{{ route('operator-merchant-item-status',['id' => $merchantItem->id, 'status' => 1]) }}" {{ $merchantItem->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
+                                                                                    <option data-val="0" value="{{ route('operator-merchant-item-status',['id' => $merchantItem->id, 'status' => 0]) }}" {{ $merchantItem->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
                                                                                 </select>
                                                                                 </div>
                                                                             </td>
@@ -208,8 +208,9 @@
                     <div class="row">
                         <div class="col-md-12">
                             <div class="contact-form">
-                                <form id="emailreply1">
+                                <form id="emailreply1" action="{{route('operator-send-message')}}">
                                     {{csrf_field()}}
+                                    <input type="hidden" name="type" value="merchant">
                                     <ul>
                                         <li>
                                             <input type="email" class="form-control eml-val" id="eml1" name="to" placeholder="{{ __("Email") }} *" value="" required="">

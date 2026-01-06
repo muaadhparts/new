@@ -60,6 +60,22 @@
             <span>@lang('Withdraw')</span>
         </a>
     </li>
+    <li class="{{ Request::routeIs('courier-transactions') ? 'active' : '' }}">
+        <a href="{{ route('courier-transactions') }}">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 6H19M1 10H19M1 14H13M6 18V2M14 18V2" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>@lang('Transactions')</span>
+        </a>
+    </li>
+    <li class="{{ Request::routeIs('courier-settlements') ? 'active' : '' }}">
+        <a href="{{ route('courier-settlements') }}">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 1V19M14 4H8C6.34315 4 5 5.34315 5 7C5 8.65685 6.34315 10 8 10H12C13.6569 10 15 11.3431 15 13C15 14.6569 13.6569 16 12 16H6" stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>@lang('Settlements')</span>
+        </a>
+    </li>
     <li class="{{ Request::url() == route('courier-profile') ? 'active' : '' }}">
         <a href="{{ route('courier-profile') }}">
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">

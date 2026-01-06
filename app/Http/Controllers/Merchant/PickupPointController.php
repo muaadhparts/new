@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Models\PickupPoint;
+use App\Models\City;
 use Illuminate\Http\Request;
 
 
@@ -11,11 +12,11 @@ use Datatables;
 
 class PickupPointController extends MerchantBaseController
 {
-  
+
 
     public function index()
-    { 
-        $datas = PickupPoint::where('user_id', $this->user->id)->get();
+    {
+        $datas = PickupPoint::with('city')->where('user_id', $this->user->id)->get();
         return view('merchant.pickup.index', compact('datas'));
     }
 
@@ -23,18 +24,23 @@ class PickupPointController extends MerchantBaseController
     public function create()
     {
         $sign = $this->curr;
-        return view('merchant.pickup.create', compact('sign'));
+        $cities = City::orderBy('city_name', 'asc')->get();
+        return view('merchant.pickup.create', compact('sign', 'cities'));
     }
 
     //*** POST Request
     public function store(Request $request)
     {
         //--- Validation Section
-        $rules = ['location' => 'required'];
+        $rules = [
+            'location' => 'required',
+            'city_id' => 'required|exists:cities,id',
+        ];
         $request->validate($rules);
 
         $data = new PickupPoint();
         $data->location = $request->location;
+        $data->city_id = $request->city_id;
         $data->user_id = $this->user->id;
         $data->save();
 
@@ -46,17 +52,22 @@ class PickupPointController extends MerchantBaseController
     public function edit($id)
     {
         $data = PickupPoint::findOrFail($id);
-        return view('merchant.pickup.edit', compact('data'));
+        $cities = City::orderBy('city_name', 'asc')->get();
+        return view('merchant.pickup.edit', compact('data', 'cities'));
     }
 
     //*** POST Request
     public function update(Request $request, $id)
     {
-        $rules = ['location' => 'required'];
+        $rules = [
+            'location' => 'required',
+            'city_id' => 'required|exists:cities,id',
+        ];
         $request->validate($rules);
 
         $data = PickupPoint::findOrFail($id);
         $data->location = $request->location;
+        $data->city_id = $request->city_id;
         $data->user_id = $this->user->id;
         $data->save();
         $msg = __('Data Updated Successfully.');

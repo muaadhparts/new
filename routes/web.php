@@ -235,6 +235,7 @@ Route::prefix('operator')->group(function () {
         Route::get('/purchase/{id}/print', 'Operator\PurchaseController@printpage')->name('operator-purchase-print');
         Route::get('/purchase/{id1}/status/{status}', 'Operator\PurchaseController@status')->name('operator-purchase-status');
         Route::post('/purchase/email/', 'Operator\PurchaseController@emailsub')->name('operator-purchase-emailsub');
+        Route::get('/send-message', 'Operator\PurchaseController@emailsub')->name('operator-send-message'); // Alias for email modal in user/courier lists
         Route::post('/purchase/{id}/license', 'Operator\PurchaseController@license')->name('operator-purchase-license');
         Route::post('/purchase/catalogItem-submit', 'Operator\PurchaseController@catalogItem_submit')->name('operator-purchase-catalogItem-submit');
         Route::get('/purchase/catalogItem-show/{id}', 'Operator\PurchaseController@catalogItem_show');
@@ -319,6 +320,8 @@ Route::prefix('operator')->group(function () {
         Route::get('tax/calculate', 'Operator\IncomeController@taxCalculate')->name('operator-tax-calculate-income');
         Route::get('withdraw/earning', 'Operator\IncomeController@withdrawIncome')->name('operator-withdraw-income');
         Route::get('commission/earning', 'Operator\IncomeController@commissionIncome')->name('operator-commission-income');
+        Route::get('merchant/report', 'Operator\IncomeController@merchantReport')->name('operator-merchant-report');
+        Route::get('commission/detailed', 'Operator\IncomeController@commissionIncomeDetailed')->name('operator-commission-detailed');
         // -------------------------- Admin Total Income Route --------------------------//
     });
 
@@ -496,6 +499,17 @@ Route::prefix('operator')->group(function () {
 
         // WITHDRAW SECTION ENDS
 
+        // COURIER SETTLEMENT SECTION
+        Route::get('/couriers/balances', 'Operator\CourierManagementController@index')->name('operator-courier-balances');
+        Route::get('/courier/{id}/details', 'Operator\CourierManagementController@show')->name('operator-courier-details');
+        Route::get('/couriers/settlements', 'Operator\CourierManagementController@settlements')->name('operator-courier-settlements');
+        Route::get('/courier/{id}/settlement/create', 'Operator\CourierManagementController@createSettlement')->name('operator-courier-create-settlement');
+        Route::post('/courier/{id}/settlement', 'Operator\CourierManagementController@storeSettlement')->name('operator-courier-store-settlement');
+        Route::post('/settlement/{id}/process', 'Operator\CourierManagementController@processSettlement')->name('operator-settlement-process');
+        Route::post('/settlement/{id}/cancel', 'Operator\CourierManagementController@cancelSettlement')->name('operator-settlement-cancel');
+        Route::get('/courier/{id}/unsettled', 'Operator\CourierManagementController@unsettledDeliveries')->name('operator-courier-unsettled');
+        // COURIER SETTLEMENT SECTION ENDS
+
     });
 
     //------------ OPERATORUSER TOP UP & TRANSACTION SECTION ------------
@@ -531,6 +545,8 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
         Route::delete('/merchants/delete/{id}', 'Operator\MerchantController@destroy')->name('operator-merchant-delete');
         Route::get('/merchant/commission/collect/{id}', 'Operator\MerchantController@commissionCollect')->name('operator-merchant-commission-collect');
+        Route::get('/merchant/{id}/add-subscription', 'Operator\MerchantController@addMembershipPlan')->name('operator-merchant-add-subs');
+        Route::post('/merchant/{id}/add-subscription', 'Operator\MerchantController@addMembershipPlanStore')->name('operator-merchant-add-subs-store');
 
         Route::get('/merchants/withdraws/datatables', 'Operator\MerchantController@withdrawdatatables')->name('operator-merchant-withdraw-datatables'); //JSON REQUEST
         Route::get('/merchants/withdraws', 'Operator\MerchantController@withdraws')->name('operator-merchant-withdraw-index');
@@ -1611,6 +1627,11 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         Route::get('/reset', 'Courier\CourierController@resetform')->name('courier-reset');
         Route::post('/reset', 'Courier\CourierController@reset')->name('courier-reset-submit');
+
+        // Financial & Accounting Routes
+        Route::get('/transactions', 'Courier\CourierController@transactions')->name('courier-transactions');
+        Route::get('/settlements', 'Courier\CourierController@settlements')->name('courier-settlements');
+        Route::get('/financial-report', 'Courier\CourierController@financialReport')->name('courier-financial-report');
     });
 
     // ************************************ COURIER SECTION ENDS**********************************************
@@ -1801,6 +1822,9 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/step1/submit', function($merchantId) {
             return redirect()->route('front.checkout.merchant', $merchantId)->with('info', __('Please fill out the form and submit again.'));
         });
+
+        // API: Get delivery options based on customer city
+        Route::post('/delivery-options', 'Front\CheckoutController@getDeliveryOptions')->name('front.checkout.merchant.delivery-options');
 
         // Step 2: Shipping
         Route::get('/step2', 'Front\CheckoutController@checkoutMerchantStep2')->name('front.checkout.merchant.step2');

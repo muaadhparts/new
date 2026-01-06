@@ -123,7 +123,7 @@
                                         </thead>
                                         <tbody>
 
-                                            @foreach($data->purchases as $deliveryCourier)
+                                            @foreach($data->deliveries as $deliveryCourier)
 
                                             <tr>
                                                 <td><a href="{{ route('operator-purchase-invoice',$deliveryCourier->purchase->id) }}">{{sprintf("%'.08d",

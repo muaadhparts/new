@@ -3,13 +3,24 @@
 namespace App\Http\Controllers\Courier;
 
 use App\Models\City;
+use App\Models\Currency;
 use App\Models\DeliveryCourier;
 use App\Models\CourierServiceArea;
+use App\Models\CourierTransaction;
+use App\Models\CourierSettlement;
+use App\Services\CourierAccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class CourierController extends CourierBaseController
 {
+    protected CourierAccountingService $accountingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->accountingService = app(CourierAccountingService::class);
+    }
 
     public function index()
     {
@@ -18,7 +29,12 @@ class CourierController extends CourierBaseController
             ->whereNotNull('purchase_id')
             ->with(['purchase', 'pickup'])
             ->orderby('id', 'desc')->take(8)->get();
-        return view('courier.dashbaord', compact('purchases', 'user'));
+
+        // Get accounting report
+        $report = $this->accountingService->getCourierReport($this->courier->id);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('courier.dashbaord', compact('purchases', 'user', 'report', 'currency'));
     }
 
     public function profile()
@@ -205,9 +221,73 @@ class CourierController extends CourierBaseController
 
     public function orderComplete($id)
     {
-        $data = DeliveryCourier::where('courier_id', $this->courier->id)->where('id', $id)->first();
-        $data->status = 'delivered';
-        $data->save();
+        $delivery = DeliveryCourier::where('courier_id', $this->courier->id)->where('id', $id)->first();
+
+        if (!$delivery) {
+            return back()->with('unsuccess', __('Delivery not found'));
+        }
+
+        $delivery->status = 'delivered';
+        $delivery->delivered_at = now();
+        $delivery->save();
+
+        // Record COD collection if applicable
+        if ($delivery->payment_method === 'cod' && $delivery->order_amount > 0) {
+            $this->accountingService->recordCodCollection($id, $delivery->order_amount);
+        }
+
+        // Record delivery fee earned
+        if ($delivery->delivery_fee > 0) {
+            $this->accountingService->recordDeliveryFeeEarned($id);
+        }
+
         return back()->with('success', __('Successfully Delivered this purchase'));
+    }
+
+    /**
+     * View courier transactions
+     */
+    public function transactions(Request $request)
+    {
+        $query = CourierTransaction::where('courier_id', $this->courier->id)
+            ->orderBy('created_at', 'desc');
+
+        if ($request->type) {
+            $query->where('type', $request->type);
+        }
+
+        $transactions = $query->paginate(20);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('courier.transactions', compact('transactions', 'currency'));
+    }
+
+    /**
+     * View courier settlements
+     */
+    public function settlements()
+    {
+        $settlements = CourierSettlement::where('courier_id', $this->courier->id)
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        $currency = Currency::where('is_default', 1)->first();
+        $settlementCalc = $this->accountingService->calculateSettlementAmount($this->courier->id);
+
+        return view('courier.settlements', compact('settlements', 'currency', 'settlementCalc'));
+    }
+
+    /**
+     * View financial summary/report
+     */
+    public function financialReport(Request $request)
+    {
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('courier.financial_report', compact('report', 'currency', 'startDate', 'endDate'));
     }
 }

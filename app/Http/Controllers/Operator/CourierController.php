@@ -24,11 +24,11 @@ class CourierController extends OperatorBaseController
     //*** JSON Request
     public function datatables()
     {
-        $datas = Courier::with('purchases')->latest('id')->get();
+        $datas = Courier::with('deliveries')->latest('id')->get();
         //--- Integrating This Collection Into Datatables
         return Datatables::of($datas)
             ->addColumn('total_delivery', function (Courier $data) {
-                return $data->purchases->count();
+                return $data->deliveries->count();
             })
             ->addColumn('action', function (Courier $data) {
                 $class = $data->status == 0 ? 'drop-success' : 'drop-danger';

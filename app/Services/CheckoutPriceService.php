@@ -7,6 +7,10 @@ use App\Models\DiscountCode;
 use App\Models\Currency;
 use App\Models\Shipping;
 use App\Models\Package;
+use App\Models\MerchantCommission;
+use App\Models\MerchantTaxSetting;
+use App\Models\CourierServiceArea;
+use App\Models\PickupPoint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -498,6 +502,11 @@ class CheckoutPriceService
         $packingCompany = '';
         $grandTotal = 0;
         $subtotalBeforeDiscount = 0;
+        // Courier delivery fields
+        $deliveryType = 'shipping';
+        $courierId = null;
+        $courierName = '';
+        $courierFee = 0;
 
         if ($step == 1) {
             // Step 1: Only catalogItems and tax (calculated dynamically)
@@ -545,6 +554,11 @@ class CheckoutPriceService
                 $packingCompany = $step2Data->packing_company ?? '';
                 $grandTotal = $step2Data->grand_total ?? $step2Data->total ?? 0;
                 $subtotalBeforeDiscount = $step2Data->subtotal_before_discount ?? 0;
+                // Courier delivery fields
+                $deliveryType = $step2Data->delivery_type ?? 'shipping';
+                $courierId = $step2Data->courier_id ?? null;
+                $courierName = $step2Data->courier_name ?? '';
+                $courierFee = $step2Data->courier_fee ?? 0;
             }
         }
 
@@ -566,6 +580,11 @@ class CheckoutPriceService
             'packing_company' => $packingCompany,
             'grand_total' => round($grandTotal, 2),
             'subtotal_before_discount' => round($subtotalBeforeDiscount, 2),
+            // Courier delivery fields
+            'delivery_type' => $deliveryType,
+            'courier_id' => $courierId,
+            'courier_name' => $courierName,
+            'courier_fee' => round($courierFee, 2),
         ];
     }
 
@@ -607,6 +626,12 @@ class CheckoutPriceService
             'shipping_company' => $raw['shipping_company'],
             'packing_company' => $raw['packing_company'],
 
+            // Courier delivery fields
+            'delivery_type' => $raw['delivery_type'],
+            'courier_id' => $raw['courier_id'],
+            'courier_name' => $raw['courier_name'],
+            'courier_fee' => $this->convert($raw['courier_fee']),
+
             // Currency info (for JS formatting)
             'currency_sign' => $this->currencySign,
             'currency_format' => $this->currencyFormat,
@@ -635,5 +660,317 @@ class CheckoutPriceService
             // Include raw converted values for JS calculations
             ...$converted,
         ];
+    }
+
+    // ========================================================================
+    // MERCHANT COMMISSION & TAX METHODS
+    // ========================================================================
+
+    /**
+     * Calculate merchant commission for a given amount
+     * Commission goes to the platform
+     */
+    public function calculateMerchantCommission(int $merchantId, float $amount): array
+    {
+        $commission = MerchantCommission::where('user_id', $merchantId)->first();
+
+        if (!$commission || !$commission->is_active) {
+            return [
+                'commission_amount' => 0,
+                'commission_type' => null,
+                'commission_rate' => 0,
+                'commission_fixed' => 0,
+            ];
+        }
+
+        $commissionAmount = $commission->calculateCommission($amount);
+
+        return [
+            'commission_amount' => round($commissionAmount, 2),
+            'commission_type' => $commission->commission_type,
+            'commission_rate' => (float)$commission->commission_rate,
+            'commission_fixed' => (float)$commission->commission_fixed,
+        ];
+    }
+
+    /**
+     * Calculate merchant-specific tax
+     * Each merchant can have their own tax settings
+     */
+    public function calculateMerchantTax(int $merchantId, float $amount): array
+    {
+        $taxSetting = MerchantTaxSetting::where('user_id', $merchantId)->first();
+
+        if (!$taxSetting || !$taxSetting->is_active) {
+            return [
+                'tax_amount' => 0,
+                'tax_rate' => 0,
+                'tax_name' => '',
+                'tax_number' => '',
+            ];
+        }
+
+        $taxAmount = $taxSetting->calculateTax($amount);
+
+        return [
+            'tax_amount' => round($taxAmount, 2),
+            'tax_rate' => (float)$taxSetting->tax_rate,
+            'tax_name' => $taxSetting->tax_name ?? 'VAT',
+            'tax_number' => $taxSetting->tax_number ?? '',
+        ];
+    }
+
+    /**
+     * Get merchant tax setting
+     */
+    public function getMerchantTaxSetting(int $merchantId): ?MerchantTaxSetting
+    {
+        return MerchantTaxSetting::where('user_id', $merchantId)->first();
+    }
+
+    /**
+     * Get merchant commission setting
+     */
+    public function getMerchantCommissionSetting(int $merchantId): ?MerchantCommission
+    {
+        return MerchantCommission::where('user_id', $merchantId)->first();
+    }
+
+    // ========================================================================
+    // COURIER / DELIVERY METHODS
+    // ========================================================================
+
+    /**
+     * Check if courier delivery is available for a city
+     * Checks if merchant has a pickup point in that city AND couriers serve that city
+     */
+    public function canDeliverToCity(int $merchantId, int $customerCityId): bool
+    {
+        // Check if merchant has a pickup point in customer's city
+        $merchantHasPickupInCity = PickupPoint::where('user_id', $merchantId)
+            ->where('city_id', $customerCityId)
+            ->where('status', 1)
+            ->exists();
+
+        if (!$merchantHasPickupInCity) {
+            return false;
+        }
+
+        // Check if there are couriers serving this city
+        $couriersAvailable = CourierServiceArea::where('city_id', $customerCityId)
+            ->whereHas('courier', function ($query) {
+                $query->where('status', 1);
+            })
+            ->exists();
+
+        return $couriersAvailable;
+    }
+
+    /**
+     * Get available couriers for a city with their prices
+     */
+    public function getAvailableCouriersForCity(int $cityId): array
+    {
+        $serviceAreas = CourierServiceArea::where('city_id', $cityId)
+            ->with('courier')
+            ->whereHas('courier', function ($query) {
+                $query->where('status', 1);
+            })
+            ->get();
+
+        $couriers = [];
+        foreach ($serviceAreas as $area) {
+            $couriers[] = [
+                'courier_id' => $area->courier_id,
+                'courier_name' => $area->courier->name,
+                'delivery_fee' => (float)$area->price,
+                'service_area_id' => $area->id,
+            ];
+        }
+
+        return $couriers;
+    }
+
+    /**
+     * Get courier delivery fee for a specific city
+     */
+    public function getCourierDeliveryFee(int $courierId, int $cityId): float
+    {
+        $serviceArea = CourierServiceArea::where('courier_id', $courierId)
+            ->where('city_id', $cityId)
+            ->first();
+
+        return $serviceArea ? (float)$serviceArea->price : 0;
+    }
+
+    /**
+     * Get merchant pickup points in a specific city
+     */
+    public function getMerchantPickupPointsInCity(int $merchantId, int $cityId): \Illuminate\Database\Eloquent\Collection
+    {
+        return PickupPoint::where('user_id', $merchantId)
+            ->where('city_id', $cityId)
+            ->where('status', 1)
+            ->get();
+    }
+
+    /**
+     * Get all merchant pickup points
+     */
+    public function getMerchantPickupPoints(int $merchantId): \Illuminate\Database\Eloquent\Collection
+    {
+        return PickupPoint::where('user_id', $merchantId)
+            ->where('status', 1)
+            ->get();
+    }
+
+    // ========================================================================
+    // MERCHANT PURCHASE BREAKDOWN
+    // ========================================================================
+
+    /**
+     * Calculate complete merchant purchase details
+     * This is used to populate the merchant_purchases table
+     */
+    public function calculateMerchantPurchaseDetails(int $merchantId, array $cartItems, array $options = []): array
+    {
+        // 1. Calculate items total for this merchant
+        $itemsTotal = 0;
+        foreach ($cartItems as $item) {
+            $itemMerchantId = $this->getItemMerchantId($item);
+            if ((int)$itemMerchantId === $merchantId) {
+                $itemsTotal += (float)($item['price'] ?? 0);
+            }
+        }
+        $itemsTotal = round($itemsTotal, 2);
+
+        // 2. Calculate commission (platform's cut)
+        $commissionData = $this->calculateMerchantCommission($merchantId, $itemsTotal);
+        $commissionAmount = $commissionData['commission_amount'];
+
+        // 3. Calculate tax (merchant-specific)
+        $taxData = $this->calculateMerchantTax($merchantId, $itemsTotal);
+        $taxAmount = $taxData['tax_amount'];
+
+        // 4. Get shipping cost from options
+        $shippingCost = (float)($options['shipping_cost'] ?? 0);
+        $shippingType = $options['shipping_type'] ?? 'platform';
+        $shippingId = $options['shipping_id'] ?? null;
+
+        // 5. Get packing cost from options
+        $packingCost = (float)($options['packing_cost'] ?? 0);
+
+        // 6. Get courier info from options
+        $courierId = $options['courier_id'] ?? null;
+        $courierFee = (float)($options['courier_fee'] ?? 0);
+        $pickupPointId = $options['pickup_point_id'] ?? null;
+
+        // 7. Determine payment type and money receiver
+        $paymentType = $options['payment_type'] ?? 'platform';
+        $paymentGatewayId = $options['payment_gateway_id'] ?? null;
+        $moneyReceivedBy = $options['money_received_by'] ?? 'platform';
+
+        // 8. Calculate net amount (what merchant gets after commission)
+        $netAmount = $itemsTotal - $commissionAmount;
+
+        return [
+            // Basic amounts
+            'items_total' => $itemsTotal,
+            'price' => $itemsTotal,
+
+            // Commission
+            'commission_amount' => $commissionAmount,
+            'commission_type' => $commissionData['commission_type'],
+            'commission_rate' => $commissionData['commission_rate'],
+            'commission_fixed' => $commissionData['commission_fixed'],
+
+            // Tax
+            'tax_amount' => $taxAmount,
+            'tax_rate' => $taxData['tax_rate'],
+            'tax_name' => $taxData['tax_name'],
+            'tax_number' => $taxData['tax_number'],
+
+            // Shipping
+            'shipping_cost' => $shippingCost,
+            'shipping_type' => $shippingType,
+            'shipping_id' => $shippingId,
+
+            // Packing
+            'packing_cost' => $packingCost,
+
+            // Courier
+            'courier_id' => $courierId,
+            'courier_fee' => $courierFee,
+            'pickup_point_id' => $pickupPointId,
+
+            // Payment
+            'payment_type' => $paymentType,
+            'payment_gateway_id' => $paymentGatewayId,
+            'money_received_by' => $moneyReceivedBy,
+
+            // Net amount (merchant's earnings after commission)
+            'net_amount' => round($netAmount, 2),
+
+            // Grand total for this merchant (what customer pays for this merchant's items)
+            'merchant_total' => round($itemsTotal + $taxAmount + $shippingCost + $packingCost + $courierFee, 2),
+        ];
+    }
+
+    /**
+     * Determine who receives the money based on payment gateway
+     */
+    public function determineMoneyReceiver(int $merchantId, ?int $paymentGatewayId): string
+    {
+        if (!$paymentGatewayId) {
+            return 'platform';
+        }
+
+        $gateway = \App\Models\MerchantPayment::find($paymentGatewayId);
+        if (!$gateway) {
+            return 'platform';
+        }
+
+        // If gateway belongs to the merchant, merchant receives the money
+        if ($gateway->user_id > 0 && $gateway->user_id == $merchantId) {
+            return 'merchant';
+        }
+
+        return 'platform';
+    }
+
+    /**
+     * Determine payment type based on payment gateway ownership
+     */
+    public function determinePaymentType(int $merchantId, ?int $paymentGatewayId): string
+    {
+        return $this->determineMoneyReceiver($merchantId, $paymentGatewayId) === 'merchant' ? 'merchant' : 'platform';
+    }
+
+    /**
+     * Determine shipping type
+     */
+    public function determineShippingType(int $merchantId, ?int $shippingId, ?int $courierId): string
+    {
+        // If courier is selected, it's courier delivery
+        if ($courierId) {
+            return 'courier';
+        }
+
+        // If no shipping, it's pickup
+        if (!$shippingId) {
+            return 'pickup';
+        }
+
+        $shipping = Shipping::find($shippingId);
+        if (!$shipping) {
+            return 'platform';
+        }
+
+        // If shipping belongs to merchant, it's merchant shipping
+        if ($shipping->user_id > 0 && $shipping->user_id == $merchantId) {
+            return 'merchant';
+        }
+
+        return 'platform';
     }
 }

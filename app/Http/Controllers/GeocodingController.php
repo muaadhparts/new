@@ -644,6 +644,45 @@ class GeocodingController extends Controller
                 ->first();
         }
 
+        // 3.5 البحث عن المدينة في قاعدة البيانات (للربط مع المناديب ونقاط الاستلام)
+        // الأولوية: 1. البحث بالإحداثيات (الأدق) 2. البحث بالاسم
+        $cityId = null;
+        $dbCityName = null;
+        $city = null;
+
+        // أولاً: البحث بالإحداثيات (أقرب مدينة - الطريقة الأدق)
+        if ($country) {
+            $nearestCity = $this->findNearestCityInCountry($latitude, $longitude, $country->id, 100);
+            if ($nearestCity) {
+                $city = \App\Models\City::find($nearestCity['id']);
+                Log::info('getTaxFromCoordinates: Found city by coordinates', [
+                    'city_id' => $city->id,
+                    'city_name' => $city->city_name,
+                    'distance_km' => $nearestCity['distance_km']
+                ]);
+            }
+        }
+
+        // ثانياً: إذا لم نجد بالإحداثيات، نبحث بالاسم
+        if (!$city && $cityName) {
+            $city = \App\Models\City::where('city_name', 'LIKE', '%' . $cityName . '%')
+                ->orWhere('city_name', 'LIKE', '%' . $this->normalizeArabicCity($cityName) . '%')
+                ->first();
+
+            if ($city) {
+                Log::info('getTaxFromCoordinates: Found city by name', [
+                    'city_id' => $city->id,
+                    'city_name' => $city->city_name,
+                    'search_name' => $cityName
+                ]);
+            }
+        }
+
+        if ($city) {
+            $cityId = $city->id;
+            $dbCityName = $city->city_name;
+        }
+
         $taxRate = 0;
         $taxLocation = '';
 
@@ -670,7 +709,8 @@ class GeocodingController extends Controller
             'longitude' => $longitude,
             'country_id' => $country->id ?? null,
             'country_name' => $country->country_name ?? $countryName,
-            'city_name' => $cityName,
+            'city_id' => $cityId,
+            'city_name' => $dbCityName ?? $cityName,
             'state_name' => $stateName,
             'formatted_address' => $formattedAddress,
             'postal_code' => $postalCode,
@@ -690,7 +730,8 @@ class GeocodingController extends Controller
             'geocoding_success' => $geocodingSuccess,
             'country_id' => $country->id ?? null,
             'country_name' => $country->country_name ?? $countryName,
-            'city_name' => $cityName,
+            'city_id' => $cityId,
+            'city_name' => $dbCityName ?? $cityName,
             'state_name' => $stateName,
             'formatted_address' => $formattedAddress,
             'postal_code' => $postalCode,
@@ -800,6 +841,66 @@ class GeocodingController extends Controller
                 'strategy' => 'nearest_city_globally',
                 'original_coordinates' => compact('latitude', 'longitude')
             ]
+        ];
+    }
+
+    /**
+     * تطبيع أسماء المدن العربية للبحث
+     * يحول الأسماء الإنجليزية الشائعة إلى النطق العربي المكتوب بالإنجليزية
+     */
+    protected function normalizeArabicCity(string $cityName): string
+    {
+        // قائمة تحويلات الأسماء الشائعة
+        $mappings = [
+            'Buraydah' => 'Buraidah',
+            'Riyadh' => 'Riyad',
+            'Jeddah' => 'Jidda',
+            'Mecca' => 'Makka',
+            'Medina' => 'Madina',
+            'Dammam' => 'Damam',
+            'Qatif' => 'Qatef',
+        ];
+
+        return $mappings[$cityName] ?? $cityName;
+    }
+
+    /**
+     * البحث عن أقرب مدينة في دولة محددة بناءً على الإحداثيات
+     *
+     * @param float $latitude خط العرض
+     * @param float $longitude خط الطول
+     * @param int $countryId معرّف الدولة
+     * @param float $maxDistanceKm أقصى مسافة للبحث
+     * @return array|null
+     */
+    protected function findNearestCityInCountry(float $latitude, float $longitude, int $countryId, float $maxDistanceKm = 50): ?array
+    {
+        // صيغة Haversine لحساب المسافة بالكيلومتر
+        $haversine = "(6371 * acos(
+            cos(radians(?)) *
+            cos(radians(latitude)) *
+            cos(radians(longitude) - radians(?)) +
+            sin(radians(?)) *
+            sin(radians(latitude))
+        ))";
+
+        $city = \App\Models\City::select('cities.*')
+            ->selectRaw("{$haversine} AS distance_km", [$latitude, $longitude, $latitude])
+            ->where('country_id', $countryId)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->having('distance_km', '<=', $maxDistanceKm)
+            ->orderBy('distance_km')
+            ->first();
+
+        if (!$city) {
+            return null;
+        }
+
+        return [
+            'id' => $city->id,
+            'name' => $city->city_name,
+            'distance_km' => round($city->distance_km, 2)
         ];
     }
 }

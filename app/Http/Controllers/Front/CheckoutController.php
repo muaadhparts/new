@@ -55,8 +55,11 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Purchase;
 use App\Models\MerchantPayment;
+use App\Models\PickupPoint;
+use App\Models\CourierServiceArea;
 use App\Services\MerchantCartService;
 use App\Services\CheckoutDataService;
+use App\Services\CheckoutPriceService;
 use App\Services\ShippingCalculatorService;
 use App\Services\GoogleMapsService;
 use Auth;
@@ -1268,6 +1271,15 @@ class CheckoutController extends FrontBaseController
             'discount_amount' => $step1['discount_amount'] ?? null,
             'discount_code_id' => $step1['discount_code_id'] ?? null,
             'user_id' => $step1['user_id'] ?? null,
+            // ========================================================================
+            // DELIVERY OPTIONS (from Step 1 location selection)
+            // ========================================================================
+            'delivery_type' => $step1['delivery_type'] ?? null, // 'local_courier', 'pickup', 'shipping_company', or null
+            'selected_courier_id' => !empty($step1['selected_courier_id']) ? (int)$step1['selected_courier_id'] : null,
+            'selected_courier_fee' => !empty($step1['selected_courier_fee']) ? (float)$step1['selected_courier_fee'] : 0,
+            'selected_service_area_id' => !empty($step1['selected_service_area_id']) ? (int)$step1['selected_service_area_id'] : null,
+            'selected_pickup_point_id' => !empty($step1['selected_pickup_point_id']) ? (int)$step1['selected_pickup_point_id'] : null,
+            'customer_city_id' => !empty($step1['customer_city_id']) ? (int)$step1['customer_city_id'] : null,
         ];
 
         // Merge location_draft_merchant_{id} into step1Data (if available)
@@ -1343,6 +1355,72 @@ class CheckoutController extends FrontBaseController
         $step1Data['total_with_tax'] = $merchantSubtotal + $taxAmount;
 
         Session::put('merchant_step1_' . $merchantId, $step1Data);
+
+        // ========================================================================
+        // DELIVERY TYPE ROUTING
+        // If delivery_type is 'local_courier' or 'pickup', auto-create step2 data
+        // and skip to step3 (no shipping selection needed)
+        // ========================================================================
+        $deliveryType = $step1Data['delivery_type'] ?? null;
+
+        if ($deliveryType === 'local_courier' || $deliveryType === 'pickup') {
+            // Auto-populate step2 data based on delivery selection
+            $courierFee = 0;
+            $courierName = null;
+
+            if ($deliveryType === 'local_courier' && !empty($step1Data['selected_courier_id'])) {
+                // Get courier details
+                $courierFee = (float)($step1Data['selected_courier_fee'] ?? 0);
+                $serviceAreaId = $step1Data['selected_service_area_id'] ?? null;
+                if ($serviceAreaId) {
+                    $serviceArea = CourierServiceArea::with('courier')->find($serviceAreaId);
+                    if ($serviceArea) {
+                        $courierName = $serviceArea->courier->name ?? 'Courier';
+                    }
+                }
+            }
+
+            // Calculate totals
+            $grandTotal = $merchantSubtotal + $taxAmount + $courierFee;
+
+            // Build step2 data
+            $step2Data = [
+                'catalog_items_total' => $merchantSubtotal,
+                'discount_amount' => 0,
+                'discount_code' => '',
+                'discount_percentage' => '',
+                'discount_code_id' => null,
+                'shipping_company' => null,
+                'shipping_cost' => 0,
+                'original_shipping_cost' => 0,
+                'is_free_shipping' => false,
+                'free_shipping_discount' => 0,
+                'packing_company' => null,
+                'packing_cost' => 0,
+                'tax_rate' => $taxRate,
+                'tax_amount' => $taxAmount,
+                'tax_location' => $taxLocation,
+                'subtotal_before_discount' => $merchantSubtotal + $taxAmount + $courierFee,
+                'grand_total' => $grandTotal,
+                'total' => $grandTotal,
+                'final_total' => $grandTotal,
+                // Delivery data
+                'delivery_type' => $deliveryType,
+                'courier_id' => $step1Data['selected_courier_id'] ?? null,
+                'courier_name' => $courierName,
+                'courier_fee' => $courierFee,
+                'pickup_point_id' => $step1Data['selected_pickup_point_id'] ?? null,
+                'customer_city_id' => $step1Data['customer_city_id'] ?? null,
+            ];
+
+            Session::put('merchant_step2_' . $merchantId, $step2Data);
+            Session::save();
+
+            // Skip step2, go directly to step3 (payment)
+            return redirect()->route('front.checkout.merchant.step3', $merchantId);
+        }
+
+        // Normal flow: Go to step2 (shipping selection)
         Session::save();
         return redirect()->route('front.checkout.merchant.step2', $merchantId);
     }
@@ -1388,6 +1466,23 @@ class CheckoutController extends FrontBaseController
         // This avoids code duplication in view
         $itemsByMerchant = $this->groupItemsByMerchant($merchantItems);
 
+        // ========================================================================
+        // COURIER DELIVERY SUPPORT
+        // Check if courier delivery is available for customer's city
+        // ========================================================================
+        $courierData = $this->getCourierDeliveryData($merchantId, $step1);
+
+        // DEBUG: Log courier data
+        \Log::info('Step2 Courier Data', [
+            'merchant_id' => $merchantId,
+            'step1_customer_city_id' => $step1->customer_city_id ?? 'NOT SET',
+            'step1_latitude' => $step1->latitude ?? 'NOT SET',
+            'step1_longitude' => $step1->longitude ?? 'NOT SET',
+            'courier_available' => $courierData['available'],
+            'couriers_count' => count($courierData['couriers']),
+            'customer_city_id' => $courierData['customer_city_id'],
+        ]);
+
         return view('frontend.checkout.step2', [
             'catalogItemsByMerchant' => $itemsByMerchant, // Grouped items (single merchant)
             'catalogItems' => $merchantItems, // Keep for backward compatibility
@@ -1410,6 +1505,11 @@ class CheckoutController extends FrontBaseController
             'is_merchant_checkout' => true,
             'merchant_id' => $merchantId,
             'merchantData' => $step2MerchantData['merchantData'], // N+1 FIX
+            // Courier delivery data
+            'courier_available' => $courierData['available'],
+            'available_couriers' => $courierData['couriers'],
+            'merchant_pickup_points' => $courierData['pickup_points'],
+            'customer_city_id' => $courierData['customer_city_id'],
         ]);
     }
 
@@ -1611,6 +1711,56 @@ class CheckoutController extends FrontBaseController
 
         $packing_name = count($packing_names) ? implode(' + ', array_unique($packing_names)) : null;
 
+        // ========================================================================
+        // ✅ COURIER DELIVERY HANDLING
+        // ========================================================================
+        $courierId = null;
+        $courierFee = 0.0;
+        $courierName = null;
+        $pickupPointId = null;
+        $deliveryType = 'shipping'; // Default: regular shipping
+
+        // Check if courier delivery was selected
+        if (isset($step2['delivery_type']) && $step2['delivery_type'] === 'courier') {
+            $deliveryType = 'courier';
+            $courierId = (int)($step2['courier_id'] ?? 0);
+            $pickupPointId = (int)($step2['pickup_point_id'] ?? 0);
+
+            if ($courierId > 0) {
+                // Get courier fee from service area
+                $customerCityId = (int)($step2['customer_city_id'] ?? 0);
+                if ($customerCityId > 0) {
+                    $serviceArea = CourierServiceArea::where('courier_id', $courierId)
+                        ->where('city_id', $customerCityId)
+                        ->first();
+                    if ($serviceArea) {
+                        $courierFee = (float)$serviceArea->price;
+                        $courierName = $serviceArea->courier->name ?? 'Courier';
+                    }
+                }
+            }
+
+            // When using courier, clear regular shipping costs
+            $shipping_cost_total = 0;
+            $shipping_name = null;
+            $is_free_shipping = false;
+            $original_shipping_cost = 0;
+            $free_shipping_discount = 0;
+        }
+        // Check if pickup was selected (no delivery)
+        elseif (isset($step2['delivery_type']) && $step2['delivery_type'] === 'pickup') {
+            $deliveryType = 'pickup';
+            $pickupPointId = (int)($step2['pickup_point_id'] ?? 0);
+
+            // Clear all shipping costs
+            $shipping_cost_total = 0;
+            $shipping_name = null;
+            $is_free_shipping = false;
+            $original_shipping_cost = 0;
+            $free_shipping_discount = 0;
+            $courierFee = 0;
+        }
+
         // Get tax data from merchant step1
         $step1Data = Session::get('merchant_step1_' . $merchantId);
         $taxAmount = $step1Data['tax_amount'] ?? 0;
@@ -1622,12 +1772,12 @@ class CheckoutController extends FrontBaseController
         // ========================================================================
         // catalog_items_total = RAW catalogItems (no discount)
         // subtotal = catalog_items_total - discount_amount
-        // grand_total = subtotal + tax + shipping + packing
-        // subtotal_before_discount = catalog_items_total + tax + shipping + packing (for discount recalculation)
+        // grand_total = subtotal + tax + shipping + packing + courier_fee
+        // subtotal_before_discount = catalog_items_total + tax + shipping + packing + courier_fee (for discount recalculation)
 
         $subtotal = $catalogItemsTotal - $discountAmount;
-        $grandTotal = $subtotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
-        $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total;
+        $grandTotal = $subtotal + $taxAmount + $shipping_cost_total + $packing_cost_total + $courierFee;
+        $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount + $shipping_cost_total + $packing_cost_total + $courierFee;
 
         // Save all data to step2
         $step2['catalog_items_total'] = $catalogItemsTotal;          // ✅ RAW catalogItems total
@@ -1649,6 +1799,13 @@ class CheckoutController extends FrontBaseController
         $step2['grand_total'] = $grandTotal;                         // ✅ Final amount
         $step2['total'] = $grandTotal;                               // Backward compatibility
         $step2['final_total'] = $grandTotal;                         // ✅ Alias
+
+        // ✅ Courier delivery data
+        $step2['delivery_type'] = $deliveryType;                     // 'shipping', 'courier', 'pickup'
+        $step2['courier_id'] = $courierId;
+        $step2['courier_name'] = $courierName;
+        $step2['courier_fee'] = $courierFee;
+        $step2['pickup_point_id'] = $pickupPointId;
 
         // ✅ Save raw shipping/packing selections for restore on refresh/back
         if (isset($step2['shipping']) && is_array($step2['shipping'])) {
@@ -1882,5 +2039,285 @@ class CheckoutController extends FrontBaseController
             'merchantData' => $merchantData,
             'country' => $country,
         ];
+    }
+
+    /**
+     * API: Get delivery options based on customer's city
+     *
+     * Called via AJAX when customer selects location from map
+     * Returns available delivery methods: local courier, pickup, shipping companies
+     *
+     * @param Request $request
+     * @param int $merchantId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDeliveryOptions(Request $request, $merchantId)
+    {
+        $cityId = $request->input('city_id');
+        $cityName = $request->input('city_name');
+
+        // Try to find city by ID first, then by name
+        $customerCityId = null;
+        if ($cityId) {
+            $customerCityId = (int)$cityId;
+        } elseif ($cityName) {
+            $city = City::where('city_name', 'LIKE', '%' . $cityName . '%')->first();
+            if ($city) {
+                $customerCityId = $city->id;
+            }
+        }
+
+        $result = [
+            'success' => true,
+            'customer_city_id' => $customerCityId,
+            'city_matched' => false,
+            'delivery_options' => [],
+            'local_couriers' => [],
+            'pickup_available' => false,
+            'pickup_points' => [],
+        ];
+
+        // ========================================================================
+        // 1. SHIPPING TO ADDRESS - ALWAYS AVAILABLE (first option)
+        // ========================================================================
+        $result['delivery_options'][] = [
+            'type' => 'shipping_company',
+            'label' => __('Ship to Address'),
+            'description' => __('Delivery by shipping company to your address'),
+            'icon' => 'fa-truck',
+        ];
+
+        // ========================================================================
+        // 2. CHECK LOCAL COURIERS (only if customer is in merchant's service area)
+        // ========================================================================
+        if ($customerCityId) {
+            // Check if merchant has pickup points (warehouse) in customer's city
+            $merchantHasWarehouseInCity = PickupPoint::where('user_id', $merchantId)
+                ->where('city_id', $customerCityId)
+                ->where('status', 1)
+                ->exists();
+
+            if ($merchantHasWarehouseInCity) {
+                $result['city_matched'] = true;
+
+                // Get available local couriers for this city
+                $serviceAreas = CourierServiceArea::where('city_id', $customerCityId)
+                    ->with('courier')
+                    ->whereHas('courier', function ($query) {
+                        $query->where('status', 1);
+                    })
+                    ->get();
+
+                if ($serviceAreas->isNotEmpty()) {
+                    $result['local_couriers'] = $serviceAreas->map(function ($area) {
+                        return [
+                            'courier_id' => $area->courier_id,
+                            'courier_name' => $area->courier->name,
+                            'delivery_fee' => (float)$area->price,
+                            'service_area_id' => $area->id,
+                        ];
+                    });
+
+                    // Add local courier option (second option)
+                    $result['delivery_options'][] = [
+                        'type' => 'local_courier',
+                        'label' => __('Delivery by Courier'),
+                        'description' => __('Fast delivery by local courier'),
+                        'icon' => 'fa-motorcycle',
+                    ];
+                }
+            }
+        }
+
+        return response()->json($result);
+    }
+
+    /**
+     * Get courier delivery data for a merchant and customer location.
+     *
+     * Checks if:
+     * 1. Merchant has pickup points in customer's city
+     * 2. Couriers are available in customer's city
+     *
+     * @param int $merchantId
+     * @param object|null $step1 Step 1 session data containing customer_city
+     * @return array
+     */
+    protected function getCourierDeliveryData(int $merchantId, $step1 = null): array
+    {
+        $result = [
+            'available' => false,
+            'couriers' => [],
+            'pickup_points' => [],
+            'customer_city_id' => null,
+        ];
+
+        if (!$step1) {
+            return $result;
+        }
+
+        // Get customer coordinates
+        $customerLat = isset($step1->latitude) ? (float)$step1->latitude : null;
+        $customerLng = isset($step1->longitude) ? (float)$step1->longitude : null;
+
+        // Try to get customer city ID from step1
+        $customerCityId = null;
+
+        // First check if customer_city_id is directly available (from step1 form hidden field)
+        if (!empty($step1->customer_city_id)) {
+            $customerCityId = (int)$step1->customer_city_id;
+        }
+        // Fallback: check city_id
+        elseif (!empty($step1->city_id)) {
+            $customerCityId = (int)$step1->city_id;
+        }
+        // Otherwise try to find city by name
+        elseif (!empty($step1->customer_city)) {
+            $city = City::where('city_name', $step1->customer_city)->first();
+            if ($city) {
+                $customerCityId = $city->id;
+            }
+        }
+
+        $result['customer_city_id'] = $customerCityId;
+
+        // ========================================================================
+        // STRATEGY 1: Search by city_id (exact match)
+        // ========================================================================
+        $merchantPickupPoints = collect();
+        $serviceAreas = collect();
+
+        if ($customerCityId) {
+            // Check if merchant has pickup points in customer's city
+            $merchantPickupPoints = PickupPoint::where('user_id', $merchantId)
+                ->where('city_id', $customerCityId)
+                ->where('status', 1)
+                ->get();
+
+            if ($merchantPickupPoints->isNotEmpty()) {
+                // Get available couriers for this city
+                $serviceAreas = CourierServiceArea::where('city_id', $customerCityId)
+                    ->with('courier')
+                    ->whereHas('courier', function ($query) {
+                        $query->where('status', 1);
+                    })
+                    ->get();
+            }
+        }
+
+        // ========================================================================
+        // STRATEGY 2: Fallback to coordinate-based search (within radius)
+        // Used when city matching fails but coordinates are available
+        // ========================================================================
+        if ($serviceAreas->isEmpty() && $customerLat && $customerLng) {
+            // Find merchant pickup points within radius using Haversine formula
+            $merchantPickupPoints = $this->findPickupPointsNearLocation(
+                $merchantId,
+                $customerLat,
+                $customerLng,
+                20 // Default 20km radius
+            );
+
+            if ($merchantPickupPoints->isNotEmpty()) {
+                // Find courier service areas within radius
+                $serviceAreas = $this->findCourierServiceAreasNearLocation(
+                    $customerLat,
+                    $customerLng,
+                    20 // Default 20km radius
+                );
+            }
+        }
+
+        // No pickup points found = no courier delivery available
+        if ($merchantPickupPoints->isEmpty()) {
+            return $result;
+        }
+
+        $result['pickup_points'] = $merchantPickupPoints;
+
+        // No couriers found
+        if ($serviceAreas->isEmpty()) {
+            return $result;
+        }
+
+        // Format couriers for view
+        $couriers = [];
+        foreach ($serviceAreas as $area) {
+            $couriers[] = [
+                'courier_id' => $area->courier_id,
+                'courier_name' => $area->courier->name,
+                'delivery_fee' => (float)$area->price,
+                'service_area_id' => $area->id,
+                'distance_km' => $area->distance_km ?? null, // Include distance if calculated
+            ];
+        }
+
+        $result['available'] = true;
+        $result['couriers'] = $couriers;
+
+        return $result;
+    }
+
+    /**
+     * Find merchant pickup points within radius using Haversine formula
+     *
+     * @param int $merchantId
+     * @param float $lat Customer latitude
+     * @param float $lng Customer longitude
+     * @param int $radiusKm Search radius in kilometers
+     * @return \Illuminate\Support\Collection
+     */
+    protected function findPickupPointsNearLocation(int $merchantId, float $lat, float $lng, int $radiusKm = 20)
+    {
+        // Haversine formula to calculate distance
+        // 6371 = Earth's radius in km
+        return PickupPoint::where('user_id', $merchantId)
+            ->where('status', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->selectRaw("
+                *,
+                (6371 * acos(
+                    cos(radians(?)) *
+                    cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(?)) +
+                    sin(radians(?)) *
+                    sin(radians(latitude))
+                )) AS distance_km
+            ", [$lat, $lng, $lat])
+            ->havingRaw("distance_km <= ?", [$radiusKm])
+            ->orderBy('distance_km')
+            ->get();
+    }
+
+    /**
+     * Find courier service areas within radius using Haversine formula
+     *
+     * @param float $lat Customer latitude
+     * @param float $lng Customer longitude
+     * @param int $radiusKm Search radius in kilometers
+     * @return \Illuminate\Support\Collection
+     */
+    protected function findCourierServiceAreasNearLocation(float $lat, float $lng, int $radiusKm = 20)
+    {
+        return CourierServiceArea::whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->with('courier')
+            ->whereHas('courier', function ($query) {
+                $query->where('status', 1);
+            })
+            ->selectRaw("
+                courier_service_areas.*,
+                (6371 * acos(
+                    cos(radians(?)) *
+                    cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(?)) +
+                    sin(radians(?)) *
+                    sin(radians(latitude))
+                )) AS distance_km
+            ", [$lat, $lng, $lat])
+            ->havingRaw("distance_km <= ?", [$radiusKm])
+            ->orderBy('distance_km')
+            ->get();
     }
 }
