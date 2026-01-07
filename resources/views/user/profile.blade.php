@@ -49,51 +49,13 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
-                                            <div class="single-form-wrapper flex-grow-1">
-                                                <div class="form-group">
-                                                    <label for="select_country">@lang('Select Country')</label>
-                                                    <div class="dropdown-container">
-                                                        <select class="form-control nice-select form__control"
-                                                            id="select_country" name="country">
-                                                            @include('includes.countries')
-                                                            <!-- Add more options here if needed -->
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="single-form-wrapper flex-grow-1">
-                                                <div class="form-group">
-                                                    <label for="customer_state">@lang('State/Region')</label>
-                                                    <input type="text" id="customer_state" class="form-control"
-                                                        placeholder="@lang('State/Region')"
-                                                        value="{{ $user->customer_state ?? '' }}"
-                                                        name="customer_state">
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
-                                            <div class="single-form-wrapper flex-grow-1 w-50">
-                                                <div class="form-group">
-                                                    <label for="customer_city">@lang('City')</label>
-                                                    <input type="text" id="customer_city" class="form-control"
-                                                        placeholder="@lang('City')"
-                                                        value="{{ $user->customer_city ?? '' }}"
-                                                        name="customer_city">
-                                                </div>
-                                            </div>
-                                            <div class="single-form-wrapper flex-grow-1 w-50">
-                                                <div class="form-group">
-                                                    <label for="zip">@lang('Zip')</label>
-                                                    <input type="text" id="zip" class="form-control"
-                                                        placeholder="@lang('Zip')" value="{{ $user->zip }}"
-                                                        name="zip">
-                                                </div>
-                                            </div>
-                                        </div>
                                         <div class="form-group">
                                             <label for="address">@lang('Address')</label>
                                             <textarea id="address" class="form-control" name="address" placeholder="@lang('Address')" style="height: 122px">{{ $user->address }}</textarea>
+                                            <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                                onclick="openMapPicker({ addressField: '#address' })">
+                                                <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
+                                            </button>
                                         </div>
 
                                         <button class="template-btn btn-forms" type="submit">

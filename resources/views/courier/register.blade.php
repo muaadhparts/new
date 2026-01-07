@@ -50,10 +50,14 @@
                                 <label for="address">@lang('Address')</label>
                                 <input type="text" class="form-control" id="address" name="address"
                                     placeholder="@lang('Enter your address')">
-                                    @error('address')
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2 mb-3"
+                                    onclick="openMapPicker({ addressField: '#address' })">
+                                    <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
+                                </button>
+                                @error('address')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror
-    
+
                                 <label for="create-password">@lang('Password')</label>
                                 <div class="pass-wrapper">
                                     <input type="password" name="password" class="form-control" id="create-password"

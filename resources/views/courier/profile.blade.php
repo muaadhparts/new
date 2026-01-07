@@ -47,63 +47,11 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
-                                            <div class="single-form-wrapper flex-grow-1">
-                                                <div class="form-group">
-                                                    <label for="select_country">@lang('Select Country')</label>
-                                                    <div class="dropdown-container">
-                                                        <select class="form-control nice-select form__control"
-                                                            id="select_country" name="country">
-                                                            <option value="">@lang('Select Country')</option>
-                                                            @foreach (App\Models\Country::where('status', 1)->get() as $countryItem)
-                                                                <option value="{{ $countryItem->country_name }}"
-                                                                    data="{{ $countryItem->id }}"
-                                                                    rel="{{ $countryItem->cities->count() > 0 ? 1 : 0 }}"
-                                                                    data-href="{{ route('country.wise.city', $countryItem->id) }}"
-                                                                    {{ $user->country == $countryItem->country_name ? 'selected' : '' }}>
-                                                                    {{ $countryItem->country_name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="single-form-wrapper flex-grow-1">
-                                                <div class="form-group">
-                                                    <label for="city">@lang('Select City')</label>
-                                                    <div class="dropdown-container">
-                                                        @php
-                                                            $userCountry = $user->country ? App\Models\Country::where('country_name', $user->country)->first() : null;
-                                                            $cities = $userCountry ? App\Models\City::where('country_id', $userCountry->id)->where('status', 1)->get() : collect();
-                                                        @endphp
-                                                        <select class="form-control nice-select form__control form-control-sm"
-                                                            id="show_city" name="city_id">
-                                                            <option value="">@lang('Select City')</option>
-                                                            @foreach ($cities as $city)
-                                                                <option value="{{ $city->id }}"
-                                                                    {{ $user->city_id == $city->id ? 'selected' : '' }}>
-                                                                    {{ $city->city_name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="multi-form-wrapper d-flex gap-4 flex-column flex-sm-row">
-                                            <div class="single-form-wrapper flex-grow-1 w-50">
-                                                <div class="form-group">
-                                                    <label for="zip">@lang('Zip')</label>
-                                                    <input type="text" id="zip" class="form-control"
-                                                        placeholder="@lang('Zip')" value="{{ $user->zip }}" name="zip">
-                                                </div>
-                                            </div>
-                                        </div>
                                         <div class="form-group">
                                             <label for="address">@lang('Address')</label>
                                             <textarea id="address" class="form-control" name="address" placeholder="@lang('Address')" style="height: 122px">{{ $user->address }}</textarea>
                                             <button type="button" class="btn btn-outline-primary btn-sm mt-2"
-                                                onclick="openMapPicker({ addressField: '#address', zipField: '#zip' })">
+                                                onclick="openMapPicker({ addressField: '#address' })">
                                                 <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
                                             </button>
                                         </div>
@@ -140,17 +88,6 @@
 @endsection
 @section('script')
     <script>
-        // Load cities when country changes
-        $(document).on('change', '#select_country', function() {
-            let cityUrl = $('option:selected', this).attr('data-href');
-
-            $.get(cityUrl, function(response) {
-                $('#show_city').html(response.data);
-                $("#show_city").niceSelect("destroy");
-                $("#show_city").niceSelect();
-            });
-        });
-
         $(document).on("change", "#photo", function() {
             if (this.files && this.files[0]) {
                 var reader = new FileReader();

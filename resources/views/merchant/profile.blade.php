@@ -69,6 +69,10 @@
                                 <label for="shop-address">@lang('Shop Address')</label>
                                 <input type="text" id="shop-address" class="form-control" placeholder="@lang('Shop Address')"
                                     value="{{ $data->shop_address }}" name="shop_address">
+                                <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                    onclick="openMapPicker({ addressField: '#shop-address' })">
+                                    <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
+                                </button>
                                 @error('shop_address')
                                     <span class="text-danger">{{ $message }}</span>
                                 @enderror

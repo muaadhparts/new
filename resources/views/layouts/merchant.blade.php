@@ -59,6 +59,7 @@
     </style>
 
     @yield('css')
+    @stack('styles')
     <!--favicon-->
 
 </head>
@@ -177,6 +178,10 @@
 
 @livewireScripts
 
+    {{-- Global Map Picker Modal --}}
+    @include('components.global-map-picker-modal')
+
+    @stack('scripts')
 </body>
 
 </html>
