@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Models\Publication;
-use App\Models\Metric;
 use App\Models\License;
 use App\Models\Purchase;
 use App\Models\CatalogItem;
@@ -59,8 +58,6 @@ class DashboardController extends OperatorBaseController
             });
 
         $data['recentUsers'] = User::latest('id')->take(5)->get();
-        $data['referrals'] = Metric::where('type', 'referral')->latest('total_count')->take(5)->get();
-        $data['browsers'] = Metric::where('type', 'browser')->latest('total_count')->take(5)->get();
 
         // Check activation status
         $data['activation_notify'] = "";

@@ -1,3 +1,53 @@
+{{-- Search Engine Verification Meta Tags --}}
+@if (!empty($seo->search_console_verification))
+    <meta name="google-site-verification" content="{{ $seo->search_console_verification }}">
+@endif
+@if (!empty($seo->bing_verification))
+    <meta name="msvalidate.01" content="{{ $seo->bing_verification }}">
+@endif
+
+{{-- Organization Schema (JSON-LD) - Appears on all pages --}}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": {!! json_encode($gs->title ?? config('app.name')) !!},
+    "url": {!! json_encode(url('/')) !!},
+    "logo": {!! json_encode(asset('assets/images/' . ($gs->logo ?? 'logo.png'))) !!},
+    "description": {!! json_encode($seo->meta_description ?? '') !!},
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "availableLanguage": ["Arabic", "English"]
+    }
+    @if(isset($socialsetting))
+    ,"sameAs": [
+        @if(!empty($socialsetting->facebook))"{{ $socialsetting->facebook }}"@endif
+        @if(!empty($socialsetting->twitter)),{{ !empty($socialsetting->facebook) ? ',' : '' }}"{{ $socialsetting->twitter }}"@endif
+        @if(!empty($socialsetting->instagram)){{ (!empty($socialsetting->facebook) || !empty($socialsetting->twitter)) ? ',' : '' }}"{{ $socialsetting->instagram }}"@endif
+    ]
+    @endif
+}
+</script>
+
+{{-- WebSite Schema with SearchAction --}}
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": {!! json_encode($gs->title ?? config('app.name')) !!},
+    "url": {!! json_encode(url('/')) !!},
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": {!! json_encode(url('/catalog?search={search_term_string}')) !!}
+        },
+        "query-input": "required name=search_term_string"
+    }
+}
+</script>
+
 @if (isset($page->meta_tag) && isset($page->meta_description))
     <meta name="keywords" content="{{ $page->meta_tag }}">
     <meta name="description" content="{{ $page->meta_description }}">
@@ -47,7 +97,20 @@
     </style>
 @endif
 
-@if (!empty($seo->google_analytics))
+{{-- Google Tag Manager - Primary tracking solution --}}
+@if (!empty($seo->gtm_id))
+    <script>
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer','{{ $seo->gtm_id }}');
+    </script>
+@endif
+
+{{-- Google Analytics (legacy - use GTM instead when possible) --}}
+@if (!empty($seo->google_analytics) && empty($seo->gtm_id))
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ $seo->google_analytics }}"></script>
     <script>
         "use strict";
         window.dataLayer = window.dataLayer || [];

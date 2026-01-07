@@ -59,6 +59,13 @@ class Kernel extends ConsoleKernel
                 ->hourly()
                 ->withoutOverlapping()
                 ->appendOutputTo(storage_path('logs/cities-geocode.log'));
+
+        // ✅ Sitemap: توليد خرائط الموقع يومياً للأرشفة
+        $schedule->command('sitemap:generate')
+                ->daily()
+                ->at('03:00')
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/sitemap.log'));
     }
 
 

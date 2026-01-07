@@ -116,13 +116,26 @@ class VerificationController extends OperatorBaseController
     //*** GET Request
     public function status($id1,$id2)
     {
-        $user = Verification::findOrFail($id1);
-        $user->status = $id2;
-        $user->update();
-        //--- Redirect Section        
+        $verification = Verification::findOrFail($id1);
+        $verification->status = $id2;
+        $verification->update();
+
+        // عند الموافقة على التحقق، تفعيل حساب التاجر
+        if ($id2 == 'Verified' && $verification->user) {
+            $verification->user->is_merchant = 2;
+            $verification->user->save();
+        }
+
+        // عند الرفض، إرجاع حالة التاجر لقيد التحقق
+        if ($id2 == 'Declined' && $verification->user) {
+            $verification->user->is_merchant = 1;
+            $verification->user->save();
+        }
+
+        //--- Redirect Section
         $msg[0] = __('Status Updated Successfully.');
-        return response()->json($msg);      
-        //--- Redirect Section Ends    
+        return response()->json($msg);
+        //--- Redirect Section Ends
 
     }
 

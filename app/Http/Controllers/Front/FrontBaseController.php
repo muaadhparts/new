@@ -2,10 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\{
-    Http\Controllers\Controller,
-    Models\Metric
-};
+use App\Http\Controllers\Controller;
 use App\Models\Currency;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
@@ -64,120 +61,9 @@ class FrontBaseController extends Controller
 
             return $next($request);
         });
-
-
-        // Set Counter
-
-        if (isset($_SERVER['HTTP_REFERER'])) {
-            $referral = parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST);
-            if ($referral != $_SERVER['SERVER_NAME']) {
-
-                $brwsr = Metric::where('type', 'browser')->where('referral', $this->getOS());
-                if ($brwsr->count() > 0) {
-                    $brwsr = $brwsr->first();
-                    $tbrwsr['total_count'] = $brwsr->total_count + 1;
-                    $brwsr->update($tbrwsr);
-                } else {
-                    $newbrws = new Metric();
-                    $newbrws['referral'] = $this->getOS();
-                    $newbrws['type'] = "browser";
-                    $newbrws['total_count'] = 1;
-                    $newbrws->save();
-                }
-
-                $count = Metric::where('referral', $referral);
-                if ($count->count() > 0) {
-                    $counts = $count->first();
-                    $tcount['total_count'] = $counts->total_count + 1;
-                    $counts->update($tcount);
-                } else {
-                    $newcount = new Metric();
-                    $newcount['referral'] = $referral;
-                    $newcount['total_count'] = 1;
-                    $newcount->save();
-                }
-            }
-        } else {
-            $brwsr = Metric::where('type', 'browser')->where('referral', $this->getOS());
-            if ($brwsr->count() > 0) {
-                $brwsr = $brwsr->first();
-                $tbrwsr['total_count'] = $brwsr->total_count + 1;
-                $brwsr->update($tbrwsr);
-            } else {
-                $newbrws = new Metric();
-                $newbrws['referral'] = $this->getOS();
-                $newbrws['type'] = "browser";
-                $newbrws['total_count'] = 1;
-                $newbrws->save();
-            }
-        }
     }
 
-    // داخل App\Http\Controllers\Front\FrontBaseController
-    function getOS()
-    {
-        // ⚠️ يدعم التشغيل من CLI أو أي سياق بلا HTTP_USER_AGENT
-        // نحاول القراءة من request() أولاً، ثم $_SERVER، ثم نضع قيمة افتراضية.
-        $user_agent = null;
-
-        // جرّب عبر Laravel request() إن وُجدت
-        try {
-            if (function_exists('request') && request()) {
-                $ua = request()->header('User-Agent');
-                if (is_string($ua) && strlen($ua) > 0) {
-                    $user_agent = $ua;
-                }
-            }
-        } catch (\Throwable $e) {
-            // تجاهل أي أخطاء حال عدم توفر request() في CLI
-        }
-
-        // fallback إلى $_SERVER إن لم نجد via request()
-        if ($user_agent === null) {
-            $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? null;
-        }
-
-        // قيمة افتراضية في حال عدم التوفر (CLI / Job)
-        if ($user_agent === null) {
-            $user_agent = 'Console/CLI';
-        }
-
-        $os_platform = "Unknown OS Platform";
-
-        $os_array = array(
-            '/windows nt 10/i'     =>  'Windows 10',
-            '/windows nt 6\.3/i'   =>  'Windows 8.1',
-            '/windows nt 6\.2/i'   =>  'Windows 8',
-            '/windows nt 6\.1/i'   =>  'Windows 7',
-            '/windows nt 6\.0/i'   =>  'Windows Vista',
-            '/windows nt 5\.2/i'   =>  'Windows Server 2003/XP x64',
-            '/windows nt 5\.1/i'   =>  'Windows XP',
-            '/windows xp/i'        =>  'Windows XP',
-            '/macintosh|mac os x/i'=>  'Mac OS X',
-            '/mac_powerpc/i'       =>  'Mac OS 9',
-            '/linux/i'             =>  'Linux',
-            '/ubuntu/i'            =>  'Ubuntu',
-            '/iphone/i'            =>  'iPhone',
-            '/ipod/i'              =>  'iPod',
-            '/ipad/i'              =>  'iPad',
-            '/android/i'           =>  'Android',
-            '/blackberry/i'        =>  'BlackBerry',
-            '/webos/i'             =>  'Mobile'
-        );
-
-        foreach ($os_array as $regex => $value) {
-            if (preg_match($regex, $user_agent)) {
-                $os_platform = $value;
-                break;
-            }
-        }
-
-        return $os_platform;
-        // dd($os_platform); // للاختبار لاحقًا عند الحاجة
-    }
-
-
-    protected function  code_image()
+    protected function code_image()
     {
         $actual_path = str_replace('project', '', base_path());
         $image = imagecreatetruecolor(200, 50);

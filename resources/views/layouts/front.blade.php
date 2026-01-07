@@ -70,6 +70,11 @@
 </head>
 
 <body class="m-theme-scope">
+    {{-- Google Tag Manager (noscript) --}}
+    @if (!empty($seo->gtm_id))
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ $seo->gtm_id }}"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    @endif
 
     {{-- Header data ($categories, $static_content, $currencies, $languges) provided by AppServiceProvider with caching --}}
     <!-- header area -->

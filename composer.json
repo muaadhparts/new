@@ -43,6 +43,7 @@
         "psr/http-factory": "^1.1",
         "razorpay/razorpay": "^2.8",
         "siberfx/laravel-tryoto": "^1.0",
+        "spatie/laravel-sitemap": "^7.3",
         "stripe/stripe-php": "^12.6",
         "symfony/http-client": "^7.1",
         "tymon/jwt-auth": "^2.0",

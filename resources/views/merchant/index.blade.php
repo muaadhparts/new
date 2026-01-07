@@ -10,15 +10,39 @@
 
         {{-- تنبيه التاجر تحت التحقق --}}
         @if(auth()->user()->is_merchant == 1)
-            <div class="m-alert m-alert--warning mb-4">
-                <div class="d-flex align-items-center">
-                    <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
-                    <div>
-                        <h5 class="mb-1">@lang('Account Pending Verification')</h5>
-                        <p class="mb-0">@lang('Your merchant account is under review. You can view your dashboard but cannot perform actions until your account is verified by the administrator.')</p>
+            @php
+                $hasVerification = auth()->user()->checkVerification();
+            @endphp
+            @if($hasVerification)
+                {{-- تم إرسال المستندات - في انتظار المراجعة --}}
+                <div class="m-alert m-alert--info mb-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock me-3 fs-4"></i>
+                            <div>
+                                <h5 class="mb-1">@lang('Verification Under Review')</h5>
+                                <p class="mb-0">@lang('Your documents have been submitted and are being reviewed by our team. You will be notified once approved.')</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @else
+                {{-- لم يتم إرسال المستندات بعد --}}
+                <div class="m-alert m-alert--warning mb-4">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+                            <div>
+                                <h5 class="mb-1">@lang('Account Pending Verification')</h5>
+                                <p class="mb-0">@lang('Please submit your business documents to verify your merchant account and start selling.')</p>
+                            </div>
+                        </div>
+                        <a href="{{ route('merchant-verify') }}" class="m-btn m-btn--primary">
+                            <i class="fas fa-file-upload me-2"></i>@lang('Submit Documents')
+                        </a>
+                    </div>
+                </div>
+            @endif
         @endif
 
         <!-- Info cards area start -->

@@ -46,7 +46,9 @@
       "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\merchant-commission\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\merchant-commission\")",
       "Bash(herd secure:*)",
       "Bash(herd restart:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(composer require:*)",
+      "Bash(composer show:*)"
     ]
   }
 }

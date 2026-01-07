@@ -92,66 +92,6 @@
 
 {{-- ADD / EDIT MODAL ENDS --}}
 
-
-{{-- VERIFICATION MODAL --}}
-
-<div class="modal fade" id="verify-modal" tabindex="-1" role="dialog" aria-labelledby="modal1" aria-hidden="true">
-
-	<div class="modal-dialog modal-dialog-centered" role="document">
-		<div class="modal-content">
-			<div class="submit-loader">
-				<img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
-			</div>
-			<div class="modal-header">
-				<h5 class="modal-title">{{ __('ASK FOR VERIFICATION') }}</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-					
-				</button>
-			</div>
-			<div class="modal-body">
-
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __("Close") }}</button>
-			</div>
-		</div>
-	</div>
-
-</div>
-
-{{-- VERIFICATION MODAL ENDS --}}
-
-{{-- SUBSCRIPTION MODAL --}}
-
-<div class="modal fade" id="ad-subscription-modal" tabindex="-1" role="dialog" aria-labelledby="modal1"
-	aria-hidden="true">
-
-	<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-		<div class="modal-content">
-			<div class="submit-loader">
-				<img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
-			</div>
-			<div class="modal-header">
-				<h5 class="modal-title">{{ __('ADD SUBSCRIPTION PLAN') }}</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-					
-				</button>
-			</div>
-			<div class="modal-body">
-
-			</div>
-			<div class="modal-footer">
-				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __("Close") }}</button>
-			</div>
-		</div>
-	</div>
-
-</div>
-
-{{-- SUBSCRIPTION MODAL ENDS --}}
-
-
-
 {{-- DELETE MODAL --}}
 
 <div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="modal1" aria-hidden="true">
@@ -311,49 +251,6 @@
 	(function($) {
 		"use strict";
 
-$(document).on('click','.verify',function(){
-if(admin_loader == 1)
-  {
-  $('.submit-loader').show();
-}
-  $('#verify-modal .modal-content .modal-body').html('').load($(this).attr('data-href'),function(response, status, xhr){
-      if(status == "success")
-      {
-        if(admin_loader == 1)
-          {
-            $('.submit-loader').hide();
-          }
-      }
-    });
-});
-
-
-})(jQuery);
-
-</script>
-
-
-<script type="text/javascript">
-	(function($) {
-		"use strict";
-
-	$(document).on('click','.add-subs',function(){
-	if(admin_loader == 1)
-	  {
-	  $('.submit-loader').show();
-	}
-	  $('#ad-subscription-modal .modal-content .modal-body').html('').load($(this).attr('data-href'),function(response, status, xhr){
-		  if(status == "success")
-		  {
-			if(admin_loader == 1)
-			  {
-				$('.submit-loader').hide();
-			  }
-		  }
-		});
-	});
-
-
 	$(document).on('click','.merchant_commission',function(){
 		let status = confirm('Are you sure to release the commission?');
 		if(status){
@@ -362,8 +259,8 @@ if(admin_loader == 1)
 			return false;
 		}
 	})
-	
-	
+
+
 })(jQuery);
 
 </script>

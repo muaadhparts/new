@@ -1,2 +1,48 @@
+# MUAADH EPC - Robots.txt
+# https://www.robotstxt.org/
+
+# Allow all search engines
 User-agent: *
-Disallow:
+
+# Allow crawling of main content
+Allow: /
+Allow: /catalog
+Allow: /catalog-item
+Allow: /blog
+Allow: /page
+
+# Disallow admin and dashboard areas
+Disallow: /operator
+Disallow: /operator/
+Disallow: /merchant
+Disallow: /merchant/
+Disallow: /user
+Disallow: /user/
+Disallow: /courier
+Disallow: /courier/
+Disallow: /admin
+Disallow: /admin/
+
+# Disallow checkout and cart (private user data)
+Disallow: /checkout
+Disallow: /cart
+Disallow: /payment
+
+# Disallow API endpoints
+Disallow: /api/
+Disallow: /livewire/
+
+# Disallow internal assets that don't need indexing
+Disallow: /storage/
+Disallow: /vendor/
+Disallow: /*.json$
+Disallow: /*.xml$
+
+# Allow sitemap XML files
+Allow: /sitemap*.xml
+
+# Crawl-delay for politeness (optional)
+Crawl-delay: 1
+
+# Sitemap location (update domain before production)
+Sitemap: https://yourdomain.com/sitemap.xml

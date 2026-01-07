@@ -337,36 +337,6 @@
 
 
 
-    <div class="row row-cards-one">
-
-        <div class="col-md-12 col-sm-12 col-lg-6 col-xl-6">
-            <div class="card">
-                <h5 class="card-header">{{ __('Top Referrals') }}</h5>
-                <div class="card-body">
-                    <div class="admin-fix-height-card">
-                         <div id="chartContainer-topReference"></div>
-                    </div>
-                       
-                </div>
-            </div>
-
-        </div>
-
-        <div class="col-md-12 col-lg-6 col-sm-12 col-xl-6">
-                <div class="card">
-                        <h5 class="card-header">{{ __('Most Used OS') }}</h5>
-                        <div class="card-body">
-                        <div class="admin-fix-height-card">
-                            <div id="chartContainer-os"></div>
-                        </div>
-                        </div>
-                    </div>
-        </div>
-        
-    </div>
-
-
-
 </div>
 
 @endsection
@@ -426,75 +396,6 @@
           'responsive'  : true,
           'paging'  : false
     } );
-
-        var chart1 = new CanvasJS.Chart("chartContainer-topReference",
-            {
-                exportEnabled: true,
-                animationEnabled: true,
-
-                legend: {
-                    cursor: "pointer",
-                    horizontalAlign: "right",
-                    verticalAlign: "center",
-                    fontSize: 16,
-                    padding: {
-                        top: 20,
-                        bottom: 2,
-                        right: 20,
-                    },
-                },
-                data: [
-                    {
-                        type: "pie",
-                        showInLegend: true,
-                        legendText: "",
-                        toolTipContent: "{name}: <strong>{#percent%} (#percent%)</strong>",
-                        indexLabel: "#percent%",
-                        indexLabelFontColor: "white",
-                        indexLabelPlacement: "inside",
-                        dataPoints: [
-                                @foreach($referrals as $browser)
-                                    {y:{{$browser->total_count}}, name: "{{$browser->referral}}"},
-                                @endforeach
-                        ]
-                    }
-                ]
-            });
-        chart1.render();
-
-        var chart = new CanvasJS.Chart("chartContainer-os",
-            {
-                exportEnabled: true,
-                animationEnabled: true,
-                legend: {
-                    cursor: "pointer",
-                    horizontalAlign: "right",
-                    verticalAlign: "center",
-                    fontSize: 16,
-                    padding: {
-                        top: 20,
-                        bottom: 2,
-                        right: 20,
-                    },
-                },
-                data: [
-                    {
-                        type: "pie",
-                        showInLegend: true,
-                        legendText: "",
-                        toolTipContent: "{name}: <strong>{#percent%} (#percent%)</strong>",
-                        indexLabel: "#percent%",
-                        indexLabelFontColor: "white",
-                        indexLabelPlacement: "inside",
-                        dataPoints: [
-                            @foreach($browsers as $browser)
-                                {y:{{$browser->total_count}}, name: "{{$browser->referral}}"},
-                            @endforeach
-                        ]
-                    }
-                ]
-            });
-        chart.render();    
 
     })(jQuery);
     
