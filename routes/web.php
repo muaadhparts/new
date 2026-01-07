@@ -1284,8 +1284,9 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::post('/pickup-point/create', 'Merchant\PickupPointController@store')->name('merchant-pickup-point-store');
             Route::get('/pickup-point/edit/{id}', 'Merchant\PickupPointController@edit')->name('merchant-pickup-point-edit');
             Route::post('/pickup-point/edit/{id}', 'Merchant\PickupPointController@update')->name('merchant-pickup-point-update');
-            Route::delete('/pickup-point/delete/{id}', 'Merchant\PickupPointController@destroy')->name('merchant-pickup-point-delete');
+            Route::get('/pickup-point/delete/{id}', 'Merchant\PickupPointController@destroy')->name('merchant-pickup-point-delete');
             Route::get('/pickup-point/status/{id}/{status}', 'Merchant\PickupPointController@status')->name('merchant-pickup-point-status');
+            Route::get('/pickup-point/cities', 'Merchant\PickupPointController@getCitiesByCountry')->name('merchant-pickup-get-cities');
 
             //------------ MERCHANT PICKUP POINT END ------------
 

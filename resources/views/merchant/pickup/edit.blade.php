@@ -42,6 +42,16 @@
                     <div class="row">
 
                         <div class="form-group col-md-6 mb-3">
+                            <label for="country_id">@lang('Country') <span class="text-danger">*</span></label>
+                            <select name="country_id" id="country_id" class="form-control" required>
+                                <option value="">@lang('Select Country')</option>
+                                @foreach($countries as $country)
+                                    <option value="{{ $country->id }}" {{ $selectedCountryId == $country->id ? 'selected' : '' }}>{{ $country->country_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="form-group col-md-6 mb-3">
                             <label for="city_id">@lang('City') <span class="text-danger">*</span></label>
                             <select name="city_id" id="city_id" class="form-control" required>
                                 <option value="">@lang('Select City')</option>
@@ -54,14 +64,22 @@
                             @enderror
                         </div>
 
-                        <div class="form-group col-md-6 mb-3">
+                        <div class="form-group col-12 mb-3">
                             <label for="location">@lang('Location / Address') <span class="text-danger">*</span></label>
                             <input type="text" id="location" class="form-control" placeholder="@lang('Enter detailed address')" value="{{ $data->location }}"
                                 name="location" required>
+                            <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                onclick="openMapPicker({ addressField: '#location', latField: '#latitude', lngField: '#longitude' })">
+                                <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
+                            </button>
                             @error('location')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
+
+                        {{-- Hidden fields for coordinates --}}
+                        <input type="hidden" name="latitude" id="latitude" value="{{ $data->latitude }}">
+                        <input type="hidden" name="longitude" id="longitude" value="{{ $data->longitude }}">
 
                         <div class="col-12 col-sm-12">
                             <button class="template-btn btn-forms" type="submit">
@@ -75,3 +93,49 @@
         <!-- Edit Profile area end  -->
     </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var countrySelect = document.getElementById('country_id');
+    var citySelect = document.getElementById('city_id');
+    var ajaxUrl = "{{ route('merchant-pickup-get-cities') }}";
+
+    if (!countrySelect || !citySelect) {
+        console.error('Country or City select not found');
+        return;
+    }
+
+    countrySelect.addEventListener('change', function() {
+        var countryId = this.value;
+
+        if (!countryId) {
+            citySelect.innerHTML = '<option value="">-- {{ __("Select Country First") }} --</option>';
+            return;
+        }
+
+        // Show loading
+        citySelect.innerHTML = '<option value="">{{ __("Loading...") }}</option>';
+
+        // AJAX request using jQuery (more compatible)
+        $.ajax({
+            url: ajaxUrl,
+            type: 'GET',
+            data: { country_id: countryId },
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    citySelect.innerHTML = data.cities;
+                } else {
+                    citySelect.innerHTML = '<option value="">-- {{ __("No cities found") }} --</option>';
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', error);
+                citySelect.innerHTML = '<option value="">-- {{ __("Error loading cities") }} --</option>';
+            }
+        });
+    });
+});
+</script>
+@endpush

@@ -48,8 +48,10 @@
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
+                                <th>{{ __('Country') }}</th>
                                 <th>{{ __('City') }}</th>
                                 <th>{{ __('Location') }}</th>
+                                <th>{{ __('Coordinates') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th class="text-center">{{ __('Options') }}</th>
                             </tr>
@@ -57,6 +59,11 @@
                         <tbody>
                             @forelse ($datas as $data)
                                 <tr>
+                                    <td>
+                                        <span class="content">
+                                            {{ $data->country ? $data->country->country_name : '-' }}
+                                        </span>
+                                    </td>
                                     <td>
                                         <span class="content">
                                             {{ $data->city ? $data->city->city_name : '-' }}
@@ -67,7 +74,16 @@
                                             {{ $data->location }}
                                         </span>
                                     </td>
-
+                                    <td>
+                                        @if($data->latitude && $data->longitude)
+                                            <small class="text-muted">
+                                                {{ number_format($data->latitude, 6) }},<br>
+                                                {{ number_format($data->longitude, 6) }}
+                                            </small>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                     <td>
                                         @php
                                             $active = $data->status == 1 ? 'selected' : '';
@@ -122,8 +138,7 @@
 
                                             <a href="javascript:;"
                                                 data-href="{{ route('merchant-pickup-point-delete', $data->id) }}"
-                                                class="view-btn delete-btn delete_button" data-bs-toggle="modal"
-                                                data-bs-target="#confirm-detete-modal">
+                                                class="view-btn delete-btn pickup-delete-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">
                                                     <path
@@ -137,7 +152,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center">
+                                    <td colspan="6" class="text-center">
                                         @lang('No Data Found')
                                     </td>
                                 </tr>
@@ -154,25 +169,39 @@
     <!-- outlet end  -->
 @endsection
 @section('script')
-    {{-- DATA TABLE --}}
-
     <script type="text/javascript">
         "use strict";
-
-        $(document).on('click', '#reset', function() {
-            $('.discount_date').val('');
-            location.href = '{{ route('merchant.income') }}';
-        })
-
-        var dateToday = new Date();
-        $(".discount_date").datepicker({
-            changeMonth: true,
-            changeYear: true,
-        });
 
         $(document).on('change', '#pickup_status', function() {
             var link = $(this).val();
             window.location.href = link;
+        });
+
+        // AJAX Delete
+        $(document).on('click', '.pickup-delete-btn', function(e) {
+            e.preventDefault();
+            var $btn = $(this);
+            var url = $btn.data('href');
+            var $row = $btn.closest('tr');
+
+            if (!confirm('{{ __("Are you sure you want to delete this item?") }}')) {
+                return;
+            }
+
+            $.ajax({
+                url: url,
+                type: 'GET',
+                dataType: 'json',
+                success: function(response) {
+                    toastr.success(response);
+                    $row.fadeOut(300, function() {
+                        $(this).remove();
+                    });
+                },
+                error: function(xhr) {
+                    toastr.error('{{ __("Error deleting item") }}');
+                }
+            });
         });
     </script>
 @endsection

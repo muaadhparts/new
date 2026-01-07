@@ -9,8 +9,8 @@ class Courier extends Authenticatable
     protected $table = 'couriers';
 
     protected $fillable = [
-        'name', 'photo', 'zip', 'city_id', 'country', 'address', 'phone', 'fax',
-        'email', 'password', 'location', 'email_verify', 'email_verified', 'email_token',
+        'name', 'photo', 'city_id', 'address', 'phone',
+        'email', 'password', 'email_verify', 'email_verified', 'email_token',
         'status', 'balance', 'total_collected', 'total_delivered', 'total_fees_earned'
     ];
 

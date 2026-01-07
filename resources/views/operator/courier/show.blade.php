@@ -71,29 +71,10 @@
                             <div class="col-md-4">
                                 <div class="table-responsive show-table">
                                     <table class="table">
-
-                                        @if($data->country != null)
-                                        <tr>
-                                            <th>{{ __("Country") }}</th>
-                                            <td>{{$data->country}}</td>
-                                        </tr>
-                                        @endif
                                         @if($data->city_id != null)
                                         <tr>
                                             <th>{{ __("City") }}</th>
-                                            <td>{{$data->city->city_name}}</td>
-                                        </tr>
-                                        @endif
-                                        @if($data->fax != null)
-                                        <tr>
-                                            <th>{{ __("Fax") }}</th>
-                                            <td>{{$data->fax}}</td>
-                                        </tr>
-                                        @endif
-                                        @if($data->zip != null)
-                                        <tr>
-                                            <th>{{ __("Zip Code") }}</th>
-                                            <td>{{$data->zip}}</td>
+                                            <td>{{$data->city->city_name ?? '-'}}</td>
                                         </tr>
                                         @endif
                                         <tr>

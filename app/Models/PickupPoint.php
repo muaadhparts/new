@@ -15,6 +15,7 @@ class PickupPoint extends Model
 
     protected $fillable = [
         'user_id',
+        'country_id',
         'location',
         'city_id',
         'latitude',
@@ -42,6 +43,11 @@ class PickupPoint extends Model
     public function city()
     {
         return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id');
     }
 
     public function scopeActive($query)
