@@ -321,11 +321,11 @@
                                                 </li>
                                                 @endif
 
-                                                @if($deliveryCourier->pickup && $deliveryCourier->pickup->location)
+                                                @if($deliveryCourier->merchantLocation && $deliveryCourier->merchantLocation->location)
                                                 <li class="mb-2">
                                                     <i class="fas fa-store me-2 text-muted"></i>
-                                                    <strong>@lang('Pickup Point'):</strong>
-                                                    {{ $deliveryCourier->pickup->location }}
+                                                    <strong>@lang('Warehouse Location'):</strong>
+                                                    {{ $deliveryCourier->merchantLocation->location }}
                                                 </li>
                                                 @endif
 

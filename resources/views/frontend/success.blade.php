@@ -366,12 +366,12 @@
                                             </div>
                                             @endif
 
-                                            @if($deliveryCourier->pickup && $deliveryCourier->pickup->location)
+                                            @if($deliveryCourier->merchantLocation && $deliveryCourier->merchantLocation->location)
                                             <div class="d-flex gap-12 mb-2">
                                                 <i class="fas fa-store text-muted"></i>
                                                 <div>
-                                                    <small class="text-muted">@lang('Pickup Point')</small>
-                                                    <p class="mb-0">{{ $deliveryCourier->pickup->location }}</p>
+                                                    <small class="text-muted">@lang('Warehouse Location')</small>
+                                                    <p class="mb-0">{{ $deliveryCourier->merchantLocation->location }}</p>
                                                 </div>
                                             </div>
                                             @endif

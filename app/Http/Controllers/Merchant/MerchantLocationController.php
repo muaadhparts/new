@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\PickupPoint;
+use App\Models\MerchantLocation;
 use App\Models\City;
 use App\Models\Country;
 use Illuminate\Http\Request;
@@ -11,14 +11,20 @@ use Illuminate\Http\Request;
 use Validator;
 use Datatables;
 
-class PickupPointController extends MerchantBaseController
+/**
+ * MerchantLocationController - Manage merchant warehouse/origin locations
+ *
+ * This is where merchants set their shipping origin locations.
+ * NOT to be confused with "pickup" (customer pickup from store).
+ */
+class MerchantLocationController extends MerchantBaseController
 {
 
 
     public function index()
     {
-        $datas = PickupPoint::with(['city', 'country'])->where('user_id', $this->user->id)->get();
-        return view('merchant.pickup.index', compact('datas'));
+        $datas = MerchantLocation::with(['city', 'country'])->where('user_id', $this->user->id)->get();
+        return view('merchant.location.index', compact('datas'));
     }
 
     //*** GET Request
@@ -28,7 +34,7 @@ class PickupPointController extends MerchantBaseController
         $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
             $q->where('status', 1);
         })->get();
-        return view('merchant.pickup.create', compact('sign', 'countries'));
+        return view('merchant.location.create', compact('sign', 'countries'));
     }
 
     /**
@@ -72,7 +78,7 @@ class PickupPointController extends MerchantBaseController
         ];
         $request->validate($rules);
 
-        $data = new PickupPoint();
+        $data = new MerchantLocation();
         $data->location = $request->location;
         $data->country_id = $request->country_id;
         $data->city_id = $request->city_id;
@@ -88,12 +94,12 @@ class PickupPointController extends MerchantBaseController
     //*** GET Request
     public function edit($id)
     {
-        $data = PickupPoint::findOrFail($id);
+        $data = MerchantLocation::findOrFail($id);
         $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
             $q->where('status', 1);
         })->get();
 
-        // Get the country from pickup point or from city
+        // Get the country from merchant location or from city
         $selectedCountryId = $data->country_id;
         if (!$selectedCountryId && $data->city_id) {
             $currentCity = City::find($data->city_id);
@@ -105,7 +111,7 @@ class PickupPointController extends MerchantBaseController
             ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('city_name')->get()
             : collect();
 
-        return view('merchant.pickup.edit', compact('data', 'countries', 'cities', 'selectedCountryId'));
+        return view('merchant.location.edit', compact('data', 'countries', 'cities', 'selectedCountryId'));
     }
 
     //*** POST Request
@@ -120,7 +126,7 @@ class PickupPointController extends MerchantBaseController
         ];
         $request->validate($rules);
 
-        $data = PickupPoint::findOrFail($id);
+        $data = MerchantLocation::findOrFail($id);
         $data->location = $request->location;
         $data->country_id = $request->country_id;
         $data->city_id = $request->city_id;
@@ -135,7 +141,7 @@ class PickupPointController extends MerchantBaseController
     //*** GET Request Delete (AJAX)
     public function destroy($id)
     {
-        $data = PickupPoint::where('id', $id)->where('user_id', $this->user->id)->first();
+        $data = MerchantLocation::where('id', $id)->where('user_id', $this->user->id)->first();
         if (!$data) {
             return response()->json(['error' => __('Data not found.')], 404);
         }
@@ -145,7 +151,7 @@ class PickupPointController extends MerchantBaseController
 
     public function status($id1, $id2)
     {
-        $data = PickupPoint::findOrFail($id1);
+        $data = MerchantLocation::findOrFail($id1);
         $data->status = $id2;
         $data->update();
         //--- Redirect Section

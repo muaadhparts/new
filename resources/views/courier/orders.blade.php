@@ -112,9 +112,9 @@
                                             </small>
                                         </td>
 
-                                        {{-- Pickup Point --}}
-                                        <td data-label="{{ __('Pickup Point') }}">
-                                            {{ $delivery->pickup->location ?? 'N/A' }}
+                                        {{-- Warehouse Location --}}
+                                        <td data-label="{{ __('Warehouse Location') }}">
+                                            {{ $delivery->merchantLocation->location ?? 'N/A' }}
                                         </td>
 
                                         {{-- Delivery Fee --}}

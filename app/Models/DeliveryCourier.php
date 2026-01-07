@@ -17,7 +17,7 @@ class DeliveryCourier extends Model
         'purchase_id',
         'merchant_id',
         'courier_id',
-        'pickup_point_id',
+        'merchant_location_id',
         'service_area_id',
         'status',
         'delivery_fee',
@@ -54,9 +54,9 @@ class DeliveryCourier extends Model
         return $this->belongsTo(User::class, 'merchant_id');
     }
 
-    public function pickup()
+    public function merchantLocation()
     {
-        return $this->belongsTo(PickupPoint::class, 'pickup_point_id')->withDefault();
+        return $this->belongsTo(MerchantLocation::class, 'merchant_location_id')->withDefault();
     }
 
     public function servicearea()

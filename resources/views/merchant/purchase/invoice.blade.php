@@ -191,10 +191,10 @@
                                 <span class="fw-semibold">@lang('Delivery Fee :')</span>
                                 <span class="fw-normal">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}</span>
                             </li>
-                            @if($invoiceDeliveryCourier->pickup)
+                            @if($invoiceDeliveryCourier->merchantLocation)
                             <li>
-                                <span class="fw-semibold">@lang('Pickup Point :')</span>
-                                <span class="fw-normal">{{ $invoiceDeliveryCourier->pickup->location }}</span>
+                                <span class="fw-semibold">@lang('Warehouse Location :')</span>
+                                <span class="fw-normal">{{ $invoiceDeliveryCourier->merchantLocation->location }}</span>
                             </li>
                             @endif
                             <li>

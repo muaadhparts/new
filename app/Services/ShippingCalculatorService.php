@@ -4,18 +4,19 @@ namespace App\Services;
 
 use App\Models\City;
 use App\Models\User;
-use App\Models\PickupPoint;
+use App\Models\MerchantLocation;
 use Illuminate\Support\Facades\Log;
 
 /**
- * خدمة موحدة لحساب الشحن
+ * Unified Shipping Calculator Service
  *
- * التوجيه المعماري:
- * - البيانات: city_name (إنجليزي فقط) - لا يوجد city_name_ar
- * - لا قيم ثابتة (hardcoded)
- * - لا fallback لأي بيانات
- * - كل تاجر يُحسب شحنه مستقلاً
- * - الوزن القابل للشحن = الأعلى بين الفعلي والحجمي
+ * Architecture:
+ * - Data: city_name (English only) - no city_name_ar
+ * - No hardcoded values
+ * - No fallback for any data
+ * - Each merchant calculated independently
+ * - Chargeable weight = max(actual, volumetric)
+ * - Merchant origin from merchant_locations table
  */
 class ShippingCalculatorService
 {
@@ -53,38 +54,38 @@ class ShippingCalculatorService
     }
 
     /**
-     * جلب مدينة التاجر (مدينة انطلاق الطلبية)
+     * Get merchant's origin city (shipping origin)
      *
-     * المصدر: جدول pickup_points (نقاط الاستلام/المستودعات)
-     * - يبحث عن أول نقطة استلام نشطة للتاجر
-     * - يستخدم city_id منها لجلب بيانات المدينة
+     * Source: merchant_locations table (warehouse/origin locations)
+     * - Finds first active merchant location
+     * - Uses city_id to get city data
      */
     public static function getMerchantCity(int $merchantId): ?array
     {
-        // جلب أول نقطة استلام نشطة للتاجر
-        $pickupPoint = PickupPoint::where('user_id', $merchantId)
+        // Get first active merchant location
+        $merchantLocation = MerchantLocation::where('user_id', $merchantId)
             ->where('status', 1)
             ->first();
 
-        if (!$pickupPoint) {
-            Log::warning('ShippingCalculator: Merchant has no active pickup point', ['merchant_id' => $merchantId]);
+        if (!$merchantLocation) {
+            Log::warning('ShippingCalculator: Merchant has no active location', ['merchant_id' => $merchantId]);
             return null;
         }
 
-        if (!$pickupPoint->city_id) {
-            Log::warning('ShippingCalculator: Pickup point has no city', [
+        if (!$merchantLocation->city_id) {
+            Log::warning('ShippingCalculator: Merchant location has no city', [
                 'merchant_id' => $merchantId,
-                'pickup_point_id' => $pickupPoint->id,
+                'merchant_location_id' => $merchantLocation->id,
             ]);
             return null;
         }
 
-        $city = City::find($pickupPoint->city_id);
+        $city = City::find($merchantLocation->city_id);
         if (!$city) {
-            Log::warning('ShippingCalculator: City not found for pickup point', [
+            Log::warning('ShippingCalculator: City not found for merchant location', [
                 'merchant_id' => $merchantId,
-                'pickup_point_id' => $pickupPoint->id,
-                'city_id' => $pickupPoint->city_id,
+                'merchant_location_id' => $merchantLocation->id,
+                'city_id' => $merchantLocation->city_id,
             ]);
             return null;
         }
@@ -93,11 +94,11 @@ class ShippingCalculatorService
             'city_id' => $city->id,
             'city_name' => $city->city_name,
             'country_id' => $city->country_id,
-            'pickup_point_id' => $pickupPoint->id,
-            'pickup_location' => $pickupPoint->location,
-            'latitude' => $pickupPoint->latitude,
-            'longitude' => $pickupPoint->longitude,
-            'source' => 'pickup_point',
+            'merchant_location_id' => $merchantLocation->id,
+            'warehouse_address' => $merchantLocation->location,
+            'latitude' => $merchantLocation->latitude,
+            'longitude' => $merchantLocation->longitude,
+            'source' => 'merchant_location',
         ];
     }
 

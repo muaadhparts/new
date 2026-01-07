@@ -1277,18 +1277,18 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT SERVICE ENDS ------------
 
-            //------------ MERCHANT PICKUP POINT ------------
-            Route::get('/pickup-point/datatables', 'Merchant\PickupPointController@datatables')->name('merchant-pickup-point-datatables');
-            Route::get('/pickup-point', 'Merchant\PickupPointController@index')->name('merchant-pickup-point-index');
-            Route::get('/pickup-point/create', 'Merchant\PickupPointController@create')->name('merchant-pickup-point-create');
-            Route::post('/pickup-point/create', 'Merchant\PickupPointController@store')->name('merchant-pickup-point-store');
-            Route::get('/pickup-point/edit/{id}', 'Merchant\PickupPointController@edit')->name('merchant-pickup-point-edit');
-            Route::post('/pickup-point/edit/{id}', 'Merchant\PickupPointController@update')->name('merchant-pickup-point-update');
-            Route::get('/pickup-point/delete/{id}', 'Merchant\PickupPointController@destroy')->name('merchant-pickup-point-delete');
-            Route::get('/pickup-point/status/{id}/{status}', 'Merchant\PickupPointController@status')->name('merchant-pickup-point-status');
-            Route::get('/pickup-point/cities', 'Merchant\PickupPointController@getCitiesByCountry')->name('merchant-pickup-get-cities');
+            //------------ MERCHANT LOCATION (Warehouse/Origin) ------------
+            Route::get('/location/datatables', 'Merchant\MerchantLocationController@datatables')->name('merchant-location-datatables');
+            Route::get('/location', 'Merchant\MerchantLocationController@index')->name('merchant-location-index');
+            Route::get('/location/create', 'Merchant\MerchantLocationController@create')->name('merchant-location-create');
+            Route::post('/location/create', 'Merchant\MerchantLocationController@store')->name('merchant-location-store');
+            Route::get('/location/edit/{id}', 'Merchant\MerchantLocationController@edit')->name('merchant-location-edit');
+            Route::post('/location/edit/{id}', 'Merchant\MerchantLocationController@update')->name('merchant-location-update');
+            Route::get('/location/delete/{id}', 'Merchant\MerchantLocationController@destroy')->name('merchant-location-delete');
+            Route::get('/location/status/{id}/{status}', 'Merchant\MerchantLocationController@status')->name('merchant-location-status');
+            Route::get('/location/cities', 'Merchant\MerchantLocationController@getCitiesByCountry')->name('merchant-location-get-cities');
 
-            //------------ MERCHANT PICKUP POINT END ------------
+            //------------ MERCHANT LOCATION END ------------
 
             //------------ MERCHANT SOCIAL LINK ------------
 

@@ -187,7 +187,7 @@ trait HandlesMerchantCheckout
         }
 
         $courierId = $step2['courier_id'] ?? null;
-        $pickupPointId = $step2['pickup_point_id'] ?? null;
+        $merchantLocationId = $step2['merchant_location_id'] ?? null;
         $serviceAreaId = $step2['selected_service_area_id'] ?? null;
         $courierFee = (float)($step2['courier_fee'] ?? 0);
 
@@ -196,8 +196,8 @@ trait HandlesMerchantCheckout
             return null;
         }
 
-        // For pickup, only pickup_point_id is required
-        if ($deliveryType === 'pickup' && !$pickupPointId) {
+        // For pickup, only merchant_location_id is required
+        if ($deliveryType === 'pickup' && !$merchantLocationId) {
             return null;
         }
 
@@ -209,7 +209,7 @@ trait HandlesMerchantCheckout
             'purchase_id' => $purchase->id,
             'merchant_id' => $merchantId,
             'courier_id' => $courierId,
-            'pickup_point_id' => $pickupPointId,
+            'merchant_location_id' => $merchantLocationId,
             'service_area_id' => $serviceAreaId,
             'status' => 'pending',
             'delivery_fee' => $courierFee,

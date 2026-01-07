@@ -138,7 +138,7 @@
                                 $shipping = isset($merchantInfo['shipping']) ? collect($merchantInfo['shipping']) : collect();
                                 $packaging = $merchantInfo['packaging'] ?? collect();
                                 $merchantUser = $merchantInfo['merchant'] ?? null;
-                                $pickupPoint = $merchantInfo['pickup_point'] ?? null;
+                                $merchantLocation = $merchantInfo['merchant_location'] ?? null;
                                 $groupedShipping = $merchantInfo['grouped_shipping'] ?? collect();
                                 $providerLabels = $merchantInfo['provider_labels'] ?? [
                                     'manual' => __('Manual Shipping'),
@@ -269,7 +269,7 @@
                                             </li>
                                             <li>
                                                 <span><b>@lang('Warehouse Address:')</b></span>
-                                                <span>{{ $pickupPoint->location ?? $merchantUser->address ?? '-' }}</span>
+                                                <span>{{ $merchantLocation->location ?? $merchantUser->address ?? '-' }}</span>
                                             </li>
                                         </ul>
 
@@ -427,7 +427,7 @@
                                             </li>
                                             <li>
                                                 <span><b>@lang('Warehouse Address:')</b></span>
-                                                <span>{{ $pickupPoint->location ?? $merchantUser->address ?? '-' }}</span>
+                                                <span>{{ $merchantLocation->location ?? $merchantUser->address ?? '-' }}</span>
                                             </li>
                                         </ul>
                                     </div>

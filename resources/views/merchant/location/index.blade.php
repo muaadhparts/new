@@ -6,10 +6,10 @@
         <!-- breadcrumb start  -->
         <div class="gs-merchant-breadcrumb has-mb">
             <div class="d-flex gap-4 custom-gap-sm-2 flex-wrap align-items-center">
-                <h4 class="text-capitalize">@lang('Pickup Point')
+                <h4 class="text-capitalize">@lang('Warehouse Location')
 
                 </h4>
-                <a href="{{ route('merchant-pickup-point-create') }}" class="template-btn md-btn black-btn data-table-btn"
+                <a href="{{ route('merchant-location-create') }}" class="template-btn md-btn black-btn data-table-btn"
                     type="button">+@lang('Add New')</a>
 
             </div>
@@ -32,7 +32,7 @@
 
                 <li>
                     <a href="javascript:;" class="text-capitalize">
-                        @lang('Pickup Point')
+                        @lang('Warehouse Location')
                     </a>
                 </li>
             </ul>
@@ -50,7 +50,7 @@
                             <tr>
                                 <th>{{ __('Country') }}</th>
                                 <th>{{ __('City') }}</th>
-                                <th>{{ __('Location') }}</th>
+                                <th>{{ __('Address') }}</th>
                                 <th>{{ __('Coordinates') }}</th>
                                 <th>{{ __('Status') }}</th>
                                 <th class="text-center">{{ __('Options') }}</th>
@@ -93,12 +93,12 @@
                                         <div class="status position-relative">
                                             <div class="dropdown-container">
                                                 <select class="form-control nice-select form__control {{ $activeClass }}"
-                                                    id="pickup_status">
+                                                    id="location_status">
                                                     <option
-                                                        value="{{ route('merchant-pickup-point-status', ['id' => $data->id, 'status' => 1]) }}"
+                                                        value="{{ route('merchant-location-status', ['id' => $data->id, 'status' => 1]) }}"
                                                         {{ $active }}> {{ __('Activated') }} </option>
                                                     <option
-                                                        value="{{ route('merchant-pickup-point-status', ['id' => $data->id, 'status' => 0]) }}"
+                                                        value="{{ route('merchant-location-status', ['id' => $data->id, 'status' => 0]) }}"
                                                         {{ $deactivated }}> {{ __('Deactivated') }} </option>
 
                                                     <!-- Add more options here if needed -->
@@ -113,7 +113,7 @@
 
                                     <td>
                                         <div class="table-icon-btns-wrapper">
-                                            <a href="{{ route('merchant-pickup-point-edit', $data->id) }}"
+                                            <a href="{{ route('merchant-location-edit', $data->id) }}"
                                                 class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">
@@ -137,8 +137,8 @@
                                             </a>
 
                                             <a href="javascript:;"
-                                                data-href="{{ route('merchant-pickup-point-delete', $data->id) }}"
-                                                class="view-btn delete-btn pickup-delete-btn">
+                                                data-href="{{ route('merchant-location-delete', $data->id) }}"
+                                                class="view-btn delete-btn location-delete-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">
                                                     <path
@@ -172,13 +172,13 @@
     <script type="text/javascript">
         "use strict";
 
-        $(document).on('change', '#pickup_status', function() {
+        $(document).on('change', '#location_status', function() {
             var link = $(this).val();
             window.location.href = link;
         });
 
         // AJAX Delete
-        $(document).on('click', '.pickup-delete-btn', function(e) {
+        $(document).on('click', '.location-delete-btn', function(e) {
             e.preventDefault();
             var $btn = $(this);
             var url = $btn.data('href');

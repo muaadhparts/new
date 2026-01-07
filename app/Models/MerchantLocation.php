@@ -5,11 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PickupPoint extends Model
+/**
+ * MerchantLocation - Merchant warehouse/origin locations
+ *
+ * This is the merchant's warehouse or shipping origin location.
+ * NOT to be confused with "pickup" which is customer pickup from store.
+ */
+class MerchantLocation extends Model
 {
     use HasFactory;
 
-    protected $table = 'pickup_points';
+    protected $table = 'merchant_locations';
 
     public $timestamps = false;
 
@@ -71,7 +77,7 @@ class PickupPoint extends Model
     }
 
     /**
-     * Scope: Find pickup points within radius of given coordinates
+     * Scope: Find merchant locations within radius of given coordinates
      * Uses Haversine formula for accurate distance calculation
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
@@ -85,7 +91,7 @@ class PickupPoint extends Model
         return $query->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->selectRaw("
-                pickup_points.*,
+                merchant_locations.*,
                 (6371 * acos(
                     cos(radians(?)) *
                     cos(radians(latitude)) *
@@ -99,7 +105,7 @@ class PickupPoint extends Model
     }
 
     /**
-     * Check if this pickup point is within radius of given coordinates
+     * Check if this merchant location is within radius of given coordinates
      *
      * @param float $lat
      * @param float $lng

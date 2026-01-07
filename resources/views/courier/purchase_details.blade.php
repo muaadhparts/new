@@ -99,8 +99,8 @@
                                     @endif
 
                                     <div class="account-info-item">
-                                        <span class="info-title"><strong>@lang('Pickup Location:')</strong> </span>
-                                        <span class="info-content">{{ $data->pickup->location }}</span>
+                                        <span class="info-title"><strong>@lang('Warehouse Location:')</strong> </span>
+                                        <span class="info-content">{{ $data->merchantLocation->location }}</span>
                                     </div>
 
                                 </div>

@@ -30,7 +30,7 @@ class MerchantPurchase extends Model
         'payment_gateway_id',
         'shipping_id',
         'courier_id',
-        'pickup_point_id',
+        'merchant_location_id',
     ];
 
     protected $casts = [
@@ -73,9 +73,9 @@ class MerchantPurchase extends Model
         return $this->belongsTo(Courier::class, 'courier_id')->withDefault();
     }
 
-    public function pickupPoint()
+    public function merchantLocation()
     {
-        return $this->belongsTo(PickupPoint::class, 'pickup_point_id')->withDefault();
+        return $this->belongsTo(MerchantLocation::class, 'merchant_location_id')->withDefault();
     }
 
     public function isMerchantPayment(): bool

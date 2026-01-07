@@ -123,9 +123,9 @@
                                         </p>
                                     </td>
 
-                                    <td data-label="{{ __('Pickup Point') }}">
+                                    <td data-label="{{ __('Warehouse Location') }}">
                                         <p>
-                                            {{ $purchase->pickup->location }}
+                                            {{ $purchase->merchantLocation->location }}
                                         </p>
                                     </td>
 
