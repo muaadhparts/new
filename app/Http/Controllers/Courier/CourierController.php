@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Courier;
 
 use App\Models\City;
+use App\Models\Country;
 use App\Models\Currency;
 use App\Models\DeliveryCourier;
 use App\Models\CourierServiceArea;
@@ -114,53 +115,176 @@ class CourierController extends CourierBaseController
 
     public function serviceAreaCreate()
     {
-        $cities = City::whereStatus(1)->get();
-        return view('courier.add_service', compact('cities'));
+        $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
+            $q->where('status', 1);
+        })->get();
+        return view('courier.add_service', compact('countries'));
+    }
+
+    /**
+     * Get cities by country for AJAX
+     */
+    public function getCitiesByCountry(Request $request)
+    {
+        // Validate country_id
+        if (!$request->country_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Country ID is required',
+                'cities' => '<option value="">' . __('Select Country First') . '</option>',
+                'count' => 0
+            ]);
+        }
+
+        // Get active cities for this country
+        $cities = City::where('country_id', $request->country_id)
+            ->where('status', 1)
+            ->orderBy('city_name')
+            ->get(['id', 'city_name']);
+
+        // Build options HTML
+        $options = '<option value="">' . __('Select City') . '</option>';
+        foreach ($cities as $city) {
+            $options .= '<option value="' . $city->id . '">' . htmlspecialchars($city->city_name) . '</option>';
+        }
+
+        return response()->json([
+            'success' => true,
+            'cities' => $options,
+            'count' => $cities->count()
+        ]);
     }
 
     public function serviceAreaStore(Request $request)
     {
-        $request->validate(
-            [
-                'service_area_id' => 'required|unique:courier_service_areas,city_id,NULL,id,courier_id,' . $this->courier->id . '|exists:cities,id',
-                'price' => 'required|min:1|numeric',
-            ]
-        );
+        // Step 1: Basic validation
+        $request->validate([
+            'country_id' => 'required|exists:countries,id',
+            'service_area_id' => 'required|exists:cities,id',
+            'price' => 'required|min:1|numeric',
+            'service_radius_km' => 'required|integer|min:1|max:500',
+        ]);
 
+        // Step 2: Strict backend validation - verify city belongs to country and is active
+        $city = City::where('id', $request->service_area_id)
+            ->where('country_id', $request->country_id)
+            ->where('status', 1)
+            ->first();
+
+        if (!$city) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['service_area_id' => __('Invalid city selection. City must be active and belong to the selected country.')]);
+        }
+
+        // Step 3: Check country is active
+        $country = Country::where('id', $request->country_id)->where('status', 1)->first();
+        if (!$country) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['country_id' => __('Selected country is not available.')]);
+        }
+
+        // Step 4: Check uniqueness - this courier doesn't already have this city
+        $exists = CourierServiceArea::where('courier_id', $this->courier->id)
+            ->where('city_id', $city->id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['service_area_id' => __('You already have a service area for this city.')]);
+        }
+
+        // Step 5: Create service area
         $service_area = new CourierServiceArea();
         $service_area->courier_id = $this->courier->id;
-        $service_area->city_id = $request->service_area_id;
+        $service_area->city_id = $city->id;
         $service_area->price = $request->price / $this->curr->value;
+        $service_area->service_radius_km = $request->service_radius_km;
+        $service_area->latitude = $city->latitude;
+        $service_area->longitude = $city->longitude;
+        $service_area->status = 1; // Active by default
         $service_area->save();
 
-        $msg = __('Successfully created your service area');
-        return redirect()->route('courier-service-area')->with('success', $msg);
+        return redirect()->route('courier-service-area')->with('success', __('Successfully created your service area'));
     }
 
     public function serviceAreaEdit($id)
     {
-        $cities = City::whereStatus(1)->get();
         $service_area = CourierServiceArea::findOrFail($id);
-        return view('courier.edit_service', compact('cities', 'service_area'));
+        $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
+            $q->where('status', 1);
+        })->get();
+
+        // Get the country of the current city
+        $currentCity = City::find($service_area->city_id);
+        $selectedCountryId = $currentCity ? $currentCity->country_id : null;
+
+        // Get cities for the selected country
+        $cities = $selectedCountryId
+            ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('city_name')->get()
+            : collect();
+
+        return view('courier.edit_service', compact('countries', 'cities', 'service_area', 'selectedCountryId'));
     }
 
     public function serviceAreaUpdate(Request $request, $id)
     {
-        $request->validate(
-            [
-                'service_area_id' => 'required|unique:courier_service_areas,city_id,' . $id . ',id,courier_id,' . $this->courier->id . '|exists:cities,id',
-                'price' => 'required|min:1|numeric',
-            ]
-        );
+        // Step 1: Verify ownership
+        $service_area = CourierServiceArea::where('id', $id)
+            ->where('courier_id', $this->courier->id)
+            ->firstOrFail();
 
-        $service_area = CourierServiceArea::findOrFail($id);
-        $service_area->courier_id = $this->courier->id;
-        $service_area->city_id = $request->service_area_id;
+        // Step 2: Basic validation
+        $request->validate([
+            'country_id' => 'required|exists:countries,id',
+            'service_area_id' => 'required|exists:cities,id',
+            'price' => 'required|min:1|numeric',
+            'service_radius_km' => 'required|integer|min:1|max:500',
+        ]);
+
+        // Step 3: Strict backend validation - verify city belongs to country and is active
+        $city = City::where('id', $request->service_area_id)
+            ->where('country_id', $request->country_id)
+            ->where('status', 1)
+            ->first();
+
+        if (!$city) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['service_area_id' => __('Invalid city selection. City must be active and belong to the selected country.')]);
+        }
+
+        // Step 4: Check country is active
+        $country = Country::where('id', $request->country_id)->where('status', 1)->first();
+        if (!$country) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['country_id' => __('Selected country is not available.')]);
+        }
+
+        // Step 5: Check uniqueness (exclude current record)
+        $exists = CourierServiceArea::where('courier_id', $this->courier->id)
+            ->where('city_id', $city->id)
+            ->where('id', '!=', $id)
+            ->exists();
+
+        if ($exists) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['service_area_id' => __('You already have a service area for this city.')]);
+        }
+
+        // Step 6: Update service area
+        $service_area->city_id = $city->id;
         $service_area->price = $request->price / $this->curr->value;
+        $service_area->service_radius_km = $request->service_radius_km;
+        $service_area->latitude = $city->latitude;
+        $service_area->longitude = $city->longitude;
         $service_area->save();
 
-        $msg = __('Successfully updated your service area');
-        return redirect()->route('courier-service-area')->with('success', $msg);
+        return redirect()->route('courier-service-area')->with('success', __('Successfully updated your service area'));
     }
 
     public function serviceAreaDestroy($id)
@@ -169,6 +293,22 @@ class CourierController extends CourierBaseController
         $service_area->delete();
         $msg = __('Successfully deleted your service area');
         return back()->with('success', $msg);
+    }
+
+    /**
+     * Toggle service area status (active/inactive)
+     */
+    public function serviceAreaToggleStatus($id)
+    {
+        $service_area = CourierServiceArea::where('courier_id', $this->courier->id)
+            ->where('id', $id)
+            ->firstOrFail();
+
+        $service_area->status = $service_area->status == 1 ? 0 : 1;
+        $service_area->save();
+
+        $statusText = $service_area->status == 1 ? __('activated') : __('deactivated');
+        return back()->with('success', __('Service area successfully') . ' ' . $statusText);
     }
 
     public function orders(Request $request)

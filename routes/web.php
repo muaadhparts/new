@@ -1614,6 +1614,8 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/service/area/edit/{id}', 'Courier\CourierController@serviceAreaEdit')->name('courier-service-area-edit');
         Route::post('/service/area/edit/{id}', 'Courier\CourierController@serviceAreaUpdate')->name('courier-service-area-update');
         Route::get('/service/area/delete/{id}', 'Courier\CourierController@serviceAreaDestroy')->name('courier-service-area-delete');
+        Route::get('/service/area/toggle-status/{id}', 'Courier\CourierController@serviceAreaToggleStatus')->name('courier-service-area-toggle-status');
+        Route::get('/service/area/cities', 'Courier\CourierController@getCitiesByCountry')->name('courier-get-cities');
 
         Route::get('/withdraw', 'Courier\WithdrawController@index')->name('courier-wwt-index');
         Route::get('/withdraw/create', 'Courier\WithdrawController@create')->name('courier-wwt-create');

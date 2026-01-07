@@ -103,6 +103,10 @@
                                         <div class="form-group">
                                             <label for="address">@lang('Address')</label>
                                             <textarea id="address" class="form-control" name="address" placeholder="@lang('Address')" style="height: 122px">{{ $user->address }}</textarea>
+                                            <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                                onclick="openMapPicker({ addressField: '#address', zipField: '#zip' })">
+                                                <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
+                                            </button>
                                         </div>
 
                                         <button class="template-btn btn-forms" type="submit">
@@ -133,6 +137,7 @@
             </div>
         </div>
     </div>
+
 @endsection
 @section('script')
     <script>

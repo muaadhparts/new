@@ -14,11 +14,11 @@ use Illuminate\Support\Facades\Session;
  *
  * STRICT POLICY (2025-12):
  * - merchant_id MUST come from Route parameter
- * - NO session-based merchant tracking (checkout_merchant_id is DEPRECATED)
+ * - NO session-based merchant tracking (checkout_merchant_id removed)
  * - Step data stored as: merchant_step1_{merchant_id}, merchant_step2_{merchant_id}
  *
  * Usage in Payment Controllers:
- *   public function store($merchantId) {
+ *   public function store(Request $request, $merchantId) {
  *       $steps = $this->getCheckoutSteps($merchantId);
  *       $cart = $this->filterCartForMerchant($originalCart, $merchantId);
  *   }
@@ -134,7 +134,6 @@ trait HandlesMerchantCheckout
         }
 
         // Clear merchant-specific session data (checkout steps, discount codes)
-        // NOTE: checkout_merchant_id is NO LONGER used - merchant context is in route
         Session::forget('merchant_step1_' . $merchantId);
         Session::forget('merchant_step2_' . $merchantId);
         Session::forget('discount_code_merchant_' . $merchantId);

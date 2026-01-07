@@ -284,24 +284,114 @@
                                 </li>
                             </ul>
                         </div>
-                        <!-- Shipping Method -->
+                        <!-- Delivery Method -->
                         @if ($purchase->dp == 0)
                             <div class="col-lg-6 col-md-6 col-sm-12">
-                                <h5>@lang('Shipping Method')</h5>
+                                <h5>@lang('Delivery Method')</h5>
                                 <div class="payment-information">
+                                    @php
+                                        // Check if this purchase has local courier delivery
+                                        $deliveryCourier = \App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
+                                            ->with(['courier', 'pickup'])
+                                            ->first();
+                                    @endphp
 
-                                    @if ($purchase->shipping == 'shipto')
-                                        <p>{{ __('Ship To Address') }}</p>
+                                    @if ($deliveryCourier && $deliveryCourier->courier)
+                                        {{-- Local Courier Delivery --}}
+                                        <div class="courier-delivery-info">
+                                            <div class="d-flex align-items-center gap-2 mb-3">
+                                                <i class="fas fa-motorcycle text-success fa-lg"></i>
+                                                <strong class="text-success">@lang('Local Courier Delivery')</strong>
+                                            </div>
+
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2">
+                                                    <i class="fas fa-user me-2 text-muted"></i>
+                                                    <strong>@lang('Courier'):</strong>
+                                                    {{ $deliveryCourier->courier->name }}
+                                                </li>
+
+                                                @if($deliveryCourier->courier->phone)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-phone me-2 text-muted"></i>
+                                                    <strong>@lang('Phone'):</strong>
+                                                    <a href="tel:{{ $deliveryCourier->courier->phone }}" class="text-primary">
+                                                        {{ $deliveryCourier->courier->phone }}
+                                                    </a>
+                                                </li>
+                                                @endif
+
+                                                @if($deliveryCourier->pickup && $deliveryCourier->pickup->location)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-store me-2 text-muted"></i>
+                                                    <strong>@lang('Pickup Point'):</strong>
+                                                    {{ $deliveryCourier->pickup->location }}
+                                                </li>
+                                                @endif
+
+                                                <li class="mb-2">
+                                                    <i class="fas fa-money-bill-wave me-2 text-muted"></i>
+                                                    <strong>@lang('Delivery Fee'):</strong>
+                                                    <span class="text-success fw-bold">
+                                                        {{ \PriceHelper::showOrderCurrencyPrice($deliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}
+                                                    </span>
+                                                </li>
+
+                                                <li>
+                                                    <i class="fas fa-info-circle me-2 text-muted"></i>
+                                                    <strong>@lang('Status'):</strong>
+                                                    @if($deliveryCourier->status == 'pending')
+                                                        <span class="badge bg-warning">@lang('Pending')</span>
+                                                    @elseif($deliveryCourier->status == 'ready_for_pickup')
+                                                        <span class="badge bg-info">@lang('Ready for Pickup')</span>
+                                                    @elseif($deliveryCourier->status == 'accepted')
+                                                        <span class="badge bg-primary">@lang('In Transit')</span>
+                                                    @elseif($deliveryCourier->status == 'delivered')
+                                                        <span class="badge bg-success">@lang('Delivered')</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">{{ ucfirst($deliveryCourier->status) }}</span>
+                                                    @endif
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    @elseif ($purchase->shipping == 'shipto')
+                                        {{-- Regular Shipping via Shipping Company --}}
+                                        <div class="shipping-company-info">
+                                            <div class="d-flex align-items-center gap-2 mb-3">
+                                                <i class="fas fa-truck text-primary fa-lg"></i>
+                                                <strong class="text-primary">@lang('Shipping Company Delivery')</strong>
+                                            </div>
+
+                                            @if ($purchase->shipping_title && !empty($purchase->shipping_title) && !is_array(json_decode($purchase->shipping_title, true)))
+                                            <ul class="list-unstyled">
+                                                <li class="mb-2">
+                                                    <i class="fas fa-building me-2 text-muted"></i>
+                                                    <strong>@lang('Company'):</strong>
+                                                    {{ $purchase->shipping_title }}
+                                                </li>
+
+                                                @if($purchase->shipping_cost > 0)
+                                                <li class="mb-2">
+                                                    <i class="fas fa-money-bill-wave me-2 text-muted"></i>
+                                                    <strong>@lang('Shipping Cost'):</strong>
+                                                    <span class="text-primary fw-bold">
+                                                        {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost * $purchase->currency_value, $purchase->currency_sign) }}
+                                                    </span>
+                                                </li>
+                                                @endif
+                                            </ul>
+                                            @else
+                                                <p class="text-muted">@lang('Shipping to your address')</p>
+                                            @endif
+                                        </div>
                                     @else
-                                        <p>{{ __('Pick Up') }}</p>
-                                    @endif
-
-                                    {{-- عرض معلومات شركة الشحن (Tryoto) إذا كانت موجودة --}}
-                                    @if ($purchase->shipping_title && !empty($purchase->shipping_title) && !is_array(json_decode($purchase->shipping_title, true)))
-                                        <p class="mt-2"><strong>{{ __('Carrier') }}:</strong> {{ $purchase->shipping_title }}</p>
+                                        {{-- Pickup --}}
+                                        <div class="d-flex align-items-center gap-2">
+                                            <i class="fas fa-store text-info"></i>
+                                            <p class="mb-0">{{ __('Pick Up from Store') }}</p>
+                                        </div>
                                     @endif
                                 </div>
-
                             </div>
                         @endif
 

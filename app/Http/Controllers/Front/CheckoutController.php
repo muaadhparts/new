@@ -733,19 +733,12 @@ class CheckoutController extends FrontBaseController
         $taxRate = $step1['tax_rate'] ?? 0;
         $taxLocation = $step1['tax_location'] ?? '';
 
-        // ✅ Get discount code data (supports both regular and merchant checkout)
-        $checkoutMerchantId = Session::get('checkout_merchant_id');
-        if ($checkoutMerchantId) {
-            $discountAmount = Session::get('discount_code_merchant_' . $checkoutMerchantId, 0);
-            $discountCode = Session::get('discount_code_value_merchant_' . $checkoutMerchantId, '');
-            $discountCodeId = Session::get('discount_code_id_merchant_' . $checkoutMerchantId, null);
-            $discountPercentage = Session::get('discount_percentage_merchant_' . $checkoutMerchantId, '');
-        } else {
-            $discountAmount = Session::get('discount_code', 0);
-            $discountCode = Session::get('discount_code_value', '');
-            $discountCodeId = Session::get('discount_code_id', null);
-            $discountPercentage = Session::get('discount_percentage', '');
-        }
+        // ✅ Get discount code data (regular checkout only - uses standard session keys)
+        // NOTE: Merchant checkout uses checkoutMerchantStep2Submit() with route-based merchant_id
+        $discountAmount = Session::get('discount_code', 0);
+        $discountCode = Session::get('discount_code_value', '');
+        $discountCodeId = Session::get('discount_code_id', null);
+        $discountPercentage = Session::get('discount_percentage', '');
 
         // ✅ Calculate totals
         // subtotal_before_discount = catalogItems + tax + shipping + packing
@@ -1066,21 +1059,19 @@ class CheckoutController extends FrontBaseController
     /**
      * Step 1 - Display checkout page for a SPECIFIC merchant only
      *
-     * MULTI-MERCHANT SIMPLIFIED LOGIC:
-     * 1. Checks authentication (logged-in or guest checkout enabled)
-     * 2. Saves merchant_id in session for tracking (checkout_merchant_id)
-     * 3. Filters cart to show ONLY this merchant's catalogItems (getMerchantCartData)
-     * 4. Gets ONLY merchant-specific shipping methods (no general cart shipping)
-     * 5. Gets ONLY merchant-specific packaging methods (no general cart packaging)
-     * 6. Calculates total for THIS merchant only (with merchant-specific discount)
-     * 7. Does NOT call Purchase::getShipData or Purchase::getPackingData (avoids cart-wide logic)
-     * 8. Does NOT modify auth state - only reads Auth::check()
+     * POLICY: merchant_id comes from ROUTE only
      *
-     * @param int $merchantId The merchant's user_id
+     * MULTI-MERCHANT LOGIC:
+     * 1. Checks authentication (logged-in or guest checkout enabled)
+     * 2. Filters cart to show ONLY this merchant's catalogItems (getMerchantCartData)
+     * 3. Gets ONLY merchant-specific shipping methods (no general cart shipping)
+     * 4. Gets ONLY merchant-specific packaging methods (no general cart packaging)
+     * 5. Calculates total for THIS merchant only (with merchant-specific discount)
+     * 6. Does NOT call Purchase::getShipData or Purchase::getPackingData (avoids cart-wide logic)
+     * 7. Does NOT modify auth state - only reads Auth::check()
+     *
+     * @param int $merchantId The merchant's user_id from route
      * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
-     */
-    /**
-     * POLICY: merchant_id comes from ROUTE only - NOT from session
      */
     public function checkoutMerchant($merchantId)
     {
@@ -2012,7 +2003,6 @@ class CheckoutController extends FrontBaseController
         Session::forget('merchant_step1_' . $merchantId);
         Session::forget('merchant_step2_' . $merchantId);
         Session::forget('discount_code_merchant_' . $merchantId);
-        Session::forget('checkout_merchant_id');
     }
 
     /**

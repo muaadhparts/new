@@ -23,7 +23,7 @@
 
     $currentStep = $step ?? 1;
     $isDigital = $digital ?? false;
-    $merchantId = $merchant_id ?? Session::get('checkout_merchant_id');
+    $merchantId = $merchant_id ?? null;
 
     // ========================================================================
     // USE CHECKOUT PRICE SERVICE FOR CURRENCY CONVERSION

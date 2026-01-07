@@ -140,11 +140,27 @@ html {
                                           {{ __('Address:') }} {{$purchase->pickup_location}}<br>
                                        </address>
                                        @endif
-                                       <h5>{{ __('Shipping Method') }}</h5>
-                                       @if($purchase->shipping == "shipto")
-                                       <p>{{ __('Ship To Address') }}</p>
+                                       <h5>{{ __('Delivery Method') }}</h5>
+                                       @php
+                                          $printDeliveryCourier = \App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
+                                              ->with(['courier'])
+                                              ->first();
+                                       @endphp
+
+                                       @if ($printDeliveryCourier && $printDeliveryCourier->courier)
+                                          <p><strong>{{ __('Local Courier Delivery') }}</strong></p>
+                                          <p>
+                                             {{ __('Courier:') }} {{ $printDeliveryCourier->courier->name }}<br>
+                                             @if($printDeliveryCourier->courier->phone)
+                                             {{ __('Phone:') }} {{ $printDeliveryCourier->courier->phone }}<br>
+                                             @endif
+                                             {{ __('Delivery Fee:') }} {{ \PriceHelper::showOrderCurrencyPrice($printDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}<br>
+                                             {{ __('Status:') }} {{ ucfirst($printDeliveryCourier->status) }}
+                                          </p>
+                                       @elseif($purchase->shipping == "shipto")
+                                          <p>{{ __('Ship To Address') }}</p>
                                        @else
-                                       <p>{{ __('Pick Up') }}</p>
+                                          <p>{{ __('Pick Up from Store') }}</p>
                                        @endif
                                        @php
                                           $printShipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)

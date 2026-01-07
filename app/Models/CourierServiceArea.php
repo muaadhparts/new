@@ -20,6 +20,7 @@ class CourierServiceArea extends Model
         'longitude',
         'service_radius_km',
         'price',
+        'status',
     ];
 
     protected $casts = [
@@ -27,6 +28,7 @@ class CourierServiceArea extends Model
         'longitude' => 'float',
         'service_radius_km' => 'integer',
         'price' => 'float',
+        'status' => 'integer',
     ];
 
     public function city()

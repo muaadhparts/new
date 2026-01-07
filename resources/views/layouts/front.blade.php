@@ -206,6 +206,9 @@
         }
     @endphp
 
+    {{-- Global Map Picker Modal - Available on all pages --}}
+    @include('components.global-map-picker-modal')
+
     @stack('scripts')
     @yield('script')
     @livewireScripts

@@ -5,25 +5,27 @@
  * MULTI-MERCHANT CASH ON DELIVERY PAYMENT CONTROLLER
  * ====================================================================
  *
- * This controller handles COD payment in a multi-merchant system:
+ * STRICT POLICY (2025-12):
+ * - merchant_id comes from ROUTE only: /checkout/merchant/{merchantId}/payment/cod
+ * - NO session-based merchant tracking
  *
  * Key Features:
  * 1. Uses HandlesMerchantCheckout trait for merchant isolation
- * 2. Detects if checkout is merchant-specific via checkout_merchant_id session
+ * 2. Gets merchant_id from route parameter (not session)
  * 3. Filters cart to process ONLY merchant's items
  * 4. Creates purchase with ONLY merchant's items
  * 5. Removes ONLY merchant's items from cart after purchase
  * 6. Redirects to /carts if other merchants remain, else to success page
  *
  * Multi-Merchant Logic Flow:
- * 1. getMerchantCheckoutData() - Checks if merchant checkout
+ * 1. merchant_id from route parameter
  * 2. getCheckoutSteps() - Gets merchant_step1_{id} and merchant_step2_{id}
  * 3. filterCartForMerchant() - Filters cart items
  * 4. Purchase creation - Uses only filtered items
  * 5. removeMerchantItemsFromCart() - Removes merchant items only
  * 6. getSuccessUrl() - Determines redirect based on remaining items
  *
- * Modified: 2025-01-XX for Multi-Merchant Checkout System
+ * Modified: 2025-12 for Route-based Merchant Checkout
  * ====================================================================
  */
 
@@ -48,22 +50,18 @@ class CashOnDeliveryController extends CheckoutBaseControlller
     use CreatesTryotoShipments, HandlesMerchantCheckout, SavesCustomerShippingChoice;
 
     /**
-     * Process COD payment for single merchant or complete cart
+     * Process COD payment for single merchant
+     *
+     * POLICY: merchant_id comes from ROUTE only
+     * Route: /checkout/merchant/{merchantId}/payment/cod
      *
      * MULTI-MERCHANT LOGIC:
-     * 1. Detects merchant checkout via checkout_merchant_id session
+     * 1. Gets merchant_id from route parameter
      * 2. Loads merchant-specific session data (merchant_step1_{id}, merchant_step2_{id})
      * 3. Filters cart to include ONLY this merchant's items
      * 4. Creates purchase with filtered items only
      * 5. Removes only this merchant's items from cart
      * 6. Redirects to /carts if other merchants remain
-     *
-     * @param Request $request
-     * @return \Illuminate\Http\RedirectResponse
-     */
-    /**
-     * POLICY: merchant_id comes from ROUTE only
-     * Route: /checkout/merchant/{merchantId}/payment/cod
      */
     public function store(Request $request, $merchantId)
     {

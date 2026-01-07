@@ -821,7 +821,6 @@ class CartController extends FrontBaseController
 
         // مسح الجلسات الأخرى المتعلقة بالـ checkout
         Session::forget([
-            'checkout_merchant_id',
             'selectedLocation',
             'shipping_selection',
         ]);

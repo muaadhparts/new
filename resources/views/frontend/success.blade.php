@@ -326,16 +326,168 @@
                     </div>
                     @if ($purchase->dp == 0)
                         <div class="col-lg-6 col-md-6 col-sm-12">
-                            <h5>@lang('Shipping Method')</h5>
+                            <h5>@lang('Delivery Method')</h5>
                             <div class="payment-information">
+                                @php
+                                    // Check if this purchase has local courier delivery
+                                    $deliveryCourier = \App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
+                                        ->with(['courier', 'pickup'])
+                                        ->first();
+                                @endphp
 
-                                @if ($purchase->shipping == 'shipto')
-                                    <p>{{ __('Ship To Address') }}</p>
+                                @if ($deliveryCourier && $deliveryCourier->courier)
+                                    {{-- Local Courier Delivery --}}
+                                    <div class="courier-delivery-info">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <i class="fas fa-motorcycle text-success"></i>
+                                            <strong class="text-success">@lang('Local Courier Delivery')</strong>
+                                        </div>
+
+                                        <div class="courier-details mt-3">
+                                            <div class="d-flex gap-12 mb-2">
+                                                <i class="fas fa-user text-muted"></i>
+                                                <div>
+                                                    <small class="text-muted">@lang('Courier Name')</small>
+                                                    <p class="mb-0 fw-semibold">{{ $deliveryCourier->courier->name }}</p>
+                                                </div>
+                                            </div>
+
+                                            @if($deliveryCourier->courier->phone)
+                                            <div class="d-flex gap-12 mb-2">
+                                                <i class="fas fa-phone text-muted"></i>
+                                                <div>
+                                                    <small class="text-muted">@lang('Courier Phone')</small>
+                                                    <p class="mb-0">
+                                                        <a href="tel:{{ $deliveryCourier->courier->phone }}" class="text-primary">
+                                                            {{ $deliveryCourier->courier->phone }}
+                                                        </a>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            @endif
+
+                                            @if($deliveryCourier->pickup && $deliveryCourier->pickup->location)
+                                            <div class="d-flex gap-12 mb-2">
+                                                <i class="fas fa-store text-muted"></i>
+                                                <div>
+                                                    <small class="text-muted">@lang('Pickup Point')</small>
+                                                    <p class="mb-0">{{ $deliveryCourier->pickup->location }}</p>
+                                                </div>
+                                            </div>
+                                            @endif
+
+                                            <div class="d-flex gap-12 mb-2">
+                                                <i class="fas fa-money-bill-wave text-muted"></i>
+                                                <div>
+                                                    <small class="text-muted">@lang('Delivery Fee')</small>
+                                                    <p class="mb-0 text-success fw-semibold">
+                                                        {{ \PriceHelper::showOrderCurrencyPrice($deliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <div class="d-flex gap-12">
+                                                <i class="fas fa-info-circle text-muted"></i>
+                                                <div>
+                                                    <small class="text-muted">@lang('Status')</small>
+                                                    <p class="mb-0">
+                                                        @if($deliveryCourier->status == 'pending')
+                                                            <span class="badge bg-warning">@lang('Pending')</span>
+                                                        @elseif($deliveryCourier->status == 'ready_for_pickup')
+                                                            <span class="badge bg-info">@lang('Ready for Pickup')</span>
+                                                        @elseif($deliveryCourier->status == 'accepted')
+                                                            <span class="badge bg-primary">@lang('Accepted')</span>
+                                                        @elseif($deliveryCourier->status == 'delivered')
+                                                            <span class="badge bg-success">@lang('Delivered')</span>
+                                                        @else
+                                                            <span class="badge bg-secondary">{{ ucfirst($deliveryCourier->status) }}</span>
+                                                        @endif
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @elseif ($purchase->shipping == 'shipto')
+                                    {{-- Regular Shipping via Shipping Company --}}
+                                    <div class="shipping-company-info">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            <i class="fas fa-truck text-primary"></i>
+                                            <strong class="text-primary">@lang('Shipping Company Delivery')</strong>
+                                        </div>
+
+                                        @if ($purchase->shipping_title && !empty($purchase->shipping_title))
+                                            <div class="shipping-details mt-3">
+                                                <div class="d-flex gap-12 mb-2">
+                                                    <i class="fas fa-building text-muted"></i>
+                                                    <div>
+                                                        <small class="text-muted">@lang('Shipping Company')</small>
+                                                        <p class="mb-0 fw-semibold">{{ $purchase->shipping_title }}</p>
+                                                    </div>
+                                                </div>
+
+                                                @if($purchase->shipping_cost > 0)
+                                                <div class="d-flex gap-12 mb-2">
+                                                    <i class="fas fa-money-bill-wave text-muted"></i>
+                                                    <div>
+                                                        <small class="text-muted">@lang('Shipping Cost')</small>
+                                                        <p class="mb-0 text-primary fw-semibold">
+                                                            {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost * $purchase->currency_value, $purchase->currency_sign) }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                @endif
+
+                                                @php
+                                                    // Check for tracking info
+                                                    $latestShipment = \App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
+                                                        ->orderBy('status_date', 'desc')
+                                                        ->first();
+                                                @endphp
+
+                                                @if($latestShipment && $latestShipment->tracking_number)
+                                                <div class="d-flex gap-12 mb-2">
+                                                    <i class="fas fa-barcode text-muted"></i>
+                                                    <div>
+                                                        <small class="text-muted">@lang('Tracking Number')</small>
+                                                        <p class="mb-0">
+                                                            <span class="text-primary">{{ $latestShipment->tracking_number }}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="d-flex gap-12">
+                                                    <i class="fas fa-info-circle text-muted"></i>
+                                                    <div>
+                                                        <small class="text-muted">@lang('Status')</small>
+                                                        <p class="mb-0">
+                                                            @if($latestShipment->status == 'delivered')
+                                                                <span class="badge bg-success">@lang('Delivered')</span>
+                                                            @elseif($latestShipment->status == 'in_transit')
+                                                                <span class="badge bg-primary">@lang('In Transit')</span>
+                                                            @elseif($latestShipment->status == 'out_for_delivery')
+                                                                <span class="badge bg-info">@lang('Out for Delivery')</span>
+                                                            @elseif(in_array($latestShipment->status, ['pending', 'processing']))
+                                                                <span class="badge bg-warning">@lang('Processing')</span>
+                                                            @else
+                                                                <span class="badge bg-secondary">{{ $latestShipment->status_ar ?? ucfirst(str_replace('_', ' ', $latestShipment->status)) }}</span>
+                                                            @endif
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <p class="mb-0 text-muted">@lang('Shipping to your address')</p>
+                                        @endif
+                                    </div>
                                 @else
-                                    <p>{{ __('Pick Up') }}</p>
+                                    {{-- Pickup --}}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <i class="fas fa-store text-info"></i>
+                                        <p class="mb-0">{{ __('Pick Up from Store') }}</p>
+                                    </div>
                                 @endif
                             </div>
-
                         </div>
                     @endif
 
