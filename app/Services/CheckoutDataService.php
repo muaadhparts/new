@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Operator;
 use App\Models\Country;
 use App\Models\Package;
+use App\Models\PickupPoint;
 use App\Models\Shipping;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -47,6 +48,7 @@ class CheckoutDataService
         $merchants = self::loadMerchants($merchantIds);
         $shippingByMerchant = self::loadShipping($merchantIds, $hasAdminItems);
         $packagingByMerchant = self::loadPackaging($merchantIds);
+        $pickupPointsByMerchant = self::loadPickupPoints($merchantIds);
         $operator = $hasAdminItems ? Operator::find(1) : null;
 
         // Provider labels (static)
@@ -63,6 +65,7 @@ class CheckoutDataService
             $shipping = $shippingByMerchant[$merchantId] ?? collect();
             $result[$merchantId] = [
                 'merchant' => $merchants[$merchantId] ?? null,
+                'pickup_point' => $pickupPointsByMerchant[$merchantId] ?? null,
                 'shipping' => $shipping,
                 'packaging' => $packagingByMerchant[$merchantId] ?? collect(),
                 'grouped_shipping' => $shipping->groupBy('provider'),
@@ -135,6 +138,28 @@ class CheckoutDataService
 
         // Group by user_id - returns Collection of Collections
         return $allPackaging->groupBy('user_id');
+    }
+
+    /**
+     * Bulk load active pickup points for all merchants
+     * Returns first active pickup point per merchant (keyed by user_id)
+     */
+    private static function loadPickupPoints(array $merchantIds): Collection
+    {
+        if (empty($merchantIds)) {
+            return collect();
+        }
+
+        // Load all active pickup points with city and country
+        $allPickupPoints = PickupPoint::whereIn('user_id', $merchantIds)
+            ->where('status', 1)
+            ->with(['city', 'country'])
+            ->get();
+
+        // Get first active pickup point per merchant (keyed by user_id)
+        return $allPickupPoints->groupBy('user_id')->map(function ($points) {
+            return $points->first();
+        });
     }
 
     /**

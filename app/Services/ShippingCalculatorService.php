@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\City;
 use App\Models\User;
+use App\Models\PickupPoint;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -54,48 +55,50 @@ class ShippingCalculatorService
     /**
      * جلب مدينة التاجر (مدينة انطلاق الطلبية)
      *
-     * المصدر: جدول users
-     * - city_id = معرف المدينة في جدول cities
-     * - city = اسم المدينة بالإنجليزي (يستخدم مباشرة إذا لم يوجد city_id)
+     * المصدر: جدول pickup_points (نقاط الاستلام/المستودعات)
+     * - يبحث عن أول نقطة استلام نشطة للتاجر
+     * - يستخدم city_id منها لجلب بيانات المدينة
      */
     public static function getMerchantCity(int $merchantId): ?array
     {
-        $merchant = User::find($merchantId);
+        // جلب أول نقطة استلام نشطة للتاجر
+        $pickupPoint = PickupPoint::where('user_id', $merchantId)
+            ->where('status', 1)
+            ->first();
 
-        if (!$merchant) {
-            Log::warning('ShippingCalculator: Merchant not found', ['merchant_id' => $merchantId]);
+        if (!$pickupPoint) {
+            Log::warning('ShippingCalculator: Merchant has no active pickup point', ['merchant_id' => $merchantId]);
             return null;
         }
 
-        // 1. city_id موجود - جلب الاسم من جدول cities
-        if ($merchant->city_id) {
-            $city = City::find($merchant->city_id);
-            if ($city) {
-                return [
-                    'city_id' => $city->id,
-                    'city_name' => $city->city_name,
-                    'country_id' => $city->country_id,
-                    'source' => 'city_id',
-                ];
-            }
-            Log::warning('ShippingCalculator: City ID not found in DB', [
+        if (!$pickupPoint->city_id) {
+            Log::warning('ShippingCalculator: Pickup point has no city', [
                 'merchant_id' => $merchantId,
-                'city_id' => $merchant->city_id,
+                'pickup_point_id' => $pickupPoint->id,
             ]);
+            return null;
         }
 
-        // 2. city موجود - استخدم الاسم مباشرة
-        if ($merchant->city) {
-            return [
-                'city_id' => null,
-                'city_name' => $merchant->city,
-                'country_id' => null,
-                'source' => 'city_column',
-            ];
+        $city = City::find($pickupPoint->city_id);
+        if (!$city) {
+            Log::warning('ShippingCalculator: City not found for pickup point', [
+                'merchant_id' => $merchantId,
+                'pickup_point_id' => $pickupPoint->id,
+                'city_id' => $pickupPoint->city_id,
+            ]);
+            return null;
         }
 
-        Log::warning('ShippingCalculator: Merchant has no city configured', ['merchant_id' => $merchantId]);
-        return null;
+        return [
+            'city_id' => $city->id,
+            'city_name' => $city->city_name,
+            'country_id' => $city->country_id,
+            'pickup_point_id' => $pickupPoint->id,
+            'pickup_location' => $pickupPoint->location,
+            'latitude' => $pickupPoint->latitude,
+            'longitude' => $pickupPoint->longitude,
+            'source' => 'pickup_point',
+        ];
     }
 
     /**

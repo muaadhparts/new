@@ -244,25 +244,21 @@ class ShippingQuoteService
     }
 
     /**
-     * Get merchant's origin city name
+     * Get merchant's origin city name from pickup_points
      */
     protected function getMerchantCity(int $merchantId): ?string
     {
-        $merchant = DB::table('users')
-            ->select('city')
-            ->where('id', $merchantId)
+        // جلب أول نقطة استلام نشطة للتاجر
+        $pickupPoint = DB::table('pickup_points')
+            ->where('user_id', $merchantId)
+            ->where('status', 1)
             ->first();
 
-        if (!$merchant || empty($merchant->city)) {
+        if (!$pickupPoint || !$pickupPoint->city_id) {
             return null;
         }
 
-        // If city is an ID, get the name
-        if (is_numeric($merchant->city)) {
-            return $this->getCityName((int) $merchant->city);
-        }
-
-        return $merchant->city;
+        return $this->getCityName((int) $pickupPoint->city_id);
     }
 
     /**

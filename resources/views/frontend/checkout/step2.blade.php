@@ -138,6 +138,7 @@
                                 $shipping = isset($merchantInfo['shipping']) ? collect($merchantInfo['shipping']) : collect();
                                 $packaging = $merchantInfo['packaging'] ?? collect();
                                 $merchantUser = $merchantInfo['merchant'] ?? null;
+                                $pickupPoint = $merchantInfo['pickup_point'] ?? null;
                                 $groupedShipping = $merchantInfo['grouped_shipping'] ?? collect();
                                 $providerLabels = $merchantInfo['provider_labels'] ?? [
                                     'manual' => __('Manual Shipping'),
@@ -267,11 +268,8 @@
                                                 <span>{{ $merchantUser->phone }}</span>
                                             </li>
                                             <li>
-                                                <span><b>@lang('Shop Address:')</b></span>
-                                                <span>{{ $merchantUser->address }}</span>
-                                            </li>
-                                            <li>
-
+                                                <span><b>@lang('Warehouse Address:')</b></span>
+                                                <span>{{ $pickupPoint->location ?? $merchantUser->address ?? '-' }}</span>
                                             </li>
                                         </ul>
 
@@ -428,8 +426,8 @@
                                                 <span>{{ $merchantUser->phone }}</span>
                                             </li>
                                             <li>
-                                                <span><b>@lang('Shop Address:')</b></span>
-                                                <span>{{ $merchantUser->address }}</span>
+                                                <span><b>@lang('Warehouse Address:')</b></span>
+                                                <span>{{ $pickupPoint->location ?? $merchantUser->address ?? '-' }}</span>
                                             </li>
                                         </ul>
                                     </div>
