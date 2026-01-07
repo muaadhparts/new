@@ -23,8 +23,9 @@ class Merchant
             return redirect()->route('user.login');
         }
 
-        // التحقق من أن المستخدم تاجر
-        if (!Auth::user()->IsMerchant()) {
+        // التحقق من أن المستخدم تاجر (مفعّل أو تحت التحقق)
+        // is_merchant = 1: تحت التحقق، is_merchant = 2: مفعّل
+        if (Auth::user()->is_merchant < 1) {
             if ($request->expectsJson()) {
                 return response()->json(['message' => 'Unauthorized. Merchant access required.'], 403);
             }

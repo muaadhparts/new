@@ -127,8 +127,6 @@
                     <input type="hidden" name="user_id" value="{{ Auth::user()->id }}">
 
                 </div>
-                <!-- Select Pickup Point -->
-
                 <!-- Assign Courier Button  -->
                 <button class="template-btn"  type="submit">@lang('Send Message')</button>
                 <!-- modal body end  -->

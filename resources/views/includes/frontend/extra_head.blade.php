@@ -23,7 +23,9 @@
 @else
     <meta property="og:title" content="{{ $gs->title }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
-    <meta name="keywords" content="{{ $seo->meta_keys }}">
+    @if(isset($seo) && $seo)
+        <meta name="keywords" content="{{ $seo->meta_keys }}">
+    @endif
     <meta name="author" content="Muaadh">
     <title>{{ $gs->title }}</title>
 @endif

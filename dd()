@@ -17,6 +17,6 @@
   [90m    Psy\Exception\ParseErrorException::fromParseError(Object(PhpParser\Error))[39m
 
   [33m2   [39m[39;1mvendor\psy\psysh\src\CodeCleaner.php[39;22m:[39;1m240[39;22m
-  [90m    Psy\CodeCleaner::parse("<?php print_r(App\Models\EmailTemplate::pluck('email_type')-;
+  [90m    Psy\CodeCleaner::parse("<?php App\Models\EmailTemplate::all(['email_type'])-;
 ")[39m
 

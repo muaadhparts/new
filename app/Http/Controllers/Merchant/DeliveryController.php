@@ -120,7 +120,7 @@ class DeliveryController extends MerchantBaseController
 
                 if ($delivery) {
                     $message = '<strong class="display-5">Courier : ' . $delivery->courier->name . ' </br>Delivery Cost : ' . PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price) . '</br>
-                    Pickup Point : ' . $delivery->pickup->location . '</br>
+                    Warehouse Location : ' . $delivery->merchantLocation->location . '</br>
                     Status :
                     <span class="badge badge-dark p-1">' . $delivery->status . '</span>
                     </strong>';
@@ -209,7 +209,7 @@ class DeliveryController extends MerchantBaseController
         if ($delivery) {
             $delivery->courier_id = $service_area->courier_id;
             $delivery->service_area_id = $service_area->id;
-            $delivery->pickup_point_id = $request->pickup_point_id;
+            $delivery->merchant_location_id = $request->merchant_location_id;
             $delivery->status = 'pending';
             $delivery->save();
         } else {
@@ -218,7 +218,7 @@ class DeliveryController extends MerchantBaseController
             $delivery->merchant_id = auth()->id();
             $delivery->courier_id = $service_area->courier_id;
             $delivery->service_area_id = $service_area->id;
-            $delivery->pickup_point_id = $request->pickup_point_id;
+            $delivery->merchant_location_id = $request->merchant_location_id;
             $delivery->status = 'pending';
             $delivery->save();
         }
@@ -665,9 +665,9 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * تحديث حالة الطلب من التاجر (جاهز للاستلام)
+     * تحديث حالة الطلب من التاجر (جاهز لاستلام الكوريير)
      */
-    public function markReadyForPickup(Request $request)
+    public function markReadyForCourierCollection(Request $request)
     {
         $request->validate([
             'purchase_id' => 'required|exists:purchases,id'
@@ -682,7 +682,7 @@ class DeliveryController extends MerchantBaseController
         }
 
         // تحديث حالة الطلب في MerchantPurchase
-        $merchantOrder->status = 'ready_for_pickup';
+        $merchantOrder->status = 'ready_for_courier_collection';
         $merchantOrder->save();
 
         // ✅ تحديث حالة DeliveryCourier أيضاً
@@ -691,10 +691,10 @@ class DeliveryController extends MerchantBaseController
             ->first();
 
         if ($deliveryCourier && $deliveryCourier->status === 'pending') {
-            $deliveryCourier->status = 'ready_for_pickup';
+            $deliveryCourier->status = 'ready_for_courier_collection';
             $deliveryCourier->save();
 
-            Log::info('DeliveryCourier marked ready for pickup', [
+            Log::info('DeliveryCourier marked ready for courier collection', [
                 'delivery_courier_id' => $deliveryCourier->id,
                 'purchase_id' => $purchase->id,
                 'courier_id' => $deliveryCourier->courier_id,
@@ -703,11 +703,11 @@ class DeliveryController extends MerchantBaseController
 
         // إضافة تتبع
         $purchase->tracks()->create([
-            'title' => __('Ready for Pickup'),
-            'text' => __('Merchant :merchant has marked the purchase as ready for pickup', ['merchant' => $this->user->shop_name])
+            'title' => __('Ready for Courier Collection'),
+            'text' => __('Merchant :merchant has marked the purchase as ready for courier collection', ['merchant' => $this->user->shop_name])
         ]);
 
-        return redirect()->back()->with('success', __('Purchase marked as ready for pickup. Courier has been notified.'));
+        return redirect()->back()->with('success', __('Purchase marked as ready for courier collection. Courier has been notified.'));
     }
 
     /**

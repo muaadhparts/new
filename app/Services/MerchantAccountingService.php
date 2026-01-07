@@ -96,7 +96,7 @@ class MerchantAccountingService
         }
 
         if (!$shippingId) {
-            return 'pickup';
+            return 'platform'; // Default to platform shipping
         }
 
         $shipping = Shipping::find($shippingId);
@@ -156,7 +156,7 @@ class MerchantAccountingService
             'merchant_payments' => $purchases->where('payment_type', 'merchant')->sum('price'),
             'platform_payments' => $purchases->where('payment_type', 'platform')->sum('price'),
             'courier_deliveries' => $purchases->where('shipping_type', 'courier')->count(),
-            'pickup_deliveries' => $purchases->where('shipping_type', 'pickup')->count(),
+            'shipping_deliveries' => $purchases->whereIn('shipping_type', ['platform', 'merchant'])->count(),
         ];
     }
 

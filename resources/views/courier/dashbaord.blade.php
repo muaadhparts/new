@@ -107,7 +107,7 @@
                             <tr>
                                 <th><span class="header-title">{{ __('#Purchase') }}</span></th>
                                 <th><span class="header-title">{{ __('Service Area') }}</span></th>
-                                <th><span class="header-title">{{ __('Pickup Point') }}</span></th>
+                                <th><span class="header-title">{{ __('Merchant Location') }}</span></th>
                                 <th><span class="header-title">{{ __('Purchase Total') }}</span></th>
                                 <th><span class="header-title">{{ __('Purchase Status') }}</span></th>
                                 <th><span class="header-title">{{ __('View') }}</span></th>

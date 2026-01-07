@@ -58,12 +58,12 @@ class CheckoutBaseControlller extends Controller
         // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
         $purchaseTotal = (float)($input['total'] ?? 0) / $this->curr->value;
 
-        // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
+        // ✅ حفظ طريقة الشحن الأصلية (shipto) قبل أي معالجة
         $step1 = Session::get('step1', []);
         $originalShippingMethod = $step1['shipping'] ?? 'shipto';
 
-        // إذا كان shipping string (shipto/pickup) وليس array، نحفظه
-        if (isset($input['shipping']) && is_string($input['shipping']) && in_array($input['shipping'], ['shipto', 'pickup'])) {
+        // إذا كان shipping string (shipto) وليس array، نحفظه
+        if (isset($input['shipping']) && is_string($input['shipping']) && $input['shipping'] === 'shipto') {
             $originalShippingMethod = $input['shipping'];
         }
 
@@ -126,7 +126,7 @@ class CheckoutBaseControlller extends Controller
             unset($input['packeging']);
         }
 
-        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
+        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto) للعرض في الفاتورة
         $input['shipping'] = $originalShippingMethod;
 
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل (Tryoto وغيرها)

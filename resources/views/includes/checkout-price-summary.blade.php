@@ -182,7 +182,7 @@
                     <span class="right-side courier-fee-display text-success" id="courier-fee-display">{{ $formatPrice(0) }}</span>
                 </div>
             @else
-                {{-- Step 3: Shipping from session (hide if courier/pickup selected) --}}
+                {{-- Step 3: Shipping from session (hide if courier selected) --}}
                 @if($deliveryType === 'shipping')
                 <div class="price-details">
                     <span>@lang('Shipping Cost')</span>
@@ -234,14 +234,6 @@
                 </small>
             </div>
             @endif
-        @elseif($currentStep == 3 && $deliveryType === 'pickup')
-            <div class="price-details">
-                <span>
-                    <i class="fas fa-store me-1"></i>
-                    @lang('Delivery Method')
-                </span>
-                <span class="right-side text-success">@lang('Pickup from Store')</span>
-            </div>
         @endif
 
         {{-- ================================================================

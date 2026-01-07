@@ -93,9 +93,9 @@ class MerchantPurchase extends Model
         return $this->shipping_type === 'courier';
     }
 
-    public function isPickupDelivery(): bool
+    public function isShippingDelivery(): bool
     {
-        return $this->shipping_type === 'pickup';
+        return in_array($this->shipping_type, ['platform', 'merchant']);
     }
 
     public function calculateNetAmount(): float

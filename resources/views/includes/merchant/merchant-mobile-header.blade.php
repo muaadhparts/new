@@ -127,9 +127,9 @@
 
 
             <li
-                class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/pickup-point') || request()->is('merchant/pickup-point/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? 'active' : '' }}">
+                class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? 'active' : '' }}">
                 <a href="#merchant-collapsed-settings"
-                    class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/pickup-point') || request()->is('merchant/pickup-point/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? '' : 'collapsed' }}"
+                    class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? '' : 'collapsed' }}"
                     data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapsed-settings">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path
@@ -142,7 +142,7 @@
                     <span class="label">@lang('Settings')</span>
                     <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
                 </a>
-                <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/pickup-point') || request()->is('merchant/pickup-point/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? 'show' : '' }}"
+                <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? 'show' : '' }}"
                     id="merchant-collapsed-settings">
                     @if ($gs->merchant_ship_info == 1)
                     <li class=""><a
@@ -152,8 +152,8 @@
                             class="sidebar-sub-menu-item {{ request()->is('merchant/package') || request()->is('merchant/package/*') ? 'active' : '' }}"
                             href="{{ route('merchant-package-index') }}">@lang('Packagings CatalogItems')</a></li>
                     <li class=""><a
-                            class="sidebar-sub-menu-item {{ request()->is('merchant/pickup-point') || request()->is('merchant/pickup-point/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-pickup-point-index') }}">@lang('Pickup Point')</a></li>
+                            class="sidebar-sub-menu-item {{ request()->is('merchant/location') || request()->is('merchant/location/*') ? 'active' : '' }}"
+                            href="{{ route('merchant-location-index') }}">@lang('Warehouse Locations')</a></li>
                     @endif
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? 'active' : '' }}"

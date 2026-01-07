@@ -132,4 +132,53 @@ class UserController extends UserBaseController
         return view('user.affilate.affilate-program', compact('user', 'final_affilate_users'));
     }
 
+    /**
+     * Show merchant application form
+     */
+    public function applyMerchant()
+    {
+        $user = $this->user;
+
+        // إذا كان المستخدم تاجر بالفعل، وجهه إلى لوحة التاجر
+        if ($user->is_merchant >= 1) {
+            return redirect()->route('merchant.dashboard');
+        }
+
+        return view('user.apply-merchant', compact('user'));
+    }
+
+    /**
+     * Submit merchant application
+     */
+    public function submitMerchantApplication(Request $request)
+    {
+        $user = $this->user;
+
+        // إذا كان المستخدم تاجر بالفعل
+        if ($user->is_merchant >= 1) {
+            return redirect()->route('merchant.dashboard');
+        }
+
+        $request->validate([
+            'shop_name' => 'required|unique:users,shop_name',
+            'shop_number' => 'nullable|max:10',
+            'shop_address' => 'required',
+        ], [
+            'shop_name.required' => __('Shop name is required.'),
+            'shop_name.unique' => __('This Shop Name has already been taken.'),
+            'shop_number.max' => __('Shop Number Must Be Less Than 10 Digits.'),
+            'shop_address.required' => __('Shop address is required.'),
+        ]);
+
+        // تحديث بيانات المستخدم ليصبح تاجر تحت التحقق
+        $user->shop_name = $request->shop_name;
+        $user->shop_number = $request->shop_number;
+        $user->shop_address = $request->shop_address;
+        $user->shop_message = $request->shop_message;
+        $user->is_merchant = 1; // تحت التحقق
+        $user->save();
+
+        return redirect()->route('merchant.dashboard')->with('success', __('Your merchant application has been submitted. Please wait for admin verification.'));
+    }
+
 }

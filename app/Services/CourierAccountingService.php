@@ -7,7 +7,7 @@ use App\Models\CourierServiceArea;
 use App\Models\CourierSettlement;
 use App\Models\CourierTransaction;
 use App\Models\DeliveryCourier;
-use App\Models\PickupPoint;
+use App\Models\MerchantLocation;
 
 class CourierAccountingService
 {
@@ -23,12 +23,12 @@ class CourierAccountingService
 
     public function canDeliverToCity(int $merchantId, int $customerCityId): bool
     {
-        $merchantPickups = PickupPoint::where('user_id', $merchantId)
+        $merchantHasLocation = MerchantLocation::where('user_id', $merchantId)
             ->where('city_id', $customerCityId)
             ->where('status', 1)
             ->exists();
 
-        if (!$merchantPickups) {
+        if (!$merchantHasLocation) {
             return false;
         }
 

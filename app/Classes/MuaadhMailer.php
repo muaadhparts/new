@@ -39,8 +39,14 @@ class MuaadhMailer
 
     public function sendAutoPurchaseMail(array $mailData, $id)
     {
-//        dd($mailData);
         $temp = EmailTemplate::where('email_type', '=', $mailData['type'])->first();
+
+        // إذا لم يوجد قالب البريد، تخطى الإرسال
+        if (!$temp) {
+            \Log::warning('Email template not found: ' . $mailData['type']);
+            return false;
+        }
+
         $purchase = Purchase::findOrFail($id);
         $cart = json_decode($purchase->cart, true);
         try {
@@ -94,6 +100,12 @@ class MuaadhMailer
     {
 
         $temp = EmailTemplate::where('email_type', '=', $mailData['type'])->first();
+
+        // إذا لم يوجد قالب البريد، تخطى الإرسال
+        if (!$temp) {
+            \Log::warning('Email template not found: ' . $mailData['type']);
+            return false;
+        }
 
         try {
 

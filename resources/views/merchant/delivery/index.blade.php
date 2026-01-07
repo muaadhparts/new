@@ -230,18 +230,18 @@
                                         </a>
                                     @elseif ($delivery && $delivery->status == 'pending')
                                         {{-- ✅ Local Courier assigned - merchant needs to mark ready --}}
-                                        <form action="{{ route('merchant.ready.pickup') }}" method="POST" class="d-inline">
+                                        <form action="{{ route('merchant.ready.courier') }}" method="POST" class="d-inline">
                                             @csrf
                                             <input type="hidden" name="purchase_id" value="{{ $data->id }}">
                                             <button type="submit" class="btn btn-sm btn-success mb-1">
-                                                <i class="fas fa-check-circle"></i> @lang('Ready for Pickup')
+                                                <i class="fas fa-check-circle"></i> @lang('Ready for Courier Collection')
                                             </button>
                                         </form>
                                         <br>
                                         <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">
                                             <i class="fas fa-eye"></i> @lang('View')
                                         </a>
-                                    @elseif ($delivery && in_array($delivery->status, ['ready_for_pickup', 'accepted']))
+                                    @elseif ($delivery && in_array($delivery->status, ['ready_for_courier_collection', 'accepted']))
                                         {{-- Waiting for courier to pick up or deliver --}}
                                         <span class="badge bg-info mb-1">
                                             <i class="fas fa-clock"></i> @lang('Waiting for Courier')
@@ -380,11 +380,11 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Select Pickup Point')</label>
-                                    <select class="form-select" name="pickup_point_id" id="pickupPointSelect" required>
-                                        <option value="">@lang('Select Pickup Point')</option>
-                                        @foreach (App\Models\PickupPoint::where('user_id', auth()->id())->whereStatus(1)->get() as $pickup)
-                                            <option value="{{ $pickup->id }}">{{ $pickup->location }}</option>
+                                    <label class="form-label">@lang('Select Warehouse Location')</label>
+                                    <select class="form-select" name="merchant_location_id" id="merchantLocationSelect" required>
+                                        <option value="">@lang('Select Warehouse Location')</option>
+                                        @foreach (App\Models\MerchantLocation::where('user_id', auth()->id())->whereStatus(1)->get() as $location)
+                                            <option value="{{ $location->id }}">{{ $location->location }}</option>
                                         @endforeach
                                     </select>
                                 </div>

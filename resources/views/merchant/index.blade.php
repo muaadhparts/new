@@ -8,6 +8,19 @@
         </div>
         <!-- breadcrumb end -->
 
+        {{-- تنبيه التاجر تحت التحقق --}}
+        @if(auth()->user()->is_merchant == 1)
+            <div class="m-alert m-alert--warning mb-4">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-exclamation-triangle me-3 fs-4"></i>
+                    <div>
+                        <h5 class="mb-1">@lang('Account Pending Verification')</h5>
+                        <p class="mb-0">@lang('Your merchant account is under review. You can view your dashboard but cannot perform actions until your account is verified by the administrator.')</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Info cards area start -->
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 row-cols-xxl-4 gy-4">
             <div class="col">

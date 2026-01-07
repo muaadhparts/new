@@ -166,9 +166,9 @@ trait HandlesMerchantCheckout
     }
 
     /**
-     * Create DeliveryCourier record for courier or pickup delivery
+     * Create DeliveryCourier record for local courier delivery
      *
-     * Called after purchase creation when delivery_type is 'local_courier' or 'pickup'
+     * Called after purchase creation when delivery_type is 'local_courier'
      *
      * @param \App\Models\Purchase $purchase The created purchase
      * @param int $merchantId The merchant ID from route
@@ -181,8 +181,8 @@ trait HandlesMerchantCheckout
         // Get delivery type from step2
         $deliveryType = $step2['delivery_type'] ?? null;
 
-        // Only create record for courier or pickup delivery
-        if (!in_array($deliveryType, ['local_courier', 'pickup'])) {
+        // Only create record for local courier delivery
+        if ($deliveryType !== 'local_courier') {
             return null;
         }
 
@@ -191,13 +191,8 @@ trait HandlesMerchantCheckout
         $serviceAreaId = $step2['selected_service_area_id'] ?? null;
         $courierFee = (float)($step2['courier_fee'] ?? 0);
 
-        // For courier delivery, both courier_id and service_area_id are required
-        if ($deliveryType === 'local_courier' && !$courierId) {
-            return null;
-        }
-
-        // For pickup, only merchant_location_id is required
-        if ($deliveryType === 'pickup' && !$merchantLocationId) {
+        // For courier delivery, courier_id is required
+        if (!$courierId) {
             return null;
         }
 
@@ -218,7 +213,6 @@ trait HandlesMerchantCheckout
             'payment_method' => $paymentMethod,
             'fee_status' => 'pending',
             'settlement_status' => 'pending',
-            'notes' => $deliveryType === 'pickup' ? 'Pickup from store' : null,
         ]);
 
         \Log::info('DeliveryCourier created', [

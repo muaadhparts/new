@@ -141,12 +141,12 @@ trait CreatesTryotoShipments
             // 2) Quick display and explanation
             $first = $otoPayloads[0];
 
-            // لا نُعيد تعيين $purchase->shipping لأنها تحتوي على طريقة التوصيل (shipto/pickup)
+            // لا نُعيد تعيين $purchase->shipping لأنها تحتوي على طريقة التوصيل (shipto)
             // بدلاً من ذلك، نحفظ معلومات Tryoto في shipping_title فقط
             $purchase->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
 
             // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
-            if (empty($purchase->shipping) || !in_array($purchase->shipping, ['shipto', 'pickup'])) {
+            if (empty($purchase->shipping) || $purchase->shipping !== 'shipto') {
                 $purchase->shipping = 'shipto';
             }
 

@@ -107,6 +107,12 @@ class RegisterController extends Controller
             $mailer->sendAutoMail($data);
 
             Auth::login($user);
+
+            // إذا سجل كتاجر، وجهه إلى لوحة التاجر
+            if ($user->is_merchant >= 1) {
+                return redirect()->route('merchant.dashboard')->with('success', __('Registration Successful. Your merchant account is pending verification.'));
+            }
+
             return redirect()->route('user-dashboard')->with('success', __('Registration Successful'));
         }
 
@@ -138,6 +144,12 @@ class RegisterController extends Controller
                 $mailer->sendAutoMail($data);
 
                 Auth::login($user);
+
+                // إذا كان تاجر، وجهه إلى لوحة التاجر
+                if ($user->is_merchant >= 1) {
+                    return redirect()->route('merchant.dashboard')->with('success', __('Email Verified Successfully. Your merchant account is pending verification.'));
+                }
+
                 return redirect()->route('user-dashboard')->with('success', __('Email Verified Successfully'));
             }
         } else {

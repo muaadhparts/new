@@ -20,10 +20,10 @@
                         <li class="nav-item">
                             <a class="nav-link {{ !request()->input('type') ? 'active' : '' }}"
                                href="{{ route('courier-purchases') }}">
-                                <i class="fas fa-box-open"></i> @lang('Ready for Pickup')
+                                <i class="fas fa-box-open"></i> @lang('Ready for Courier Collection')
                                 @php
                                     $readyCount = \App\Models\DeliveryCourier::where('courier_id', auth('courier')->id())
-                                        ->whereIn('status', ['ready_for_pickup', 'accepted'])
+                                        ->whereIn('status', ['ready_for_courier_collection', 'accepted'])
                                         ->count();
                                 @endphp
                                 @if($readyCount > 0)
@@ -57,7 +57,7 @@
                     @if(!request()->input('type'))
                         <div class="alert alert-success mb-3">
                             <i class="fas fa-info-circle me-2"></i>
-                            @lang('These orders are ready for pickup from merchants. Accept and deliver them to earn!')
+                            @lang('These orders are ready for courier collection from merchants. Accept and deliver them to earn!')
                         </div>
                     @elseif(request()->input('type') == 'pending')
                         <div class="alert alert-warning mb-3">
@@ -74,7 +74,7 @@
                                     <th>{{ __('#Purchase') }}</th>
                                     <th>{{ __('Merchant') }}</th>
                                     <th>{{ __('Delivery Area') }}</th>
-                                    <th>{{ __('Pickup Point') }}</th>
+                                    <th>{{ __('Merchant Location') }}</th>
                                     <th>{{ __('Delivery Fee') }}</th>
                                     <th>{{ __('Status') }}</th>
                                     <th>{{ __('Actions') }}</th>
@@ -134,8 +134,8 @@
                                         <td data-label="{{ __('Status') }}">
                                             @if($delivery->status == 'pending')
                                                 <span class="badge bg-warning text-dark">@lang('Pending Merchant')</span>
-                                            @elseif($delivery->status == 'ready_for_pickup')
-                                                <span class="badge bg-success">@lang('Ready for Pickup')</span>
+                                            @elseif($delivery->status == 'ready_for_courier_collection')
+                                                <span class="badge bg-success">@lang('Ready for Courier Collection')</span>
                                             @elseif($delivery->status == 'accepted')
                                                 <span class="badge bg-primary">@lang('Accepted')</span>
                                             @elseif($delivery->status == 'delivered')
@@ -149,7 +149,7 @@
 
                                         {{-- Actions --}}
                                         <td data-label="{{ __('Actions') }}">
-                                            @if($delivery->status == 'ready_for_pickup')
+                                            @if($delivery->status == 'ready_for_courier_collection')
                                                 <a href="{{ route('courier-purchase-delivery-accept', $delivery->id) }}"
                                                    class="btn btn-sm btn-success mb-1">
                                                     <i class="fas fa-check"></i> @lang('Accept')

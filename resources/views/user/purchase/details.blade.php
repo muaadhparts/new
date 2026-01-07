@@ -166,30 +166,6 @@
                                         </li>
                                     </ul>
                                 </div>
-                            @else
-                                <div class="address-item">
-                                    <h5>
-                                        @lang('Pickup Address')
-                                    </h5>
-                                    <ul>
-
-                                        <li>
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
-                                                <path
-                                                    d="M12 12.5C13.6569 12.5 15 11.1569 15 9.5C15 7.84315 13.6569 6.5 12 6.5C10.3431 6.5 9 7.84315 9 9.5C9 11.1569 10.3431 12.5 12 12.5Z"
-                                                    stroke="#4C3533" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
-                                                <path
-                                                    d="M12 22C14 18 20 15.4183 20 10C20 5.58172 16.4183 2 12 2C7.58172 2 4 5.58172 4 10C4 15.4183 10 18 12 22Z"
-                                                    stroke="#4C3533" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
-                                            </svg>
-
-                                            {{ $purchase->pickup_location }}
-                                        </li>
-                                    </ul>
-                                </div>
                             @endif
                         @endif
 
@@ -292,7 +268,7 @@
                                     @php
                                         // Check if this purchase has local courier delivery
                                         $deliveryCourier = \App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
-                                            ->with(['courier', 'pickup'])
+                                            ->with(['courier', 'merchantLocation'])
                                             ->first();
                                     @endphp
 
@@ -342,8 +318,8 @@
                                                     <strong>@lang('Status'):</strong>
                                                     @if($deliveryCourier->status == 'pending')
                                                         <span class="badge bg-warning">@lang('Pending')</span>
-                                                    @elseif($deliveryCourier->status == 'ready_for_pickup')
-                                                        <span class="badge bg-info">@lang('Ready for Pickup')</span>
+                                                    @elseif($deliveryCourier->status == 'ready_for_courier_collection')
+                                                        <span class="badge bg-info">@lang('Ready for Courier Collection')</span>
                                                     @elseif($deliveryCourier->status == 'accepted')
                                                         <span class="badge bg-primary">@lang('In Transit')</span>
                                                     @elseif($deliveryCourier->status == 'delivered')
@@ -383,12 +359,6 @@
                                             @else
                                                 <p class="text-muted">@lang('Shipping to your address')</p>
                                             @endif
-                                        </div>
-                                    @else
-                                        {{-- Pickup --}}
-                                        <div class="d-flex align-items-center gap-2">
-                                            <i class="fas fa-store text-info"></i>
-                                            <p class="mb-0">{{ __('Pick Up from Store') }}</p>
                                         </div>
                                     @endif
                                 </div>

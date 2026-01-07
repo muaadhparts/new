@@ -154,12 +154,6 @@
                         <h5 class="title">@lang('Shipping Address')</h5>
                         <ul class="info-list">
 
-                            @if ($purchase->shipping == 'pickup')
-                                <li class="info-list-item">
-                                    <span class="info-type">@lang('Pickup Location')</span> <span
-                                        class="info">{{ $purchase->pickup_location }}</span>
-                                </li>
-                            @else
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Name')</span> <span
                                         class="info">{{ $purchase->customer_name }}</span>
@@ -188,7 +182,6 @@
                                     <span class="info-type">@lang('Postal Code')</span> <span
                                         class="info">{{ $purchase->customer_zip }}</span>
                                 </li>
-                            @endif
                         </ul>
                     </div>
                 </div>

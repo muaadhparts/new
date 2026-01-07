@@ -643,18 +643,6 @@ Route::prefix('operator')->group(function () {
 
         // Deal Of The Day
 
-        //------------ OPERATORPICKUP LOACTION ------------
-
-        Route::get('/pickup/datatables', 'Operator\PickupController@datatables')->name('operator-pick-datatables'); //JSON REQUEST
-        Route::get('/pickup', 'Operator\PickupController@index')->name('operator-pick-index');
-        Route::get('/pickup/create', 'Operator\PickupController@create')->name('operator-pick-create');
-        Route::post('/pickup/create', 'Operator\PickupController@store')->name('operator-pick-store');
-        Route::get('/pickup/edit/{id}', 'Operator\PickupController@edit')->name('operator-pick-edit');
-        Route::post('/pickup/edit/{id}', 'Operator\PickupController@update')->name('operator-pick-update');
-        Route::delete('/pickup/delete/{id}', 'Operator\PickupController@destroy')->name('operator-pick-delete');
-
-        //------------ OPERATORPICKUP LOACTION ENDS ------------
-
         //------------ OPERATORSHIPPING ------------
 
         Route::get('/shipping/datatables', 'Operator\ShippingController@datatables')->name('operator-shipping-datatables');
@@ -1125,7 +1113,7 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/track-shipment', 'Merchant\DeliveryController@trackShipment')->name('merchant.track.shipment');
             Route::get('delivery/shipment-history/{purchaseId}', 'Merchant\DeliveryController@shipmentHistory')->name('merchant.shipment.history');
             Route::post('delivery/cancel-shipment', 'Merchant\DeliveryController@cancelShipment')->name('merchant.cancel.shipment');
-            Route::post('delivery/ready-for-pickup', 'Merchant\DeliveryController@markReadyForPickup')->name('merchant.ready.pickup');
+            Route::post('delivery/ready-for-courier', 'Merchant\DeliveryController@markReadyForCourierCollection')->name('merchant.ready.courier');
             Route::get('delivery/stats', 'Merchant\DeliveryController@shippingStats')->name('merchant.shipping.stats');
             Route::get('delivery/purchase-status/{purchaseId}', 'Merchant\DeliveryController@getPurchaseShipmentStatus')->name('merchant.purchase.shipment.status');
 
@@ -1395,7 +1383,10 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/logout', 'User\LoginController@logout')->name('user-logout');
         Route::get('/dashboard', 'User\UserController@index')->name('user-dashboard');
 
-      
+        // Merchant Application (for regular users to become merchants)
+        Route::get('/apply-merchant', 'User\UserController@applyMerchant')->name('user.apply-merchant');
+        Route::post('/apply-merchant', 'User\UserController@submitMerchantApplication')->name('user.apply-merchant-submit');
+
         // User Reset
         Route::get('/reset', 'User\UserController@resetform')->name('user-reset');
         Route::post('/reset', 'User\UserController@reset')->name('user-reset-submit');

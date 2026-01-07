@@ -262,9 +262,6 @@
             <a href="{{ route('operator-package-index') }}"><span>{{ __('Packagings') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('operator-pick-index') }}"><span>{{ __('Pickup Locations') }}</span></a>
-        </li>
-        <li>
             <a href="{{ route('operator-gs-contents') }}"><span>{{ __('Website Contents') }}</span></a>
         </li>
         <li>

@@ -152,31 +152,8 @@
                         <div class="mb-40">
                             <h4 class="form-title">@lang('Billing Details')</h4>
                             <div class="row g-4">
-                                {{-- OLD SHIPPING DROPDOWN - Hidden for merchant checkout (uses new delivery options) --}}
-                                @if(!(isset($is_merchant_checkout) && $is_merchant_checkout))
-                                <div class="col-lg-6 {{ $digital == 1 ? 'd-none' : '' }}">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="Shipping">@lang('Shipping')</label>
-                                        <select class="input-cls nice-select" id="shipop" name="shipping" required="">
-                                            <option value="shipto">{{ __('Ship To Address') }}</option>
-                                            <option value="pickup">{{ __('Pick Up') }}</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6 d-none" id="shipshow">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="Shipping">@lang('Shipping')</label>
-                                        <select class="input-cls" name="pickup_location">
-                                            @foreach ($pickups as $pickup)
-                                                <option value="{{ $pickup->location }}">
-                                                    {{ $pickup->location }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                </div>
-                                @endif
-                                {{-- END: Old shipping dropdown --}}
+                                {{-- Shipping is always 'shipto' (delivery to customer address) --}}
+                                <input type="hidden" name="shipping" value="shipto">
 
 
                                 <div class="col-lg-6">
@@ -657,14 +634,6 @@
         }
 
 
-        $('#shipop').on('change', function() {
-            var val = $(this).val();
-            if (val == 'pickup') {
-                $('#shipshow').removeClass('d-none');
-            } else {
-                $('#shipshow').addClass('d-none');
-            }
-        });
     </script>
 
     {{-- Modal & Google Places fixes --}}

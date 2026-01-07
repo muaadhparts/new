@@ -766,7 +766,7 @@ class CheckoutController extends Controller
             $purchase->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
 
             // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
-            if (empty($purchase->shipping) || !in_array($purchase->shipping, ['shipto', 'pickup'])) {
+            if (empty($purchase->shipping) || $purchase->shipping !== 'shipto') {
                 $purchase->shipping = 'shipto';
             }
 

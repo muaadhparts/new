@@ -62,7 +62,7 @@ class IncomeController extends Controller
             'merchant_payments' => $currencySign . number_format($report['merchant_payments'], 2),
             'platform_payments' => $currencySign . number_format($report['platform_payments'], 2),
             'courier_deliveries' => $report['courier_deliveries'],
-            'pickup_deliveries' => $report['pickup_deliveries'],
+            'shipping_deliveries' => $report['shipping_deliveries'],
         ]);
     }
 }

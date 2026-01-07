@@ -286,13 +286,6 @@
                     <div class="table-responsive-sm">
                         <table class="table">
                             <tbody>
-                                @if($purchase->shipping == "pickup")
-                                <tr>
-                                    <th width="45%"><strong>{{ __('Pickup Location') }}:</strong></th>
-                                    <th width="10%">:</th>
-                                    <td width="45%">{{$purchase->pickup_location}}</td>
-                                </tr>
-                                @else
                                 <tr>
                                     <th width="45%"><strong>{{ __('Name') }}:</strong></th>
                                     <th width="10%">:</th>
@@ -340,9 +333,6 @@
                                     <td width="45%">{{$purchase->shipping_zip == null ? $purchase->customer_zip :
                                         $purchase->shipping_zip}}</td>
                                 </tr>
-
-
-                                @endif
                             </tbody>
                         </table>
                     </div>

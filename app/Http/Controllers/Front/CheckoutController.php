@@ -55,7 +55,7 @@ use App\Models\City;
 use App\Models\Country;
 use App\Models\Purchase;
 use App\Models\MerchantPayment;
-use App\Models\PickupPoint;
+use App\Models\MerchantLocation;
 use App\Models\CourierServiceArea;
 use App\Services\MerchantCartService;
 use App\Services\CheckoutDataService;
@@ -126,7 +126,6 @@ class CheckoutController extends FrontBaseController
         $merchant_shipping_id = 0;
         $merchant_packing_id = 0;
         $curr = $this->curr;
-        $pickups = DB::table('pickups')->get();
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
         $cartItems = $cart->items;
@@ -173,7 +172,7 @@ class CheckoutController extends FrontBaseController
 //            dd($total ,$cart->items);
 
             // Note: 'catalogItems' kept for backward compatibility in views
-            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -217,12 +216,12 @@ class CheckoutController extends FrontBaseController
                         if (!Auth::check()) {
                             $ck = 1;
                             // Note: 'catalogItems' kept for backward compatibility in views
-                            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
                         }
                     }
                 }
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -261,7 +260,7 @@ class CheckoutController extends FrontBaseController
                 }
                 $ck = 1;
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
         }
     }
@@ -285,7 +284,6 @@ class CheckoutController extends FrontBaseController
         $merchant_shipping_id = 0;
         $merchant_packing_id = 0;
         $curr = $this->curr;
-        $pickups = DB::table('pickups')->get();
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
         $cartItems = $cart->items;
@@ -335,7 +333,7 @@ class CheckoutController extends FrontBaseController
             $step2Data = $this->prepareStep2MerchantData($cartItems, $step1);
 
             // Note: 'catalogItems' kept for backward compatibility in views
-            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -382,13 +380,13 @@ class CheckoutController extends FrontBaseController
                         if (!Auth::check()) {
                             $ck = 1;
                             // Note: 'catalogItems' kept for backward compatibility in views
-                            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
                         }
                     }
                 }
 //                dd($cartItems);
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -431,7 +429,7 @@ class CheckoutController extends FrontBaseController
                 $step2Data = $this->prepareStep2MerchantData($cartItems, $step1);
 
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'pickups' => $pickups, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
             }
         }
     }
@@ -478,8 +476,7 @@ class CheckoutController extends FrontBaseController
             'latitude' => (float) $step1['latitude'],
             'longitude' => (float) $step1['longitude'],
             'country_id' => $step1['country_id'] ?? null,
-            'shipping' => $step1['shipping'] ?? 'shipto',
-            'pickup_location' => $step1['pickup_location'] ?? null,
+            'shipping' => 'shipto', // Always delivery to customer address
             'create_account' => $step1['create_account'] ?? null,
             'password' => $step1['password'] ?? null,
             'password_confirmation' => $step1['password_confirmation'] ?? null,
@@ -799,7 +796,6 @@ class CheckoutController extends FrontBaseController
         $merchant_packing_id = 0;
         $curr = $this->curr;
         $gateways = MerchantPayment::scopeHasGateway($this->curr->id);
-        $pickups = DB::table('pickups')->get();
 
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
@@ -846,7 +842,6 @@ class CheckoutController extends FrontBaseController
         return view('frontend.checkout.step3', [
             'catalogItems'            => $cart->items,
             'totalPrice'          => $total,
-            'pickups'             => $pickups,
             'totalQty'            => $cart->totalQty,
             'gateways'            => $gateways,
             'shipping_cost'       => $step2->shipping_cost ?? 0,
@@ -1127,15 +1122,13 @@ class CheckoutController extends FrontBaseController
         // catalogItemsTotal = RAW price (no discount deduction)
         $catalogItemsTotal = $totalPrice;
 
-        $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
         return view('frontend.checkout.step1', [
             'catalogItems' => $merchantItems,
             'catalogItemsTotal' => $catalogItemsTotal, // ✅ RAW catalogItems total (no discount)
             'totalPrice' => $catalogItemsTotal, // Backward compatibility
-            'pickups' => $pickups,
-            'totalQty' => $totalQty,
+                        'totalQty' => $totalQty,
             'shipping_cost' => 0,
             'digital' => $dp,
             'curr' => $curr,
@@ -1227,8 +1220,7 @@ class CheckoutController extends FrontBaseController
             'latitude' => (float) $step1['latitude'],
             'longitude' => (float) $step1['longitude'],
             'country_id' => $step1['country_id'] ?? null,
-            'shipping' => $step1['shipping'] ?? 'shipto',
-            'pickup_location' => $step1['pickup_location'] ?? null,
+            'shipping' => 'shipto', // Always delivery to customer address
             'create_account' => $step1['create_account'] ?? null,
             'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
@@ -1244,11 +1236,11 @@ class CheckoutController extends FrontBaseController
             // ========================================================================
             // DELIVERY OPTIONS (from Step 1 location selection)
             // ========================================================================
-            'delivery_type' => $step1['delivery_type'] ?? null, // 'local_courier', 'pickup', 'shipping_company', or null
+            'delivery_type' => $step1['delivery_type'] ?? null, // 'local_courier', 'shipping_company', or null
             'selected_courier_id' => !empty($step1['selected_courier_id']) ? (int)$step1['selected_courier_id'] : null,
             'selected_courier_fee' => !empty($step1['selected_courier_fee']) ? (float)$step1['selected_courier_fee'] : 0,
             'selected_service_area_id' => !empty($step1['selected_service_area_id']) ? (int)$step1['selected_service_area_id'] : null,
-            'selected_pickup_point_id' => !empty($step1['selected_pickup_point_id']) ? (int)$step1['selected_pickup_point_id'] : null,
+            'selected_merchant_location_id' => !empty($step1['selected_merchant_location_id']) ? (int)$step1['selected_merchant_location_id'] : null,
             'customer_city_id' => !empty($step1['customer_city_id']) ? (int)$step1['customer_city_id'] : null,
         ];
 
@@ -1328,12 +1320,12 @@ class CheckoutController extends FrontBaseController
 
         // ========================================================================
         // DELIVERY TYPE ROUTING
-        // If delivery_type is 'local_courier' or 'pickup', auto-create step2 data
+        // If delivery_type is 'local_courier', auto-create step2 data
         // and skip to step3 (no shipping selection needed)
         // ========================================================================
         $deliveryType = $step1Data['delivery_type'] ?? null;
 
-        if ($deliveryType === 'local_courier' || $deliveryType === 'pickup') {
+        if ($deliveryType === 'local_courier') {
             // Auto-populate step2 data based on delivery selection
             $courierFee = 0;
             $courierName = null;
@@ -1379,7 +1371,7 @@ class CheckoutController extends FrontBaseController
                 'courier_id' => $step1Data['selected_courier_id'] ?? null,
                 'courier_name' => $courierName,
                 'courier_fee' => $courierFee,
-                'pickup_point_id' => $step1Data['selected_pickup_point_id'] ?? null,
+                'merchant_location_id' => $step1Data['selected_merchant_location_id'] ?? null,
                 'customer_city_id' => $step1Data['customer_city_id'] ?? null,
             ];
 
@@ -1424,7 +1416,6 @@ class CheckoutController extends FrontBaseController
         $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
         // No fallback to user 0 - if merchant has no packages, collection will be empty
 
-        $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
         // N+1 FIX: Pre-load all merchant data
@@ -1447,8 +1438,7 @@ class CheckoutController extends FrontBaseController
             'catalogItems' => $merchantItems, // Keep for backward compatibility
             'catalogItemsTotal' => $totalPrice, // Items total only - shipping/packing added dynamically
             'totalPrice' => $totalPrice, // Backward compatibility
-            'pickups' => $pickups,
-            'totalQty' => $totalQty,
+                        'totalQty' => $totalQty,
             'shipping_cost' => 0,
             'digital' => $dp,
             'curr' => $curr,
@@ -1467,7 +1457,7 @@ class CheckoutController extends FrontBaseController
             // Courier delivery data
             'courier_available' => $courierData['available'],
             'available_couriers' => $courierData['couriers'],
-            'merchant_pickup_points' => $courierData['pickup_points'],
+            'merchant_locations' => $courierData['merchant_locations'],
             'customer_city_id' => $courierData['customer_city_id'],
         ]);
     }
@@ -1686,14 +1676,14 @@ class CheckoutController extends FrontBaseController
         $courierId = null;
         $courierFee = 0.0;
         $courierName = null;
-        $pickupPointId = null;
+        $merchantLocationId = null;
         $deliveryType = 'shipping'; // Default: regular shipping
 
         // Check if courier delivery was selected (local_courier = المندوب المحلي)
         if (isset($step2['delivery_type']) && $step2['delivery_type'] === 'local_courier') {
             $deliveryType = 'local_courier';
             $courierId = (int)($step2['courier_id'] ?? 0);
-            $pickupPointId = (int)($step2['pickup_point_id'] ?? 0);
+            $merchantLocationId = (int)($step2['merchant_location_id'] ?? 0);
 
             if ($courierId > 0) {
                 // Get courier fee from service area (try city_id first, then coordinates)
@@ -1734,19 +1724,6 @@ class CheckoutController extends FrontBaseController
             $is_free_shipping = false;
             $original_shipping_cost = 0;
             $free_shipping_discount = 0;
-        }
-        // Check if pickup was selected (no delivery)
-        elseif (isset($step2['delivery_type']) && $step2['delivery_type'] === 'pickup') {
-            $deliveryType = 'pickup';
-            $pickupPointId = (int)($step2['pickup_point_id'] ?? 0);
-
-            // Clear all shipping costs
-            $shipping_cost_total = 0;
-            $shipping_name = null;
-            $is_free_shipping = false;
-            $original_shipping_cost = 0;
-            $free_shipping_discount = 0;
-            $courierFee = 0;
         }
 
         // Get tax data from merchant step1
@@ -1789,11 +1766,11 @@ class CheckoutController extends FrontBaseController
         $step2['final_total'] = $grandTotal;                         // ✅ Alias
 
         // ✅ Courier delivery data
-        $step2['delivery_type'] = $deliveryType;                     // 'shipping', 'courier', 'pickup'
+        $step2['delivery_type'] = $deliveryType;                     // 'shipping' or 'local_courier'
         $step2['courier_id'] = $courierId;
         $step2['courier_name'] = $courierName;
         $step2['courier_fee'] = $courierFee;
-        $step2['pickup_point_id'] = $pickupPointId;
+        $step2['merchant_location_id'] = $merchantLocationId;
 
         // ✅ Save raw shipping/packing selections for restore on refresh/back
         if (isset($step2['shipping']) && is_array($step2['shipping'])) {
@@ -1865,7 +1842,6 @@ class CheckoutController extends FrontBaseController
         $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
         // No fallback to user 0 - if merchant has no packages, collection will be empty
 
-        $pickups = DB::table('pickups')->get();
         $curr = $this->curr;
 
         $paystack = MerchantPayment::whereKeyword('paystack')->first();
@@ -1883,8 +1859,7 @@ class CheckoutController extends FrontBaseController
             'catalogItems' => $merchantItems,
             'catalogItemsTotal' => $catalogItemsTotal, // CatalogItems only - ALWAYS for "Total MRP" display
             'totalPrice' => $catalogItemsTotal, // Keep same as catalogItemsTotal for backward compatibility
-            'pickups' => $pickups,
-            'totalQty' => $totalQty,
+                        'totalQty' => $totalQty,
             'gateways' => $gateways,
             'shipping_cost' => $step2->shipping_cost ?? 0,
             'digital' => $dp,
@@ -2032,7 +2007,7 @@ class CheckoutController extends FrontBaseController
      * API: Get delivery options based on customer's city
      *
      * Called via AJAX when customer selects location from map
-     * Returns available delivery methods: local courier, pickup, shipping companies
+     * Returns available delivery methods: local courier, shipping companies
      *
      * @param Request $request
      * @param int $merchantId
@@ -2060,8 +2035,7 @@ class CheckoutController extends FrontBaseController
             'city_matched' => false,
             'delivery_options' => [],
             'local_couriers' => [],
-            'pickup_available' => false,
-            'pickup_points' => [],
+            'merchant_locations' => [],
         ];
 
         // ========================================================================
@@ -2078,8 +2052,8 @@ class CheckoutController extends FrontBaseController
         // 2. CHECK LOCAL COURIERS (only if customer is in merchant's service area)
         // ========================================================================
         if ($customerCityId) {
-            // Check if merchant has pickup points (warehouse) in customer's city
-            $merchantHasWarehouseInCity = PickupPoint::where('user_id', $merchantId)
+            // Check if merchant has warehouse locations in customer's city
+            $merchantHasWarehouseInCity = MerchantLocation::where('user_id', $merchantId)
                 ->where('city_id', $customerCityId)
                 ->where('status', 1)
                 ->exists();
@@ -2123,7 +2097,7 @@ class CheckoutController extends FrontBaseController
      * Get courier delivery data for a merchant and customer location.
      *
      * Checks if:
-     * 1. Merchant has pickup points in customer's city
+     * 1. Merchant has warehouse locations in customer's city
      * 2. Couriers are available in customer's city
      *
      * @param int $merchantId
@@ -2135,7 +2109,7 @@ class CheckoutController extends FrontBaseController
         $result = [
             'available' => false,
             'couriers' => [],
-            'pickup_points' => [],
+            'merchant_locations' => [],
             'customer_city_id' => null,
         ];
 
@@ -2171,17 +2145,17 @@ class CheckoutController extends FrontBaseController
         // ========================================================================
         // STRATEGY 1: Search by city_id (exact match)
         // ========================================================================
-        $merchantPickupPoints = collect();
+        $merchantLocations = collect();
         $serviceAreas = collect();
 
         if ($customerCityId) {
-            // Check if merchant has pickup points in customer's city
-            $merchantPickupPoints = PickupPoint::where('user_id', $merchantId)
+            // Check if merchant has warehouse locations in customer's city
+            $merchantLocations = MerchantLocation::where('user_id', $merchantId)
                 ->where('city_id', $customerCityId)
                 ->where('status', 1)
                 ->get();
 
-            if ($merchantPickupPoints->isNotEmpty()) {
+            if ($merchantLocations->isNotEmpty()) {
                 // Get available couriers for this city
                 $serviceAreas = CourierServiceArea::where('city_id', $customerCityId)
                     ->with('courier')
@@ -2197,15 +2171,15 @@ class CheckoutController extends FrontBaseController
         // Used when city matching fails but coordinates are available
         // ========================================================================
         if ($serviceAreas->isEmpty() && $customerLat && $customerLng) {
-            // Find merchant pickup points within radius using Haversine formula
-            $merchantPickupPoints = $this->findPickupPointsNearLocation(
+            // Find merchant locations within radius using Haversine formula
+            $merchantLocations = $this->findMerchantLocationsNearLocation(
                 $merchantId,
                 $customerLat,
                 $customerLng,
                 20 // Default 20km radius
             );
 
-            if ($merchantPickupPoints->isNotEmpty()) {
+            if ($merchantLocations->isNotEmpty()) {
                 // Find courier service areas within radius
                 $serviceAreas = $this->findCourierServiceAreasNearLocation(
                     $customerLat,
@@ -2215,12 +2189,12 @@ class CheckoutController extends FrontBaseController
             }
         }
 
-        // No pickup points found = no courier delivery available
-        if ($merchantPickupPoints->isEmpty()) {
+        // No merchant locations found = no courier delivery available
+        if ($merchantLocations->isEmpty()) {
             return $result;
         }
 
-        $result['pickup_points'] = $merchantPickupPoints;
+        $result['merchant_locations'] = $merchantLocations;
 
         // No couriers found
         if ($serviceAreas->isEmpty()) {
@@ -2251,7 +2225,7 @@ class CheckoutController extends FrontBaseController
     }
 
     /**
-     * Find merchant pickup points within radius using Haversine formula
+     * Find merchant locations within radius using Haversine formula
      *
      * @param int $merchantId
      * @param float $lat Customer latitude
@@ -2259,11 +2233,11 @@ class CheckoutController extends FrontBaseController
      * @param int $radiusKm Search radius in kilometers
      * @return \Illuminate\Support\Collection
      */
-    protected function findPickupPointsNearLocation(int $merchantId, float $lat, float $lng, int $radiusKm = 20)
+    protected function findMerchantLocationsNearLocation(int $merchantId, float $lat, float $lng, int $radiusKm = 20)
     {
         // Haversine formula to calculate distance
         // 6371 = Earth's radius in km
-        return PickupPoint::where('user_id', $merchantId)
+        return MerchantLocation::where('user_id', $merchantId)
             ->where('status', 1)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')

@@ -10,7 +10,7 @@ use App\Models\Package;
 use App\Models\MerchantCommission;
 use App\Models\MerchantTaxSetting;
 use App\Models\CourierServiceArea;
-use App\Models\PickupPoint;
+use App\Models\MerchantLocation;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -742,17 +742,17 @@ class CheckoutPriceService
 
     /**
      * Check if courier delivery is available for a city
-     * Checks if merchant has a pickup point in that city AND couriers serve that city
+     * Checks if merchant has a warehouse location in that city AND couriers serve that city
      */
     public function canDeliverToCity(int $merchantId, int $customerCityId): bool
     {
-        // Check if merchant has a pickup point in customer's city
-        $merchantHasPickupInCity = PickupPoint::where('user_id', $merchantId)
+        // Check if merchant has a warehouse location in customer's city
+        $merchantHasLocationInCity = MerchantLocation::where('user_id', $merchantId)
             ->where('city_id', $customerCityId)
             ->where('status', 1)
             ->exists();
 
-        if (!$merchantHasPickupInCity) {
+        if (!$merchantHasLocationInCity) {
             return false;
         }
 
@@ -804,22 +804,22 @@ class CheckoutPriceService
     }
 
     /**
-     * Get merchant pickup points in a specific city
+     * Get merchant warehouse locations in a specific city
      */
-    public function getMerchantPickupPointsInCity(int $merchantId, int $cityId): \Illuminate\Database\Eloquent\Collection
+    public function getMerchantLocationsInCity(int $merchantId, int $cityId): \Illuminate\Database\Eloquent\Collection
     {
-        return PickupPoint::where('user_id', $merchantId)
+        return MerchantLocation::where('user_id', $merchantId)
             ->where('city_id', $cityId)
             ->where('status', 1)
             ->get();
     }
 
     /**
-     * Get all merchant pickup points
+     * Get all merchant warehouse locations
      */
-    public function getMerchantPickupPoints(int $merchantId): \Illuminate\Database\Eloquent\Collection
+    public function getMerchantLocations(int $merchantId): \Illuminate\Database\Eloquent\Collection
     {
-        return PickupPoint::where('user_id', $merchantId)
+        return MerchantLocation::where('user_id', $merchantId)
             ->where('status', 1)
             ->get();
     }
@@ -863,7 +863,7 @@ class CheckoutPriceService
         // 6. Get courier info from options
         $courierId = $options['courier_id'] ?? null;
         $courierFee = (float)($options['courier_fee'] ?? 0);
-        $pickupPointId = $options['pickup_point_id'] ?? null;
+        $merchantLocationId = $options['merchant_location_id'] ?? null;
 
         // 7. Determine payment type and money receiver
         $paymentType = $options['payment_type'] ?? 'platform';
@@ -901,7 +901,7 @@ class CheckoutPriceService
             // Courier
             'courier_id' => $courierId,
             'courier_fee' => $courierFee,
-            'pickup_point_id' => $pickupPointId,
+            'merchant_location_id' => $merchantLocationId,
 
             // Payment
             'payment_type' => $paymentType,
@@ -956,9 +956,9 @@ class CheckoutPriceService
             return 'courier';
         }
 
-        // If no shipping, it's pickup
+        // If no shipping selected, default to platform shipping
         if (!$shippingId) {
-            return 'pickup';
+            return 'platform';
         }
 
         $shipping = Shipping::find($shippingId);

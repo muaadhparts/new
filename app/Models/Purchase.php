@@ -9,7 +9,7 @@ class Purchase extends Model
 {
     protected $table = 'purchases';
 
-	protected $fillable = ['user_id', 'cart', 'method', 'shipping', 'pickup_location', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'purchase_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip', 'customer_state', 'customer_country', 'order_note', 'discount_code', 'discount_amount', 'status', 'affilate_user', 'affilate_charge', 'currency_sign', 'currency_name', 'currency_value', 'shipping_cost', 'packing_cost', 'tax', 'tax_location', 'dp', 'pay_id', 'merchant_shipping_id', 'merchant_packing_id', 'wallet_price', 'shipping_title', 'packing_title', 'affilate_users', 'commission', 'merchant_ids', 'customer_shipping_choice', 'shipping_status'];
+	protected $fillable = ['user_id', 'cart', 'method', 'shipping', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'purchase_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip', 'customer_state', 'customer_country', 'order_note', 'discount_code', 'discount_amount', 'status', 'affilate_user', 'affilate_charge', 'currency_sign', 'currency_name', 'currency_value', 'shipping_cost', 'packing_cost', 'tax', 'tax_location', 'dp', 'pay_id', 'merchant_shipping_id', 'merchant_packing_id', 'wallet_price', 'shipping_title', 'packing_title', 'affilate_users', 'commission', 'merchant_ids', 'customer_shipping_choice', 'shipping_status'];
 
 
     protected $casts = [

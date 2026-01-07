@@ -162,8 +162,6 @@
                             <span class="fw-semibold">@lang('Delivery Type :')</span>
                             @if($shippingType === 'courier' || $shippingType === 'local_courier')
                                 <span class="m-badge m-badge--warning">@lang('Local Courier')</span>
-                            @elseif($shippingType === 'pickup')
-                                <span class="m-badge m-badge--secondary">@lang('Pickup')</span>
                             @else
                                 <span class="m-badge m-badge--primary">@lang('Shipping')</span>
                             @endif
@@ -173,7 +171,7 @@
                         @php
                             $invoiceDeliveryCourier = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
                                 ->where('merchant_id', $invoiceMerchantId)
-                                ->with(['courier', 'pickup'])
+                                ->with(['courier', 'merchantLocation'])
                                 ->first();
                         @endphp
                         @if($invoiceDeliveryCourier && $invoiceDeliveryCourier->courier)
@@ -203,8 +201,8 @@
                                     <span class="m-badge m-badge--success">@lang('Delivered')</span>
                                 @elseif($invoiceDeliveryCourier->status == 'accepted')
                                     <span class="m-badge m-badge--primary">@lang('In Progress')</span>
-                                @elseif($invoiceDeliveryCourier->status == 'ready_for_pickup')
-                                    <span class="m-badge m-badge--info">@lang('Ready for Pickup')</span>
+                                @elseif($invoiceDeliveryCourier->status == 'ready_for_courier_collection')
+                                    <span class="m-badge m-badge--info">@lang('Ready for Courier Collection')</span>
                                 @else
                                     <span class="m-badge m-badge--warning">{{ ucfirst($invoiceDeliveryCourier->status) }}</span>
                                 @endif
@@ -284,15 +282,6 @@
                     <h5>@lang('Shipping Address')</h5>
                     <ul>
 
-                        @if ($purchase->shipping == 'pickup')
-                        <li class="info-list-item">
-                            <span class="info-type">@lang('Pickup Location :')</span> <span
-                                class="info">{{ $purchase->pickup_location }}</span>
-                        </li>
-                        @else
-
-
-
                         <li>
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
@@ -343,7 +332,6 @@
 
                             {{ $purchase->customer_email }}
                         </li>
-                        @endif
                     </ul>
                 </div>
                 @endif

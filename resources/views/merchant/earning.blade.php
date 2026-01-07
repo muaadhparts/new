@@ -131,8 +131,8 @@
                                     <td class="text-end">{{ $courier_deliveries ?? 0 }}</td>
                                 </tr>
                                 <tr>
-                                    <td>@lang('Pickup Orders')</td>
-                                    <td class="text-end">{{ $pickup_deliveries ?? 0 }}</td>
+                                    <td>@lang('Shipping Orders')</td>
+                                    <td class="text-end">{{ $shipping_deliveries ?? 0 }}</td>
                                 </tr>
                             </table>
                         </div>
@@ -206,8 +206,6 @@
                                     <td>
                                         @if(($data->shipping_type ?? 'shipping') === 'courier')
                                             <span class="badge bg-warning">@lang('Courier')</span>
-                                        @elseif(($data->shipping_type ?? 'shipping') === 'pickup')
-                                            <span class="badge bg-secondary">@lang('Pickup')</span>
                                         @else
                                             <span class="badge bg-primary">@lang('Shipping')</span>
                                         @endif

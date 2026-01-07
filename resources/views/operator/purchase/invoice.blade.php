@@ -47,11 +47,7 @@
                         <span><strong>{{  __('Purchase ID')}} :</strong> {{ $purchase->purchase_number }}</span><br>
                         @if($purchase->dp == 0)
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
-                            @if($purchase->shipping == "pickup")
-                            {{ __('Pick Up') }}
-                            @else
                             {{ __('Ship To Address') }}
-                            @endif
                         </span><br>
                         @endif
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$purchase->method}}</span>

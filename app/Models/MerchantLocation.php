@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * MerchantLocation - Merchant warehouse/origin locations
  *
  * This is the merchant's warehouse or shipping origin location.
- * NOT to be confused with "pickup" which is customer pickup from store.
+ * Used by local couriers to collect orders for delivery to customers.
  */
 class MerchantLocation extends Model
 {

@@ -169,6 +169,28 @@
                         </div>
                     </div>
 
+                    {{-- قسم التقديم كتاجر - للمستخدمين العاديين فقط --}}
+                    @if(auth()->user()->is_merchant == 0)
+                        <div class="m-card mt-4">
+                            <div class="m-card__body">
+                                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="fas fa-store text-primary" style="font-size: 2.5rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h5 class="mb-1">@lang('Become a Merchant')</h5>
+                                            <p class="mb-0 text-muted">@lang('Start selling your products and reach more customers')</p>
+                                        </div>
+                                    </div>
+                                    <a href="{{ route('user.apply-merchant') }}" class="m-btn m-btn--primary">
+                                        <i class="fas fa-rocket me-2"></i>@lang('Apply Now')
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- recent purchases -->
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <h4 class="table-title">@lang('Recent Purchases')</h4>

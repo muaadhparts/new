@@ -15,7 +15,7 @@ use Datatables;
  * MerchantLocationController - Manage merchant warehouse/origin locations
  *
  * This is where merchants set their shipping origin locations.
- * NOT to be confused with "pickup" (customer pickup from store).
+ * Used by local couriers to collect orders for delivery to customers.
  */
 class MerchantLocationController extends MerchantBaseController
 {

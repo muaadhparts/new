@@ -939,8 +939,6 @@
                     <input type="hidden" name="merchant_id" value="{{ $merchant->user_id }}">
 
                 </div>
-                <!-- Select Pickup Point -->
-
                 <!-- Assign Courier Button  -->
                 <button class="m-btn m-btn--primary" data-bs-dismiss="modal" type="submit">@lang('Send Message')</button>
                 <!-- modal body end  -->

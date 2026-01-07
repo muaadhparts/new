@@ -133,11 +133,11 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // تحضير بيانات الشحن والتغليف - تأكد من تحويل كل القيم إلى JSON
         $input['merchant_ids'] = json_encode($merchant_ids);
 
-        // ✅ حفظ طريقة الشحن الأصلية (shipto/pickup) قبل أي معالجة
+        // ✅ حفظ طريقة الشحن الأصلية (shipto) قبل أي معالجة
         $originalShippingMethod = $steps['step1']['shipping'] ?? 'shipto';
 
-        // إذا كان shipping string (shipto/pickup) وليس array، نحفظه
-        if (isset($input['shipping']) && is_string($input['shipping']) && in_array($input['shipping'], ['shipto', 'pickup'])) {
+        // إذا كان shipping string (shipto) وليس array، نحفظه
+        if (isset($input['shipping']) && is_string($input['shipping']) && $input['shipping'] === 'shipto') {
             $originalShippingMethod = $input['shipping'];
         }
 
@@ -216,7 +216,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // تأكد من إزالة أي مصفوفات متبقية
         unset($input['packeging']);
 
-        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto/pickup) للعرض في الفاتورة
+        // ✅ إعادة تعيين قيمة shipping الأصلية (shipto) للعرض في الفاتورة
         $input['shipping'] = $originalShippingMethod;
 
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل
@@ -264,7 +264,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // Clear stock reservations after successful purchase (stock already sold)
         StockReservation::clearAfterPurchase();
 
-        // Create DeliveryCourier record if using local courier or pickup
+        // Create DeliveryCourier record if using local courier
         $this->createDeliveryCourier($purchase, $merchantId, $step2, 'cod');
 
         // Create Tryoto shipment for COD purchases
