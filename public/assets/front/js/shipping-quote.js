@@ -3,10 +3,9 @@
  *
  * Shows shipping cost quotes without creating shipments.
  * Works with CustomerLocation.js for location context.
- * Uses catalog_item_id (new naming convention) instead of catalog_item_id.
  *
  * Usage:
- * - ShippingQuote.showQuoteModal(vendorId, weight) - Show modal with options
+ * - ShippingQuote.showQuoteModal(merchantUserId, weight) - Show modal with options
  * - Auto-initialization for elements with data-shipping-quote attribute
  */
 const ShippingQuote = (function() {
@@ -23,9 +22,9 @@ const ShippingQuote = (function() {
     /**
      * Get quick shipping estimate (cheapest option)
      */
-    async function getQuickEstimate(vendorId, weight = 0.5) {
+    async function getQuickEstimate(merchantUserId, weight = 0.5) {
         const cityId = CustomerLocation.getCityId();
-        const cacheKey = `${vendorId}:${weight}:${cityId || 'none'}`;
+        const cacheKey = `${merchantUserId}:${weight}:${cityId || 'none'}`;
 
         const cached = quoteCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
@@ -41,9 +40,9 @@ const ShippingQuote = (function() {
                     'X-CSRF-TOKEN': getCSRFToken()
                 },
                 body: JSON.stringify({
-                    merchant_id: vendorId,
+                    merchant_id: merchantUserId,
                     weight: weight,
-                    city_id: cityId  // Always send city_id
+                    city_id: cityId
                 })
             });
 
@@ -61,9 +60,8 @@ const ShippingQuote = (function() {
 
     /**
      * Get full catalogItem quote with all options
-     * Uses catalog_item_id (new naming convention)
      */
-    async function getProductQuote(vendorId, weight = 0.5, catalogItemId = null) {
+    async function getProductQuote(merchantUserId, weight = 0.5, catalogItemId = null) {
         try {
             const response = await fetch(config.apiBase + '/quote', {
                 method: 'POST',
@@ -73,10 +71,10 @@ const ShippingQuote = (function() {
                     'X-CSRF-TOKEN': getCSRFToken()
                 },
                 body: JSON.stringify({
-                    merchant_id: vendorId,
+                    merchant_id: merchantUserId,
                     weight,
                     catalog_item_id: catalogItemId,
-                    city_id: CustomerLocation.getCityId()  // Always send city_id
+                    city_id: CustomerLocation.getCityId()
                 })
             });
 
@@ -89,7 +87,7 @@ const ShippingQuote = (function() {
     /**
      * Show shipping quote modal with all options
      */
-    async function showQuoteModal(vendorId, weight = 0.5, productName = '') {
+    async function showQuoteModal(merchantUserId, weight = 0.5, catalogItemName = '') {
         // Check if location is set first
         if (!CustomerLocation.hasCity()) {
             const city = await CustomerLocation.requestLocation();
@@ -97,12 +95,12 @@ const ShippingQuote = (function() {
         }
 
         // Create and show modal with loading state
-        const modal = createModal(productName);
+        const modal = createModal(catalogItemName);
         document.body.appendChild(modal);
         setTimeout(() => modal.classList.add('show'), 10);
 
         // Fetch quote
-        const result = await getProductQuote(vendorId, weight);
+        const result = await getProductQuote(merchantUserId, weight);
 
         // Update modal with result
         updateModalContent(modal, result);
@@ -238,12 +236,12 @@ const ShippingQuote = (function() {
                 e.preventDefault();
                 e.stopPropagation();
 
-                const vendorId = parseInt(this.dataset.vendorId);
+                const merchantUserId = parseInt(this.dataset.merchantUserId);
                 const weight = parseFloat(this.dataset.weight || 0.5);
-                const productName = this.dataset.productName || '';
+                const productName = this.dataset.catalogItemName || this.dataset.productName || '';
                 const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
 
-                if (!vendorId) return;
+                if (!merchantUserId) return;
 
                 // Show loading state
                 const originalContent = this.innerHTML;
@@ -261,7 +259,7 @@ const ShippingQuote = (function() {
                 }
 
                 // Get quick estimate
-                const result = await getQuickEstimate(vendorId, weight);
+                const result = await getQuickEstimate(merchantUserId, weight);
 
                 this.classList.remove('m-shipping-quote-btn--loading');
 
@@ -274,7 +272,7 @@ const ShippingQuote = (function() {
                     this.classList.add('has-price');
 
                     // Click again to show full modal with all options
-                    this.onclick = () => showQuoteModal(vendorId, weight, productName);
+                    this.onclick = () => showQuoteModal(merchantUserId, weight, productName);
                 } else {
                     // Show error or no service message
                     const errorMsg = isRtl ? 'غير متاح' : 'N/A';

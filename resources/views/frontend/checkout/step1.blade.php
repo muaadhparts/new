@@ -709,53 +709,53 @@
         @php \Log::warning('Google Maps: API key not configured in api_credentials table - Checkout map disabled'); @endphp
     @endif
     <script>
+    /**
+     * =====================================================
+     * Google Maps Location Picker - Clean & Simple Version
+     * =====================================================
+     */
+
     // Check if Google Maps is available
     const googleMapsAvailable = typeof google !== 'undefined' && typeof google.maps !== 'undefined';
 
     // Map Variables
-    let map, marker, searchBox, geocoder;
-    let selectedLat = null, selectedLng = null;
+    let map, marker, geocoder, autocomplete;
+    let selectedLat = null;
+    let selectedLng = null;
     let selectedAddress = '';
-    let locationConfirmed = false; // Track if location was confirmed
 
-    // Checkout type detection
-    const isMerchantCheckout = {{ isset($is_merchant_checkout) && $is_merchant_checkout ? 'true' : 'false' }};
-    const checkoutMerchantId = {{ isset($merchant_id) ? $merchant_id : 'null' }};
-
-    // Default center (Saudi Arabia)
-    const defaultCenter = { lat: 24.7136, lng: 46.6753 };
+    // Config
+    const currentLocale = '{{ app()->getLocale() == "ar" ? "ar" : "en" }}';
+    const merchantId = {{ isset($merchant_id) ? $merchant_id : 'null' }};
+    const defaultCenter = { lat: 24.7136, lng: 46.6753 }; // Saudi Arabia
     const defaultZoom = 6;
 
-    // When modal opens - check if we have a saved location
+    // =====================================================
+    // Modal Events
+    // =====================================================
+
+    // When modal opens - restore saved location if exists
     $('#mapModal').on('show.bs.modal', function() {
-        // Check if we already have a confirmed location from hidden fields
         const savedLat = parseFloat($('#latitude').val());
         const savedLng = parseFloat($('#longitude').val());
 
         if (savedLat && savedLng && !isNaN(savedLat) && !isNaN(savedLng)) {
-            // We have a saved location - restore it
             selectedLat = savedLat;
             selectedLng = savedLng;
-            // Read clean address from data attribute
             selectedAddress = $('#selected-location-info').attr('data-address') || '';
-            locationConfirmed = true;
         } else {
-            // No saved location - start fresh
             selectedLat = null;
             selectedLng = null;
             selectedAddress = '';
-            locationConfirmed = false;
         }
 
-        // Clear search input
         $('#map-search-input').val('');
     });
 
-    // Initialize map when modal is shown
+    // When modal is visible - initialize or refresh map
     $('#mapModal').on('shown.bs.modal', function() {
         if (!googleMapsAvailable) {
-            document.getElementById('coords-display').innerHTML = '<span class="text-danger">@lang("Map service unavailable. Please enter address manually.")</span>';
-            console.error('Google Maps API not loaded - API key may be missing from api_credentials table');
+            $('#coords-display').html('<span class="text-danger">@lang("Map service unavailable. Please enter address manually.")</span>');
             return;
         }
 
@@ -765,59 +765,25 @@
             google.maps.event.trigger(map, 'resize');
         }
 
-        // If we have a saved location, show it on the map
+        // Show saved location or default view
         if (selectedLat && selectedLng) {
-            showSavedLocation();
+            showLocationOnMap(selectedLat, selectedLng, selectedAddress);
         } else {
-            // No saved location - show default view
-            resetMapToDefault();
+            showDefaultView();
         }
     });
 
-    // Show saved location on map
-    function showSavedLocation() {
-        if (!selectedLat || !selectedLng) return;
-
-        map.setCenter({ lat: selectedLat, lng: selectedLng });
-        map.setZoom(15);
-
-        marker.setPosition({ lat: selectedLat, lng: selectedLng });
-        marker.setVisible(true);
-
-        // Update display
-        let displayText = '';
-        if (selectedAddress) {
-            displayText = '<div class="mb-1">' + selectedAddress + '</div>';
-            displayText += '<small class="text-muted">(' + selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6) + ')</small>';
-        } else {
-            displayText = selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-        }
-        document.getElementById('coords-display').innerHTML = displayText;
-        document.getElementById('confirm-location-btn').disabled = false;
-    }
-
-    // Reset map to default view (no location selected)
-    function resetMapToDefault() {
-        if (marker) {
-            marker.setVisible(false);
-        }
-        map.setCenter(defaultCenter);
-        map.setZoom(defaultZoom);
-        document.getElementById('confirm-location-btn').disabled = true;
-        document.getElementById('coords-display').innerHTML = '@lang("Click on map or search to select location")';
-    }
+    // =====================================================
+    // Map Functions
+    // =====================================================
 
     function initMap() {
-        // Check if Google Maps is available
-        if (!googleMapsAvailable) {
-            console.error('initMap called but Google Maps is not available');
-            return;
-        }
+        if (!googleMapsAvailable) return;
 
-        // Initialize geocoder
+        // Create geocoder
         geocoder = new google.maps.Geocoder();
 
-        // Create map centered on Saudi Arabia
+        // Create map
         map = new google.maps.Map(document.getElementById('map'), {
             center: defaultCenter,
             zoom: defaultZoom,
@@ -826,404 +792,255 @@
             fullscreenControl: true
         });
 
-        // Create marker (hidden by default, positioned at center)
+        // Create draggable marker (hidden initially)
         marker = new google.maps.Marker({
             map: map,
-            position: defaultCenter,
             draggable: true,
             visible: false
         });
 
-        // Initialize Places Autocomplete
+        // Setup search autocomplete
         const input = document.getElementById('map-search-input');
-        if (!input) {
-            console.error('Search input not found!');
-            return;
-        }
-
-        try {
-            searchBox = new google.maps.places.Autocomplete(input, {
+        if (input) {
+            autocomplete = new google.maps.places.Autocomplete(input, {
                 types: ['geocode', 'establishment'],
-                fields: ['geometry', 'formatted_address', 'name']
+                fields: ['geometry', 'formatted_address']
             });
-            console.log('Places Autocomplete initialized successfully');
-        } catch (e) {
-            console.error('Failed to initialize Places Autocomplete:', e);
-            return;
+
+            autocomplete.addListener('place_changed', function() {
+                const place = autocomplete.getPlace();
+                if (place.geometry && place.geometry.location) {
+                    const lat = place.geometry.location.lat();
+                    const lng = place.geometry.location.lng();
+                    map.setCenter({ lat, lng });
+                    map.setZoom(15);
+                    setLocation(lat, lng, place.formatted_address);
+                }
+            });
         }
-
-        // Bias search results to map viewport
-        map.addListener('bounds_changed', function() {
-            searchBox.setBounds(map.getBounds());
-        });
-
-        // Handle place selection from search
-        searchBox.addListener('place_changed', function() {
-            const place = searchBox.getPlace();
-            console.log('Place selected:', place);
-
-            if (!place.geometry || !place.geometry.location) {
-                console.warn('No geometry for selected place');
-                return;
-            }
-
-            // Move map to selected place
-            map.setCenter(place.geometry.location);
-            map.setZoom(15);
-
-            // Set location with address
-            setLocation(
-                place.geometry.location.lat(),
-                place.geometry.location.lng(),
-                place.formatted_address
-            );
-        });
 
         // Click on map = set location
         map.addListener('click', function(e) {
-            setLocationWithGeocode(e.latLng.lat(), e.latLng.lng());
+            getAddressAndSetLocation(e.latLng.lat(), e.latLng.lng());
         });
 
         // Drag marker = update location
         marker.addListener('dragend', function() {
             const pos = marker.getPosition();
-            setLocationWithGeocode(pos.lat(), pos.lng());
+            getAddressAndSetLocation(pos.lat(), pos.lng());
         });
 
-        // My Location button
+        // Button events
         document.getElementById('my-location-btn').addEventListener('click', getMyLocation);
-
-        // Confirm button
         document.getElementById('confirm-location-btn').addEventListener('click', confirmLocation);
 
-        // Show initial message (no auto-detect - professional UX)
-        document.getElementById('coords-display').innerHTML = '@lang("Search for your address or click Use My Location")';
+        // Initial message
+        $('#coords-display').html('@lang("Click on map or search to select location")');
     }
 
-    function autoDetectLocation() {
-        if (!navigator.geolocation) {
-            console.log('Geolocation not supported');
-            document.getElementById('coords-display').innerHTML = '@lang("Click on map or search to select location")';
-            return;
+    function showDefaultView() {
+        if (marker) marker.setVisible(false);
+        map.setCenter(defaultCenter);
+        map.setZoom(defaultZoom);
+        $('#confirm-location-btn').prop('disabled', true);
+        $('#coords-display').html('@lang("Click on map or search to select location")');
+    }
+
+    function showLocationOnMap(lat, lng, address) {
+        map.setCenter({ lat, lng });
+        map.setZoom(15);
+        marker.setPosition({ lat, lng });
+        marker.setVisible(true);
+        updateDisplay(lat, lng, address);
+        $('#confirm-location-btn').prop('disabled', false);
+    }
+
+    function updateDisplay(lat, lng, address) {
+        let html = '';
+        if (address) {
+            html = '<div class="mb-1">' + address + '</div>';
+            html += '<small class="text-muted">(' + lat.toFixed(6) + ', ' + lng.toFixed(6) + ')</small>';
+        } else {
+            html = lat.toFixed(6) + ', ' + lng.toFixed(6);
         }
-
-        document.getElementById('coords-display').innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Detecting your location...")';
-
-        navigator.geolocation.getCurrentPosition(
-            function(position) {
-                console.log('Got fresh GPS position:', position.coords.latitude, position.coords.longitude);
-                const lat = position.coords.latitude;
-                const lng = position.coords.longitude;
-
-                map.setCenter({ lat: lat, lng: lng });
-                map.setZoom(14);
-
-                setLocationWithGeocode(lat, lng);
-            },
-            function(error) {
-                console.log('Geolocation error:', error.code, error.message);
-                // Show message based on error type
-                let msg = '@lang("Click on map or search to select location")';
-                if (error.code === error.PERMISSION_DENIED) {
-                    msg = '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Location permission denied - please select manually")</span>';
-                }
-                document.getElementById('coords-display').innerHTML = msg;
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0  // Always get fresh location, never use cached
-            }
-        );
+        $('#coords-display').html(html);
     }
 
-    // Current locale for geocoding
-    const currentLocale = '{{ app()->getLocale() == "ar" ? "ar" : "en" }}';
-
-    function setLocationWithGeocode(lat, lng) {
-        // Show loading
-        document.getElementById('coords-display').innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Loading address...")';
-
-        // Reverse geocode to get address with language parameter
-        geocoder.geocode({
-            location: { lat: lat, lng: lng },
-            language: currentLocale
-        }, function(results, status) {
-            if (status === 'OK' && results[0]) {
-                setLocation(lat, lng, results[0].formatted_address);
-            } else {
-                setLocation(lat, lng, null);
-            }
-        });
-    }
+    // =====================================================
+    // Location Functions
+    // =====================================================
 
     function setLocation(lat, lng, address) {
         selectedLat = lat;
         selectedLng = lng;
         selectedAddress = address || '';
 
-        // Update marker
-        marker.setPosition({ lat: lat, lng: lng });
+        marker.setPosition({ lat, lng });
         marker.setVisible(true);
+        updateDisplay(lat, lng, address);
+        $('#confirm-location-btn').prop('disabled', false);
+    }
 
-        // Update display with full address
-        let displayText = '';
-        if (address) {
-            displayText = '<div class="mb-1">' + address + '</div>';
-            displayText += '<small class="text-muted">(' + lat.toFixed(6) + ', ' + lng.toFixed(6) + ')</small>';
-        } else {
-            displayText = lat.toFixed(6) + ', ' + lng.toFixed(6);
-        }
-        document.getElementById('coords-display').innerHTML = displayText;
+    function getAddressAndSetLocation(lat, lng) {
+        $('#coords-display').html('<i class="fas fa-spinner fa-spin"></i> @lang("Loading address...")');
 
-        // Enable confirm button
-        document.getElementById('confirm-location-btn').disabled = false;
+        geocoder.geocode({
+            location: { lat, lng },
+            language: currentLocale
+        }, function(results, status) {
+            const address = (status === 'OK' && results[0]) ? results[0].formatted_address : null;
+            setLocation(lat, lng, address);
+        });
     }
 
     function getMyLocation() {
         if (!navigator.geolocation) {
-            document.getElementById('coords-display').innerHTML =
-                '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Browser does not support geolocation")</span>';
+            $('#coords-display').html('<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Browser does not support geolocation")</span>');
             return;
         }
 
-        // Check if running on HTTPS or localhost (required for geolocation)
-        const isSecure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-        if (!isSecure) {
-            document.getElementById('coords-display').innerHTML =
-                '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Location requires HTTPS. Please search for your address instead.")</span>';
+        // HTTPS required for geolocation
+        if (location.protocol !== 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            $('#coords-display').html('<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Location requires HTTPS. Please search for your address instead.")</span>');
             return;
         }
 
-        const btn = document.getElementById('my-location-btn');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        btn.disabled = true;
+        const btn = $('#my-location-btn');
+        const originalText = btn.html();
+        btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
+        $('#coords-display').html('<i class="fas fa-spinner fa-spin"></i> @lang("Detecting your location...")');
 
-        // Show loading message
-        document.getElementById('coords-display').innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Detecting your location...")';
-
-        // Use watchPosition for better accuracy, then clear it
-        let watchId = null;
-        let bestPosition = null;
-        let attempts = 0;
-        const maxAttempts = 3;
-
-        watchId = navigator.geolocation.watchPosition(
+        navigator.geolocation.getCurrentPosition(
             function(position) {
-                attempts++;
-                const accuracy = position.coords.accuracy;
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
 
-                // Keep the best (most accurate) position
-                if (!bestPosition || accuracy < bestPosition.coords.accuracy) {
-                    bestPosition = position;
-                }
+                map.setCenter({ lat, lng });
+                map.setZoom(15);
+                getAddressAndSetLocation(lat, lng);
 
-                // Update loading message with accuracy
-                document.getElementById('coords-display').innerHTML =
-                    '<i class="fas fa-spinner fa-spin"></i> @lang("Detecting your location...") (' + Math.round(accuracy) + 'm)';
-
-                // If we have good accuracy (< 100m) or max attempts reached, use this position
-                if (accuracy < 100 || attempts >= maxAttempts) {
-                    navigator.geolocation.clearWatch(watchId);
-
-                    const lat = bestPosition.coords.latitude;
-                    const lng = bestPosition.coords.longitude;
-                    const finalAccuracy = Math.round(bestPosition.coords.accuracy);
-
-                    console.log('GPS Position:', lat, lng, 'Accuracy:', finalAccuracy + 'm');
-
-                    map.setCenter({ lat: lat, lng: lng });
-                    map.setZoom(finalAccuracy < 50 ? 17 : (finalAccuracy < 500 ? 15 : 13));
-                    setLocationWithGeocode(lat, lng);
-
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-
-                    // Show accuracy warning if not very accurate
-                    if (finalAccuracy > 500) {
-                        setTimeout(function() {
-                            const currentDisplay = document.getElementById('coords-display').innerHTML;
-                            document.getElementById('coords-display').innerHTML = currentDisplay +
-                                '<br><small class="text-warning"><i class="fas fa-exclamation-triangle"></i> @lang("Location accuracy is low. Please verify or search for your address.")</small>';
-                        }, 1000);
-                    }
-                }
+                btn.html(originalText).prop('disabled', false);
             },
             function(error) {
-                if (watchId) navigator.geolocation.clearWatch(watchId);
+                btn.html(originalText).prop('disabled', false);
 
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-
-                let errorMessage = '@lang("Could not get your location")';
-                let displayMessage = '';
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        errorMessage = '@lang("Location permission denied")';
-                        displayMessage = '@lang("Please allow location access in your browser settings, or search for your address manually.")';
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        errorMessage = '@lang("Location unavailable")';
-                        displayMessage = '@lang("Please search for your address manually.")';
-                        break;
-                    case error.TIMEOUT:
-                        errorMessage = '@lang("Location request timed out")';
-                        displayMessage = '@lang("Please try again or search for your address manually.")';
-                        break;
+                let msg = '@lang("Could not get your location")';
+                if (error.code === error.PERMISSION_DENIED) {
+                    msg = '@lang("Location permission denied")';
+                } else if (error.code === error.POSITION_UNAVAILABLE) {
+                    msg = '@lang("Location unavailable")';
+                } else if (error.code === error.TIMEOUT) {
+                    msg = '@lang("Location request timed out")';
                 }
 
-                // Show error in coords display instead of alert
-                document.getElementById('coords-display').innerHTML =
-                    '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> ' + errorMessage + '</span>' +
-                    (displayMessage ? '<br><small class="text-muted">' + displayMessage + '</small>' : '');
+                $('#coords-display').html(
+                    '<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> ' + msg + '</span>' +
+                    '<br><small class="text-muted">@lang("Please search for your address manually.")</small>'
+                );
             },
             {
-                enableHighAccuracy: true,
-                timeout: 20000,
-                maximumAge: 0
+                enableHighAccuracy: false,
+                timeout: 30000,
+                maximumAge: 60000
             }
         );
-
-        // Safety timeout - if no position after 20 seconds, stop watching
-        setTimeout(function() {
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                if (bestPosition) {
-                    const lat = bestPosition.coords.latitude;
-                    const lng = bestPosition.coords.longitude;
-                    map.setCenter({ lat: lat, lng: lng });
-                    map.setZoom(15);
-                    setLocationWithGeocode(lat, lng);
-                }
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-            }
-        }, 20000);
     }
 
+    // =====================================================
+    // Confirm & Save Location
+    // =====================================================
+
     function confirmLocation() {
-        if (!selectedLat || !selectedLng) {
-            return;
-        }
+        if (!selectedLat || !selectedLng) return;
 
-        const confirmBtn = document.getElementById('confirm-location-btn');
-        const originalBtnText = confirmBtn.innerHTML;
+        const btn = $('#confirm-location-btn');
+        const originalText = btn.html();
+        btn.html('<i class="fas fa-spinner fa-spin"></i> @lang("Loading...")').prop('disabled', true);
 
-        // Show loading state (keep modal open)
-        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> @lang("Loading...")';
-        confirmBtn.disabled = true;
-
-        // Fetch tax info FIRST, then close modal
         $.ajax({
             url: '/geocoding/tax-from-coordinates',
             method: 'POST',
             data: {
                 latitude: selectedLat,
                 longitude: selectedLng,
-                merchant_id: checkoutMerchantId,
+                merchant_id: merchantId,
                 _token: $('meta[name="csrf-token"]').attr('content')
             },
             success: function(response) {
-                // Fill hidden fields
+                // Save to hidden fields
                 $('#latitude').val(selectedLat);
                 $('#longitude').val(selectedLng);
                 if (response.country_id) $('#country_id').val(response.country_id);
                 if (response.formatted_address) $('#address').val(response.formatted_address);
                 if (response.postal_code) $('#zip').val(response.postal_code);
+                if (response.city_id) $('#customer_city_id').val(response.city_id);
 
-                // Get display address and save it
+                // Update address if server returned better one
                 let displayAddress = selectedAddress;
                 if (response.geocoding_success && response.formatted_address) {
                     displayAddress = response.formatted_address;
-                    selectedAddress = displayAddress; // Update global variable
+                    selectedAddress = displayAddress;
                 }
 
-                // Mark location as confirmed
-                locationConfirmed = true;
-
-                // Update main page button
+                // Update UI on main page
                 $('#open-map-btn').removeClass('m-btn--primary m-btn--outline').addClass('m-btn--success');
                 $('#open-map-btn').html('<i class="fas fa-check-circle"></i> @lang("Location Selected")');
 
-                // Show location info - store clean address in data attribute for later retrieval
-                $('#selected-location-info').removeClass('d-none');
-                $('#selected-location-info').attr('data-address', displayAddress);
-                let locationDisplayText = displayAddress
-                    ? displayAddress + ' <small class="text-muted">(' + selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6) + ')</small>'
-                    : selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6);
-                $('#location-text').html(locationDisplayText);
+                $('#selected-location-info').removeClass('d-none').attr('data-address', displayAddress);
+                $('#location-text').html(
+                    displayAddress
+                        ? displayAddress + ' <small class="text-muted">(' + selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6) + ')</small>'
+                        : selectedLat.toFixed(6) + ', ' + selectedLng.toFixed(6)
+                );
 
                 // Update tax display
                 if (response.tax_rate > 0) {
                     $('.tax-display-wrapper').removeClass('d-none');
                     $('.tax-rate-text').html('(' + response.tax_rate + '%)');
-
                     var taxAmount = parseFloat(response.tax_amount || 0);
                     @if($gs->currency_format == 0)
                         $('.tax-amount-value').html('{{ $curr->sign }}' + taxAmount.toFixed(2));
                     @else
                         $('.tax-amount-value').html(taxAmount.toFixed(2) + '{{ $curr->sign }}');
                     @endif
-
                     if (response.tax_location) {
-                        $('.tax-location-wrapper').removeClass('d-none');
-                        $('.tax-location-text').html(response.tax_location);
+                        $('.tax-location-wrapper').removeClass('d-none').find('.tax-location-text').html(response.tax_location);
                     }
-
                     if (typeof PriceSummary !== 'undefined' && PriceSummary.updateTax) {
                         PriceSummary.updateTax(response.tax_rate, taxAmount);
                     }
                 } else {
-                    $('.tax-display-wrapper').addClass('d-none');
-                    $('.tax-location-wrapper').addClass('d-none');
+                    $('.tax-display-wrapper, .tax-location-wrapper').addClass('d-none');
                 }
 
-                // NOW close modal (after everything is ready)
+                // Close modal
                 $('#mapModal').modal('hide');
-
-                // Reset button for next time
-                confirmBtn.innerHTML = originalBtnText;
-                confirmBtn.disabled = false;
-
-                // Store city_id for step2
-                if (response.city_id) {
-                    $('#customer_city_id').val(response.city_id);
-                }
+                btn.html(originalText).prop('disabled', false);
             },
-            error: function(xhr) {
-                // Show error, keep modal open
-                confirmBtn.innerHTML = originalBtnText;
-                confirmBtn.disabled = false;
-
-                let errorMsg = '@lang("Failed to get location details. Please try again.")';
-                document.getElementById('coords-display').innerHTML =
-                    '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> ' + errorMsg + '</span>';
+            error: function() {
+                btn.html(originalText).prop('disabled', false);
+                $('#coords-display').html('<span class="text-danger"><i class="fas fa-exclamation-circle"></i> @lang("Failed to get location details. Please try again.")</span>');
             }
         });
     }
 
-    // Form validation - require location for physical products
+    // =====================================================
+    // Form Validation
+    // =====================================================
+
     $('form.address-wrapper').on('submit', function(e) {
-        const lat = $('#latitude').val();
-        const lng = $('#longitude').val();
         const isDigital = {{ $digital }};
-
-        // Only require location for physical products
-        if (!isDigital && (!lat || !lng)) {
+        if (!isDigital && (!$('#latitude').val() || !$('#longitude').val())) {
             e.preventDefault();
-
             if (typeof toastr !== 'undefined') {
                 toastr.error('@lang("Please select your location from the map")');
             } else {
                 alert('@lang("Please select your location from the map")');
             }
-
             $('#open-map-btn').addClass('m-btn--danger').removeClass('m-btn--primary m-btn--outline m-btn--success');
             setTimeout(function() {
                 $('#open-map-btn').removeClass('m-btn--danger').addClass('m-btn--primary m-btn--outline');
             }, 3000);
-
             return false;
         }
     });
