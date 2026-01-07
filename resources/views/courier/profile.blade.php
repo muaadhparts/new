@@ -54,8 +54,16 @@
                                                     <div class="dropdown-container">
                                                         <select class="form-control nice-select form__control"
                                                             id="select_country" name="country">
-                                                            @include('includes.countries')
-                                                            <!-- Add more options here if needed -->
+                                                            <option value="">@lang('Select Country')</option>
+                                                            @foreach (App\Models\Country::where('status', 1)->get() as $countryItem)
+                                                                <option value="{{ $countryItem->country_name }}"
+                                                                    data="{{ $countryItem->id }}"
+                                                                    rel="{{ $countryItem->cities->count() > 0 ? 1 : 0 }}"
+                                                                    data-href="{{ route('country.wise.city', $countryItem->id) }}"
+                                                                    {{ $user->country == $countryItem->country_name ? 'selected' : '' }}>
+                                                                    {{ $countryItem->country_name }}
+                                                                </option>
+                                                            @endforeach
                                                         </select>
                                                     </div>
                                                 </div>
@@ -64,28 +72,19 @@
                                                 <div class="form-group">
                                                     <label for="city">@lang('Select City')</label>
                                                     <div class="dropdown-container">
-                                                        <select
-                                                            class="form-control nice-select form__control form-control-sm"
+                                                        @php
+                                                            $userCountry = $user->country ? App\Models\Country::where('country_name', $user->country)->first() : null;
+                                                            $cities = $userCountry ? App\Models\City::where('country_id', $userCountry->id)->where('status', 1)->get() : collect();
+                                                        @endphp
+                                                        <select class="form-control nice-select form__control form-control-sm"
                                                             id="show_city" name="city_id">
-                                                            @if ($user->country)
-                                                                @php
-                                                                    $country = App\Models\Country::where(
-                                                                        'country_name',
-                                                                        $user->country,
-                                                                    )->first();
-                                                                    $cities = $country ? App\Models\City::where('country_id', $country->id)
-                                                                        ->where('status', 1)
-                                                                        ->get() : collect();
-                                                                @endphp
-                                                                <option value="">@lang('Select City')</option>
-                                                                @foreach ($cities as $city)
-                                                                    <option value="{{ $city->id }}"
-                                                                        {{ $user->city_id == $city->id ? 'selected' : '' }}>
-                                                                        {{ $city->city_name }}</option>
-                                                                @endforeach
-                                                            @else
-                                                                <option value="">@lang('Select City')</option>
-                                                            @endif
+                                                            <option value="">@lang('Select City')</option>
+                                                            @foreach ($cities as $city)
+                                                                <option value="{{ $city->id }}"
+                                                                    {{ $user->city_id == $city->id ? 'selected' : '' }}>
+                                                                    {{ $city->city_name }}
+                                                                </option>
+                                                            @endforeach
                                                         </select>
                                                     </div>
                                                 </div>

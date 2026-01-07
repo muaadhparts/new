@@ -70,15 +70,43 @@
 
 @push('styles')
 <style>
-/* Google Places Autocomplete z-index fix */
+/* Google Places Autocomplete z-index fix - MUST be higher than modal (1055) */
 .pac-container {
-    z-index: 10000 !important;
+    z-index: 99999 !important;
+    background-color: #fff !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+    margin-top: 5px !important;
+    font-family: inherit !important;
+}
+.pac-item {
+    padding: 10px 15px !important;
+    cursor: pointer !important;
+    border-bottom: 1px solid #eee !important;
+}
+.pac-item:hover {
+    background-color: #f5f5f5 !important;
+}
+.pac-item-query {
+    font-size: 14px !important;
+    color: #333 !important;
+}
+.pac-matched {
+    font-weight: bold !important;
 }
 
 /* Modal - No transparency */
 #globalMapModal .modal-content {
     background: var(--bg-primary, #fff) !important;
     opacity: 1 !important;
+}
+
+/* Ensure modal has proper z-index */
+#globalMapModal {
+    z-index: 1055 !important;
+}
+#globalMapModal .modal-dialog {
+    z-index: 1056 !important;
 }
 </style>
 @endpush
@@ -88,6 +116,10 @@
 <script>
 /**
  * Global Map Picker - Reusable across all pages
+ * Features:
+ * - Event listeners bound ONCE
+ * - targetFields reset on modal close
+ * - Configurable defaultCenter
  */
 (function() {
     // State
@@ -95,11 +127,19 @@
     let selectedLat = null, selectedLng = null, selectedAddress = '';
     let targetFields = {};
     let isInitialized = false;
+    let eventsBound = false;
 
-    // Config
-    const currentLocale = '{{ app()->getLocale() == "ar" ? "ar" : "en" }}';
-    const defaultCenter = { lat: 24.7136, lng: 46.6753 };
-    const defaultZoom = 6;
+    // Configurable Settings (can be overridden via window.GlobalMapPickerConfig)
+    const config = {
+        defaultCenter: { lat: 24.7136, lng: 46.6753 }, // Saudi Arabia (default)
+        defaultZoom: 6,
+        locale: '{{ app()->getLocale() == "ar" ? "ar" : "en" }}'
+    };
+
+    // Allow global config override
+    if (window.GlobalMapPickerConfig) {
+        Object.assign(config, window.GlobalMapPickerConfig);
+    }
 
     // =====================================================
     // Global Function - Call from anywhere
@@ -113,7 +153,15 @@
             callback: options.callback || null
         };
 
-        // Reset state
+        // Override center if provided
+        if (options.center) {
+            config.defaultCenter = options.center;
+        }
+        if (options.zoom) {
+            config.defaultZoom = options.zoom;
+        }
+
+        // Reset selection state
         selectedLat = null;
         selectedLng = null;
         selectedAddress = '';
@@ -122,17 +170,43 @@
     };
 
     // =====================================================
-    // Modal Events
+    // Bind Events ONCE on DOM Ready
     // =====================================================
-    $('#globalMapModal').on('shown.bs.modal', function() {
-        if (!isInitialized) {
-            initMap();
-            isInitialized = true;
-        } else {
-            google.maps.event.trigger(map, 'resize');
-            showDefaultView();
-        }
+    $(document).ready(function() {
+        if (eventsBound) return;
+        eventsBound = true;
+
+        // Modal shown event
+        $('#globalMapModal').on('shown.bs.modal', function() {
+            if (!isInitialized) {
+                initMap();
+                isInitialized = true;
+            } else {
+                google.maps.event.trigger(map, 'resize');
+                showDefaultView();
+            }
+        });
+
+        // Modal hidden event - Reset targetFields
+        $('#globalMapModal').on('hidden.bs.modal', function() {
+            resetState();
+        });
+
+        // Button click events (delegated, bound once)
+        $(document).on('click', '#global-my-location-btn', getMyLocation);
+        $(document).on('click', '#global-confirm-location-btn', confirmLocation);
     });
+
+    // =====================================================
+    // Reset State
+    // =====================================================
+    function resetState() {
+        targetFields = {};
+        selectedLat = null;
+        selectedLng = null;
+        selectedAddress = '';
+        $('#global-confirm-location-btn').prop('disabled', true);
+    }
 
     // =====================================================
     // Map Functions
@@ -146,8 +220,8 @@
         geocoder = new google.maps.Geocoder();
 
         map = new google.maps.Map(document.getElementById('global-map'), {
-            center: defaultCenter,
-            zoom: defaultZoom,
+            center: config.defaultCenter,
+            zoom: config.defaultZoom,
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
@@ -162,37 +236,57 @@
         // Search autocomplete
         const input = document.getElementById('global-map-search-input');
         if (input) {
+            // Clear any existing autocomplete
+            if (autocomplete) {
+                google.maps.event.clearInstanceListeners(autocomplete);
+            }
+
             autocomplete = new google.maps.places.Autocomplete(input, {
-                types: ['geocode', 'establishment'],
-                fields: ['geometry', 'formatted_address', 'address_components']
+                fields: ['geometry', 'formatted_address', 'address_components', 'name']
+                // No types restriction = search everything
+                // No bounds restriction = global search
             });
+
+            // Bias results to map viewport but don't restrict
+            autocomplete.bindTo('bounds', map);
 
             autocomplete.addListener('place_changed', function() {
                 const place = autocomplete.getPlace();
-                if (place.geometry && place.geometry.location) {
-                    const lat = place.geometry.location.lat();
-                    const lng = place.geometry.location.lng();
-                    map.setCenter({ lat, lng });
-                    map.setZoom(15);
-                    setLocation(lat, lng, place.formatted_address, place.address_components);
+
+                if (!place.geometry || !place.geometry.location) {
+                    // User pressed enter without selecting - try to search
+                    console.log('No geometry for place:', place);
+                    return;
+                }
+
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+
+                // Animate to location
+                map.panTo({ lat, lng });
+                map.setZoom(15);
+
+                setLocation(lat, lng, place.formatted_address || place.name, place.address_components);
+            });
+
+            // Prevent form submission on enter
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
                 }
             });
         }
 
-        // Click on map
+        // Click on map (Google Maps event - bound once during init)
         map.addListener('click', function(e) {
             getAddressAndSetLocation(e.latLng.lat(), e.latLng.lng());
         });
 
-        // Drag marker
+        // Drag marker (Google Maps event - bound once during init)
         marker.addListener('dragend', function() {
             const pos = marker.getPosition();
             getAddressAndSetLocation(pos.lat(), pos.lng());
         });
-
-        // Buttons
-        document.getElementById('global-my-location-btn').addEventListener('click', getMyLocation);
-        document.getElementById('global-confirm-location-btn').addEventListener('click', confirmLocation);
 
         showDefaultView();
     }
@@ -200,8 +294,8 @@
     function showDefaultView() {
         if (marker) marker.setVisible(false);
         if (map) {
-            map.setCenter(defaultCenter);
-            map.setZoom(defaultZoom);
+            map.setCenter(config.defaultCenter);
+            map.setZoom(config.defaultZoom);
         }
         $('#global-confirm-location-btn').prop('disabled', true);
         $('#global-coords-display').html('@lang("Click on map or search to select location")');
@@ -245,7 +339,7 @@
 
         geocoder.geocode({
             location: { lat, lng },
-            language: currentLocale
+            language: config.locale
         }, function(results, status) {
             if (status === 'OK' && results[0]) {
                 setLocation(lat, lng, results[0].formatted_address, results[0].address_components);
@@ -334,6 +428,28 @@
             toastr.success('@lang("Location selected successfully")');
         }
     }
+
+    // =====================================================
+    // Public API for advanced usage
+    // =====================================================
+    window.GlobalMapPicker = {
+        setCenter: function(lat, lng) {
+            config.defaultCenter = { lat, lng };
+            if (map) map.setCenter(config.defaultCenter);
+        },
+        setZoom: function(zoom) {
+            config.defaultZoom = zoom;
+            if (map) map.setZoom(zoom);
+        },
+        getSelectedLocation: function() {
+            return {
+                lat: selectedLat,
+                lng: selectedLng,
+                address: typeof selectedAddress === 'object' ? selectedAddress.text : selectedAddress,
+                postalCode: typeof selectedAddress === 'object' ? selectedAddress.postalCode : null
+            };
+        }
+    };
 })();
 </script>
 @endpush
