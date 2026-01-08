@@ -9,7 +9,7 @@
         zipField: '#zip',
         latField: '#latitude',
         lngField: '#longitude',
-        callback: function(data) { console.log(data); }
+        callback: function(data) { /* handle data */ }
     })">
         <i class="fas fa-map-marker-alt"></i> Select on Map
     </button>
@@ -255,7 +255,6 @@
 
                 if (!place.geometry || !place.geometry.location) {
                     // User pressed enter without selecting - try to search
-                    console.log('No geometry for place:', place);
                     return;
                 }
 

@@ -353,12 +353,6 @@
                                   parseFloat($('#subtotal-before-discount-form').val()) ||
                                   parseFloat($('#ttotal').val()) || 0;
 
-    console.log('📍 Step3 Initialized:', {
-        subtotalBeforeDiscount: SUBTOTAL_BEFORE_DISCOUNT,
-        currentTotal: $('#ttotal').val(),
-        hasDiscount: $('#has-discount').val() === '1'
-    });
-
     // Helper: Format price with currency
     function formatPrice(amount) {
         var formatted = parseFloat(amount).toFixed(2);
@@ -403,8 +397,6 @@
             return false;
         }
 
-        console.log('Applying discount code:', { code: code, subtotalBeforeDiscount: SUBTOTAL_BEFORE_DISCOUNT });
-
         $.ajax({
             type: "GET",
             url: mainurl + "/carts/discount-code/check",
@@ -413,8 +405,6 @@
                 total: SUBTOTAL_BEFORE_DISCOUNT // Always use subtotal before discount
             },
             success: function (response) {
-                console.log('Discount code response:', response);
-
                 if (response == 0) {
                     toastr.error('{{ __('Discount code not found') }}');
                 } else if (response == 2) {
@@ -470,8 +460,6 @@
         var merchantId = $('#checkout-merchant-id').val();
         var isMerchantCheckout = $('#is-merchant-checkout').val() === '1';
 
-        console.log('Removing discount code:', { merchantId: merchantId, isMerchantCheckout: isMerchantCheckout });
-
         $.ajax({
             type: "POST",
             url: "{{ isset($merchant_id) && $merchant_id ? route('front.checkout.merchant.discount-code.remove', ['merchantId' => $merchant_id]) : route('front.discount-code.remove') }}",
@@ -479,8 +467,6 @@
                 _token: '{{ csrf_token() }}'
             },
             success: function (response) {
-                console.log('Remove discount code response:', response);
-
                 if (response.success) {
                     // Hide discount row
                     $('#discount-row').addClass('d-none');

@@ -41,7 +41,7 @@
                <div class="cart-button">
                  
                   <a href="javascript:;"
-                  data-bs-toggle="modal"  {{$cartItem->cross_products ? 'data-bs-target=#exampleModal' : ''}}  data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}" data-cross-href="{{route('front.show.cross.catalogItem',$cartItem->id)}}" class="add-cart button add_to_cart_button {{$cartItem->cross_products ? 'view_cross_product' : ''}}"  data-bs-placement="right"  title="Add To Cart" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
+                  data-bs-toggle="modal"  {{$cartItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}  data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}" data-cross-href="{{route('front.show.cross.catalogItem',$cartItem->id)}}" class="add-cart button add_to_cart_button {{$cartItem->cross_items ? 'view_cross_product' : ''}}"  data-bs-placement="right"  title="Add To Cart" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
                
        

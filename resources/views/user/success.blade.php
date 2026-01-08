@@ -18,7 +18,6 @@
   @else
    var data = '{"status": false, "data" : [], "error" : ["message" : "Payment Not Suceesfull."]}';
   @endif
-  console.log(data);
   window.Print.postMessage(data);
   
     

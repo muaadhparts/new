@@ -16,46 +16,29 @@
 
   // ✅ Global cart state updater function
   window.applyCartState = function(data) {
-    if (!data) {
-      console.warn('⚠️ applyCartState called with empty data');
-      return;
-    }
+    if (!data) return;
 
     const cartCount = data.cart_count || data[0] || 0;
     const cartTotal = data.cart_total || data[1];
 
-    console.log('🔄 Applying cart state:', { cartCount, cartTotal, data });
-
-    // Update all cart count elements with multiple methods for reliability
+    // Update all cart count elements
     const $cartCount = $("#cart-count");
     const $cartCount1 = $("#cart-count1");
     const $headerCartCount = $(".header-cart-count");
 
-    console.log('📍 Found elements:', {
-      cartCount: $cartCount.length,
-      cartCount1: $cartCount1.length,
-      headerCartCount: $headerCartCount.length
-    });
-
-    // Try jQuery first
     if ($cartCount.length) {
       $cartCount.html(cartCount);
       $cartCount.text(cartCount);
-      console.log('✅ Updated #cart-count to:', cartCount);
-    } else {
-      console.warn('⚠️ #cart-count element not found with jQuery!');
     }
 
     if ($cartCount1.length) {
       $cartCount1.html(cartCount);
       $cartCount1.text(cartCount);
-      console.log('✅ Updated #cart-count1 to:', cartCount);
     }
 
     if ($headerCartCount.length) {
       $headerCartCount.html(cartCount);
       $headerCartCount.text(cartCount);
-      console.log('✅ Updated .header-cart-count to:', cartCount);
     }
 
     // Fallback: Try vanilla JavaScript
@@ -65,22 +48,17 @@
     if (cartCountEl) {
       cartCountEl.textContent = cartCount;
       cartCountEl.innerHTML = cartCount;
-      console.log('✅ Updated #cart-count via vanilla JS to:', cartCount);
-    } else {
-      console.error('❌ #cart-count not found even with vanilla JS!');
     }
 
     if (cartCount1El) {
       cartCount1El.textContent = cartCount;
       cartCount1El.innerHTML = cartCount;
-      console.log('✅ Updated #cart-count1 via vanilla JS to:', cartCount);
     }
 
     // Also update by class
     document.querySelectorAll('.header-cart-count').forEach(el => {
       el.textContent = cartCount;
       el.innerHTML = cartCount;
-      console.log('✅ Updated .header-cart-count via vanilla JS');
     });
 
     // Update total if provided
@@ -264,12 +242,7 @@
     const $btn = $(this);
     const removeUrl = $btn.attr('href');
 
-    if (!removeUrl) {
-      console.error('Remove URL not found');
-      return;
-    }
-
-    console.log('🗑️ Removing from compare:', removeUrl);
+    if (!removeUrl) return;
 
     // إزالة صامتة بدون تأكيد
     $.ajax({
@@ -281,7 +254,6 @@
         'Accept': 'application/json'
       },
       success: function(data) {
-        console.log('✅ Compare remove response:', data);
 
         if (data.ok || data.success) {
           toastr.success(data.success || 'Item removed from comparison');
@@ -307,8 +279,7 @@
           toastr.error(data.error || 'Failed to remove item');
         }
       },
-      error: function(xhr, status, error) {
-        console.error('❌ Compare remove failed:', error);
+      error: function() {
         toastr.error('Failed to remove item. Please try again.');
       }
     });
@@ -356,7 +327,6 @@
       },
       error: function () {
         // صامت
-        console.log('Qty increase failed');
       }
     });
   });
@@ -413,7 +383,6 @@
       },
       error: function () {
         // صامت
-        console.log('Qty decrease failed');
       }
     });
   });

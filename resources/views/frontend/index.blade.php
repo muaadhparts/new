@@ -116,13 +116,13 @@ Sections are rendered based on theme settings and purchase
     @endif
 
     {{-- ===================================================================
-         SECTION: Featured Items (if enabled: $theme->show_featured_products)
+         SECTION: Featured Items (if enabled: $theme->show_featured_items)
          Uses slider like Related Items - each card is a MerchantItem
          =================================================================== --}}
-    @if(($theme->show_featured_products ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
+    @if(($theme->show_featured_items ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_featured_products ?? __('Featured Items') }}</h2>
+            <h2 class="title text-center">{{ $theme->title_featured_items ?? __('Featured Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $featured_merchants])
         </div>
     </section>

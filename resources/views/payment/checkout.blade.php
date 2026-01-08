@@ -335,7 +335,6 @@
 		function grandTotal() {
 			$('#grandTotal').val($('#preamount').val());
 			let total = parseFloat($('#grandTotal').val());
-			console.log(total);
 			let shipping_charge = parseFloat($('.shipping:checked').attr('data'));
 			let packing_charge = parseFloat($('.packing:checked').attr('data'));
 			extra = shipping_charge + packing_charge;

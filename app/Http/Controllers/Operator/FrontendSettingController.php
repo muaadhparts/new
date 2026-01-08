@@ -103,8 +103,8 @@ class FrontendSettingController extends OperatorBaseController
         if ($request->blog == ""){
             $input['blog'] = 0;
         }
-        if ($request->popular_products == ""){
-            $input['popular_products'] = 0;
+        if ($request->popular_items == ""){
+            $input['popular_items'] = 0;
         }
         if ($request->third_left_banner == ""){
             $input['third_left_banner'] = 0;

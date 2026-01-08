@@ -75,7 +75,7 @@
                             <td>
                                 @if($delivery->payment_method == 'cod')
                                     <span class="text-danger">
-                                        {{ $currency->sign }}{{ number_format($delivery->order_amount ?? 0, 2) }}
+                                        {{ $currency->sign }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}
                                     </span>
                                     <br><small class="text-muted">({{ __('Courier collected') }})</small>
                                 @else
@@ -113,7 +113,7 @@
                         <tr>
                             <td colspan="4" class="text-end"><strong>{{ __('Totals') }}:</strong></td>
                             <td class="text-danger">
-                                <strong>{{ $currency->sign }}{{ number_format($unsettled->where('payment_method', 'cod')->sum('order_amount'), 2) }}</strong>
+                                <strong>{{ $currency->sign }}{{ number_format($unsettled->where('payment_method', 'cod')->sum('purchase_amount'), 2) }}</strong>
                             </td>
                             <td class="text-success">
                                 <strong>{{ $currency->sign }}{{ number_format($unsettled->sum('delivery_fee'), 2) }}</strong>
@@ -123,7 +123,7 @@
                         <tr>
                             <td colspan="4" class="text-end"><strong>{{ __('Net (Fees - COD)') }}:</strong></td>
                             @php
-                                $codTotal = $unsettled->where('payment_method', 'cod')->sum('order_amount');
+                                $codTotal = $unsettled->where('payment_method', 'cod')->sum('purchase_amount');
                                 $feesTotal = $unsettled->sum('delivery_fee');
                                 $net = $feesTotal - $codTotal;
                             @endphp

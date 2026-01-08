@@ -173,12 +173,12 @@ class MollieController extends CheckoutBaseControlller
                     $num = $purchase->pay_amount;
                     $rewards = Reward::get();
                     foreach ($rewards as $i) {
-                        $smallest[$i->order_amount] = abs($i->order_amount - $num);
+                        $smallest[$i->purchase_amount] = abs($i->purchase_amount - $num);
                     }
 
                     if (isset($smallest)) {
                         asort($smallest);
-                        $final_reword = Reward::where('order_amount', key($smallest))->first();
+                        $final_reword = Reward::where('purchase_amount', key($smallest))->first();
                         Auth::user()->update(['reward' => (Auth::user()->reward + $final_reword->reward)]);
                     }
                 }

@@ -411,17 +411,6 @@
         $('#final-cost, #final-total-display, .total-amount').html(formatPrice(grandTotal));
         $('#grandtotal').val(grandTotal.toFixed(2));
 
-        console.log('PriceSummary: Total updated', {
-            catalogItems: v.catalogItemsTotal,
-            discount: v.discountAmount,
-            tax: v.taxAmount,
-            deliveryType: v.deliveryType,
-            shipping: v.shippingCost,
-            courierFee: v.courierFee,
-            packing: v.packingCost,
-            total: grandTotal
-        });
-
         return grandTotal;
     }
 
@@ -513,8 +502,6 @@
 
     // Make it globally available
     window.PriceSummary = PriceSummary;
-
-    console.log('✅ PriceSummary attached to window');
     });
 })();
 </script>

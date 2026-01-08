@@ -255,7 +255,7 @@
                 @php
                     $processedCatalogItems = [];
                     foreach ($catalogItems as $mpId => $catalogItem) {
-                        $merchantItem = $catalogItem['merchant_item'] ?? $catalogItem['merchant_product'] ?? null;
+                        $merchantItem = $catalogItem['merchant_item'] ?? $catalogItem['merchant_item'] ?? null;
                         $catalogItemData = $catalogItem['item'];
 
                         if ($merchantItem) {

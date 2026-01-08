@@ -387,8 +387,8 @@ class CourierController extends CourierBaseController
         $delivery->save();
 
         // Record COD collection if applicable
-        if ($delivery->payment_method === 'cod' && $delivery->order_amount > 0) {
-            $this->accountingService->recordCodCollection($id, $delivery->order_amount);
+        if ($delivery->payment_method === 'cod' && $delivery->purchase_amount > 0) {
+            $this->accountingService->recordCodCollection($id, $delivery->purchase_amount);
         }
 
         // Record delivery fee earned

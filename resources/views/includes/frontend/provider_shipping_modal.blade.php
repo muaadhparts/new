@@ -107,7 +107,6 @@
                 // ✅ Update PriceSummary directly
                 if (typeof window.PriceSummary !== 'undefined') {
                     window.PriceSummary.updateShipping(finalPrice, originalPrice, isFreeShipping);
-                    console.log('✅ Shipping updated via PriceSummary:', { final: finalPrice, original: originalPrice, free: isFreeShipping });
                 }
 
                 // Also call global functions for backward compatibility

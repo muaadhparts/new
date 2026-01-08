@@ -99,10 +99,10 @@
                                 @endif
                         </li>
 
-                        @if (!empty($purchase->order_note))
+                        @if (!empty($purchase->purchase_note))
                             <li class="info-list-item">
                                 <span class="info-type">@lang('Purchase Note')</span> <span
-                                    class="info">{{ $purchase->order_note }}</span>
+                                    class="info">{{ $purchase->purchase_note }}</span>
                             </li>
                         @endif
 

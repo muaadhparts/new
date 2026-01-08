@@ -112,7 +112,6 @@
 
         $(document).on('click', '.txn-show', function (e) {
             var url = $(this).attr('data-href');
-            console.log(url)
             $('#trans').load(url);
             $('#trans-modal').modal('show');
         });

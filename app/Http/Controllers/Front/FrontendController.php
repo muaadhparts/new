@@ -123,8 +123,8 @@ class FrontendController extends FrontBaseController
         // Returns MerchantItem objects - each represents a unique listing
         // (catalog item + merchant + quality brand combination)
         // ============================================================================
-        if ($theme->show_featured_products) {
-            $count = $theme->count_featured_products ?? 8;
+        if ($theme->show_featured_items) {
+            $count = $theme->count_featured_items ?? 8;
             $data['featured_merchants'] = Cache::remember('homepage_featured_merchants_' . $count, 1800, function () use ($count) {
                 return MerchantItem::where('status', 1)
                     ->where('featured', 1)

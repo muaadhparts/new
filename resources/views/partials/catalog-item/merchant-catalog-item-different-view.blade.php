@@ -6,7 +6,7 @@
                 @php
                     $catalogItemUrl = $catalogItem->getCatalogItemUrl();
                     // affiliate_link is now on merchant_items
-                    $bestMerchantItem = $catalogItem->best_merchant_product ?? null;
+                    $bestMerchantItem = $catalogItem->best_merchant_item ?? null;
                 @endphp
                 <div class="col">
                     <div class="catalogItem type-catalogItem">
@@ -34,9 +34,9 @@
                                             <div class="cart-button">
                                                 <a href="javascript:;" data-bs-toggle="modal"
                                                     data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}"
-                                                    {{$catalogItem->cross_products ? 'data-bs-target=#exampleModal' : ''}}
+                                                    {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}
                                                     data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
-                                                    class="add-cart button add_to_cart_button {{$catalogItem->cross_products ? 'view_cross_product' : ''}}"
+                                                    class="add-cart button add_to_cart_button {{$catalogItem->cross_items ? 'view_cross_product' : ''}}"
                                                     data-bs-toggle="tooltip" data-bs-placement="right" title=""
                                                     data-bs-original-title="{{ __('Add To Cart') }}"
                                                     aria-label="{{ __('Add To Cart') }}"></a>
@@ -100,7 +100,7 @@
                 @php
                     $catalogItemUrl = $catalogItem->getCatalogItemUrl();
                     // affiliate_link is now on merchant_items
-                    $bestMerchantItem = $catalogItem->best_merchant_product ?? null;
+                    $bestMerchantItem = $catalogItem->best_merchant_item ?? null;
                 @endphp
                 <div class="col">
                     <div class="catalogItem type-catalogItem">
@@ -130,9 +130,9 @@
                                                 <div class="cart-button">
                                                     <a href="javascript:;" data-bs-toggle="modal"
                                                         data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}"
-                                                        {{$catalogItem->cross_products ? 'data-bs-target=#exampleModal' : ''}}
+                                                        {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}
                                                         data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
-                                                        class="add-cart button add_to_cart_button {{$catalogItem->cross_products ? 'view_cross_product' : ''}}"
+                                                        class="add-cart button add_to_cart_button {{$catalogItem->cross_items ? 'view_cross_product' : ''}}"
                                                         data-bs-toggle="tooltip" data-bs-placement="right" title=""
                                                         data-bs-original-title="{{ __('Add To Cart') }}"
                                                         aria-label="{{ __('Add To Cart') }}"></a>
@@ -201,7 +201,7 @@
             @php
                 $catalogItemUrl = $catalogItem->getCatalogItemUrl();
                 // affiliate_link is now on merchant_items
-                $bestMerchantItem = $catalogItem->best_merchant_product ?? null;
+                $bestMerchantItem = $catalogItem->best_merchant_item ?? null;
             @endphp
             <div class="col">
                 <div class="catalogItem type-catalogItem">
@@ -230,9 +230,9 @@
                                             <div class="cart-button">
                                                 <a href="javascript:;" data-bs-toggle="modal"
                                                     data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}"
-                                                    {{$catalogItem->cross_products ? 'data-bs-target=#exampleModal' : ''}}
+                                                    {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}
                                                     data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
-                                                    class="add-cart button add_to_cart_button {{$catalogItem->cross_products ? 'view_cross_product' : ''}}"
+                                                    class="add-cart button add_to_cart_button {{$catalogItem->cross_items ? 'view_cross_product' : ''}}"
                                                     data-bs-toggle="tooltip" data-bs-placement="right" title=""
                                                     data-bs-original-title="{{ __('Add To Cart') }}"
                                                     aria-label="{{ __('Add To Cart') }}"></a>

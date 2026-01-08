@@ -173,10 +173,6 @@
          */
         toast(message, type = 'warning') {
             // Silent mode - no toast messages for qty controls
-            // if (typeof toastr !== 'undefined') {
-            //     toastr[type](message);
-            // }
-            console.log(`[Qty ${type}]: ${message}`);
         }
     };
 
@@ -189,10 +185,7 @@
          */
         increase($btn) {
             const $input = Utils.findInput($btn);
-            if (!$input) {
-                console.warn('QtyControl: Input not found');
-                return false;
-            }
+            if (!$input) return false;
 
             const current = parseInt($input.val()) || 1;
             const stock = Utils.getStock($btn);
@@ -214,10 +207,7 @@
          */
         decrease($btn) {
             const $input = Utils.findInput($btn);
-            if (!$input) {
-                console.warn('QtyControl: Input not found');
-                return false;
-            }
+            if (!$input) return false;
 
             const current = parseInt($input.val()) || 1;
             const minQty = Utils.getMinQty($input);
@@ -299,8 +289,6 @@
                 e.preventDefault();
             }
         });
-
-        console.log('[QtyControl] Centralized quantity control initialized');
     }
 
     // ========================================

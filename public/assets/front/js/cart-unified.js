@@ -70,8 +70,6 @@
                     showConfirmButton: false,
                     timer: 3000
                 });
-            } else {
-                console.log(`[Cart ${type}]: ${message}`);
             }
         },
 
@@ -118,7 +116,6 @@
 
             // Prevent duplicate requests
             if (state.processing.has(mpId)) {
-                console.warn('Cart: Request already in progress for MI:', mpId);
                 return { success: false, message: 'Request in progress' };
             }
 
@@ -151,7 +148,6 @@
                 return { success: true, data };
 
             } catch (error) {
-                console.error('Cart API Error:', error);
                 return { success: false, message: error.message };
             } finally {
                 state.processing.delete(mpId);
@@ -207,10 +203,7 @@
          * Initialize controller
          */
         init() {
-            if (!this.data.mpId) {
-                console.error('CartButton: Missing merchant_item_id (data-mp-id attribute)');
-                return;
-            }
+            if (!this.data.mpId) return;
 
             this.bindEvents();
             this.initDefaults();
@@ -485,7 +478,6 @@
             // REQUIRED: merchant_item_id (also accepts merchant_item_id for backward compatibility)
             const mpId = btn.dataset.merchantItemId || btn.dataset.merchantProductId;
             if (!mpId) {
-                console.error('Cart: merchant_item_id not found on button');
                 utils.toast('Cannot add to cart - missing catalogItem data', 'error');
                 return;
             }
@@ -701,8 +693,6 @@
                     this.handleQtyMinus(btn);
                 }
             });
-
-            console.log('[Cart] Event delegation initialized for dynamic content');
         },
 
         /**
@@ -775,8 +765,6 @@
 
         // Initialize event delegation for dynamic content (modals, AJAX)
         EventDelegation.init();
-
-        console.log('[Cart] Unified cart system initialized v4.1 (merchant_item_id naming)');
     }
 
     // Initialize on DOM ready

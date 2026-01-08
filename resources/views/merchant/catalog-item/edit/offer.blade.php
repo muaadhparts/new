@@ -409,7 +409,6 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(response => response.json())
             .then(data => {
-                console.log('Gallery uploaded:', data);
                 // Clear file input and submit main form
                 galleryUpload.value = '';
                 mainForm.submit();

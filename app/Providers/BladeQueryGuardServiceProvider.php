@@ -121,13 +121,15 @@ class BladeQueryGuardServiceProvider extends ServiceProvider
 
             self::$bladeQueries[] = $queryInfo;
 
-            // Log warning
-            Log::channel('single')->warning('⚠️ Blade Query Detected', [
-                'view' => self::$currentView,
-                'sql' => $this->formatSql($sql, $query->bindings),
-                'time_ms' => $query->time,
-                'trace' => $queryInfo['trace'],
-            ]);
+            // Log warning only if explicitly enabled via BLADE_QUERY_LOG=true
+            if (env('BLADE_QUERY_LOG', false)) {
+                Log::channel('single')->warning('⚠️ Blade Query Detected', [
+                    'view' => self::$currentView,
+                    'sql' => $this->formatSql($sql, $query->bindings),
+                    'time_ms' => $query->time,
+                    'trace' => $queryInfo['trace'],
+                ]);
+            }
 
             // In strict mode, throw exception
             if (env('BLADE_QUERY_GUARD_STRICT', false)) {

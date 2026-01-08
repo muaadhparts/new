@@ -22,7 +22,7 @@ class DeliveryCourier extends Model
         'status',
         'delivery_fee',
         'cod_amount',
-        'order_amount',
+        'purchase_amount',
         'payment_method',
         'fee_status',
         'settlement_status',
@@ -34,7 +34,7 @@ class DeliveryCourier extends Model
     protected $casts = [
         'delivery_fee' => 'decimal:2',
         'cod_amount' => 'decimal:2',
-        'order_amount' => 'decimal:2',
+        'purchase_amount' => 'decimal:2',
         'delivered_at' => 'datetime',
         'settled_at' => 'datetime',
     ];
@@ -100,8 +100,8 @@ class DeliveryCourier extends Model
             $this->fee_status = 'paid';
             $this->save();
         } elseif ($this->isCod()) {
-            $totalCollected = $this->order_amount + $this->delivery_fee;
-            $this->courier->recordCodCollection($this->order_amount);
+            $totalCollected = $this->purchase_amount + $this->delivery_fee;
+            $this->courier->recordCodCollection($this->purchase_amount);
             $this->fee_status = 'collected';
             $this->save();
         }

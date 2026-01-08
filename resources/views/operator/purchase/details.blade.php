@@ -156,10 +156,10 @@
                                 <span class='badge badge-success'>{{__('Paid')}}</span>
                                 @endif
 
-                                @if(!empty($purchase->order_note))
+                                @if(!empty($purchase->purchase_note))
                                 <th width="45%">{{ __('Purchase Note') }}</th>
                                 <th width="10%">:</th>
-                                <td width="45%">{{$purchase->order_note}}</td>
+                                <td width="45%">{{$purchase->purchase_note}}</td>
                                 @endif
 
                             </tbody>

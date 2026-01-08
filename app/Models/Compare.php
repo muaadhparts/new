@@ -16,22 +16,22 @@ class Compare extends Model
     }
 
     /**
-     * Add a merchant catalogItem to comparison
+     * Add a merchant item to comparison
      * Uses merchant_item_id as the unique identifier
      */
-    public function add($merchantItem, $merchantProductId)
+    public function add($merchantItem, $merchantItemId)
     {
-        // Check if this merchant catalogItem is already in comparison
-        if ($this->items && array_key_exists($merchantProductId, $this->items)) {
+        // Check if this merchant item is already in comparison
+        if ($this->items && array_key_exists($merchantItemId, $this->items)) {
             // Mark as already exists and don't overwrite
-            $this->items[$merchantProductId]['ck'] = 1;
+            $this->items[$merchantItemId]['ck'] = 1;
             return;
         }
 
         // Add new item
-        $this->items[$merchantProductId] = [
+        $this->items[$merchantItemId] = [
             'ck' => 0,
-            'merchant_product' => $merchantItem
+            'merchant_item' => $merchantItem
         ];
     }
 
@@ -52,9 +52,9 @@ class Compare extends Model
         }
     }
 
-    public function removeItem($merchantProductId)
+    public function removeItem($merchantItemId)
     {
-        unset($this->items[$merchantProductId]);
+        unset($this->items[$merchantItemId]);
     }
 
     /**
@@ -67,15 +67,15 @@ class Compare extends Model
         }
 
         $items = [];
-        foreach ($this->items as $merchantProductId => $itemData) {
-            if (isset($itemData['merchant_product'])) {
-                $merchantItem = $itemData['merchant_product'];
+        foreach ($this->items as $merchantItemId => $itemData) {
+            if (isset($itemData['merchant_item'])) {
+                $merchantItem = $itemData['merchant_item'];
                 $catalogItem = $merchantItem->catalogItem ?? null;
 
                 // Return in the format expected by the view (with 'item' key)
-                $items[$merchantProductId] = [
+                $items[$merchantItemId] = [
                     'item' => $catalogItem, // The actual CatalogItem model
-                    'merchant_product' => $merchantItem,
+                    'merchant_item' => $merchantItem,
                     'ck' => $itemData['ck'] ?? 0
                 ];
             }

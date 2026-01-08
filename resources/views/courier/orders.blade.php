@@ -126,7 +126,7 @@
                                                 <br>
                                                 <span class="badge bg-warning text-dark">COD</span>
                                                 <br>
-                                                <small>@lang('Collect'): {{ \PriceHelper::showAdminCurrencyPrice($delivery->order_amount ?? 0) }}</small>
+                                                <small>@lang('Collect'): {{ \PriceHelper::showAdminCurrencyPrice($delivery->purchase_amount ?? 0) }}</small>
                                             @endif
                                         </td>
 

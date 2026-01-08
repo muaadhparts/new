@@ -14,10 +14,11 @@
 /bootstrap/cache/*.php
 /storage/framework/views/*
 nul
-!README.md
-
-# ملفات Markdown
+# ملفات Markdown (مع استثناءات)
 *.md
+!README.md
+!DEVELOPMENT_PLAN.md
+!CLAUDE.md
 /bootstrap/cache/*.php
 /bootstrap/cache/*.tmp
 /storage/*.key

@@ -783,8 +783,6 @@
         let original_tax = 0;
 
         $(document).ready(function() {
-            console.log('📍 Step2: تحميل الصفحة');
-
             // ✅ Restore saved shipping/packing selections from step2 session
             @if(isset($step2) && $step2)
                 @if(isset($step2->saved_shipping_selections) && is_array($step2->saved_shipping_selections))
@@ -794,7 +792,6 @@
                         const shippingRadio{{ $merchantId }} = $('input.shipping[name="shipping[{{ $merchantId }}]"][value="{{ $shippingValue }}"]');
                         if (shippingRadio{{ $merchantId }}.length > 0) {
                             shippingRadio{{ $merchantId }}.prop('checked', true);
-                            console.log('✅ تم استرجاع shipping للـ merchant {{ $merchantId }}');
                         }
                     @endforeach
                 @endif
@@ -805,7 +802,6 @@
                         const packingRadio{{ $merchantId }} = $('input.packing[name="packeging[{{ $merchantId }}]"][value="{{ $packingValue }}"]');
                         if (packingRadio{{ $merchantId }}.length > 0) {
                             packingRadio{{ $merchantId }}.prop('checked', true);
-                            console.log('✅ تم استرجاع packing للـ merchant {{ $merchantId }}');
                         }
                     @endforeach
                 @endif
@@ -836,8 +832,6 @@
                 hide_state();
             }
 
-            console.log('📍 Step2: Tax loaded from Step1 session, no API call needed');
-
             // ✅ No longer needed - delivery type is now handled via modal selection
         });
 
@@ -849,8 +843,6 @@
             const courierName = $(element).data('courier-name');
             const courierFee = parseFloat($(element).data('courier-fee')) || 0;
             const serviceAreaId = $(element).data('service-area-id');
-
-            console.log('🚴 Courier selected:', courierName, 'Fee:', courierFee);
 
             // Update hidden fields
             $('#selected_courier_id').val(courierId);
@@ -912,7 +904,6 @@
             // Recalculate total using PriceSummary
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.updateShipping(fee);
-                console.log('✅ PriceSummary updated with courier fee:', fee);
             } else {
                 // Fallback manual calculation
                 let catalogItemsTotal = parseFloat($('#price-catalogItems-total').val()) || 0;
@@ -924,8 +915,6 @@
                 $('#price-grand-total').val(grandTotal.toFixed(2));
                 $('#grand-total-display').text(currFormat == 0 ? currSign + grandTotal.toFixed(2) : grandTotal.toFixed(2) + currSign);
                 $('#grandtotal').val(grandTotal.toFixed(2));
-
-                console.log('💰 Manual total calculation with courier fee:', grandTotal);
             }
         }
 
@@ -946,8 +935,6 @@
             // Reset header display
             $('#selected-courier-display').addClass('d-none');
             $('#select-courier-btn-wrapper').removeClass('d-none');
-
-            console.log('🔄 Courier selection reset');
         }
 
 
@@ -989,8 +976,6 @@
                     if (typeof PriceSummary !== 'undefined') {
                         PriceSummary.updateTax(taxRate, taxAmount);
                     }
-
-                    console.log('💰 Tax updated:', { rate: taxRate + '%', amount: taxAmount });
 
                     $('.gocover').hide();
                 }
@@ -1039,11 +1024,7 @@
             let isFreeShipping = false;
 
             // ✅ جمع كل الشحن المحدد
-            // - .shipping = الشحن العادي
-            // - .shipping-option = Tryoto من API
-            // - .tryoto-radio = Tryoto modal
             const checkedShipping = $('input.shipping:checked, input.shipping-option:checked, input.tryoto-radio:checked');
-            console.log('🔍 getShipping: Found', checkedShipping.length, 'checked shipping inputs');
 
             checkedShipping.each(function() {
                 const originalPrice = parseFloat($(this).attr('data-price')) || 0;
@@ -1057,7 +1038,6 @@
                 if (freeAbove > 0 && merchantTotal >= freeAbove) {
                     // الشحن مجاني - لا نضيف للـ mship
                     isFreeShipping = true;
-                    console.log('🎁 Free shipping for merchant', merchantId, '- Total:', merchantTotal, '>= FreeAbove:', freeAbove);
                 } else {
                     mship += originalPrice;
                 }
@@ -1067,8 +1047,6 @@
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.updateShipping(mship, originalShipping, isFreeShipping);
             }
-
-            console.log('🚚 Shipping - Original:', originalShipping.toFixed(2), 'Final:', mship.toFixed(2), 'Free:', isFreeShipping);
         }
 
         // Helper function to get merchant's catalogItems total (converted to current currency)
@@ -1084,7 +1062,6 @@
         function getPacking() {
             mpack = 0;
             const checkedPacking = $('.packing:checked');
-            console.log('🔍 getPacking: Found', checkedPacking.length, 'checked packing inputs');
 
             checkedPacking.each(function() {
                 mpack += parseFloat($(this).attr('data-price')) || 0;
@@ -1093,7 +1070,6 @@
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.updatePacking(mpack);
             }
-            console.log('📦 Packing total:', mpack);
         }
 
         /**
@@ -1104,7 +1080,6 @@
             // Use PriceSummary for unified calculation
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.recalculateTotal();
-                console.log('✅ تم تحديث الإجمالي عبر PriceSummary');
             }
         }
 

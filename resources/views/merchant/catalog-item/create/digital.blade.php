@@ -403,7 +403,6 @@
 
                 var editors = document.getElementsByClassName('nic-edit');
                 for (var i = 0; i < editors.length; i++) {
-                    console.log(editors[i]);
                     var editorInstance = nicEditors.findEditor(editors[i].id); // Find the nicEditor instance
                     if (editorInstance) {
                         editors[i].value = editorInstance

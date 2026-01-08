@@ -77,7 +77,6 @@
                 // ✅ Update PriceSummary directly
                 if (typeof window.PriceSummary !== 'undefined') {
                     window.PriceSummary.updatePacking(price);
-                    console.log('✅ Packing updated via PriceSummary:', { price: price });
                 }
 
                 // Also call global function for backward compatibility

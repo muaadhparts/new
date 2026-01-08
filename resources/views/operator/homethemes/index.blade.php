@@ -51,7 +51,7 @@
                                     @if($theme->show_brands)<span class="badge bg-primary">Brands</span>@endif
                                     @if($theme->show_categories)<span class="badge bg-primary">Categories</span>@endif
                                     @if($theme->show_arrival)<span class="badge bg-primary">Arrival</span>@endif
-                                    @if($theme->show_featured_products)<span class="badge bg-primary">Featured</span>@endif
+                                    @if($theme->show_featured_items)<span class="badge bg-primary">Featured</span>@endif
                                     @if($theme->show_deal_of_day)<span class="badge bg-primary">Deal of Day</span>@endif
                                     @if($theme->show_top_rated)<span class="badge bg-primary">Top Rated</span>@endif
                                     @if($theme->show_big_save)<span class="badge bg-primary">Big Save</span>@endif

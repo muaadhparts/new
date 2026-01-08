@@ -547,7 +547,7 @@ class CatalogItemDetailsController extends FrontBaseController
     public function showCrossCatalogItem($id)
     {
         $catalogItem = CatalogItem::findOrFail($id);
-        $cross_ids = array_filter(explode(',', (string) $catalogItem->cross_products));
+        $cross_ids = array_filter(explode(',', (string) $catalogItem->cross_items));
         $cross_catalog_items = CatalogItem::whereIn('id', $cross_ids)
             ->withCount('catalogReviews')
             ->withAvg('catalogReviews', 'rating')

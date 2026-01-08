@@ -373,8 +373,6 @@ jQuery(document).ready(function($) {
                 'Accept': 'application/json'
             },
             success: function(resp) {
-                console.log('Cart remove response:', resp);
-
                 if (resp && resp.success) {
                     // Animate and remove item
                     $item.slideUp(300, function() {
@@ -496,7 +494,7 @@ jQuery(document).ready(function($) {
                 $wrapper.find('.m-cart__qty-hint').fadeOut(200);
             },
             error: function() {
-                console.log('Qty increase failed');
+                // Qty increase failed
             },
             complete: function() {
                 $btn.prop('disabled', false);
@@ -553,7 +551,7 @@ jQuery(document).ready(function($) {
                 $wrapper.find('.m-cart__qty-hint').fadeOut(200);
             },
             error: function() {
-                console.log('Qty decrease failed');
+                // Qty decrease failed
             },
             complete: function() {
                 $btn.prop('disabled', false);

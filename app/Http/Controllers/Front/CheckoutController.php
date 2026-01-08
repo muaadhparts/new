@@ -491,6 +491,7 @@ class CheckoutController extends FrontBaseController
             'discount_amount' => $step1['discount_amount'] ?? null,
             'discount_code_id' => $step1['discount_code_id'] ?? null,
             'user_id' => $step1['user_id'] ?? null,
+            'customer_city_id' => $step1['customer_city_id'] ?? null, // For courier matching
         ];
 
         // Merge location_draft into step1Data (if available)
@@ -499,12 +500,14 @@ class CheckoutController extends FrontBaseController
             $step1Data = array_merge($step1Data, [
                 'country_id' => $locationDraft['country_id'] ?? $step1Data['country_id'],
                 'country_name' => $locationDraft['country_name'] ?? null,
+                'city_id' => $locationDraft['city_id'] ?? $step1Data['customer_city_id'], // For courier matching
                 'city_name' => $locationDraft['city_name'] ?? null,
                 'state_name' => $locationDraft['state_name'] ?? null,
                 // Purchase table fields
                 'customer_country' => $locationDraft['country_name'] ?? null,
                 'customer_city' => $locationDraft['city_name'] ?? null,
                 'customer_state' => $locationDraft['state_name'] ?? null,
+                'customer_city_id' => $locationDraft['city_id'] ?? $step1Data['customer_city_id'], // For courier matching
                 'tax_rate' => $locationDraft['tax_rate'] ?? 0,
                 'tax_amount' => $locationDraft['tax_amount'] ?? 0,
                 'tax_location' => $locationDraft['tax_location'] ?? '',
@@ -1250,12 +1253,14 @@ class CheckoutController extends FrontBaseController
             $step1Data = array_merge($step1Data, [
                 'country_id' => $locationDraft['country_id'] ?? $step1Data['country_id'],
                 'country_name' => $locationDraft['country_name'] ?? null,
+                'city_id' => $locationDraft['city_id'] ?? $step1Data['customer_city_id'], // For courier matching
                 'city_name' => $locationDraft['city_name'] ?? null,
                 'state_name' => $locationDraft['state_name'] ?? null,
                 // Purchase table fields
                 'customer_country' => $locationDraft['country_name'] ?? null,
                 'customer_city' => $locationDraft['city_name'] ?? null,
                 'customer_state' => $locationDraft['state_name'] ?? null,
+                'customer_city_id' => $locationDraft['city_id'] ?? $step1Data['customer_city_id'], // For courier matching
                 'tax_rate' => $locationDraft['tax_rate'] ?? 0,
                 'tax_amount' => $locationDraft['tax_amount'] ?? 0,
                 'tax_location' => $locationDraft['tax_location'] ?? '',

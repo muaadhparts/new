@@ -46,11 +46,11 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
     $brandName = $actualProduct->brand?->localized_name;
     $brandLogo = $actualProduct->brand?->photo_url;
 
-    // Quality Brand info (from merchant_product)
+    // Quality Brand info (from merchant_item)
     $qualityBrandName = $mp->qualityBrand?->localized_name;
     $qualityBrandLogo = $mp->qualityBrand?->logo_url;
 
-    // Merchant info (from merchant_product)
+    // Merchant info (from merchant_item)
     $merchantName = $mp->user ? getLocalizedShopName($mp->user) : null;
 
     // Stock info for Add to Cart

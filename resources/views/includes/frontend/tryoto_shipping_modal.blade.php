@@ -157,7 +157,6 @@
             // ✅ Update PriceSummary directly
             if (typeof window.PriceSummary !== 'undefined') {
                 window.PriceSummary.updateShipping(finalPrice, originalPrice, isFreeShipping);
-                console.log('✅ Tryoto Shipping updated via PriceSummary:', { final: finalPrice, original: originalPrice, free: isFreeShipping });
             }
         }
 

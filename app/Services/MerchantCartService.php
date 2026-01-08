@@ -210,19 +210,17 @@ class MerchantCartService
             }
         }
 
-        // جلب مدينة التاجر من قاعدة البيانات
-        $merchant = User::find($merchantId);
-        $merchantCityId = $merchant->city_id ?? null;
-        $merchantCity = null;
+        // جلب مدينة التاجر من merchant_locations (المستودع)
+        $merchantCityData = ShippingCalculatorService::getMerchantCity($merchantId);
+        $merchantCityId = $merchantCityData['city_id'] ?? null;
+        $merchantCity = $merchantCityData['city_name'] ?? null;
 
-        if ($merchantCityId) {
-            $city = \App\Models\City::find($merchantCityId);
-            $merchantCity = $city->city_name ?? $city->name ?? null;
-        }
+        // جلب بيانات التاجر للاسم
+        $merchant = User::find($merchantId);
 
         if (!$merchantCity) {
             $hasCompleteData = false;
-            $missingData[] = "Merchant {$merchantId}: missing city";
+            $missingData[] = "Merchant {$merchantId}: missing city (add location in merchant_locations)";
         }
 
         return [

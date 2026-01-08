@@ -247,7 +247,6 @@ $paydata = $gateway->convertAutoData();
     } = await mp.getPaymentMethods({
       bin
     });
-    console.log(results);
     return results[0];
   }
 

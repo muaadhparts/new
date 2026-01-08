@@ -227,7 +227,7 @@
                         { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'shop_number', name: 'shop_number' },
-                        { data: 'admin_commission', name: 'admin_commission' },
+                        { data: 'operator_commission', name: 'operator_commission' },
                         { data: 'status', searchable: false, orderable: false},
             			{ data: 'action', searchable: false, orderable: false }
                      ],

@@ -443,8 +443,8 @@ class CatalogItemController extends OperatorBaseController
 
         // Remove merchant-specific fields from catalog item table input
         unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['merchant_id']);
-        if ($request->cross_products) {
-            $input['cross_products'] = implode(',', $request->cross_products);
+        if ($request->cross_items) {
+            $input['cross_items'] = implode(',', $request->cross_items);
         }
 
         // Old category attribute system removed - categories now linked via TreeCategories
@@ -842,8 +842,8 @@ class CatalogItemController extends OperatorBaseController
             $jsonAttr = json_encode($attrArr);
             $input['attributes'] = $jsonAttr;
         }
-        if ($request->cross_products) {
-            $input['cross_products'] = implode(',', $request->cross_products);
+        if ($request->cross_items) {
+            $input['cross_items'] = implode(',', $request->cross_items);
         }
         $data->slug = Str::slug($data->name, '-') . '-' . strtolower($data->part_number);
 

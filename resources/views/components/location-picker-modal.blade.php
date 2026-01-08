@@ -208,7 +208,6 @@
         init: function() {
             this.cacheElements();
             this.bindEvents();
-            console.log('📍 Location Picker initialized');
         },
 
         /**
@@ -368,8 +367,6 @@
 
             // Show zoom hint briefly
             this.showZoomHint();
-
-            console.log('🗺️ Map initialized');
         },
 
         /**
@@ -511,7 +508,6 @@
                     this.showAlert(result.message || '{{ __("Failed to get location information") }}', 'error');
                 }
             } catch (error) {
-                console.error('Geocode error:', error);
                 this.showAlert('{{ __("Server connection error") }}', 'error');
             } finally {
                 this.showLoading(false);
@@ -557,7 +553,6 @@
                     }, 2000);
                 }
             } catch (error) {
-                console.error('Sync error:', error);
                 this.hideSyncProgress();
                 this.showAlert('{{ __("Server connection error") }}', 'error');
             }
@@ -625,8 +620,6 @@
             if (modal) {
                 modal.hide();
             }
-
-            console.log('✅ Location confirmed:', this.selectedData);
         },
 
         /**
@@ -671,8 +664,6 @@
                     });
                 }
             });
-
-            console.log('📝 Form fields auto-filled');
         },
 
         /**

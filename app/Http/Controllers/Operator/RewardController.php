@@ -23,10 +23,10 @@ class RewardController extends Controller
     public function update(Request $request)
     {
         DB::table('rewards')->delete();
-        if($request->order_amount && $request->reward){
-            foreach($request->order_amount as $key => $amount){
+        if($request->purchase_amount && $request->reward){
+            foreach($request->purchase_amount as $key => $amount){
                 $data = new Reward();
-                $data->order_amount = $amount;
+                $data->purchase_amount = $amount;
                 $data->reward = $request->reward[$key];
                 $data->save();
             }

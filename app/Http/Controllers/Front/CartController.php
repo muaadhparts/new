@@ -881,7 +881,7 @@ class CartController extends FrontBaseController
     {
         return CatalogItem::query()->select([
             'id','slug','part_number','name','photo',
-            'weight','type','file','link','measure','attributes','cross_products',
+            'weight','type','file','link','measure','attributes','cross_items',
         ])->find($id);
     }
 

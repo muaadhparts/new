@@ -174,7 +174,7 @@ class ImportController extends MerchantBaseController
                 'attributes', 'name', 'details', 'weight', 'policy', 'tags',
                 'features', 'colors', 'is_meta', 'meta_tag', 'meta_description',
                 'youtube', 'link', 'platform', 'region', 'measure', 'is_catalog',
-                'catalog_id', 'cross_products'
+                'catalog_id', 'cross_items'
             ]);
 
             // ملف رقمي (إن وجد)
@@ -322,7 +322,7 @@ class ImportController extends MerchantBaseController
             'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'details',
             'weight', 'policy', 'tags', 'features', 'colors', 'is_meta', 'meta_tag',
             'meta_description', 'youtube', 'type', 'link', 'platform', 'region',
-            'measure', 'is_catalog', 'catalog_id', 'cross_products'
+            'measure', 'is_catalog', 'catalog_id', 'cross_items'
         ]);
 
         // مصدر الصورة

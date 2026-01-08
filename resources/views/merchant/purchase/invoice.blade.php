@@ -210,7 +210,7 @@
                             @if($invoiceDeliveryCourier->payment_method === 'cod')
                             <li>
                                 <span class="fw-semibold">@lang('COD Amount :')</span>
-                                <span class="fw-normal text-warning">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->order_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                <span class="fw-normal text-warning">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->purchase_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
                             </li>
                             @endif
                         @endif

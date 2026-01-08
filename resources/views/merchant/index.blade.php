@@ -138,7 +138,7 @@
                             });
                         @endphp
                         <h3 class="value">{{$curr->sign}}<span
-                                class="counter">{{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($user->admin_commission) }}</span>
+                                class="counter">{{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($user->operator_commission) }}</span>
                         </h3>
                     </div>
                 </div>

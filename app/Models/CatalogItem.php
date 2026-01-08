@@ -23,7 +23,7 @@ class CatalogItem extends Model
         'length', 'width', 'height', 'status',
         'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
         'youtube', 'type', 'platform', 'region', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
-        'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_products'
+        'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_items'
     ];
 
     /**

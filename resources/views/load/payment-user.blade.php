@@ -158,7 +158,6 @@
             } = await mp.getPaymentMethods({
                 bin
             });
-            console.log(results);
             return results[0];
         }
 
@@ -167,7 +166,6 @@
                 paymentMethodId,
                 bin
             });
-            console.log(issuers)
             return issuers;
         };
 

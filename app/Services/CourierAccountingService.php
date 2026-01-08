@@ -171,7 +171,7 @@ class CourierAccountingService
             'cod_deliveries' => $deliveries->where('payment_method', 'cod')->count(),
             'online_deliveries' => $deliveries->where('payment_method', 'online')->count(),
             'total_delivery_fees' => $deliveries->sum('delivery_fee'),
-            'total_cod_collected' => $deliveries->where('payment_method', 'cod')->sum('order_amount'),
+            'total_cod_collected' => $deliveries->where('payment_method', 'cod')->sum('purchase_amount'),
             'unsettled_deliveries' => $deliveries->where('settlement_status', 'pending')->count(),
         ];
     }
@@ -212,7 +212,7 @@ class CourierAccountingService
     {
         $unsettled = $this->getUnsettledDeliveriesForCourier($courierId);
 
-        $codAmount = $unsettled->where('payment_method', 'cod')->sum('order_amount');
+        $codAmount = $unsettled->where('payment_method', 'cod')->sum('purchase_amount');
         $feesEarned = $unsettled->where('payment_method', 'online')->sum('delivery_fee');
         $codFees = $unsettled->where('payment_method', 'cod')->sum('delivery_fee');
 

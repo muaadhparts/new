@@ -139,7 +139,7 @@
                                             <div class="d-flex justify-content-between align-items-center">
                                                 <label class="control-label">{{ __('Featured CatalogItems') }}</label>
                                                 <label class="switch">
-                                                    <input type="checkbox" name="show_featured_products" value="1" checked>
+                                                    <input type="checkbox" name="show_featured_items" value="1" checked>
                                                     <span class="slider round"></span>
                                                 </label>
                                             </div>
@@ -245,7 +245,7 @@
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Featured CatalogItems Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_featured_products" value="5" min="1">
+                                            <input type="number" class="form-control" name="order_featured_items" value="5" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Deal of Day Purchase') }}</label>
@@ -300,7 +300,7 @@
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Featured CatalogItems Title') }}</label>
-                                            <input type="text" class="form-control" name="title_featured_products" placeholder="{{ __('Featured CatalogItems') }}">
+                                            <input type="text" class="form-control" name="title_featured_items" placeholder="{{ __('Featured CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Deal of Day Title') }}</label>
@@ -339,7 +339,7 @@
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Featured CatalogItems') }}</label>
-                                            <input type="number" class="form-control" name="count_featured_products" value="8" min="1" max="24">
+                                            <input type="number" class="form-control" name="count_featured_items" value="8" min="1" max="24">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Top Rated') }}</label>

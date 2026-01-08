@@ -209,7 +209,7 @@ trait HandlesMerchantCheckout
             'status' => 'pending',
             'delivery_fee' => $courierFee,
             'cod_amount' => $codAmount,
-            'order_amount' => $purchase->pay_amount,
+            'purchase_amount' => $purchase->pay_amount,
             'payment_method' => $paymentMethod,
             'fee_status' => 'pending',
             'settlement_status' => 'pending',

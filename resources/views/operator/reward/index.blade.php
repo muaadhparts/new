@@ -77,9 +77,9 @@
 																
 																<div class="col-lg-6">
 																	
-																	<input type="number" name="order_amount[]"
+																	<input type="number" name="purchase_amount[]"
 																		class="form-control"
-																		placeholder="{{ __('Purchase Amount (USD)') }}" min="0" value="{{$data->order_amount}}">
+																		placeholder="{{ __('Purchase Amount (USD)') }}" min="0" value="{{$data->purchase_amount}}">
 																</div>
 																<div class="col-lg-6">
 																	<input type="number" name="reward[]"
@@ -129,7 +129,7 @@ $("#whole-section").append(''+
 							'<span class="remove whole-remove"><i class="fas fa-times"></i></span>'+
 								'<div  class="row">'+
 									'<div class="col-lg-6">'+
-										'<input type="number" name="order_amount[]" class="form-control" placeholder="Purchase Amount (USD)" min="0" required>'+
+										'<input type="number" name="purchase_amount[]" class="form-control" placeholder="Purchase Amount (USD)" min="0" required>'+
 									'</div>'+
 									'<div class="col-lg-6">'+
 										'<input type="number" name="reward[]" class="form-control" placeholder="Reward" min="0" required>'+
@@ -150,7 +150,7 @@ $("#whole-section").append(''+
 							'<span class="remove whole-remove"><i class="fas fa-times"></i></span>'+
 								'<div  class="row">'+
 									'<div class="col-lg-4">'+
-										'<input type="number" name="order_amount[]" class="form-control" placeholder="Purchase Amount" min="0" required>'+
+										'<input type="number" name="purchase_amount[]" class="form-control" placeholder="Purchase Amount" min="0" required>'+
 									'</div>'+
 									
 									'<div class="col-lg-4">'+
