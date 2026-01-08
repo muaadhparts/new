@@ -408,9 +408,9 @@ class UserController extends OperatorBaseController
             }
         }
 
-        if($user->notivications->count() > 0)
+        if($user->userCatalogEvents->count() > 0)
         {
-            foreach ($user->notivications as $gal) {
+            foreach ($user->userCatalogEvents as $gal) {
                 $gal->delete();
             }
         }

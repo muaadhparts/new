@@ -167,8 +167,8 @@ class MerchantController extends OperatorBaseController
         $user->reg_number = null;
         $user->shop_message = null;
         $user->update();
-        if ($user->notivications->count() > 0) {
-            foreach ($user->notivications as $gal) {
+        if ($user->userCatalogEvents->count() > 0) {
+            foreach ($user->userCatalogEvents as $gal) {
                 $gal->delete();
             }
         }

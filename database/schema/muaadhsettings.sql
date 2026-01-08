@@ -1,5 +1,5 @@
 -- Schema for table: muaadhsettings
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `muaadhsettings`;
 
@@ -38,7 +38,7 @@ CREATE TABLE `muaadhsettings` (
   `from_email` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `from_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `is_smtp` tinyint(1) NOT NULL DEFAULT '0',
-  `is_comment` tinyint(1) NOT NULL DEFAULT '1',
+  `is_buyer_note` tinyint(1) NOT NULL DEFAULT '1',
   `is_currency` tinyint(1) NOT NULL DEFAULT '1',
   `is_affilate` tinyint(1) NOT NULL DEFAULT '1',
   `affilate_charge` int NOT NULL DEFAULT '0',

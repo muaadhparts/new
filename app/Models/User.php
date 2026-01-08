@@ -126,9 +126,21 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\ChatThread', 'recieved_user');
     }
 
-    public function notivications()
+    /**
+     * Get user catalog events (for user notifications)
+     */
+    public function userCatalogEvents()
     {
         return $this->hasMany('App\Models\UserCatalogEvent', 'user_id');
+    }
+
+    /**
+     * Alias for catalogEvents() - backwards compatibility
+     * Used by payment controllers and listeners
+     */
+    public function notifications()
+    {
+        return $this->catalogEvents();
     }
 
     public function favoriteSellers()

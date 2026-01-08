@@ -137,17 +137,17 @@
         </div>
     </div>
 
-    <!-- merchant notification -->
+    <!-- merchant catalog events -->
     <div class="gs-merchant-header-noti">
         <div class="d-flex align-items-center justify-content-between gap-4">
-            <span class="title">@lang('Your Notification')</span>
-            <a class="clear-btn" href="{{ route('merchant-purchase-notf-clear',Auth::user()->id) }}">Clear All</a>
+            <span class="title">@lang('Your Events')</span>
+            <a class="clear-btn" href="{{ route('merchant-purchase-event-clear',Auth::user()->id) }}">Clear All</a>
         </div>
         <ul>
             @php
-                $notifications = App\Models\UserCatalogEvent::whereUserId(auth()->id())->orderby('id','desc')->get();
+                $catalogEvents = App\Models\UserCatalogEvent::whereUserId(auth()->id())->orderby('id','desc')->get();
             @endphp
-            @forelse ($notifications as $data)
+            @forelse ($catalogEvents as $data)
             <li>
                 <span class="sm-info-1">@lang('Purchase has been placed')</span>
                 <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}"

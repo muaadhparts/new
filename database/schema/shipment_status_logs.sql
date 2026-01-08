@@ -1,5 +1,5 @@
 -- Schema for table: shipment_status_logs
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `shipment_status_logs`;
 
@@ -22,4 +22,4 @@ CREATE TABLE `shipment_status_logs` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

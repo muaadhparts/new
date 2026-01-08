@@ -1,5 +1,5 @@
 -- Schema for table: brand_regions
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `brand_regions`;
 

@@ -1,5 +1,5 @@
 -- Schema for table: users
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `users`;
 
@@ -53,4 +53,4 @@ CREATE TABLE `users` (
   `reward` double NOT NULL DEFAULT '0',
   `email_token` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

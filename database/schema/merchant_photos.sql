@@ -1,6 +1,5 @@
 -- Schema for table: merchant_photos
--- Renamed from: galleries
--- Updated: 2026-01-03
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `merchant_photos`;
 

@@ -1,5 +1,5 @@
 -- Schema for table: withdraws
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `withdraws`;
 
@@ -21,4 +21,4 @@ CREATE TABLE `withdraws` (
   `status` enum('pending','completed','rejected') NOT NULL DEFAULT 'pending',
   `type` enum('user','merchant','rider') NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

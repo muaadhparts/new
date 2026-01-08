@@ -1,5 +1,5 @@
 -- Schema for table: merchant_payments
--- Exported: 2026-01-04 03:10:00
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `merchant_payments`;
 
@@ -8,7 +8,7 @@ CREATE TABLE `merchant_payments` (
   `user_id` int NOT NULL DEFAULT '0',
   `subtitle` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `title` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `topup` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `type` enum('manual','automatic') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'manual',
   `information` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,

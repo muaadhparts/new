@@ -1,9 +1,9 @@
--- Schema for table: blog_categories
--- Exported: 2026-01-03 04:17:45
+-- Schema for table: article_types
+-- Exported: 2026-01-07 23:59:03
 
-DROP TABLE IF EXISTS `blog_categories`;
+DROP TABLE IF EXISTS `article_types`;
 
-CREATE TABLE `blog_categories` (
+CREATE TABLE `article_types` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,

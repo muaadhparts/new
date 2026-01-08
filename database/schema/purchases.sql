@@ -1,5 +1,5 @@
 -- Schema for table: purchases
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `purchases`;
 
@@ -9,7 +9,6 @@ CREATE TABLE `purchases` (
   `cart` json NOT NULL,
   `method` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `shipping` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pickup_location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `totalQty` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `pay_amount` double NOT NULL,
   `txnid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -63,4 +62,4 @@ CREATE TABLE `purchases` (
   `commission` double NOT NULL DEFAULT '0',
   `riders` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

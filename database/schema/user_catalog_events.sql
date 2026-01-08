@@ -1,5 +1,5 @@
 -- Schema for table: user_catalog_events
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `user_catalog_events`;
 
@@ -11,4 +11,4 @@ CREATE TABLE `user_catalog_events` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

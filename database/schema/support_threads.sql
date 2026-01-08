@@ -1,5 +1,5 @@
 -- Schema for table: support_threads
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `support_threads`;
 
@@ -15,4 +15,4 @@ CREATE TABLE `support_threads` (
   PRIMARY KEY (`id`),
   KEY `support_threads_user_id_index` (`user_id`),
   KEY `support_threads_type_index` (`type`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

@@ -1,5 +1,5 @@
 -- Schema for table: parts_r50gl
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `parts_r50gl`;
 

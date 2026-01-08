@@ -169,17 +169,17 @@ Route::prefix('operator')->group(function () {
     //------------ PROTECTED OPERATOR ROUTES (Require Authentication) ------------
     Route::middleware(['auth:operator'])->group(function () {
 
-        //------------ OPERATOR NOTIFICATION SECTION ------------
-        Route::get('/all/notf/count', 'Operator\NotificationController@all_notf_count')->name('all-notf-count');
-        Route::get('/user/notf/show', 'Operator\NotificationController@user_notf_show')->name('user-notf-show');
-        Route::get('/user/notf/clear', 'Operator\NotificationController@user_notf_clear')->name('user-notf-clear');
-        Route::get('/purchase/notf/show', 'Operator\NotificationController@purchase_notf_show')->name('purchase-notf-show');
-        Route::get('/purchase/notf/clear', 'Operator\NotificationController@purchase_notf_clear')->name('purchase-notf-clear');
-        Route::get('/catalog-item/notf/show', 'Operator\NotificationController@catalog_item_notf_show')->name('catalog-item-notf-show');
-        Route::get('/catalog-item/notf/clear', 'Operator\NotificationController@catalog_item_notf_clear')->name('catalog-item-notf-clear');
-        Route::get('/conv/notf/show', 'Operator\NotificationController@conv_notf_show')->name('conv-notf-show');
-        Route::get('/conv/notf/clear', 'Operator\NotificationController@conv_notf_clear')->name('conv-notf-clear');
-        //------------ OPERATOR NOTIFICATION SECTION ENDS ------------
+        //------------ OPERATOR CATALOG EVENT SECTION ------------
+        Route::get('/all/event/count', 'Operator\CatalogEventController@allEventCount')->name('all-event-count');
+        Route::get('/user/event/show', 'Operator\CatalogEventController@showUserEvents')->name('user-event-show');
+        Route::get('/user/event/clear', 'Operator\CatalogEventController@clearUserEvents')->name('user-event-clear');
+        Route::get('/purchase/event/show', 'Operator\CatalogEventController@showPurchaseEvents')->name('purchase-event-show');
+        Route::get('/purchase/event/clear', 'Operator\CatalogEventController@clearPurchaseEvents')->name('purchase-event-clear');
+        Route::get('/catalog-item/event/show', 'Operator\CatalogEventController@showCatalogItemEvents')->name('catalog-item-event-show');
+        Route::get('/catalog-item/event/clear', 'Operator\CatalogEventController@clearCatalogItemEvents')->name('catalog-item-event-clear');
+        Route::get('/conv/event/show', 'Operator\CatalogEventController@showConversationEvents')->name('conv-event-show');
+        Route::get('/conv/event/clear', 'Operator\CatalogEventController@clearConversationEvents')->name('conv-event-clear');
+        //------------ OPERATOR CATALOG EVENT SECTION ENDS ------------
 
         //------------ OPERATOR DASHBOARD & PROFILE SECTION ------------
         Route::get('/', 'Operator\DashboardController@index')->name('operator.dashboard');
@@ -1229,13 +1229,13 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT PACKAGE ENDS------------
 
-            //------------ MERCHANT NOTIFICATION SECTION ------------
+            //------------ MERCHANT CATALOG EVENT SECTION ------------
 
-            Route::get('/purchase/notf/show/{id}', 'Merchant\NotificationController@purchase_notf_show')->name('merchant-purchase-notf-show');
-            Route::get('/purchase/notf/count/{id}', 'Merchant\NotificationController@purchase_notf_count')->name('merchant-purchase-notf-count');
-            Route::get('/purchase/notf/clear/{id}', 'Merchant\NotificationController@purchase_notf_clear')->name('merchant-purchase-notf-clear');
+            Route::get('/purchase/event/show/{id}', 'Merchant\CatalogEventController@showPurchaseEvents')->name('merchant-purchase-event-show');
+            Route::get('/purchase/event/count/{id}', 'Merchant\CatalogEventController@countPurchaseEvents')->name('merchant-purchase-event-count');
+            Route::get('/purchase/event/clear/{id}', 'Merchant\CatalogEventController@clearPurchaseEvents')->name('merchant-purchase-event-clear');
 
-            //------------ MERCHANT NOTIFICATION SECTION ENDS ------------
+            //------------ MERCHANT CATALOG EVENT SECTION ENDS ------------
 
             // Merchant Profile
             Route::get('/profile', 'Merchant\MerchantController@profile')->name('merchant-profile');

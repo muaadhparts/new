@@ -1,5 +1,5 @@
 -- Schema for table: catalog_item_clicks
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `catalog_item_clicks`;
 
@@ -10,4 +10,4 @@ CREATE TABLE `catalog_item_clicks` (
   `date` date DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `product_clicks_merchant_product_id_index` (`merchant_item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=33070 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=33076 DEFAULT CHARSET=latin1;

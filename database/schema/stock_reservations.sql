@@ -1,5 +1,5 @@
 -- Schema for table: stock_reservations
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:04
 
 DROP TABLE IF EXISTS `stock_reservations`;
 
@@ -17,4 +17,4 @@ CREATE TABLE `stock_reservations` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `stock_reservations_expires_at_merchant_item_id_index` (`expires_at`,`merchant_item_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=87 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

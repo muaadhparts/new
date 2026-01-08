@@ -1,5 +1,5 @@
 -- Schema for table: callouts
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `callouts`;
 

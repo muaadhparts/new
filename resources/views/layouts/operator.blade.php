@@ -101,7 +101,7 @@
 
 						<div class="right-eliment">
 							<ul class="list">
-								<input type="hidden" id="all_notf_count" value="{{ route('all-notf-count') }}">
+								<input type="hidden" id="all_event_count" value="{{ route('all-event-count') }}">
 								<li class="bell-area">
 									<a class="dropdown-toggle-1" target="_blank" href="{{ route('front.index') }}">
 										<i class="fas fa-globe-americas"></i>
@@ -109,52 +109,49 @@
 								</li>
 
 								<li class="bell-area">
-									<a id="notf_conv" class="dropdown-toggle-1" href="javascript:;">
+									<a id="event_conv" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-envelope"></i>
-										<span id="conv-notf-count">{{ App\Models\CatalogEvent::countChatThread()
-											}}</span>
+										<span id="conv-event-count">{{ App\Models\CatalogEvent::countChatThread() }}</span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('conv-notf-show') }}"
-											id="conv-notf-show">
+										<div class="dropdownmenu-wrapper" data-href="{{ route('conv-event-show') }}"
+											id="conv-event-show">
 										</div>
 									</div>
 								</li>
 
 								<li class="bell-area">
-									<a id="notf_product" class="dropdown-toggle-1" href="javascript:;">
+									<a id="event_product" class="dropdown-toggle-1" href="javascript:;">
 										<i class="icofont-cart"></i>
-										<span id="catalogItem-notf-count">{{ App\Models\CatalogEvent::countCatalogItem()
-											}}</span>
+										<span id="catalogItem-event-count">{{ App\Models\CatalogEvent::countCatalogItem() }}</span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('catalog-item-notf-show') }}"
-											id="catalog-item-notf-show">
+										<div class="dropdownmenu-wrapper" data-href="{{ route('catalog-item-event-show') }}"
+											id="catalog-item-event-show">
 										</div>
 									</div>
 								</li>
 
 								<li class="bell-area">
-									<a id="notf_user" class="dropdown-toggle-1" href="javascript:;">
+									<a id="event_user" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-user"></i>
-										<span id="user-notf-count">{{ App\Models\CatalogEvent::countRegistration()
-											}}</span>
+										<span id="user-event-count">{{ App\Models\CatalogEvent::countRegistration() }}</span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('user-notf-show') }}"
-											id="user-notf-show">
+										<div class="dropdownmenu-wrapper" data-href="{{ route('user-event-show') }}"
+											id="user-event-show">
 										</div>
 									</div>
 								</li>
 
 								<li class="bell-area">
-									<a id="notf_order" class="dropdown-toggle-1" href="javascript:;">
+									<a id="event_order" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-newspaper"></i>
-										<span id="purchase-notf-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
+										<span id="purchase-event-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
 									</a>
 									<div class="dropdown-menu">
-										<div class="dropdownmenu-wrapper" data-href="{{ route('purchase-notf-show') }}"
-											id="purchase-notf-show">
+										<div class="dropdownmenu-wrapper" data-href="{{ route('purchase-event-show') }}"
+											id="purchase-event-show">
 										</div>
 									</div>
 								</li>

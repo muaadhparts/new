@@ -1,5 +1,5 @@
 -- Schema for table: frontend_settings
--- Exported: 2026-01-04
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `frontend_settings`;
 
@@ -31,7 +31,7 @@ CREATE TABLE `frontend_settings` (
   `faq` tinyint(1) NOT NULL DEFAULT '0',
   `contact` tinyint(1) NOT NULL DEFAULT '0',
   `category` tinyint(1) NOT NULL DEFAULT '0',
-  `arrival_section` tinyint(1) NOT NULL DEFAULT '1',
+  `featured_promo` tinyint(1) NOT NULL DEFAULT '1',
   `our_services` tinyint(1) NOT NULL DEFAULT '1',
   `slider` tinyint(1) NOT NULL DEFAULT '0',
   `partner` tinyint(1) NOT NULL DEFAULT '1',
@@ -47,5 +47,6 @@ CREATE TABLE `frontend_settings` (
   `popular_items` tinyint(1) NOT NULL DEFAULT '1',
   `flash_deal` tinyint NOT NULL DEFAULT '1',
   `top_brand` tinyint NOT NULL DEFAULT '1',
+  `publication` tinyint(1) DEFAULT '0',
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

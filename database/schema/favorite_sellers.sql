@@ -1,5 +1,5 @@
 -- Schema for table: favorite_sellers
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `favorite_sellers`;
 

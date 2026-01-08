@@ -1,9 +1,9 @@
--- Schema for table: attribute_options
--- Exported: 2026-01-03 04:17:45
+-- Schema for table: spec_values
+-- Exported: 2026-01-07 23:59:04
 
-DROP TABLE IF EXISTS `attribute_options`;
+DROP TABLE IF EXISTS `spec_values`;
 
-CREATE TABLE `attribute_options` (
+CREATE TABLE `spec_values` (
   `id` int NOT NULL AUTO_INCREMENT,
   `attribute_id` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,

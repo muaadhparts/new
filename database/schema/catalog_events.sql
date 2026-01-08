@@ -1,5 +1,5 @@
 -- Schema for table: catalog_events
--- Exported: 2026-01-03 04:17:45
+-- Exported: 2026-01-07 23:59:03
 
 DROP TABLE IF EXISTS `catalog_events`;
 
@@ -9,9 +9,9 @@ CREATE TABLE `catalog_events` (
   `user_id` int DEFAULT NULL,
   `merchant_id` int DEFAULT NULL,
   `catalog_item_id` int DEFAULT NULL,
-  `conversation_id` int DEFAULT NULL,
+  `chat_thread_id` int unsigned DEFAULT NULL,
   `is_read` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;

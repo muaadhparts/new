@@ -1002,80 +1002,80 @@
 
   // FORGOT FORM ENDS
 
-  // NOTIFICATION COUNT
+  // CATALOG EVENT COUNT
 
   $(document).ready(function () {
     setInterval(function () {
       $.ajax({
         type: "GET",
-        url: $("#all_notf_count").val(),
+        url: $("#all_event_count").val(),
         success: function (data) {
-          $("#user-notf-count").html(data["user_count"]);
-          $("#conv-notf-count").html(data["conv_count"]);
-          $("#purchase-notf-count").html(data["order_count"]);
-          $("#catalogItem-notf-count").html(data["product_count"]);
+          $("#user-event-count").html(data["user_count"]);
+          $("#conv-event-count").html(data["conv_count"]);
+          $("#purchase-event-count").html(data["order_count"]);
+          $("#catalogItem-event-count").html(data["product_count"]);
         },
       });
     }, 300000);
   });
 
-  // NOTIFICATION COUNT ENDS
+  // CATALOG EVENT COUNT ENDS
 
-  // USER REGISTER NOTIFICATION
+  // USER REGISTER EVENT
 
-  $(document).on("click", "#notf_user", function () {
-    $("#user-notf-count").html("0");
-    $("#user-notf-show").load($("#user-notf-show").data("href"));
+  $(document).on("click", "#event_user", function () {
+    $("#user-event-count").html("0");
+    $("#user-event-show").load($("#user-event-show").data("href"));
   });
 
-  $(document).on("click", "#user-notf-clear", function () {
+  $(document).on("click", "#user-event-clear", function () {
     $(this).parent().parent().trigger("click");
-    $.get($("#user-notf-clear").data("href"));
+    $.get($("#user-event-clear").data("href"));
   });
 
-  // USER REGISTER NOTIFICATION ENDS
+  // USER REGISTER EVENT ENDS
 
-  // ORDER NOTIFICATION
+  // ORDER EVENT
 
-  $(document).on("click", "#notf_order", function () {
-    $("#purchase-notf-count").html("0");
-    $("#purchase-notf-show").load($("#purchase-notf-show").data("href"));
+  $(document).on("click", "#event_order", function () {
+    $("#purchase-event-count").html("0");
+    $("#purchase-event-show").load($("#purchase-event-show").data("href"));
   });
 
-  $(document).on("click", "#purchase-notf-clear", function () {
+  $(document).on("click", "#purchase-event-clear", function () {
     $(this).parent().parent().trigger("click");
-    $.get($("#purchase-notf-clear").data("href"));
+    $.get($("#purchase-event-clear").data("href"));
   });
 
-  // ORDER NOTIFICATION ENDS
+  // ORDER EVENT ENDS
 
-  // PRODUCT NOTIFICATION
+  // PRODUCT EVENT
 
-  $(document).on("click", "#notf_product", function () {
-    $("#catalogItem-notf-count").html("0");
-    $("#catalogItem-notf-show").load($("#catalogItem-notf-show").data("href"));
+  $(document).on("click", "#event_product", function () {
+    $("#catalogItem-event-count").html("0");
+    $("#catalog-item-event-show").load($("#catalog-item-event-show").data("href"));
   });
 
-  $(document).on("click", "#catalogItem-notf-clear", function () {
+  $(document).on("click", "#catalog-item-event-clear", function () {
     $(this).parent().parent().trigger("click");
-    $.get($("#catalogItem-notf-clear").data("href"));
+    $.get($("#catalog-item-event-clear").data("href"));
   });
 
-  // PRODUCT NOTIFICATION ENDS
+  // PRODUCT EVENT ENDS
 
-  // CONVERSATION NOTIFICATION
+  // CONVERSATION EVENT
 
-  $(document).on("click", "#notf_conv", function () {
-    $("#conv-notf-count").html("0");
-    $("#conv-notf-show").load($("#conv-notf-show").data("href"));
+  $(document).on("click", "#event_conv", function () {
+    $("#conv-event-count").html("0");
+    $("#conv-event-show").load($("#conv-event-show").data("href"));
   });
 
-  $(document).on("click", "#conv-notf-clear", function () {
+  $(document).on("click", "#conv-event-clear", function () {
     $(this).parent().parent().trigger("click");
-    $.get($("#conv-notf-clear").data("href"));
+    $.get($("#conv-event-clear").data("href"));
   });
 
-  // CONVERSATION NOTIFICATION ENDS
+  // CONVERSATION EVENT ENDS
 
   // SEND MESSAGE SECTION
   $(document).on("click", ".send", function () {
