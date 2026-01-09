@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use App\Models\Currency;
-use App\Models\MerchantPurchase;
 use App\Services\MerchantAccountingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -98,6 +97,7 @@ class IncomeController extends Controller
 
     /**
      * Merchant Tax Report
+     * Tax is informational only - NOT part of settlement calculations
      */
     public function taxReport(Request $request)
     {
@@ -108,38 +108,19 @@ class IncomeController extends Controller
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->format('Y-m-d') : null;
 
-        // Query tax transactions
-        $query = MerchantPurchase::where('user_id', $merchantId)
-            ->where('tax_amount', '>', 0)
-            ->with(['purchase']);
-
-        if ($startDate) {
-            $query->whereDate('created_at', '>=', $startDate);
-        }
-        if ($endDate) {
-            $query->whereDate('created_at', '<=', $endDate);
-        }
-
-        $purchases = $query->orderBy('created_at', 'desc')->get();
-
-        // Calculate totals
-        $totalTax = $purchases->sum('tax_amount');
-        $totalSales = $purchases->sum('price');
-
-        // Group by payment owner
-        $taxFromPlatformPayments = $purchases->where('payment_owner_id', 0)->sum('tax_amount');
-        $taxFromMerchantPayments = $purchases->filter(fn($p) => $p->payment_owner_id > 0)->sum('tax_amount');
+        // Get tax report from service (NO direct calculations in controller)
+        $report = $this->accountingService->getMerchantTaxReport($merchantId, $startDate, $endDate);
 
         return view('merchant.tax_report', [
             'currency' => $currency,
             'currencySign' => $currencySign,
             'start_date' => $startDate ?? '',
             'end_date' => $endDate ?? '',
-            'purchases' => $purchases,
-            'total_tax' => $currencySign . number_format($totalTax, 2),
-            'total_sales' => $currencySign . number_format($totalSales, 2),
-            'tax_from_platform_payments' => $currencySign . number_format($taxFromPlatformPayments, 2),
-            'tax_from_merchant_payments' => $currencySign . number_format($taxFromMerchantPayments, 2),
+            'purchases' => $report['purchases'],
+            'total_tax' => $currencySign . number_format($report['total_tax'], 2),
+            'total_sales' => $currencySign . number_format($report['total_sales'], 2),
+            'tax_from_platform_payments' => $currencySign . number_format($report['tax_from_platform_payments'], 2),
+            'tax_from_merchant_payments' => $currencySign . number_format($report['tax_from_merchant_payments'], 2),
         ]);
     }
 

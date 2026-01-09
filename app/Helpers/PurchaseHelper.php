@@ -255,23 +255,30 @@ class PurchaseHelper
                 $moneyReceivedBy = self::determineMoneyReceiver($isCOD, $shippingData, $paymentOwnerId);
 
                 // Calculate net amount (what merchant should receive after deductions)
-                $netAmount = $itemsTotal - $commissionAmount - $taxAmount;
+                // IMPORTANT: Tax is NOT deducted from net - it's informational only!
+                // Tax is a pass-through (collected from customer, paid to tax authority)
+                // It should NOT affect merchant-platform settlements
+                $netAmount = $itemsTotal - $commissionAmount;
 
                 // Calculate platform services fees (only if platform provides the service)
                 $platformShippingFee = ($shippingData['owner_id'] === 0) ? $shippingData['cost'] : 0;
                 $platformPackingFee = 0; // Packing owner handled separately
 
                 // Calculate financial balances based on payment owner
+                // CRITICAL: Tax is NOT included in settlements!
+                // Tax is accounting information, not money for platform or merchant
                 $merchantOwesPlatform = 0;
                 $platformOwesMerchant = 0;
 
                 if ($paymentOwnerId > 0) {
-                    // Payment owner receives money directly
-                    // Merchant owes platform: commission + tax + platform services
-                    $merchantOwesPlatform = $commissionAmount + $taxAmount + $platformShippingFee + $platformPackingFee;
+                    // Payment owner receives money directly (including tax)
+                    // Merchant owes platform ONLY: commission + platform services
+                    // Tax is NOT owed - it's a pass-through to tax authority
+                    $merchantOwesPlatform = $commissionAmount + $platformShippingFee + $platformPackingFee;
                 } else {
                     // Platform receives money (payment_owner_id = 0)
-                    // Platform owes merchant: net amount
+                    // Platform owes merchant: net amount (sales minus commission)
+                    // Tax is NOT part of this - platform collects tax separately for tax authority
                     $platformOwesMerchant = $netAmount;
                 }
 

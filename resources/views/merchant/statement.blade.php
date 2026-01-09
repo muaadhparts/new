@@ -98,6 +98,7 @@
                                 <th>@lang('Date')</th>
                                 <th>@lang('Description')</th>
                                 <th>@lang('Reference')</th>
+                                <th class="text-center">@lang('Status')</th>
                                 <th class="text-end">@lang('Credit')</th>
                                 <th class="text-end">@lang('Debit')</th>
                                 <th class="text-end">@lang('Balance')</th>
@@ -115,6 +116,21 @@
                                         </a>
                                     @else
                                         -
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    {{-- payment_owner = 'merchant' means payment_owner_id > 0 = ALWAYS PAID --}}
+                                    {{-- payment_owner = 'platform' means payment_owner_id = 0 = depends on settlement_status --}}
+                                    @if($entry['payment_owner'] === 'merchant')
+                                        {{-- Merchant received payment directly - ALWAYS PAID --}}
+                                        <span class="badge bg-success">@lang('Paid')</span>
+                                    @else
+                                        {{-- Platform received payment - check settlement_status --}}
+                                        @if($entry['settlement_status'] === 'settled')
+                                            <span class="badge bg-success">@lang('Settled')</span>
+                                        @else
+                                            <span class="badge bg-warning">@lang('Pending')</span>
+                                        @endif
                                     @endif
                                 </td>
                                 <td class="text-end text-success">
@@ -138,7 +154,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="6" class="text-center py-4 text-muted">
+                                <td colspan="7" class="text-center py-4 text-muted">
                                     @lang('No transactions found')
                                 </td>
                             </tr>
@@ -147,7 +163,7 @@
                         @if(count($statement) > 0)
                         <tfoot class="table-light">
                             <tr class="fw-bold">
-                                <td colspan="3" class="text-end">@lang('Closing Balance')</td>
+                                <td colspan="4" class="text-end">@lang('Closing Balance')</td>
                                 <td class="text-end text-success">{{ $total_credit }}</td>
                                 <td class="text-end text-danger">{{ $total_debit }}</td>
                                 <td class="text-end {{ $closing_balance >= 0 ? 'text-success' : 'text-danger' }}">
@@ -171,18 +187,26 @@
             <div class="card-body">
                 <h6>@lang('Understanding Your Statement')</h6>
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <p class="text-success mb-1"><i class="fas fa-plus-circle"></i> <strong>@lang('Credit (CR)')</strong></p>
                         <ul class="small text-muted">
                             <li>@lang('Net earnings from your sales after commission')</li>
                             <li>@lang('Amount platform owes you')</li>
                         </ul>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <p class="text-danger mb-1"><i class="fas fa-minus-circle"></i> <strong>@lang('Debit (DR)')</strong></p>
                         <ul class="small text-muted">
-                            <li>@lang('Commission paid when you received payment directly')</li>
+                            <li>@lang('Commission owed when you received payment directly')</li>
                             <li>@lang('Amount you owe to platform')</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="text-info mb-1"><i class="fas fa-info-circle"></i> <strong>@lang('Status')</strong></p>
+                        <ul class="small text-muted">
+                            <li><span class="badge bg-success">@lang('Paid')</span> @lang('You received payment directly')</li>
+                            <li><span class="badge bg-success">@lang('Settled')</span> @lang('Platform paid you')</li>
+                            <li><span class="badge bg-warning">@lang('Pending')</span> @lang('Awaiting settlement')</li>
                         </ul>
                     </div>
                 </div>

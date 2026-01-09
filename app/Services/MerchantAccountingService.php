@@ -168,6 +168,35 @@ class MerchantAccountingService
         ];
     }
 
+    /**
+     * Get merchant-specific tax report
+     * Tax is informational only - NOT part of settlement
+     */
+    public function getMerchantTaxReport(int $merchantId, ?string $startDate = null, ?string $endDate = null): array
+    {
+        $query = MerchantPurchase::where('user_id', $merchantId)
+            ->where('tax_amount', '>', 0)
+            ->with(['purchase']);
+
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $purchases = $query->orderBy('created_at', 'desc')->get();
+
+        return [
+            'total_tax' => $purchases->sum('tax_amount'),
+            'total_sales' => $purchases->sum('price'),
+            'total_orders' => $purchases->count(),
+            'tax_from_platform_payments' => $purchases->where('payment_owner_id', 0)->sum('tax_amount'),
+            'tax_from_merchant_payments' => $purchases->filter(fn($p) => $p->payment_owner_id > 0)->sum('tax_amount'),
+            'purchases' => $purchases,
+        ];
+    }
+
     // =========================================================================
     // ADMIN FINANCIAL REPORTS
     // =========================================================================
