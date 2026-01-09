@@ -460,7 +460,9 @@ class PurchaseHelper
 
         if ($provider === 'tryoto' || $provider === 'shipping_company') {
             // Third-party shipping (Tryoto) - Platform service
-            $result['type'] = 'shipping_company';
+            // NOTE: shipping_type ENUM only allows: merchant, platform, courier, pickup
+            // Tryoto/shipping companies use 'platform' since platform owns the integration
+            $result['type'] = 'platform';
             $result['owner_id'] = 0; // Platform owns Tryoto integration
             $result['shipping_id'] = (int)($shippingChoice['delivery_option_id'] ?? 0);
         } elseif ($provider === 'local_courier' || $provider === 'courier') {

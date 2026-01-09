@@ -128,11 +128,11 @@ class InstamojoController extends CheckoutBaseControlller
             $cart = $this->filterCartForMerchant($originalCart, $merchantId);
             $t_oldCart = Session::get('cart');
             $t_cart = new Cart($t_oldCart);
+            // Note: Don't json_encode - Purchase model 'cart' cast handles encoding automatically
             $new_cart = [];
             $new_cart['totalQty'] = $t_cart->totalQty;
             $new_cart['totalPrice'] = $t_cart->totalPrice;
             $new_cart['items'] = $t_cart->items;
-            $new_cart = json_encode($new_cart);
             $temp_affilate_users = PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 

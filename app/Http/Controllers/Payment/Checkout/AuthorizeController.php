@@ -135,11 +135,11 @@ class AuthorizeController extends CheckoutBaseControlller
 
                         // Filter cart for merchant
                         $cart = $this->filterCartForMerchant($originalCart, $merchantId);
+                        // Note: Don't json_encode - Purchase model 'cart' cast handles encoding automatically
                         $new_cart = [];
                         $new_cart['totalQty'] = $cart->totalQty;
                         $new_cart['totalPrice'] = $cart->totalPrice;
                         $new_cart['items'] = $cart->items;
-                        $new_cart = json_encode($new_cart);
                         $temp_affilate_users = PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
                         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
