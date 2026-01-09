@@ -5,18 +5,193 @@ use DB;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Purchase Model
+ *
+ * ARCHITECTURAL PRINCIPLE - CART DATA HANDLING (2026-01-09):
+ * ==========================================================
+ * This model is the SINGLE SOURCE OF TRUTH for cart data storage.
+ *
+ * RULE: Only the storage layer (this model) handles data transformation.
+ *       All other layers (controllers, services, views) work with structured arrays.
+ *
+ * WHAT THIS MEANS:
+ * - Controllers should pass arrays directly: $purchase->cart = $cartArray;
+ * - Controllers should read arrays directly: $items = $purchase->cart['items'];
+ * - NO json_encode() outside this model
+ * - NO json_decode() outside this model
+ * - The 'array' cast handles all encoding/decoding automatically
+ *
+ * CART DATA STRUCTURE:
+ * [
+ *     'totalQty' => int,
+ *     'totalPrice' => float,
+ *     'items' => [
+ *         'cart_key' => [
+ *             'user_id' => int (merchant_id),
+ *             'merchant_item_id' => int,
+ *             'qty' => int,
+ *             'price' => float,
+ *             'item' => [...catalog item data...],
+ *             ...
+ *         ]
+ *     ]
+ * ]
+ */
 class Purchase extends Model
 {
     protected $table = 'purchases';
 
 	protected $fillable = ['user_id', 'cart', 'method', 'shipping', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'purchase_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip', 'customer_state', 'customer_country', 'purchase_note', 'discount_code', 'discount_amount', 'status', 'affilate_user', 'affilate_charge', 'currency_sign', 'currency_name', 'currency_value', 'shipping_cost', 'packing_cost', 'tax', 'tax_location', 'pay_id', 'merchant_shipping_id', 'merchant_packing_id', 'wallet_price', 'shipping_title', 'packing_title', 'affilate_users', 'commission', 'merchant_ids', 'customer_shipping_choice', 'shipping_status', 'couriers'];
 
-
+    /**
+     * Attribute casts - THE STORAGE LAYER
+     *
+     * These casts handle ALL JSON encoding/decoding automatically.
+     * External code should NEVER manually encode/decode these fields.
+     */
     protected $casts = [
         'cart' => 'array',
         'customer_shipping_choice' => 'array',
         'shipping_status' => 'array',
     ];
+
+    // =========================================================================
+    // CART DATA ACCESS METHODS (Clean API for external code)
+    // =========================================================================
+
+    /**
+     * Get cart items as array
+     *
+     * Use this instead of: json_decode($purchase->cart, true)['items']
+     *
+     * @return array
+     */
+    public function getCartItems(): array
+    {
+        $cart = $this->cart;
+
+        // Handle legacy double-encoded data (backward compatibility)
+        if (is_string($cart)) {
+            $cart = json_decode($cart, true);
+        }
+
+        return $cart['items'] ?? [];
+    }
+
+    /**
+     * Get cart total quantity
+     *
+     * @return int
+     */
+    public function getCartTotalQty(): int
+    {
+        $cart = $this->cart;
+
+        if (is_string($cart)) {
+            $cart = json_decode($cart, true);
+        }
+
+        return (int)($cart['totalQty'] ?? 0);
+    }
+
+    /**
+     * Get cart total price
+     *
+     * @return float
+     */
+    public function getCartTotalPrice(): float
+    {
+        $cart = $this->cart;
+
+        if (is_string($cart)) {
+            $cart = json_decode($cart, true);
+        }
+
+        return (float)($cart['totalPrice'] ?? 0);
+    }
+
+    /**
+     * Get cart items grouped by merchant
+     *
+     * @return array [merchant_id => ['items' => [...], 'totalQty' => x, 'totalPrice' => y]]
+     */
+    public function getCartItemsByMerchant(): array
+    {
+        $items = $this->getCartItems();
+        $grouped = [];
+
+        foreach ($items as $key => $item) {
+            $merchantId = $item['user_id'] ?? $item['item']['user_id'] ?? 0;
+
+            if (!isset($grouped[$merchantId])) {
+                $grouped[$merchantId] = [
+                    'items' => [],
+                    'totalQty' => 0,
+                    'totalPrice' => 0,
+                ];
+            }
+
+            $grouped[$merchantId]['items'][$key] = $item;
+            $grouped[$merchantId]['totalQty'] += (int)($item['qty'] ?? 1);
+            $grouped[$merchantId]['totalPrice'] += (float)($item['price'] ?? 0);
+        }
+
+        return $grouped;
+    }
+
+    /**
+     * Get cart items for a specific merchant
+     *
+     * @param int $merchantId
+     * @return array
+     */
+    public function getCartItemsForMerchant(int $merchantId): array
+    {
+        $items = $this->getCartItems();
+        $merchantItems = [];
+
+        foreach ($items as $key => $item) {
+            $itemMerchantId = $item['user_id'] ?? $item['item']['user_id'] ?? 0;
+
+            if ((int)$itemMerchantId === $merchantId) {
+                $merchantItems[$key] = $item;
+            }
+        }
+
+        return $merchantItems;
+    }
+
+    /**
+     * Check if cart has items for a specific merchant
+     *
+     * @param int $merchantId
+     * @return bool
+     */
+    public function hasItemsForMerchant(int $merchantId): bool
+    {
+        return !empty($this->getCartItemsForMerchant($merchantId));
+    }
+
+    /**
+     * Get all merchant IDs from cart
+     *
+     * @return array
+     */
+    public function getMerchantIdsFromCart(): array
+    {
+        $items = $this->getCartItems();
+        $merchantIds = [];
+
+        foreach ($items as $item) {
+            $merchantId = $item['user_id'] ?? $item['item']['user_id'] ?? 0;
+            if ($merchantId && !in_array($merchantId, $merchantIds)) {
+                $merchantIds[] = $merchantId;
+            }
+        }
+
+        return $merchantIds;
+    }
 
     /**
      * Get the user that owns this purchase.

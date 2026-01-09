@@ -45,8 +45,14 @@ class PurchaseDetailsResource extends JsonResource
         'charge_id' => $this->charge_id,
         'transaction_id' => $this->txnid,
         'purchased_products' => $this->when(!empty($this->cart), function() {
-          $cart = json_decode($this->cart,true);
-          foreach($cart['items'] as $key=> $item){
+          // Model cast handles decoding; handle legacy double-encoded data
+          $cart = $this->cart;
+          if (is_string($cart)) {
+              $cart = json_decode($cart, true);
+          }
+          $new = [];
+          $items = $cart['items'] ?? [];
+          foreach($items as $key=> $item){
               $item['item']['photo'] = \Illuminate\Support\Facades\Storage::url($item['item']['photo']) ?? asset('assets/images/noimage.png');
               $new[$key.Str::random(3)]['item'] = $item;
           }

@@ -97,14 +97,14 @@ class PurchaseController extends OperatorBaseController
     public function show($id)
     {
         $purchase = Purchase::findOrFail($id);
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('operator.purchase.details', compact('purchase', 'cart'));
     }
 
     public function invoice($id)
     {
         $purchase = Purchase::findOrFail($id);
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('operator.purchase.invoice', compact('purchase', 'cart'));
     }
 
@@ -135,7 +135,7 @@ class PurchaseController extends OperatorBaseController
     public function printpage($id)
     {
         $purchase = Purchase::findOrFail($id);
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('operator.purchase.print', compact('purchase', 'cart'));
     }
 
@@ -233,7 +233,7 @@ class PurchaseController extends OperatorBaseController
                         }
                     }
 
-                    $cart = json_decode($data->cart, true);
+                    $cart = $data->cart; // Model cast handles decoding
 
                     // Restore CatalogItem Stock If Any - Update merchant_items instead
                     foreach ($cart['items'] as $cartItem) {
@@ -467,7 +467,7 @@ class PurchaseController extends OperatorBaseController
             $cart->totalPrice += $data['price'];
         }
 
-        $o_cart = json_decode($purchase->cart, true);
+        $o_cart = $purchase->cart; // Model cast handles decoding
 
         $purchase->totalQty = $purchase->totalQty + $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'];
         $purchase->pay_amount = $purchase->pay_amount + $cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['price'];
@@ -487,7 +487,7 @@ class PurchaseController extends OperatorBaseController
         $o_cart['items'][$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] = $prev_qty;
         $o_cart['items'][$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['price'] = $prev_price;
 
-        $purchase->cart = json_encode($o_cart);
+        $purchase->cart = $o_cart; // Model cast handles encoding
 
         $purchase->update();
         return redirect()->back()->with('success', __('Successfully Added To Cart.'));
@@ -499,7 +499,7 @@ class PurchaseController extends OperatorBaseController
         $catalogItem = CatalogItem::find($itemid);
 
         $purchase = Purchase::find($purchaseid);
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         $data['catalogItem'] = $catalogItem;
         $data['item_id'] = $id;
         $data['prod'] = $id;
@@ -634,7 +634,7 @@ class PurchaseController extends OperatorBaseController
             $cart->totalPrice += $data['price'];
         }
 
-        $o_cart = json_decode($purchase->cart, true);
+        $o_cart = $purchase->cart; // Model cast handles decoding
 
         if (!empty($o_cart['items'][$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
 
@@ -693,7 +693,7 @@ class PurchaseController extends OperatorBaseController
         $o_cart['items'][$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['qty'] = $prev_qty;
         $o_cart['items'][$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['price'] = $prev_price;
 
-        $purchase->cart = json_encode($o_cart);
+        $purchase->cart = $o_cart; // Model cast handles encoding
 
         $purchase->update();
         return redirect()->back()->with('success', __('Successfully Updated The Cart.'));
@@ -703,12 +703,12 @@ class PurchaseController extends OperatorBaseController
     {
 
         $purchase = Purchase::find($purchaseid);
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
 
         $purchase->totalQty = $purchase->totalQty - $cart['items'][$id]['qty'];
         $purchase->pay_amount = $purchase->pay_amount - $cart['items'][$id]['price'];
         unset($cart['items'][$id]);
-        $purchase->cart = json_encode($cart);
+        $purchase->cart = $cart; // Model cast handles encoding
 
         $purchase->update();
 

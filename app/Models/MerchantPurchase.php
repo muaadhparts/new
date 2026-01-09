@@ -348,6 +348,29 @@ class MerchantPurchase extends Model
     }
 
     // ============================================================
+    // CART DATA ACCESS METHODS
+    // Same architectural principle as Purchase model
+    // ============================================================
+
+    /**
+     * Get cart items as array.
+     * Handles legacy double-encoded data internally.
+     *
+     * @return array
+     */
+    public function getCartItems(): array
+    {
+        $cart = $this->cart;
+
+        // Handle legacy double-encoded data (backward compatibility)
+        if (is_string($cart)) {
+            $cart = json_decode($cart, true);
+        }
+
+        return $cart['items'] ?? $cart ?? [];
+    }
+
+    // ============================================================
     // HELPER METHODS
     // ============================================================
 

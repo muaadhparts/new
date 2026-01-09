@@ -50,16 +50,8 @@ trait CreatesTryotoShipments
         $destinationCity = $systemTryotoService->resolveCityName($destinationCityValue);
 
         // Preparing cart items for dimension/weight calculations
-        $cartRaw = $purchase->cart;
-        $cartArr = is_string($cartRaw) ? (json_decode($cartRaw, true) ?: []) : (is_array($cartRaw) ? $cartRaw : (array) $cartRaw);
-
-        // Trying to extract items in common formats
-        $items = [];
-        if (isset($cartArr['items']) && is_array($cartArr['items'])) {
-            $items = $cartArr['items'];
-        } elseif (isset($cartArr[0])) {
-            $items = $cartArr; // Direct array
-        }
+        // Use model method that handles legacy double-encoded data
+        $items = $purchase->getCartItems();
 
         // Simple normalization to pass to PriceHelper::calculateShippingDimensions
         $itemsForDims = [];

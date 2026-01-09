@@ -123,7 +123,7 @@
                                     @php
                                         $extra_price = 0;
                                     @endphp
-                                    @foreach (json_decode($purchase->cart, true)['items'] as $catalogItem)
+                                    @foreach ($purchase->getCartItems() as $catalogItem)
                                         @if ($catalogItem['user_id'] == $data->merchant_id)
                                             <tr>
                                                 <td data-label="{{ __('ID#') }}">
@@ -175,43 +175,40 @@
                         </div>
 
                         <div class="text-center mt-4">
-
-
                             @php
-
-                               $purchase_shipping = json_decode($purchase->merchant_shipping_id, true) ?? [];
-                                $purchase_package = json_decode($purchase->merchant_packing_id, true) ?? [];
-
-                                // Retrieve merchant-specific shipping and packing IDs, defaulting to null if not found
-                                $merchant_shipping_id = $purchase_shipping[$data->merchant_id] ?? null;
-                                $merchant_package_id = $purchase_package[$data->merchant_id] ?? null;
-                                
-                                // Retrieve the Shipping and Package models, or null if not found
-                                $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
-                                $package = $merchant_package_id ? App\Models\Package::find($merchant_package_id) : null;
-                                
-                                // Calculate shipping and packing costs, defaulting to 0 if models are not found
-                                $shipping_cost = $shipping ? $shipping->price : 0;
-                                $packing_cost = $package ? $package->price : 0;
-                                
-                                // Total extra cost
-                                $extra_price = $shipping_cost + $packing_cost;
+                                // المبلغ الإجمالي للتحصيل = مبلغ الطلب + رسوم التوصيل
+                                $totalToCollect = ($data->purchase_amount ?? 0) + ($data->delivery_fee ?? 0);
                             @endphp
 
-                            <strong>
-
-                                @lang('Collection Amount from Customer') :
-                                @if ($purchase->method == 'Cash On Delivery')
-                                    {{ \PriceHelper::showAdminCurrencyPrice(
-                                        ($purchase->merchantPurchases->where('user_id', $data->merchant_id)->sum('price') + $extra_price) *
-                                            $data->purchase->currency_value,
-                                        $purchase->currency_sign,
-                                    ) }}
-                                @else
-                                    {{ __('N/A') }}
-                                @endif
-
-                            </strong>
+                            @if ($data->payment_method === 'cod')
+                                <div class="alert alert-warning">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        @lang('Cash on Delivery - Amount to Collect')
+                                    </h5>
+                                    <table class="table table-sm table-borderless mb-0" style="max-width: 300px; margin: 0 auto;">
+                                        <tr>
+                                            <td class="text-start">@lang('Items Total'):</td>
+                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($data->purchase_amount ?? 0, $purchase->currency_sign) }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-start">@lang('Delivery Fee'):</td>
+                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-start"><strong>@lang('Total to Collect'):</strong></td>
+                                            <td class="text-end"><strong class="text-danger fs-5">{{ \PriceHelper::showAdminCurrencyPrice($totalToCollect, $purchase->currency_sign) }}</strong></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            @else
+                                <div class="alert alert-success">
+                                    <i class="fas fa-credit-card"></i>
+                                    <strong>@lang('Online Payment')</strong> - @lang('Customer already paid. Just deliver the order.')
+                                    <br>
+                                    <small class="text-muted">@lang('Your delivery fee'): {{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</small>
+                                </div>
+                            @endif
                         </div>
 
 

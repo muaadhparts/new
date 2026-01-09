@@ -283,7 +283,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" id="modal_order_id" value="">
+                    <input type="hidden" id="modal_purchase_id" value="">
 
                     {{-- ✅ Customer Choice Alert --}}
                     <div id="customerChoiceAlert" class="alert alert-info d-none mb-3">
@@ -306,26 +306,11 @@
                         </small>
                     </div>
 
-                    {{-- Shipping Method Tabs --}}
-                    <ul class="nav nav-tabs mb-3" id="shippingTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="tryoto-tab" data-bs-toggle="tab" data-bs-target="#tryoto-content" type="button" role="tab">
-                                <i class="fas fa-truck"></i> @lang('Shipping Company')
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="courier-tab" data-bs-toggle="tab" data-bs-target="#courier-content" type="button" role="tab">
-                                <i class="fas fa-motorcycle"></i> @lang('Local Courier')
-                            </button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content" id="shippingTabsContent">
-                        {{-- Tryoto Tab --}}
-                        <div class="tab-pane fade show active" id="tryoto-content" role="tabpanel">
+                    {{-- Tryoto Shipping Form --}}
+                    <div class="tryoto-shipping-content">
                             <form id="tryotoForm" action="{{ route('merchant.send.tryoto') }}" method="POST">
                                 @csrf
-                                <input type="hidden" name="order_id" id="tryoto_order_id">
+                                <input type="hidden" name="purchase_id" id="tryoto_purchase_id">
                                 <input type="hidden" name="delivery_option_id" id="delivery_option_id">
                                 <input type="hidden" name="company" id="selected_company">
                                 <input type="hidden" name="price" id="selected_price">
@@ -364,53 +349,6 @@
                                     <i class="fas fa-paper-plane"></i> @lang('Create Shipment')
                                 </button>
                             </form>
-                        </div>
-
-                        {{-- Local Courier Tab --}}
-                        <div class="tab-pane fade" id="courier-content" role="tabpanel">
-                            <form action="{{ route('merchant-courier-search-submit') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="order_id" id="courier_order_id">
-
-                                <div class="mb-3">
-                                    <label class="form-label">@lang('Select Courier')</label>
-                                    <select class="form-select" name="courier_id" id="courierSelect" required>
-                                        <option value="">@lang('Select Courier')</option>
-                                    </select>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label">@lang('Select Warehouse Location')</label>
-                                    <select class="form-select" name="merchant_location_id" id="merchantLocationSelect" required>
-                                        <option value="">@lang('Select Warehouse Location')</option>
-                                        @foreach (App\Models\MerchantLocation::where('user_id', auth()->id())->whereStatus(1)->get() as $location)
-                                            <option value="{{ $location->id }}">{{ $location->location }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div id="courierDetails" class="d-none mb-3 p-3 bg-light rounded">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <strong>@lang('Courier:')</strong>
-                                            <span id="courier_name"></span>
-                                        </div>
-                                        <div class="col-6">
-                                            <strong>@lang('Cost:')</strong>
-                                            <span id="courier_cost"></span>
-                                        </div>
-                                        <div class="col-12 mt-2">
-                                            <strong>@lang('Service Area:')</strong>
-                                            <span id="courier_area"></span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button type="submit" class="template-btn w-100">
-                                    <i class="fas fa-user-check"></i> @lang('Assign Courier')
-                                </button>
-                            </form>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -482,13 +420,12 @@
 
     // Open shipping modal
     $(document).on('click', '.assignShippingBtn', function() {
-        const orderId = $(this).data('purchase-id');
+        const purchaseId = $(this).data('purchase-id');
         const customerCity = $(this).data('customer-city');
         currentCustomerChoice = $(this).data('customer-choice');
 
-        $('#modal_order_id').val(orderId);
-        $('#tryoto_order_id').val(orderId);
-        $('#courier_order_id').val(orderId);
+        $('#modal_purchase_id').val(purchaseId);
+        $('#tryoto_purchase_id').val(purchaseId);
 
         // ✅ Show customer choice alert if exists
         if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto') {
@@ -515,7 +452,7 @@
         $('#submitTryotoBtn').prop('disabled', true);
 
         // Load Tryoto options
-        $.get("{{ route('merchant.shipping.options') }}", { order_id: orderId }, function(response) {
+        $.get("{{ route('merchant.shipping.options') }}", { purchase_id: purchaseId }, function(response) {
             if (response.success) {
                 $('#shippingCompanySelect').html(response.options);
 
@@ -557,11 +494,6 @@
             toastr.error('@lang("Failed to connect to shipping service")');
             console.error('Shipping API Error:', xhr);
         });
-
-        // Load couriers
-        $.get("{{ route('merchant.find.courier') }}", { city: customerCity }, function(response) {
-            $('#courierSelect').html(response.couriers);
-        });
     });
 
     // Shipping company selection
@@ -584,20 +516,6 @@
         } else {
             $('#shippingDetails').addClass('d-none');
             $('#submitTryotoBtn').prop('disabled', true);
-        }
-    });
-
-    // Courier selection
-    $(document).on('change', '#courierSelect', function() {
-        const selected = $(this).find('option:selected');
-
-        if ($(this).val()) {
-            $('#courier_name').text(selected.attr('courierName'));
-            $('#courier_cost').text(selected.attr('courierCost'));
-            $('#courier_area').text(selected.attr('area'));
-            $('#courierDetails').removeClass('d-none');
-        } else {
-            $('#courierDetails').addClass('d-none');
         }
     });
 

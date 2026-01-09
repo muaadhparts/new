@@ -48,7 +48,11 @@ class MuaadhMailer
         }
 
         $purchase = Purchase::findOrFail($id);
-        $cart = json_decode($purchase->cart, true);
+        // Model cast handles decoding; handle legacy double-encoded data
+        $cart = $purchase->cart;
+        if (is_string($cart)) {
+            $cart = json_decode($cart, true);
+        }
         try {
 
             $body = preg_replace("/{customer_name}/", $mailData['cname'], $temp->email_body);

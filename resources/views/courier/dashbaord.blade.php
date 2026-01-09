@@ -113,6 +113,7 @@
                                 <th><span class="header-title">{{ __('View') }}</span></th>
                             </tr>
                             @forelse ($purchases as $purchase)
+                                @if($purchase->purchase)
                                 <tr>
                                     <td data-label="{{ __('#Purchase') }}">
                                         {{ $purchase->purchase->purchase_number }}
@@ -125,40 +126,19 @@
 
                                     <td data-label="{{ __('Warehouse Location') }}">
                                         <p>
-                                            {{ $purchase->merchantLocation->location }}
+                                            {{ $purchase->merchantLocation->location ?? '-' }}
                                         </p>
                                     </td>
 
                                     <td data-label="{{ __('Purchase Total') }}">
-
                                         @php
-
-                                             $purchase_shipping = json_decode($purchase->purchase->merchant_shipping_id, true) ?? [];
-                                            $purchase_package = json_decode($purchase->purchase->merchant_packing_id, true) ?? [];
-
-                                            // Retrieve merchant-specific shipping and packing IDs
-                                            $merchant_shipping_id = $purchase_shipping[$purchase->merchant_id] ?? null;
-                                            $merchant_package_id = $purchase_package[$purchase->merchant_id] ?? null;
-
-                                            // Retrieve Shipping model or set to null if not found
-                                            $shipping = $merchant_shipping_id ? App\Models\Shipping::find($merchant_shipping_id) : null;
-
-                                            // Retrieve Package model or set to null if not found
-                                            $package = $merchant_package_id ? App\Models\Package::find($merchant_package_id) : null;
-
-                                            // Calculate costs if models are found, default to 0 if null
-                                            $shipping_cost = $shipping ? $shipping->price : 0;
-                                            $packing_cost = $package ? $package->price : 0;
-
-                                            // Total extra cost
-                                            $extra_price = $shipping_cost + $packing_cost;
+                                            // المبلغ الإجمالي = مبلغ الطلب + رسوم التوصيل
+                                            $totalAmount = ($purchase->purchase_amount ?? 0) + ($purchase->delivery_fee ?? 0);
                                         @endphp
-
-                                        {{ \PriceHelper::showAdminCurrencyPrice(
-                                            ($purchase->purchase->merchantPurchases->where('user_id', $purchase->merchant_id)->sum('price') + $extra_price) *
-                                                $purchase->purchase->currency_value,
-                                            $purchase->currency_sign,
-                                        ) }}
+                                        {{ \PriceHelper::showAdminCurrencyPrice($totalAmount, $purchase->purchase->currency_sign ?? 'SAR') }}
+                                        @if($purchase->payment_method === 'cod')
+                                            <br><span class="badge bg-warning text-dark">COD</span>
+                                        @endif
                                     </td>
                                     <td data-label="{{ __('Purchase Status') }}">
                                         <div class="">
@@ -189,6 +169,7 @@
 
                                     </td>
                                 </tr>
+                                @endif
                             @empty
                                 <tr>
                                     <td colspan="6">{{ __('No purchases found') }}</td>

@@ -46,7 +46,7 @@ class PurchaseController extends UserBaseController
     {
         $user = $this->user;
         $purchase = $user->purchases()->whereId($id)->firstOrFail();
-        $cart = json_decode($purchase->cart, true);;
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('user.purchase.details',compact('user','purchase','cart'));
     }
 
@@ -61,7 +61,7 @@ class PurchaseController extends UserBaseController
         $user = $this->user;
         // Security: Only allow printing own purchases
         $purchase = $user->purchases()->whereId($id)->firstOrFail();
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('user.purchase.print',compact('user','purchase','cart'));
     }
 

@@ -28,7 +28,8 @@ class CourierController extends CourierBaseController
         $user = $this->courier;
         $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
             ->whereNotNull('purchase_id')
-            ->with(['purchase', 'merchantLocation'])
+            ->whereHas('purchase') // Ensure the purchase still exists
+            ->with(['purchase.merchantPurchases', 'merchantLocation'])
             ->orderby('id', 'desc')->take(8)->get();
 
         // Get accounting report
@@ -317,7 +318,8 @@ class CourierController extends CourierBaseController
             // ✅ Completed/delivered orders
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
-                ->with(['purchase', 'merchantLocation', 'merchant'])
+                ->whereHas('purchase')
+                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
                 ->where('status', 'delivered')
                 ->orderby('id', 'desc')
                 ->paginate(10);
@@ -325,7 +327,8 @@ class CourierController extends CourierBaseController
             // ✅ Orders waiting for merchant to mark ready (courier can see but not act)
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
-                ->with(['purchase', 'merchantLocation', 'merchant'])
+                ->whereHas('purchase')
+                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
                 ->where('status', 'pending')
                 ->orderby('id', 'desc')
                 ->paginate(10);
@@ -334,7 +337,8 @@ class CourierController extends CourierBaseController
             // Only show orders that merchant has marked as ready
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
-                ->with(['purchase', 'merchantLocation', 'merchant'])
+                ->whereHas('purchase')
+                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
                 ->whereIn('status', ['ready_for_courier_collection', 'accepted'])
                 ->orderby('id', 'desc')
                 ->paginate(10);
@@ -345,10 +349,11 @@ class CourierController extends CourierBaseController
 
     public function orderDetails($id)
     {
-        $data = DeliveryCourier::with(['purchase', 'merchantLocation', 'merchant'])
+        $data = DeliveryCourier::with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
             ->where('courier_id', $this->courier->id)
             ->where('id', $id)
             ->whereNotNull('purchase_id')
+            ->whereHas('purchase')
             ->first();
 
         if (!$data) {

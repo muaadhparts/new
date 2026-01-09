@@ -88,7 +88,7 @@ class CheckoutController extends Controller
                 'totalPrice' => $t_cart->totalPrice,
                 'items'      => $t_cart->items,
             ];
-            $new_cart_json = json_encode($cart_payload);
+            // Model cast handles encoding - pass array directly
 
             // أفلييت
             $temp_affilate_users = PurchaseHelper::item_affilate_check($cart);
@@ -145,7 +145,7 @@ class CheckoutController extends Controller
             $purchase = new Purchase;
 
             $input['user_id']        = $request->user_id ? $request->user_id : null;
-            $input['cart']           = $new_cart_json;
+            $input['cart']           = $cart_payload; // Model cast handles encoding
             $input['affilate_users'] = $affilate_users;
             $input['currency_name']  = $curr->name;
             $input['currency_sign']  = $curr->sign;

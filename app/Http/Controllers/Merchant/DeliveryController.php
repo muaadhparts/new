@@ -392,30 +392,50 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * ✅ مدينة التاجر من جدول users (city_id)
+     * ✅ مدينة التاجر من جدول users (city_id أو shop_city)
      */
     private function resolveMerchantCity($merchant): ?string
     {
-        // city_id في جدول users يحتوي على ID المدينة
-        if (!$merchant->city_id) {
-            Log::warning('Merchant has no city_id', [
-                'merchant_id' => $merchant->id,
-                'merchant_name' => $merchant->name
-            ]);
-            return null;
+        // المحاولة الأولى: city_id (الأفضل - مرتبط بجدول المدن)
+        if ($merchant->city_id) {
+            $city = City::find($merchant->city_id);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
         }
 
-        $city = City::find($merchant->city_id);
-
-        if (!$city || !$city->city_name) {
-            Log::warning('City not found for merchant', [
-                'merchant_id' => $merchant->id,
-                'city_id' => $merchant->city_id
-            ]);
-            return null;
+        // المحاولة الثانية: shop_city (نص مباشر)
+        if (!empty($merchant->shop_city)) {
+            // إذا كان رقماً، نبحث عن المدينة
+            if (is_numeric($merchant->shop_city)) {
+                $city = City::find($merchant->shop_city);
+                if ($city && $city->city_name) {
+                    return $city->city_name;
+                }
+            }
+            // إذا كان نصاً، نستخدمه مباشرة
+            return $merchant->shop_city;
         }
 
-        return $city->city_name;
+        // المحاولة الثالثة: warehouse_city
+        if (!empty($merchant->warehouse_city)) {
+            if (is_numeric($merchant->warehouse_city)) {
+                $city = City::find($merchant->warehouse_city);
+                if ($city && $city->city_name) {
+                    return $city->city_name;
+                }
+            }
+            return $merchant->warehouse_city;
+        }
+
+        Log::warning('Merchant has no city configured', [
+            'merchant_id' => $merchant->id,
+            'merchant_name' => $merchant->name,
+            'city_id' => $merchant->city_id,
+            'shop_city' => $merchant->shop_city ?? null
+        ]);
+
+        return null;
     }
 
     /**
@@ -502,7 +522,7 @@ class DeliveryController extends MerchantBaseController
      */
     private function calculatePurchaseDimensions(Purchase $purchase): array
     {
-        $cart = is_string($purchase->cart) ? json_decode($purchase->cart, true) : $purchase->cart;
+        $cart = $purchase->cart; // Model cast handles decoding
         $items = $cart['items'] ?? $cart ?? [];
 
         $totalWeight = 0;

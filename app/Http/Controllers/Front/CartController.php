@@ -1277,18 +1277,52 @@ class CartController extends FrontBaseController
         $mp->refresh();
         $updatedStock = $this->effectiveStock($mp, $sizeStr);
 
+        // حساب إجماليات التاجر (Merchant totals)
+        $merchantTotal = 0;
+        $merchantSubtotal = 0;
+        $merchantDiscount = 0;
+        $merchantItemCount = 0;
+
+        foreach ($cart->items as $rowKey => $rowItem) {
+            $rowMerchantId = $this->extractMerchantIdFromRow($rowItem);
+            if ($rowMerchantId === $merchantId) {
+                $rowPrice = (float)($rowItem['price'] ?? 0);
+                $rowQty = (int)($rowItem['qty'] ?? 1);
+                $rowDiscount = (float)($rowItem['discount'] ?? 0);
+                $rowItemPrice = (float)($rowItem['item_price'] ?? ($rowItem['item']->price ?? 0));
+
+                $merchantTotal += $rowPrice;
+                $merchantItemCount += $rowQty;
+
+                // حساب الخصم للصف
+                if ($rowDiscount > 0) {
+                    $originalRowTotal = $rowItemPrice * $rowQty;
+                    $discountAmount = ($originalRowTotal * $rowDiscount) / 100;
+                    $merchantDiscount += $discountAmount;
+                }
+            }
+        }
+
+        // الإجمالي الفرعي = الإجمالي + الخصم (قبل خصم الخصومات)
+        $merchantSubtotal = $merchantTotal + $merchantDiscount;
+
         // تجهيز الاستجابة مع بيانات إضافية
         $data = [];
-        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[0] = \PriceHelper::showCurrencyPrice($merchantTotal * $curr->value); // Merchant total (NOT cart total)
         $data[1] = $cart->items[$itemid]['qty'];
         $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
-        $data[3] = $data[0];
+        $data[3] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value); // Cart total
         $data[4] = $bulkDiscount['has_discount'] ? '(' . $bulkDiscount['discount_percent'] . '% ' . __('Off') . ')' : '';
         $data['bulk_discount'] = $bulkDiscount;
         $data['dimensions'] = $dimensions;
         $data['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $newQty : null;
         $data['stock'] = $updatedStock; // المخزون المتبقي
         $data['qty'] = $newQty;
+        // بيانات ملخص التاجر
+        $data['merchant_total'] = \PriceHelper::showCurrencyPrice($merchantTotal * $curr->value);
+        $data['merchant_subtotal'] = \PriceHelper::showCurrencyPrice($merchantSubtotal * $curr->value);
+        $data['merchant_discount'] = \PriceHelper::showCurrencyPrice($merchantDiscount * $curr->value);
+        $data['merchant_item_count'] = $merchantItemCount;
 
         return response()->json($data);
     }
@@ -1417,18 +1451,52 @@ class CartController extends FrontBaseController
         $mp->refresh();
         $updatedStock = $this->effectiveStock($mp, $sizeStr);
 
+        // حساب إجماليات التاجر (Merchant totals)
+        $merchantTotal = 0;
+        $merchantSubtotal = 0;
+        $merchantDiscount = 0;
+        $merchantItemCount = 0;
+
+        foreach ($cart->items as $rowKey => $rowItem) {
+            $rowMerchantId = $this->extractMerchantIdFromRow($rowItem);
+            if ($rowMerchantId === $merchantId) {
+                $rowPrice = (float)($rowItem['price'] ?? 0);
+                $rowQty = (int)($rowItem['qty'] ?? 1);
+                $rowDiscount = (float)($rowItem['discount'] ?? 0);
+                $rowItemPrice = (float)($rowItem['item_price'] ?? ($rowItem['item']->price ?? 0));
+
+                $merchantTotal += $rowPrice;
+                $merchantItemCount += $rowQty;
+
+                // حساب الخصم للصف
+                if ($rowDiscount > 0) {
+                    $originalRowTotal = $rowItemPrice * $rowQty;
+                    $discountAmount = ($originalRowTotal * $rowDiscount) / 100;
+                    $merchantDiscount += $discountAmount;
+                }
+            }
+        }
+
+        // الإجمالي الفرعي = الإجمالي + الخصم (قبل خصم الخصومات)
+        $merchantSubtotal = $merchantTotal + $merchantDiscount;
+
         // تجهيز الاستجابة مع بيانات إضافية
         $data = [];
-        $data[0] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value);
+        $data[0] = \PriceHelper::showCurrencyPrice($merchantTotal * $curr->value); // Merchant total (NOT cart total)
         $data[1] = $cart->items[$itemid]['qty'];
         $data[2] = \PriceHelper::showCurrencyPrice($cart->items[$itemid]['price'] * $curr->value);
-        $data[3] = $data[0];
+        $data[3] = \PriceHelper::showCurrencyPrice($cart->totalPrice * $curr->value); // Cart total
         $data[4] = $bulkDiscount['has_discount'] ? '(' . $bulkDiscount['discount_percent'] . '% ' . __('Off') . ')' : '';
         $data['bulk_discount'] = $bulkDiscount;
         $data['dimensions'] = $dimensions;
         $data['row_weight'] = $dimensions['weight'] ? $dimensions['weight'] * $newQty : null;
         $data['stock'] = $updatedStock; // المخزون المتبقي
         $data['qty'] = $newQty;
+        // بيانات ملخص التاجر
+        $data['merchant_total'] = \PriceHelper::showCurrencyPrice($merchantTotal * $curr->value);
+        $data['merchant_subtotal'] = \PriceHelper::showCurrencyPrice($merchantSubtotal * $curr->value);
+        $data['merchant_discount'] = \PriceHelper::showCurrencyPrice($merchantDiscount * $curr->value);
+        $data['merchant_item_count'] = $merchantItemCount;
 
         return response()->json($data);
     }

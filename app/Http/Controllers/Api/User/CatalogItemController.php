@@ -37,7 +37,7 @@ class CatalogItemController extends Controller
             $purchases = Purchase::where('user_id', '=', $request->user_id)->where('status', '=', 'completed')->get();
 
             foreach ($purchases as $purchase) {
-                $cart = json_decode($purchase->cart,true);
+                $cart = $purchase->cart; // Model cast handles decoding
                 foreach ($cart['items'] as $item) {
                     if ($request->catalog_item_id == $item['item']['id']) {
                         $ck = 1;

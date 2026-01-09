@@ -34,7 +34,7 @@ class PurchaseController extends MerchantBaseController
             abort(403, 'Unauthorized access to purchase');
         }
 
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('merchant.purchase.details', compact('user', 'purchase', 'cart'));
     }
 
@@ -48,7 +48,7 @@ class PurchaseController extends MerchantBaseController
             abort(403, 'Unauthorized access to purchase');
         }
 
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart'));
     }
 
@@ -62,7 +62,7 @@ class PurchaseController extends MerchantBaseController
             abort(403, 'Unauthorized access to purchase');
         }
 
-        $cart = json_decode($purchase->cart, true);
+        $cart = $purchase->cart; // Model cast handles decoding
         return view('merchant.purchase.print', compact('user', 'purchase', 'cart'));
     }
 

@@ -48,7 +48,7 @@
                     <div class="m-cart__merchant-info">
                         <i class="fas fa-store"></i>
                         <span class="m-cart__merchant-name">{{ $merchantGroup['merchant_name'] ?? __('Merchant') }}</span>
-                        <span class="m-cart__merchant-count">{{ $merchantGroup['count'] ?? 0 }} @lang('Items')</span>
+                        <span class="m-cart__merchant-count"><span class="m-cart__header-count">{{ $merchantGroup['count'] ?? 0 }}</span> @lang('Items')</span>
                     </div>
                 </div>
 
@@ -280,8 +280,8 @@
                         <h5 class="m-cart__summary-title">@lang('Purchase Summary')</h5>
 
                         <div class="m-cart__summary-row">
-                            <span>@lang('Subtotal') ({{ $merchantGroup['count'] ?? 0 }})</span>
-                            <span>{{ $showPrice($merchantSubtotal) }}</span>
+                            <span>@lang('Subtotal') (<span class="m-cart__summary-count">{{ $merchantGroup['count'] ?? 0 }}</span>)</span>
+                            <span class="m-cart__summary-subtotal">{{ $showPrice($merchantSubtotal) }}</span>
                         </div>
 
                         @if($merchantDiscount > 0)
@@ -479,7 +479,17 @@ jQuery(document).ready(function($) {
                 }
                 $qtyInput.val(resp[1]);
                 $('#prc' + domKey).html(resp[2]);
-                $wrapper.closest('.m-cart__merchant').find('.total-cart-price').html(resp[0]);
+                var $merchantEl = $wrapper.closest('.m-cart__merchant');
+                $merchantEl.find('.total-cart-price').html(resp[0]);
+
+                // Update summary subtotal and count
+                if (resp.merchant_subtotal) {
+                    $merchantEl.find('.m-cart__summary-subtotal').html(resp.merchant_subtotal);
+                }
+                if (resp.merchant_item_count !== undefined) {
+                    $merchantEl.find('.m-cart__summary-count').text(resp.merchant_item_count);
+                    $merchantEl.find('.m-cart__header-count').text(resp.merchant_item_count);
+                }
 
                 // Update stock value from server response
                 if (resp.stock !== undefined) {
@@ -536,7 +546,17 @@ jQuery(document).ready(function($) {
                 }
                 $qtyInput.val(resp[1]);
                 $('#prc' + domKey).html(resp[2]);
-                $wrapper.closest('.m-cart__merchant').find('.total-cart-price').html(resp[0]);
+                var $merchantEl = $wrapper.closest('.m-cart__merchant');
+                $merchantEl.find('.total-cart-price').html(resp[0]);
+
+                // Update summary subtotal and count
+                if (resp.merchant_subtotal) {
+                    $merchantEl.find('.m-cart__summary-subtotal').html(resp.merchant_subtotal);
+                }
+                if (resp.merchant_item_count !== undefined) {
+                    $merchantEl.find('.m-cart__summary-count').text(resp.merchant_item_count);
+                    $merchantEl.find('.m-cart__header-count').text(resp.merchant_item_count);
+                }
 
                 // Update stock value from server response
                 if (resp.stock !== undefined) {

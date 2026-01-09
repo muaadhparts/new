@@ -225,8 +225,28 @@ trait HandlesMerchantCheckout
             }
         }
 
-        // Determine COD amount (for COD orders, this is the total amount to collect)
-        $codAmount = ($paymentMethod === 'cod') ? $purchase->pay_amount : 0;
+        // ✅ Calculate merchant-specific amount (not total purchase)
+        // Get the MerchantPurchase for this specific merchant
+        $merchantPurchase = $purchase->merchantPurchases()
+            ->where('user_id', $merchantId)
+            ->first();
+
+        // The purchase_amount should be this merchant's total (items + tax)
+        // NOT the full purchase->pay_amount which includes all merchants
+        $merchantTotal = $merchantPurchase ? (float)$merchantPurchase->price : 0;
+
+        // Add tax if applicable (stored as tax_amount in merchant_purchases)
+        $merchantTax = $merchantPurchase ? (float)($merchantPurchase->tax_amount ?? 0) : 0;
+
+        // Also add courier fee if stored separately
+        $courierFeeFromMerchant = $merchantPurchase ? (float)($merchantPurchase->courier_fee ?? 0) : 0;
+
+        // Merchant amount = price + tax (courier fee is separate - added to total at collection)
+        $merchantAmount = $merchantTotal + $merchantTax;
+
+        // Determine COD amount (for COD orders, this is the total to collect from customer)
+        // This is merchant amount + delivery fee (will be added by courier)
+        $codAmount = ($paymentMethod === 'cod') ? $merchantAmount : 0;
 
         // Create the DeliveryCourier record
         $deliveryCourier = DeliveryCourier::create([
@@ -238,7 +258,7 @@ trait HandlesMerchantCheckout
             'status' => 'pending',
             'delivery_fee' => $courierFee,
             'cod_amount' => $codAmount,
-            'purchase_amount' => $purchase->pay_amount,
+            'purchase_amount' => $merchantAmount, // ✅ Merchant's total only, not full purchase
             'payment_method' => $paymentMethod,
             'fee_status' => 'pending',
             'settlement_status' => 'pending',
@@ -251,7 +271,8 @@ trait HandlesMerchantCheckout
             'delivery_type' => $deliveryType,
             'courier_id' => $courierId,
             'service_area_id' => $serviceAreaId,
-            'courier_fee' => $courierFee,
+            'delivery_fee' => $courierFee,
+            'purchase_amount' => $merchantAmount,
             'cod_amount' => $codAmount,
             'payment_method' => $paymentMethod,
         ]);

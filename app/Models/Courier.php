@@ -9,7 +9,7 @@ class Courier extends Authenticatable
     protected $table = 'couriers';
 
     protected $fillable = [
-        'name', 'photo', 'city_id', 'address', 'phone',
+        'name', 'photo', 'address', 'phone',
         'email', 'password', 'email_verify', 'email_verified', 'email_token',
         'status', 'balance', 'total_collected', 'total_delivered', 'total_fees_earned'
     ];
@@ -28,11 +28,6 @@ class Courier extends Authenticatable
     public function deliveries()
     {
         return $this->hasMany(DeliveryCourier::class);
-    }
-
-    public function city()
-    {
-        return $this->belongsTo(City::class);
     }
 
     public function serviceAreas()

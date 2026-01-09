@@ -645,9 +645,8 @@ class TryotoService
         // Prepare sender phone - allow null
         $senderPhone = $this->cleanPhoneNumber($merchant->phone ?? '');
 
-        // Prepare cart items
-        $cart = is_string($purchase->cart) ? json_decode($purchase->cart, true) : $purchase->cart;
-        $items = $cart['items'] ?? $cart ?? [];
+        // Prepare cart items - use model method that handles legacy data
+        $items = $purchase->getCartItems();
         $purchaseItems = [];
         $itemCount = 0;
 
@@ -1314,10 +1313,8 @@ class TryotoService
      */
     private function calculateDimensionsFromPurchase(Purchase $purchase, ?int $merchantId = null): array
     {
-        $cartRaw = $purchase->cart;
-        $cartArr = is_string($cartRaw) ? (json_decode($cartRaw, true) ?: []) : (is_array($cartRaw) ? $cartRaw : []);
-
-        $items = $cartArr['items'] ?? $cartArr;
+        // Use model method that handles legacy double-encoded data
+        $items = $purchase->getCartItems();
         $itemsForCalculation = [];
 
         foreach ($items as $ci) {
