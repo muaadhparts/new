@@ -136,37 +136,55 @@ class IncomeController extends Controller
 
     public function commissionIncome(Request $request)
     {
-
         $current_date = Carbon::now();
-        $explode = explode('-',$current_date->format('d-m-Y'));
+        $explode = explode('-', $current_date->format('d-m-Y'));
         $explode[0] = '1';
-        $implode= implode("-",$explode);
+        $implode = implode("-", $explode);
         $first_day = Carbon::parse($implode);
         $last30days = date('Y-m-d', strtotime('today - 30 days'));
-        
-        
-        $last_30_days =  Purchase::whereDate('created_at','>=',$last30days)->whereDate('created_at','<=',$current_date)->where('commission','!=',0);
-        $current_month =  Purchase::whereDate('created_at','>=',$first_day)->whereDate('created_at','<=',$current_date)->where('commission','!=',0);
 
+        // Use MerchantPurchase for commission data
+        $last_30_days_sum = MerchantPurchase::whereDate('created_at', '>=', $last30days)
+            ->whereDate('created_at', '<=', $current_date)
+            ->where('commission_amount', '>', 0)
+            ->sum('commission_amount');
 
-        $sign = Currency::where('is_default','=',1)->first();
-        if($request->start_date && $request->end_date){
-           $start_date = Carbon::parse($request->start_date);
-           $end_date = Carbon::parse($request->end_date);
-           $purchases = Purchase::with(['merchantPurchases.user'])->whereDate('created_at','>=',$start_date)->whereDate('created_at','<=',$end_date)->where('commission','!=',0);
-       }else{
-           $purchases = Purchase::with(['merchantPurchases.user'])->where('commission','!=',0);
-       }
+        $current_month_sum = MerchantPurchase::whereDate('created_at', '>=', $first_day)
+            ->whereDate('created_at', '<=', $current_date)
+            ->where('commission_amount', '>', 0)
+            ->sum('commission_amount');
 
-       return view('operator.earning.commission_earning',[
-           'purchases' => $purchases->count() > 0 ? $purchases->get() : [],
-           'total' => $purchases->count() > 0 ? $sign->sign . $purchases->sum('commission') : 0,
-           'start_date' => isset($start_date) ? $start_date : '',
-           'end_date' => isset($end_date) ? $end_date : '',
-           'currency' => $sign,
-           'current_month' => $current_month->count() > 0 ? $sign->sign . $current_month->sum('commission') : 0,
-           'last_30_days' => $last_30_days->count() > 0 ? $sign->sign . $last_30_days->sum('commission') : 0,
-       ]);
+        $sign = Currency::where('is_default', '=', 1)->first();
+
+        // Build query for purchases with commission
+        $query = Purchase::with(['merchantPurchases.user'])
+            ->whereHas('merchantPurchases', function ($q) {
+                $q->where('commission_amount', '>', 0);
+            });
+
+        if ($request->start_date && $request->end_date) {
+            $start_date = Carbon::parse($request->start_date);
+            $end_date = Carbon::parse($request->end_date);
+            $query->whereDate('created_at', '>=', $start_date)
+                  ->whereDate('created_at', '<=', $end_date);
+        }
+
+        $purchases = $query->get();
+
+        // Calculate total commission from merchant_purchases
+        $total_commission = $purchases->flatMap(function ($purchase) {
+            return $purchase->merchantPurchases;
+        })->sum('commission_amount');
+
+        return view('operator.earning.commission_earning', [
+            'purchases' => $purchases,
+            'total' => $sign->sign . number_format($total_commission, 2),
+            'start_date' => isset($start_date) ? $start_date : '',
+            'end_date' => isset($end_date) ? $end_date : '',
+            'currency' => $sign,
+            'current_month' => $sign->sign . number_format($current_month_sum, 2),
+            'last_30_days' => $sign->sign . number_format($last_30_days_sum, 2),
+        ]);
     }
 
     /**

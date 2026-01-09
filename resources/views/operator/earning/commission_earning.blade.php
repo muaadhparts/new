@@ -76,7 +76,7 @@
 											   {{$purchase->txnId}}
 											</td>
 											<td>
-											   {{$purchase->currency_sign}}{{round($purchase->commission * $purchase->currency_value,2)}}
+											   {{$purchase->currency_sign}}{{ number_format($purchase->merchantPurchases->sum('commission_amount') * $purchase->currency_value, 2) }}
 											</td>
 											<td>
 											   {{$purchase->tax_location}}

@@ -56,7 +56,6 @@
 														aria-orientation="vertical">
 														@foreach($gateways as $gt)
 															@if($gt->type == 'manual')
-																@if($purchase->dp == 0)
 																	<a class="nav-link payment " data-val=""
 																		data-show="{{$gt->showForm()}}"
 																		data-form="{{ $gt->showApiCheckoutLink() }}"
@@ -77,7 +76,6 @@
 																			@endif
 																		</p>
 																	</a>
-																@endif
 															@else
 																<a class="nav-link payment" data-val="{{ $gt->keyword }}"
 																	data-show="{{$gt->showForm()}}"
@@ -133,12 +131,10 @@
 														<div class="tab-content" id="v-pills-tabContent">
 															@foreach($gateways as $gt)
 																@if($gt->type == 'manual')
-																	@if($purchase->dp == 0)
 																		<div class="tab-pane fade" id="v-pills-tab{{ $gt->id }}"
 																			role="tabpanel"
 																			aria-labelledby="v-pills-tab{{ $gt->id }}-tab">
 																		</div>
-																	@endif
 																@else
 																	<div class="tab-pane fade" id="v-pills-tab{{ $gt->id }}"
 																		role="tabpanel"

@@ -273,7 +273,6 @@
                 </div>
             </div>
 
-            @if($purchase->dp == 0)
             <div class="col-lg-6">
                 <div class="special-box">
                     <div class="heading-area">
@@ -338,7 +337,6 @@
                     </div>
                 </div>
             </div>
-            @endif
         </div>
 
         {{-- Shipment Status Section --}}
@@ -453,20 +451,23 @@
                 @foreach($resultArray as $key1 => $catalogItem)
 
                 @php
+                $gs = App\Models\Muaadhsetting::find(1);
+                $platformName = $gs->title ?? __('Platform');
 
                 if($key1 == 0){
-                $merchant = App\Models\Operator::find(1);
+                    // Platform items (user_id = 0)
+                    $merchantName = $platformName;
                 }else{
-                $merchant = App\Models\User::find($key1);
+                    $merchant = App\Models\User::find($key1);
+                    $merchantName = $merchant->shop_name ?? $merchant->name ?? __('Unknown Merchant');
                 }
-
                 @endphp
                 <div class="mr-table">
                     <h4 class="title">
                         <a href="javascript:;" data-bs-toggle="modal" merchant="{{$key1}}"
-                            merchant-store="{{$merchant->shop_name}}" class="btn btn-primary btn-sm pl-2 show_add_product"
+                            merchant-store="{{$merchantName}}" class="btn btn-primary btn-sm pl-2 show_add_product"
                             data-bs-target="#add-catalogItem"><i class="fas fa-plus"></i>{{ __("Add Item") }}</a> {{
-                        __('Items Purchased From') }} - <strong>{{$merchant->shop_name}}</strong>
+                        __('Items Purchased From') }} - <strong>{{$merchantName}}</strong>
 
                     </h4>
                     <div class="table-responsive">
@@ -507,7 +508,7 @@
                                         {{ __('Merchant Removed') }}
                                         @endif
                                         @else
-                                        <a href="javascript:;">{{ App\Models\Operator::find(1)->shop_name }}</a>
+                                        <a href="javascript:;">{{ $platformName }}</a>
                                         @endif
 
                                     </td>
@@ -519,11 +520,6 @@
 
                                         @endphp
 
-                                        @if($purchase->dp == 1 && $purchase->payment_status == 'Completed')
-
-                                        <span class="badge badge-success">{{ __('Completed') }}</span>
-
-                                        @else
                                         @if($merchantPurchase->status == 'pending')
                                         <span class="badge badge-warning">{{ucwords($merchantPurchase->status)}}</span>
                                         @elseif($merchantPurchase->status == 'processing')
@@ -534,7 +530,6 @@
                                         <span class="badge badge-success">{{ucwords($merchantPurchase->status)}}</span>
                                         @elseif($merchantPurchase->status == 'declined')
                                         <span class="badge badge-danger">{{ucwords($merchantPurchase->status)}}</span>
-                                        @endif
                                         @endif
 
                                         @endif

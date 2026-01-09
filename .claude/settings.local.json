@@ -49,7 +49,10 @@
       "Bash(mkdir:*)",
       "Bash(composer require:*)",
       "Bash(composer show:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(for f in app/Http/Controllers/Payment/Checkout/*.php)",
+      "Bash(do php -l \"$f\")",
+      "Bash(done)"
     ]
   }
 }

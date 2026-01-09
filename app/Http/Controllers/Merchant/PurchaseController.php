@@ -66,15 +66,46 @@ class PurchaseController extends MerchantBaseController
         return view('merchant.purchase.print', compact('user', 'purchase', 'cart'));
     }
 
+    /**
+     * Update merchant purchase status
+     *
+     * @param string $slug Purchase number
+     * @param string $status New status (pending, processing, on delivery, completed, declined)
+     */
     public function status($slug, $status)
     {
-        $mainPurchase = MerchantPurchase::where('purchase_number', '=', $slug)->first();
-        if ($mainPurchase->status == "completed") {
-            return redirect()->back()->with('success', __('This Purchase is Already Completed'));
-        } else {
-            $user = $this->user;
-            MerchantPurchase::where('purchase_number', '=', $slug)->where('user_id', '=', $user->id)->update(['status' => $status]);
-            return redirect()->route('merchant-purchase-index')->with('success', __('Purchase Status Updated Successfully'));
+        $user = $this->user;
+
+        // Get THIS merchant's record only (not any merchant with same purchase_number)
+        $merchantPurchase = MerchantPurchase::where('purchase_number', $slug)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$merchantPurchase) {
+            return redirect()->back()->with('unsuccess', __('Purchase not found or unauthorized'));
         }
+
+        if ($merchantPurchase->status === 'completed') {
+            return redirect()->back()->with('success', __('This Purchase is Already Completed'));
+        }
+
+        // Update status
+        $merchantPurchase->status = $status;
+        $merchantPurchase->save();
+
+        // If all merchant purchases for this purchase are completed, update main purchase
+        $purchase = $merchantPurchase->purchase;
+        if ($purchase && $status === 'completed') {
+            $allCompleted = $purchase->merchantPurchases()
+                ->where('status', '!=', 'completed')
+                ->count() === 0;
+
+            if ($allCompleted) {
+                $purchase->status = 'completed';
+                $purchase->save();
+            }
+        }
+
+        return redirect()->route('merchant-purchase-index')->with('success', __('Purchase Status Updated Successfully'));
     }
 }

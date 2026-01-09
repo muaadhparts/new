@@ -71,36 +71,6 @@ html {
                            <div class="dashboard-content">
                               <div class="view-purchase-page" id="print">
                                  <p class="purchase-date" style="margin-left: 2%">{{ __('Purchase Date') }} {{date('d-M-Y',strtotime($purchase->created_at))}}</p>
-                                 @if($purchase->dp == 1)
-                                 <div class="billing-add-area">
-                                    <div class="row">
-                                       <div class="col-md-6">
-                                          <h5>{{ __('Billing Address') }}</h5>
-                                          <address>
-                                             {{ __('Name:') }} {{$purchase->customer_name}}<br>
-                                             {{ __('Email:') }} {{$purchase->customer_email}}<br>
-                                             {{ __('Phone:') }} {{$purchase->customer_phone}}<br>
-                                             {{ __('Address:') }} {{$purchase->customer_address}}<br>
-                                             {{$purchase->customer_city}}-{{$purchase->customer_zip}}
-                                          </address>
-                                       </div>
-                                       <div class="col-md-6">
-                                          <h5>{{ __('Payment Information') }}</h5>
-                                          <p>{{ __('Tax:') }}  {{ \PriceHelper::showOrderCurrencyPrice((($purchase->tax) / $purchase->currency_value),$purchase->currency_sign) }}</p>
-                                          <p>{{ __('Paid Amount:') }} {{ \PriceHelper::showOrderCurrencyPrice(($purchase->pay_amount  * $purchase->currency_value),$purchase->currency_sign) }}</p>
-                                          <p>{{ __('Payment Method:') }} {{$purchase->method}}</p>
-                                          @if($purchase->method != "Cash On Delivery")
-                                          @if($purchase->method=="Stripe")
-                                          {{$purchase->method}} {{ __('Charge ID:') }}
-                                          <p>{{$purchase->charge_id}}</p>
-                                          @endif
-                                          {{$purchase->method}} {{ __('Transaction ID:') }}
-                                          <p id="ttn">{{$purchase->txnid}}</p>
-                                          @endif
-                                       </div>
-                                    </div>
-                                 </div>
-                                 @else
                                  <div class="invoice__metaInfo">
                                     <div class="col-md-6">
                                        <h5>{{ __('Billing Address') }}</h5>
@@ -172,7 +142,6 @@ html {
                                        @endif
                                     </div>
                                  </div>
-                                 @endif
                                  <br>
                                  <br>
                                  <div class="table-responsive">

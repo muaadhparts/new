@@ -236,7 +236,7 @@ class PurchaseController extends OperatorBaseController
                     $cart = json_decode($data->cart, true);
 
                     // Restore CatalogItem Stock If Any - Update merchant_items instead
-                    foreach ($cart->items as $cartItem) {
+                    foreach ($cart['items'] as $cartItem) {
                         $x = (string) $cartItem['stock'];
                         if ($x != null) {
                             // Find the merchant item that was used for this purchase item
@@ -255,7 +255,7 @@ class PurchaseController extends OperatorBaseController
                     }
 
                     // Restore CatalogItem Size Qty If Any - Update merchant_items instead
-                    foreach ($cart->items as $cartItem) {
+                    foreach ($cart['items'] as $cartItem) {
                         $x = (string) $cartItem['size_qty'];
                         if (!empty($x)) {
                             $merchantId = $cartItem['item']['user_id'] ?? null;

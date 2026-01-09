@@ -276,7 +276,6 @@
                 </div>
 
 
-                @if ($purchase->dp == 0)
                 <!-- shipping address -->
                 <div class="address-item">
                     <h5>@lang('Shipping Address')</h5>
@@ -334,7 +333,6 @@
                         </li>
                     </ul>
                 </div>
-                @endif
 
 
 

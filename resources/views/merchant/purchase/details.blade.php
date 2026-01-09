@@ -147,7 +147,6 @@
 
 
 
-            @if ($purchase->dp == 0)
                 <!-- Shipping Address Card  -->
                 <div class="col">
                     <div class="purchase-info-card shipping-address-card">
@@ -185,7 +184,6 @@
                         </ul>
                     </div>
                 </div>
-            @endif
 
             {{-- ✅ Shipment Status Card --}}
             @php
@@ -358,9 +356,6 @@
                                                         ->first();
                                                 @endphp
 
-                                                @if ($purchase->dp == 1 && $purchase->payment_status == 'Completed')
-                                                    <span class="m-badge m-badge--completed">{{ __('Completed') }}</span>
-                                                @else
                                                     @if ($merchantPurchase->status == 'pending')
                                                         <span class="m-badge m-badge--pending">{{ ucwords($merchantPurchase->status) }}</span>
                                                     @elseif($merchantPurchase->status == 'processing')
@@ -372,7 +367,6 @@
                                                     @elseif($merchantPurchase->status == 'declined')
                                                         <span class="m-badge m-badge--cancelled">{{ ucwords($merchantPurchase->status) }}</span>
                                                     @endif
-                                                @endif
                                             @endif
                                         </td>
 

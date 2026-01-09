@@ -1336,11 +1336,9 @@ table.dataTable thead .sorting_desc_disabled::after {
                         <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $purchase->id) }}</span><br>
                         <span><strong>{{ __('Purchase Date') }} :</strong> {{ date('d-M-Y',strtotime($purchase->created_at)) }}</span><br>
                         <span><strong>{{  __('Purchase ID')}} :</strong> {{ $purchase->purchase_number }}</span><br>
-                        @if($purchase->dp == 0)
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
                             {{ __('Ship To Address') }}
                         </span><br>
-                        @endif
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$purchase->method}}</span><br>
                         <span><strong>{{ __('Payment Status') }} :</strong> {{ $purchase->payment_status == 'Pending' ? "Unpaid":"Paid" }}</span>
                     </div>
@@ -1348,7 +1346,6 @@ table.dataTable thead .sorting_desc_disabled::after {
             </div>
 
             <div class="invoice__metaInfo" style="width: 50%">
-                @if($purchase->dp == 0)
                 <div class="col-lg-6">
                         <div class="invoice__orderDetails">
                             <p><strong>{{ __('Shipping Details') }}</strong></p>
@@ -1358,7 +1355,6 @@ table.dataTable thead .sorting_desc_disabled::after {
                            <span><strong>{{ __('Country') }}</strong>: {{ $purchase->customer_country }}</span>
                         </div>
                 </div>
-                @endif
 
             </div>
 
