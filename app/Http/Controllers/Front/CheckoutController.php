@@ -122,7 +122,6 @@ class CheckoutController extends FrontBaseController
         if (!Session::has('cart')) {
             return redirect()->route('front.cart')->with('success', __("You don't have any catalogItem to checkout."));
         }
-        $dp = 1;
         $merchant_shipping_id = 0;
         $merchant_packing_id = 0;
         $curr = $this->curr;
@@ -152,12 +151,7 @@ class CheckoutController extends FrontBaseController
                 // No global packaging - empty collection
                 $package_data = collect();
             }
-            foreach ($cartItems as $cartItem) {
-                if ($cartItem['item']['type'] == 'Physical') {
-                    $dp = 0;
-                    break;
-                }
-            }
+
             $total = $cart->totalPrice;
             $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
@@ -172,7 +166,7 @@ class CheckoutController extends FrontBaseController
 //            dd($total ,$cart->items);
 
             // Note: 'catalogItems' kept for backward compatibility in views
-            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -195,12 +189,6 @@ class CheckoutController extends FrontBaseController
 
                 }
 
-                foreach ($cartItems as $cartItem) {
-                    if ($cartItem['item']['type'] == 'Physical') {
-                        $dp = 0;
-                        break;
-                    }
-                }
                 $total = $cart->totalPrice;
                 $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
@@ -211,17 +199,8 @@ class CheckoutController extends FrontBaseController
                     $total = Session::get('discount_code_total');
                     $total = str_replace($curr->sign, '', $total) + round(0 * $curr->value, 2);
                 }
-                foreach ($cartItems as $cartItem) {
-                    if ($cartItem['item']['type'] != 'Physical') {
-                        if (!Auth::check()) {
-                            $ck = 1;
-                            // Note: 'catalogItems' kept for backward compatibility in views
-                            return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
-                        }
-                    }
-                }
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -260,7 +239,7 @@ class CheckoutController extends FrontBaseController
                 }
                 $ck = 1;
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
+                return view('frontend.checkout.step1', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,  'shipping_cost' => 0, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id]);
             }
         }
     }
@@ -280,7 +259,6 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('step1');
 //        dd($step1);
-        $dp = 1;
         $merchant_shipping_id = 0;
         $merchant_packing_id = 0;
         $curr = $this->curr;
@@ -311,12 +289,7 @@ class CheckoutController extends FrontBaseController
                 // No global packaging - empty collection
                 $package_data = collect();
             }
-            foreach ($cartItems as $cartItem) {
-                if ($cartItem['item']['type'] == 'Physical') {
-                    $dp = 0;
-                    break;
-                }
-            }
+
             $total = $cart->totalPrice;
             $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
@@ -333,7 +306,7 @@ class CheckoutController extends FrontBaseController
             $step2Data = $this->prepareStep2MerchantData($cartItems, $step1);
 
             // Note: 'catalogItems' kept for backward compatibility in views
-            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
         } else {
 
             if ($this->gs->guest_checkout == 1) {
@@ -356,12 +329,6 @@ class CheckoutController extends FrontBaseController
 
                 }
 
-                foreach ($cartItems as $cartItem) {
-                    if ($cartItem['item']['type'] == 'Physical') {
-                        $dp = 0;
-                        break;
-                    }
-                }
                 $total = $cart->totalPrice;
                 $discountAmount = Session::has('discount_code') ? Session::get('discount_code') : 0;
 
@@ -375,18 +342,9 @@ class CheckoutController extends FrontBaseController
                 // N+1 FIX: Pre-load all merchant data
                 $step2Data = $this->prepareStep2MerchantData($cartItems, $step1 ?? null);
 
-                foreach ($cartItems as $cartItem) {
-                    if ($cartItem['item']['type'] != 'Physical') {
-                        if (!Auth::check()) {
-                            $ck = 1;
-                            // Note: 'catalogItems' kept for backward compatibility in views
-                            return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
-                        }
-                    }
-                }
 //                dd($cartItems);
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty, 'shipping_cost' => 0, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
             }
 
             // If guest checkout is Deactivated then display pop up form with proper error message
@@ -429,7 +387,7 @@ class CheckoutController extends FrontBaseController
                 $step2Data = $this->prepareStep2MerchantData($cartItems, $step1);
 
                 // Note: 'catalogItems' kept for backward compatibility in views
-                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'digital' => $dp, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
+                return view('frontend.checkout.step2', ['catalogItems' => $cartItems, 'totalPrice' => $total, 'totalQty' => $cart->totalQty,'shipping_cost' => 0, 'curr' => $curr, 'shipping_data' => $shipping_data, 'package_data' => $package_data, 'merchant_shipping_id' => $merchant_shipping_id, 'merchant_packing_id' => $merchant_packing_id, 'step1' => $step1, 'merchantData' => $step2Data['merchantData'], 'preloadedCountry' => $step2Data['country']]);
             }
         }
     }
@@ -480,7 +438,6 @@ class CheckoutController extends FrontBaseController
             'create_account' => $step1['create_account'] ?? null,
             'password' => $step1['password'] ?? null,
             'password_confirmation' => $step1['password_confirmation'] ?? null,
-            'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
             'merchant_shipping_id' => $step1['merchant_shipping_id'] ?? 0,
             'merchant_packing_id' => $step1['merchant_packing_id'] ?? 0,
@@ -794,7 +751,6 @@ class CheckoutController extends FrontBaseController
 
         $step1 = (object) Session::get('step1');
         $step2 = (object) Session::get('step2');
-        $dp = 1;
         $merchant_shipping_id = 0;
         $merchant_packing_id = 0;
         $curr = $this->curr;
@@ -806,11 +762,6 @@ class CheckoutController extends FrontBaseController
 
         $paystack = MerchantPayment::whereKeyword('paystack')->first();
         $paystackData = $paystack ? $paystack->convertAutoData() : [];
-
-        // Check if cart has physical items
-        foreach ($cartItems as $cartItem) {
-            if ($cartItem['item']['type'] == 'Physical') { $dp = 0; break; }
-        }
 
         // شحن وتغليف
         if ($this->gs->multiple_shipping == 1) {
@@ -848,7 +799,6 @@ class CheckoutController extends FrontBaseController
             'totalQty'            => $cart->totalQty,
             'gateways'            => $gateways,
             'shipping_cost'       => $step2->shipping_cost ?? 0,
-            'digital'             => $dp,
             'curr'                => $curr,
             'shipping_data'       => $shipping_data,
             'package_data'        => $package_data,
@@ -965,7 +915,7 @@ class CheckoutController extends FrontBaseController
      * 6. Returns filtered data as array
      *
      * @param int $merchantId
-     * @return array ['merchantItems', 'totalPrice', 'totalQty', 'digital']
+     * @return array ['merchantItems', 'totalPrice', 'totalQty', 'shipping_data', 'has_complete_shipping_data', 'missing_shipping_data']
      */
     private function getMerchantCartData($merchantId): array
     {
@@ -1030,15 +980,6 @@ class CheckoutController extends FrontBaseController
             $totalQty += (int)($cartItem['qty'] ?? 1);
         }
 
-        // Check if all merchant items are digital
-        $dp = 1;
-        foreach ($merchantItems as $cartItem) {
-            if (data_get($cartItem, 'item.type') == 'Physical') {
-                $dp = 0;
-                break;
-            }
-        }
-
         // حساب بيانات الشحن للتاجر باستخدام MerchantCartService
         $shippingData = MerchantCartService::calculateMerchantShipping($merchantId, $cart->items);
 
@@ -1047,7 +988,6 @@ class CheckoutController extends FrontBaseController
             'merchantItems' => $merchantItems,
             'totalPrice' => $totalPrice,
             'totalQty' => $totalQty,
-            'digital' => $dp,
             'shipping_data' => $shippingData,
             'has_complete_shipping_data' => $shippingData['has_complete_data'],
             'missing_shipping_data' => $shippingData['missing_data'],
@@ -1108,7 +1048,6 @@ class CheckoutController extends FrontBaseController
         $merchantItems = $cartData['merchantItems'];
         $totalPrice = $cartData['totalPrice'];
         $totalQty = $cartData['totalQty'];
-        $dp = $cartData['digital'];
         $merchantShippingData = $cartData['shipping_data'];
 
         if (empty($merchantItems)) {
@@ -1133,7 +1072,6 @@ class CheckoutController extends FrontBaseController
             'totalPrice' => $catalogItemsTotal, // Backward compatibility
                         'totalQty' => $totalQty,
             'shipping_cost' => 0,
-            'digital' => $dp,
             'curr' => $curr,
             'shipping_data' => $shipping_data,
             'package_data' => $package_data,
@@ -1225,7 +1163,6 @@ class CheckoutController extends FrontBaseController
             'country_id' => $step1['country_id'] ?? null,
             'shipping' => 'shipto', // Always delivery to customer address
             'create_account' => $step1['create_account'] ?? null,
-            'dp' => $step1['dp'] ?? 0,
             'totalQty' => $step1['totalQty'] ?? 0,
             'merchant_shipping_id' => $step1['merchant_shipping_id'] ?? 0,
             'merchant_packing_id' => $step1['merchant_packing_id'] ?? 0,
@@ -1415,7 +1352,6 @@ class CheckoutController extends FrontBaseController
         $merchantItems = $cartData['merchantItems'];
         $totalPrice = $cartData['totalPrice'];
         $totalQty = $cartData['totalQty'];
-        $dp = $cartData['digital'];
 
         $shipping_data = \App\Models\Shipping::forMerchant($merchantId)->get();
         $package_data = DB::table('packages')->where('user_id', $merchantId)->get();
@@ -1445,7 +1381,6 @@ class CheckoutController extends FrontBaseController
             'totalPrice' => $totalPrice, // Backward compatibility
                         'totalQty' => $totalQty,
             'shipping_cost' => 0,
-            'digital' => $dp,
             'curr' => $curr,
             'shipping_data' => $shipping_data,
             'package_data' => $package_data,
@@ -1486,17 +1421,15 @@ class CheckoutController extends FrontBaseController
         $step2 = $request->all();
         $oldCart = Session::get('cart');
 
-        // Check if cart contains physical catalogItems (digital catalogItems don't need shipping)
+        // Check if cart contains physical catalogItems for this merchant
         $cart = new Cart($oldCart);
         $hasPhysicalProducts = false;
         foreach ($cart->items as $catalogItem) {
             $itemMerchantId = data_get($catalogItem, 'item.user_id') ?? data_get($catalogItem, 'item.merchant_user_id') ?? 0;
             if ($itemMerchantId == $merchantId) {
-                // Check if this is a physical catalogItem (dp = 0)
-                if (isset($catalogItem['dp']) && $catalogItem['dp'] == 0) {
-                    $hasPhysicalProducts = true;
-                    break;
-                }
+                // All catalog items are physical products (no digital products in this system)
+                $hasPhysicalProducts = true;
+                break;
             }
         }
 
@@ -1826,7 +1759,6 @@ class CheckoutController extends FrontBaseController
         $merchantItems = $cartData['merchantItems'];
         $catalogItemsTotal = $cartData['totalPrice']; // CatalogItems only (no shipping)
         $totalQty = $cartData['totalQty'];
-        $dp = $cartData['digital'];
 
         // Get payment gateways for THIS merchant ONLY (NO FALLBACK)
         // CRITICAL: Only show payment methods owned by this merchant
@@ -1867,7 +1799,6 @@ class CheckoutController extends FrontBaseController
                         'totalQty' => $totalQty,
             'gateways' => $gateways,
             'shipping_cost' => $step2->shipping_cost ?? 0,
-            'digital' => $dp,
             'curr' => $curr,
             'shipping_data' => $shipping_data,
             'package_data' => $package_data,

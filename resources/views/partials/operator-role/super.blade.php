@@ -68,7 +68,7 @@
     </a>
     <ul class="collapse list-unstyled" id="menu2" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-catalog-item-types') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
+            <a href="{{ route('operator-catalog-item-create', 'physical') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
         </li>
         <li>
             <a href="{{ route('operator-catalog-item-index') }}"><span>{{ __('All CatalogItems') }}</span></a>
@@ -452,13 +452,3 @@
                                 Manager') }}</a>
 </li>
 
-<li>
-    <a href="#sactive" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="fas fa-cog"></i>{{ __('System Activation') }}
-    </a>
-    <ul class="collapse list-unstyled" id="sactive" data-bs-parent="#accordion">
-
-        <li><a href="{{ route('operator-activation-form') }}"> {{ __('Activation') }}</a></li>
-        <li><a href="{{ route('operator-generate-backup') }}"> {{ __('Generate Backup') }}</a></li>
-    </ul>
-</li>

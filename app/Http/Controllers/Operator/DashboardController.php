@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Models\Publication;
-use App\Models\License;
 use App\Models\Purchase;
 use App\Models\CatalogItem;
 use App\Models\User;
@@ -58,15 +57,6 @@ class DashboardController extends OperatorBaseController
             });
 
         $data['recentUsers'] = User::latest('id')->take(5)->get();
-
-        // Check activation status
-        $data['activation_notify'] = "";
-        $license = License::getActiveLicense();
-        if (!$license) {
-            $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>النظام غير مفعل.<br><a href='" . route('operator-license-index') . "' class='btn btn-success'>تفعيل الآن</a>";
-        } elseif ($license->expires_at && $license->expires_at->diffInDays(now()) <= 10) {
-            $data['activation_notify'] = "<i class='icofont-warning-alt icofont-4x'></i><br>تنبيه: الترخيص سينتهي في " . $license->expires_at->format('Y-m-d') . "<br><a href='" . route('operator-license-index') . "' class='btn btn-warning'>تجديد الترخيص</a>";
-        }
 
         return view('operator.dashboard', $data);
     }
@@ -133,119 +123,5 @@ class DashboardController extends OperatorBaseController
         $operator->update($input);
         $msg = __('Successfully changed your password');
         return response()->json($msg);
-    }
-
-    public function generate_bkup()
-    {
-        $bkuplink = "";
-        $chk = file_get_contents('backup.txt');
-        if ($chk != "") {
-            $bkuplink = url($chk);
-        }
-        return view('operator.movetoserver', compact('bkuplink', 'chk'));
-    }
-
-    public function clear_bkup()
-    {
-        $destination = public_path() . '/install';
-        $bkuplink = "";
-        $chk = file_get_contents('backup.txt');
-        if ($chk != "") {
-            $path = str_replace('project', '', base_path($chk));
-            @unlink($path);
-        }
-
-        if (is_dir($destination)) {
-            $this->deleteDir($destination);
-        }
-        $handle = fopen('backup.txt', 'w+');
-        fwrite($handle, "");
-        fclose($handle);
-        return redirect()->back()->with('success', 'Backup file Deleted Successfully!');
-    }
-
-    public function movescript()
-    {
-        ini_set('max_execution_time', 3000);
-
-        $destination = public_path() . '/install';
-        $chk = file_get_contents('backup.txt');
-
-        if ($chk != "") {
-            $base_path = str_replace('project', '', base_path());
-            @unlink(public_path($base_path));
-        }
-
-        if (is_dir($destination)) {
-            $this->deleteDir($destination);
-        }
-
-        $src = base_path() . '/vendor/update';
-
-        $this->recurse_copy($src, $destination);
-        $files = public_path();
-        $bkupname = 'MUAADH-EPC-Backup-' . date('Y-m-d') . '.zip';
-
-        $zip = new \ZipArchive();
-        $zip->open($bkupname, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
-
-        $files = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(base_path()),
-            \RecursiveIteratorIterator::LEAVES_ONLY
-        );
-        foreach ($files as $name => $file) {
-            if (!$file->isDir()) {
-                $filePath = $file->getRealPath();
-                $relativePath = substr($filePath, strlen(base_path()) + 1);
-                $zip->addFile($filePath, $relativePath);
-            }
-        }
-
-        $zip->close();
-
-        $handle = fopen('backup.txt', 'w+');
-        fwrite($handle, $bkupname);
-        fclose($handle);
-
-        if (is_dir($destination)) {
-            $this->deleteDir($destination);
-        }
-        return response()->json(['status' => 'success', 'backupfile' => url($bkupname), 'filename' => $bkupname], 200);
-    }
-
-    public function recurse_copy($src, $dst)
-    {
-
-        $dir = opendir($src);
-        @mkdir($dst);
-        while (false !== ($file = readdir($dir))) {
-            if (($file != '.') && ($file != '..')) {
-                if (is_dir($src . '/' . $file)) {
-                    $this->recurse_copy($src . '/' . $file, $dst . '/' . $file);
-                } else {
-                    copy($src . '/' . $file, $dst . '/' . $file);
-                }
-            }
-        }
-        closedir($dir);
-    }
-
-    public function deleteDir($dirPath)
-    {
-        if (!is_dir($dirPath)) {
-            throw new InvalidArgumentException("$dirPath must be a directory");
-        }
-        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
-            $dirPath .= '/';
-        }
-        $files = glob($dirPath . '*', GLOB_MARK);
-        foreach ($files as $file) {
-            if (is_dir($file)) {
-                self::deleteDir($file);
-            } else {
-                unlink($file);
-            }
-        }
-        rmdir($dirPath);
     }
 }

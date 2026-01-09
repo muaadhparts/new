@@ -20,7 +20,6 @@ class CatalogItemCardDTO
     public string $catalogItemSlug;
     public ?string $part_number;
     public string $photo;
-    public string $type;
     public string $itemType;
     public ?string $affiliateLink;
     public float $catalogReviewsAvg;
@@ -80,7 +79,6 @@ class CatalogItemCardDTO
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
-        $dto->type = $catalogItem->type ?? 'Physical';
         // item_type is now on merchant_items, not catalog_items
         $dto->itemType = $merchant->item_type ?? '';
         // affiliate_link is now on merchant_items, not catalog_items
@@ -150,7 +148,6 @@ class CatalogItemCardDTO
         $dto->catalogItemSlug = $catalogItem->slug ?? '';
         $dto->part_number = $catalogItem->part_number;
         $dto->photo = self::resolvePhoto($catalogItem->photo);
-        $dto->type = $catalogItem->type ?? 'Physical';
         // item_type is now on merchant_items - no type without merchant
         $dto->itemType = '';
         // affiliate_link is now on merchant_items - no link without merchant

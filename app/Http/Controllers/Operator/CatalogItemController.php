@@ -92,9 +92,6 @@ class CatalogItemController extends OperatorBaseController
                 if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
                 return $mp->stock;
             })
-            ->addColumn('type', function (MerchantItem $mp) {
-                return $mp->catalogItem ? $mp->catalogItem->type : __('N/A');
-            })
             ->addColumn('status', function (MerchantItem $mp) {
                 $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
                 $s = $mp->status == 1 ? 'selected' : '';
@@ -112,11 +109,9 @@ class CatalogItemController extends OperatorBaseController
                 $catalogItem = $mp->catalogItem;
                 if (!$catalogItem) return '';
 
-                $catalog = $catalogItem->type == 'Physical'
-                    ? ($catalogItem->is_catalog == 1
-                        ? '<a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
-                        : '<a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 1]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>')
-                    : '';
+                $catalog = $catalogItem->is_catalog == 1
+                    ? '<a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
+                    : '<a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 1]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>';
 
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
@@ -240,11 +235,6 @@ class CatalogItemController extends OperatorBaseController
         return view('operator.catalog-item.index');
     }
 
-    public function types()
-    {
-        return view('operator.catalog-item.types');
-    }
-
     public function deactive()
     {
         return view('operator.catalog-item.deactive');
@@ -256,20 +246,12 @@ class CatalogItemController extends OperatorBaseController
     }
 
     //*** GET Request
-    public function create($slug)
+    public function create()
     {
         // TODO: Removed - old category system
         $cats = collect(); // Category::all();
         $sign = $this->curr;
-        if ($slug == 'physical') {
-            return view('operator.catalog-item.create.physical', compact('cats', 'sign'));
-        } else if ($slug == 'digital') {
-            return view('operator.catalog-item.create.digital', compact('cats', 'sign'));
-        } else if (($slug == 'license')) {
-            return view('operator.catalog-item.create.license', compact('cats', 'sign'));
-        } else if (($slug == 'listing')) {
-            return view('operator.catalog-item.create.listing', compact('cats', 'sign'));
-        }
+        return view('operator.catalog-item.create.physical', compact('cats', 'sign'));
     }
 
     //*** GET Request
@@ -342,66 +324,50 @@ class CatalogItemController extends OperatorBaseController
     //*** POST Request
     public function store(Request $request)
     {
-        //--- Validation Section
-        $rules = [
-            'photo' => 'required',
-            'file' => 'mimes:zip',
-        ];
+        //--- Logic Section
+        $data = new CatalogItem;
+        $sign = $this->curr;
+        $input = $request->all();
+
+        // Handle photo - optional, use default if not provided
+        if (!empty($request->photo)) {
+            $image = $request->photo;
+            list($type, $image) = explode(';', $image);
+            list(, $image) = explode(',', $image);
+            $image = base64_decode($image);
+            $image_name = time() . Str::random(8) . '.png';
+            $path = 'assets/images/catalogItems/' . $image_name;
+            file_put_contents($path, $image);
+            $input['photo'] = $image_name;
+        } else {
+            $input['photo'] = null; // Will use default noimage.png in views
+        }
+
+        // Validate part_number
+        $rules = ['part_number' => 'min:8|unique:catalog_items'];
 
         $validator = Validator::make($request->all(), $rules);
 
         if ($validator->fails()) {
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
-        //--- Validation Section Ends
 
-        //--- Logic Section
-        $data = new CatalogItem;
-        $sign = $this->curr;
-        $input = $request->all();
-
-        // Check File
-        if ($file = $request->file('file')) {
-            $name = time() . \Str::random(8) . str_replace(' ', '', $file->getClientOriginalExtension());
-            $file->move('assets/files', $name);
-            $input['file'] = $name;
-        }
-
-        $image = $request->photo;
-        list($type, $image) = explode(';', $image);
-        list(, $image) = explode(',', $image);
-        $image = base64_decode($image);
-        $image_name = time() . Str::random(8) . '.png';
-        $path = 'assets/images/catalogItems/' . $image_name;
-        file_put_contents($path, $image);
-        $input['photo'] = $image_name;
-
-        if ($request->type == "Physical" || $request->type == "Listing") {
-            $rules = ['part_number' => 'min:8|unique:catalog_items'];
-
-            $validator = Validator::make($request->all(), $rules);
-
-            if ($validator->fails()) {
-                return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-            }
-
-            // Handle size data (belongs to catalog_items table)
-            if (empty($request->size_check)) {
+        // Handle size data (belongs to catalog_items table)
+        if (empty($request->size_check)) {
+            $input['size'] = null;
+            $input['size_qty'] = null;
+        } else {
+            if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
                 $input['size'] = null;
                 $input['size_qty'] = null;
             } else {
-                if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
-                    $input['size'] = null;
-                    $input['size_qty'] = null;
-                } else {
-                    $input['size'] = implode(',', $request->size);
-                    $input['size_qty'] = implode(',', $request->size_qty);
-                }
+                $input['size'] = implode(',', $request->size);
+                $input['size_qty'] = implode(',', $request->size_qty);
             }
+        }
 
-            if ($request->mesasure_check == "") {
-                $input['measure'] = null;
-            }
+        if ($request->mesasure_check == "") {
+            $input['measure'] = null;
         }
 
         if (empty($request->seo_check)) {
@@ -410,16 +376,6 @@ class CatalogItemController extends OperatorBaseController
         } else {
             if (!empty($request->meta_tag)) {
                 $input['meta_tag'] = implode(',', $request->meta_tag);
-            }
-        }
-
-        if ($request->type == "License") {
-            if (in_array(null, $request->license) || in_array(null, $request->license_qty)) {
-                $input['license'] = null;
-                $input['license_qty'] = null;
-            } else {
-                $input['license'] = implode(',,', $request->license);
-                $input['license_qty'] = implode(',', $request->license_qty);
             }
         }
 
@@ -480,11 +436,7 @@ class CatalogItemController extends OperatorBaseController
 
         // Set Slug
         $catalogItem = CatalogItem::find($data->id);
-        if ($catalogItem->type != 'Physical' || $request->type != "Listing") {
-            $catalogItem->slug = Str::slug($data->name, '-') . '-' . strtolower(Str::random(3) . $data->id . Str::random(3));
-        } else {
-            $catalogItem->slug = Str::slug($data->name, '-') . '-' . strtolower($data->part_number);
-        }
+        $catalogItem->slug = Str::slug($data->name, '-') . '-' . strtolower($data->part_number);
 
         // Set Thumbnail
         $img = Image::make('assets/images/catalogItems/' . $catalogItem->photo)->resize(285, 285);
@@ -567,7 +519,6 @@ class CatalogItemController extends OperatorBaseController
                     $data = new CatalogItem;
                     $sign = Currency::where('is_default', '=', 1)->first();
 
-                    $input['type'] = 'Physical';
                     $input['part_number'] = $line[0];
 
                     // Old category system removed - now using TreeCategories
@@ -679,24 +630,20 @@ class CatalogItemController extends OperatorBaseController
         // Get quality brands for dropdown
         $qualityBrands = \App\Models\QualityBrand::all();
 
-        if ($data->type == 'Digital') {
-            return view('operator.catalog-item.edit.digital', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
-        } elseif ($data->type == 'License') {
-            return view('operator.catalog-item.edit.license', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
-        } elseif ($data->type == 'Listing') {
-            return view('operator.catalog-item.edit.listing', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
-        } else {
-            return view('operator.catalog-item.edit.physical', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
-        }
+        return view('operator.catalog-item.edit.physical', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
     }
 
     //*** POST Request
     public function update(Request $request, $merchantItemId)
     {
+        //-- Logic Section
+        $merchantItem = MerchantItem::findOrFail($merchantItemId);
+        $data = CatalogItem::findOrFail($merchantItem->catalog_item_id);
+        $sign = $this->curr;
+        $input = $request->all();
+
         //--- Validation Section
-        $rules = [
-            'file' => 'mimes:zip',
-        ];
+        $rules = ['part_number' => 'min:8|unique:catalog_items,part_number,' . $data->id];
 
         $validator = Validator::make($request->all(), $rules);
 
@@ -705,78 +652,47 @@ class CatalogItemController extends OperatorBaseController
         }
         //--- Validation Section Ends
 
-        //-- Logic Section
-        $merchantItem = MerchantItem::findOrFail($merchantItemId);
-        $data = CatalogItem::findOrFail($merchantItem->catalog_item_id);
-        $sign = $this->curr;
-        $input = $request->all();
-
-        //Check Types
-        if ($request->type_check == 1) {
-            $input['link'] = null;
-        } else {
-            if ($data->file != null) {
-                if (file_exists(public_path() . '/assets/files/' . $data->file)) {
-                    unlink(public_path() . '/assets/files/' . $data->file);
-                }
-            }
-            $input['file'] = null;
+        // Check Condition
+        if ($request->item_condition_check == "") {
+            $input['item_condition'] = 0;
         }
 
-        // Check Physical
-        if ($data->type == "Physical" || $data->type == "Listing") {
-            //--- Validation Section
-            $rules = ['part_number' => 'min:8|unique:catalog_items,part_number,' . $data->id];
+        // Check Preorderd
+        if ($request->preordered_check == "") {
+            $input['preordered'] = 0;
+        }
 
-            $validator = Validator::make($request->all(), $rules);
+        // Check Minimum Qty
+        if ($request->minimum_qty_check == "") {
+            $input['minimum_qty'] = null;
+        }
 
-            if ($validator->fails()) {
-                return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-            }
-            //--- Validation Section Ends
-
-            // Check Condition
-            if ($request->item_condition_check == "") {
-                $input['item_condition'] = 0;
-            }
-
-            // Check Preorderd
-            if ($request->preordered_check == "") {
-                $input['preordered'] = 0;
-            }
-
-            // Check Minimum Qty
-            if ($request->minimum_qty_check == "") {
-                $input['minimum_qty'] = null;
-            }
-
-            // Check Size
-            if (empty($request->stock_check)) {
+        // Check Size
+        if (empty($request->stock_check)) {
+            $input['stock_check'] = 0;
+            $input['size'] = null;
+            $input['size_qty'] = null;
+        } else {
+            if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
                 $input['stock_check'] = 0;
                 $input['size'] = null;
                 $input['size_qty'] = null;
             } else {
-                if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
-                    $input['stock_check'] = 0;
-                    $input['size'] = null;
-                    $input['size_qty'] = null;
-                } else {
-                    $input['stock_check'] = 1;
-                    $input['size'] = implode(',', $request->size);
-                    $input['size_qty'] = implode(',', $request->size_qty);
-                }
+                $input['stock_check'] = 1;
+                $input['size'] = implode(',', $request->size);
+                $input['size_qty'] = implode(',', $request->size_qty);
             }
+        }
 
-            if (empty($request->color_check)) {
-                $input['color_all'] = null;
-            } else {
-                $input['color_all'] = implode(',', $request->color_all);
-            }
+        if (empty($request->color_check)) {
+            $input['color_all'] = null;
+        } else {
+            $input['color_all'] = implode(',', $request->color_all);
+        }
 
-            // Check Measure
-            if ($request->measure_check == "") {
-                $input['measure'] = null;
-            }
+        // Check Measure
+        if ($request->measure_check == "") {
+            $input['measure'] = null;
         }
 
         // Check Seo
@@ -786,25 +702,6 @@ class CatalogItemController extends OperatorBaseController
         } else {
             if (!empty($request->meta_tag)) {
                 $input['meta_tag'] = implode(',', $request->meta_tag);
-            }
-        }
-
-        // Check License
-        if ($data->type == "License") {
-
-            if (!in_array(null, $request->license) && !in_array(null, $request->license_qty)) {
-                $input['license'] = implode(',,', $request->license);
-                $input['license_qty'] = implode(',', $request->license_qty);
-            } else {
-                if (in_array(null, $request->license) || in_array(null, $request->license_qty)) {
-                    $input['license'] = null;
-                    $input['license_qty'] = null;
-                } else {
-                    $license = explode(',,', $data->license);
-                    $license_qty = explode(',', $data->license_qty);
-                    $input['license'] = implode(',,', $license);
-                    $input['license_qty'] = implode(',', $license_qty);
-                }
             }
         }
 
@@ -981,11 +878,6 @@ class CatalogItemController extends OperatorBaseController
             unlink(public_path() . '/assets/images/thumbnails/' . $data->thumbnail);
         }
 
-        if ($data->file != null) {
-            if (file_exists(public_path() . '/assets/files/' . $data->file)) {
-                unlink(public_path() . '/assets/files/' . $data->file);
-            }
-        }
         $data->delete();
         //--- Redirect Section
         $msg = __('CatalogItem Deleted Successfully.');

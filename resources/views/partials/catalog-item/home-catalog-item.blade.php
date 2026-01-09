@@ -36,16 +36,11 @@
                <a class="cart-out-of-stock button add_to_cart_button"  href="#" title="{{ __('Out Of Stock') }}" ><i class="flaticon-cancel flat-mini mx-auto"></i></a>
             </div>
             @else
-            @if ($cartItem->type != "Listing")
-          
                <div class="cart-button">
-                 
+
                   <a href="javascript:;"
                   data-bs-toggle="modal"  {{$cartItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}  data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}" data-cross-href="{{route('front.show.cross.catalogItem',$cartItem->id)}}" class="add-cart button add_to_cart_button {{$cartItem->cross_items ? 'view_cross_product' : ''}}"  data-bs-placement="right"  title="Add To Cart" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
-               
-       
-            @endif
             @endif
             @endif
             @if(Auth::check())
@@ -58,11 +53,9 @@
             </div>
             @endif
 
-            @if ($cartItem->type != "Listing")
                <div class="compare-button">
                   <a class="compare button add_to_cart_button" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" href="javascrit:;" data-bs-toggle="tooltip" data-bs-placement="right" title="{{__('Compare')}}" data-bs-original-title="{{__('Compare')}}" aria-label="{{__('Compare')}}">{{ __('Compare') }}</a>
                </div>
-            @endif
          </div>
        </div>
        <div class="catalogItem-info">
@@ -81,7 +74,7 @@
              </div>
           </div>
           {{-- Shipping Quote Button --}}
-          @if(($cartItem->type ?? 'Physical') == 'Physical' && $homeProdMerchant)
+          @if($homeProdMerchant)
               <x-shipping-quote-button
                   :merchant-user-id="$homeProdMerchant->user_id"
                   :catalog-item-name="$cartItem->showName()"

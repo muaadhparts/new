@@ -448,7 +448,6 @@
                                             </div>
                                         </div>
 
-                                        <input type="hidden" name="type" value="Physical">
 
                                     </div>
                                 </div>

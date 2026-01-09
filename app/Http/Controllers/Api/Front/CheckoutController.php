@@ -81,9 +81,6 @@ class CheckoutController extends Controller
                 $curr = Currency::where('is_default', '=', 1)->first();
             }
 
-            // تحقق رخص (لا تُنقص هنا)
-            PurchaseHelper::license_check($cart);
-
             // حفظ نسخة خفيفة من السلة داخل الطلب
             $t_cart = new Cart($cart);
             $cart_payload = [
@@ -96,41 +93,6 @@ class CheckoutController extends Controller
             // أفلييت
             $temp_affilate_users = PurchaseHelper::item_affilate_check($cart);
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
-
-            // إنقاص رخص MP (بدل catalogItems) وتعيين الترخيص بالسلة
-            foreach ($cart->items as $key => $cartItem) {
-                if (!empty($cartItem['item']['license']) && !empty($cartItem['item']['license_qty'])) {
-                    $merchantId = (int)($cartItem['item']['user_id'] ?? 0);
-                    if (!$merchantId) {
-                        continue;
-                    }
-
-                    $mp = MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
-                        ->where('user_id', $merchantId)
-                        ->first();
-
-                    if ($mp && !empty($mp->license_qty)) {
-                        $arr = is_array($mp->license_qty) ? $mp->license_qty : explode(',', (string)$mp->license_qty);
-                        foreach ($arr as $ttl => $dtl) {
-                            $dtl = (int)$dtl;
-                            if ($dtl > 0) {
-                                $dtl--;
-                                $arr[$ttl] = $dtl;
-                                $mp->license_qty = implode(',', $arr);
-                                $mp->save();
-
-                                // حدّث قيمة الترخيص في عنصر السلة كما كان سابقًا
-                                $licenses = is_array($mp->license) ? $mp->license : explode(',,', (string)$mp->license);
-                                $license  = $licenses[$ttl] ?? null;
-                                if ($license) {
-                                    $cart->MobileupdateLicense($key, $license);
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
 
             $t_cart = new Cart($cart);
             $purchaseCalculate = PriceHelper::getPurchaseTotal($input, $t_cart);
@@ -212,7 +174,7 @@ class CheckoutController extends Controller
                     $sub = $sub - $t_sub;
                 }
                 if ($sub > 0) {
-                    $user = PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']);
+                    $user = PurchaseHelper::affilate_check(Session::get('affilate'), $sub, 0);
                     $input['affilate_user']   = Session::get('affilate');
                     $input['affilate_charge'] = $sub;
                 }

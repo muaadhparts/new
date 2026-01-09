@@ -159,10 +159,7 @@ class PurchaseCreateController extends OperatorBaseController
 
         $size_price = ($size_price / $curr->value);
         $color_price = ($color_price / $curr->value);
-        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'measure', 'attributes']);
-        if ($catalogItem->type != 'Physical') {
-            $qty = 1;
-        }
+        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'measure', 'attributes']);
 
         // Get the first active merchant item for this catalog item
         $merchantItem = $catalogItem->merchantItems()
@@ -193,22 +190,6 @@ class PurchaseCreateController extends OperatorBaseController
             }
         }
 
-        if (!empty($catalogItem->license_qty)) {
-            $lcheck = 1;
-            foreach ($catalogItem->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) {
-                    $lcheck = 0;
-                } else {
-                    $lcheck = 1;
-                    break;
-                }
-            }
-            if ($lcheck == 0) {
-                return 0;
-            }
-        }
-
-
         if (empty($size)) {
             if (!empty($catalogItem->size)) {
                 $size = trim($catalogItem->size[0]);
@@ -238,9 +219,6 @@ class PurchaseCreateController extends OperatorBaseController
 
         $cart->addnum($catalogItem, $catalogItem->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
 
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-            return view('operator.purchase.create.product_add_table');
-        }
         if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
 
             return view('operator.purchase.create.product_add_table');
@@ -326,7 +304,6 @@ class PurchaseCreateController extends OperatorBaseController
 
         $oldCart = Session::get('admin_cart');
         $cart = new Cart($oldCart);
-        PurchaseHelper::license_check($cart); // For License Checking
         $t_oldCart = Session::get('admin_cart');
         $t_cart = new Cart($t_oldCart);
         $new_cart = [];

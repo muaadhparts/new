@@ -45,7 +45,7 @@
         $ratingsCount = $card->catalogReviewsCount;
         $minQty = $card->minQty;
         $preordered = $card->preordered ?? false;
-        $catalogItemType = $card->type;
+        $catalogItemType = 'Physical'; // All catalog items are Physical in this EPC
         $affiliateCatalogItemType = $card->itemType ?? null;
         $affiliateLink = $card->affiliateLink ?? null;
         $favoriteUrl = $card->favoriteUrl ?? null;
@@ -113,7 +113,7 @@
         $ratingsCount = $actualCatalogItem->catalog_reviews_count ?? 0;
         $minQty = max(1, (int)($merchantItem->minimum_qty ?? 1));
         $preordered = $merchantItem->preordered ?? false;
-        $catalogItemType = $actualCatalogItem->type ?? 'Physical';
+        $catalogItemType = 'Physical'; // All catalog items are Physical
         // item_type and affiliate_link are now on merchant_items, not catalog_items
         $affiliateCatalogItemType = $merchantItem->item_type ?? null;
         $affiliateLink = $merchantItem->affiliate_link ?? null;
@@ -221,12 +221,12 @@
             </div>
 
             {{-- Shipping Quote Button --}}
-            @if($catalogItemType === 'Physical' && $merchantUserId)
+            @if($merchantUserId)
                 <x-shipping-quote-button :merchant-user-id="$merchantUserId" :catalog-item-name="$catalogItemName" class="mt-2" />
             @endif
 
             {{-- Add to Cart --}}
-            @if($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
+            @if($affiliateCatalogItemType !== 'affiliate')
                 @if($inStock && $hasMerchant && $merchantItemId)
                     <button type="button" class="catalogItem-card__cart-btn m-cart-add"
                         data-catalog-item-id="{{ $catalogItemId }}"
@@ -299,17 +299,15 @@
                      loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
             </a>
 
-            @if ($catalogItemType !== 'Listing')
-                <div class="catalogItem-card__actions">
-                    <button type="button" class="catalogItem-card__action compare_product"
-                        data-href="{{ $compareUrl }}" title="@lang('Compare')">
-                        <i class="fas fa-exchange-alt"></i>
-                    </button>
-                    <a href="{{ $catalogItemUrl }}" class="catalogItem-card__action" title="@lang('View')">
-                        <i class="far fa-eye"></i>
-                    </a>
-                </div>
-            @endif
+            <div class="catalogItem-card__actions">
+                <button type="button" class="catalogItem-card__action compare_product"
+                    data-href="{{ $compareUrl }}" title="@lang('Compare')">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+                <a href="{{ $catalogItemUrl }}" class="catalogItem-card__action" title="@lang('View')">
+                    <i class="far fa-eye"></i>
+                </a>
+            </div>
         </div>
 
         {{-- Content Section --}}
@@ -365,12 +363,12 @@
             </div>
 
             {{-- Shipping Quote Button --}}
-            @if($catalogItemType === 'Physical' && $merchantUserId)
+            @if($merchantUserId)
                 <x-shipping-quote-button :merchant-user-id="$merchantUserId" :catalog-item-name="$catalogItemName" class="mt-2" />
             @endif
 
             {{-- Add to Cart --}}
-            @if ($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
+            @if ($affiliateCatalogItemType !== 'affiliate')
                 @if ($inStock && $hasMerchant && $merchantItemId)
                     <button type="button" class="catalogItem-card__cart-btn m-cart-add"
                         data-merchant-item-id="{{ $merchantItemId }}"

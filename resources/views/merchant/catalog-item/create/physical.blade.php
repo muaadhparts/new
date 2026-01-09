@@ -45,7 +45,6 @@
         <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="myForm" action="{{ route('merchant-catalog-item-store') }}"
             method="POST" enctype="multipart/form-data">
             @csrf
-            <input type="hidden" name="type" value="Physical">
             <!-- inputes of physical catalogItem start  -->
             <div class="col-12 col-lg-8 physical-catalogItem-inputes-wrapper show">
                 <div class="form-group">

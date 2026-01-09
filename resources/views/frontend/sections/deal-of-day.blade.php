@@ -58,7 +58,6 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
     $inStock = $stockQty > 0 || $mp->preordered;
     $minQty = max(1, (int)($mp->minimum_qty ?? 1));
     $preordered = $mp->preordered ?? false;
-    $catalogItemType = $actualProduct->type ?? 'Physical';
     $affiliateItemType = $mp->item_type ?? null;
     $affiliateLink = $mp->affiliate_link ?? null;
 @endphp
@@ -139,7 +138,7 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                 @endif
 
                 {{-- Add to Cart Button --}}
-                @if ($catalogItemType !== 'Listing' && $affiliateItemType !== 'affiliate')
+                @if ($affiliateItemType !== 'affiliate')
                     @if ($inStock)
                         <button type="button" class="muaadh-btn muaadh-btn-primary m-cart-add"
                             data-merchant-item-id="{{ $mp->id }}"
@@ -169,13 +168,11 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
                 @endif
 
                 {{-- Shipping Quote Button --}}
-                @if($catalogItemType == 'Physical')
-                    <x-shipping-quote-button
-                        :merchant-user-id="$mp->user_id"
-                        :catalog-item-name="$actualProduct->showName()"
-                        class="mt-2"
-                    />
-                @endif
+                <x-shipping-quote-button
+                    :merchant-user-id="$mp->user_id"
+                    :catalog-item-name="$actualProduct->showName()"
+                    class="mt-2"
+                />
             </div>
         </div>
     </div>

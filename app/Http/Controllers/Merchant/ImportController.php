@@ -168,21 +168,13 @@ class ImportController extends MerchantBaseController
             $sign = $this->curr;
 
             // تعريف العنصر (هوية فقط — بدون سعر/مخزون/مقاسات)
-            // Note: category_id, subcategory_id, childcategory_id removed - using TreeCategories
             $catalogItemInput = $request->only([
-                'type', 'part_number',
+                'part_number',
                 'attributes', 'name', 'details', 'weight', 'policy', 'tags',
                 'features', 'colors', 'is_meta', 'meta_tag', 'meta_description',
-                'youtube', 'link', 'platform', 'region', 'measure', 'is_catalog',
+                'youtube', 'measure', 'is_catalog',
                 'catalog_id', 'cross_items'
             ]);
-
-            // ملف رقمي (إن وجد)
-            if ($file = $request->file('file')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $file->move('assets/files', $name);
-                $catalogItemInput['file'] = $name;
-            }
 
             // الصورة الرئيسية (base64 أو رابط)
             if ($request->photo != "") {
@@ -208,8 +200,7 @@ class ImportController extends MerchantBaseController
             $merchantInput = $request->only([
                 'stock', 'is_discount', 'discount_date', 'whole_sell_qty',
                 'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
-                'popular', 'status', 'is_popular', 'licence_type', 'license_qty',
-                'license', 'ship', 'item_condition', 'affiliate_link'
+                'popular', 'status', 'is_popular', 'ship', 'item_condition', 'affiliate_link'
             ]);
             $merchantInput['item_type'] = 'affiliate';
 
@@ -316,12 +307,11 @@ class ImportController extends MerchantBaseController
         }
 
         // حقول تعريف العنصر (هوية فقط)
-        // Note: category_id, subcategory_id, childcategory_id removed - using TreeCategories
         $catalogItemInput = $request->only([
-            'type', 'part_number',
-            'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'details',
+            'part_number',
+            'attributes', 'name', 'slug', 'photo', 'thumbnail', 'details',
             'weight', 'policy', 'tags', 'features', 'colors', 'is_meta', 'meta_tag',
-            'meta_description', 'youtube', 'type', 'link', 'platform', 'region',
+            'meta_description', 'youtube',
             'measure', 'is_catalog', 'catalog_id', 'cross_items'
         ]);
 
@@ -336,8 +326,7 @@ class ImportController extends MerchantBaseController
         $merchantInput = $request->only([
             'stock', 'is_discount', 'discount_date', 'whole_sell_qty',
             'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
-            'popular', 'status', 'is_popular', 'licence_type', 'license_qty',
-            'license', 'ship', 'item_condition', 'affiliate_link'
+            'popular', 'status', 'is_popular', 'ship', 'item_condition', 'affiliate_link'
         ]);
 
         // المقاسات على MP

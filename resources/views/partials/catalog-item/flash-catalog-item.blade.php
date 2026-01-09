@@ -71,7 +71,6 @@
              </span>
           </li>
           @else
-          @if ($cartItem->type != 'Listing')
           <li>
              <span  class="cart-btn add-to-cart add-to-cart-btn" data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}"  title="{{ __('Add To Cart') }}">
              <i class="icofont-cart"></i>
@@ -82,7 +81,6 @@
              <i class="fas fa-eye"></i>
              </span>
           </li>
-          @endif
           @endif
           @endif
           {{-- ADD TO CART SECTION ENDS --}}

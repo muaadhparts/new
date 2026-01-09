@@ -50,7 +50,6 @@
                         {{-- ============================================== --}}
                         {{-- STEP 1: SELECT LOCATION FROM MAP --}}
                         {{-- ============================================== --}}
-                        @if($digital != 1)
                         <div class="mb-40" id="location-selection-section">
                             <h4 class="form-title">
                                 <i class="fas fa-map-marker-alt me-2"></i>
@@ -70,7 +69,6 @@
                                 <span id="location-text"></span>
                             </div>
                         </div>
-                        @endif
                         {{-- END: Location Selection Section --}}
 
                         {{-- ============================================== --}}
@@ -252,7 +250,6 @@
                                 'step' => 1,
                                 'catalogItemsTotal' => $catalogItemsTotal ?? $totalPrice,
                                 'totalPrice' => $totalPrice, // Backward compatibility
-                                'digital' => $digital,
                                 'curr' => $curr,
                                 'gs' => $gs
                             ])
@@ -322,7 +319,6 @@
                 {{-- City ID for step2 courier check --}}
                 <input type="hidden" name="customer_city_id" id="customer_city_id" value="">
 
-                <input type="hidden" name="dp" value="{{ $digital }}">
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
                 <input type="hidden" name="totalQty" value="{{ $totalQty }}">
@@ -998,8 +994,7 @@
     // =====================================================
 
     $('form.address-wrapper').on('submit', function(e) {
-        const isDigital = {{ $digital }};
-        if (!isDigital && (!$('#latitude').val() || !$('#longitude').val())) {
+        if (!$('#latitude').val() || !$('#longitude').val()) {
             e.preventDefault();
             if (typeof toastr !== 'undefined') {
                 toastr.error('@lang("Please select your location from the map")');

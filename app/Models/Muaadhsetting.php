@@ -183,7 +183,7 @@ class Muaadhsetting extends Model
         'min_price', 'max_price', 'item_page', 'post_count', 'favorite_page',
         'decimal_separator', 'thousand_separator', 'version',
         'is_reward', 'reward_point', 'reward_dolar',
-        'physical', 'digital', 'license', 'affilite',
+        'physical', 'affilite',
         'header_color', 'capcha_secret_key', 'capcha_site_key',
         'brand_title', 'brand_text',
         'deal_title', 'deal_details', 'deal_time', 'deal_background',

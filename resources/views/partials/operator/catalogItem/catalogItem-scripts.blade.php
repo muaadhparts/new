@@ -338,49 +338,6 @@
 
 
 
-        // License Section
-
-        $("#license-btn").on('click', function() {
-
-            $("#license-section").append('' +
-                '<div class="license-area">' +
-                '<span class="remove license-remove"><i class="fas fa-times"></i></span>' +
-                '<div  class="row">' +
-                '<div class="col-lg-6">' +
-                '<input type="text" name="license[]" class="form-control" placeholder="{{ __('License Key') }}" required="">' +
-                '</div>' +
-                '<div class="col-lg-6">' +
-                '<input type="number" name="license_qty[]" min="1" class="form-control" placeholder="{{ __('License Quantity') }}" value="1">' +
-                '</div>' +
-                '</div>' +
-                '</div>' +
-                '');
-        });
-
-        $(document).on('click', '.license-remove', function() {
-
-            $(this.parentNode).remove();
-            if (isEmpty($('#license-section'))) {
-
-                $("#license-section").append('' +
-                    '<div class="license-area">' +
-                    '<span class="remove license-remove"><i class="fas fa-times"></i></span>' +
-                    '<div  class="row">' +
-                    '<div class="col-lg-6">' +
-                    '<input type="text" name="license[]" class="form-control" placeholder="{{ __('License Key') }}" required="">' +
-                    '</div>' +
-                    '<div class="col-lg-6">' +
-                    '<input type="number" name="license_qty[]" min="1" class="form-control" placeholder="{{ __('License Quantity') }}" value="1">' +
-                    '</div>' +
-                    '</div>' +
-                    '</div>' +
-                    '');
-            }
-
-        });
-
-        // License Section Ends
-
         $("#size-check").change(function() {
             if (this.checked) {
                 $("#size-display").show();

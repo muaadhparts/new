@@ -34,7 +34,6 @@
                  class="flaticon-cancel flat-mini mx-auto"></i></a>
                </div>
             @else
-               @if ($catalogItem->type != "Listing")
                <div class="cart-button">
                <a href="javascript:;" data-bs-toggle="modal"
                data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}" {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}} data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
@@ -42,9 +41,6 @@
                data-bs-toggle="tooltip" data-bs-placement="right" title=""
                data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
-
-
-            @endif
             @endif
             @endif
                @if(Auth::check())
@@ -62,14 +58,12 @@
                </div>
             @endif
 
-               @if ($catalogItem->type != "Listing")
                <div class="compare-button">
                 <a class="compare button button add_to_cart_button"
                  data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascrit:;"
                  data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Compare') }}"
                  data-bs-original-title="Compare" aria-label="Compare">{{ __('Compare') }}</a>
                </div>
-            @endif
                </div>
             </div>
             <div class="catalogItem-info">
@@ -131,7 +125,6 @@
                  class="flaticon-cancel flat-mini mx-auto"></i></a>
                </div>
             @else
-               @if ($catalogItem->type != "Listing")
                <div class="cart-button">
                <a href="javascript:;" data-bs-toggle="modal"
                data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}" {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}} data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
@@ -139,8 +132,6 @@
                data-bs-toggle="tooltip" data-bs-placement="right" title=""
                data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
-
-            @endif
             @endif
             @endif
                @if(Auth::check())
@@ -157,14 +148,12 @@
                  data-bs-original-title="Add to Favorites" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                </div>
             @endif
-               @if ($catalogItem->type != "Listing")
                <div class="compare-button">
                 <a class="compare button button add_to_cart_button"
                  data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascrit:;"
                  data-bs-toggle="tooltip" data-bs-placement="right" title="" data-bs-original-title="Compare"
                  aria-label="Compare">{{ __('Compare') }}</a>
                </div>
-            @endif
                </div>
 
 
@@ -230,7 +219,6 @@
                class="flaticon-cancel flat-mini mx-auto"></i></a>
             </div>
          @else
-         @if ($catalogItem->type != 'Listing')
           <div class="cart-button">
             <a href="javascript:;" data-bs-toggle="modal"
             data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}" {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}} data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
@@ -238,8 +226,6 @@
             data-bs-toggle="tooltip" data-bs-placement="right" title=""
             data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
           </div>
-
-       @endif
       @endif
          @endif
                 @if(Auth::check())
@@ -257,14 +243,12 @@
             </div>
          @endif
 
-                @if ($catalogItem->type != 'Listing')
                <div class="compare-button">
                  <a class="compare button button add_to_cart_button"
                   data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascrit:;"
                   data-bs-toggle="tooltip" data-bs-placement="right" title="" data-bs-original-title="Compare"
                   aria-label="Compare">{{ __('Compare') }}</a>
                </div>
-            @endif
                </div>
             </div>
             <div class="catalogItem-info">

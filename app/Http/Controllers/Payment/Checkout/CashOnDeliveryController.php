@@ -108,7 +108,6 @@ class CashOnDeliveryController extends CheckoutBaseControlller
         // merchant_id comes from route, so we ALWAYS filter
         $cart = $this->filterCartForMerchant($originalCart, $merchantId);
 
-        PurchaseHelper::license_check($cart); // For License Checking
         $t_cart = $cart;
         $new_cart = [];
         $new_cart['totalQty'] = $t_cart->totalQty;
@@ -253,7 +252,7 @@ class CashOnDeliveryController extends CheckoutBaseControlller
                 $sub = $sub - $t_sub;
             }
             if ($sub > 0) {
-                PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                PurchaseHelper::affilate_check(Session::get('affilate'), $sub, 0); // For Affiliate Checking
                 $input['affilate_user'] = Session::get('affilate');
                 $input['affilate_charge'] = $sub;
             }

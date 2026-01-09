@@ -50,34 +50,6 @@ class PurchaseHelper
         }
     }
 
-    public static function license_check($cart)
-    {
-
-        foreach ($cart->items as $key => $cartItem) {
-            if (!empty($cartItem['item']['license']) && !empty($cartItem['item']['license_qty'])) {
-                foreach ($cartItem['item']['license_qty'] as $ttl => $dtl) {
-                    if ($dtl != 0) {
-                        $dtl--;
-                        $catalogItem = CatalogItem::find($cartItem['item']['id']);
-                        $temp = $catalogItem->license_qty;
-                        $temp[$ttl] = $dtl;
-                        $final = implode(',', $temp);
-                        $catalogItem->license_qty = $final;
-                        $catalogItem->update();
-                        $temp =  $catalogItem->license;
-                        $license = $temp[$ttl];
-                        $oldCart = Session::has('cart') ? Session::get('cart') : null;
-                        $cart = new Cart($oldCart);
-                        $cart->updateLicense($cartItem['item']['id'], $license);
-
-                        Session::put('cart', $cart);
-                        break;
-                    }
-                }
-            }
-        }
-    }
-
     public static function item_affilate_check($cart)
     {
         $affilate_users = null;
@@ -118,22 +90,11 @@ class PurchaseHelper
     }
 
 
-    public static function affilate_check($id, $sub, $dp)
+    public static function affilate_check($id, $sub, $dp = 0)
     {
         try {
             $user = User::find($id);
-            if ($dp == 1) {
-                $referral_commission = new ReferralCommission();
-                $referral_commission->refer_id = $user->id;
-                $referral_commission->bonus = $sub;
-                $referral_commission->type = 'Purchase';
-                if (Auth::user()) {
-                    $referral_commission->refer_id = Auth::user()->id;
-                }
-                $referral_commission->save();
-                $user->affilate_income += $sub;
-                $user->update();
-            }
+            // Physical-only system - referral commission handled elsewhere
             return $user;
         } catch (\Exception $e) {
         }

@@ -222,35 +222,28 @@ class ImportController extends OperatorBaseController
             $input['photo'] = $request->photolink;
         }
 
-        // Check Physical meta (identity only — لا نكتب price/stock/size في catalogItems)
-        if($request->type == "Physical")
-        {
-            //--- Validation Section
-            $rules = ['part_number' => 'min:8|unique:catalogItems'];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-            }
-            //--- Validation Section Ends
+        // Physical item validation (Physical-only system)
+        //--- Validation Section
+        $rules = ['part_number' => 'min:8|unique:catalogItems'];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+        }
+        //--- Validation Section Ends
 
-            // Identity flags (لن تُكتب أسعار/مخزون على catalogItems)
-            if ($request->item_condition_check == ""){ $input['item_condition'] = 0; }
-            if ($request->preordered_check == ""){ $input['preordered'] = 0; }
-            if ($request->shipping_time_check == ""){ $input['ship'] = null; }
+        // Identity flags
+        if ($request->item_condition_check == ""){ $input['item_condition'] = 0; }
+        if ($request->preordered_check == ""){ $input['preordered'] = 0; }
+        if ($request->shipping_time_check == ""){ $input['ship'] = null; }
 
-            // لا تكتب هذه في catalogItems
-            unset($input['stock_check'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
-            // Colors belong to merchant_items, not catalogItems
-            // This will be handled separately in merchant item creation
+        // These belong to merchant_items, not catalogItems
+        unset($input['stock_check'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
 
-            // قياسات عامة للهوية (إن أردت إبقاءها في catalogItems: size_all)
-            if(empty($request->size_check)) {
-                $input['size_all'] = null;
-            } else {
-                $input['size_all'] = implode(',', (array)$request->size_all);
-            }
-
-            // القياسات/الخصومات بالجملة ستذهب إلى MerchantItem لاحقًا
+        // Size options for identity
+        if(empty($request->size_check)) {
+            $input['size_all'] = null;
+        } else {
+            $input['size_all'] = implode(',', (array)$request->size_all);
         }
 
         // Check Seo
@@ -263,19 +256,7 @@ class ImportController extends OperatorBaseController
             }
         }
 
-        // License (هوية فقط)
-        if($request->type == "License")
-        {
-            if(in_array(null, (array)$request->license) || in_array(null, (array)$request->license_qty)) {
-                $input['license'] = null;
-                $input['license_qty'] = null;
-            } else {
-                $input['license'] = implode(',,', $request->license);
-                $input['license_qty'] = implode(',', $request->license_qty);
-            }
-        }
-
-        // Features / Colors (هوية)
+        // Features (Physical-only system)
         if(in_array(null, (array)$request->features)) {
             $input['features'] = null;
         } else {
@@ -292,14 +273,9 @@ class ImportController extends OperatorBaseController
         // Save catalog item (identity only)
         $data->fill($input)->save();
 
-        // Set slug
+        // Set slug using part number (Physical-only system)
         $catalogItem = CatalogItem::find($data->id);
-        if($catalogItem->type != 'Physical'){
-            $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower(Str::random(3).$data->id.Str::random(3));
-        }
-        else {
-            $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower($data->part_number);
-        }
+        $catalogItem->slug = Str::slug($data->name,'-').'-'.strtolower($data->part_number);
 
         // Thumbnail
         $fimageData = public_path().'/assets/images/catalogItems/'.$catalogItem->photo;
@@ -450,46 +426,39 @@ class ImportController extends OperatorBaseController
             $input['photo'] = $request->photolink;
         }
 
-        // Physical adjustments (هوية فقط)
-        if($data->type == "Physical")
-        {
-            //--- Validation Section
-            $rules = ['part_number' => 'min:8|unique:catalogItems,part_number,'.$id];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-            }
-            //--- Validation Section Ends
+        // Physical item validation (Physical-only system)
+        //--- Validation Section
+        $rules = ['part_number' => 'min:8|unique:catalogItems,part_number,'.$id];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+        }
+        //--- Validation Section Ends
 
-            if ($request->item_condition_check == ""){ $input['item_condition'] = 0; }
-            if ($request->preordered_check == ""){ $input['preordered'] = 0; }
-            if ($request->shipping_time_check == ""){ $input['ship'] = null; }
+        if ($request->item_condition_check == ""){ $input['item_condition'] = 0; }
+        if ($request->preordered_check == ""){ $input['preordered'] = 0; }
+        if ($request->shipping_time_check == ""){ $input['ship'] = null; }
 
-            // لا تكتب مقاسات/مخزون/أسعار على catalogItems
-            if(empty($request->stock_check)) {
-                $input['stock_check'] = 0;
-                $input['size'] = null;
-                $input['size_qty'] = null;
-                $input['size_price'] = null;
-                $input['color'] = null;
-            } else {
-                // لن نخزن على catalogItems — ستذهب إلى MP
-                unset($input['size'], $input['size_qty'], $input['size_price'], $input['color']);
-                $input['stock_check'] = 1; // لأغراض العرض فقط إن كان لازال مستخدمًا في الواجهات
-            }
+        // These belong to merchant_items, not catalogItems
+        if(empty($request->stock_check)) {
+            $input['stock_check'] = 0;
+            $input['size'] = null;
+            $input['size_qty'] = null;
+            $input['size_price'] = null;
+            $input['color'] = null;
+        } else {
+            unset($input['size'], $input['size_qty'], $input['size_price'], $input['color']);
+            $input['stock_check'] = 1;
+        }
 
-            // Colors belong to merchant_items, not catalogItems
-            // This will be handled separately in merchant item update
+        if(empty($request->size_check)) {
+            $input['size_all'] = null;
+        } else {
+            $input['size_all'] = implode(',', (array)$request->size_all);
+        }
 
-            if(empty($request->size_check)) {
-                $input['size_all'] = null;
-            } else {
-                $input['size_all'] = implode(',', (array)$request->size_all);
-            }
-
-            if ($request->measure_check == "") {
-                $input['measure'] = null;
-            }
+        if ($request->measure_check == "") {
+            $input['measure'] = null;
         }
 
         // Check Seo
@@ -502,26 +471,7 @@ class ImportController extends OperatorBaseController
             }
         }
 
-        // License (identity only)
-        if($data->type == "License")
-        {
-            if(!in_array(null, (array)$request->license) && !in_array(null, (array)$request->license_qty)) {
-                $input['license'] = implode(',,', $request->license);
-                $input['license_qty'] = implode(',', $request->license_qty);
-            } else {
-                if(in_array(null, (array)$request->license) || in_array(null, (array)$request->license_qty)) {
-                    $input['license'] = null;
-                    $input['license_qty'] = null;
-                } else {
-                    $license     = explode(',,', (string)$catalogItem->license);
-                    $license_qty = explode(',',  (string)$catalogItem->license_qty);
-                    $input['license'] = implode(',,', $license);
-                    $input['license_qty'] = implode(',', $license_qty);
-                }
-            }
-        }
-
-        // Features (identity) - colors moved to merchant_items
+        // Features (Physical-only system)
         if(!in_array(null, (array)$request->features)) {
             $input['features'] = implode(',', str_replace(',',' ', $request->features));
         } else {

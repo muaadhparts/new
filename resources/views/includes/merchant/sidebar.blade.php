@@ -66,11 +66,11 @@
         </li>
 
         <li
-            class="has-sub-menu {{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/catalogItems/listing/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') || request()->is('merchant/stock/*') ? 'active' : '' }}">
+            class="has-sub-menu {{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') || request()->is('merchant/stock/*') ? 'active' : '' }}">
 
 
             <a href="#merchant-collapse-catalogItem"
-                class="{{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/catalogItems/listing/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') || request()->is('merchant/stock/*') ? '' : 'collapsed' }}"
+                class="{{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') || request()->is('merchant/stock/*') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapse-catalogItem">
 
 
@@ -85,12 +85,12 @@
                 <span class="label">@lang('CatalogItems')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/catalogItems/listing/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') || request()->is('merchant/stock/*') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/edit/*') || request()->is('merchant/catalogItems/catalog/*') || request()->is('merchant/stock/*') ? 'show' : '' }}"
                 id="merchant-collapse-catalogItem">
 
 
-                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems/types') || request()->is('merchant/catalogItems/physical/create') || request()->is('merchant/catalogItems/digital/create') || request()->is('merchant/catalogItems/license/create') || request()->is('merchant/listing/create') ? 'active' : '' }}"
-                        href="{{ route('merchant-catalog-item-types') }}">@lang('Add New CatalogItem')</a>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalog-items/physical/create') ? 'active' : '' }}"
+                        href="{{ route('merchant-catalog-item-create', 'physical') }}">@lang('Add New CatalogItem')</a>
                 </li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/edit/*') ? 'active' : '' }}"
                         href="{{ route('merchant-catalog-item-index') }}">@lang('All CatalogItem')</a></li>

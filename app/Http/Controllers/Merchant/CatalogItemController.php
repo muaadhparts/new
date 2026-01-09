@@ -41,11 +41,6 @@ class CatalogItemController extends MerchantBaseController
         return view('merchant.catalog-item.index', compact('datas'));
     }
 
-    public function types()
-    {
-        return view('merchant.catalog-item.types');
-    }
-
     //*** GET Request - NEW SIMPLIFIED ADD CATALOG ITEM PAGE
     public function add()
     {
@@ -122,7 +117,6 @@ class CatalogItemController extends MerchantBaseController
                 'id' => $catalogItem->id,
                 'name' => $catalogItem->name,
                 'part_number' => $catalogItem->part_number,
-                'type' => $catalogItem->type,
                 'brand' => $catalogItem->brand ? $catalogItem->brand->name : null,
                 'photo' => $photoUrl,
             ]
@@ -144,7 +138,7 @@ class CatalogItemController extends MerchantBaseController
         return view('merchant.catalog-item.catalogs', compact('datas', 'user'));
     }
 
-    //*** GET Request - Show create form based on catalog item type
+    //*** GET Request - Show create form for physical catalog item
     public function create($slug)
     {
         $user = $this->user;
@@ -160,19 +154,13 @@ class CatalogItemController extends MerchantBaseController
         $cats = collect(); // Category::all();
         $sign = $this->curr;
 
-        switch ($slug) {
-            case 'physical':
-                return view('merchant.catalog-item.create.physical', compact('cats', 'sign'));
-            case 'digital':
-                return view('merchant.catalog-item.create.digital', compact('cats', 'sign'));
-            case 'license':
-                return view('merchant.catalog-item.create.license', compact('cats', 'sign'));
-            case 'listing':
-                return view('merchant.catalog-item.create.listing', compact('cats', 'sign'));
-            default:
-                Session::flash('unsuccess', __('Invalid catalogItem type.'));
-                return redirect()->route('merchant-catalog-item-types');
+        // Physical-only system - all items are physical
+        if ($slug === 'physical') {
+            return view('merchant.catalog-item.create.physical', compact('cats', 'sign'));
         }
+
+        Session::flash('unsuccess', __('Invalid catalog item type.'));
+        return redirect()->route('merchant-catalog-item-types');
     }
 
     //*** GET Request - Create merchant offer for existing catalog item
@@ -388,17 +376,6 @@ class CatalogItemController extends MerchantBaseController
                         $merchantData['details'] = $line[13];
                     }
 
-                    if ($catalogItem->type === 'License') {
-                        if (!empty($line[14])) {
-                            $merchantData['licence_type'] = $line[14];
-                        }
-                        if (!empty($line[15])) {
-                            $merchantData['license'] = $line[15];
-                        }
-                        if (!empty($line[16])) {
-                            $merchantData['license_qty'] = $line[16];
-                        }
-                    }
 
                     try {
                         // 5. Create or update merchant item
@@ -701,15 +678,7 @@ class CatalogItemController extends MerchantBaseController
 
         $sign = $this->curr;
 
-        if ($data->type == 'Digital') {
-            return view('merchant.catalog-item.edit.catalog.digital', compact('cats', 'data', 'merchantItem', 'sign'));
-        } elseif ($data->type == 'License') {
-            return view('merchant.catalog-item.edit.catalog.license', compact('cats', 'data', 'merchantItem', 'sign'));
-        } elseif ($data->type == 'Listing') {
-            return view('merchant.catalog-item.edit.listing', compact('cats', 'data', 'merchantItem', 'sign'));
-        } else {
-            return view('merchant.catalog-item.edit.catalog.physical', compact('cats', 'data', 'merchantItem', 'sign'));
-        }
+        return view('merchant.catalog-item.edit.catalog.physical', compact('cats', 'data', 'merchantItem', 'sign'));
     }
 
     //*** POST Request
@@ -733,32 +702,20 @@ class CatalogItemController extends MerchantBaseController
         $sign  = $this->curr;
         $input = $request->all();
 
-        if ($request->type_check == 1) {
-            $input['link'] = null;
-        } else {
-            if ($data->file != null) {
-                if (file_exists(public_path() . '/assets/files/' . $data->file)) {
-                    @unlink(public_path() . '/assets/files/' . $data->file);
-                }
-            }
-            $input['file'] = null;
+        // Physical-only system - validate part_number
+        $rules = ['part_number' => 'min:8|unique:catalog_items,part_number,' . $id];
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
-        if ($data->type == "Physical") {
-            $rules = ['part_number' => 'min:8|unique:catalog_items,part_number,' . $id];
-            $validator = Validator::make($request->all(), $rules);
-            if ($validator->fails()) {
-                return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-            }
+        unset($input['item_condition'], $input['preordered'], $input['minimum_qty'], $input['ship']);
+        unset($input['stock_check']);
+        unset($input['color_all']);
+        unset($input['whole_sell_qty'], $input['whole_sell_discount']);
 
-            unset($input['item_condition'], $input['preordered'], $input['minimum_qty'], $input['ship']);
-            unset($input['stock_check']);
-            unset($input['color_all']);
-            unset($input['whole_sell_qty'], $input['whole_sell_discount']);
-
-            if ($request->measure_check == "") {
-                $input['measure'] = null;
-            }
+        if ($request->measure_check == "") {
+            $input['measure'] = null;
         }
 
         if (empty($request->seo_check)) {
@@ -768,23 +725,6 @@ class CatalogItemController extends MerchantBaseController
             if (!empty($request->meta_tag)) {
                 $input['meta_tag'] = $request->meta_tag;
                 $input['is_meta']  = 1;
-            }
-        }
-
-        if ($data->type == "License") {
-            if (!in_array(null, (array)$request->license) && !in_array(null, (array)$request->license_qty)) {
-                $input['license']     = implode(',,', $request->license);
-                $input['license_qty'] = implode(',',  $request->license_qty);
-            } else {
-                if (in_array(null, (array)$request->license) || in_array(null, (array)$request->license_qty)) {
-                    $input['license'] = null;
-                    $input['license_qty'] = null;
-                } else {
-                    $license     = explode(',,', (string)$data->license);
-                    $license_qty = explode(',',  (string)$data->license_qty);
-                    $input['license']     = implode(',,', $license);
-                    $input['license_qty'] = implode(',',  $license_qty);
-                }
             }
         }
 

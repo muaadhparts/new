@@ -438,17 +438,15 @@
                                         @endphp
                                         @if ($stockEmpty)
                                             <span class="btn-cart disabled">@lang('Out Of Stock')</span>
-                                        @else
-                                            @if ($catalogItem['item']->type != 'Listing' && $mp)
-                                                {{-- UNIFIED: Use m-cart-add with merchant_item_id --}}
-                                                <button type="button"
-                                                    class="m-cart-add btn-cart"
-                                                    data-merchant-item-id="{{ $mp->id }}"
-                                                    data-merchant-user-id="{{ $mp->user_id }}"
-                                                    data-min-qty="{{ max(1, (int)($mp->minimum_qty ?? 1)) }}">
-                                                    <i class="fas fa-shopping-cart"></i> @lang('Add To Cart')
-                                                </button>
-                                            @endif
+                                        @elseif ($mp)
+                                            {{-- UNIFIED: Use m-cart-add with merchant_item_id --}}
+                                            <button type="button"
+                                                class="m-cart-add btn-cart"
+                                                data-merchant-item-id="{{ $mp->id }}"
+                                                data-merchant-user-id="{{ $mp->user_id }}"
+                                                data-min-qty="{{ max(1, (int)($mp->minimum_qty ?? 1)) }}">
+                                                <i class="fas fa-shopping-cart"></i> @lang('Add To Cart')
+                                            </button>
                                         @endif
                                     @endif
                                 </td>
@@ -460,7 +458,7 @@
                             <td><h6 class="td-title">@lang('Shipping')</h6></td>
                             @foreach ($processedCatalogItems as $mpId => $catalogItem)
                                 <td>
-                                    @if ($catalogItem['item']->type == 'Physical' && $catalogItem['merchant_item'])
+                                    @if ($catalogItem['merchant_item'])
                                         <x-shipping-quote-button
                                             :merchant-user-id="$catalogItem['merchant_item']->user_id"
                                             :catalog-item-name="getLocalizedCatalogItemName($catalogItem['item'])"

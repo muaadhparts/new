@@ -206,37 +206,33 @@
 
                                 {{-- Quantity --}}
                                 <div class="m-cart__item-qty">
-                                    @if (data_get($catalogItem, 'item.type') == 'Physical')
-                                        <div class="m-cart__qty-control" data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
-                                            <button type="button" class="m-cart__qty-btn quantity-down"
-                                                data-min-qty="{{ $minQty }}">
-                                                <i class="fas fa-minus"></i>
-                                            </button>
-                                            <input type="text" id="qty{{ $domKey }}"
-                                                   value="{{ $qty }}"
-                                                   class="m-cart__qty-input" readonly>
-                                            <button type="button" class="m-cart__qty-btn quantity-up"
-                                                data-stock="{{ $stock }}"
-                                                data-preordered="{{ $preordered }}">
-                                                <i class="fas fa-plus"></i>
-                                            </button>
+                                    <div class="m-cart__qty-control" data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
+                                        <button type="button" class="m-cart__qty-btn quantity-down"
+                                            data-min-qty="{{ $minQty }}">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <input type="text" id="qty{{ $domKey }}"
+                                               value="{{ $qty }}"
+                                               class="m-cart__qty-input" readonly>
+                                        <button type="button" class="m-cart__qty-btn quantity-up"
+                                            data-stock="{{ $stock }}"
+                                            data-preordered="{{ $preordered }}">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
 
-                                            {{-- Inline limit message --}}
-                                            <div class="m-cart__qty-hint"></div>
+                                        {{-- Inline limit message --}}
+                                        <div class="m-cart__qty-hint"></div>
 
-                                            {{-- Hidden inputs for JS --}}
-                                            <input type="hidden" class="prodid" value="{{ data_get($catalogItem, 'item.id') }}">
-                                            <input type="hidden" class="itemid" value="{{ $rowKey }}">
-                                            <input type="hidden" class="domkey" value="{{ $domKey }}">
-                                            <input type="hidden" class="size_qty" value="{{ $catalogItem['size_qty'] ?? '' }}">
-                                            <input type="hidden" class="size_price" value="{{ $catalogItem['size_price'] ?? 0 }}">
-                                            <input type="hidden" class="minimum_qty" value="{{ $minQty }}">
-                                            <input type="hidden" class="stock_val" value="{{ $stock }}">
-                                            <input type="hidden" class="preordered_val" value="{{ $preordered }}">
-                                        </div>
-                                    @else
-                                        <span class="m-cart__qty-static">1</span>
-                                    @endif
+                                        {{-- Hidden inputs for JS --}}
+                                        <input type="hidden" class="prodid" value="{{ data_get($catalogItem, 'item.id') }}">
+                                        <input type="hidden" class="itemid" value="{{ $rowKey }}">
+                                        <input type="hidden" class="domkey" value="{{ $domKey }}">
+                                        <input type="hidden" class="size_qty" value="{{ $catalogItem['size_qty'] ?? '' }}">
+                                        <input type="hidden" class="size_price" value="{{ $catalogItem['size_price'] ?? 0 }}">
+                                        <input type="hidden" class="minimum_qty" value="{{ $minQty }}">
+                                        <input type="hidden" class="stock_val" value="{{ $stock }}">
+                                        <input type="hidden" class="preordered_val" value="{{ $preordered }}">
+                                    </div>
                                 </div>
 
                                 {{-- Subtotal --}}

@@ -50,16 +50,10 @@ class PurchaseController extends UserBaseController
         return view('user.purchase.details',compact('user','purchase','cart'));
     }
 
-    public function purchasedownload($slug,$id)
+    // Digital downloads removed - Physical-only system
+    public function purchasedownload($slug, $id)
     {
-        $user = $this->user;
-        $purchase = Purchase::where('purchase_number','=',$slug)->first();
-        $catalogItem = CatalogItem::findOrFail($id);
-        if(!isset($purchase) || $catalogItem->type == 'Physical' || $purchase->user_id != $user->id)
-        {
-            return redirect()->back();
-        }
-        return response()->download(public_path('assets/files/'.$catalogItem->file));
+        return redirect()->back();
     }
 
     public function purchaseprint($id)

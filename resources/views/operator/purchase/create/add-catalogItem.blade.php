@@ -73,11 +73,8 @@
 
           @if(!$catalogItem->emptyStock())
             <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->stock }}">
-          @elseif($catalogItem->type != 'Physical')
-            <input type="hidden" class="catalogItem-stock" value="0">
           @else
             <input type="hidden" class="catalogItem-stock" value="">
-
           @endif
 
         @endif

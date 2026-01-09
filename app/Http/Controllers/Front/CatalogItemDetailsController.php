@@ -163,8 +163,7 @@ class CatalogItemDetailsController extends FrontBaseController
             ->where('stock', '>', 0)
             ->where('item_type', $merchantItem->item_type)
             ->whereHas('catalogItem', function($q) use ($catalogItem) {
-                $q->where('type', $catalogItem->type)
-                  ->where('id', '!=', $catalogItem->id);
+                $q->where('id', '!=', $catalogItem->id);
             })
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with(['catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'), 'user', 'qualityBrand'])

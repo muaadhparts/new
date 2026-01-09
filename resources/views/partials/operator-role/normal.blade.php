@@ -79,7 +79,7 @@
     </a>
     <ul class="collapse list-unstyled" id="menu2" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-catalog-item-types') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
+            <a href="{{ route('operator-catalog-item-create', 'physical') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
         </li>
         <li>
             <a href="{{ route('operator-catalog-item-index') }}"><span>{{ __('All CatalogItems') }}</span></a>

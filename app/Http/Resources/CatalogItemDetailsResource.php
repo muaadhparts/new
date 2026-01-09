@@ -59,7 +59,6 @@ class CatalogItemDetailsResource extends JsonResource
       'title'         => $this->name,
       'slug'          => $this->slug,
       'part_number'           => $this->part_number,
-      'type'          => $this->type,
       'attributes'    => $this->attributes ? json_decode($this->attributes, true) : null,
 
       // صور

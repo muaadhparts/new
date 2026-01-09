@@ -48,7 +48,8 @@
       "Bash(herd restart:*)",
       "Bash(mkdir:*)",
       "Bash(composer require:*)",
-      "Bash(composer show:*)"
+      "Bash(composer show:*)",
+      "Bash(ls:*)"
     ]
   }
 }

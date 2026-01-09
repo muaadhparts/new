@@ -425,7 +425,7 @@
                                             </span>
                                         </td>
                                         <td>{{ $delivery->servicearea->name ?? '-' }}</td>
-                                        <td>{{ $delivery->updated_at->format('Y-m-d H:i') }}</td>
+                                        <td>{{ $delivery->updated_at?->format('Y-m-d H:i') ?? '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -542,8 +542,6 @@
 
 
                                     <td>
-                                        <input type="hidden" value="{{ $catalogItem['license'] }}">
-
                                         @php
                                         $detailsCatalogItemUrl = '#';
                                         if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
@@ -592,12 +590,6 @@
                                             <strong>{{ __('Condition') }}:</strong>
                                             <span class="badge {{ isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $itemCondition }}</span>
                                         </p>
-
-                                        @if($catalogItem['license'] != '')
-                                        <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#confirm-delete"
-                                            class="btn btn-info btn-sm catalogItem-btn license"><i
-                                                class="fa fa-eye"></i> {{ __('View License') }}</a>
-                                        @endif
 
                                         @if($catalogItem['affilate_user'] != 0)
                                         <p>
@@ -744,45 +736,6 @@
 
 
 </div>
-
-{{-- LICENSE MODAL --}}
-
-<div class="modal fade" id="confirm-delete" tabindex="-1" role="dialog" aria-labelledby="modal1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <div class="modal-header d-block text-center">
-                <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                    
-                </button>
-            </div>
-
-            <div class="modal-body">
-                <p class="text-center">{{ __('The Licenes Key is') }} : <span id="key"></span> <a href="javascript:;"
-                        id="license-edit">{{ __('Edit License') }}</a><a href="javascript:;" id="license-cancel"
-                        class="showbox">{{ __('Cancel') }}</a></p>
-                <form method="POST" action="{{route('operator-purchase-license',$purchase->id)}}" id="edit-license"
-                    style="display: none;">
-                    {{csrf_field()}}
-                    <input type="hidden" name="license_key" id="license-key" value="">
-                    <div class="form-group text-center">
-                        <input type="text" name="license" class="form-control d-inline-block" placeholder="{{ __('Enter New License Key') }}"
-                            required="">
-                        <input type="submit" name="submit" class="btn btn-primary btn-sm">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer justify-content-center">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ __('Close') }}</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-
-{{-- LICENSE MODAL ENDS --}}
 
 {{-- BILLING DETAILS EDIT MODAL --}}
 
@@ -995,31 +948,6 @@ $(document).on('click','.show_add_product',function(){
             'autoWidth'   : false,
             'responsive'  : true
     });
-
-     $(document).on('click','.license' , function(e){
-        var id = $(this).parent().find('input[type=hidden]').val();
-        var key = $(this).parent().parent().find('input[type=hidden]').val();
-        $('#key').html(id);  
-        $('#license-key').val(key);    
-    });
-
-    $(document).on('click','#license-edit' , function(e){
-        $(this).hide();
-        $('#edit-license').show();
-        $('#license-cancel').show();
-    });
-
-    $(document).on('click','#license-cancel' , function(e){
-        $(this).hide();
-        $('#edit-license').hide();
-        $('#license-edit').show();
-    });
-
-    @if(Session::has('license'))
-
-    $.notify('{{  Session::get('license')  }}','success');
-
-    @endif
 
 // ADD OPERATION
 

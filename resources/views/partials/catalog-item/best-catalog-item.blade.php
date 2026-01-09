@@ -33,7 +33,7 @@
                     </div>
                 </div>
                 {{-- Shipping Quote Button --}}
-                @if(($cartItem->type ?? 'Physical') == 'Physical' && $bestProdMerchant)
+                @if($bestProdMerchant)
                     <x-shipping-quote-button
                         :merchant-user-id="$bestProdMerchant->user_id"
                         :catalog-item-name="$cartItem->showName()"

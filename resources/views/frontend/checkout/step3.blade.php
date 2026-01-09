@@ -63,7 +63,6 @@
                             @foreach ($gateways as $gt)
                             @if ($gt->checkout == 1)
                             @if ($gt->type == 'manual')
-                            @if ($digital == 0)
                             <!-- single payment input -->
                             <div class="gs-radio-wrapper payment" data-show="{{ $gt->showForm() }}"
                                 data-form="{{ $gt->showCheckoutLink($merchant_id ?? null) }}"
@@ -82,7 +81,6 @@
                                     <span class="label-subtitle">{{ $gt->subtitle }}</span>
                                 </label>
                             </div>
-                            @endif
                             @else
                             <div class="gs-radio-wrapper payment" data-val="{{ $gt->keyword }}"
                                 data-show="{{ $gt->showForm() }}" data-form="{{ $gt->showCheckoutLink($merchant_id ?? null) }}"
@@ -184,7 +182,6 @@
                         {{-- All values are read from step1 and step2 session data --}}
                         @include('includes.checkout-price-summary', [
                             'step' => 3,
-                            'digital' => $digital,
                             'curr' => $curr,
                             'gs' => $gs,
                             'step1' => $step1,
@@ -244,7 +241,6 @@
             <input type="hidden" id="is-merchant-checkout" value="{{ ($is_merchant_checkout ?? false) ? '1' : '0' }}">
 
             {{-- ✅ Basic Purchase Information --}}
-            <input type="hidden" name="dp" value="{{ $digital }}">
             <input type="hidden" name="totalQty" value="{{ $totalQty }}">
             <input type="hidden" name="merchant_shipping_id" value="{{ $merchant_shipping_id }}">
             <input type="hidden" name="merchant_packing_id" value="{{ $merchant_packing_id }}">

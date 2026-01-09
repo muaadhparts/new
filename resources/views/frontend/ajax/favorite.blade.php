@@ -32,12 +32,10 @@
             </span>
         </td>
         <td class="catalogItem-stock-status">
-            @if($favoriteCatalogItem->type == 'Physical')
             @if($favoriteCatalogItem->emptyStock())
             <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
             @else
             <div class="stock-availability in-stock text-bold">{{ __('In Stock') }}</div>
-            @endif
             @endif
         </td>
         <td class="catalogItem-add-to-cart">

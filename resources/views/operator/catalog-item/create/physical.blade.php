@@ -5,8 +5,8 @@
         <div class="mr-breadcrumb">
             <div class="row">
                 <div class="col-lg-12">
-                    <h4 class="heading">{{ __('Physical CatalogItem') }} <a class="add-btn"
-                            href="{{ route('operator-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a>
+                    <h4 class="heading">{{ __('Add CatalogItem') }} <a class="add-btn"
+                            href="{{ route('operator-catalog-item-index') }}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a>
                     </h4>
                     <ul class="links">
                         <li>
@@ -19,10 +19,7 @@
                             <a href="{{ route('operator-catalog-item-index') }}">{{ __('All Catalog Items') }}</a>
                         </li>
                         <li>
-                            <a href="{{ route('operator-catalog-item-types') }}">{{ __('Add CatalogItem') }}</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('operator-catalog-item-create', 'physical') }}">{{ __('Physical CatalogItem') }}</a>
+                            <a href="{{ route('operator-catalog-item-create', 'physical') }}">{{ __('Add CatalogItem') }}</a>
                         </li>
                     </ul>
                 </div>
@@ -650,7 +647,6 @@
                                             </div>
                                         </div>
 
-                                        <input type="hidden" name="type" value="Physical">
 
                                     </div>
                                 </div>

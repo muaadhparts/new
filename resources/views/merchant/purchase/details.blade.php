@@ -403,14 +403,6 @@
                                         @endif
 
 
-                                        @if ($catalogItem['license'] != '')
-                                            <a href="javascript:;" data-bs-toggle="modal"
-                                                data-bs-target="#confirm-delete"
-                                                class="m-btn m-btn--info m-btn--xs" id="license">
-                                                <i class="fa fa-eye"></i> {{ __('View License') }}
-                                            </a>
-                                        @endif
-
 
 
 

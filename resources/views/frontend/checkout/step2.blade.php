@@ -127,10 +127,6 @@
 
                         @endphp
 
-                        @php
-                            $is_Digital = 1;
-                        @endphp
-
                         @foreach ($resultArray as $loop_merchant_id => $array_product)
                             @php
                                 // ✅ N+1 FIX: Use pre-loaded data from CheckoutDataService
@@ -163,11 +159,6 @@
                                 <!-- catalogItem list  -->
                                 <div class="catalogItem-list">
                                     @foreach ($array_product as $catalogItem)
-                                        @php
-                                            if ($catalogItem['dp'] == 0) {
-                                                $is_Digital = 0;
-                                            }
-                                        @endphp
                                         <div class="checkout-single-catalogItem wow-replaced" data-wow-delay=".1s">
                                             <div class="img-wrapper">
                                                 <a href="#">
@@ -296,7 +287,7 @@
                                             @endif
                                         @endif
 
-                                        @if ($is_Digital == 0 && $packaging->isNotEmpty())
+                                        @if ($packaging->isNotEmpty())
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
                                                     <b>{{ __('Packageing :') }}</b>
@@ -350,68 +341,66 @@
                                             <input type="hidden" name="customer_city_id" value="{{ $customer_city_id ?? '' }}">
                                         @endif
 
-                                        @if ($is_Digital == 0)
-                                            <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
-                                                <span class="label mr-2">
-                                                    <b>{{ __('Shipping Methods:') }}</b>
-                                                </span>
+                                        <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
+                                            <span class="label mr-2">
+                                                <b>{{ __('Shipping Methods:') }}</b>
+                                            </span>
 
-                                                {{-- Dynamic buttons for each provider --}}
-                                                @foreach($groupedShipping as $provider => $methods)
-                                                    @php
-                                                        $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
-                                                        $modalId = "merchant_{$provider}_shipping_{$merchant_id}";
-                                                    @endphp
-
-                                                    <button type="button" class="template-btn sm-btn"
-                                                            data-bs-toggle="modal"
-                                                            data-bs-target="#{{ $modalId }}">
-                                                        {{ $providerLabel }}
-                                                    </button>
-                                                @endforeach
-
-                                                {{-- Display selected shipping --}}
-                                                <p id="shipping_text{{ $merchant_id }}" class="ms-auto mb-0">
-                                                    @lang('Not Selected')
-                                                </p>
-                                            </div>
-
-                                            {{-- Include modals for each provider --}}
+                                            {{-- Dynamic buttons for each provider --}}
                                             @foreach($groupedShipping as $provider => $methods)
                                                 @php
                                                     $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
                                                     $modalId = "merchant_{$provider}_shipping_{$merchant_id}";
                                                 @endphp
 
-                                                @if($provider === 'tryoto')
-                                                    {{-- Tryoto Modal with API Component --}}
-                                                    @include('includes.frontend.tryoto_shipping_modal', [
-                                                        'modalId' => $modalId,
-                                                        'providerLabel' => $providerLabel,
-                                                        'merchant_id' => $merchant_id,
-                                                        'array_product' => $array_product,
-                                                        'curr' => $curr,
-                                                        'gs' => $gs,
-                                                    ])
-                                                @else
-                                                    {{-- Manual/Debts Modal --}}
-                                                    @include('includes.frontend.provider_shipping_modal', [
-                                                        'modalId' => $modalId,
-                                                        'provider' => $provider,
-                                                        'providerLabel' => $providerLabel,
-                                                        'methods' => $methods,
-                                                        'merchant_id' => $merchant_id,
-                                                        'array_product' => $array_product,
-                                                        'curr' => $curr,
-                                                    ])
-                                                @endif
+                                                <button type="button" class="template-btn sm-btn"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#{{ $modalId }}">
+                                                    {{ $providerLabel }}
+                                                </button>
                                             @endforeach
-                                            @if($packaging->isNotEmpty())
-                                                @include('includes.frontend.merchant_packaging', [
-                                                    'packaging' => $packaging,
+
+                                            {{-- Display selected shipping --}}
+                                            <p id="shipping_text{{ $merchant_id }}" class="ms-auto mb-0">
+                                                @lang('Not Selected')
+                                            </p>
+                                        </div>
+
+                                        {{-- Include modals for each provider --}}
+                                        @foreach($groupedShipping as $provider => $methods)
+                                            @php
+                                                $providerLabel = $providerLabels[$provider] ?? ucfirst($provider);
+                                                $modalId = "merchant_{$provider}_shipping_{$merchant_id}";
+                                            @endphp
+
+                                            @if($provider === 'tryoto')
+                                                {{-- Tryoto Modal with API Component --}}
+                                                @include('includes.frontend.tryoto_shipping_modal', [
+                                                    'modalId' => $modalId,
+                                                    'providerLabel' => $providerLabel,
                                                     'merchant_id' => $merchant_id,
+                                                    'array_product' => $array_product,
+                                                    'curr' => $curr,
+                                                    'gs' => $gs,
+                                                ])
+                                            @else
+                                                {{-- Manual/Debts Modal --}}
+                                                @include('includes.frontend.provider_shipping_modal', [
+                                                    'modalId' => $modalId,
+                                                    'provider' => $provider,
+                                                    'providerLabel' => $providerLabel,
+                                                    'methods' => $methods,
+                                                    'merchant_id' => $merchant_id,
+                                                    'array_product' => $array_product,
+                                                    'curr' => $curr,
                                                 ])
                                             @endif
+                                        @endforeach
+                                        @if($packaging->isNotEmpty())
+                                            @include('includes.frontend.merchant_packaging', [
+                                                'packaging' => $packaging,
+                                                'merchant_id' => $merchant_id,
+                                            ])
                                         @endif
                                     </div>
                                 @else
@@ -436,9 +425,6 @@
 
 
                             </div>
-                            @php
-                                $is_Digital = 1;
-                            @endphp
                         @endforeach
 
 
@@ -449,21 +435,57 @@
                             <h4 class="form-title">@lang('Summery')</h4>
 
 
-                            @if ($digital == 0)
-                                <!-- shipping methods -->
-                                @if ($gs->multiple_shipping == 0)
+                            <!-- shipping methods -->
+                            @if ($gs->multiple_shipping == 0)
+                                <div class="summary-inner-box">
+                                    <h6 class="summary-title">@lang('Shipping Method')</h6>
+                                    <div class="inputs-wrapper">
+
+                                        @foreach ($shipping_data as $data)
+                                            <div class="gs-radio-wrapper">
+                                                <input type="radio" class="shipping"
+                                                    data-price="{{ round($data->price * $curr->value, 2) }}"
+                                                    data-form="{{ $data->title }}"
+                                                    id="free-shepping{{ $data->id }}" name="shipping_id"
+                                                    value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
+                                                <label class="icon-label" for="free-shepping{{ $data->id }}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20"
+                                                        height="20" viewBox="0 0 20 20" fill="none">
+                                                        <rect x="0.5" y="0.5" width="19" height="19"
+                                                            rx="9.5" fill="var(--surface-primary, #fff)" />
+                                                        <rect x="0.5" y="0.5" width="19" height="19"
+                                                            rx="9.5" stroke="currentColor" />
+                                                        <circle cx="10" cy="10" r="4" fill="currentColor" />
+                                                    </svg>
+                                                </label>
+                                                <label for="free-shepping{{ $data->id }}">
+                                                    {{ $data->title }}
+                                                    @if ($data->price != 0)
+                                                        +
+                                                        {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
+                                                    @endif
+                                                    <small>{{ $data->subtitle }}</small>
+                                                </label>
+                                            </div>
+                                        @endforeach
+
+                                    </div>
+                                </div>
+
+                                <!-- Packaging -->
+                                @if($package_data->isNotEmpty())
                                     <div class="summary-inner-box">
-                                        <h6 class="summary-title">@lang('Shipping Method')</h6>
+                                        <h6 class="summary-title">@lang('Packaging')</h6>
                                         <div class="inputs-wrapper">
 
-                                            @foreach ($shipping_data as $data)
+                                            @foreach ($package_data as $data)
                                                 <div class="gs-radio-wrapper">
-                                                    <input type="radio" class="shipping"
+                                                    <input type="radio" class="packing"
                                                         data-price="{{ round($data->price * $curr->value, 2) }}"
                                                         data-form="{{ $data->title }}"
-                                                        id="free-shepping{{ $data->id }}" name="shipping_id"
+                                                        id="free-package{{ $data->id }}" name="packeging_id"
                                                         value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
-                                                    <label class="icon-label" for="free-shepping{{ $data->id }}">
+                                                    <label class="icon-label" for="free-package{{ $data->id }}">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="20"
                                                             height="20" viewBox="0 0 20 20" fill="none">
                                                             <rect x="0.5" y="0.5" width="19" height="19"
@@ -473,7 +495,7 @@
                                                             <circle cx="10" cy="10" r="4" fill="currentColor" />
                                                         </svg>
                                                     </label>
-                                                    <label for="free-shepping{{ $data->id }}">
+                                                    <label for="free-package{{ $data->id }}">
                                                         {{ $data->title }}
                                                         @if ($data->price != 0)
                                                             +
@@ -483,46 +505,8 @@
                                                     </label>
                                                 </div>
                                             @endforeach
-
                                         </div>
                                     </div>
-
-                                    <!-- Packaging -->
-                                    @if($package_data->isNotEmpty())
-                                        <div class="summary-inner-box">
-                                            <h6 class="summary-title">@lang('Packaging')</h6>
-                                            <div class="inputs-wrapper">
-
-                                                @foreach ($package_data as $data)
-                                                    <div class="gs-radio-wrapper">
-                                                        <input type="radio" class="packing"
-                                                            data-price="{{ round($data->price * $curr->value, 2) }}"
-                                                            data-form="{{ $data->title }}"
-                                                            id="free-package{{ $data->id }}" name="packeging_id"
-                                                            value="{{ $data->id }}" {{ $loop->first ? 'checked' : '' }}>
-                                                        <label class="icon-label" for="free-package{{ $data->id }}">
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="20"
-                                                                height="20" viewBox="0 0 20 20" fill="none">
-                                                                <rect x="0.5" y="0.5" width="19" height="19"
-                                                                    rx="9.5" fill="var(--surface-primary, #fff)" />
-                                                                <rect x="0.5" y="0.5" width="19" height="19"
-                                                                    rx="9.5" stroke="currentColor" />
-                                                                <circle cx="10" cy="10" r="4" fill="currentColor" />
-                                                            </svg>
-                                                        </label>
-                                                        <label for="free-package{{ $data->id }}">
-                                                            {{ $data->title }}
-                                                            @if ($data->price != 0)
-                                                                +
-                                                                {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
-                                                            @endif
-                                                            <small>{{ $data->subtitle }}</small>
-                                                        </label>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </div>
-                                    @endif
                                 @endif
                             @endif
 
@@ -532,7 +516,6 @@
                                 'step' => 2,
                                 'catalogItemsTotal' => $catalogItemsTotal ?? $totalPrice,
                                 'totalPrice' => $totalPrice, // Backward compatibility
-                                'digital' => $digital,
                                 'curr' => $curr,
                                 'gs' => $gs,
                                 'step1' => $step1 ?? null
@@ -582,7 +565,7 @@
                 </div>
 
 
-                @if ($gs->multiple_shipping == 0 && $digital == 0)
+                @if ($gs->multiple_shipping == 0)
                     <input type="hidden" name="shipping_id" id="multi_shipping_id"
                         value="{{ @$shipping_data[0]->id }}">
                     <input type="hidden" name="packaging_id" id="multi_packaging_id"
@@ -590,7 +573,6 @@
                 @endif
 
 
-                <input type="hidden" name="dp" value="{{ $digital }}">
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
                 <input type="hidden" name="totalQty" value="{{ $totalQty }}">

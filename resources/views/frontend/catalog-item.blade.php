@@ -68,7 +68,7 @@
                 <div class="col-lg-6 wow-replaced" data-wow-delay=".2s">
                     <form>
                         <!-- catalogItem-info-wrapper  -->
-                        <div class="catalogItem-info-wrapper  {{ $catalogItem->type != 'Physical' ? 'mb-3' : '' }}">
+                        <div class="catalogItem-info-wrapper">
                             <h3>{{ $catalogItem->localized_name }}</h3>
                             {{-- PRICE: From $merchant (MerchantItem) ONLY --}}
                             <div class="price-wrapper">
@@ -118,32 +118,24 @@
 
                         <!-- catalogItem stocks -->
 
-                        @if (
-                            $catalogItem->ship != null ||
-                                $catalogItem->part_number != null ||
-                                $catalogItem->platform != null ||
-                                $catalogItem->region != null ||
-                                $catalogItem->licence_type != null)
+                        @if ($catalogItem->ship != null || $catalogItem->part_number != null)
                             <hr>
 
                             <div class="catalogItem-stocks-wraper">
                                 <ul>
                                     <li>
                                         {{-- STOCK: From $merchant (MerchantItem) ONLY --}}
-                                        @if ($catalogItem->type == 'Physical')
-                                            <span><b>@lang('Availability :') </b></span>
-                                            @php
-                                                $merchantStock = $merchant ? (int) $merchant->stock : 0;
-                                                $merchantPreordered = $merchant ? (bool) $merchant->preordered : false;
-                                                $isOutOfStock = $merchantStock <= 0 && !$merchantPreordered;
-                                            @endphp
-                                            @if ($isOutOfStock)
-                                                <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
-                                            @else
-                                                {{ $gs->show_stock == 0 ? '' : $merchantStock }} {{ __('In Stock') }}
-                                            @endif
+                                        <span><b>@lang('Availability :') </b></span>
+                                        @php
+                                            $merchantStock = $merchant ? (int) $merchant->stock : 0;
+                                            $merchantPreordered = $merchant ? (bool) $merchant->preordered : false;
+                                            $isOutOfStock = $merchantStock <= 0 && !$merchantPreordered;
+                                        @endphp
+                                        @if ($isOutOfStock)
+                                            <div class="stock-availability out-stock">{{ __('Out Of Stock') }}</div>
+                                        @else
+                                            {{ $gs->show_stock == 0 ? '' : $merchantStock }} {{ __('In Stock') }}
                                         @endif
-
                                     </li>
 
 
@@ -158,21 +150,6 @@
                                             <span><b>@lang('CatalogItem PART_NUMBER :') </b></span>
                                             <span>{{ $catalogItem->part_number }} </span>
                                         </li>
-                                    @endif
-
-                                    @if ($catalogItem->type == 'License')
-                                        @if ($catalogItem->platform != null)
-                                            <span><b>@lang('Platform:') </b></span>
-                                            <span>{{ $catalogItem->platform }} </span>
-                                        @endif
-                                        @if ($catalogItem->region != null)
-                                            <span><b>@lang('Region:') </b></span>
-                                            <span>{{ $catalogItem->region }} </span>
-                                        @endif
-                                        @if ($catalogItem->licence_type != null)
-                                            <span><b>@lang('License Type:') </b></span>
-                                            <span>{{ $catalogItem->licence_type }} </span>
-                                        @endif
                                     @endif
                                 </ul>
                             </div>
@@ -306,32 +283,28 @@
                             $initialStock = !empty($merchantSizeQty) ? (int) ($merchantSizeQty[0] ?? $mpStock) : $mpStock;
                         @endphp
 
-                        @if ($catalogItem->type == 'Physical')
-
-                            {{-- Stock from $merchant only (size-specific or general) --}}
-                            <input type="hidden" id="stock" value="{{ $initialStock }}">
+                        {{-- Stock from $merchant only (size-specific or general) --}}
+                        <input type="hidden" id="stock" value="{{ $initialStock }}">
 
 
-                            <!-- add-qty-wrapper -->
-                            <div class="add-qty-wrapper">
-                                <span class="varition-title">@lang('Quantity :')</span>
-                                <div class="catalogItem-input-wrapper">
-                                    <button class="action-btn qtminus" type="button">-</button>
+                        <!-- add-qty-wrapper -->
+                        <div class="add-qty-wrapper">
+                            <span class="varition-title">@lang('Quantity :')</span>
+                            <div class="catalogItem-input-wrapper">
+                                <button class="action-btn qtminus" type="button">-</button>
 
-                                    {{-- minimum_qty from $merchant --}}
-                                    <input class="qty-input qttotal" type="text" readonly id="purchase-qty"
-                                        value="{{ $mpMinQty }}">
+                                {{-- minimum_qty from $merchant --}}
+                                <input class="qty-input qttotal" type="text" readonly id="purchase-qty"
+                                    value="{{ $mpMinQty }}">
 
-                                    <input class="qty-input" type="hidden" id="affilate_user"
-                                        value="{{ $mpMinQty }}">
+                                <input class="qty-input" type="hidden" id="affilate_user"
+                                    value="{{ $mpMinQty }}">
 
-                                    <input class="qty-input" type="hidden" id="product_minimum_qty"
-                                        value="{{ $mpMinQty }}">
-                                    <button class="action-btn qtplus" type="button">+</button>
-                                </div>
+                                <input class="qty-input" type="hidden" id="product_minimum_qty"
+                                    value="{{ $mpMinQty }}">
+                                <button class="action-btn qtplus" type="button">+</button>
                             </div>
-
-                        @endif
+                        </div>
 
                         {{-- Price from $merchant ONLY - NO FALLBACK --}}
                         <input type="hidden" id="product_price"
@@ -368,15 +341,13 @@
                         </div>
 
                         {{-- Shipping Quote Button --}}
-                        @if($catalogItem->type == 'Physical')
-                            <div class="mt-3">
-                                <x-shipping-quote-button
-                                    :merchant-user-id="$merchant->user_id"
-                                    :catalog-item-name="$catalogItem->localized_name"
-                                    class="m-btn--block"
-                                />
-                            </div>
-                        @endif
+                        <div class="mt-3">
+                            <x-shipping-quote-button
+                                :merchant-user-id="$merchant->user_id"
+                                :catalog-item-name="$catalogItem->localized_name"
+                                class="m-btn--block"
+                            />
+                        </div>
 
                         <!-- wish-compare-report-wrapper -->
                         <div class="wish-compare-report-wrapper">
@@ -405,19 +376,17 @@
                                 </a>
                             @endif
 
-                            @if ($catalogItem->type != 'Listing')
-                                <a data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascript:;"
-                                    class="link compare_product">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                        viewBox="0 0 24 24" fill="none">
-                                        <path
-                                            d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
-                                            stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                            stroke-linejoin="round" />
-                                    </svg>
-                                    <span class="title">@lang('Add to Compare')</span>
-                                </a>
-                            @endif
+                            <a data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascript:;"
+                                class="link compare_product">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                    viewBox="0 0 24 24" fill="none">
+                                    <path
+                                        d="M18.1777 8C23.2737 8 23.2737 16 18.1777 16C13.0827 16 11.0447 8 5.43875 8C0.85375 8 0.85375 16 5.43875 16C11.0447 16 13.0828 8 18.1788 8H18.1777Z"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" />
+                                </svg>
+                                <span class="title">@lang('Add to Compare')</span>
+                            </a>
 
                             @if ($gs->is_report == 1)
                                 @if (Auth::guard('web')->check())

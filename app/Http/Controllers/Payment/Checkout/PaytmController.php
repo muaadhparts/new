@@ -114,7 +114,6 @@ class PaytmController extends CheckoutBaseControlller
                 $oldCart = Session::get('cart');
                 $originalCart = new Cart($oldCart);
                 $cart = $this->filterCartForMerchant($originalCart, $merchantId);
-                PurchaseHelper::license_check($cart); // For License Checking
 
                 $t_cart = new Cart($oldCart);
                 $new_cart = [];
@@ -146,9 +145,6 @@ class PaytmController extends CheckoutBaseControlller
                 $input['tax_location'] = $step2['tax_location'] ?? '';
 
 
-                if ($input['dp'] == 1) {
-                    $input['status'] = 'completed';
-                }
                 if (Session::has('affilate')) {
                     $val = $request->total / $this->curr->value;
                     $val = $val / 100;
@@ -161,7 +157,7 @@ class PaytmController extends CheckoutBaseControlller
                         $sub = $sub - $t_sub;
                     }
                     if ($sub > 0) {
-                        $user = PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                        $user = PurchaseHelper::affilate_check(Session::get('affilate'), $sub, 0); // For Affiliate Checking
                         $input['affilate_user'] = Session::get('affilate');
                         $input['affilate_charge'] = $sub;
                     }

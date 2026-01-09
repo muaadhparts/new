@@ -97,8 +97,6 @@ class Cart extends Model
             'stock'               => $item->stock,
             'price'               => $item->price,
             'item'                => $item,
-            'license'             => '',
-            'dp'                  => '0',
             'keys'                => $keys,
             'values'              => $values,
             'item_price'          => $item->price,
@@ -111,15 +109,8 @@ class Cart extends Model
         // مفتاح Merchant-aware
         $key = $this->makeKey($item, (string)$size, (string)$color, (string)$values, '');
 
-        if ($item->type == 'Physical') {
-            if ($this->items && array_key_exists($key, $this->items)) {
-                $storedItem = $this->items[$key];
-            }
-        } else {
-            if ($this->items && array_key_exists($key, $this->items)) {
-                $storedItem = $this->items[$key];
-            }
-            $storedItem['dp'] = 1; // Digital
+        if ($this->items && array_key_exists($key, $this->items)) {
+            $storedItem = $this->items[$key];
         }
 
         $storedItem['qty']++;
@@ -213,8 +204,6 @@ class Cart extends Model
             'stock'        => $item->stock,
             'price'        => $item->price,
             'item'         => $item,
-            'license'      => '',
-            'dp'           => '0',
             'keys'         => $keys,
             'values'       => $values,
             'item_price'   => $item->price,
@@ -227,15 +216,8 @@ class Cart extends Model
         // مفتاح Merchant-aware
         $key = $this->makeKey($item, (string)$size, (string)$color, (string)$values, (string)$size_key);
 
-        if ($item->type == 'Physical') {
-            if ($this->items && array_key_exists($key, $this->items)) {
-                $storedItem = $this->items[$key];
-            }
-        } else {
-            if ($this->items && array_key_exists($key, $this->items)) {
-                $storedItem = $this->items[$key];
-            }
-            $storedItem['dp'] = 1;
+        if ($this->items && array_key_exists($key, $this->items)) {
+            $storedItem = $this->items[$key];
         }
 
         $storedItem['affilate_user'] = $affilate_user;
@@ -349,8 +331,6 @@ class Cart extends Model
             'stock'        => $item->stock,
             'price'        => $item->price,
             'item'         => $item,
-            'license'      => '',
-            'dp'           => '0',
             'keys'         => '',
             'values'       => '',
             'item_price'   => $item->price,
@@ -410,8 +390,6 @@ class Cart extends Model
             'stock'        => $item->stock,
             'price'        => $item->price,
             'item'         => $item,
-            'license'      => '',
-            'dp'           => '0',
             'keys'         => '',
             'values'       => '',
             'item_price'   => $item->price,
@@ -467,8 +445,6 @@ class Cart extends Model
         $this->totalQty -= $step;
     }
 
-    public function MobileupdateLicense($id, $license) { $this->items[$id]['license'] = $license; }
-    public function updateLicense($id, $license)      { $this->items[$id]['license'] = $license; }
     public function updateColor($item, $id, $color)   { $this->items[$id]['color']   = $color; }
 
     public function removeItem($id)

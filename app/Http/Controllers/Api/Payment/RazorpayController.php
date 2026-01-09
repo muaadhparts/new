@@ -151,9 +151,6 @@ class RazorpayController extends Controller
             if (isset($purchase)) {
                 $data['txnid'] = $transaction_id;
                 $data['payment_status'] = 'Completed';
-                if ($purchase->dp == 1) {
-                    $data['status'] = 'completed';
-                }
                 $purchase->update($data);
             }
             return redirect(route('front.payment.success', 1));

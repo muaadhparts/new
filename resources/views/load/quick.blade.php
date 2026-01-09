@@ -47,22 +47,20 @@
 
                   {{-- STOCK SECTION  --}}
 
-                  @if($catalogItem->type == 'Physical')
-                      @if($catalogItem->emptyStock())
-                      <li class="outStock">
-                        <p>
-                          <i class="icofont-close-circled"></i>
-                          {{ __('Out Of Stock') }}
-                        </p>
-                      </li>
-                      @else
-                      <div class="isStock">
-                          <span>
-                            <i class="far fa-check-circle"></i>
-                            {{ $gs->show_stock == 0 ? '' : $catalogItem->merchantSizeStock() }} {{ __('In Stock') }}
-                          </span>
-                      </div>
-                      @endif
+                  @if($catalogItem->emptyStock())
+                  <li class="outStock">
+                    <p>
+                      <i class="icofont-close-circled"></i>
+                      {{ __('Out Of Stock') }}
+                    </p>
+                  </li>
+                  @else
+                  <div class="isStock">
+                      <span>
+                        <i class="far fa-check-circle"></i>
+                        {{ $gs->show_stock == 0 ? '' : $catalogItem->merchantSizeStock() }} {{ __('In Stock') }}
+                      </span>
+                  </div>
                   @endif
 
                   {{-- STOCK SECTION ENDS  --}}
@@ -292,11 +290,8 @@
 
                 @if(!$catalogItem->emptyStock())
                   <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->merchantSizeStock() }}">
-                @elseif($catalogItem->type != 'Physical')
-                  <input type="hidden" class="catalogItem-stock" value="0">
                 @else
                   <input type="hidden" class="catalogItem-stock" value="">
-
                 @endif
 
               @endif
@@ -371,7 +366,7 @@
                       {{-- CATALOGITEM QUANTITY SECTION --}}
 
                       {{-- item_type is now on merchant_items --}}
-                      @if($quickMerchantItem && $quickMerchantItem->item_type != "affiliate" && $catalogItem->type == 'Physical')
+                      @if($quickMerchantItem && $quickMerchantItem->item_type != "affiliate")
 
                           <li>
                             <div class="multiple-item-price">
@@ -480,33 +475,6 @@
 
               {{-- CATALOGITEM OTHER DETAILS SECTION ENDS --}}
 
-              {{-- CATALOGITEM LICENSE SECTION --}}
-
-              @if($catalogItem->type == 'License')
-
-                @if($catalogItem->platform != null)
-                  <div class="license-id">
-                      {{ __('Platform:') }}
-                      <span>{{ $catalogItem->platform }}</span>
-                  </div>
-                @endif
-
-                @if($catalogItem->region != null)
-                  <div class="license-id">
-                      {{ __('Region:') }}
-                      <span>{{ $catalogItem->region }}</span>
-                  </div>
-                @endif
-
-                @if($catalogItem->licence_type != null)
-                <div class="license-id">
-                    {{ __('License Type:') }}
-                    <span>{{ $catalogItem->licence_type }}</span>
-                </div>
-                @endif
-
-              @endif
-
               <div class="mt-2">
                 @php
                     $detailMerchantUserId = request()->get('user', $catalogItem->user_id);
@@ -519,7 +487,6 @@
               </div>
 
 
-              {{-- CATALOGITEM LICENSE SECTION ENDS--}}
 
 
             </div>

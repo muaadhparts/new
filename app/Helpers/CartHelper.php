@@ -214,7 +214,6 @@ class CartHelper
                 'slug' => $catalogItem->slug ?? '',
                 'part_number' => $catalogItem->part_number ?? '',
                 'photo' => $catalogItem->photo ?? '',
-                'type' => $catalogItem->type ?? 'Physical',
 
                 // معلومات التاجر
                 'merchant_name' => getLocalizedShopName($mp->user),

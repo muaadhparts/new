@@ -4,15 +4,6 @@
 <div class="content-area">
     @include('alerts.form-success')
 
-    @if($activation_notify != "")
-    <div class="alert alert-danger validation">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"><span
-                aria-hidden="true">×</span></button>
-        <h3 class="text-center">{!! clean($activation_notify, array('Attr.EnableID' => true)) !!}</h3>
-        
-    </div>
-    @endif
-
     @if(Session::has('cache'))
 
     <div class="alert alert-success validation">

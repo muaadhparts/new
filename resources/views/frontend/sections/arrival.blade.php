@@ -61,8 +61,6 @@ Receives: $merchantItems (Collection of MerchantItem models)
         $minQty = max(1, (int)($merchantItem->minimum_qty ?? 1));
         $preordered = $merchantItem->preordered ?? false;
 
-        // Catalog item type
-        $catalogItemType = $actualCatalogItem->type ?? 'Physical';
         $affiliateCatalogItemType = $merchantItem->item_type ?? null;
         $affiliateLink = $merchantItem->affiliate_link ?? null;
     @endphp
@@ -132,7 +130,7 @@ Receives: $merchantItems (Collection of MerchantItem models)
                 </div>
 
                 {{-- Add to Cart --}}
-                @if ($catalogItemType !== 'Listing' && $affiliateCatalogItemType !== 'affiliate')
+                @if ($affiliateCatalogItemType !== 'affiliate')
                     @if ($inStock)
                         <button type="button" class="catalogItem-card__cart-btn m-cart-add"
                             data-merchant-item-id="{{ $merchantItemId }}"
@@ -158,13 +156,11 @@ Receives: $merchantItems (Collection of MerchantItem models)
                 @endif
 
                 {{-- Shipping Quote Button --}}
-                @if($catalogItemType == 'Physical')
-                    <x-shipping-quote-button
-                        :merchant-user-id="$merchantUserId"
-                        :catalog-item-name="$catalogItemName"
-                        class="mt-2"
-                    />
-                @endif
+                <x-shipping-quote-button
+                    :merchant-user-id="$merchantUserId"
+                    :catalog-item-name="$catalogItemName"
+                    class="mt-2"
+                />
             </div>
         </div>
     </div>

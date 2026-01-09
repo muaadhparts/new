@@ -439,7 +439,6 @@
                                         <td class="td-catalogItem-name">
 
                                             <div class="td-title td-catalogItem-namee">
-                                                <input type="hidden" value="{{ $catalogItem['license'] }}">
                                                 @php
                                                     $userPurchaseProductUrl = '#';
                                                     if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
@@ -462,35 +461,7 @@
                                                 @if(isset($catalogItem['merchant_name']))
                                                 <small class="d-block"><strong>{{ __('Merchant') }}:</strong> {{ $catalogItem['merchant_name'] }}</small>
                                                 @endif
-                                                @if ($catalogItem['item']['type'] != 'Physical')
-                                                    @if ($purchase->payment_status == 'Completed')
-                                                        @if ($catalogItem['item']['file'] != null)
-                                                            <a class="title-hover-color"
-                                                                href="{{ route('user-purchase-download', ['slug' => $purchase->purchase_number, 'id' => $catalogItem['item']['id']]) }}"
-                                                                class="btn btn-sm btn-primary">
-                                                                <i class="fa fa-download"></i>
-                                                                {{ __('Download') }}
-                                                            </a>
-                                                        @else
-                                                            <a class="title-hover-color" target="_blank"
-                                                                href="{{ $catalogItem['item']['link'] }}"
-                                                                class="btn btn-sm btn-primary">
-                                                                <i class="fa fa-download"></i>
-                                                                {{ __('Download') }}
-                                                            </a>
-                                                        @endif
-                                                        @if ($catalogItem['license'] != '')
-                                                            <a href="javascript:;" data-bs-toggle="modal"
-                                                                data-bs-target="#licence"
-                                                                class="btn btn-sm btn-info catalogItem-btn" id="license"><i
-                                                                    class="fa fa-eye"></i>
-                                                                {{ __('View License') }}</a>
-                                                        @endif
-                                                    @endif
-                                                @endif
                                             </div>
-
-                                            <span class="license-key">Licenes key: ...</span>
                                         </td>
 
                                         <td>
@@ -530,26 +501,6 @@
                             </table>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="modal fade" id="license" tabindex="-1" role="dialog" aria-labelledby="modal1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header d-block text-center">
-                    <h4 class="modal-title d-inline-block">{{ __('License Key') }}</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p class="text-center">{{ __('The Licenes Key is :') }} <span id="key"></span></p>
-                </div>
-                <div class="modal-footer justify-content-center">
-                    <button type="button" class="btn btn-danger" data-bs-dismiss="modal">{{ __('Close') }}</button>
                 </div>
             </div>
         </div>

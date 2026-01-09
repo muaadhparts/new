@@ -270,7 +270,7 @@ class FrontendController extends Controller
             if (!empty($input)) {
 
                 $type = isset($input['type']) ? $input['type'] : '';
-                $typeCheck = !empty($type) && in_array($type, ['Physical', 'Digital', 'License', 'Listing']);
+                $typeCheck = !empty($type) && $type === 'Physical';
                 $highlight = isset($input['highlight']) ? $input['highlight'] : '';
                 $highlightCheck = !empty($highlight) && in_array($highlight, ['featured', 'best', 'top', 'big', 'is_discount', 'hot', 'latest', 'trending', 'sale']);
                 $itemType = isset($input['item_type']) ? $input['item_type'] : '';

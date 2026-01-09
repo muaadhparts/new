@@ -139,18 +139,6 @@ class PurchaseController extends OperatorBaseController
         return view('operator.purchase.print', compact('purchase', 'cart'));
     }
 
-    public function license(Request $request, $id)
-    {
-        $purchase = Purchase::findOrFail($id);
-        $cart = json_decode($purchase->cart, true);
-        $cart['items'][$request->license_key]['license'] = $request->license;
-        $new_cart = json_encode($cart);
-        $purchase->cart = $new_cart;
-        $purchase->update();
-        $msg = __('Successfully Changed The License Key.');
-        return redirect()->back()->with('license', $msg);
-    }
-
     public function edit($id)
     {
         $data = Purchase::find($id);
@@ -380,7 +368,7 @@ class PurchaseController extends OperatorBaseController
         $size_price = ($size_price / $purchase->currency_value);
 
         // Get catalogItem with merchant data
-        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
+        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'measure', 'attributes']);
 
         // Get merchant-specific data from merchant_items
         $merchantId = (int) ($_GET['merchant_id'] ?? 0);
@@ -418,21 +406,6 @@ class PurchaseController extends OperatorBaseController
                 foreach ($prices as $data) {
                     $cartItem->price += ($data / $purchase->currency_value);
                 }
-            }
-        }
-
-        if (!empty($cartItem->license_qty)) {
-            $lcheck = 1;
-            foreach ($cartItem->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) {
-                    $lcheck = 0;
-                } else {
-                    $lcheck = 1;
-                    break;
-                }
-            }
-            if ($lcheck == 0) {
-                return 0;
             }
         }
 
@@ -480,9 +453,6 @@ class PurchaseController extends OperatorBaseController
         $color_price = isset($request->color_price) ? (float) $_GET['color_price'] : 0;
         $cart->addnum($cartItem, $cartItem->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
 
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-            return redirect()->back()->with('unsuccess', __('This item is already in the cart.'));
-        }
         if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
             return redirect()->back()->with('unsuccess', __('Out Of Stock.'));
         }
@@ -565,7 +535,7 @@ class PurchaseController extends OperatorBaseController
         $size_price = ($size_price / $purchase->currency_value);
 
         // Get catalogItem with merchant data
-        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'type', 'file', 'link', 'license', 'license_qty', 'measure', 'attributes']);
+        $catalogItem = CatalogItem::where('id', '=', $id)->first(['id', 'slug', 'name', 'photo', 'measure', 'attributes']);
 
         // Get merchant-specific data from merchant_items
         $merchantId = (int) ($_GET['merchant_id'] ?? 0);
@@ -606,20 +576,6 @@ class PurchaseController extends OperatorBaseController
             }
         }
 
-        if (!empty($cartItem->license_qty)) {
-            $lcheck = 1;
-            foreach ($cartItem->license_qty as $ttl => $dtl) {
-                if ($dtl < 1) {
-                    $lcheck = 0;
-                } else {
-                    $lcheck = 1;
-                    break;
-                }
-            }
-            if ($lcheck == 0) {
-                return 0;
-            }
-        }
         if (empty($size)) {
             if (!empty($cartItem->size)) {
                 $size = trim($cartItem->size[0]);
@@ -664,9 +620,6 @@ class PurchaseController extends OperatorBaseController
 
         $cart->addnum($cartItem, $cartItem->id, $qty, $size, $color, $size_qty, $size_price, $color_price, $size_key, $keys, $values, $affilate_user);
 
-        if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['dp'] == 1) {
-            return redirect()->back()->with('unsuccess', __('This item is already in the cart.'));
-        }
         if ($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)]['stock'] < 0) {
             return redirect()->back()->with('unsuccess', __('Out Of Stock.'));
         }

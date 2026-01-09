@@ -57,7 +57,6 @@ class VoguepayController extends CheckoutBaseControlller
         $originalCart = new Cart($oldCart);
         $cart = $this->filterCartForMerchant($originalCart, $merchantId);
 
-        PurchaseHelper::license_check($cart); // For License Checking
         $new_cart = [];
         $new_cart['totalQty'] = $cart->totalQty;
         $new_cart['totalPrice'] = $cart->totalPrice;
@@ -85,9 +84,6 @@ class VoguepayController extends CheckoutBaseControlller
         $input['tax'] = $step2['tax_amount'] ?? 0;
         $input['tax_location'] = $step2['tax_location'] ?? '';
 
-        if ($input['dp'] == 1) {
-            $input['status'] = 'completed';
-        }
         if (Session::has('affilate')) {
             $val = $request->total / $this->curr->value;
             $val = $val / 100;
@@ -100,7 +96,7 @@ class VoguepayController extends CheckoutBaseControlller
                 $sub = $sub - $t_sub;
             }
             if ($sub > 0) {
-                PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                PurchaseHelper::affilate_check(Session::get('affilate'), $sub, 0); // For Affiliate Checking
                 $input['affilate_user'] = Session::get('affilate');
                 $input['affilate_charge'] = $sub;
             }

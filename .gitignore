@@ -51,6 +51,9 @@ yarn-error.log
 /vendor01
 /vendora
 /storaage
-n e w v i o w . z i p 
+n e w v i o w . z i p
+
+# ===== حماية لوحة التحكم - لا ترفع أبداً =====
+/app/Http/Controllers/Operator/UnlockController.php 
  
  

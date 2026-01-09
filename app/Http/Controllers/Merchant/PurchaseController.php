@@ -38,25 +38,6 @@ class PurchaseController extends MerchantBaseController
         return view('merchant.purchase.details', compact('user', 'purchase', 'cart'));
     }
 
-    public function license(Request $request, $slug)
-    {
-        $user = $this->user;
-        $purchase = Purchase::where('purchase_number', '=', $slug)->first();
-
-        // Security: Verify merchant has items in this purchase
-        if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $user->id)->exists()) {
-            abort(403, 'Unauthorized access to purchase');
-        }
-
-        $cart = json_decode($purchase->cart, true);
-        $cart['items'][$request->license_key]['license'] = $request->license;
-        $new_cart = json_encode($cart);
-        $purchase->cart = $new_cart;
-        $purchase->update();
-        $msg = __('Successfully Changed The License Key.');
-        return redirect()->back()->with('license', $msg);
-    }
-
     public function invoice($slug)
     {
         $user = $this->user;

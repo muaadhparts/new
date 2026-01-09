@@ -190,7 +190,7 @@
             </div>
 
             {{-- Quantity Selector --}}
-            @if(($catalogItem->type ?? 'Physical') === 'Physical' && $canBuy)
+            @if($canBuy)
                 <div class="catalog-quickview-quantity">
                     <label class="catalog-quickview-qty-label">@lang('Quantity'):</label>
                     <div class="catalog-quickview-qty-control">
@@ -261,7 +261,7 @@
             </div>
 
             {{-- Shipping Quote Button --}}
-            @if(($catalogItem->type ?? 'Physical') == 'Physical' && $mp)
+            @if($mp)
                 <div class="mt-3">
                     <x-shipping-quote-button
                         :merchant-user-id="$merchantUserId"

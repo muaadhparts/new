@@ -63,7 +63,6 @@
                               <td>
                                 <img src="{{ filter_var($catalogItem['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $catalogItem['item']['photo'] : ($catalogItem['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                                 <br>
-                                 <input type="hidden" value="{{ $catalogItem['license'] }}">
                                  @php
                                     $createViewProductUrl = '#';
                                     if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {

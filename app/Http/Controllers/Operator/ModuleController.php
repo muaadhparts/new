@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Models\Module;
-use App\Models\License;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
@@ -42,12 +41,6 @@ class ModuleController extends OperatorBaseController
         $request->validate([
             'file' => 'required|mimes:zip',
         ]);
-
-        // التحقق من تفعيل النظام عبر جدول licenses
-        $license = License::getActiveLicense();
-        if (!$license) {
-            return response()->json(__('يرجى تفعيل النظام أولاً.'));
-        }
 
         if (class_exists('ZipArchive')) {
             if ($request->hasFile('file')) {

@@ -19,10 +19,10 @@ class CatalogItem extends Model
      */
     protected $fillable = [
         'brand_id', 'part_number',
-        'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'file', 'weight',
+        'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'weight',
         'length', 'width', 'height', 'status',
         'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
-        'youtube', 'type', 'platform', 'region', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
+        'youtube', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
         'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_items'
     ];
 
@@ -31,7 +31,7 @@ class CatalogItem extends Model
      */
     public $selectable = [
         'id', 'name', 'slug', 'features', 'thumbnail', 'attributes',
-        'brand_id', 'type', 'weight'
+        'brand_id', 'weight'
     ];
 
     /* =========================================================================
@@ -715,16 +715,6 @@ class CatalogItem extends Model
         return $value === null ? '' : explode(',', $value);
     }
 
-
-    public function getLicenseAttribute($value)
-    {
-        return $value === null ? '' : explode(',,', $value);
-    }
-
-    public function getLicenseQtyAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
 
     public function getWholeSellQtyAttribute($value)
     {

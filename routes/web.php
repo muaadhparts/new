@@ -166,8 +166,14 @@ Route::prefix('operator')->group(function () {
 
     //------------ OPERATOR FORGOT SECTION ENDS ------------
 
-    //------------ PROTECTED OPERATOR ROUTES (Require Authentication) ------------
-    Route::middleware(['auth:operator'])->group(function () {
+    //------------ OPERATOR UNLOCK/PROTECTION SECTION ------------
+    Route::get('/unlock', 'Operator\UnlockController@show')->name('operator.unlock');
+    Route::post('/unlock', 'Operator\UnlockController@verify')->name('operator.unlock.verify');
+    Route::get('/lock', 'Operator\UnlockController@lock')->name('operator.lock')->middleware('auth:operator');
+    //------------ OPERATOR UNLOCK SECTION ENDS ------------
+
+    //------------ PROTECTED OPERATOR ROUTES (Require Authentication + Protection) ------------
+    Route::middleware(['auth:operator', 'operator.protection'])->group(function () {
 
         //------------ OPERATOR CATALOG EVENT SECTION ------------
         Route::get('/all/event/count', 'Operator\CatalogEventController@allEventCount')->name('all-event-count');
@@ -236,7 +242,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/purchase/{id1}/status/{status}', 'Operator\PurchaseController@status')->name('operator-purchase-status');
         Route::post('/purchase/email/', 'Operator\PurchaseController@emailsub')->name('operator-purchase-emailsub');
         Route::get('/send-message', 'Operator\PurchaseController@emailsub')->name('operator-send-message'); // Alias for email modal in user/courier lists
-        Route::post('/purchase/{id}/license', 'Operator\PurchaseController@license')->name('operator-purchase-license');
         Route::post('/purchase/catalogItem-submit', 'Operator\PurchaseController@catalogItem_submit')->name('operator-purchase-catalogItem-submit');
         Route::get('/purchase/catalogItem-show/{id}', 'Operator\PurchaseController@catalogItem_show');
         Route::get('/purchase/addcart/{id}', 'Operator\PurchaseController@addcart');
@@ -340,7 +345,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/catalog-items/catalogs/', 'Operator\CatalogItemController@catalogItemsCatalog')->name('operator-catalog-item-catalog-index');
 
         // CREATE SECTION
-        Route::get('/catalog-items/types', 'Operator\CatalogItemController@types')->name('operator-catalog-item-types');
         Route::get('/catalog-items/{slug}/create', 'Operator\CatalogItemController@create')->name('operator-catalog-item-create');
         Route::post('/catalog-items/store', 'Operator\CatalogItemController@store')->name('operator-catalog-item-store');
         Route::get('/getspecs', 'Operator\CatalogItemController@getSpecs')->name('operator-catalog-item-getspecs');
@@ -1007,14 +1011,6 @@ Route::prefix('operator')->group(function () {
 
     // Note: Status and Feature routes are now in the ADMIN CATALOG ITEM SECTION above
 
-    // MERCHANT PHOTO SECTION ------------
-
-    Route::get('/merchant-photo/show', 'Operator\MerchantPhotoController@show')->name('operator-merchant-photo-show');
-    Route::post('/merchant-photo/store', 'Operator\MerchantPhotoController@store')->name('operator-merchant-photo-store');
-    Route::get('/merchant-photo/delete', 'Operator\MerchantPhotoController@destroy')->name('operator-merchant-photo-delete');
-
-    // MERCHANT PHOTO SECTION ENDS------------
-
     Route::post('/frontend-setting/update/all', 'Operator\FrontendSettingController@update')->name('operator-fs-update');
     Route::post('/frontend-setting/update/home', 'Operator\FrontendSettingController@homeupdate')->name('operator-fs-homeupdate');
     Route::post('/frontend-setting/menu-update', 'Operator\FrontendSettingController@menuupdate')->name('operator-fs-menuupdate');
@@ -1031,24 +1027,7 @@ Route::prefix('operator')->group(function () {
             return redirect()->route('operator.dashboard')->with('cache', 'System Cache Has Been Removed.');
         })->name('operator-cache-clear');
 
-        Route::get('/check/movescript', 'Operator\DashboardController@movescript')->name('operator-move-script');
-        Route::get('/generate/backup', 'Operator\DashboardController@generate_bkup')->name('operator-generate-backup');
-        Route::get('/clear/backup', 'Operator\DashboardController@clear_bkup')->name('operator-clear-backup');
 
-        // ------------ LICENSE SECTION ----------------------
-        Route::get('/license/datatables', 'Operator\LicenseController@datatables')->name('operator-license-datatables');
-        Route::get('/license', 'Operator\LicenseController@index')->name('operator-license-index');
-        Route::get('/license/create', 'Operator\LicenseController@create')->name('operator-license-create');
-        Route::post('/license/create', 'Operator\LicenseController@store')->name('operator-license-store');
-        Route::get('/license/edit/{id}', 'Operator\LicenseController@edit')->name('operator-license-edit');
-        Route::post('/license/edit/{id}', 'Operator\LicenseController@update')->name('operator-license-update');
-        Route::delete('/license/delete/{id}', 'Operator\LicenseController@destroy')->name('operator-license-delete');
-        Route::get('/license/activate/{id}', 'Operator\LicenseController@activateLicense')->name('operator-license-activate-license');
-        Route::get('/license/deactivate/{id}', 'Operator\LicenseController@deactivate')->name('operator-license-deactivate');
-        Route::get('/license/generate-key', 'Operator\LicenseController@generateKey')->name('operator-license-generate-key');
-        Route::get('/activation', 'Operator\LicenseController@activation')->name('operator-activation-form');
-        Route::post('/activation', 'Operator\LicenseController@activateWithKey')->name('operator-activate-purchase');
-        // ------------ LICENSE SECTION ENDS ----------------------
 
         // ------------ ADMIN ROLE SECTION ----------------------
 
@@ -1099,7 +1078,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/purchase/{id}/print', 'Merchant\PurchaseController@printpage')->name('merchant-purchase-print');
             Route::get('/purchase/{id1}/status/{status}', 'Merchant\PurchaseController@status')->name('merchant-purchase-status');
             Route::post('/purchase/email/', 'Merchant\PurchaseController@emailsub')->name('merchant-purchase-emailsub');
-            Route::post('/purchase/{slug}/license', 'Merchant\PurchaseController@license')->name('merchant-purchase-license');
 
             //------------ PURCHASE SECTION ENDS------------
 
@@ -1141,7 +1119,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/catalog-items/search-part_number', 'Merchant\CatalogItemController@searchSku')->name('merchant-catalog-item-search-part_number');
             Route::post('/catalog-items/store-offer', 'Merchant\CatalogItemController@storeOffer')->name('merchant-catalog-item-store-offer');
             Route::put('/catalog-items/update-offer/{merchantItemId}', 'Merchant\CatalogItemController@updateOffer')->name('merchant-catalog-item-update-offer');
-            Route::get('/catalog-items/types', 'Merchant\CatalogItemController@types')->name('merchant-catalog-item-types');
             Route::get('/catalog-items/{slug}/create', 'Merchant\CatalogItemController@create')->name('merchant-catalog-item-create');
             Route::post('/catalog-items/store', 'Merchant\CatalogItemController@store')->name('merchant-catalog-item-store');
             Route::get('/getspecs', 'Merchant\CatalogItemController@getSpecs')->name('merchant-catalog-item-getspecs');

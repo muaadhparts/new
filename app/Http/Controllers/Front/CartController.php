@@ -881,7 +881,7 @@ class CartController extends FrontBaseController
     {
         return CatalogItem::query()->select([
             'id','slug','part_number','name','photo',
-            'weight','type','file','link','measure','attributes','cross_items',
+            'weight','measure','attributes','cross_items',
         ])->find($id);
     }
 
@@ -1160,7 +1160,7 @@ class CartController extends FrontBaseController
         }
 
         // CatalogItem (identity only)
-        $catalogItem = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
+        $catalogItem = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','attributes']);
         if (!$catalogItem) { return 0; }
 
         // معلومات الصف من السلة (Merchant-aware)
@@ -1311,7 +1311,7 @@ class CartController extends FrontBaseController
             return 0;
         }
 
-        $catalogItem = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','type','attributes']);
+        $catalogItem = \App\Models\CatalogItem::find($id, ['id','slug','name','photo','attributes']);
         if (!$catalogItem) { return 0; }
 
         $row  = $oldCart->items[$itemid];

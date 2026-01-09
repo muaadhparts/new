@@ -186,8 +186,6 @@ class PaypalController extends CheckoutBaseControlller
 
         if ($response->isSuccessful()) {
 
-            PurchaseHelper::license_check($cart); // For License Checking
-
             // Serialize cart for purchase (using filtered merchant cart)
             $new_cart = [];
             $new_cart['totalQty'] = $cart->totalQty;
@@ -217,9 +215,6 @@ class PaypalController extends CheckoutBaseControlller
             $input['tax_location'] = $step2['tax_location'] ?? '';
 
             $input['txnid'] = $response->getData()['wallet_logs'][0]['related_resources'][0]['sale']['id'];
-            if ($input['dp'] == 1) {
-                $input['status'] = 'completed';
-            }
             if (Session::has('affilate')) {
                 $val = $request->total / $this->curr->value;
                 $val = $val / 100;
@@ -232,7 +227,7 @@ class PaypalController extends CheckoutBaseControlller
                     $sub = $sub - $t_sub;
                 }
                 if ($sub > 0) {
-                    PurchaseHelper::affilate_check(Session::get('affilate'), $sub, $input['dp']); // For Affiliate Checking
+                    PurchaseHelper::affilate_check(Session::get('affilate'), $sub, 0); // For Affiliate Checking
                     $input['affilate_user'] = Session::get('affilate');
                     $input['affilate_charge'] = $sub;
                 }

@@ -22,7 +22,6 @@
     use App\Services\CheckoutPriceService;
 
     $currentStep = $step ?? 1;
-    $isDigital = $digital ?? false;
     $merchantId = $merchant_id ?? null;
 
     // ========================================================================
@@ -158,7 +157,6 @@
         {{-- ================================================================
             ROW 4: Shipping OR Courier (Step 2 & 3 only, physical catalogItems)
         ================================================================= --}}
-        {{-- DEBUG: isDigital={{ $isDigital ? 'true' : 'false' }}, currentStep={{ $currentStep }} --}}
         @if($currentStep >= 2)
             @if($currentStep == 2)
                 {{-- Step 2: Dynamic Shipping via JavaScript --}}

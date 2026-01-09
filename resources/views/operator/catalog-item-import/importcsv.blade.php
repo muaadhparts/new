@@ -10,7 +10,7 @@
 							<div class="mr-breadcrumb">
 								<div class="row">
 									<div class="col-lg-12">
-											<h4 class="heading">{{ __("Import CSV CatalogItem") }} <a class="add-btn" href="{{ route('operator-catalog-item-types') }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
+											<h4 class="heading">{{ __("Import CSV CatalogItem") }} <a class="add-btn" href="{{ route('operator-catalog-item-index') }}"><i class="fas fa-arrow-left"></i> {{ __("Back") }}</a></h4>
 											<ul class="links">
 												<li>
 													<a href="{{ route('operator.dashboard') }}">{{ __("Dashboard") }} </a>
@@ -59,7 +59,6 @@
 											  </div>
 												
 	
-						                        <input type="hidden" name="type" value="Physical">
 												<div class="row">
 													<div class="col-lg-4">
 														<div class="left-area">
