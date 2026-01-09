@@ -174,11 +174,21 @@ class PurchaseHelper
     /**
      * Create MerchantPurchase records grouped by merchant
      *
-     * CRITICAL FIX (2026-01-09):
-     * - Groups cart items by merchant (not one record per item)
-     * - Stores merchant-specific cart in each MerchantPurchase
-     * - Calculates financial fields (commission, tax, shipping, net_amount)
-     * - Properly sets payment_type, shipping_type, money_received_by
+     * STRICT ARCHITECTURAL RULES (2026-01-09):
+     * =========================================
+     * 1. owner_id = 0 → Platform service (NEVER NULL)
+     * 2. owner_id > 0 → Merchant/Other service
+     * 3. Sales ALWAYS registered to merchant in MerchantPurchase
+     *
+     * COD PAYMENT RULES:
+     * ==================
+     * - COD + Courier shipping → payment_owner_id = 0 (money to platform via courier)
+     * - COD + Shipping Company → payment_owner_id = shipping_owner_id (money to shipping owner)
+     *
+     * MONEY FLOW:
+     * ===========
+     * - payment_owner_id = 0 → Platform receives money → platform_owes_merchant
+     * - payment_owner_id > 0 → Owner receives money → merchant_owes_platform
      *
      * @param mixed $cart The cart object with items
      * @param Purchase $purchase The main purchase record
@@ -213,6 +223,9 @@ class PurchaseHelper
                 $customerShippingChoice = json_decode($customerShippingChoice, true) ?? [];
             }
 
+            $paymentMethod = strtolower($purchase->method ?? '');
+            $isCOD = (strpos($paymentMethod, 'cod') !== false || strpos($paymentMethod, 'cash') !== false);
+
             // Create one MerchantPurchase per merchant
             foreach ($merchantGroups as $merchantId => $merchantData) {
                 // Calculate commission
@@ -232,65 +245,62 @@ class PurchaseHelper
 
                 // Get merchant-specific shipping choice
                 $shippingChoice = $customerShippingChoice[$merchantId] ?? $customerShippingChoice[(string)$merchantId] ?? null;
-                $shippingCost = 0;
-                $shippingType = null;
-                $courierId = null;
-                $shippingId = null;
+                $shippingData = self::processShippingChoice($shippingChoice, $merchantId);
 
-                if ($shippingChoice) {
-                    $shippingCost = (float)($shippingChoice['price'] ?? 0);
-                    $provider = $shippingChoice['provider'] ?? '';
+                // Determine payment owner based on strict rules
+                $paymentOwnerId = self::determinePaymentOwner($purchase, $checkoutData, $shippingData, $isCOD);
+                $paymentType = ($paymentOwnerId === 0) ? 'platform' : 'merchant';
 
-                    if ($provider === 'tryoto' || $provider === 'shipping_company') {
-                        $shippingType = 'platform'; // Third-party shipping
-                        $shippingId = $shippingChoice['delivery_option_id'] ?? null;
-                    } elseif ($provider === 'local_courier' || $provider === 'courier') {
-                        $shippingType = 'courier';
-                        $courierId = $shippingChoice['courier_id'] ?? null;
-                    } elseif ($provider === 'pickup') {
-                        $shippingType = 'pickup';
-                    } else {
-                        $shippingType = 'merchant'; // Merchant's own shipping
-                        $shippingId = $shippingChoice['shipping_id'] ?? null;
-                    }
+                // Determine who physically receives the money
+                $moneyReceivedBy = self::determineMoneyReceiver($isCOD, $shippingData, $paymentOwnerId);
+
+                // Calculate net amount (what merchant should receive after deductions)
+                $netAmount = $itemsTotal - $commissionAmount - $taxAmount;
+
+                // Calculate platform services fees (only if platform provides the service)
+                $platformShippingFee = ($shippingData['owner_id'] === 0) ? $shippingData['cost'] : 0;
+                $platformPackingFee = 0; // Packing owner handled separately
+
+                // Calculate financial balances based on payment owner
+                $merchantOwesPlatform = 0;
+                $platformOwesMerchant = 0;
+
+                if ($paymentOwnerId > 0) {
+                    // Payment owner receives money directly
+                    // Merchant owes platform: commission + tax + platform services
+                    $merchantOwesPlatform = $commissionAmount + $taxAmount + $platformShippingFee + $platformPackingFee;
+                } else {
+                    // Platform receives money (payment_owner_id = 0)
+                    // Platform owes merchant: net amount
+                    $platformOwesMerchant = $netAmount;
                 }
-
-                // Determine payment type (COD = platform collects, online = depends on gateway)
-                $paymentMethod = strtolower($purchase->method ?? '');
-                $paymentType = 'platform'; // Default: platform handles payment
-                $moneyReceivedBy = 'platform';
-
-                if (strpos($paymentMethod, 'cod') !== false || strpos($paymentMethod, 'cash') !== false) {
-                    // For COD, money is received by courier or merchant
-                    if ($shippingType === 'courier') {
-                        $moneyReceivedBy = 'courier';
-                    } else {
-                        $moneyReceivedBy = 'merchant';
-                    }
-                }
-
-                // Calculate net amount (what merchant receives)
-                $netAmount = $itemsTotal - $commissionAmount;
 
                 $merchantPurchase = new MerchantPurchase();
                 $merchantPurchase->purchase_id = $purchase->id;
                 $merchantPurchase->user_id = $merchantId;
-                $merchantPurchase->cart = $merchantData['items']; // Store merchant-specific cart
+                $merchantPurchase->cart = $merchantData['items'];
                 $merchantPurchase->qty = $merchantData['totalQty'];
                 $merchantPurchase->price = $itemsTotal;
                 $merchantPurchase->purchase_number = $purchase->purchase_number;
                 $merchantPurchase->status = 'pending';
                 $merchantPurchase->commission_amount = $commissionAmount;
                 $merchantPurchase->tax_amount = $taxAmount;
-                $merchantPurchase->shipping_cost = $shippingCost;
-                $merchantPurchase->packing_cost = 0; // TODO: Calculate if packing is used
-                $merchantPurchase->courier_fee = $shippingType === 'courier' ? $shippingCost : 0;
+                $merchantPurchase->shipping_cost = $shippingData['cost'];
+                $merchantPurchase->packing_cost = 0;
+                $merchantPurchase->courier_fee = ($shippingData['type'] === 'courier') ? $shippingData['cost'] : 0;
+                $merchantPurchase->platform_shipping_fee = $platformShippingFee;
+                $merchantPurchase->platform_packing_fee = $platformPackingFee;
                 $merchantPurchase->net_amount = $netAmount;
+                $merchantPurchase->merchant_owes_platform = $merchantOwesPlatform;
+                $merchantPurchase->platform_owes_merchant = $platformOwesMerchant;
                 $merchantPurchase->payment_type = $paymentType;
-                $merchantPurchase->shipping_type = $shippingType;
+                $merchantPurchase->shipping_type = $shippingData['type'];
                 $merchantPurchase->money_received_by = $moneyReceivedBy;
-                $merchantPurchase->shipping_id = $shippingId;
-                $merchantPurchase->courier_id = $courierId;
+                $merchantPurchase->payment_owner_id = $paymentOwnerId;
+                $merchantPurchase->shipping_owner_id = $shippingData['owner_id'];
+                $merchantPurchase->packing_owner_id = 0; // Default to platform
+                $merchantPurchase->shipping_id = $shippingData['shipping_id'];
+                $merchantPurchase->courier_id = $shippingData['courier_id'];
                 $merchantPurchase->save();
 
                 // Create notification for merchant
@@ -304,6 +314,185 @@ class PurchaseHelper
                 'trace' => $e->getTraceAsString()
             ]);
         }
+    }
+
+    /**
+     * Determine payment owner based on strict rules
+     *
+     * STRICT RULES:
+     * =============
+     * 1. Online payment → Check merchant credentials, else platform (0)
+     * 2. COD + Courier → Platform (0) - Courier delivers to platform
+     * 3. COD + Shipping Company → shipping_owner_id - Money to shipping owner
+     *
+     * @param Purchase $purchase
+     * @param array $checkoutData
+     * @param array $shippingData
+     * @param bool $isCOD
+     * @return int Owner user_id (0 = platform, > 0 = merchant/owner)
+     */
+    private static function determinePaymentOwner($purchase, array $checkoutData, array $shippingData, bool $isCOD): int
+    {
+        // COD has special rules based on shipping type
+        if ($isCOD) {
+            // Rule: COD + Courier → money always goes to platform (0)
+            if ($shippingData['type'] === 'courier') {
+                return 0; // Platform receives via courier
+            }
+
+            // Rule: COD + Shipping Company → money goes to shipping owner
+            // (could be platform or merchant depending on who owns the shipping service)
+            return $shippingData['owner_id'];
+        }
+
+        // Online payment - check if merchant has their own payment gateway
+        $paymentMethod = strtolower($purchase->method ?? '');
+
+        // Check if merchant-specific payment gateway was used
+        $merchantPaymentGatewayId = $checkoutData['merchant_payment_gateway_id'] ?? 0;
+        if ($merchantPaymentGatewayId > 0) {
+            $credential = \App\Models\MerchantCredential::where('id', $merchantPaymentGatewayId)
+                ->where('is_active', true)
+                ->first();
+
+            if ($credential && $credential->user_id > 0) {
+                return $credential->user_id; // Merchant owns this gateway
+            }
+        }
+
+        // Check for merchant payment info in checkout data
+        $merchantId = $checkoutData['merchant_id'] ?? 0;
+        if ($merchantId > 0) {
+            $serviceName = self::getPaymentServiceName($paymentMethod);
+            $hasMerchantCredentials = \App\Models\MerchantCredential::where('user_id', $merchantId)
+                ->where('service_name', $serviceName)
+                ->where('is_active', true)
+                ->exists();
+
+            if ($hasMerchantCredentials) {
+                return $merchantId; // Merchant receives money directly
+            }
+        }
+
+        // Default: Platform gateway (0)
+        return 0;
+    }
+
+    /**
+     * Determine who physically receives the money
+     *
+     * @param bool $isCOD
+     * @param array $shippingData
+     * @param int $paymentOwnerId
+     * @return string 'platform', 'merchant', or 'courier'
+     */
+    private static function determineMoneyReceiver(bool $isCOD, array $shippingData, int $paymentOwnerId): string
+    {
+        if ($isCOD) {
+            // COD: physical money receiver depends on delivery method
+            if ($shippingData['type'] === 'courier') {
+                return 'courier'; // Courier collects and delivers to platform
+            }
+            // Shipping company collects
+            return ($shippingData['owner_id'] === 0) ? 'platform' : 'merchant';
+        }
+
+        // Online payment: receiver is the payment owner
+        return ($paymentOwnerId === 0) ? 'platform' : 'merchant';
+    }
+
+    /**
+     * Get payment service name from payment method
+     */
+    private static function getPaymentServiceName(string $paymentMethod): string
+    {
+        $methodMap = [
+            'myfatoorah' => 'myfatoorah',
+            'stripe' => 'stripe',
+            'paypal' => 'paypal',
+            'razorpay' => 'razorpay',
+            'tap' => 'tap',
+            'moyasar' => 'moyasar',
+        ];
+
+        foreach ($methodMap as $key => $service) {
+            if (strpos($paymentMethod, $key) !== false) {
+                return $service;
+            }
+        }
+
+        return $paymentMethod;
+    }
+
+    /**
+     * Process shipping choice to determine owner and type
+     *
+     * STRICT RULE: owner_id = 0 → Platform, owner_id > 0 → Owner
+     * NOTE: NULL is NEVER returned - always 0 for platform
+     *
+     * @param array|null $shippingChoice
+     * @param int $merchantId
+     * @return array ['type', 'cost', 'owner_id', 'shipping_id', 'courier_id']
+     */
+    private static function processShippingChoice($shippingChoice, int $merchantId): array
+    {
+        $result = [
+            'type' => 'platform', // Default type
+            'cost' => 0,
+            'owner_id' => 0, // Default: platform (NEVER NULL)
+            'shipping_id' => 0,
+            'courier_id' => 0,
+        ];
+
+        if (!$shippingChoice) {
+            return $result;
+        }
+
+        $result['cost'] = (float)($shippingChoice['price'] ?? 0);
+        $provider = $shippingChoice['provider'] ?? '';
+
+        if ($provider === 'tryoto' || $provider === 'shipping_company') {
+            // Third-party shipping (Tryoto) - Platform service
+            $result['type'] = 'shipping_company';
+            $result['owner_id'] = 0; // Platform owns Tryoto integration
+            $result['shipping_id'] = (int)($shippingChoice['delivery_option_id'] ?? 0);
+        } elseif ($provider === 'local_courier' || $provider === 'courier') {
+            // Local courier
+            $result['type'] = 'courier';
+            $result['courier_id'] = (int)($shippingChoice['courier_id'] ?? 0);
+
+            // Courier owner from database
+            if ($result['courier_id'] > 0) {
+                $courier = \App\Models\Courier::find($result['courier_id']);
+                $result['owner_id'] = $courier ? (int)($courier->user_id ?? 0) : 0;
+            }
+        } elseif ($provider === 'pickup') {
+            // Pickup - Merchant handles, no shipping cost
+            $result['type'] = 'pickup';
+            $result['owner_id'] = $merchantId;
+            $result['cost'] = 0;
+        } else {
+            // Check Shipping table to determine owner
+            $shippingId = (int)($shippingChoice['shipping_id'] ?? 0);
+            if ($shippingId > 0) {
+                $shipping = \App\Models\Shipping::find($shippingId);
+                if ($shipping) {
+                    $result['owner_id'] = (int)($shipping->user_id ?? 0);
+                    $result['type'] = ($result['owner_id'] === 0) ? 'platform' : 'merchant';
+                    $result['shipping_id'] = $shippingId;
+                } else {
+                    // Shipping record not found - default to merchant
+                    $result['type'] = 'merchant';
+                    $result['owner_id'] = $merchantId;
+                }
+            } else {
+                // No shipping ID - default to merchant
+                $result['type'] = 'merchant';
+                $result['owner_id'] = $merchantId;
+            }
+        }
+
+        return $result;
     }
 
     public static function add_to_wallet_log($data, $price)

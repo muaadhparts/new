@@ -72,16 +72,44 @@
         </div>
     </div>
 
+    {{-- Payment Flow Breakdown --}}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <strong>{{ __('Platform Owes Merchants') }}</strong>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-success">{{ $currency->sign }}{{ number_format($platformSummary['payment_breakdown']['platform_owes_merchants'] ?? 0, 2) }}</h2>
+                    <small class="text-muted">{{ $platformSummary['payment_breakdown']['platform_payments'] ?? 0 }} {{ __('orders via platform payment') }}</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <strong>{{ __('Merchants Owe Platform') }}</strong>
+                    <i class="fas fa-arrow-left"></i>
+                </div>
+                <div class="card-body text-center">
+                    <h2 class="text-warning">{{ $currency->sign }}{{ number_format($platformSummary['payment_breakdown']['merchants_owe_platform'] ?? 0, 2) }}</h2>
+                    <small class="text-muted">{{ $platformSummary['payment_breakdown']['merchant_payments'] ?? 0 }} {{ __('orders via merchant payment') }}</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- Pending Settlements Summary --}}
     <div class="row mb-4">
         <div class="col-md-6">
-            <div class="card border-warning">
-                <div class="card-header bg-warning text-dark">
-                    <strong>{{ __('Pending Merchant Payouts') }}</strong>
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <strong>{{ __('Pending Merchant Settlements') }}</strong>
                 </div>
                 <div class="card-body text-center">
                     <h2>{{ $currency->sign }}{{ number_format($platformSummary['pending_settlements']['merchant_payable'], 2) }}</h2>
-                    <a href="{{ route('operator.settlement.merchants') }}" class="btn btn-outline-warning">{{ __('Manage Merchant Settlements') }}</a>
+                    <a href="{{ route('operator.settlement.merchants') }}" class="btn btn-outline-primary">{{ __('Manage Settlements') }}</a>
                 </div>
             </div>
         </div>
@@ -92,7 +120,7 @@
                 </div>
                 <div class="card-body text-center">
                     <h2>{{ $currency->sign }}{{ number_format($platformSummary['pending_settlements']['courier_payable'], 2) }}</h2>
-                    <a href="{{ route('operator.settlement.couriers') }}" class="btn btn-outline-info">{{ __('Manage Courier Settlements') }}</a>
+                    <a href="{{ route('operator.settlement.couriers') }}" class="btn btn-outline-info">{{ __('Manage Settlements') }}</a>
                 </div>
             </div>
         </div>
@@ -113,7 +141,8 @@
                                 <tr>
                                     <th>{{ __('Merchant') }}</th>
                                     <th class="text-center">{{ __('Orders') }}</th>
-                                    <th class="text-end">{{ __('Net Payable') }}</th>
+                                    <th class="text-center">{{ __('Direction') }}</th>
+                                    <th class="text-end">{{ __('Amount') }}</th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -122,17 +151,32 @@
                                 <tr>
                                     <td>{{ $merchant['merchant_name'] }}</td>
                                     <td class="text-center">{{ $merchant['orders_count'] }}</td>
-                                    <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['net_payable'], 2) }}</td>
+                                    <td class="text-center">
+                                        @if($merchant['settlement_direction'] === 'platform_to_merchant')
+                                            <span class="badge bg-success" title="{{ __('Platform owes merchant') }}">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </span>
+                                        @else
+                                            <span class="badge bg-warning" title="{{ __('Merchant owes platform') }}">
+                                                <i class="fas fa-arrow-left"></i>
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="{{ $merchant['settlement_direction'] === 'platform_to_merchant' ? 'text-success' : 'text-warning' }}">
+                                            {{ $currency->sign }}{{ number_format($merchant['net_balance'], 2) }}
+                                        </span>
+                                    </td>
                                     <td class="text-end">
                                         <a href="{{ route('operator.settlement.merchant.preview', ['merchant_id' => $merchant['merchant_id']]) }}"
-                                           class="btn btn-sm btn-primary">
-                                            {{ __('Create Settlement') }}
+                                           class="btn btn-sm {{ $merchant['settlement_direction'] === 'platform_to_merchant' ? 'btn-success' : 'btn-warning' }}">
+                                            {{ __('Settle') }}
                                         </a>
                                     </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
+                                    <td colspan="5" class="text-center text-muted py-4">
                                         {{ __('No pending merchant settlements') }}
                                     </td>
                                 </tr>

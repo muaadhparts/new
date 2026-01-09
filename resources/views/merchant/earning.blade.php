@@ -1,253 +1,317 @@
 @extends('layouts.merchant')
 
 @section('content')
-    <!-- outlet start  -->
-    <div class="gs-merchant-outlet">
-        <!-- breadcrumb start  -->
-        <div class="gs-merchant-breadcrumb has-mb">
-            <h4 class="text-capitalize">@lang('Merchant Earning')</h4>
-            <ul class="breadcrumb-menu">
-                <li>
-                    <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" class="home-icon-merchant-panel-breadcrumb">
-                            <path
-                                d="M9 21V13.6C9 13.0399 9 12.7599 9.109 12.546C9.20487 12.3578 9.35785 12.2049 9.54601 12.109C9.75993 12 10.04 12 10.6 12H13.4C13.9601 12 14.2401 12 14.454 12.109C14.6422 12.2049 14.7951 12.3578 14.891 12.546C15 12.7599 15 13.0399 15 13.6V21M2 9.5L11.04 2.72C11.3843 2.46181 11.5564 2.33271 11.7454 2.28294C11.9123 2.23902 12.0877 2.23902 12.2546 2.28295C12.4436 2.33271 12.6157 2.46181 12.96 2.72L22 9.5M4 8V17.8C4 18.9201 4 19.4802 4.21799 19.908C4.40974 20.2843 4.7157 20.5903 5.09202 20.782C5.51985 21 6.0799 21 7.2 21H16.8C17.9201 21 18.4802 21 18.908 20.782C19.2843 20.5903 19.5903 20.2843 19.782 19.908C20 19.4802 20 18.9201 20 17.8V8L13.92 3.44C13.2315 2.92361 12.8872 2.66542 12.5091 2.56589C12.1754 2.47804 11.8246 2.47804 11.4909 2.56589C11.1128 2.66542 10.7685 2.92361 10.08 3.44L4 8Z"
-                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">
-                        @lang('Dashboard')
-                    </a>
-                </li>
+<div class="gs-merchant-outlet">
+    {{-- Breadcrumb --}}
+    <div class="gs-merchant-breadcrumb has-mb">
+        <h4 class="text-capitalize">@lang('Financial Dashboard')</h4>
+        <ul class="breadcrumb-menu">
+            <li><a href="{{ route('merchant.dashboard') }}">@lang('Dashboard')</a></li>
+            <li><a href="#">@lang('Financial Dashboard')</a></li>
+        </ul>
+    </div>
 
-                <li>
-                    <a href="#" class="text-capitalize">
-                        @lang('Merchant Earning')
-                    </a>
-                </li>
-            </ul>
+    <div class="gs-merchant-erning">
+        {{-- Summary Cards --}}
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-primary text-white h-100">
+                    <div class="card-body text-center">
+                        <h6 class="mb-2">@lang('Total Sales')</h6>
+                        <h3 class="mb-0">{{ $total_sales }}</h3>
+                        <small>{{ $total_orders }} @lang('orders')</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-danger text-white h-100">
+                    <div class="card-body text-center">
+                        <h6 class="mb-2">@lang('Platform Deductions')</h6>
+                        <h3 class="mb-0">{{ $total_commission }}</h3>
+                        <small>@lang('Commission')</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card bg-success text-white h-100">
+                    <div class="card-body text-center">
+                        <h6 class="mb-2">@lang('Net Earnings')</h6>
+                        <h3 class="mb-0">{{ $total_net }}</h3>
+                        <small>@lang('After deductions')</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="card {{ $net_balance >= 0 ? 'bg-info' : 'bg-warning' }} text-white h-100">
+                    <div class="card-body text-center">
+                        <h6 class="mb-2">@lang('Current Balance')</h6>
+                        <h3 class="mb-0">{{ $currencySign }}{{ number_format(abs($net_balance), 2) }}</h3>
+                        @if($net_balance >= 0)
+                            <small>@lang('Platform owes you')</small>
+                        @else
+                            <small>@lang('You owe platform')</small>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- breadcrumb end -->
 
-
-        <div class="gs-merchant-erning">
-            <!-- Summary Cards Start -->
-            <div class="row mb-4">
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="m-card bg-white shadow-sm">
-                        <div class="m-card__body text-center">
-                            <h6 class="text-muted mb-2">@lang('Total Sales')</h6>
-                            <h4 class="mb-0" style="color: var(--theme-primary);">{{ $total_sales ?? $total }}</h4>
-                        </div>
+        {{-- Settlement Balance Cards --}}
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white d-flex justify-content-between">
+                        <strong>@lang('Platform Owes You')</strong>
+                        <span class="badge bg-light text-success">{{ $platform_payments['count'] }} @lang('orders')</span>
                     </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="m-card bg-white shadow-sm">
-                        <div class="m-card__body text-center">
-                            <h6 class="text-muted mb-2">@lang('Platform Commission')</h6>
-                            <h4 class="mb-0 text-danger">-{{ $total_commission ?? '0' }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="m-card bg-white shadow-sm">
-                        <div class="m-card__body text-center">
-                            <h6 class="text-muted mb-2">@lang('Net Earnings')</h6>
-                            <h4 class="mb-0 text-success">{{ $total_net ?? $total }}</h4>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-3 col-md-6 mb-3">
-                    <div class="m-card bg-white shadow-sm">
-                        <div class="m-card__body text-center">
-                            <h6 class="text-muted mb-2">@lang('Total Orders')</h6>
-                            <h4 class="mb-0">{{ $count_orders ?? 0 }}</h4>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Detailed Breakdown -->
-            <div class="row mb-4">
-                <div class="col-lg-6 mb-3">
-                    <div class="m-card bg-white shadow-sm">
-                        <div class="m-card__header">
-                            <h5 class="mb-0">@lang('Financial Breakdown')</h5>
-                        </div>
-                        <div class="m-card__body">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td>@lang('Total Sales')</td>
-                                    <td class="text-end"><strong>{{ $total_sales ?? '0' }}</strong></td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Platform Commission')</td>
-                                    <td class="text-end text-danger">-{{ $total_commission ?? '0' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Tax Collected')</td>
-                                    <td class="text-end">{{ $total_tax ?? '0' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Shipping Income')</td>
-                                    <td class="text-end">{{ $total_shipping ?? '0' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Packing Income')</td>
-                                    <td class="text-end">{{ $total_packing ?? '0' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Courier Fees')</td>
-                                    <td class="text-end">{{ $total_courier_fees ?? '0' }}</td>
-                                </tr>
-                                <tr class="border-top">
-                                    <td><strong>@lang('Net Earnings')</strong></td>
-                                    <td class="text-end text-success"><strong>{{ $total_net ?? '0' }}</strong></td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-6 mb-3">
-                    <div class="m-card bg-white shadow-sm">
-                        <div class="m-card__header">
-                            <h5 class="mb-0">@lang('Payment & Delivery Stats')</h5>
-                        </div>
-                        <div class="m-card__body">
-                            <table class="table table-borderless">
-                                <tr>
-                                    <td>@lang('Via Merchant Gateway')</td>
-                                    <td class="text-end">{{ $merchant_payments ?? '0' }}</td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Via Platform Gateway')</td>
-                                    <td class="text-end">{{ $platform_payments ?? '0' }}</td>
-                                </tr>
-                                <tr class="border-top">
-                                    <td>@lang('Courier Deliveries')</td>
-                                    <td class="text-end">{{ $courier_deliveries ?? 0 }}</td>
-                                </tr>
-                                <tr>
-                                    <td>@lang('Shipping Orders')</td>
-                                    <td class="text-end">{{ $shipping_deliveries ?? 0 }}</td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Summary Cards End -->
-
-            <!-- Table area start  -->
-            <div class="merchant-table-wrapper catalogItem-catalogs-table-wrapper">
-                <div class="d-flex justify-content-center">
-                    <form class="total-erning-box" action="{{ route('merchant.income') }}" method="GET">
-                        <div class="title-wrapper">
-                            <h5 class="title">@lang('Filter by Date')
-                                @if($start_date && $end_date)
-                                    <small>({{ $start_date }} @lang('To') {{ $end_date }})</small>
-                                @endif
-                            </h5>
-                        </div>
-                        <div class="form-group filter-box">
-                            <input type="text" class="form-control filter-input discount_date" name="start_date"
-                                placeholder="@lang('From Date')" value="{{ $start_date ?? '' }}">
-                            <input type="text" class="form-control filter-input discount_date" name="end_date"
-                                placeholder="@lang('To Date') " value="{{ $end_date ?? '' }}">
-                            <div class="fitler-reset-btns-wrapper">
-                                <button class="template-btn" type="submit">Filter</button>
-                                <button class="template-btn black-btn" id="reset" type="button">@lang('Reset')</button>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-success mb-1">{{ $currencySign }}{{ number_format($platform_owes_merchant, 2) }}</h4>
+                                <small class="text-muted">@lang('Amount to receive')</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="mb-1">{{ $currencySign }}{{ number_format($platform_payments['total'], 2) }}</h4>
+                                <small class="text-muted">@lang('Total from platform payments')</small>
                             </div>
                         </div>
-                    </form>
+                    </div>
                 </div>
-                <div class="user-table table-responsive position-relative">
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark d-flex justify-content-between">
+                        <strong>@lang('You Owe Platform')</strong>
+                        <span class="badge bg-dark">{{ $merchant_payments['count'] }} @lang('orders')</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <h4 class="text-danger mb-1">{{ $currencySign }}{{ number_format($merchant_owes_platform, 2) }}</h4>
+                                <small class="text-muted">@lang('Amount to pay')</small>
+                            </div>
+                            <div class="col-6">
+                                <h4 class="mb-1">{{ $currencySign }}{{ number_format($merchant_payments['total'], 2) }}</h4>
+                                <small class="text-muted">@lang('Total from your payments')</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                    <table class="gs-data-table w-100">
+        {{-- Financial Breakdown --}}
+        <div class="row mb-4">
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">@lang('Sales Breakdown')</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <td>@lang('Gross Sales')</td>
+                                <td class="text-end"><strong>{{ $total_sales }}</strong></td>
+                            </tr>
+                            <tr class="text-danger">
+                                <td>@lang('Platform Commission')</td>
+                                <td class="text-end">-{{ $total_commission }}</td>
+                            </tr>
+                            <tr class="text-muted">
+                                <td>@lang('Tax Collected')</td>
+                                <td class="text-end">{{ $total_tax }}</td>
+                            </tr>
+                            @if($report['total_platform_shipping_fee'] > 0)
+                            <tr class="text-muted">
+                                <td>@lang('Platform Shipping Fee')</td>
+                                <td class="text-end">-{{ $total_platform_shipping_fee }}</td>
+                            </tr>
+                            @endif
+                            @if($report['total_platform_packing_fee'] > 0)
+                            <tr class="text-muted">
+                                <td>@lang('Platform Packing Fee')</td>
+                                <td class="text-end">-{{ $total_platform_packing_fee }}</td>
+                            </tr>
+                            @endif
+                            <tr class="border-top">
+                                <td><strong>@lang('Net Earnings')</strong></td>
+                                <td class="text-end text-success"><strong>{{ $total_net }}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h5 class="mb-0">@lang('Delivery Statistics')</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless mb-0">
+                            <tr>
+                                <td><i class="fas fa-motorcycle me-2"></i>@lang('Courier Deliveries')</td>
+                                <td class="text-end">
+                                    <span class="badge bg-warning">{{ $courier_deliveries['count'] }}</span>
+                                    <span class="ms-2">{{ $total_courier_fee }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-truck me-2"></i>@lang('Platform Shipping')</td>
+                                <td class="text-end">
+                                    <span class="badge bg-primary">{{ $platform_shipping['count'] }}</span>
+                                    <span class="ms-2">{{ $currencySign }}{{ number_format($platform_shipping['cost'], 2) }}</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><i class="fas fa-store me-2"></i>@lang('Your Shipping')</td>
+                                <td class="text-end">
+                                    <span class="badge bg-success">{{ $merchant_shipping['count'] }}</span>
+                                    <span class="ms-2">{{ $currencySign }}{{ number_format($merchant_shipping['cost'], 2) }}</span>
+                                </td>
+                            </tr>
+                            <tr class="border-top">
+                                <td><strong>@lang('Total Shipping')</strong></td>
+                                <td class="text-end"><strong>{{ $total_shipping_cost }}</strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Date Filter --}}
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="{{ route('merchant.income') }}" method="GET">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-4">
+                            <label class="form-label">@lang('From Date')</label>
+                            <input type="text" class="form-control discount_date" name="start_date"
+                                   placeholder="@lang('From Date')" value="{{ $start_date }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">@lang('To Date')</label>
+                            <input type="text" class="form-control discount_date" name="end_date"
+                                   placeholder="@lang('To Date')" value="{{ $end_date }}">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary">@lang('Filter')</button>
+                            <button type="button" id="reset" class="btn btn-secondary">@lang('Reset')</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- Transactions Table --}}
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">@lang('Transactions')</h5>
+                <span class="badge bg-primary">{{ count($purchases) }} @lang('transactions')</span>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0" id="earningsTable">
                         <thead>
                             <tr>
-                                <th>{{ __('Purchase Number') }}</th>
-                                <th>{{ __('Sales') }}</th>
-                                <th>{{ __('Commission') }}</th>
-                                <th>{{ __('Net') }}</th>
-                                <th>{{ __('Payment') }}</th>
-                                <th>{{ __('Delivery') }}</th>
-                                <th>{{ __('Date') }}</th>
+                                <th>@lang('Purchase #')</th>
+                                <th class="text-end">@lang('Gross')</th>
+                                <th class="text-end">@lang('Commission')</th>
+                                <th class="text-end">@lang('Tax')</th>
+                                <th class="text-end">@lang('Net')</th>
+                                <th class="text-center">@lang('Payment')</th>
+                                <th class="text-center">@lang('Shipping')</th>
+                                <th class="text-end">@lang('Balance')</th>
+                                <th>@lang('Date')</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse ($datas as $data)
-                                @php
-                                    $currSign = $data->purchase->currency_sign ?? 'SAR ';
-                                    $currVal = $data->purchase->currency_value ?? 1;
-                                @endphp
-                                <tr>
-                                    <td>
-                                        <a class="title-hover-color"
-                                            href="{{ route('merchant-purchase-invoice', $data->purchase->purchase_number) }}">{{ $data->purchase->purchase_number }}</a>
-                                    </td>
-                                    <td>
-                                        {{ $currSign . number_format($data->price * $currVal, 2) }}
-                                    </td>
-                                    <td class="text-danger">
-                                        -{{ $currSign . number_format(($data->commission_amount ?? 0) * $currVal, 2) }}
-                                    </td>
-                                    <td class="text-success">
-                                        {{ $currSign . number_format(($data->net_amount ?? $data->price) * $currVal, 2) }}
-                                    </td>
-                                    <td>
-                                        <span class="badge {{ ($data->payment_type ?? 'platform') === 'merchant' ? 'bg-success' : 'bg-info' }}">
-                                            {{ ($data->payment_type ?? 'platform') === 'merchant' ? __('Merchant') : __('Platform') }}
+                            @forelse($purchases as $purchase)
+                            <tr>
+                                <td>
+                                    <a href="{{ route('merchant-purchase-invoice', $purchase->purchase_number) }}">
+                                        {{ $purchase->purchase_number }}
+                                    </a>
+                                </td>
+                                <td class="text-end">{{ $currencySign }}{{ number_format($purchase->price, 2) }}</td>
+                                <td class="text-end text-danger">-{{ $currencySign }}{{ number_format($purchase->commission_amount, 2) }}</td>
+                                <td class="text-end">{{ $currencySign }}{{ number_format($purchase->tax_amount, 2) }}</td>
+                                <td class="text-end text-success">{{ $currencySign }}{{ number_format($purchase->net_amount, 2) }}</td>
+                                <td class="text-center">
+                                    @if($purchase->payment_owner_id === 0)
+                                        <span class="badge bg-primary" title="@lang('Platform received payment')">
+                                            <i class="fas fa-building"></i>
                                         </span>
-                                    </td>
-                                    <td>
-                                        @if(($data->shipping_type ?? 'shipping') === 'courier')
-                                            <span class="badge bg-warning">@lang('Courier')</span>
-                                        @else
-                                            <span class="badge bg-primary">@lang('Shipping')</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <span class="content">
-                                            {{ $data->purchase->created_at->format('d-m-Y') }}
+                                    @else
+                                        <span class="badge bg-success" title="@lang('You received payment')">
+                                            <i class="fas fa-store"></i>
                                         </span>
-                                    </td>
-                                </tr>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($purchase->shipping_type === 'courier')
+                                        <span class="badge bg-warning" title="@lang('Courier')">
+                                            <i class="fas fa-motorcycle"></i>
+                                        </span>
+                                    @elseif($purchase->shipping_owner_id === 0)
+                                        <span class="badge bg-primary" title="@lang('Platform Shipping')">
+                                            <i class="fas fa-truck"></i>
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success" title="@lang('Your Shipping')">
+                                            <i class="fas fa-store"></i>
+                                        </span>
+                                    @endif
+                                </td>
+                                <td class="text-end">
+                                    @if($purchase->platform_owes_merchant > 0)
+                                        <span class="text-success" title="@lang('Platform owes you')">
+                                            +{{ $currencySign }}{{ number_format($purchase->platform_owes_merchant, 2) }}
+                                        </span>
+                                    @elseif($purchase->merchant_owes_platform > 0)
+                                        <span class="text-danger" title="@lang('You owe platform')">
+                                            -{{ $currencySign }}{{ number_format($purchase->merchant_owes_platform, 2) }}
+                                        </span>
+                                    @else
+                                        <span class="text-muted">{{ $currencySign }}0.00</span>
+                                    @endif
+                                </td>
+                                <td>{{ $purchase->created_at->format('d-m-Y') }}</td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="7" class="text-center">
-                                        @lang('No Data Found')
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td colspan="9" class="text-center py-4 text-muted">
+                                    @lang('No transactions found')
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
             </div>
-            <!-- Table area end  -->
         </div>
-
-
     </div>
-    <!-- outlet end  -->
+</div>
 @endsection
+
 @section('script')
-    {{-- DATA TABLE --}}
+<script type="text/javascript">
+    $(document).on('click', '#reset', function() {
+        $('.discount_date').val('');
+        location.href = '{{ route('merchant.income') }}';
+    });
 
-    <script type="text/javascript">
-        $(document).on('click', '#reset', function() {
+    $(".discount_date").datepicker({
+        changeMonth: true,
+        changeYear: true,
+        dateFormat: 'yy-mm-dd'
+    });
 
-            $('.discount_date').val('');
-            location.href = '{{ route('merchant.income') }}';
-        })
-
-        var dateToday = new Date();
-        $(".discount_date").datepicker({
-            changeMonth: true,
-            changeYear: true,
+    if ($.fn.DataTable) {
+        $('#earningsTable').DataTable({
+            order: [[8, 'desc']],
+            pageLength: 25
         });
-    </script>
+    }
+</script>
 @endsection

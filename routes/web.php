@@ -1335,6 +1335,8 @@ Route::group(['middleware' => 'maintenance'], function () {
             // -------------------------- Merchant Income ------------------------------------//
             Route::get('earning/datatables', "Merchant\IncomeController@datatables")->name('merchant.income.datatables');
             Route::get('total/earning', "Merchant\IncomeController@index")->name('merchant.income');
+            Route::get('tax-report', "Merchant\IncomeController@taxReport")->name('merchant.tax-report');
+            Route::get('statement', "Merchant\IncomeController@statement")->name('merchant.statement');
 
             Route::get('/verify', 'Merchant\MerchantController@verify')->name('merchant-verify');
             Route::get('/warning/verify/{id}', 'Merchant\MerchantController@warningVerify')->name('merchant-warning');

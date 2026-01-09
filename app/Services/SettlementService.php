@@ -22,10 +22,22 @@ use Illuminate\Support\Facades\DB;
  * - Merchant settlements (based on MerchantPurchase)
  * - Courier settlements (based on DeliveryCourier)
  *
+ * ARCHITECTURAL PRINCIPLE (2026-01-09):
+ * - user_id = 0 → Platform service → Money goes to platform
+ * - user_id ≠ 0 → Merchant service → Money goes directly to merchant
+ *
+ * Money Flow:
+ * - platform_owes_merchant > 0: Platform received payment, owes merchant
+ * - merchant_owes_platform > 0: Merchant received payment, owes platform
+ *
  * This service is the SINGLE SOURCE OF TRUTH for settlement operations.
  */
 class SettlementService
 {
+    // Settlement types
+    const TYPE_PLATFORM_PAYS_MERCHANT = 'platform_pays_merchant';
+    const TYPE_MERCHANT_PAYS_PLATFORM = 'merchant_pays_platform';
+
     // =========================================================================
     // MERCHANT SETTLEMENTS
     // =========================================================================
@@ -36,7 +48,10 @@ class SettlementService
     public function getUnsettledMerchantPurchases(int $merchantId, ?Carbon $fromDate = null, ?Carbon $toDate = null): Collection
     {
         $query = MerchantPurchase::where('user_id', $merchantId)
-            ->where('settlement_status', 'unsettled')
+            ->where(function ($q) {
+                $q->whereNull('settlement_status')
+                    ->orWhere('settlement_status', 'unsettled');
+            })
             ->whereHas('purchase', function ($q) {
                 $q->whereIn('status', ['completed', 'delivered']);
             });
@@ -54,10 +69,33 @@ class SettlementService
 
     /**
      * Get merchant settlement summary (for preview before creating settlement)
+     *
+     * ARCHITECTURAL PRINCIPLE:
+     * - platform_owes_merchant: Sum of net amounts when platform received payment
+     * - merchant_owes_platform: Sum of commissions + platform services when merchant received payment
      */
     public function getMerchantSettlementSummary(int $merchantId, ?Carbon $fromDate = null, ?Carbon $toDate = null): array
     {
         $purchases = $this->getUnsettledMerchantPurchases($merchantId, $fromDate, $toDate);
+
+        // Calculate by payment owner
+        $platformPayments = $purchases->where('payment_owner_id', 0);
+        $merchantPayments = $purchases->where('payment_owner_id', '!=', 0);
+
+        // Platform owes merchant (platform received the money)
+        $platformOwesMerchant = $platformPayments->sum('platform_owes_merchant');
+
+        // Merchant owes platform (merchant received the money directly)
+        $merchantOwesPlatform = $merchantPayments->sum('merchant_owes_platform');
+
+        // Net settlement amount
+        // Positive = Platform pays merchant
+        // Negative = Merchant pays platform
+        $netSettlement = $platformOwesMerchant - $merchantOwesPlatform;
+
+        $settlementType = $netSettlement >= 0
+            ? self::TYPE_PLATFORM_PAYS_MERCHANT
+            : self::TYPE_MERCHANT_PAYS_PLATFORM;
 
         return [
             'merchant_id' => $merchantId,
@@ -66,18 +104,55 @@ class SettlementService
             'period_end' => $toDate ?? $purchases->max('created_at')?->toDateString(),
             'orders_count' => $purchases->count(),
             'items_count' => $purchases->sum('qty'),
+
+            // Gross sales breakdown
             'total_sales' => $purchases->sum('price'),
             'total_commission' => $purchases->sum('commission_amount'),
             'total_tax' => $purchases->sum('tax_amount'),
-            'total_shipping' => $purchases->sum('shipping_cost') + $purchases->sum('courier_fee'),
+            'total_shipping' => $purchases->sum('shipping_cost'),
+            'total_courier_fee' => $purchases->sum('courier_fee'),
             'total_packing' => $purchases->sum('packing_cost'),
-            'net_payable' => $purchases->sum('net_amount'),
+            'net_amount' => $purchases->sum('net_amount'),
+
+            // Platform services used by merchant
+            'platform_shipping_fees' => $purchases->sum('platform_shipping_fee'),
+            'platform_packing_fees' => $purchases->sum('platform_packing_fee'),
+
+            // Settlement breakdown by payment owner
+            'by_payment_owner' => [
+                'platform_payments' => [
+                    'count' => $platformPayments->count(),
+                    'total_sales' => $platformPayments->sum('price'),
+                    'platform_owes_merchant' => $platformOwesMerchant,
+                ],
+                'merchant_payments' => [
+                    'count' => $merchantPayments->count(),
+                    'total_sales' => $merchantPayments->sum('price'),
+                    'merchant_owes_platform' => $merchantOwesPlatform,
+                ],
+            ],
+
+            // Final settlement
+            'platform_owes_merchant' => $platformOwesMerchant,
+            'merchant_owes_platform' => $merchantOwesPlatform,
+            'net_settlement' => abs($netSettlement),
+            'settlement_type' => $settlementType,
+            'settlement_direction' => $netSettlement >= 0 ? 'platform_to_merchant' : 'merchant_to_platform',
+
+            // Legacy field for backward compatibility
+            'net_payable' => $netSettlement >= 0 ? $netSettlement : 0,
+
             'purchases' => $purchases,
         ];
     }
 
     /**
      * Create a merchant settlement
+     *
+     * ARCHITECTURAL PRINCIPLE:
+     * - Settlement type determined by net balance
+     * - platform_pays_merchant: Platform owes more than merchant owes
+     * - merchant_pays_platform: Merchant owes more than platform owes
      */
     public function createMerchantSettlement(
         int $merchantId,
@@ -102,13 +177,16 @@ class SettlementService
                 'total_sales' => $summary['total_sales'],
                 'total_commission' => $summary['total_commission'],
                 'total_tax' => $summary['total_tax'],
-                'total_shipping' => $summary['total_shipping'],
+                'total_shipping' => $summary['total_shipping'] + $summary['total_courier_fee'],
                 'total_packing' => $summary['total_packing'],
-                'total_deductions' => 0,
-                'net_payable' => $summary['net_payable'],
+                'total_deductions' => $summary['merchant_owes_platform'], // What merchant owes
+                'net_payable' => $summary['net_settlement'],
                 'orders_count' => $summary['orders_count'],
                 'items_count' => $summary['items_count'],
                 'status' => MerchantSettlement::STATUS_DRAFT,
+                'settlement_type' => $summary['settlement_type'],
+                'platform_owes_merchant' => $summary['platform_owes_merchant'],
+                'merchant_owes_platform' => $summary['merchant_owes_platform'],
                 'created_by' => $createdBy,
                 'notes' => $notes,
             ]);
@@ -129,6 +207,11 @@ class SettlementService
 
     /**
      * Get all merchants with unsettled balances
+     *
+     * ARCHITECTURAL PRINCIPLE:
+     * Shows both directions:
+     * - platform_owes_merchant: Platform collected payment, owes merchant
+     * - merchant_owes_platform: Merchant collected payment, owes platform
      */
     public function getMerchantsWithUnsettledBalances(): Collection
     {
@@ -136,8 +219,13 @@ class SettlementService
             ->select('user_id')
             ->selectRaw('COUNT(*) as orders_count')
             ->selectRaw('SUM(price) as total_sales')
-            ->selectRaw('SUM(net_amount) as net_payable')
-            ->where('settlement_status', 'unsettled')
+            ->selectRaw('SUM(platform_owes_merchant) as platform_owes_merchant')
+            ->selectRaw('SUM(merchant_owes_platform) as merchant_owes_platform')
+            ->selectRaw('SUM(platform_owes_merchant) - SUM(merchant_owes_platform) as net_balance')
+            ->where(function ($q) {
+                $q->whereNull('settlement_status')
+                    ->orWhere('settlement_status', 'unsettled');
+            })
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('purchases')
@@ -149,12 +237,24 @@ class SettlementService
             ->get()
             ->map(function ($item) {
                 $merchant = User::find($item->user_id);
+                $netBalance = (float) $item->net_balance;
+
                 return [
                     'merchant_id' => $item->user_id,
                     'merchant_name' => $merchant?->shop_name ?? $merchant?->name ?? 'Unknown',
                     'orders_count' => $item->orders_count,
-                    'total_sales' => $item->total_sales,
-                    'net_payable' => $item->net_payable,
+                    'total_sales' => (float) $item->total_sales,
+                    'platform_owes_merchant' => (float) $item->platform_owes_merchant,
+                    'merchant_owes_platform' => (float) $item->merchant_owes_platform,
+                    'net_balance' => abs($netBalance),
+                    'settlement_type' => $netBalance >= 0
+                        ? self::TYPE_PLATFORM_PAYS_MERCHANT
+                        : self::TYPE_MERCHANT_PAYS_PLATFORM,
+                    'settlement_direction' => $netBalance >= 0
+                        ? 'platform_to_merchant'
+                        : 'merchant_to_platform',
+                    // Legacy field
+                    'net_payable' => $netBalance >= 0 ? $netBalance : 0,
                 ];
             });
     }
@@ -298,6 +398,13 @@ class SettlementService
 
     /**
      * Get platform financial summary
+     *
+     * ARCHITECTURAL PRINCIPLE:
+     * Platform revenue comes from:
+     * - Commission from all sales
+     * - Tax collected
+     * - Platform shipping fees (when shipping_owner_id = 0)
+     * - Platform packing fees (when packing_owner_id = 0)
      */
     public function getPlatformSummary(?Carbon $fromDate = null, ?Carbon $toDate = null): array
     {
@@ -310,9 +417,22 @@ class SettlementService
             $query->whereDate('created_at', '<=', $toDate);
         }
 
-        $totalSales = $query->sum('price');
-        $totalCommission = $query->sum('commission_amount');
-        $totalTax = $query->sum('tax_amount');
+        // Clone query for different aggregations
+        $statsQuery = clone $query;
+
+        // Sales statistics
+        $stats = $statsQuery->selectRaw('
+            SUM(price) as total_sales,
+            SUM(commission_amount) as total_commission,
+            SUM(tax_amount) as total_tax,
+            SUM(net_amount) as total_net_to_merchants,
+            SUM(platform_shipping_fee) as platform_shipping_revenue,
+            SUM(platform_packing_fee) as platform_packing_revenue,
+            SUM(platform_owes_merchant) as total_platform_owes_merchant,
+            SUM(merchant_owes_platform) as total_merchant_owes_platform,
+            COUNT(CASE WHEN payment_owner_id = 0 THEN 1 END) as platform_payment_count,
+            COUNT(CASE WHEN payment_owner_id != 0 THEN 1 END) as merchant_payment_count
+        ')->first();
 
         // Courier data
         $courierQuery = DeliveryCourier::query();
@@ -323,12 +443,24 @@ class SettlementService
             $courierQuery->whereDate('created_at', '<=', $toDate);
         }
 
-        $totalCodCollected = $courierQuery->where('payment_method', 'cod')->sum('cod_amount');
-        $totalCourierFees = $courierQuery->sum('delivery_fee');
+        $courierStats = $courierQuery->selectRaw('
+            SUM(CASE WHEN payment_method = "cod" THEN cod_amount ELSE 0 END) as total_cod_collected,
+            SUM(delivery_fee) as total_fees
+        ')->first();
+
+        $totalCodCollected = (float) ($courierStats->total_cod_collected ?? 0);
+        $totalCourierFees = (float) ($courierStats->total_fees ?? 0);
 
         // Settlement status
         $pendingMerchantSettlements = MerchantSettlement::pending()->sum('net_payable');
         $pendingCourierSettlements = CourierSettlement::pending()->sum('amount');
+
+        // Platform revenue calculation
+        $commissionRevenue = (float) ($stats->total_commission ?? 0);
+        $taxRevenue = (float) ($stats->total_tax ?? 0);
+        $shippingRevenue = (float) ($stats->platform_shipping_revenue ?? 0);
+        $packingRevenue = (float) ($stats->platform_packing_revenue ?? 0);
+        $totalPlatformRevenue = $commissionRevenue + $taxRevenue + $shippingRevenue + $packingRevenue;
 
         return [
             'period' => [
@@ -336,10 +468,16 @@ class SettlementService
                 'to' => $toDate?->format('Y-m-d') ?? 'All time',
             ],
             'sales' => [
-                'total_sales' => $totalSales,
-                'total_commission' => $totalCommission,
-                'total_tax' => $totalTax,
-                'net_to_merchants' => $totalSales - $totalCommission,
+                'total_sales' => (float) ($stats->total_sales ?? 0),
+                'total_commission' => $commissionRevenue,
+                'total_tax' => $taxRevenue,
+                'net_to_merchants' => (float) ($stats->total_net_to_merchants ?? 0),
+            ],
+            'payment_breakdown' => [
+                'platform_payments' => (int) ($stats->platform_payment_count ?? 0),
+                'merchant_payments' => (int) ($stats->merchant_payment_count ?? 0),
+                'platform_owes_merchants' => (float) ($stats->total_platform_owes_merchant ?? 0),
+                'merchants_owe_platform' => (float) ($stats->total_merchant_owes_platform ?? 0),
             ],
             'courier' => [
                 'total_cod_collected' => $totalCodCollected,
@@ -351,9 +489,11 @@ class SettlementService
                 'courier_payable' => $pendingCourierSettlements,
             ],
             'platform_revenue' => [
-                'commission' => $totalCommission,
-                'tax' => $totalTax,
-                'total' => $totalCommission + $totalTax,
+                'commission' => $commissionRevenue,
+                'tax' => $taxRevenue,
+                'shipping_markup' => $shippingRevenue,
+                'packing_markup' => $packingRevenue,
+                'total' => $totalPlatformRevenue,
             ],
         ];
     }

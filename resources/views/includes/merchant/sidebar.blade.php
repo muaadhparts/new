@@ -216,8 +216,10 @@
 
 
 
-        <li class="">
-            <a href="{{ route('merchant.income') }}">
+        <li class="has-sub-menu {{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement') ? 'active' : '' }}">
+            <a href="#merchant-collapse-financial"
+                class="{{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement') ? '' : 'collapsed' }}"
+                data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapse-financial">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
                     <path
@@ -232,8 +234,18 @@
                     <path d="M22 2L17 7" stroke="#292D32" stroke-width="1.5" stroke-linecap="round"
                         stroke-linejoin="round" />
                 </svg>
-                <span class="label">@lang('Total Earnings')</span>
+                <span class="label">@lang('Financial')</span>
+                <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
+            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement') ? 'show' : '' }}"
+                id="merchant-collapse-financial">
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/total/earning') ? 'active' : '' }}"
+                        href="{{ route('merchant.income') }}">@lang('Financial Dashboard')</a></li>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/tax-report') ? 'active' : '' }}"
+                        href="{{ route('merchant.tax-report') }}">@lang('Tax Report')</a></li>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/statement') ? 'active' : '' }}"
+                        href="{{ route('merchant.statement') }}">@lang('Account Statement')</a></li>
+            </ul>
         </li>
         <li class="{{ request()->is('merchant/profile') ? 'active' : '' }}">
             <a href="{{ route('merchant-profile') }}">

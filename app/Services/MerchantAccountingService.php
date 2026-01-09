@@ -2,135 +2,39 @@
 
 namespace App\Services;
 
+use App\Models\Currency;
+use App\Models\DeliveryCourier;
 use App\Models\MerchantCommission;
 use App\Models\MerchantPayment;
 use App\Models\MerchantPurchase;
 use App\Models\MerchantTaxSetting;
-use App\Models\Purchase;
 use App\Models\Shipping;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * MerchantAccountingService
+ *
+ * ARCHITECTURAL PRINCIPLE (2026-01-09):
+ * - owner_id = 0 → Platform service
+ * - owner_id > 0 → Merchant/Owner service
+ *
+ * Single source of truth: MerchantPurchase table
+ * - payment_owner_id: Who owns the payment gateway (0=platform, >0=merchant)
+ * - shipping_owner_id: Who provides shipping (0=platform, >0=merchant)
+ * - platform_owes_merchant: Amount platform must pay merchant
+ * - merchant_owes_platform: Amount merchant owes platform
+ */
 class MerchantAccountingService
 {
-    public function calculateMerchantPurchaseDetails(Purchase $purchase, int $merchantId, array $cartItems): array
-    {
-        $itemsTotal = $this->calculateItemsTotal($cartItems, $merchantId);
+    // =========================================================================
+    // MERCHANT FINANCIAL REPORTS
+    // =========================================================================
 
-        $commission = $this->calculateCommission($merchantId, $itemsTotal);
-
-        $taxSetting = MerchantTaxSetting::where('user_id', $merchantId)->first();
-        $taxAmount = $taxSetting ? $taxSetting->calculateTax($itemsTotal) : 0;
-
-        $netAmount = $itemsTotal - $commission;
-
-        return [
-            'items_total' => $itemsTotal,
-            'commission_amount' => $commission,
-            'tax_amount' => $taxAmount,
-            'net_amount' => $netAmount,
-        ];
-    }
-
-    public function calculateItemsTotal(array $cartItems, int $merchantId): float
-    {
-        $total = 0;
-        foreach ($cartItems as $item) {
-            $itemMerchantId = $item['user_id'] ?? ($item['item']['user_id'] ?? 0);
-            if ((int)$itemMerchantId === $merchantId) {
-                $total += (float)($item['price'] ?? 0);
-            }
-        }
-        return round($total, 2);
-    }
-
-    public function calculateCommission(int $merchantId, float $amount): float
-    {
-        $commission = MerchantCommission::where('user_id', $merchantId)->first();
-        if (!$commission || !$commission->is_active) {
-            return 0;
-        }
-
-        return $commission->calculateCommission($amount);
-    }
-
-    public function determineMoneyReceiver(int $merchantId, ?int $paymentGatewayId): string
-    {
-        if (!$paymentGatewayId) {
-            return 'platform';
-        }
-
-        $gateway = MerchantPayment::find($paymentGatewayId);
-        if (!$gateway) {
-            return 'platform';
-        }
-
-        if (isset($gateway->user_id) && $gateway->user_id > 0 && $gateway->user_id == $merchantId) {
-            return 'merchant';
-        }
-
-        return 'platform';
-    }
-
-    public function determinePaymentType(int $merchantId, ?int $paymentGatewayId): string
-    {
-        if (!$paymentGatewayId) {
-            return 'platform';
-        }
-
-        $gateway = MerchantPayment::find($paymentGatewayId);
-        if (!$gateway) {
-            return 'platform';
-        }
-
-        if (isset($gateway->user_id) && $gateway->user_id > 0 && $gateway->user_id == $merchantId) {
-            return 'merchant';
-        }
-
-        return 'platform';
-    }
-
-    public function determineShippingType(int $merchantId, ?int $shippingId, ?int $courierId): string
-    {
-        if ($courierId) {
-            return 'courier';
-        }
-
-        if (!$shippingId) {
-            return 'platform'; // Default to platform shipping
-        }
-
-        $shipping = Shipping::find($shippingId);
-        if (!$shipping) {
-            return 'platform';
-        }
-
-        if ($shipping->user_id > 0 && $shipping->user_id == $merchantId) {
-            return 'merchant';
-        }
-
-        return 'platform';
-    }
-
-    public function getMerchantTaxSetting(int $merchantId): ?MerchantTaxSetting
-    {
-        return MerchantTaxSetting::where('user_id', $merchantId)->first();
-    }
-
-    public function getMerchantCommissionSetting(int $merchantId): ?MerchantCommission
-    {
-        return MerchantCommission::where('user_id', $merchantId)->first();
-    }
-
-    public function hasMerchantPaymentGateway(int $merchantId): bool
-    {
-        return MerchantPayment::where('user_id', $merchantId)->where('status', 1)->exists();
-    }
-
-    public function hasMerchantShipping(int $merchantId): bool
-    {
-        return Shipping::where('user_id', $merchantId)->exists();
-    }
-
+    /**
+     * Get comprehensive merchant financial report
+     * Based exclusively on MerchantPurchase records
+     */
     public function getMerchantReport(int $merchantId, ?string $startDate = null, ?string $endDate = null): array
     {
         $query = MerchantPurchase::where('user_id', $merchantId);
@@ -144,22 +48,133 @@ class MerchantAccountingService
 
         $purchases = $query->get();
 
+        // Platform payments (payment_owner_id = 0)
+        $platformPayments = $purchases->where('payment_owner_id', 0);
+        // Merchant payments (payment_owner_id > 0)
+        $merchantPayments = $purchases->filter(fn($p) => $p->payment_owner_id > 0);
+
+        // Platform shipping (shipping_owner_id = 0)
+        $platformShipping = $purchases->where('shipping_owner_id', 0);
+        // Merchant shipping (shipping_owner_id > 0)
+        $merchantShipping = $purchases->filter(fn($p) => $p->shipping_owner_id > 0);
+        // Courier deliveries
+        $courierDeliveries = $purchases->where('shipping_type', 'courier');
+
         return [
+            // Sales Summary
             'total_sales' => $purchases->sum('price'),
+            'total_orders' => $purchases->count(),
+            'total_qty' => $purchases->sum('qty'),
+
+            // Platform Deductions
             'total_commission' => $purchases->sum('commission_amount'),
             'total_tax' => $purchases->sum('tax_amount'),
-            'total_shipping' => $purchases->sum('shipping_cost'),
-            'total_packing' => $purchases->sum('packing_cost'),
-            'total_courier_fees' => $purchases->sum('courier_fee'),
+            'total_platform_shipping_fee' => $purchases->sum('platform_shipping_fee'),
+            'total_platform_packing_fee' => $purchases->sum('platform_packing_fee'),
+
+            // Shipping Costs
+            'total_shipping_cost' => $purchases->sum('shipping_cost'),
+            'total_packing_cost' => $purchases->sum('packing_cost'),
+            'total_courier_fee' => $purchases->sum('courier_fee'),
+
+            // Net Amount
             'total_net' => $purchases->sum('net_amount'),
-            'count_orders' => $purchases->count(),
-            'merchant_payments' => $purchases->where('payment_type', 'merchant')->sum('price'),
-            'platform_payments' => $purchases->where('payment_type', 'platform')->sum('price'),
-            'courier_deliveries' => $purchases->where('shipping_type', 'courier')->count(),
-            'shipping_deliveries' => $purchases->whereIn('shipping_type', ['platform', 'merchant'])->count(),
+
+            // Settlement Balances
+            'platform_owes_merchant' => $purchases->sum('platform_owes_merchant'),
+            'merchant_owes_platform' => $purchases->sum('merchant_owes_platform'),
+            'net_balance' => $purchases->sum('platform_owes_merchant') - $purchases->sum('merchant_owes_platform'),
+
+            // Payment Method Breakdown
+            'platform_payments' => [
+                'count' => $platformPayments->count(),
+                'total' => $platformPayments->sum('price'),
+                'platform_owes' => $platformPayments->sum('platform_owes_merchant'),
+            ],
+            'merchant_payments' => [
+                'count' => $merchantPayments->count(),
+                'total' => $merchantPayments->sum('price'),
+                'merchant_owes' => $merchantPayments->sum('merchant_owes_platform'),
+            ],
+
+            // Shipping Breakdown
+            'platform_shipping' => [
+                'count' => $platformShipping->count(),
+                'cost' => $platformShipping->sum('shipping_cost'),
+            ],
+            'merchant_shipping' => [
+                'count' => $merchantShipping->count(),
+                'cost' => $merchantShipping->sum('shipping_cost'),
+            ],
+            'courier_deliveries' => [
+                'count' => $courierDeliveries->count(),
+                'fee' => $courierDeliveries->sum('courier_fee'),
+            ],
+
+            // Raw purchases for detailed view
+            'purchases' => $purchases,
         ];
     }
 
+    /**
+     * Get merchant statement (account ledger)
+     */
+    public function getMerchantStatement(int $merchantId, ?string $startDate = null, ?string $endDate = null): array
+    {
+        $query = MerchantPurchase::where('user_id', $merchantId)
+            ->with(['purchase']);
+
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $purchases = $query->orderBy('created_at', 'desc')->get();
+
+        // Calculate running balance
+        $statement = [];
+        $runningBalance = 0;
+
+        foreach ($purchases->sortBy('created_at') as $purchase) {
+            $credit = (float) $purchase->platform_owes_merchant;
+            $debit = (float) $purchase->merchant_owes_platform;
+            $runningBalance += ($credit - $debit);
+
+            $statement[] = [
+                'date' => $purchase->created_at,
+                'purchase_number' => $purchase->purchase_number,
+                'purchase_id' => $purchase->purchase_id,
+                'description' => $this->getTransactionDescription($purchase),
+                'gross' => (float) $purchase->price,
+                'commission' => (float) $purchase->commission_amount,
+                'tax' => (float) $purchase->tax_amount,
+                'net' => (float) $purchase->net_amount,
+                'credit' => $credit,
+                'debit' => $debit,
+                'balance' => $runningBalance,
+                'payment_owner' => $purchase->payment_owner_id === 0 ? 'platform' : 'merchant',
+                'settlement_status' => $purchase->settlement_status,
+            ];
+        }
+
+        return [
+            'statement' => array_reverse($statement), // Most recent first
+            'opening_balance' => 0,
+            'closing_balance' => $runningBalance,
+            'total_credit' => $purchases->sum('platform_owes_merchant'),
+            'total_debit' => $purchases->sum('merchant_owes_platform'),
+        ];
+    }
+
+    // =========================================================================
+    // ADMIN FINANCIAL REPORTS
+    // =========================================================================
+
+    /**
+     * Get comprehensive admin report for all merchants
+     */
     public function getAdminMerchantReport(?string $startDate = null, ?string $endDate = null): array
     {
         $query = MerchantPurchase::query();
@@ -173,30 +188,245 @@ class MerchantAccountingService
 
         $purchases = $query->get();
 
+        // Group by merchant
         $merchantReports = [];
         $groupedByMerchant = $purchases->groupBy('user_id');
 
         foreach ($groupedByMerchant as $merchantId => $merchantPurchases) {
             $merchant = User::find($merchantId);
+            $platformPayments = $merchantPurchases->where('payment_owner_id', 0);
+            $merchantPaymentsCollection = $merchantPurchases->filter(fn($p) => $p->payment_owner_id > 0);
+
             $merchantReports[] = [
                 'merchant_id' => $merchantId,
-                'merchant_name' => $merchant ? $merchant->shop_name : 'Unknown',
+                'merchant_name' => $merchant?->shop_name ?? $merchant?->name ?? __('Unknown'),
                 'total_sales' => $merchantPurchases->sum('price'),
                 'total_commission' => $merchantPurchases->sum('commission_amount'),
                 'total_tax' => $merchantPurchases->sum('tax_amount'),
                 'total_net' => $merchantPurchases->sum('net_amount'),
                 'orders_count' => $merchantPurchases->count(),
-                'merchant_payments_count' => $merchantPurchases->where('payment_type', 'merchant')->count(),
-                'platform_payments_count' => $merchantPurchases->where('payment_type', 'platform')->count(),
+
+                // By payment owner
+                'platform_payments_count' => $platformPayments->count(),
+                'platform_payments_total' => $platformPayments->sum('price'),
+                'merchant_payments_count' => $merchantPaymentsCollection->count(),
+                'merchant_payments_total' => $merchantPaymentsCollection->sum('price'),
+
+                // Settlement balances
+                'platform_owes_merchant' => $merchantPurchases->sum('platform_owes_merchant'),
+                'merchant_owes_platform' => $merchantPurchases->sum('merchant_owes_platform'),
+                'net_balance' => $merchantPurchases->sum('platform_owes_merchant') - $merchantPurchases->sum('merchant_owes_platform'),
             ];
         }
 
+        // Platform payments total
+        $platformPaymentsAll = $purchases->where('payment_owner_id', 0);
+        $merchantPaymentsAll = $purchases->filter(fn($p) => $p->payment_owner_id > 0);
+
         return [
+            // Overall totals
             'total_sales' => $purchases->sum('price'),
             'total_commissions' => $purchases->sum('commission_amount'),
             'total_taxes' => $purchases->sum('tax_amount'),
             'total_net_to_merchants' => $purchases->sum('net_amount'),
+            'total_orders' => $purchases->count(),
+
+            // Payment owner breakdown
+            'platform_payments' => [
+                'count' => $platformPaymentsAll->count(),
+                'total' => $platformPaymentsAll->sum('price'),
+            ],
+            'merchant_payments' => [
+                'count' => $merchantPaymentsAll->count(),
+                'total' => $merchantPaymentsAll->sum('price'),
+            ],
+
+            // Settlement summary
+            'platform_owes_merchants' => $purchases->sum('platform_owes_merchant'),
+            'merchants_owe_platform' => $purchases->sum('merchant_owes_platform'),
+            'net_platform_position' => $purchases->sum('merchant_owes_platform') - $purchases->sum('platform_owes_merchant'),
+
+            // Per merchant breakdown
             'merchants' => $merchantReports,
         ];
+    }
+
+    /**
+     * Get tax report for admin
+     * Tax is collected regardless of who received the payment
+     */
+    public function getAdminTaxReport(?string $startDate = null, ?string $endDate = null): array
+    {
+        $query = MerchantPurchase::where('tax_amount', '>', 0);
+
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $purchases = $query->with(['purchase', 'user'])->get();
+
+        // Group by merchant for breakdown
+        $byMerchant = $purchases->groupBy('user_id')->map(function ($items, $merchantId) {
+            $merchant = User::find($merchantId);
+            return [
+                'merchant_id' => $merchantId,
+                'merchant_name' => $merchant?->shop_name ?? $merchant?->name ?? __('Unknown'),
+                'total_tax' => $items->sum('tax_amount'),
+                'total_sales' => $items->sum('price'),
+                'orders_count' => $items->count(),
+            ];
+        })->values();
+
+        // Group by payment owner
+        $platformPaymentsTax = $purchases->where('payment_owner_id', 0)->sum('tax_amount');
+        $merchantPaymentsTax = $purchases->filter(fn($p) => $p->payment_owner_id > 0)->sum('tax_amount');
+
+        return [
+            'total_tax_collected' => $purchases->sum('tax_amount'),
+            'total_orders_with_tax' => $purchases->count(),
+            'total_sales_with_tax' => $purchases->sum('price'),
+
+            // Tax by payment receiver
+            'tax_from_platform_payments' => $platformPaymentsTax,
+            'tax_from_merchant_payments' => $merchantPaymentsTax,
+
+            // Per merchant breakdown
+            'by_merchant' => $byMerchant,
+
+            // Raw data
+            'purchases' => $purchases,
+        ];
+    }
+
+    /**
+     * Get commission report for admin
+     */
+    public function getAdminCommissionReport(?string $startDate = null, ?string $endDate = null): array
+    {
+        $query = MerchantPurchase::where('commission_amount', '>', 0);
+
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
+        $purchases = $query->with(['purchase', 'user'])->get();
+
+        // Group by merchant
+        $byMerchant = $purchases->groupBy('user_id')->map(function ($items, $merchantId) {
+            $merchant = User::find($merchantId);
+            return [
+                'merchant_id' => $merchantId,
+                'merchant_name' => $merchant?->shop_name ?? $merchant?->name ?? __('Unknown'),
+                'total_commission' => $items->sum('commission_amount'),
+                'total_sales' => $items->sum('price'),
+                'orders_count' => $items->count(),
+                'avg_commission_rate' => $items->sum('price') > 0
+                    ? round(($items->sum('commission_amount') / $items->sum('price')) * 100, 2)
+                    : 0,
+            ];
+        })->values();
+
+        return [
+            'total_commission' => $purchases->sum('commission_amount'),
+            'total_sales' => $purchases->sum('price'),
+            'total_orders' => $purchases->count(),
+            'avg_commission_rate' => $purchases->sum('price') > 0
+                ? round(($purchases->sum('commission_amount') / $purchases->sum('price')) * 100, 2)
+                : 0,
+
+            // Per merchant breakdown
+            'by_merchant' => $byMerchant,
+
+            // Raw data
+            'purchases' => $purchases,
+        ];
+    }
+
+    // =========================================================================
+    // HELPER METHODS
+    // =========================================================================
+
+    /**
+     * Calculate commission for a merchant
+     */
+    public function calculateCommission(int $merchantId, float $amount): float
+    {
+        $commission = MerchantCommission::where('user_id', $merchantId)->first();
+        if (!$commission || !$commission->is_active) {
+            return 0;
+        }
+
+        return $commission->calculateCommission($amount);
+    }
+
+    /**
+     * Get merchant tax setting
+     */
+    public function getMerchantTaxSetting(int $merchantId): ?MerchantTaxSetting
+    {
+        return MerchantTaxSetting::where('user_id', $merchantId)->first();
+    }
+
+    /**
+     * Get merchant commission setting
+     */
+    public function getMerchantCommissionSetting(int $merchantId): ?MerchantCommission
+    {
+        return MerchantCommission::where('user_id', $merchantId)->first();
+    }
+
+    /**
+     * Check if merchant has their own payment gateway
+     */
+    public function hasMerchantPaymentGateway(int $merchantId): bool
+    {
+        return MerchantPayment::where('user_id', $merchantId)->where('status', 1)->exists();
+    }
+
+    /**
+     * Check if merchant has their own shipping
+     */
+    public function hasMerchantShipping(int $merchantId): bool
+    {
+        return Shipping::where('user_id', $merchantId)->exists();
+    }
+
+    /**
+     * Get transaction description for statement
+     */
+    private function getTransactionDescription(MerchantPurchase $purchase): string
+    {
+        $paymentMethod = $purchase->payment_owner_id === 0 ? __('Platform Payment') : __('Merchant Payment');
+
+        if ($purchase->shipping_type === 'courier') {
+            $shippingMethod = __('Courier Delivery');
+        } elseif ($purchase->shipping_owner_id === 0) {
+            $shippingMethod = __('Platform Shipping');
+        } else {
+            $shippingMethod = __('Merchant Shipping');
+        }
+
+        return sprintf('%s - %s', $paymentMethod, $shippingMethod);
+    }
+
+    /**
+     * Calculate items total for a merchant from cart
+     */
+    public function calculateItemsTotal(array $cartItems, int $merchantId): float
+    {
+        $total = 0;
+        foreach ($cartItems as $item) {
+            $itemMerchantId = $item['user_id'] ?? ($item['item']['user_id'] ?? 0);
+            if ((int)$itemMerchantId === $merchantId) {
+                $total += (float)($item['price'] ?? 0);
+            }
+        }
+        return round($total, 2);
     }
 }

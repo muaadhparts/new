@@ -68,8 +68,8 @@
                             <th>{{ __('Period') }}</th>
                             <th class="text-center">{{ __('Orders') }}</th>
                             <th class="text-end">{{ __('Total Sales') }}</th>
-                            <th class="text-end">{{ __('Commission') }}</th>
-                            <th class="text-end">{{ __('Net Payable') }}</th>
+                            <th class="text-center">{{ __('Direction') }}</th>
+                            <th class="text-end">{{ __('Amount') }}</th>
                             <th class="text-center">{{ __('Status') }}</th>
                             <th>{{ __('Actions') }}</th>
                         </tr>
@@ -88,8 +88,22 @@
                             </td>
                             <td class="text-center">{{ $settlement->orders_count }}</td>
                             <td class="text-end">{{ $currency->sign }}{{ number_format($settlement->total_sales, 2) }}</td>
-                            <td class="text-end">{{ $currency->sign }}{{ number_format($settlement->total_commission, 2) }}</td>
-                            <td class="text-end"><strong>{{ $currency->sign }}{{ number_format($settlement->net_payable, 2) }}</strong></td>
+                            <td class="text-center">
+                                @if($settlement->isPlatformPaysMerchant())
+                                    <span class="badge bg-success" title="{{ __('Platform Pays Merchant') }}">
+                                        <i class="fas fa-arrow-right"></i> {{ __('Pay') }}
+                                    </span>
+                                @else
+                                    <span class="badge bg-warning" title="{{ __('Merchant Pays Platform') }}">
+                                        <i class="fas fa-arrow-left"></i> {{ __('Collect') }}
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="text-end">
+                                <strong class="{{ $settlement->isPlatformPaysMerchant() ? 'text-success' : 'text-warning' }}">
+                                    {{ $currency->sign }}{{ number_format($settlement->net_payable, 2) }}
+                                </strong>
+                            </td>
                             <td class="text-center">
                                 <span class="badge {{ $settlement->getStatusBadgeClass() }}">
                                     {{ $settlement->getStatusLabel() }}

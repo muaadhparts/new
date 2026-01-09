@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * Represents a settlement cycle for a merchant.
  * All financial data is derived from MerchantPurchase records.
  *
+ * ARCHITECTURAL PRINCIPLE (2026-01-09):
+ * - settlement_type determines direction of payment:
+ *   - platform_pays_merchant: Platform collected more, owes merchant
+ *   - merchant_pays_platform: Merchant collected more, owes platform
+ *
  * Status Workflow:
  * draft -> pending -> approved -> paid
  *                  -> cancelled
@@ -32,9 +37,12 @@ class MerchantSettlement extends Model
         'total_packing',
         'total_deductions',
         'net_payable',
+        'platform_owes_merchant',
+        'merchant_owes_platform',
         'orders_count',
         'items_count',
         'status',
+        'settlement_type',
         'payment_method',
         'payment_reference',
         'payment_date',
@@ -56,6 +64,8 @@ class MerchantSettlement extends Model
         'total_packing' => 'decimal:2',
         'total_deductions' => 'decimal:2',
         'net_payable' => 'decimal:2',
+        'platform_owes_merchant' => 'decimal:2',
+        'merchant_owes_platform' => 'decimal:2',
         'payment_date' => 'datetime',
         'approved_at' => 'datetime',
         'paid_at' => 'datetime',
@@ -67,6 +77,10 @@ class MerchantSettlement extends Model
     const STATUS_APPROVED = 'approved';
     const STATUS_PAID = 'paid';
     const STATUS_CANCELLED = 'cancelled';
+
+    // Settlement type constants
+    const TYPE_PLATFORM_PAYS_MERCHANT = 'platform_pays_merchant';
+    const TYPE_MERCHANT_PAYS_PLATFORM = 'merchant_pays_platform';
 
     // =========================================================================
     // RELATIONSHIPS
@@ -309,5 +323,63 @@ class MerchantSettlement extends Model
         ];
 
         return $classes[$this->status] ?? 'bg-secondary';
+    }
+
+    // =========================================================================
+    // SETTLEMENT TYPE METHODS
+    // =========================================================================
+
+    /**
+     * Check if platform pays merchant
+     */
+    public function isPlatformPaysMerchant(): bool
+    {
+        return $this->settlement_type === self::TYPE_PLATFORM_PAYS_MERCHANT;
+    }
+
+    /**
+     * Check if merchant pays platform
+     */
+    public function isMerchantPaysPlatform(): bool
+    {
+        return $this->settlement_type === self::TYPE_MERCHANT_PAYS_PLATFORM;
+    }
+
+    /**
+     * Get settlement type label
+     */
+    public function getSettlementTypeLabel(): string
+    {
+        $labels = [
+            self::TYPE_PLATFORM_PAYS_MERCHANT => __('Platform Pays Merchant'),
+            self::TYPE_MERCHANT_PAYS_PLATFORM => __('Merchant Pays Platform'),
+        ];
+
+        return $labels[$this->settlement_type] ?? __('Unknown');
+    }
+
+    /**
+     * Get settlement direction icon
+     */
+    public function getSettlementDirectionIcon(): string
+    {
+        return $this->isPlatformPaysMerchant()
+            ? 'fa-arrow-right text-success' // Money goes to merchant
+            : 'fa-arrow-left text-warning'; // Money comes from merchant
+    }
+
+    /**
+     * Get balance summary for display
+     */
+    public function getBalanceSummary(): array
+    {
+        return [
+            'platform_owes_merchant' => (float) $this->platform_owes_merchant,
+            'merchant_owes_platform' => (float) $this->merchant_owes_platform,
+            'net_payable' => (float) $this->net_payable,
+            'settlement_type' => $this->settlement_type,
+            'direction' => $this->isPlatformPaysMerchant() ? 'platform_to_merchant' : 'merchant_to_platform',
+            'direction_label' => $this->getSettlementTypeLabel(),
+        ];
     }
 }
