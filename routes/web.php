@@ -330,6 +330,34 @@ Route::prefix('operator')->group(function () {
         // -------------------------- Admin Total Income Route --------------------------//
     });
 
+    // ========================== SETTLEMENT SYSTEM ==========================//
+    Route::group(['prefix' => 'settlement'], function () {
+        // Dashboard
+        Route::get('/', 'Operator\SettlementController@index')->name('operator.settlement.index');
+
+        // Merchant Settlements
+        Route::get('/merchants', 'Operator\SettlementController@merchantSettlements')->name('operator.settlement.merchants');
+        Route::get('/merchant/preview', 'Operator\SettlementController@merchantSettlementPreview')->name('operator.settlement.merchant.preview');
+        Route::post('/merchant/create', 'Operator\SettlementController@createMerchantSettlement')->name('operator.settlement.merchant.create');
+        Route::get('/merchant/{settlement}', 'Operator\SettlementController@showMerchantSettlement')->name('operator.settlement.merchant.show');
+        Route::post('/merchant/{settlement}/submit', 'Operator\SettlementController@submitMerchantSettlement')->name('operator.settlement.merchant.submit');
+        Route::post('/merchant/{settlement}/approve', 'Operator\SettlementController@approveMerchantSettlement')->name('operator.settlement.merchant.approve');
+        Route::post('/merchant/{settlement}/pay', 'Operator\SettlementController@payMerchantSettlement')->name('operator.settlement.merchant.pay');
+        Route::delete('/merchant/{settlement}/cancel', 'Operator\SettlementController@cancelMerchantSettlement')->name('operator.settlement.merchant.cancel');
+
+        // Courier Settlements
+        Route::get('/couriers', 'Operator\SettlementController@courierSettlements')->name('operator.settlement.couriers');
+        Route::get('/courier/preview', 'Operator\SettlementController@courierSettlementPreview')->name('operator.settlement.courier.preview');
+        Route::post('/courier/create', 'Operator\SettlementController@createCourierSettlement')->name('operator.settlement.courier.create');
+        Route::get('/courier/{settlement}', 'Operator\SettlementController@showCourierSettlement')->name('operator.settlement.courier.show');
+        Route::post('/courier/{settlement}/process', 'Operator\SettlementController@processCourierSettlement')->name('operator.settlement.courier.process');
+        Route::delete('/courier/{settlement}/cancel', 'Operator\SettlementController@cancelCourierSettlement')->name('operator.settlement.courier.cancel');
+
+        // Reports
+        Route::get('/revenue-report', 'Operator\SettlementController@revenueReport')->name('operator.settlement.revenue-report');
+    });
+    // ========================== END SETTLEMENT SYSTEM ==========================//
+
     /////////////////////////////// ////////////////////////////////////////////
 
     // Note: Old Category/Subcategory/Childcategory and Attribute routes removed - now using TreeCategories

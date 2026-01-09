@@ -32,6 +32,9 @@ class MerchantPurchase extends Model
         'shipping_id',
         'courier_id',
         'merchant_location_id',
+        'settlement_status',
+        'settled_at',
+        'merchant_settlement_id',
     ];
 
     protected $casts = [
@@ -43,6 +46,7 @@ class MerchantPurchase extends Model
         'courier_fee' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'price' => 'decimal:2',
+        'settled_at' => 'datetime',
     ];
 
     public function user()
@@ -78,6 +82,11 @@ class MerchantPurchase extends Model
     public function merchantLocation()
     {
         return $this->belongsTo(MerchantLocation::class, 'merchant_location_id')->withDefault();
+    }
+
+    public function settlement()
+    {
+        return $this->belongsTo(MerchantSettlement::class, 'merchant_settlement_id');
     }
 
     public function isMerchantPayment(): bool

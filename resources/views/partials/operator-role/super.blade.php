@@ -59,6 +59,25 @@
     </ul>
 </li>
 
+<li>
+    <a href="#settlement-menu" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="fas fa-file-invoice-dollar"></i>{{ __('Settlements') }}
+    </a>
+    <ul class="collapse list-unstyled" id="settlement-menu" data-bs-parent="#accordion">
+        <li>
+            <a href="{{ route('operator.settlement.index') }}"> {{ __('Settlement Dashboard') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.settlement.merchants') }}"> {{ __('Merchant Settlements') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.settlement.couriers') }}"> {{ __('Courier Settlements') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.settlement.revenue-report') }}"> {{ __('Revenue Report') }}</a>
+        </li>
+    </ul>
+</li>
 
 {{-- Old Category menu removed - using TreeCategories system --}}
 
