@@ -64,7 +64,9 @@ class ManualPaymentController extends CheckoutBaseControlller
         $temp_affilate_users = PurchaseHelper::item_affilate_check($cart); // For CatalogItem Based Affilate Checking
         $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
         // ✅ استخدام الدالة الموحدة من CheckoutBaseControlller
-        $prepared = $this->prepareOrderData($input, $cart);
+        // Convert step2 to array if needed for prepareOrderData
+        $step2Array = is_array($step2) ? $step2 : (is_object($step2) ? (array)$step2 : []);
+        $prepared = $this->prepareOrderData($input, $cart, $merchantId, $step2Array);
         $input = $prepared['input'];
         $purchaseTotal = $prepared['order_total'];
 

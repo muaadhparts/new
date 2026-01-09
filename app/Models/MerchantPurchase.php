@@ -14,6 +14,7 @@ class MerchantPurchase extends Model
     protected $fillable = [
         'purchase_id',
         'user_id',
+        'cart',
         'qty',
         'price',
         'purchase_number',
@@ -34,6 +35,7 @@ class MerchantPurchase extends Model
     ];
 
     protected $casts = [
+        'cart' => 'array',
         'commission_amount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'shipping_cost' => 'decimal:2',

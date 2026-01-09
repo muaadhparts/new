@@ -142,10 +142,22 @@ class CashOnDeliveryController extends CheckoutBaseControlller
 
         // MERCHANT CHECKOUT ONLY (regular checkout is disabled)
         // merchant_id comes from route, so this is ALWAYS merchant checkout
-        $input['shipping_title'] = '';
-        $input['packing_title'] = '';
-        $input['shipping_cost'] = 0;
-        $input['packing_cost'] = 0;
+        $input['shipping_title'] = $step2['shipping_company'] ?? '';
+        $input['packing_title'] = $step2['packing_company'] ?? '';
+
+        // ✅ FIX (2026-01-09): Extract shipping cost from step2 data
+        // Step2 already has shipping_cost and courier_fee calculated by CheckoutController
+        $deliveryType = $step2['delivery_type'] ?? 'shipping';
+        if ($deliveryType === 'local_courier') {
+            // Local courier - use courier_fee
+            $input['shipping_cost'] = (float)($step2['courier_fee'] ?? 0);
+            $input['couriers'] = json_encode([$merchantId => (int)($step2['courier_id'] ?? 0)]);
+        } else {
+            // Shipping company - use shipping_cost
+            $input['shipping_cost'] = (float)($step2['shipping_cost'] ?? 0);
+        }
+        $input['packing_cost'] = (float)($step2['packing_cost'] ?? 0);
+
         $input['merchant_shipping_ids'] = json_encode([$merchantId => (int)($input['merchant_shipping_id'] ?? 0)]);
         $input['merchant_packing_ids'] = json_encode([$merchantId => (int)($input['merchant_packing_id'] ?? 0)]);
 

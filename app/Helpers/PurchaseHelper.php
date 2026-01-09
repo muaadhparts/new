@@ -171,35 +171,138 @@ class PurchaseHelper
         }
     }
 
-    public static function merchant_purchase_check($cart, $purchase)
+    /**
+     * Create MerchantPurchase records grouped by merchant
+     *
+     * CRITICAL FIX (2026-01-09):
+     * - Groups cart items by merchant (not one record per item)
+     * - Stores merchant-specific cart in each MerchantPurchase
+     * - Calculates financial fields (commission, tax, shipping, net_amount)
+     * - Properly sets payment_type, shipping_type, money_received_by
+     *
+     * @param mixed $cart The cart object with items
+     * @param Purchase $purchase The main purchase record
+     * @param array $checkoutData Optional checkout data with shipping/payment info
+     */
+    public static function merchant_purchase_check($cart, $purchase, $checkoutData = [])
     {
-
         try {
-            $notf = array();
+            $gs = \App\Models\Muaadhsetting::find(1);
 
-            foreach ($cart->items as $cartItem) {
-                if ($cartItem['item']['user_id'] != 0) {
-                    $merchantPurchase =  new MerchantPurchase();
-                    $merchantPurchase->purchase_id = $purchase->id;
-                    $merchantPurchase->user_id = $cartItem['item']['user_id'];
-                    $merchantPurchase->qty = $cartItem['qty'];
-                    $merchantPurchase->price = $cartItem['price'];
-                    $merchantPurchase->purchase_number = $purchase->purchase_number;
-                    $merchantPurchase->save();
-                    $notf[] = $cartItem['item']['user_id'];
+            // Group cart items by merchant
+            $merchantGroups = [];
+            foreach ($cart->items as $key => $cartItem) {
+                $merchantId = $cartItem['item']['user_id'] ?? $cartItem['user_id'] ?? 0;
+                if ($merchantId != 0) {
+                    if (!isset($merchantGroups[$merchantId])) {
+                        $merchantGroups[$merchantId] = [
+                            'items' => [],
+                            'totalQty' => 0,
+                            'totalPrice' => 0,
+                        ];
+                    }
+                    $merchantGroups[$merchantId]['items'][$key] = $cartItem;
+                    $merchantGroups[$merchantId]['totalQty'] += (int)($cartItem['qty'] ?? 1);
+                    $merchantGroups[$merchantId]['totalPrice'] += (float)($cartItem['price'] ?? 0);
                 }
             }
 
-            if (!empty($notf)) {
-                $users = array_unique($notf);
-                foreach ($users as $user) {
-                    $notification = new UserCatalogEvent;
-                    $notification->user_id = $user;
-                    $notification->purchase_number = $purchase->purchase_number;
-                    $notification->save();
+            // Get shipping choice data from purchase
+            $customerShippingChoice = $purchase->customer_shipping_choice;
+            if (is_string($customerShippingChoice)) {
+                $customerShippingChoice = json_decode($customerShippingChoice, true) ?? [];
+            }
+
+            // Create one MerchantPurchase per merchant
+            foreach ($merchantGroups as $merchantId => $merchantData) {
+                // Calculate commission
+                $itemsTotal = $merchantData['totalPrice'];
+                $commissionAmount = 0;
+                if ($gs) {
+                    $commissionAmount = $gs->fixed_commission + ($itemsTotal * $gs->percentage_commission / 100);
                 }
+
+                // Calculate tax (proportional to merchant's share)
+                $purchaseTax = (float)$purchase->tax;
+                $cartTotalPrice = 0;
+                foreach ($cart->items as $item) {
+                    $cartTotalPrice += (float)($item['price'] ?? 0);
+                }
+                $taxAmount = $cartTotalPrice > 0 ? ($itemsTotal / $cartTotalPrice) * $purchaseTax : 0;
+
+                // Get merchant-specific shipping choice
+                $shippingChoice = $customerShippingChoice[$merchantId] ?? $customerShippingChoice[(string)$merchantId] ?? null;
+                $shippingCost = 0;
+                $shippingType = null;
+                $courierId = null;
+                $shippingId = null;
+
+                if ($shippingChoice) {
+                    $shippingCost = (float)($shippingChoice['price'] ?? 0);
+                    $provider = $shippingChoice['provider'] ?? '';
+
+                    if ($provider === 'tryoto' || $provider === 'shipping_company') {
+                        $shippingType = 'platform'; // Third-party shipping
+                        $shippingId = $shippingChoice['delivery_option_id'] ?? null;
+                    } elseif ($provider === 'local_courier' || $provider === 'courier') {
+                        $shippingType = 'courier';
+                        $courierId = $shippingChoice['courier_id'] ?? null;
+                    } elseif ($provider === 'pickup') {
+                        $shippingType = 'pickup';
+                    } else {
+                        $shippingType = 'merchant'; // Merchant's own shipping
+                        $shippingId = $shippingChoice['shipping_id'] ?? null;
+                    }
+                }
+
+                // Determine payment type (COD = platform collects, online = depends on gateway)
+                $paymentMethod = strtolower($purchase->method ?? '');
+                $paymentType = 'platform'; // Default: platform handles payment
+                $moneyReceivedBy = 'platform';
+
+                if (strpos($paymentMethod, 'cod') !== false || strpos($paymentMethod, 'cash') !== false) {
+                    // For COD, money is received by courier or merchant
+                    if ($shippingType === 'courier') {
+                        $moneyReceivedBy = 'courier';
+                    } else {
+                        $moneyReceivedBy = 'merchant';
+                    }
+                }
+
+                // Calculate net amount (what merchant receives)
+                $netAmount = $itemsTotal - $commissionAmount;
+
+                $merchantPurchase = new MerchantPurchase();
+                $merchantPurchase->purchase_id = $purchase->id;
+                $merchantPurchase->user_id = $merchantId;
+                $merchantPurchase->cart = $merchantData['items']; // Store merchant-specific cart
+                $merchantPurchase->qty = $merchantData['totalQty'];
+                $merchantPurchase->price = $itemsTotal;
+                $merchantPurchase->purchase_number = $purchase->purchase_number;
+                $merchantPurchase->status = 'pending';
+                $merchantPurchase->commission_amount = $commissionAmount;
+                $merchantPurchase->tax_amount = $taxAmount;
+                $merchantPurchase->shipping_cost = $shippingCost;
+                $merchantPurchase->packing_cost = 0; // TODO: Calculate if packing is used
+                $merchantPurchase->courier_fee = $shippingType === 'courier' ? $shippingCost : 0;
+                $merchantPurchase->net_amount = $netAmount;
+                $merchantPurchase->payment_type = $paymentType;
+                $merchantPurchase->shipping_type = $shippingType;
+                $merchantPurchase->money_received_by = $moneyReceivedBy;
+                $merchantPurchase->shipping_id = $shippingId;
+                $merchantPurchase->courier_id = $courierId;
+                $merchantPurchase->save();
+
+                // Create notification for merchant
+                $notification = new UserCatalogEvent;
+                $notification->user_id = $merchantId;
+                $notification->purchase_number = $purchase->purchase_number;
+                $notification->save();
             }
         } catch (\Exception $e) {
+            \Log::error('merchant_purchase_check error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 

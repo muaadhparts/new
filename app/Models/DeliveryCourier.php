@@ -11,7 +11,8 @@ class DeliveryCourier extends Model
 
     protected $table = 'delivery_couriers';
 
-    public $timestamps = false;
+    // Enable timestamps (columns added in 2026_01_09 migration)
+    public $timestamps = true;
 
     protected $fillable = [
         'purchase_id',

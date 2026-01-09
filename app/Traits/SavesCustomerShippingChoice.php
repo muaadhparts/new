@@ -9,10 +9,12 @@ use Illuminate\Support\Facades\Session;
  * Trait for saving customer's shipping choice when creating orders
  *
  * This trait extracts and saves the shipping company selected by the customer
- * during checkout. It handles both Tryoto format and regular shipping IDs.
+ * during checkout. It handles:
+ * 1. Tryoto format: "deliveryOptionId#companyName#price"
+ * 2. Regular shipping ID
+ * 3. Local courier delivery
  *
- * Tryoto format: "deliveryOptionId#companyName#price"
- * Regular format: numeric shipping ID
+ * UPDATED: 2026-01-09 - Added support for courier delivery type
  */
 trait SavesCustomerShippingChoice
 {
@@ -21,28 +23,55 @@ trait SavesCustomerShippingChoice
      *
      * @param array|null $step2Data Step2 session data (if null, will read from session)
      * @param int|null $merchantId Merchant ID for merchant-specific checkout
-     * @param bool $isMerchantCheckout Whether this is merchant-specific checkout
-     * @return string|null JSON encoded shipping choices per merchant, or null if empty
+     * @param bool $isMerchantCheckout Whether this is merchant-specific checkout (default: true for merchant checkout)
+     * @return array|null Shipping choices array per merchant, or null if empty
      */
-    protected function extractCustomerShippingChoice($step2Data = null, $merchantId = null, $isMerchantCheckout = false)
+    protected function extractCustomerShippingChoice($step2Data = null, $merchantId = null, $isMerchantCheckout = true)
     {
         $choices = [];
 
         // If step2Data not provided, try to get from session
         if ($step2Data === null) {
-            if ($isMerchantCheckout && $merchantId) {
+            if ($merchantId) {
                 $step2Data = Session::get('merchant_step2_' . $merchantId, []);
             } else {
                 $step2Data = Session::get('step2', []);
             }
         }
 
-        // Get shipping selections from step2 data
-        $shippingSelections = $step2Data['shipping'] ?? [];
+        // Convert object to array if needed
+        if (is_object($step2Data)) {
+            $step2Data = (array) $step2Data;
+        }
+
+        // ✅ PRIORITY 1: Check for local courier delivery
+        $deliveryType = $step2Data['delivery_type'] ?? null;
+        if ($deliveryType === 'local_courier' && $merchantId) {
+            $courierId = $step2Data['courier_id'] ?? null;
+            $courierFee = (float)($step2Data['courier_fee'] ?? 0);
+            $courierName = $step2Data['courier_name'] ?? 'Courier';
+            $merchantLocationId = $step2Data['merchant_location_id'] ?? null;
+            $serviceAreaId = $step2Data['selected_service_area_id'] ?? null;
+
+            if ($courierId) {
+                $choices[$merchantId] = [
+                    'provider' => 'local_courier',
+                    'courier_id' => (int) $courierId,
+                    'courier_name' => $courierName,
+                    'price' => $courierFee,
+                    'merchant_location_id' => $merchantLocationId,
+                    'service_area_id' => $serviceAreaId,
+                    'selected_at' => now()->toIso8601String(),
+                ];
+                return $choices;
+            }
+        }
+
+        // ✅ PRIORITY 2: Check for shipping company selection
+        $shippingSelections = $step2Data['shipping'] ?? $step2Data['saved_shipping_selections'] ?? [];
 
         // For merchant checkout, the shipping might be stored directly
-        if ($isMerchantCheckout && $merchantId) {
-            // Check if shipping is stored as merchant_id => value
+        if ($merchantId) {
             if (is_array($shippingSelections) && isset($shippingSelections[$merchantId])) {
                 // Already in correct format
             } elseif (!is_array($shippingSelections) && !empty($shippingSelections)) {
@@ -56,6 +85,18 @@ trait SavesCustomerShippingChoice
             if ($merchantId && !empty($shippingSelections)) {
                 $shippingSelections = [$merchantId => $shippingSelections];
             } else {
+                // No shipping selection found - check if shipping_cost was already calculated
+                $shippingCost = (float)($step2Data['shipping_cost'] ?? 0);
+                if ($shippingCost > 0 && $merchantId) {
+                    // Use calculated shipping cost from step2
+                    $choices[$merchantId] = [
+                        'provider' => 'calculated',
+                        'price' => $shippingCost,
+                        'company_name' => $step2Data['shipping_company'] ?? '',
+                        'selected_at' => now()->toIso8601String(),
+                    ];
+                    return $choices;
+                }
                 return null;
             }
         }
@@ -105,7 +146,7 @@ trait SavesCustomerShippingChoice
      * @param bool $isMerchantCheckout Whether merchant-specific checkout
      * @return array Modified input array
      */
-    protected function addCustomerShippingChoiceToInput(array $input, $step2Data = null, $merchantId = null, $isMerchantCheckout = false)
+    protected function addCustomerShippingChoiceToInput(array $input, $step2Data = null, $merchantId = null, $isMerchantCheckout = true)
     {
         $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2Data, $merchantId, $isMerchantCheckout);
         return $input;

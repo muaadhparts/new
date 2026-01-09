@@ -49,17 +49,33 @@ class CheckoutBaseControlller extends Controller
      * Prepare purchase data using total from step3 (no recalculation)
      * Ensures merchant isolation and correct total handling
      *
+     * UPDATED 2026-01-09:
+     * - Properly handles merchant checkout with merchant_step2_{id}
+     * - Extracts shipping cost from step2 data
+     * - Sets courier data for local courier delivery
+     *
      * @param array $input Request input data
      * @param \App\Models\Cart $cart Cart object
+     * @param int|null $merchantId Merchant ID for merchant checkout
+     * @param array|null $step2Data Step2 session data (optional, will be fetched if not provided)
      * @return array Prepared purchase data
      */
-    protected function prepareOrderData($input, $cart)
+    protected function prepareOrderData($input, $cart, $merchantId = null, $step2Data = null)
     {
         // ✅ استخدام المبلغ من step3 مباشرة (لا إعادة حساب)
         $purchaseTotal = (float)($input['total'] ?? 0) / $this->curr->value;
 
+        // Get step2 data if not provided
+        if ($step2Data === null) {
+            if ($merchantId) {
+                $step2Data = Session::get('merchant_step2_' . $merchantId, []);
+            } else {
+                $step2Data = Session::get('step2', []);
+            }
+        }
+
         // ✅ حفظ طريقة الشحن الأصلية (shipto) قبل أي معالجة
-        $step1 = Session::get('step1', []);
+        $step1 = $merchantId ? Session::get('merchant_step1_' . $merchantId, []) : Session::get('step1', []);
         $originalShippingMethod = $step1['shipping'] ?? 'shipto';
 
         // إذا كان shipping string (shipto) وليس array، نحفظه
@@ -70,16 +86,38 @@ class CheckoutBaseControlller extends Controller
         // تحضير merchant_ids من السلة
         $merchant_ids = [];
         foreach ($cart->items as $item) {
-            $merchantId = $item['item']['user_id'] ?? 0;
-            if (!in_array($merchantId, $merchant_ids)) {
-                $merchant_ids[] = $merchantId;
+            $itemMerchantId = $item['item']['user_id'] ?? 0;
+            if (!in_array($itemMerchantId, $merchant_ids)) {
+                $merchant_ids[] = $itemMerchantId;
             }
         }
         $input['merchant_ids'] = json_encode($merchant_ids);
 
-        // تحضير بيانات الشحن والتغليف
-        if ($this->gs->multiple_shipping == 0) {
-            // Single shipping
+        // ✅ FIX (2026-01-09): Extract shipping cost and titles from step2 data
+        $input['shipping_title'] = $step2Data['shipping_company'] ?? '';
+        $input['packing_title'] = $step2Data['packing_company'] ?? '';
+
+        // Handle delivery type (shipping company vs local courier)
+        $deliveryType = $step2Data['delivery_type'] ?? 'shipping';
+        if ($deliveryType === 'local_courier') {
+            // Local courier - use courier_fee
+            $input['shipping_cost'] = (float)($step2Data['courier_fee'] ?? 0);
+            $courierId = (int)($step2Data['courier_id'] ?? 0);
+            if ($courierId && $merchantId) {
+                $input['couriers'] = json_encode([$merchantId => $courierId]);
+            }
+        } else {
+            // Shipping company - use shipping_cost
+            $input['shipping_cost'] = (float)($step2Data['shipping_cost'] ?? 0);
+        }
+        $input['packing_cost'] = (float)($step2Data['packing_cost'] ?? 0);
+
+        // Set shipping/packing IDs
+        if ($merchantId) {
+            $input['merchant_shipping_ids'] = json_encode([$merchantId => (int)($input['merchant_shipping_id'] ?? 0)]);
+            $input['merchant_packing_ids'] = json_encode([$merchantId => (int)($input['merchant_packing_id'] ?? 0)]);
+        } else {
+            // Multi-merchant or legacy checkout
             if (!isset($input['merchant_shipping_ids'])) {
                 $input['merchant_shipping_ids'] = json_encode([]);
             } elseif (is_array($input['merchant_shipping_ids'])) {
@@ -91,48 +129,16 @@ class CheckoutBaseControlller extends Controller
             } elseif (is_array($input['merchant_packing_ids'])) {
                 $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
             }
-        } else {
-            // Multi shipping
-            // Shipping
-            if (isset($input['shipping']) && is_array($input['shipping'])) {
-                $input['merchant_shipping_ids'] = json_encode($input['shipping']);
-                $input['shipping_title'] = json_encode($input['shipping']);
-                $input['merchant_shipping_id'] = json_encode($input['shipping']);
-            } elseif (isset($input['merchant_shipping_ids']) && is_array($input['merchant_shipping_ids'])) {
-                $input['merchant_shipping_ids'] = json_encode($input['merchant_shipping_ids']);
-                $input['shipping_title'] = $input['merchant_shipping_ids'];
-                $input['merchant_shipping_id'] = $input['merchant_shipping_ids'];
-            } else {
-                $input['merchant_shipping_ids'] = json_encode([]);
-                $input['shipping_title'] = json_encode([]);
-                $input['merchant_shipping_id'] = json_encode([]);
-            }
-
-            // Packing
-            if (isset($input['packeging']) && is_array($input['packeging'])) {
-                $input['merchant_packing_ids'] = json_encode($input['packeging']);
-                $input['packing_title'] = json_encode($input['packeging']);
-                $input['merchant_packing_id'] = json_encode($input['packeging']);
-            } elseif (isset($input['merchant_packing_ids']) && is_array($input['merchant_packing_ids'])) {
-                $input['merchant_packing_ids'] = json_encode($input['merchant_packing_ids']);
-                $input['packing_title'] = $input['merchant_packing_ids'];
-                $input['merchant_packing_id'] = $input['merchant_packing_ids'];
-            } else {
-                $input['merchant_packing_ids'] = json_encode([]);
-                $input['packing_title'] = json_encode([]);
-                $input['merchant_packing_id'] = json_encode([]);
-            }
-
-            unset($input['packeging']);
         }
+
+        // Clean up array inputs
+        unset($input['packeging']);
 
         // ✅ إعادة تعيين قيمة shipping الأصلية (shipto) للعرض في الفاتورة
         $input['shipping'] = $originalShippingMethod;
 
         // ✅ حفظ بيانات شركة الشحن المختارة من العميل (Tryoto وغيرها)
-        // نمرر step2 من الجلسة
-        $step2 = Session::get('step2', []);
-        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2);
+        $input['customer_shipping_choice'] = $this->extractCustomerShippingChoice($step2Data, $merchantId, $merchantId !== null);
 
         return [
             'input' => $input,

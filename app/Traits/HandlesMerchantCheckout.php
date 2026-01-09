@@ -170,6 +170,11 @@ trait HandlesMerchantCheckout
      *
      * Called after purchase creation when delivery_type is 'local_courier'
      *
+     * UPDATED 2026-01-09:
+     * - Properly extracts service_area_id from step2
+     * - Sets delivery_fee from courier_fee
+     * - Calculates COD amount correctly
+     *
      * @param \App\Models\Purchase $purchase The created purchase
      * @param int $merchantId The merchant ID from route
      * @param array $step2 Step 2 data containing delivery info
@@ -178,6 +183,11 @@ trait HandlesMerchantCheckout
      */
     protected function createDeliveryCourier($purchase, $merchantId, $step2, $paymentMethod = 'online')
     {
+        // Convert object to array if needed
+        if (is_object($step2)) {
+            $step2 = (array) $step2;
+        }
+
         // Get delivery type from step2
         $deliveryType = $step2['delivery_type'] ?? null;
 
@@ -186,14 +196,33 @@ trait HandlesMerchantCheckout
             return null;
         }
 
-        $courierId = $step2['courier_id'] ?? null;
-        $merchantLocationId = $step2['merchant_location_id'] ?? null;
-        $serviceAreaId = $step2['selected_service_area_id'] ?? null;
+        $courierId = (int)($step2['courier_id'] ?? 0);
+        $merchantLocationId = (int)($step2['merchant_location_id'] ?? 0) ?: null;
+        $serviceAreaId = (int)($step2['selected_service_area_id'] ?? $step2['service_area_id'] ?? 0) ?: null;
         $courierFee = (float)($step2['courier_fee'] ?? 0);
+        $customerCityId = (int)($step2['customer_city_id'] ?? 0);
 
         // For courier delivery, courier_id is required
         if (!$courierId) {
+            \Log::warning('createDeliveryCourier: No courier_id provided', [
+                'purchase_id' => $purchase->id,
+                'step2' => $step2,
+            ]);
             return null;
+        }
+
+        // If service_area_id not provided, try to find it
+        if (!$serviceAreaId && $customerCityId) {
+            $serviceArea = CourierServiceArea::where('courier_id', $courierId)
+                ->where('city_id', $customerCityId)
+                ->first();
+            if ($serviceArea) {
+                $serviceAreaId = $serviceArea->id;
+                // Also get courier fee from service area if not set
+                if (!$courierFee) {
+                    $courierFee = (float)$serviceArea->price;
+                }
+            }
         }
 
         // Determine COD amount (for COD orders, this is the total amount to collect)
@@ -221,7 +250,9 @@ trait HandlesMerchantCheckout
             'merchant_id' => $merchantId,
             'delivery_type' => $deliveryType,
             'courier_id' => $courierId,
+            'service_area_id' => $serviceAreaId,
             'courier_fee' => $courierFee,
+            'cod_amount' => $codAmount,
             'payment_method' => $paymentMethod,
         ]);
 
