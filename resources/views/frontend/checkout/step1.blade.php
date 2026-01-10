@@ -42,7 +42,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant.step1.submit', $merchant_id) : route('front.checkout.step1.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ route('front.checkout.merchant.step1.submit', $merchant_id) }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow fadeInUp" data-wow-delay=".2s">
@@ -71,175 +71,6 @@
                         </div>
                         {{-- END: Location Selection Section --}}
 
-                        {{-- ============================================== --}}
-                        {{-- CUSTOMER DETAILS --}}
-                        {{-- ============================================== --}}
-                        <div id="customer-details-section">
-
-                        <!-- personal information -->
-                        <div class="mb-40">
-                            <h4 class="form-title">
-                                @lang('Personal Information')
-                            </h4>
-                            <div class="row g-4">
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="name">@lang('Name')</label>
-                                        <input class="input-cls" id="name" name="personal_name"
-                                            value="{{ Auth::check() ? Auth::user()->name : '' }}" type="text"
-                                            placeholder="@lang('Enter Your Name')" {{ Auth::check() ? 'readonly' : '' }}>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="email">@lang('Email')</label>
-                                        <input class="input-cls" id="email" type="email" name="personal_email"
-                                            placeholder="@lang('Enter Your Emai')l"
-                                            value="{{ Auth::check() ? Auth::user()->email : '' }}"
-                                            {{ Auth::check() ? 'readonly' : '' }}>
-                                    </div>
-                                </div>
-
-
-
-
-                                @if (!Auth::check())
-                                    <div class="col-lg-12">
-                                        <div class="gs-checkbox-wrapper" data-bs-toggle="collapse"
-                                            data-bs-target="#show_passwords" aria-expanded="false"
-                                            aria-controls="show_passwords" role="region">
-                                            <input type="checkbox" id="showca" name="create_account" value="1">
-                                            <label class="icon-label" for="showca">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12"
-                                                    viewBox="0 0 12 12" fill="none">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="1.6666"
-                                                        stroke-linecap="round" stroke-linejoin="round" />
-                                                </svg>
-                                            </label>
-                                            <label for="showca">@lang('Create an account ?')</label>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 collapse" id="show_passwords">
-                                        <div class="row gy-4">
-                                            <div class="col-lg-6">
-                                                <div class="input-wrapper">
-                                                    <label class="label-cls" for="crpass">
-                                                        @lang('Create Password')
-                                                    </label>
-                                                    <input class="input-cls" id="crpass" name="password" type="password"
-                                                        placeholder="@lang('Create Your Password')" minlength="6">
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-6">
-                                                <div class="input-wrapper">
-                                                    <label class="label-cls" for="conpass">
-                                                        @lang('Confirm Password')
-                                                    </label>
-                                                    <input class="input-cls" id="conpass" name="password_confirmation" type="password"
-                                                        placeholder="@lang('Confirm Password')" minlength="6">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
-
-                            </div>
-                        </div>
-
-                        <!-- Billing Details -->
-                        <div class="mb-40">
-                            <h4 class="form-title">@lang('Billing Details')</h4>
-                            <div class="row g-4">
-                                {{-- Shipping is always 'shipto' (delivery to customer address) --}}
-                                <input type="hidden" name="shipping" value="shipto">
-
-
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="customer_name">@lang('Name')</label>
-                                        <input class="input-cls" id="customer_name" type="text" name="customer_name"
-                                            placeholder="@lang('Full Name')"
-                                            value="{{ Auth::check() ? Auth::user()->name : '' }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="customer_email">@lang('Email')</label>
-                                        <input class="input-cls" id="customer_email" type="text"
-                                            name="customer_email" placeholder="@lang('Your Email')"
-                                            value="{{ Auth::check() ? Auth::user()->email : '' }}">
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="phone">
-                                            @lang('Phone Number')
-                                        </label>
-                                        <input class="input-cls" id="phone" type="tel"
-                                            placeholder="@lang('Phone Number')" name="customer_phone"
-                                            value="{{ Auth::check() ? Auth::user()->phone : '' }}">
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="address">
-                                            @lang('Address')
-                                        </label>
-                                        <input class="input-cls" id="address" type="text"
-                                            placeholder="@lang('Address')" name="customer_address"
-                                            value="{{ Auth::check() ? Auth::user()->address : '' }}">
-                                    </div>
-                                </div>
-
-
-                                <div class="col-lg-6">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls" for="zip">
-                                            @lang('Postal Code')
-                                        </label>
-                                        <input class="input-cls" id="zip" type="text"
-                                            placeholder="@lang('Postal Code')" name="customer_zip"
-                                            value="{{ Auth::check() ? Auth::user()->zip : '' }}">
-                                    </div>
-                                </div>
-
-
-                                {{-- Hidden dropdowns (kept for potential future use) --}}
-                                {{-- Hidden dropdowns - name removed, using hidden fields instead --}}
-                                <div class="col-lg-6 d-none">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls">@lang('Select Country')</label>
-                                        <select class="nice-select" id="select_country">
-                                            @include('includes.countries')
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6 d-none select_state">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls">@lang('Select State')</label>
-                                        <select class="nice-select" id="show_state">
-
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-lg-6 d-none">
-                                    <div class="input-wrapper">
-                                        <label class="label-cls">@lang('Select City')</label>
-                                        {{-- name removed - using hidden field customer_city_hidden instead --}}
-                                        <select class="nice-select " id="show_city">
-
-                                        </select>
-                                    </div>
-                                </div>
-
-
-                            </div>
-                        </div>
-                        </div>
-                        {{-- END: Customer Details Section (was hidden until delivery selected) --}}
                     </div>
                     <div class="col-lg-5 col-xl-4 wow fadeInUp" data-wow-delay=".2s">
                         <div class="summary-box">
@@ -322,8 +153,6 @@
                 <input type="hidden" id="input_tax" name="tax" value="">
                 <input type="hidden" id="input_tax_type" name="tax_type" value="">
                 <input type="hidden" name="totalQty" value="{{ $totalQty }}">
-                <input type="hidden" name="merchant_shipping_id" value="{{ $merchant_shipping_id }}">
-                <input type="hidden" name="merchant_packing_id" value="{{ $merchant_packing_id }}">
                 <input type="hidden" name="currency_sign" value="{{ $curr->sign }}">
                 <input type="hidden" name="currency_name" value="{{ $curr->name }}">
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">

@@ -155,7 +155,7 @@ class RazorpayController extends Controller
             }
             return redirect(route('front.payment.success', 1));
         } else {
-            return redirect(route('front.checkout'));
+            return redirect(route('front.cart'))->with('unsuccess', __('Payment failed.'));
         }
     }
 }

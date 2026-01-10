@@ -46,7 +46,7 @@
             </div>
 
             <!-- address-->
-            <form class="address-wrapper" action="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant.step2.submit', $merchant_id) : route('front.checkout.step2.submit') }}" method="POST">
+            <form class="address-wrapper" action="{{ route('front.checkout.merchant.step2.submit', $merchant_id) }}" method="POST">
                 @csrf
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow-replaced" data-wow-delay=".2s">
@@ -55,7 +55,7 @@
                             <div class="single-addres">
                                 <div class="title-wrapper d-flex justify-content-between">
                                     <h5>@lang('Billing Address')</h5>
-                                    <a class="edit-btn" href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant', $merchant_id) : route('front.cart') }}">@lang('Edit')</a>
+                                    <a class="edit-btn" href="{{ route('front.checkout.merchant', $merchant_id) }}">@lang('Edit')</a>
                                 </div>
 
                                 <ul>
@@ -129,12 +129,9 @@
 
                         @foreach ($resultArray as $loop_merchant_id => $array_product)
                             @php
-                                // ✅ N+1 FIX: Use pre-loaded data from CheckoutDataService
                                 $merchantInfo = $merchantData[$loop_merchant_id] ?? null;
                                 $shipping = isset($merchantInfo['shipping']) ? collect($merchantInfo['shipping']) : collect();
                                 $packaging = $merchantInfo['packaging'] ?? collect();
-                                $merchantUser = $merchantInfo['merchant'] ?? null;
-                                $merchantLocation = $merchantInfo['merchant_location'] ?? null;
                                 $groupedShipping = $merchantInfo['grouped_shipping'] ?? collect();
                                 $providerLabels = $merchantInfo['provider_labels'] ?? [
                                     'manual' => __('Manual Shipping'),
@@ -142,128 +139,18 @@
                                     'tryoto' => __('Smart Shipping (Tryoto)'),
                                 ];
 
-                                // ✅ Calculate merchant's catalogItems total for free shipping check
-                                $merchantProductsTotal = 0;
-                                foreach ($array_product as $catalogItem) {
-                                    $merchantProductsTotal += $catalogItem['price'] ?? 0;
+                                $orderTotal = 0;
+                                foreach ($array_product as $cartItem) {
+                                    $orderTotal += $cartItem['price'] ?? 0;
                                 }
-                                $merchantProductsTotalConverted = round($merchantProductsTotal * $curr->value, 2);
-
+                                $orderTotalConverted = round($orderTotal * $curr->value, 2);
                             @endphp
-                            {{-- ✅ Hidden element for merchant's catalogItems total (for JavaScript) --}}
-                            <input type="hidden" data-merchant-catalogItems-total="{{ $loop_merchant_id }}" data-amount="{{ $merchantProductsTotalConverted }}" />
+                            <input type="hidden" data-order-total="{{ $loop_merchant_id }}" data-amount="{{ $orderTotalConverted }}" />
 
-                            <div class="catalogItem-infos-wrapper wow-replaced" data-wow-delay=".2s">
-                                <!-- shop-info-wrapper -->
-
-                                <!-- catalogItem list  -->
-                                <div class="catalogItem-list">
-                                    @foreach ($array_product as $catalogItem)
-                                        <div class="checkout-single-catalogItem wow-replaced" data-wow-delay=".1s">
-                                            <div class="img-wrapper">
-                                                <a href="#">
-                                                    <img width="200" class="img-cls"
-                                                        src="{{ $catalogItem['item']['photo'] ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png') }}"
-                                                        alt="catalogItem">
-                                                </a>
-                                            </div>
-                                            <div class="content-wrapper">
-                                                @php
-                                                    $checkoutProductUrl = '#';
-                                                    if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
-                                                        $checkoutProductUrl = route('front.catalog-item', [
-                                                            'slug' => $catalogItem['item']['slug'],
-                                                            'merchant_id' => $catalogItem['user_id'],
-                                                            'merchant_item_id' => $catalogItem['merchant_item_id']
-                                                        ]);
-                                                    } elseif (isset($catalogItem['item']['slug'])) {
-                                                        $checkoutProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
-                                                    }
-                                                @endphp
-                                                <h6>
-                                                    <a class="catalogItem-title"
-                                                        href="{{ $checkoutProductUrl }}"
-                                                        target="_blank">
-                                                        {{ getLocalizedCatalogItemName($catalogItem['item']) }}
-                                                    </a>
-                                                </h6>
-
-                                                <ul class="catalogItem-specifications-list">
-                                                    <li>
-                                                        <span class="specification-name">@lang('Price :')</span>
-                                                        <span class="specification">
-                                                            {{ App\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}</span>
-                                                    </li>
-                                                    <li>
-                                                        <span class="specification-name">@lang('Quantity :')</span>
-                                                        <span class="specification">{{ $catalogItem['qty'] }}</span>
-                                                    </li>
-                                                    @if (!empty($catalogItem['size']))
-                                                        <li>
-                                                            <span class="specification-name">{{ __('Size') }} : </span>
-                                                            <span
-                                                                class="specification">{{ str_replace('-', ' ', $catalogItem['size']) }}</span>
-                                                        </li>
-                                                    @endif
-
-
-                                                    @if (!empty($catalogItem['color']))
-                                                        @php
-                                                            // Handle color as string or array
-                                                            $colorValue = $catalogItem['color'];
-                                                            if (is_array($colorValue)) {
-                                                                $colorValue = reset($colorValue) ?: ''; // Get first element
-                                                            }
-                                                        @endphp
-                                                        <li>
-                                                            <span class="specification-name">@lang('Color :') </span>
-                                                            <span class="specification muaadh-color-swatch"
-                                                                style="--swatch-color: {{ $colorValue == '' ? 'white' : '#' . $colorValue }};"></span>
-                                                        </li>
-                                                    @endif
-
-                                                    @if (!empty($catalogItem['keys']))
-                                                        @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
-                                                            <li>
-                                                                <span
-                                                                    class="specification-name">{{ ucwords(str_replace('_', ' ', $key)) }}
-                                                                    : </span>
-                                                                <span class="specification">{{ $value }}</span>
-                                                            </li>
-                                                        @endforeach
-                                                    @endif
-
-                                                    <li>
-                                                        <span class="specification-name">@lang('Total Price :') </span>
-                                                        <span
-                                                            class="specification">{{ App\Models\CatalogItem::convertPrice($catalogItem['price']) }}
-                                                            {{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '%' . __('Off') . ')' }}</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    @endforeach
-
-                                </div>
-
+                            <div class="shipping-options-wrapper wow-replaced" data-wow-delay=".2s">
 
                                 @if ($gs->multiple_shipping == 1)
                                     <div class="shop-info-wrapper">
-                                        <ul>
-                                            <li>
-                                                <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ getLocalizedShopName($merchantUser) }}</span>
-                                            </li>
-                                            <li>
-                                                <span><b>@lang('Shop Phone :')</b></span>
-                                                <span>{{ $merchantUser->phone }}</span>
-                                            </li>
-                                            <li>
-                                                <span><b>@lang('Warehouse Address:')</b></span>
-                                                <span>{{ $merchantLocation->location ?? $merchantUser->address ?? '-' }}</span>
-                                            </li>
-                                        </ul>
-
 
                                         {{-- Tax Display for this Merchant --}}
                                         @if(isset($step1->merchant_tax_data[$merchant_id]))
@@ -301,7 +188,7 @@
                                                 </button>
                                             </div>
                                         @endif
-                                        {{-- ✅ LOCAL COURIER DELIVERY OPTION (if available) - Before Shipping Methods --}}
+                                        {{-- Local Courier Option --}}
                                         @if(isset($courier_available) && $courier_available && isset($available_couriers) && count($available_couriers) > 0)
                                             <div class="d-flex flex-wrap gap-2 mb-3 bg-light-white p-4">
                                                 <span class="label mr-2">
@@ -403,23 +290,6 @@
                                             ])
                                         @endif
                                     </div>
-                                @else
-                                    <div class="shop-info-wrapper">
-                                        <ul>
-                                            <li>
-                                                <span><b>@lang('Shop Name :')</b></span>
-                                                <span>{{ getLocalizedShopName($merchantUser) }}</span>
-                                            </li>
-                                            <li>
-                                                <span><b>@lang('Shop Phone :')</b></span>
-                                                <span>{{ $merchantUser->phone }}</span>
-                                            </li>
-                                            <li>
-                                                <span><b>@lang('Warehouse Address:')</b></span>
-                                                <span>{{ $merchantLocation->location ?? $merchantUser->address ?? '-' }}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
                                 @endif
 
 
@@ -511,7 +381,7 @@
                             @endif
 
 
-                            {{-- ✅ Unified Price Summary Component - Step 2 --}}
+                            {{-- Price Summary --}}
                             @include('includes.checkout-price-summary', [
                                 'step' => 2,
                                 'catalogItemsTotal' => $catalogItemsTotal ?? $totalPrice,
@@ -541,7 +411,7 @@
                                             </defs>
                                         </svg>
                                     </button>
-                                    <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant', $merchant_id) : route('front.cart') }}" class="template-btn dark-outline w-100">
+                                    <a href="{{ route('front.checkout.merchant', $merchant_id) }}" class="template-btn dark-outline w-100">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24"
                                             viewBox="0 0 25 24" fill="none">
                                             <g clip-path="url(#clip0_489_34179)">
@@ -582,8 +452,6 @@
                 <input type="hidden" name="currency_name" value="{{ $curr->name }}">
                 <input type="hidden" name="currency_value" value="{{ $curr->value }}">
                 @php
-                    // Calculate total with tax for initial display
-                    // Support both regular checkout (total_tax_amount) and merchant checkout (tax_amount)
                     $taxAmount = $step1->total_tax_amount ?? $step1->tax_amount ?? 0;
                     $totalWithTax = $totalPrice + $taxAmount;
                 @endphp
@@ -603,8 +471,6 @@
                         value="{{ round($totalWithTax * $curr->value, 2) }}">
                     <input type="hidden" id="tgrandtotal" value="{{ round($totalPrice * $curr->value, 2) }}">
                     <input type="hidden" id="tax_amount_value" value="{{ round($taxAmount * $curr->value, 2) }}">
-                    {{-- DEBUG: Remove after fixing --}}
-                    <!-- DEBUG: totalPrice={{ $totalPrice }}, taxAmount={{ $taxAmount }}, totalWithTax={{ $totalWithTax }}, curr->value={{ $curr->value }} -->
                 @endif
                 <input type="hidden" id="original_tax" value="0">
                 <input type="hidden" id="wallet-price" name="wallet_price" value="0">
@@ -631,7 +497,6 @@
     <!--  checkout wrapper end-->
 
     @php
-        // ✅ N+1 FIX: Use pre-loaded country from CheckoutDataService
         $country = $preloadedCountry ?? null;
         $countryId = $country ? $country->id : 0;
     @endphp
@@ -758,14 +623,9 @@
         let mship = 0;
         let mpack = 0;
 
-        // ✅ REMOVED: Initial calculation that was showing wrong total
-        // The correct total will be calculated by updateFinalTotal() inside $(document).ready()
-        // This fixes the issue where packing was not included in the displayed total
-
         let original_tax = 0;
 
         $(document).ready(function() {
-            // ✅ Restore saved shipping/packing selections from step2 session
             @if(isset($step2) && $step2)
                 @if(isset($step2->saved_shipping_selections) && is_array($step2->saved_shipping_selections))
                     // Restore shipping selections
@@ -799,13 +659,7 @@
                 @endif
             @endif
 
-            // ✅ CRITICAL: Update final total after loading saved selections
             updateFinalTotal();
-
-            // ✅ Tax is already calculated in Step 1 and stored in session
-            // NO need to call tax_submit API again - it overwrites correct values!
-            // The tax values are already loaded from $step1 in checkout-price-summary.blade.php
-            // ✅ Merchant checkout uses merchant_id instead of merchant_id
 
             let is_state = $('#is_state').val();
             if (is_state == 1) {
@@ -813,8 +667,6 @@
             } else {
                 hide_state();
             }
-
-            // ✅ No longer needed - delivery type is now handled via modal selection
         });
 
         /**
@@ -954,7 +806,6 @@
                     $('#input_tax').val(taxAmount);
                     $('#input_tax_type').val(data[12]);
 
-                    // ✅ استخدام PriceSummary الموحد لتحديث العرض
                     if (typeof PriceSummary !== 'undefined') {
                         PriceSummary.updateTax(taxRate, taxAmount);
                     }
@@ -973,10 +824,7 @@
             let title = $(this).attr('data-form');
             $('#shipping_text' + ref).html(title + '+' + view);
 
-            // ✅ Reset courier selection when shipping is selected
             resetCourierSelection();
-
-            // ✅ Use centralized updateFinalTotal() function
             updateFinalTotal();
 
             $('#multi_shipping_id').val($(this).val());
@@ -990,22 +838,18 @@
             let title = $(this).attr('data-form');
             $('#packing_text' + ref).html(title + '+' + view);
 
-            // ✅ Use centralized updateFinalTotal() function
             updateFinalTotal();
 
             $('#multi_packaging_id').val($(this).val());
-            // ✅ Update merchant_packing_id for merchant checkout
             $('input[name="merchant_packing_id"]').val($(this).val());
         })
 
 
-        // ✅ جعل الدالة عالمية لتستخدمها Tryoto modal
         window.getShipping = function getShipping() {
             mship = 0;
             let originalShipping = 0;
             let isFreeShipping = false;
 
-            // ✅ جمع كل الشحن المحدد
             const checkedShipping = $('input.shipping:checked, input.shipping-option:checked, input.tryoto-radio:checked');
 
             checkedShipping.each(function() {
@@ -1016,24 +860,20 @@
 
                 originalShipping += originalPrice;
 
-                // ✅ تطبيق منطق free_above
                 if (freeAbove > 0 && merchantTotal >= freeAbove) {
-                    // الشحن مجاني - لا نضيف للـ mship
                     isFreeShipping = true;
                 } else {
                     mship += originalPrice;
                 }
             });
 
-            // ✅ استخدام PriceSummary الموحد لتحديث العرض
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.updateShipping(mship, originalShipping, isFreeShipping);
             }
         }
 
-        // Helper function to get merchant's catalogItems total (converted to current currency)
         window.getMerchantTotal = function getMerchantTotal(merchantId) {
-            const merchantTotalEl = $('[data-merchant-catalogItems-total="' + merchantId + '"]');
+            const merchantTotalEl = $('[data-order-total="' + merchantId + '"]');
             if (merchantTotalEl.length > 0) {
                 return parseFloat(merchantTotalEl.attr('data-amount')) || 0;
             }
@@ -1048,18 +888,12 @@
             checkedPacking.each(function() {
                 mpack += parseFloat($(this).attr('data-price')) || 0;
             });
-            // ✅ استخدام PriceSummary الموحد لتحديث العرض
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.updatePacking(mpack);
             }
         }
 
-        /**
-         * ✅ WRAPPER: Update Final Total
-         * Now uses PriceSummary for unified calculations
-         */
         window.updateFinalTotal = function updateFinalTotal() {
-            // Use PriceSummary for unified calculation
             if (typeof PriceSummary !== 'undefined') {
                 PriceSummary.recalculateTotal();
             }

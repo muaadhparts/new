@@ -208,7 +208,7 @@
                                         </defs>
                                     </svg>
                                 </button>
-                                <a href="{{ isset($is_merchant_checkout) && $is_merchant_checkout ? route('front.checkout.merchant.step2', $merchant_id) : route('front.checkout.step2') }}" class="template-btn dark-outline w-100">
+                                <a href="{{ route('front.checkout.merchant.step2', $merchant_id) }}" class="template-btn dark-outline w-100">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="25" height="24" viewBox="0 0 25 24"
                                         fill="none">
                                         <g clip-path="url(#clip0_489_34179)">
