@@ -229,6 +229,8 @@
                 <input type="hidden" name="delivery_type" id="delivery_type" value="shipping">
                 <input type="hidden" name="shipping_id" id="selected_shipping_id" value="">
                 <input type="hidden" name="shipping_cost" id="selected_shipping_cost" value="0">
+                <input type="hidden" name="shipping_original_cost" id="selected_shipping_original_cost" value="0">
+                <input type="hidden" name="shipping_is_free" id="selected_shipping_is_free" value="0">
                 <input type="hidden" name="shipping_provider" id="selected_shipping_provider" value="">
                 <input type="hidden" name="packing_id" id="selected_packing_id" value="">
                 <input type="hidden" name="packing_cost" id="selected_packing_cost" value="0">
@@ -253,8 +255,8 @@
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
-                                <div id="api-options-{{ $providerData['provider'] }}" class="shipping-options-list api-options-container" data-provider="{{ $providerData['provider'] }}">
+                            <div class="modal-body p-0">
+                                <div id="api-options-{{ $providerData['provider'] }}" class="shipping-options-list api-options-container p-3" data-provider="{{ $providerData['provider'] }}" style="max-height: 400px; overflow-y: auto;">
                                     <div class="text-center py-4">
                                         <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
                                         <p class="mt-2 text-muted">@lang('Loading shipping options...')</p>
@@ -276,15 +278,15 @@
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
-                                <div class="shipping-options-list">
+                            <div class="modal-body p-0">
+                                <div class="shipping-options-list p-3" style="max-height: 400px; overflow-y: auto;">
                                     @if(!empty($providerData['methods']))
                                         @foreach($providerData['methods'] as $method)
-                                        <div class="form-check p-3 border rounded mb-2 shipping-option" data-price="{{ $method['price'] }}">
+                                        <div class="form-check p-3 border rounded mb-2 shipping-option {{ $method['is_free'] ? 'border-success' : '' }}">
                                             <input class="form-check-input" type="radio" name="shipping_option"
                                                    id="ship_{{ $method['id'] }}" value="{{ $method['id'] }}"
-                                                   data-price="{{ $method['final_price'] }}"
-                                                   data-original-price="{{ $method['price'] }}"
+                                                   data-price="{{ $method['chargeable_price'] }}"
+                                                   data-original-price="{{ $method['original_price'] }}"
                                                    data-title="{{ $method['title'] }}"
                                                    data-provider="{{ $providerData['provider'] }}"
                                                    data-free-above="{{ $method['free_above'] }}"
@@ -295,23 +297,19 @@
                                                     @if(!empty($method['subtitle']))
                                                     <br><small class="text-muted">{{ $method['subtitle'] }}</small>
                                                     @endif
-                                                    @if($method['free_above'] > 0)
-                                                    <br><small class="text-success">
-                                                        <i class="fas fa-gift me-1"></i>
+                                                    @if($method['free_above'] > 0 && !$method['is_free'])
+                                                    <br><small class="text-info">
+                                                        <i class="fas fa-info-circle me-1"></i>
                                                         @lang('Free if order above') {{ $curr->sign ?? '' }}{{ number_format($method['free_above'], 2) }}
                                                     </small>
                                                     @endif
                                                 </div>
-                                                <span class="text-success fw-bold">
+                                                <div class="text-end">
+                                                    <span class="fw-bold">{{ $curr->sign ?? '' }}{{ number_format($method['original_price'], 2) }}</span>
                                                     @if($method['is_free'])
-                                                        <span class="text-decoration-line-through text-muted me-1">{{ $curr->sign ?? '' }}{{ number_format($method['price'], 2) }}</span>
-                                                        @lang('Free')
-                                                    @elseif($method['price'] > 0)
-                                                        {{ $curr->sign ?? '' }}{{ number_format($method['price'], 2) }}
-                                                    @else
-                                                        @lang('Free')
+                                                    <br><span class="badge bg-success">@lang('Free')</span>
                                                     @endif
-                                                </span>
+                                                </div>
                                             </label>
                                         </div>
                                         @endforeach
@@ -342,8 +340,8 @@
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="packaging-options">
+                <div class="modal-body p-0">
+                    <div class="packaging-options p-3" style="max-height: 400px; overflow-y: auto;">
                         @foreach($packaging as $pack)
                         <div class="form-check p-3 border rounded mb-2 packaging-option" data-price="{{ $pack['price'] }}">
                             <input class="form-check-input" type="radio" name="packaging_option"
@@ -386,6 +384,9 @@ let taxAmount = {{ $totals['tax_amount'] ?? 0 }};
 // Track which API providers have been loaded
 let apiProvidersLoaded = {};
 
+// Store API response data including free shipping info
+let apiResponseData = {};
+
 // Format price
 function formatPrice(amount) {
     const formatted = parseFloat(amount).toFixed(2);
@@ -396,17 +397,34 @@ function formatPrice(amount) {
 function updateSummary() {
     const deliveryType = $('#delivery_type').val();
     let deliveryCost = 0;
+    let originalShippingCost = 0;
+    let isFreeShipping = false;
 
     if (deliveryType === 'local_courier') {
         deliveryCost = parseFloat($('#selected_courier_fee').val()) || 0;
+        originalShippingCost = deliveryCost;
     } else {
         deliveryCost = parseFloat($('#selected_shipping_cost').val()) || 0;
+        // Get original price and check if free
+        const selectedOption = $('input[name="shipping_option"]:checked');
+        if (selectedOption.length) {
+            originalShippingCost = parseFloat(selectedOption.data('original-price')) || deliveryCost;
+            isFreeShipping = selectedOption.data('is-free') == '1';
+        }
     }
 
     const packingCost = parseFloat($('#selected_packing_cost').val()) || 0;
     const grandTotal = baseTotal + taxAmount + deliveryCost + packingCost;
 
-    $('#summary-shipping').text(formatPrice(deliveryCost));
+    // Show shipping cost - display original price with "Free" badge if applicable
+    if (isFreeShipping && originalShippingCost > 0) {
+        $('#summary-shipping').html(
+            '<span class="text-muted">' + formatPrice(originalShippingCost) + '</span> ' +
+            '<span class="badge bg-success">@lang("Free")</span>'
+        );
+    } else {
+        $('#summary-shipping').text(formatPrice(deliveryCost));
+    }
 
     if (packingCost > 0) {
         $('.packing-row').removeClass('d-none');
@@ -464,10 +482,13 @@ function loadApiProviderOptions(provider) {
         },
         success: function(response) {
             apiProvidersLoaded[provider] = true;
+            // Store full response for this provider
+            apiResponseData[provider] = response;
+
             // API returns delivery_options (from Tryoto)
             const options = response.delivery_options || response.options || [];
             if (response.success && options.length > 0) {
-                renderApiProviderOptions(provider, options);
+                renderApiProviderOptions(provider, options, response.free_shipping || {});
             } else {
                 container.html(
                     '<div class="m-alert m-alert--warning"><i class="fas fa-info-circle me-2"></i>' +
@@ -483,39 +504,92 @@ function loadApiProviderOptions(provider) {
     });
 }
 
+// Format delivery days text
+function formatDeliveryDays(days) {
+    if (!days) return '';
+    // Clean up format like "1to3WorkingDays" -> "1-3 أيام عمل"
+    let cleaned = days.replace(/WorkingDays/gi, '').replace(/Days/gi, '').replace(/to/gi, '-');
+    if (cleaned === '0' || cleaned.toLowerCase() === 'same') return '@lang("Same day")';
+    if (cleaned === '1' || cleaned.toLowerCase() === 'next') return '@lang("Next day")';
+    return cleaned + ' @lang("days")';
+}
+
+// Format service type text
+function formatServiceType(type) {
+    if (!type) return '';
+    // Map common service types
+    const typeMap = {
+        'lockerDelivery': '@lang("Locker Delivery")',
+        'homeDelivery': '@lang("Home Delivery")',
+        'expressDelivery': '@lang("Express Delivery")',
+        'standardDelivery': '@lang("Standard Delivery")'
+    };
+    return typeMap[type] || type.replace(/([A-Z])/g, ' $1').trim();
+}
+
 // Render API provider options (e.g., Tryoto response format)
-function renderApiProviderOptions(provider, options) {
+// Now uses data directly from API response (free shipping logic handled by backend)
+function renderApiProviderOptions(provider, options, freeShippingInfo) {
     let html = '';
+
+    // Show free shipping banner if qualifies (from API response)
+    const qualifiesFree = freeShippingInfo.qualifies || false;
+    if (qualifiesFree) {
+        html += `<div class="alert alert-success mb-3 py-2">
+            <i class="fas fa-gift me-2"></i>
+            @lang('Free shipping! Shipping cost is covered by the merchant.')
+        </div>`;
+    }
+
     options.forEach(function(option, index) {
-        // Handle both camelCase (Tryoto API) and snake_case formats
-        const companyName = option.companyName || option.company_name || option.title || provider;
-        const serviceName = option.serviceName || option.service_name || '';
-        const price = parseFloat(option.price) || 0;
+        // All data comes from API - no frontend calculation needed
+        const companyName = option.company || option.companyName || option.deliveryCompanyName || option.title || provider;
+        const serviceType = option.serviceType || option.serviceName || '';
         const logo = option.logo || '';
-        const estimatedDays = option.estimatedDays || option.estimated_days || '';
-        const optionId = option.id || (provider + '_' + index);
+        const estimatedDays = option.estimatedDeliveryDays || option.avgDeliveryTime || '';
+        const optionId = option.deliveryOptionId || option.id || (provider + '_' + index);
+        const codCharge = parseFloat(option.codCharge) || 0;
+
+        // Prices from API (already processed by backend)
+        const originalPrice = parseFloat(option.original_price) || 0;   // Display price
+        const chargeablePrice = parseFloat(option.chargeable_price) || parseFloat(option.price) || 0; // What customer pays
+        const isFree = option.is_free || false;
+
+        // Format display values
+        const formattedDays = formatDeliveryDays(estimatedDays);
+        const formattedService = formatServiceType(serviceType);
+
+        // Price display - always show original price, add "free" badge if applicable
+        let priceHtml = `<span class="fw-bold">${formatPrice(originalPrice)}</span>`;
+        if (isFree) {
+            priceHtml += `<br><span class="badge bg-success">@lang('Free')</span>`;
+        }
 
         html += `
-            <div class="form-check p-3 border rounded mb-2 shipping-option api-option">
+            <div class="form-check p-3 border rounded mb-2 shipping-option api-option ${isFree ? 'border-success' : ''}">
                 <input class="form-check-input" type="radio" name="shipping_option"
                        id="${provider}_${optionId}" value="${optionId}"
-                       data-price="${price}"
-                       data-title="${companyName}${serviceName ? ' - ' + serviceName : ''}"
+                       data-price="${chargeablePrice}"
+                       data-original-price="${originalPrice}"
+                       data-title="${companyName}"
                        data-provider="${provider}"
-                       data-logo="${logo}"
-                       data-service="${serviceName}"
-                       data-company="${companyName}">
+                       data-company="${companyName}"
+                       data-cod-charge="${codCharge}"
+                       data-is-free="${isFree ? '1' : '0'}">
                 <label class="form-check-label w-100" for="${provider}_${optionId}">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
-                            ${logo ? '<img src="' + logo + '" alt="" class="me-2" style="height: 30px;">' : ''}
+                            ${logo ? '<img src="' + logo + '" alt="" class="me-2 rounded" style="height: 32px; width: 50px; object-fit: contain;">' : '<div class="me-2 d-flex align-items-center justify-content-center bg-light rounded" style="width: 50px; height: 32px;"><i class="fas fa-truck text-muted"></i></div>'}
                             <div>
-                                <strong>${companyName}</strong>
-                                ${serviceName ? '<br><small class="text-muted">' + serviceName + '</small>' : ''}
-                                ${estimatedDays ? '<br><small class="text-muted"><i class="fas fa-clock me-1"></i>' + estimatedDays + '</small>' : ''}
+                                <div class="fw-bold">${companyName}</div>
+                                <div class="small">
+                                    ${formattedService ? '<span class="text-muted me-2">' + formattedService + '</span>' : ''}
+                                    ${formattedDays ? '<span class="text-info"><i class="fas fa-clock me-1"></i>' + formattedDays + '</span>' : ''}
+                                </div>
+                                ${codCharge > 0 ? '<div class="small text-warning"><i class="fas fa-money-bill-wave me-1"></i>@lang("COD"): ' + formatPrice(codCharge) + '</div>' : ''}
                             </div>
                         </div>
-                        <span class="text-success fw-bold">${formatPrice(price)}</span>
+                        <div class="text-end">${priceHtml}</div>
                     </div>
                 </label>
             </div>
@@ -535,7 +609,8 @@ $('.api-provider-modal').on('show.bs.modal', function() {
 // Handle shipping selection in any modal
 $(document).on('change', 'input[name="shipping_option"]', function() {
     const option = $(this);
-    const price = parseFloat(option.data('price')) || 0;
+    const chargeablePrice = parseFloat(option.data('price')) || 0; // What customer pays (0 if free)
+    const originalPrice = parseFloat(option.data('original-price')) || chargeablePrice; // Actual shipping cost
     const title = option.data('title');
     const provider = option.data('provider');
     const isFree = option.data('is-free') == '1';
@@ -545,7 +620,9 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
 
     // Update shipping hidden fields
     $('#selected_shipping_id').val(option.val());
-    $('#selected_shipping_cost').val(price);
+    $('#selected_shipping_cost').val(chargeablePrice); // Customer pays this (0 if free)
+    $('#selected_shipping_original_cost').val(originalPrice); // Actual shipping cost (for merchant accounting)
+    $('#selected_shipping_is_free').val(isFree ? '1' : '0');
     $('#selected_shipping_provider').val(provider);
 
     // Clear courier selection
@@ -557,9 +634,12 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
     // Reset all provider buttons
     resetProviderButtons(provider);
 
-    // Update selected provider button
-    const displayText = isFree ? title + ': @lang("Free")' : title + ': ' + formatPrice(price);
-    $('#provider-text-' + provider).text(displayText).removeClass('text-muted').addClass('text-success');
+    // Update selected provider button - show original price with Free badge if applicable
+    let displayText = title + ': ' + formatPrice(originalPrice);
+    if (isFree) {
+        displayText += ' (@lang("Free"))';
+    }
+    $('#provider-text-' + provider).html(displayText).removeClass('text-muted').addClass('text-success');
     $('#provider-btn-' + provider).removeClass('m-btn--outline').addClass('m-btn--success-outline');
 
     // Update UI

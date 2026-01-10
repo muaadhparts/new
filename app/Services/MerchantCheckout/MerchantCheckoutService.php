@@ -373,27 +373,34 @@ class MerchantCheckoutService
         $grouped = [];
         foreach ($shipping as $s) {
             $provider = $s->provider ?? 'manual';
-            $isFree = $s->free_above > 0 && $itemsTotal >= $s->free_above;
+            $freeAbove = (float)$s->free_above;
+            $isFree = $freeAbove > 0 && $itemsTotal >= $freeAbove;
+            $isApiProvider = $this->isApiProvider($provider);
 
             if (!isset($grouped[$provider])) {
                 $grouped[$provider] = [
                     'provider' => $provider,
                     'label' => $this->getProviderLabel($provider),
                     'icon' => $this->getProviderIcon($provider),
-                    'is_api' => $this->isApiProvider($provider), // Only tryoto uses external API
+                    'is_api' => $isApiProvider,
                     'methods' => [],
                 ];
             }
 
-            $grouped[$provider]['methods'][] = [
-                'id' => $s->id,
-                'title' => $s->title,
-                'subtitle' => $s->subtitle,
-                'price' => round((float)$s->price, 2),
-                'free_above' => (float)$s->free_above,
-                'is_free' => $isFree,
-                'final_price' => $isFree ? 0 : round((float)$s->price, 2),
-            ];
+            // For non-API providers, add methods with free shipping logic
+            // API providers (like Tryoto) handle this in the API response
+            if (!$isApiProvider) {
+                $grouped[$provider]['methods'][] = [
+                    'id' => $s->id,
+                    'title' => $s->title,
+                    'subtitle' => $s->subtitle,
+                    'price' => round((float)$s->price, 2),
+                    'original_price' => round((float)$s->price, 2), // For display
+                    'chargeable_price' => $isFree ? 0 : round((float)$s->price, 2), // What customer pays
+                    'free_above' => $freeAbove,
+                    'is_free' => $isFree,
+                ];
+            }
         }
 
         return array_values($grouped);

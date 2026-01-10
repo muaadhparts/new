@@ -153,8 +153,11 @@ class ShippingApiController extends Controller
                 ]);
             }
 
-            // Convert prices to selected currency before returning
-            $convertedOptions = $this->convertDeliveryOptionsPrices($deliveryCompany);
+            // Get free shipping threshold from merchant's Tryoto config
+            $freeShippingInfo = $this->getFreeShippingInfo($merchantId, $cart);
+
+            // Convert prices and apply free shipping logic
+            $convertedOptions = $this->convertDeliveryOptionsPrices($deliveryCompany, $freeShippingInfo);
 
             return response()->json([
                 'success' => true,
@@ -162,6 +165,7 @@ class ShippingApiController extends Controller
                 'delivery_options' => $convertedOptions,
                 'count' => count($convertedOptions),
                 'weight' => $weight,
+                'free_shipping' => $freeShippingInfo,
             ]);
 
         } catch (\Exception $e) {
@@ -251,19 +255,69 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Convert delivery options prices to selected currency
+     * Get free shipping info for merchant
      */
-    protected function convertDeliveryOptionsPrices(array $options): array
+    protected function getFreeShippingInfo(int $merchantId, $cart): array
     {
-        return array_map(function ($option) {
-            // Convert price field (Tryoto returns 'price' in SAR)
-            if (isset($option['price'])) {
-                $option['price'] = $this->priceService->convert((float)$option['price']);
+        // Get free_above from shippings table for tryoto provider
+        $merchantTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
+            ->where('provider', 'tryoto')
+            ->first();
+
+        $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
+
+        // Calculate merchant's items total from cart
+        $itemsTotal = 0;
+        if ($cart && !empty($cart->items)) {
+            foreach ($cart->items as $item) {
+                $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? 0;
+                if ($itemMerchantId == $merchantId) {
+                    $itemsTotal += (float)($item['price'] ?? 0);
+                }
             }
-            // Also convert any other price-related fields if they exist
-            if (isset($option['originalPrice'])) {
-                $option['originalPrice'] = $this->priceService->convert((float)$option['originalPrice']);
+        }
+
+        // Check if qualifies for free shipping
+        $qualifiesFree = $freeAbove > 0 && $itemsTotal >= $freeAbove;
+
+        return [
+            'free_above' => round($freeAbove, 2),
+            'items_total' => round($itemsTotal, 2),
+            'qualifies' => $qualifiesFree,
+        ];
+    }
+
+    /**
+     * Convert delivery options prices to selected currency and apply free shipping
+     */
+    protected function convertDeliveryOptionsPrices(array $options, array $freeShippingInfo): array
+    {
+        $qualifiesFree = $freeShippingInfo['qualifies'] ?? false;
+
+        return array_map(function ($option) use ($qualifiesFree) {
+            // Original price from Tryoto (in SAR)
+            $originalPrice = (float)($option['price'] ?? 0);
+
+            // Convert to selected currency
+            $convertedOriginalPrice = $this->priceService->convert($originalPrice);
+
+            // Apply free shipping logic
+            $isFree = $qualifiesFree;
+            $chargeablePrice = $isFree ? 0 : $convertedOriginalPrice;
+
+            // Set prices
+            $option['original_price'] = round($convertedOriginalPrice, 2); // Display price (always shown)
+            $option['chargeable_price'] = round($chargeablePrice, 2);      // What customer pays
+            $option['is_free'] = $isFree;
+
+            // Keep the price field for backward compatibility but use chargeable
+            $option['price'] = round($chargeablePrice, 2);
+
+            // Convert COD charge if exists
+            if (isset($option['codCharge'])) {
+                $option['codCharge'] = round($this->priceService->convert((float)$option['codCharge']), 2);
             }
+
             return $option;
         }, $options);
     }
