@@ -62,6 +62,10 @@ class RouteServiceProvider extends ServiceProvider
             ->namespace('App\Livewire')
             ->group(base_path('routes/livewire.php'));
 
+        // Merchant Checkout Routes (API-First Architecture)
+        Route::middleware('web')
+            ->group(base_path('routes/merchant-checkout.php'));
+
 //        Route::middleware('web')
 //            ->namespace('App\Livewire')
 //            ->group(base_path('routes/web.php'));

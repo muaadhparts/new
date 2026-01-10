@@ -1407,9 +1407,9 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // Display important Codes For Payment Gatweways
         Route::get('/payment/{slug1}/{slug2}', 'User\UserController@loadpayment')->name('user.load.payment');
-        // Get cities by country (states removed)
-        Route::get('/country/wise/city/{country_id}', 'Front\CheckoutController@getCity')->name('country.wise.city');
-        Route::get('/user/country/wise/city', 'Front\CheckoutController@getCityUser')->name('country.wise.city.user');
+        // Get cities by country (states removed) - moved to GeocodingController
+        Route::get('/country/wise/city/{country_id}', [\App\Http\Controllers\Api\GeocodingController::class, 'getCitiesByCountry'])->name('country.wise.city');
+        Route::get('/user/country/wise/city', [\App\Http\Controllers\Api\GeocodingController::class, 'getCitiesByCountry'])->name('country.wise.city.user');
 
         // User Favorites
         Route::get('/favorites', 'User\FavoriteController@favorites')->name('user-favorites');
@@ -1805,98 +1805,13 @@ Route::group(['middleware' => 'maintenance'], function () {
     });
     // FAVORITE SECTION ENDS
 
-    // CHECKOUT SECTION
-    Route::get('/buy-now/{id}', 'Front\CheckoutController@buynow')->name('front.buynow');
-
     // ====================================================================
-    // VENDOR CHECKOUT POLICY (STRICT)
+    // CHECKOUT SECTION - NEW MERCHANT CHECKOUT SYSTEM
     // ====================================================================
-    // ALL checkout operations MUST have explicit merchant_id in Route.
-    // NO session, NO POST, NO hidden inputs for merchant context.
-    // Cart is multi-merchant; Checkout is single-merchant per transaction.
+    // All checkout routes are now in: routes/merchant-checkout.php
+    // Route prefix: /merchant/{merchantId}/checkout/
+    // See: App\Http\Controllers\Merchant\CheckoutMerchantController
     // ====================================================================
-
-    // Merchant-specific checkout routes (with session preservation middleware)
-    Route::middleware(['preserve.session'])->prefix('checkout/merchant/{merchantId}')->group(function () {
-        // Step 1: Address
-        Route::get('/', 'Front\CheckoutController@checkoutMerchant')->name('front.checkout.merchant');
-        Route::post('/step1/submit', 'Front\CheckoutController@checkoutMerchantStep1')->name('front.checkout.merchant.step1.submit');
-        Route::get('/step1/submit', function($merchantId) {
-            return redirect()->route('front.checkout.merchant', $merchantId)->with('info', __('Please fill out the form and submit again.'));
-        });
-
-        // API: Get delivery options based on customer city
-        Route::post('/delivery-options', 'Front\CheckoutController@getDeliveryOptions')->name('front.checkout.merchant.delivery-options');
-
-        // Step 2: Shipping
-        Route::get('/step2', 'Front\CheckoutController@checkoutMerchantStep2')->name('front.checkout.merchant.step2');
-        Route::post('/step2/submit', 'Front\CheckoutController@checkoutMerchantStep2Submit')->name('front.checkout.merchant.step2.submit');
-        Route::get('/step2/submit', function($merchantId) {
-            return redirect()->route('front.checkout.merchant.step2', $merchantId)->with('info', __('Please fill out the form and submit again.'));
-        });
-
-        // Step 3: Payment
-        Route::get('/step3', 'Front\CheckoutController@checkoutMerchantStep3')->name('front.checkout.merchant.step3');
-
-        // ================================================================
-        // PAYMENT ROUTES - All inside merchant context
-        // ================================================================
-
-        // MyFatoorah
-        Route::post('/payment/myfatoorah', 'App\Http\Controllers\MyFatoorahController@index')->name('front.checkout.merchant.myfatoorah.submit');
-
-        // Cash On Delivery
-        Route::post('/payment/cod', 'Payment\Checkout\CashOnDeliveryController@store')->name('front.checkout.merchant.cod.submit');
-
-        // Paypal
-        Route::post('/payment/paypal', 'Payment\Checkout\PaypalController@store')->name('front.checkout.merchant.paypal.submit');
-
-        // Stripe
-        Route::post('/payment/stripe', 'Payment\Checkout\StripeController@store')->name('front.checkout.merchant.stripe.submit');
-
-        // Wallet
-        Route::post('/payment/wallet', 'Payment\Checkout\WalletPaymentController@store')->name('front.checkout.merchant.wallet.submit');
-
-        // Manual
-        Route::post('/payment/manual', 'Payment\Checkout\ManualPaymentController@store')->name('front.checkout.merchant.manual.submit');
-
-        // Instamojo
-        Route::post('/payment/instamojo', 'Payment\Checkout\InstamojoController@store')->name('front.checkout.merchant.instamojo.submit');
-
-        // Paystack
-        Route::post('/payment/paystack', 'Payment\Checkout\PaystackController@store')->name('front.checkout.merchant.paystack.submit');
-
-        // PayTM
-        Route::post('/payment/paytm', 'Payment\Checkout\PaytmController@store')->name('front.checkout.merchant.paytm.submit');
-
-        // Mollie
-        Route::post('/payment/mollie', 'Payment\Checkout\MollieController@store')->name('front.checkout.merchant.mollie.submit');
-
-        // RazorPay
-        Route::post('/payment/razorpay', 'Payment\Checkout\RazorpayController@store')->name('front.checkout.merchant.razorpay.submit');
-
-        // Authorize.Net
-        Route::post('/payment/authorize', 'Payment\Checkout\AuthorizeController@store')->name('front.checkout.merchant.authorize.submit');
-
-        // Mercadopago
-        Route::post('/payment/mercadopago', 'Payment\Checkout\MercadopagoController@store')->name('front.checkout.merchant.mercadopago.submit');
-
-        // Flutter Wave
-        Route::post('/payment/flutterwave', 'Payment\Checkout\FlutterwaveController@store')->name('front.checkout.merchant.flutterwave.submit');
-
-        // SSLCommerz
-        Route::post('/payment/ssl', 'Payment\Checkout\SslController@store')->name('front.checkout.merchant.ssl.submit');
-
-        // Voguepay
-        Route::post('/payment/voguepay', 'Payment\Checkout\VoguepayController@store')->name('front.checkout.merchant.voguepay.submit');
-
-        // Discount Code (merchant-specific)
-        Route::get('/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.checkout.merchant.discount-code.check');
-        Route::post('/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.checkout.merchant.discount-code.remove');
-
-        // Wallet check
-        Route::get('/wallet-check', 'Front\CheckoutController@walletcheck')->name('front.checkout.merchant.wallet.check');
-    });
 
     // ====================================================================
     // GEOCODING ROUTES (Inside session middleware)
@@ -1913,19 +1828,26 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ====================================================================
     // PAYMENT NOTIFY/CALLBACK ROUTES (External - no merchant_id)
     // These are called by payment gateways, not by our app
+    // Controllers: App\Http\Controllers\Merchant\Payment\*
     // ====================================================================
-    Route::get('/checkout/payment/myfatoorah/notify', 'App\Http\Controllers\MyFatoorahController@notify')->name('front.myfatoorah.notify');
-    Route::get('/checkout/payment/paypal-notify', 'Payment\Checkout\PaypalController@notify')->name('front.paypal.notify');
-    Route::get('/payment/stripe/notify', 'Payment\Checkout\StripeController@notify')->name('front.stripe.notify');
-    Route::get('/checkout/payment/instamojo-notify', 'Payment\Checkout\InstamojoController@notify')->name('front.instamojo.notify');
-    Route::post('/checkout/payment/paytm-notify', 'Payment\Checkout\PaytmController@notify')->name('front.paytm.notify');
-    Route::get('/checkout/payment/molly-notify', 'Payment\Checkout\MollieController@notify')->name('front.molly.notify');
-    Route::post('/checkout/payment/razorpay-notify', 'Payment\Checkout\RazorpayController@notify')->name('front.razorpay.notify');
-    Route::post('/checkout/payment/ssl-notify', 'Payment\Checkout\SslController@notify')->name('front.ssl.notify');
+    Route::get('/checkout/payment/myfatoorah/notify', [\App\Http\Controllers\Merchant\Payment\MyFatoorahPaymentController::class, 'notify'])->name('front.myfatoorah.notify');
+    Route::get('/checkout/payment/paypal-notify', [\App\Http\Controllers\Merchant\Payment\PayPalPaymentController::class, 'notify'])->name('front.paypal.notify');
+    Route::get('/payment/stripe/notify', [\App\Http\Controllers\Merchant\Payment\StripePaymentController::class, 'notify'])->name('front.stripe.notify');
+    Route::get('/checkout/payment/instamojo-notify', [\App\Http\Controllers\Merchant\Payment\InstamojoPaymentController::class, 'notify'])->name('front.instamojo.notify');
+    Route::post('/checkout/payment/paytm-notify', [\App\Http\Controllers\Merchant\Payment\PaytmPaymentController::class, 'notify'])->name('front.paytm.notify');
+    Route::get('/checkout/payment/molly-notify', [\App\Http\Controllers\Merchant\Payment\MolliePaymentController::class, 'notify'])->name('front.molly.notify');
+    Route::post('/checkout/payment/razorpay-notify', [\App\Http\Controllers\Merchant\Payment\RazorpayPaymentController::class, 'notify'])->name('front.razorpay.notify');
+    Route::post('/checkout/payment/ssl-notify', [\App\Http\Controllers\Merchant\Payment\SslCommerzPaymentController::class, 'notify'])->name('front.ssl.notify');
 
-    // Payment return/cancel (after external redirect)
-    Route::get('/checkout/payment/return', 'Front\CheckoutController@payreturn')->name('front.payment.return');
-    Route::get('/checkout/payment/cancle', 'Front\CheckoutController@paycancle')->name('front.payment.cancle');
+    // Payment return/cancel (legacy redirect - merchant_id from session)
+    Route::get('/checkout/payment/return', function() {
+        $merchantId = session('checkout_merchant_id', 0);
+        return redirect()->route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'success']);
+    })->name('front.payment.return');
+    Route::get('/checkout/payment/cancle', function() {
+        $merchantId = session('checkout_merchant_id', 0);
+        return redirect()->route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'cancelled']);
+    })->name('front.payment.cancle');
 
     // Discount Code routes (global - for cart page)
     Route::get('/carts/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.discount-code.check');
@@ -1949,7 +1871,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::post('/uflutter/notify', 'Payment\MembershipPlan\FlutterwaveController@notify')->name('user.flutter.notify');
 
     // Checkout
-    Route::post('/cflutter/notify', 'Payment\Checkout\FlutterwaveController@notify')->name('front.flutter.notify');
+    Route::post('/cflutter/notify', [\App\Http\Controllers\Merchant\Payment\FlutterwavePaymentController::class, 'notify'])->name('front.flutter.notify');
 
     // CHECKOUT SECTION ENDS
 
@@ -1961,7 +1883,10 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::get('/topup/app/payment/{slug1}/{slug2}', 'Api\Payment\CheckoutController@topuploadpayment')->name('topup.app.payment');
 
-    Route::get('/checkout/payment/{slug1}/{slug2}', 'Front\CheckoutController@loadpayment')->name('front.load.payment');
+    // Legacy loadpayment route - redirect to cart (new checkout system uses different flow)
+    Route::get('/checkout/payment/{slug1}/{slug2}', function() {
+        return redirect()->route('front.cart')->with('info', __('Please proceed with checkout from the cart page'));
+    })->name('front.load.payment');
 
     // Note: Flutter Wave routes moved to Api\Payment section below
     // Route::post('/api/flutter/submit', 'Api\Payment\FlutterWaveController@store')->name('api.flutter.submit');

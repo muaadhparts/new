@@ -1,0 +1,223 @@
+<?php
+
+/**
+ * Merchant Checkout Routes (API-First Architecture)
+ *
+ * All routes require authentication and follow RESTful conventions.
+ * Controllers return JSON responses for API calls, or views for browser requests.
+ */
+
+use App\Http\Controllers\Merchant\CheckoutMerchantController;
+use App\Http\Controllers\Merchant\Payment\CodPaymentController;
+use App\Http\Controllers\Merchant\Payment\WalletPaymentController;
+use App\Http\Controllers\Merchant\Payment\StripePaymentController;
+use App\Http\Controllers\Merchant\Payment\PaypalPaymentController;
+use App\Http\Controllers\Merchant\Payment\ManualPaymentController;
+use App\Http\Controllers\Merchant\Payment\RazorpayPaymentController;
+use App\Http\Controllers\Merchant\Payment\MyFatoorahPaymentController;
+use App\Http\Controllers\Merchant\Payment\InstamojoPaymentController;
+use App\Http\Controllers\Merchant\Payment\PaytmPaymentController;
+use App\Http\Controllers\Merchant\Payment\MolliePaymentController;
+use App\Http\Controllers\Merchant\Payment\PaystackPaymentController;
+use App\Http\Controllers\Merchant\Payment\FlutterwavePaymentController;
+use App\Http\Controllers\Merchant\Payment\MercadopagoPaymentController;
+use App\Http\Controllers\Merchant\Payment\VoguepayPaymentController;
+use App\Http\Controllers\Merchant\Payment\SslCommerzPaymentController;
+use App\Http\Controllers\Merchant\Payment\AuthorizeNetPaymentController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Merchant Checkout Routes
+|--------------------------------------------------------------------------
+|
+| New API-First checkout flow for merchant-specific purchases.
+| All routes are prefixed with /merchant/{merchantId}/checkout
+|
+*/
+
+Route::prefix('merchant/{merchantId}/checkout')
+    ->middleware(['web', 'preserve.session'])
+    ->group(function () {
+
+        // ====================================================================
+        // CHECKOUT FLOW ROUTES
+        // ====================================================================
+
+        // Step 1: Address
+        Route::get('/address', [CheckoutMerchantController::class, 'showAddress'])
+            ->name('merchant.checkout.address');
+
+        Route::post('/address', [CheckoutMerchantController::class, 'processAddress'])
+            ->name('merchant.checkout.address.submit');
+
+        // Step 2: Shipping
+        Route::get('/shipping', [CheckoutMerchantController::class, 'showShipping'])
+            ->name('merchant.checkout.shipping');
+
+        Route::post('/shipping', [CheckoutMerchantController::class, 'processShipping'])
+            ->name('merchant.checkout.shipping.submit');
+
+        // Step 3: Payment
+        Route::get('/payment', [CheckoutMerchantController::class, 'showPayment'])
+            ->name('merchant.checkout.payment');
+
+        // Step 4: Return/Confirmation
+        Route::get('/return/{status?}', [CheckoutMerchantController::class, 'showReturn'])
+            ->name('merchant.checkout.return');
+
+        // ====================================================================
+        // UTILITY ROUTES
+        // ====================================================================
+
+        // Calculate tax for location (AJAX)
+        Route::post('/calculate-tax', [CheckoutMerchantController::class, 'calculateTax'])
+            ->name('merchant.checkout.calculate-tax');
+
+        // Get delivery options via AJAX
+        Route::post('/delivery-options', [CheckoutMerchantController::class, 'getDeliveryOptions'])
+            ->name('merchant.checkout.delivery-options');
+
+        // Discount code management
+        Route::get('/discount/check', [CheckoutMerchantController::class, 'checkDiscountCode'])
+            ->name('merchant.checkout.discount.check');
+
+        Route::post('/discount/apply', [CheckoutMerchantController::class, 'applyDiscountCode'])
+            ->name('merchant.checkout.discount.apply');
+
+        Route::post('/discount/remove', [CheckoutMerchantController::class, 'removeDiscountCode'])
+            ->name('merchant.checkout.discount.remove');
+
+        // Wallet balance check
+        Route::get('/wallet/check', [CheckoutMerchantController::class, 'checkWalletBalance'])
+            ->name('merchant.checkout.wallet.check');
+
+        // ====================================================================
+        // PAYMENT GATEWAY ROUTES - Process Payment
+        // ====================================================================
+
+        // Cash on Delivery
+        Route::post('/payment/cod', [CodPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.cod.process');
+
+        // Wallet Payment
+        Route::post('/payment/wallet', [WalletPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.wallet.process');
+
+        // Manual/Bank Transfer
+        Route::post('/payment/manual', [ManualPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.manual.process');
+
+        // Stripe
+        Route::post('/payment/stripe', [StripePaymentController::class, 'processPayment'])
+            ->name('merchant.payment.stripe.process');
+
+        // PayPal
+        Route::post('/payment/paypal', [PaypalPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.paypal.process');
+
+        // Razorpay (INR Only)
+        Route::post('/payment/razorpay', [RazorpayPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.razorpay.process');
+
+        // MyFatoorah (Middle East)
+        Route::post('/payment/myfatoorah', [MyFatoorahPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.myfatoorah.process');
+
+        // Instamojo (INR Only)
+        Route::post('/payment/instamojo', [InstamojoPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.instamojo.process');
+
+        // Paytm (INR Only)
+        Route::post('/payment/paytm', [PaytmPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.paytm.process');
+
+        // Mollie (Europe)
+        Route::post('/payment/mollie', [MolliePaymentController::class, 'processPayment'])
+            ->name('merchant.payment.mollie.process');
+
+        // Paystack (Africa - Inline Payment)
+        Route::post('/payment/paystack', [PaystackPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.paystack.process');
+
+        Route::get('/payment/paystack/config', [PaystackPaymentController::class, 'getConfig'])
+            ->name('merchant.payment.paystack.config');
+
+        // Flutterwave (Africa)
+        Route::post('/payment/flutterwave', [FlutterwavePaymentController::class, 'processPayment'])
+            ->name('merchant.payment.flutterwave.process');
+
+        // MercadoPago (Latin America)
+        Route::post('/payment/mercadopago', [MercadopagoPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.mercadopago.process');
+
+        Route::get('/payment/mercadopago/config', [MercadopagoPaymentController::class, 'getConfig'])
+            ->name('merchant.payment.mercadopago.config');
+
+        // VoguePay (Nigeria - Inline Payment)
+        Route::post('/payment/voguepay', [VoguepayPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.voguepay.process');
+
+        Route::get('/payment/voguepay/config', [VoguepayPaymentController::class, 'getConfig'])
+            ->name('merchant.payment.voguepay.config');
+
+        // SSL Commerz (Bangladesh)
+        Route::post('/payment/sslcommerz', [SslCommerzPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.sslcommerz.process');
+
+        // Authorize.net (USA)
+        Route::post('/payment/authorize', [AuthorizeNetPaymentController::class, 'processPayment'])
+            ->name('merchant.payment.authorize.process');
+    });
+
+/*
+|--------------------------------------------------------------------------
+| Payment Callback Routes (No Merchant ID in URL)
+|--------------------------------------------------------------------------
+|
+| These routes handle payment gateway callbacks that don't include
+| merchant_id in the URL. The merchant_id is passed via query parameter
+| or stored in session.
+|
+*/
+
+Route::prefix('merchant/payment')
+    ->middleware(['web', 'preserve.session'])
+    ->group(function () {
+
+        // Stripe Callback
+        Route::get('/stripe/callback', [StripePaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.stripe.callback');
+
+        // PayPal Callback
+        Route::get('/paypal/callback', [PaypalPaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.paypal.callback');
+
+        // Razorpay Callback
+        Route::post('/razorpay/callback', [RazorpayPaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.razorpay.callback');
+
+        // MyFatoorah Callback
+        Route::get('/myfatoorah/callback', [MyFatoorahPaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.myfatoorah.callback');
+
+        // Instamojo Callback
+        Route::get('/instamojo/callback', [InstamojoPaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.instamojo.callback');
+
+        // Paytm Callback
+        Route::post('/paytm/callback', [PaytmPaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.paytm.callback');
+
+        // Mollie Callback
+        Route::get('/mollie/callback', [MolliePaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.mollie.callback');
+
+        // Flutterwave Callback
+        Route::get('/flutterwave/callback', [FlutterwavePaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.flutterwave.callback');
+
+        // SSL Commerz Callback
+        Route::post('/sslcommerz/callback', [SslCommerzPaymentController::class, 'handleCallback'])
+            ->name('merchant.payment.sslcommerz.callback');
+    });

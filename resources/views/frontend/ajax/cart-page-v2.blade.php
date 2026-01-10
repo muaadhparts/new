@@ -298,7 +298,7 @@
 
                         <div class="m-cart__summary-actions">
                             @auth
-                                <a href="{{ route('front.checkout.merchant', $merchantId) }}" class="m-btn m-btn--primary m-btn--block">
+                                <a href="{{ route('merchant.checkout.address', $merchantId) }}" class="m-btn m-btn--primary m-btn--block">
                                     <i class="fas fa-lock"></i>
                                     @lang('Checkout')
                                 </a>

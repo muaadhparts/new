@@ -57,24 +57,24 @@ class MerchantPayment extends Model
         // ====================================================================
         if ($merchantId) {
             $routeMap = [
-                'myfatoorah'    => 'front.checkout.merchant.myfatoorah.submit',
-                'paypal'        => 'front.checkout.merchant.paypal.submit',
-                'stripe'        => 'front.checkout.merchant.stripe.submit',
-                'instamojo'     => 'front.checkout.merchant.instamojo.submit',
-                'paystack'      => 'front.checkout.merchant.paystack.submit',
-                'paytm'         => 'front.checkout.merchant.paytm.submit',
-                'mollie'        => 'front.checkout.merchant.mollie.submit',
-                'razorpay'      => 'front.checkout.merchant.razorpay.submit',
-                'authorize.net' => 'front.checkout.merchant.authorize.submit',
-                'mercadopago'   => 'front.checkout.merchant.mercadopago.submit',
-                'flutterwave'   => 'front.checkout.merchant.flutterwave.submit',
-                'sslcommerz'    => 'front.checkout.merchant.ssl.submit',
-                'voguepay'      => 'front.checkout.merchant.voguepay.submit',
-                'cod'           => 'front.checkout.merchant.cod.submit',
-                'wallet'        => 'front.checkout.merchant.wallet.submit',
+                'myfatoorah'    => 'merchant.payment.myfatoorah.process',
+                'paypal'        => 'merchant.payment.paypal.process',
+                'stripe'        => 'merchant.payment.stripe.process',
+                'instamojo'     => 'merchant.payment.instamojo.process',
+                'paystack'      => 'merchant.payment.paystack.process',
+                'paytm'         => 'merchant.payment.paytm.process',
+                'mollie'        => 'merchant.payment.mollie.process',
+                'razorpay'      => 'merchant.payment.razorpay.process',
+                'authorize.net' => 'merchant.payment.authorize.process',
+                'mercadopago'   => 'merchant.payment.mercadopago.process',
+                'flutterwave'   => 'merchant.payment.flutterwave.process',
+                'sslcommerz'    => 'merchant.payment.sslcommerz.process',
+                'voguepay'      => 'merchant.payment.voguepay.process',
+                'cod'           => 'merchant.payment.cod.process',
+                'wallet'        => 'merchant.payment.wallet.process',
             ];
 
-            $routeName = $routeMap[$data] ?? 'front.checkout.merchant.manual.submit';
+            $routeName = $routeMap[$data] ?? 'merchant.payment.manual.process';
             return route($routeName, ['merchantId' => $merchantId]);
         }
 

@@ -1,0 +1,237 @@
+<?php
+
+namespace App\Http\Controllers\Merchant\Payment;
+
+use App\Http\Controllers\Controller;
+use App\Services\MerchantCheckout\MerchantCheckoutService;
+use App\Services\MerchantCheckout\MerchantPurchaseCreator;
+use App\Services\MerchantCheckout\MerchantSessionManager;
+use App\Services\MerchantCheckout\MerchantCartService;
+use App\Services\MerchantCheckout\MerchantPriceCalculator;
+use App\Models\MerchantPayment;
+use App\Models\Purchase;
+use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Session;
+
+/**
+ * Base Merchant Payment Controller
+ *
+ * Common functionality for all payment gateways
+ */
+abstract class BaseMerchantPaymentController extends Controller
+{
+    protected MerchantCheckoutService $checkoutService;
+    protected MerchantPurchaseCreator $purchaseCreator;
+    protected MerchantSessionManager $sessionManager;
+    protected MerchantCartService $cartService;
+    protected MerchantPriceCalculator $priceCalculator;
+
+    protected string $paymentKeyword = '';
+    protected string $paymentMethod = '';
+
+    public function __construct(
+        MerchantCheckoutService $checkoutService,
+        MerchantPurchaseCreator $purchaseCreator,
+        MerchantSessionManager $sessionManager,
+        MerchantCartService $cartService,
+        MerchantPriceCalculator $priceCalculator
+    ) {
+        $this->checkoutService = $checkoutService;
+        $this->purchaseCreator = $purchaseCreator;
+        $this->sessionManager = $sessionManager;
+        $this->cartService = $cartService;
+        $this->priceCalculator = $priceCalculator;
+
+        $this->middleware('auth');
+    }
+
+    /**
+     * Get payment gateway configuration
+     */
+    protected function getPaymentConfig(int $merchantId): ?array
+    {
+        $payment = MerchantPayment::where('keyword', $this->paymentKeyword)
+            ->where('user_id', $merchantId)
+            ->where('status', 1)
+            ->first();
+
+        if (!$payment) {
+            return null;
+        }
+
+        return [
+            'id' => $payment->id,
+            'keyword' => $payment->keyword,
+            'title' => $payment->title ?? $payment->name,
+            'credentials' => $payment->convertAutoData(),
+        ];
+    }
+
+    /**
+     * Validate checkout is ready for payment
+     */
+    protected function validateCheckoutReady(int $merchantId): array
+    {
+        $addressData = $this->sessionManager->getAddressData($merchantId);
+        $shippingData = $this->sessionManager->getShippingData($merchantId);
+
+        if (!$addressData) {
+            return [
+                'valid' => false,
+                'error' => 'address_required',
+                'message' => __('Please complete address step first'),
+                'redirect' => route('merchant.checkout.address', $merchantId),
+            ];
+        }
+
+        if (!$shippingData) {
+            return [
+                'valid' => false,
+                'error' => 'shipping_required',
+                'message' => __('Please select shipping method first'),
+                'redirect' => route('merchant.checkout.shipping', $merchantId),
+            ];
+        }
+
+        if (!$this->cartService->hasMerchantItems($merchantId)) {
+            return [
+                'valid' => false,
+                'error' => 'empty_cart',
+                'message' => __('No items in cart for this merchant'),
+                'redirect' => route('front.cart'),
+            ];
+        }
+
+        return ['valid' => true];
+    }
+
+    /**
+     * Get checkout data for payment processing
+     */
+    protected function getCheckoutData(int $merchantId): array
+    {
+        $addressData = $this->sessionManager->getAddressData($merchantId);
+        $shippingData = $this->sessionManager->getShippingData($merchantId);
+        $discountData = $this->sessionManager->getDiscountData($merchantId);
+        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+
+        $totals = $this->priceCalculator->calculateTotals($cartSummary['items'], [
+            'discount_amount' => $discountData['amount'] ?? 0,
+            'tax_rate' => $addressData['tax_rate'] ?? 0,
+            'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
+            'packing_cost' => $shippingData['packing_cost'] ?? 0,
+            'courier_fee' => $shippingData['courier_fee'] ?? 0,
+        ]);
+
+        return [
+            'merchant_id' => $merchantId,
+            'address' => $addressData,
+            'shipping' => $shippingData,
+            'discount' => $discountData,
+            'cart' => $cartSummary,
+            'totals' => $totals,
+        ];
+    }
+
+    /**
+     * Store input data in session for callback
+     */
+    protected function storeInputForCallback(int $merchantId, array $data): void
+    {
+        Session::put('merchant_payment_input_' . $merchantId, $data);
+        Session::save();
+    }
+
+    /**
+     * Get stored input data from callback
+     */
+    protected function getStoredInput(int $merchantId): ?array
+    {
+        return Session::get('merchant_payment_input_' . $merchantId);
+    }
+
+    /**
+     * Clear stored input data
+     */
+    protected function clearStoredInput(int $merchantId): void
+    {
+        Session::forget('merchant_payment_input_' . $merchantId);
+        Session::save();
+    }
+
+    /**
+     * Create purchase after successful payment
+     */
+    protected function createSuccessfulPurchase(int $merchantId, array $paymentData): array
+    {
+        return $this->purchaseCreator->createPurchase($merchantId, array_merge($paymentData, [
+            'method' => $this->paymentMethod,
+            'payment_status' => 'Completed',
+        ]));
+    }
+
+    /**
+     * Get success redirect URL
+     */
+    protected function getSuccessUrl(int $merchantId): string
+    {
+        // Check if other merchants have items
+        if ($this->cartService->hasOtherMerchants($merchantId)) {
+            return route('front.cart') . '?checkout_success=1';
+        }
+
+        return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'success']);
+    }
+
+    /**
+     * Get cancel redirect URL
+     */
+    protected function getCancelUrl(int $merchantId): string
+    {
+        return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'cancelled']);
+    }
+
+    /**
+     * Get failure redirect URL
+     */
+    protected function getFailureUrl(int $merchantId): string
+    {
+        return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'failed']);
+    }
+
+    /**
+     * Handle payment error response
+     */
+    protected function handlePaymentError(int $merchantId, string $message): JsonResponse
+    {
+        return response()->json([
+            'success' => false,
+            'error' => 'payment_failed',
+            'message' => $message,
+            'redirect' => $this->getFailureUrl($merchantId),
+        ], 400);
+    }
+
+    /**
+     * Handle successful payment response
+     */
+    protected function handlePaymentSuccess(int $merchantId, Purchase $purchase): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'purchase_number' => $purchase->purchase_number,
+            'redirect' => $this->getSuccessUrl($merchantId),
+        ]);
+    }
+
+    /**
+     * Abstract method - process payment (must be implemented by each gateway)
+     */
+    abstract public function processPayment(Request $request, int $merchantId);
+
+    /**
+     * Abstract method - handle payment callback/notify (must be implemented by each gateway)
+     */
+    abstract public function handleCallback(Request $request);
+}

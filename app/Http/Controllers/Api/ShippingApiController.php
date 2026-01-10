@@ -275,17 +275,23 @@ class ShippingApiController extends Controller
      */
     protected function getDestinationCity(int $merchantId): ?string
     {
-        $step1 = Session::get('merchant_step1_' . $merchantId) ?? Session::get('step1');
+        // Try new merchant checkout session structure first
+        $addressData = Session::get('checkout.merchant.' . $merchantId . '.address');
 
-        if (!$step1) {
-            Log::warning('ShippingApiController: No step1 session found', [
+        // Fallback to old session structure
+        if (!$addressData) {
+            $addressData = Session::get('merchant_step1_' . $merchantId) ?? Session::get('step1');
+        }
+
+        if (!$addressData) {
+            Log::warning('ShippingApiController: No address session found', [
                 'merchant_id' => $merchantId
             ]);
             return null;
         }
 
-        $latitude = $step1['latitude'] ?? null;
-        $longitude = $step1['longitude'] ?? null;
+        $latitude = $addressData['latitude'] ?? null;
+        $longitude = $addressData['longitude'] ?? null;
 
         if (!$latitude || !$longitude) {
             Log::warning('ShippingApiController: No coordinates in session', [

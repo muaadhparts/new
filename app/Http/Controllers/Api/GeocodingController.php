@@ -605,4 +605,24 @@ class GeocodingController extends Controller
             })
         ]);
     }
+
+    /**
+     * Get cities by country ID
+     * Legacy route support
+     */
+    public function getCitiesByCountry(Request $request, ?int $country_id = null)
+    {
+        $countryId = $country_id ?? $request->input('country_id');
+
+        if (!$countryId) {
+            return response()->json([]);
+        }
+
+        $cities = City::where('status', 1)
+            ->where('country_id', $countryId)
+            ->orderBy('city_name')
+            ->get(['id', 'city_name']);
+
+        return response()->json($cities);
+    }
 }
