@@ -504,37 +504,13 @@ function loadApiProviderOptions(provider) {
     });
 }
 
-// Format delivery days text
-function formatDeliveryDays(days) {
-    if (!days) return '';
-    // Clean up format like "1to3WorkingDays" -> "1-3 أيام عمل"
-    let cleaned = days.replace(/WorkingDays/gi, '').replace(/Days/gi, '').replace(/to/gi, '-');
-    if (cleaned === '0' || cleaned.toLowerCase() === 'same') return '@lang("Same day")';
-    if (cleaned === '1' || cleaned.toLowerCase() === 'next') return '@lang("Next day")';
-    return cleaned + ' @lang("days")';
-}
-
-// Format service type text
-function formatServiceType(type) {
-    if (!type) return '';
-    // Map common service types
-    const typeMap = {
-        'lockerDelivery': '@lang("Locker Delivery")',
-        'homeDelivery': '@lang("Home Delivery")',
-        'expressDelivery': '@lang("Express Delivery")',
-        'standardDelivery': '@lang("Standard Delivery")'
-    };
-    return typeMap[type] || type.replace(/([A-Z])/g, ' $1').trim();
-}
-
-// Render API provider options (e.g., Tryoto response format)
-// Now uses data directly from API response (free shipping logic handled by backend)
+// Render API provider options
+// Frontend only consumes and displays - all processing done by API
 function renderApiProviderOptions(provider, options, freeShippingInfo) {
     let html = '';
 
     // Show free shipping banner if qualifies (from API response)
-    const qualifiesFree = freeShippingInfo.qualifies || false;
-    if (qualifiesFree) {
+    if (freeShippingInfo.qualifies) {
         html += `<div class="alert alert-success mb-3 py-2">
             <i class="fas fa-gift me-2"></i>
             @lang('Free shipping! Shipping cost is covered by the merchant.')
@@ -542,25 +518,24 @@ function renderApiProviderOptions(provider, options, freeShippingInfo) {
     }
 
     options.forEach(function(option, index) {
-        // All data comes from API - no frontend calculation needed
-        const companyName = option.company || option.companyName || option.deliveryCompanyName || option.title || provider;
-        const serviceType = option.serviceType || option.serviceName || '';
-        const logo = option.logo || '';
-        const estimatedDays = option.estimatedDeliveryDays || option.avgDeliveryTime || '';
+        // All display values come ready from API - no processing needed
         const optionId = option.deliveryOptionId || option.id || (provider + '_' + index);
-        const codCharge = parseFloat(option.codCharge) || 0;
 
-        // Prices from API (already processed by backend)
-        const originalPrice = parseFloat(option.original_price) || 0;   // Display price
-        const chargeablePrice = parseFloat(option.chargeable_price) || parseFloat(option.price) || 0; // What customer pays
+        // Raw values for data attributes (used in calculations)
+        const chargeablePrice = parseFloat(option.chargeable_price) || parseFloat(option.price) || 0;
+        const originalPrice = parseFloat(option.original_price) || 0;
         const isFree = option.is_free || false;
 
-        // Format display values
-        const formattedDays = formatDeliveryDays(estimatedDays);
-        const formattedService = formatServiceType(serviceType);
+        // Display values from API (ready to show)
+        const companyDisplay = option.company_display || option.company || '';
+        const serviceTypeDisplay = option.service_type_display || '';
+        const deliveryTimeDisplay = option.delivery_time_display || '';
+        const originalPriceDisplay = option.original_price_display || formatPrice(originalPrice);
+        const codChargeDisplay = option.cod_charge_display || '';
+        const logo = option.logo || '';
 
-        // Price display - always show original price, add "free" badge if applicable
-        let priceHtml = `<span class="fw-bold">${formatPrice(originalPrice)}</span>`;
+        // Build price HTML
+        let priceHtml = `<span class="fw-bold">${originalPriceDisplay}</span>`;
         if (isFree) {
             priceHtml += `<br><span class="badge bg-success">@lang('Free')</span>`;
         }
@@ -571,22 +546,20 @@ function renderApiProviderOptions(provider, options, freeShippingInfo) {
                        id="${provider}_${optionId}" value="${optionId}"
                        data-price="${chargeablePrice}"
                        data-original-price="${originalPrice}"
-                       data-title="${companyName}"
+                       data-title="${companyDisplay}"
                        data-provider="${provider}"
-                       data-company="${companyName}"
-                       data-cod-charge="${codCharge}"
                        data-is-free="${isFree ? '1' : '0'}">
                 <label class="form-check-label w-100" for="${provider}_${optionId}">
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             ${logo ? '<img src="' + logo + '" alt="" class="me-2 rounded" style="height: 32px; width: 50px; object-fit: contain;">' : '<div class="me-2 d-flex align-items-center justify-content-center bg-light rounded" style="width: 50px; height: 32px;"><i class="fas fa-truck text-muted"></i></div>'}
                             <div>
-                                <div class="fw-bold">${companyName}</div>
+                                <div class="fw-bold">${companyDisplay}</div>
                                 <div class="small">
-                                    ${formattedService ? '<span class="text-muted me-2">' + formattedService + '</span>' : ''}
-                                    ${formattedDays ? '<span class="text-info"><i class="fas fa-clock me-1"></i>' + formattedDays + '</span>' : ''}
+                                    ${serviceTypeDisplay ? '<span class="text-muted me-2">' + serviceTypeDisplay + '</span>' : ''}
+                                    ${deliveryTimeDisplay ? '<span class="text-info"><i class="fas fa-clock me-1"></i>' + deliveryTimeDisplay + '</span>' : ''}
                                 </div>
-                                ${codCharge > 0 ? '<div class="small text-warning"><i class="fas fa-money-bill-wave me-1"></i>@lang("COD"): ' + formatPrice(codCharge) + '</div>' : ''}
+                                ${codChargeDisplay ? '<div class="small text-warning"><i class="fas fa-money-bill-wave me-1"></i>@lang("COD"): ' + codChargeDisplay + '</div>' : ''}
                             </div>
                         </div>
                         <div class="text-end">${priceHtml}</div>

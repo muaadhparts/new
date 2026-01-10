@@ -289,12 +289,15 @@ class ShippingApiController extends Controller
 
     /**
      * Convert delivery options prices to selected currency and apply free shipping
+     * Also format all display values - Frontend should only consume, not process
      */
     protected function convertDeliveryOptionsPrices(array $options, array $freeShippingInfo): array
     {
         $qualifiesFree = $freeShippingInfo['qualifies'] ?? false;
+        $curr = $this->priceService->getCurrency();
+        $currSign = $curr->sign ?? 'SAR';
 
-        return array_map(function ($option) use ($qualifiesFree) {
+        return array_map(function ($option) use ($qualifiesFree, $currSign) {
             // Original price from Tryoto (in SAR)
             $originalPrice = (float)($option['price'] ?? 0);
 
@@ -305,21 +308,103 @@ class ShippingApiController extends Controller
             $isFree = $qualifiesFree;
             $chargeablePrice = $isFree ? 0 : $convertedOriginalPrice;
 
-            // Set prices
-            $option['original_price'] = round($convertedOriginalPrice, 2); // Display price (always shown)
-            $option['chargeable_price'] = round($chargeablePrice, 2);      // What customer pays
+            // === PRICES (raw values for calculations) ===
+            $option['original_price'] = round($convertedOriginalPrice, 2);
+            $option['chargeable_price'] = round($chargeablePrice, 2);
             $option['is_free'] = $isFree;
-
-            // Keep the price field for backward compatibility but use chargeable
             $option['price'] = round($chargeablePrice, 2);
 
-            // Convert COD charge if exists
+            // === DISPLAY VALUES (ready for frontend - no processing needed) ===
+            $option['original_price_display'] = $currSign . number_format($convertedOriginalPrice, 2);
+            $option['chargeable_price_display'] = $isFree ? __('Free') : $currSign . number_format($chargeablePrice, 2);
+
+            // Company name - use what Tryoto sends
+            $option['company_display'] = $option['company'] ?? $option['deliveryCompanyName'] ?? $option['deliveryOptionName'] ?? '';
+
+            // Service type - dynamic formatting (camelCase to readable)
+            $serviceType = $option['serviceType'] ?? '';
+            $option['service_type_display'] = $this->formatCamelCaseToReadable($serviceType);
+
+            // Delivery time - dynamic formatting
+            $deliveryTime = $option['avgDeliveryTime'] ?? $option['estimatedDeliveryDays'] ?? '';
+            $option['delivery_time_display'] = $this->formatDeliveryTime($deliveryTime);
+
+            // COD charge
             if (isset($option['codCharge'])) {
-                $option['codCharge'] = round($this->priceService->convert((float)$option['codCharge']), 2);
+                $codCharge = $this->priceService->convert((float)$option['codCharge']);
+                $option['codCharge'] = round($codCharge, 2);
+                $option['cod_charge_display'] = $codCharge > 0
+                    ? $currSign . number_format($codCharge, 2)
+                    : '';
+            } else {
+                $option['cod_charge_display'] = '';
             }
 
             return $option;
         }, $options);
+    }
+
+    /**
+     * Format camelCase or special strings to readable text
+     * Fully dynamic - no hardcoded mappings
+     */
+    protected function formatCamelCaseToReadable(string $text): string
+    {
+        if (empty($text)) return '';
+
+        // Add space before capital letters (camelCase to words)
+        $formatted = preg_replace('/([a-z])([A-Z])/', '$1 $2', $text);
+
+        // Handle common patterns
+        $formatted = str_ireplace(['_', '-'], ' ', $formatted);
+
+        // Capitalize first letter of each word
+        return ucwords(strtolower($formatted));
+    }
+
+    /**
+     * Format delivery time string to readable format
+     * Fully dynamic - parses any format from shipping company
+     */
+    protected function formatDeliveryTime(string $time): string
+    {
+        if (empty($time)) return '';
+
+        $timeLower = strtolower($time);
+
+        // Same day
+        if (str_contains($timeLower, 'same') || $time === '0') {
+            return __('Same Day');
+        }
+
+        // Next day
+        if (str_contains($timeLower, 'next') || $time === '1') {
+            return __('Next Day');
+        }
+
+        // Pattern: "1to3WorkingDays" or "2to5Days" etc
+        if (preg_match('/(\d+)\s*to\s*(\d+)/i', $time, $matches)) {
+            $from = $matches[1];
+            $to = $matches[2];
+
+            // Check if it mentions working days
+            $isWorkingDays = str_contains($timeLower, 'working');
+            $daysText = $isWorkingDays ? __('working days') : __('days');
+
+            return "{$from}-{$to} {$daysText}";
+        }
+
+        // Single number pattern: "3Days" or "5WorkingDays"
+        if (preg_match('/^(\d+)/i', $time, $matches)) {
+            $days = $matches[1];
+            $isWorkingDays = str_contains($timeLower, 'working');
+            $daysText = $isWorkingDays ? __('working days') : __('days');
+
+            return "{$days} {$daysText}";
+        }
+
+        // If no pattern matched, return formatted camelCase
+        return $this->formatCamelCaseToReadable($time);
     }
 
     /**
