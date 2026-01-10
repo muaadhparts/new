@@ -9,6 +9,7 @@ use App\Models\Shipping;
 use App\Models\Package;
 use App\Models\MerchantPayment;
 use App\Models\CourierServiceArea;
+use App\Models\MerchantLocation;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -219,36 +220,69 @@ class MerchantCheckoutService
         ];
 
         if ($deliveryType === 'local_courier') {
-            // Courier delivery
-            $courierInfo = $this->priceCalculator->calculateCourierFee(
-                (int)($input['courier_id'] ?? 0),
-                (int)($addressData['city_id'] ?? 0)
-            );
+            // Courier delivery - use data from frontend (already matched by coordinates)
+            $courierId = (int)($input['courier_id'] ?? 0);
+            $courierFee = (float)($input['courier_fee'] ?? 0);
+            $serviceAreaId = (int)($input['service_area_id'] ?? 0);
+            $merchantLocationId = (int)($input['merchant_location_id'] ?? 0);
+
+            // Get courier name from database
+            $courier = \App\Models\User::find($courierId);
+            $courierName = $courier ? ($courier->name ?? 'Courier') : 'Courier';
+
             $shippingData = array_merge($shippingData, [
-                'courier_id' => $courierInfo['courier_id'],
-                'courier_name' => $courierInfo['courier_name'],
-                'courier_fee' => $courierInfo['courier_fee'],
-                'service_area_id' => $courierInfo['service_area_id'],
+                'courier_id' => $courierId,
+                'courier_name' => $courierName,
+                'courier_fee' => $courierFee,
+                'service_area_id' => $serviceAreaId,
+                'merchant_location_id' => $merchantLocationId,
                 'shipping_id' => 0,
+                'shipping_provider' => null,
                 'shipping_name' => null,
                 'shipping_cost' => 0,
+                'original_shipping_cost' => 0,
+                'is_free_shipping' => false,
             ]);
         } else {
             // Regular shipping
-            $shippingInfo = $this->priceCalculator->calculateShippingCost(
-                (int)($input['shipping_id'] ?? 0),
-                $cartSummary['total_price']
-            );
-            $shippingData = array_merge($shippingData, [
-                'shipping_id' => $shippingInfo['shipping_id'],
-                'shipping_name' => $shippingInfo['shipping_name'],
-                'shipping_cost' => $shippingInfo['shipping_cost'],
-                'original_shipping_cost' => $shippingInfo['original_cost'],
-                'is_free_shipping' => $shippingInfo['is_free'],
-                'courier_id' => 0,
-                'courier_name' => null,
-                'courier_fee' => 0,
-            ]);
+            $shippingProvider = $input['shipping_provider'] ?? 'manual';
+
+            // Check if this is an API provider (Tryoto, etc.)
+            if ($this->isApiProvider($shippingProvider)) {
+                // For API providers, use values from frontend directly
+                $shippingCost = (float)($input['shipping_cost'] ?? 0);
+                $originalCost = (float)($input['shipping_original_cost'] ?? $shippingCost);
+                $isFree = ($input['shipping_is_free'] ?? '0') === '1';
+
+                $shippingData = array_merge($shippingData, [
+                    'shipping_id' => $input['shipping_id'] ?? '',
+                    'shipping_provider' => $shippingProvider,
+                    'shipping_name' => ucfirst($shippingProvider),
+                    'shipping_cost' => $isFree ? 0 : $shippingCost,
+                    'original_shipping_cost' => $originalCost,
+                    'is_free_shipping' => $isFree,
+                    'courier_id' => 0,
+                    'courier_name' => null,
+                    'courier_fee' => 0,
+                ]);
+            } else {
+                // For database shipping methods
+                $shippingInfo = $this->priceCalculator->calculateShippingCost(
+                    (int)($input['shipping_id'] ?? 0),
+                    $cartSummary['total_price']
+                );
+                $shippingData = array_merge($shippingData, [
+                    'shipping_id' => $shippingInfo['shipping_id'],
+                    'shipping_provider' => $shippingProvider,
+                    'shipping_name' => $shippingInfo['shipping_name'],
+                    'shipping_cost' => $shippingInfo['shipping_cost'],
+                    'original_shipping_cost' => $shippingInfo['original_cost'],
+                    'is_free_shipping' => $shippingInfo['is_free'],
+                    'courier_id' => 0,
+                    'courier_name' => null,
+                    'courier_fee' => 0,
+                ]);
+            }
         }
 
         // Packaging
@@ -453,30 +487,138 @@ class MerchantCheckoutService
 
     /**
      * Get courier options for address
+     *
+     * Couriers are shown if:
+     * 1. Customer's location is within courier's service radius
+     * 2. Merchant has a location within courier's service radius
+     * 3. Courier is active
+     *
+     * Uses Haversine formula to calculate distance between coordinates
      */
     protected function getCourierOptions(int $merchantId, array $addressData): array
     {
-        $cityId = $addressData['city_id'] ?? 0;
-        if (!$cityId) {
+        $customerLat = (float)($addressData['latitude'] ?? 0);
+        $customerLng = (float)($addressData['longitude'] ?? 0);
+
+        \Log::debug('getCourierOptions: Checking couriers', [
+            'merchant_id' => $merchantId,
+            'customer_lat' => $customerLat,
+            'customer_lng' => $customerLng,
+        ]);
+
+        if (!$customerLat || !$customerLng) {
+            \Log::debug('getCourierOptions: No customer coordinates');
             return [];
         }
 
-        $serviceAreas = CourierServiceArea::where('city_id', $cityId)
+        // Step 1: Find merchant's locations (warehouses)
+        $merchantLocations = MerchantLocation::where('user_id', $merchantId)
+            ->where('status', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->get();
+
+        if ($merchantLocations->isEmpty()) {
+            \Log::debug('getCourierOptions: Merchant has no locations with coordinates');
+            return [];
+        }
+
+        // Step 2: Find courier service areas where customer is within radius
+        $availableCouriers = [];
+
+        $serviceAreas = CourierServiceArea::where('status', 1)
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
             ->whereHas('courier', function ($q) {
                 $q->where('status', 1);
             })
-            ->with('courier')
+            ->with(['courier', 'city'])
             ->get();
 
-        return $serviceAreas->map(fn($sa) => [
-            'courier_id' => $sa->courier_id,
-            'courier_name' => $sa->courier->name ?? 'Courier',
-            'courier_phone' => $sa->courier->phone ?? '',
-            'courier_photo' => $sa->courier->photo ?? null,
-            'delivery_fee' => round((float)$sa->price, 2),
-            'service_area_id' => $sa->id,
-            'city_name' => $sa->city->name ?? '',
-        ])->toArray();
+        foreach ($serviceAreas as $sa) {
+            $courierLat = (float)$sa->latitude;
+            $courierLng = (float)$sa->longitude;
+            $serviceRadius = (int)($sa->service_radius_km ?? 20);
+
+            // Check if customer is within courier's service radius
+            $distanceToCustomer = $this->haversineDistance($courierLat, $courierLng, $customerLat, $customerLng);
+
+            if ($distanceToCustomer > $serviceRadius) {
+                continue; // Customer is too far from this courier
+            }
+
+            // Check if any merchant location is within courier's service radius
+            $nearestMerchantLocation = null;
+            $minDistanceToMerchant = PHP_FLOAT_MAX;
+
+            foreach ($merchantLocations as $ml) {
+                $distanceToMerchant = $this->haversineDistance(
+                    $courierLat, $courierLng,
+                    (float)$ml->latitude, (float)$ml->longitude
+                );
+
+                if ($distanceToMerchant <= $serviceRadius && $distanceToMerchant < $minDistanceToMerchant) {
+                    $minDistanceToMerchant = $distanceToMerchant;
+                    $nearestMerchantLocation = $ml;
+                }
+            }
+
+            if (!$nearestMerchantLocation) {
+                continue; // No merchant location within courier's service area
+            }
+
+            // Both customer and merchant are within courier's service radius
+            $availableCouriers[] = [
+                'courier_id' => $sa->courier_id,
+                'courier_name' => $sa->courier->name ?? 'Courier',
+                'courier_phone' => $sa->courier->phone ?? '',
+                'courier_photo' => $sa->courier->photo ?? null,
+                'delivery_fee' => round((float)$sa->price, 2),
+                'service_area_id' => $sa->id,
+                'city_name' => $sa->city->name ?? '',
+                'merchant_location_id' => $nearestMerchantLocation->id,
+                'distance_to_customer' => round($distanceToCustomer, 1),
+            ];
+
+            \Log::debug('getCourierOptions: Courier available', [
+                'courier_id' => $sa->courier_id,
+                'courier_name' => $sa->courier->name,
+                'distance_to_customer_km' => round($distanceToCustomer, 1),
+                'distance_to_merchant_km' => round($minDistanceToMerchant, 1),
+                'service_radius_km' => $serviceRadius,
+            ]);
+        }
+
+        // Sort by distance to customer (nearest first)
+        usort($availableCouriers, fn($a, $b) => $a['distance_to_customer'] <=> $b['distance_to_customer']);
+
+        \Log::debug('getCourierOptions: Found couriers', ['count' => count($availableCouriers)]);
+
+        return $availableCouriers;
+    }
+
+    /**
+     * Calculate distance between two coordinates using Haversine formula
+     *
+     * @param float $lat1 Latitude of point 1
+     * @param float $lng1 Longitude of point 1
+     * @param float $lat2 Latitude of point 2
+     * @param float $lng2 Longitude of point 2
+     * @return float Distance in kilometers
+     */
+    protected function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371; // Earth's radius in kilometers
+
+        $latDelta = deg2rad($lat2 - $lat1);
+        $lngDelta = deg2rad($lng2 - $lng1);
+
+        $a = sin($latDelta / 2) ** 2 +
+             cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($lngDelta / 2) ** 2;
+
+        $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+
+        return $earthRadius * $c;
     }
 
     /**

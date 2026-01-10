@@ -44,6 +44,72 @@
 
             <div class="row gy-4">
                 <div class="col-lg-7 col-xl-8">
+                    {{-- Delivery Summary --}}
+                    <div class="m-card mb-4">
+                        <div class="m-card__header d-flex justify-content-between align-items-center">
+                            <h5 class="m-0">
+                                <i class="fas fa-shipping-fast me-2"></i>
+                                @lang('Delivery Details')
+                            </h5>
+                            <a href="{{ route('merchant.checkout.shipping', $merchant_id) }}" class="m-btn m-btn--sm m-btn--outline">
+                                <i class="fas fa-edit me-1"></i> @lang('Edit')
+                            </a>
+                        </div>
+                        <div class="m-card__body">
+                            <div class="row">
+                                {{-- Address --}}
+                                <div class="col-md-6 mb-3 mb-md-0">
+                                    <h6 class="text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-1"></i>
+                                        @lang('Delivery Address')
+                                    </h6>
+                                    <p class="mb-1"><strong>{{ $address['customer_name'] ?? '-' }}</strong></p>
+                                    <p class="mb-1 small text-muted">{{ $address['customer_address'] ?? '-' }}</p>
+                                    <p class="mb-0 small text-muted">
+                                        <i class="fas fa-phone me-1"></i>{{ $address['customer_phone'] ?? '-' }}
+                                    </p>
+                                </div>
+                                {{-- Shipping/Courier --}}
+                                <div class="col-md-6">
+                                    <h6 class="text-muted mb-2">
+                                        @if(($shipping['delivery_type'] ?? 'shipping') === 'local_courier')
+                                            <i class="fas fa-motorcycle me-1"></i>
+                                            @lang('Courier Delivery')
+                                        @else
+                                            <i class="fas fa-truck me-1"></i>
+                                            @lang('Shipping Method')
+                                        @endif
+                                    </h6>
+                                    @if(($shipping['delivery_type'] ?? 'shipping') === 'local_courier')
+                                        <p class="mb-1"><strong>{{ $shipping['courier_name'] ?? '-' }}</strong></p>
+                                        <p class="mb-0 small text-success">
+                                            {{ $curr->sign ?? '' }}{{ number_format($shipping['courier_fee'] ?? 0, 2) }}
+                                        </p>
+                                    @else
+                                        <p class="mb-1"><strong>{{ $shipping['shipping_name'] ?? ucfirst($shipping['shipping_provider'] ?? 'Standard') }}</strong></p>
+                                        <p class="mb-0 small">
+                                            @if($shipping['is_free_shipping'] ?? false)
+                                                <span class="text-decoration-line-through text-muted me-1">
+                                                    {{ $curr->sign ?? '' }}{{ number_format($shipping['original_shipping_cost'] ?? 0, 2) }}
+                                                </span>
+                                                <span class="badge bg-success">@lang('Free')</span>
+                                            @else
+                                                <span class="text-success">{{ $curr->sign ?? '' }}{{ number_format($shipping['shipping_cost'] ?? 0, 2) }}</span>
+                                            @endif
+                                        </p>
+                                    @endif
+
+                                    @if(!empty($shipping['packing_name']))
+                                    <p class="mb-0 mt-2 small text-muted">
+                                        <i class="fas fa-box me-1"></i>
+                                        {{ $shipping['packing_name'] }}: {{ $curr->sign ?? '' }}{{ number_format($shipping['packing_cost'] ?? 0, 2) }}
+                                    </p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Payment Methods --}}
                     <div class="m-card">
                         <div class="m-card__header">
@@ -98,13 +164,52 @@
                                     <span>-{{ $curr->sign ?? '' }}{{ number_format($totals['discount_amount'] ?? 0, 2) }}</span>
                                 </li>
                                 @endif
-                                <li>
-                                    <span>@lang('Shipping')</span>
-                                    <span>{{ $curr->sign ?? '' }}{{ number_format($totals['shipping_cost'] ?? 0, 2) }}</span>
-                                </li>
+
+                                {{-- Shipping or Courier --}}
+                                @if(($shipping['delivery_type'] ?? 'shipping') === 'local_courier')
+                                    {{-- Courier Delivery --}}
+                                    <li>
+                                        <span>
+                                            <i class="fas fa-motorcycle me-1 text-muted"></i>
+                                            @lang('Courier')
+                                            @if(!empty($shipping['courier_name']))
+                                                <small class="text-muted d-block">{{ $shipping['courier_name'] }}</small>
+                                            @endif
+                                        </span>
+                                        <span>{{ $curr->sign ?? '' }}{{ number_format($totals['courier_fee'] ?? 0, 2) }}</span>
+                                    </li>
+                                @else
+                                    {{-- Regular Shipping --}}
+                                    <li>
+                                        <span>
+                                            <i class="fas fa-truck me-1 text-muted"></i>
+                                            @lang('Shipping')
+                                            @if(!empty($shipping['shipping_name']))
+                                                <small class="text-muted d-block">{{ $shipping['shipping_name'] }}</small>
+                                            @endif
+                                        </span>
+                                        <span>
+                                            @if($shipping['is_free_shipping'] ?? false)
+                                                <span class="text-decoration-line-through text-muted me-1">
+                                                    {{ $curr->sign ?? '' }}{{ number_format($shipping['original_shipping_cost'] ?? 0, 2) }}
+                                                </span>
+                                                <span class="badge bg-success">@lang('Free')</span>
+                                            @else
+                                                {{ $curr->sign ?? '' }}{{ number_format($totals['shipping_cost'] ?? 0, 2) }}
+                                            @endif
+                                        </span>
+                                    </li>
+                                @endif
+
                                 @if(($totals['packing_cost'] ?? 0) > 0)
                                 <li>
-                                    <span>@lang('Packaging')</span>
+                                    <span>
+                                        <i class="fas fa-box me-1 text-muted"></i>
+                                        @lang('Packaging')
+                                        @if(!empty($shipping['packing_name']))
+                                            <small class="text-muted d-block">{{ $shipping['packing_name'] }}</small>
+                                        @endif
+                                    </span>
                                     <span>{{ $curr->sign ?? '' }}{{ number_format($totals['packing_cost'] ?? 0, 2) }}</span>
                                 </li>
                                 @endif

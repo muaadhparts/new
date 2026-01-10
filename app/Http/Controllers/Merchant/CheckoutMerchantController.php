@@ -286,6 +286,8 @@ class CheckoutMerchantController extends Controller
             'merchant_id' => $merchantId,
             'cart' => $result['data']['cart'] ?? [],
             'totals' => $result['data']['totals'] ?? [],
+            'shipping' => $result['data']['shipping'] ?? [],
+            'address' => $result['data']['address'] ?? [],
             'payment_methods' => $result['data']['payment_methods'] ?? [],
             'wallet_balance' => $walletBalance,
             'curr' => $curr,

@@ -63,6 +63,29 @@
                             </div>
                         </div>
 
+                        {{-- Courier Options (Local Delivery) - Button to Modal --}}
+                        @if(!empty($couriers) && count($couriers) > 0)
+                        <div class="m-card mb-4">
+                            <div class="m-card__header">
+                                <h5 class="m-0">
+                                    <i class="fas fa-motorcycle me-2"></i>
+                                    @lang('Local Courier Delivery')
+                                </h5>
+                            </div>
+                            <div class="m-card__body">
+                                <button type="button" class="m-btn m-btn--outline w-100 d-flex align-items-center justify-content-between"
+                                        id="courier-btn" data-bs-toggle="modal" data-bs-target="#courierModal">
+                                    <span>
+                                        <i class="fas fa-motorcycle me-2"></i>
+                                        @lang('Select Courier')
+                                        <small class="text-muted ms-2">({{ count($couriers) }} @lang('available'))</small>
+                                    </span>
+                                    <span id="courier-selected-text" class="text-muted">@lang('Select')</span>
+                                </button>
+                            </div>
+                        </div>
+                        @endif
+
                         {{-- Shipping Providers Buttons --}}
                         <div class="m-card mb-4">
                             <div class="m-card__header">
@@ -123,52 +146,6 @@
                         </div>
                         @endif
 
-                        {{-- Courier Options (Local Delivery) --}}
-                        @if(!empty($couriers) && count($couriers) > 0)
-                        <div class="m-card">
-                            <div class="m-card__header">
-                                <h5 class="m-0">
-                                    <i class="fas fa-motorcycle me-2"></i>
-                                    @lang('Local Courier Delivery')
-                                    <small class="text-muted ms-2">(@lang('Alternative to shipping'))</small>
-                                </h5>
-                            </div>
-                            <div class="m-card__body">
-                                <div class="row g-3">
-                                    @foreach($couriers as $courier)
-                                    <div class="col-md-6">
-                                        <div class="form-check p-3 border rounded courier-option" data-price="{{ $courier['delivery_fee'] }}">
-                                            <input class="form-check-input" type="radio" name="courier_option" id="courier_{{ $courier['courier_id'] }}"
-                                                   value="{{ $courier['courier_id'] }}" data-price="{{ $courier['delivery_fee'] }}"
-                                                   data-service-area="{{ $courier['service_area_id'] }}"
-                                                   data-name="{{ $courier['courier_name'] }}">
-                                            <label class="form-check-label w-100" for="courier_{{ $courier['courier_id'] }}">
-                                                <div class="d-flex align-items-center">
-                                                    @if(!empty($courier['courier_photo']))
-                                                    <img src="{{ asset('assets/images/' . $courier['courier_photo']) }}" alt="" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                                    @else
-                                                    <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                                        <i class="fas fa-user text-white"></i>
-                                                    </div>
-                                                    @endif
-                                                    <div>
-                                                        <strong>{{ $courier['courier_name'] }}</strong>
-                                                        @if(!empty($courier['courier_phone']))
-                                                        <br><small class="text-muted"><i class="fas fa-phone me-1"></i>{{ $courier['courier_phone'] }}</small>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                                <span class="float-end text-success fw-bold">
-                                                    {{ $curr->sign ?? '' }}{{ number_format($courier['delivery_fee'], 2) }}
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            </div>
-                        </div>
-                        @endif
                     </div>
 
                     {{-- Order Summary --}}
@@ -236,6 +213,8 @@
                 <input type="hidden" name="packing_cost" id="selected_packing_cost" value="0">
                 <input type="hidden" name="courier_id" id="selected_courier_id" value="">
                 <input type="hidden" name="courier_fee" id="selected_courier_fee" value="0">
+                <input type="hidden" name="service_area_id" id="selected_service_area_id" value="">
+                <input type="hidden" name="merchant_location_id" id="selected_merchant_location_id" value="">
             </form>
         </div>
     </div>
@@ -362,6 +341,62 @@
                                         @lang('Free')
                                     @endif
                                 </span>
+                            </label>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    {{-- Courier Modal --}}
+    @if(!empty($couriers) && count($couriers) > 0)
+    <div class="modal fade gs-modal" id="courierModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-motorcycle me-2"></i>
+                        @lang('Select Courier')
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="courier-options p-3" style="max-height: 400px; overflow-y: auto;">
+                        @foreach($couriers as $courier)
+                        <div class="form-check p-3 border rounded mb-2 courier-option" data-price="{{ $courier['delivery_fee'] }}">
+                            <input class="form-check-input" type="radio" name="courier_option" id="courier_{{ $courier['courier_id'] }}"
+                                   value="{{ $courier['courier_id'] }}"
+                                   data-price="{{ $courier['delivery_fee'] }}"
+                                   data-service-area="{{ $courier['service_area_id'] }}"
+                                   data-merchant-location="{{ $courier['merchant_location_id'] ?? '' }}"
+                                   data-name="{{ $courier['courier_name'] }}">
+                            <label class="form-check-label w-100" for="courier_{{ $courier['courier_id'] }}">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        @if(!empty($courier['courier_photo']))
+                                        <img src="{{ asset('assets/images/' . $courier['courier_photo']) }}" alt="" class="rounded-circle me-2" style="width: 45px; height: 45px; object-fit: cover;">
+                                        @else
+                                        <div class="rounded-circle bg-secondary me-2 d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                                            <i class="fas fa-motorcycle text-white"></i>
+                                        </div>
+                                        @endif
+                                        <div>
+                                            <strong>{{ $courier['courier_name'] }}</strong>
+                                            @if(!empty($courier['courier_phone']))
+                                            <br><small class="text-muted"><i class="fas fa-phone me-1"></i>{{ $courier['courier_phone'] }}</small>
+                                            @endif
+                                            @if(!empty($courier['distance_display']))
+                                            <br><small class="text-info"><i class="fas fa-route me-1"></i>{{ $courier['distance_display'] }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <span class="text-success fw-bold">
+                                        {{ $curr->sign ?? '' }}{{ number_format($courier['delivery_fee'], 2) }}
+                                    </span>
+                                </div>
                             </label>
                         </div>
                         @endforeach
@@ -604,6 +639,10 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
     $('input[name="courier_option"]').prop('checked', false);
     $('.courier-option').removeClass('border-primary bg-light');
 
+    // Reset courier button
+    $('#courier-selected-text').text('@lang("Select")').removeClass('text-success').addClass('text-muted');
+    $('#courier-btn').removeClass('m-btn--success-outline').addClass('m-btn--outline');
+
     // Reset all provider buttons
     resetProviderButtons(provider);
 
@@ -659,6 +698,9 @@ $(document).on('change', 'input[name="packaging_option"]', function() {
 $(document).on('change', 'input[name="courier_option"]', function() {
     const option = $(this);
     const price = parseFloat(option.data('price')) || 0;
+    const serviceAreaId = option.data('service-area') || '';
+    const merchantLocationId = option.data('merchant-location') || '';
+    const courierName = option.data('name') || '';
 
     // Set delivery type to local_courier
     $('#delivery_type').val('local_courier');
@@ -666,10 +708,14 @@ $(document).on('change', 'input[name="courier_option"]', function() {
     // Update courier hidden fields
     $('#selected_courier_id').val(option.val());
     $('#selected_courier_fee').val(price);
+    $('#selected_service_area_id').val(serviceAreaId);
+    $('#selected_merchant_location_id').val(merchantLocationId);
 
     // Clear shipping selection
     $('#selected_shipping_id').val('');
     $('#selected_shipping_cost').val('0');
+    $('#selected_shipping_original_cost').val('0');
+    $('#selected_shipping_is_free').val('0');
     $('#selected_shipping_provider').val('');
     $('input[name="shipping_option"]').prop('checked', false);
     $('.shipping-option').removeClass('border-primary bg-light');
@@ -677,12 +723,22 @@ $(document).on('change', 'input[name="courier_option"]', function() {
     // Reset all provider buttons
     resetProviderButtons(null);
 
+    // Update courier button text
+    const displayText = courierName + ': ' + formatPrice(price);
+    $('#courier-selected-text').html(displayText).removeClass('text-muted').addClass('text-success');
+    $('#courier-btn').removeClass('m-btn--outline').addClass('m-btn--success-outline');
+
     // Update UI
-    $('.courier-option').removeClass('border-primary bg-light');
+    $('.courier-option').removeClass('border-primary bg-light border-success');
     option.closest('.courier-option').addClass('border-primary bg-light');
 
     updateSummary();
     checkSubmitBtn();
+
+    // Close modal after selection
+    setTimeout(function() {
+        $('#courierModal').modal('hide');
+    }, 300);
 });
 
 // Form submission
