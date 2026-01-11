@@ -95,14 +95,13 @@ abstract class BaseMerchantPaymentController extends Controller
         }
 
         $result = [];
-        $environment = 'live'; // Default
+        $environment = 'live';
 
         foreach ($credentials as $cred) {
             $result[$cred->key_name] = $cred->decrypted_value;
             $environment = $cred->environment;
         }
 
-        // Add environment info for sandbox detection
         $result['sandbox'] = $environment === 'sandbox' ? 1 : 0;
         $result['environment'] = $environment;
 

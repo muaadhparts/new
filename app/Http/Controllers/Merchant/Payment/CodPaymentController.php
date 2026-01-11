@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Merchant\Payment;
 
+use App\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -12,6 +13,28 @@ class CodPaymentController extends BaseMerchantPaymentController
 {
     protected string $paymentKeyword = 'cod';
     protected string $paymentMethod = 'Cash On Delivery';
+
+    /**
+     * Override: COD doesn't need API credentials
+     */
+    protected function getPaymentConfig(int $merchantId): ?array
+    {
+        // Check if COD is enabled for this merchant
+        $payment = MerchantPayment::where('keyword', $this->paymentKeyword)
+            ->where('user_id', $merchantId)
+            ->where('checkout', 1)
+            ->first();
+
+        if (!$payment) {
+            return null;
+        }
+
+        return [
+            'id' => $payment->id,
+            'keyword' => $payment->keyword,
+            'title' => $payment->title ?? $payment->name ?? 'Cash On Delivery',
+        ];
+    }
 
     /**
      * POST /merchant/{merchantId}/checkout/payment/cod

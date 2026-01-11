@@ -78,6 +78,10 @@ Route::prefix('merchant/{merchantId}/checkout')
         Route::post('/delivery-options', [CheckoutMerchantController::class, 'getDeliveryOptions'])
             ->name('merchant.checkout.delivery-options');
 
+        // Calculate totals preview (AJAX) - returns calculated totals without saving to session
+        Route::post('/preview-totals', [CheckoutMerchantController::class, 'previewTotals'])
+            ->name('merchant.checkout.preview-totals');
+
         // Discount code management
         Route::get('/discount/check', [CheckoutMerchantController::class, 'checkDiscountCode'])
             ->name('merchant.checkout.discount.check');

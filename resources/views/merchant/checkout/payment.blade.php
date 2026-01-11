@@ -239,7 +239,7 @@
                                 <input type="checkbox" class="form-check-input" id="use_wallet" name="use_wallet" value="1">
                                 <label class="form-check-label" for="use_wallet">
                                     @lang('Use Wallet Balance')
-                                    <span class="text-success">({{ App\Models\CatalogItem::convertPrice($wallet_balance) }})</span>
+                                    <span class="text-success">({{ $formatted_wallet_balance }})</span>
                                 </label>
                             </div>
                         </div>

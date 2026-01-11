@@ -17,11 +17,11 @@ use Illuminate\Support\Facades\Session;
  */
 class MerchantPriceCalculator
 {
-    protected Currency $currency;
+    protected ?Currency $currency = null;
 
-    public function __construct(?Currency $currency = null)
+    public function __construct()
     {
-        $this->currency = $currency ?? $this->getSessionCurrency();
+        // Currency is loaded lazily to avoid DI issues with Eloquent models
     }
 
     /**
@@ -56,9 +56,9 @@ class MerchantPriceCalculator
             'courier_fee' => round($courierFee, 2),
             'grand_total' => round($grandTotal, 2),
             'currency' => [
-                'code' => $this->currency->name,
-                'sign' => $this->currency->sign,
-                'value' => $this->currency->value,
+                'code' => $this->getCurrency()->name,
+                'sign' => $this->getCurrency()->sign,
+                'value' => $this->getCurrency()->value,
             ],
             'formatted' => [
                 'items_total' => $this->formatPrice($itemsTotal),
@@ -212,7 +212,7 @@ class MerchantPriceCalculator
      */
     public function convertToCurrency(float $amount): float
     {
-        return round($amount * $this->currency->value, 2);
+        return round($amount * $this->getCurrency()->value, 2);
     }
 
     /**
@@ -220,10 +220,11 @@ class MerchantPriceCalculator
      */
     public function convertToBase(float $amount): float
     {
-        if ($this->currency->value == 0) {
+        $currencyValue = $this->getCurrency()->value;
+        if ($currencyValue == 0) {
             return $amount;
         }
-        return round($amount / $this->currency->value, 2);
+        return round($amount / $currencyValue, 2);
     }
 
     /**
@@ -233,11 +234,12 @@ class MerchantPriceCalculator
     {
         $converted = $this->convertToCurrency($amount);
         $gs = \DB::table('muaadhsettings')->first();
+        $currency = $this->getCurrency();
 
         if ($gs && $gs->currency_format == 0) {
-            return $this->currency->sign . number_format($converted, 2);
+            return $currency->sign . number_format($converted, 2);
         }
-        return number_format($converted, 2) . $this->currency->sign;
+        return number_format($converted, 2) . $currency->sign;
     }
 
     /**
@@ -271,10 +273,13 @@ class MerchantPriceCalculator
     }
 
     /**
-     * Get currency
+     * Get currency (lazy loaded)
      */
     public function getCurrency(): Currency
     {
+        if ($this->currency === null) {
+            $this->currency = $this->getSessionCurrency();
+        }
         return $this->currency;
     }
 }

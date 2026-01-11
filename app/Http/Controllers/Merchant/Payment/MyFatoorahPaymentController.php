@@ -5,7 +5,8 @@ namespace App\Http\Controllers\Merchant\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Http;
+use MyFatoorah\Library\API\Payment\MyFatoorahPayment;
+use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
 
 /**
  * MyFatoorah Payment Controller (Middle East)
@@ -27,17 +28,17 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
 
         $config = $this->getPaymentConfig($merchantId);
         if (!$config) {
-            \Log::error('MyFatoorah: No config found', ['merchant_id' => $merchantId]);
             return $this->handlePaymentError($merchantId, __('MyFatoorah is not available for this merchant'));
         }
-        \Log::debug('MyFatoorah: Config loaded', [
-            'merchant_id' => $merchantId,
-            'has_api_key' => !empty($config['credentials']['api_key']),
-            'sandbox' => $config['credentials']['sandbox'] ?? 0,
-        ]);
 
         $checkoutData = $this->getCheckoutData($merchantId);
         $currency = $this->priceCalculator->getCurrency();
+
+        // Validate amount
+        $totalAmount = $checkoutData['totals']['grand_total'];
+        if ($totalAmount <= 0) {
+            return $this->handlePaymentError($merchantId, __('Invalid payment amount'));
+        }
 
         $this->storeInputForCallback($merchantId, [
             'merchant_id' => $merchantId,
@@ -45,54 +46,56 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
         ]);
 
         try {
-            $apiKey = $config['credentials']['api_key'] ?? '';
-            $testMode = ($config['credentials']['sandbox'] ?? 0) == 1;
-            $baseUrl = $testMode
-                ? 'https://apitest.myfatoorah.com'
-                : 'https://api.myfatoorah.com';
+            $mfConfig = [
+                'apiKey'      => $config['credentials']['api_key'] ?? '',
+                'isTest'      => ($config['credentials']['sandbox'] ?? 0) == 1,
+                'countryCode' => 'SAU',
+            ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-                'Content-Type' => 'application/json',
-            ])->post($baseUrl . '/v2/SendPayment', [
-                'CustomerName' => $checkoutData['address']['customer_name'],
-                'NotificationOption' => 'LNK',
-                'InvoiceValue' => $checkoutData['totals']['grand_total'],
-                'DisplayCurrencyIso' => $currency->name,
-                'CustomerEmail' => $checkoutData['address']['customer_email'],
-                'CallBackUrl' => route('merchant.payment.myfatoorah.callback') . '?merchant_id=' . $merchantId,
-                'ErrorUrl' => $this->getFailureUrl($merchantId),
-                'Language' => app()->getLocale() === 'ar' ? 'ar' : 'en',
-            ]);
+            // Calculate final amount (convert from display currency to base currency)
+            $finalAmount = $totalAmount / ($currency->value ?? 1);
 
-            $result = $response->json();
+            // Sanitize customer data
+            $customerName = $this->sanitizeString($checkoutData['address']['customer_name'] ?? 'Guest', 50);
+            $customerEmail = filter_var($checkoutData['address']['customer_email'] ?? '', FILTER_VALIDATE_EMAIL)
+                ? $checkoutData['address']['customer_email']
+                : 'guest@example.com';
+            $customerPhone = preg_replace('/[^0-9]/', '', $checkoutData['address']['customer_phone'] ?? '0000000000');
 
-            \Log::debug('MyFatoorah: API Response', [
-                'status' => $response->status(),
-                'success' => $response->successful(),
-                'result' => $result,
-            ]);
+            $curlData = [
+                'NotificationOption' => 'ALL',
+                'CustomerName'       => $customerName,
+                'InvoiceValue'       => round($finalAmount, 2),
+                'DisplayCurrencyIso' => $currency->name ?? 'SAR',
+                'CustomerEmail'      => $customerEmail,
+                'CallBackUrl'        => route('merchant.payment.myfatoorah.callback') . '?merchant_id=' . $merchantId,
+                'ErrorUrl'           => $this->getFailureUrl($merchantId),
+                'MobileCountryCode'  => '+966',
+                'CustomerMobile'     => substr($customerPhone, 0, 15),
+                'Language'           => app()->getLocale() === 'ar' ? 'ar' : 'en',
+                'CustomerReference'  => 'order_' . time() . '_' . $merchantId,
+                'SourceInfo'         => 'Laravel - Merchant Checkout',
+            ];
 
-            if (!$response->successful() || !isset($result['Data']['InvoiceURL'])) {
-                \Log::error('MyFatoorah: Payment failed', [
-                    'status' => $response->status(),
-                    'message' => $result['Message'] ?? 'No message',
-                    'validation_errors' => $result['ValidationErrors'] ?? null,
-                ]);
-                return $this->handlePaymentError($merchantId, $result['Message'] ?? __('Failed to create payment'));
+            $mfObj = new MyFatoorahPayment($mfConfig);
+            $payment = $mfObj->getInvoiceURL($curlData);
+
+            if (empty($payment['invoiceURL'])) {
+                return $this->handlePaymentError($merchantId, __('Failed to create payment invoice'));
             }
 
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'redirect' => $result['Data']['InvoiceURL'],
+                    'redirect' => $payment['invoiceURL'],
                 ]);
             }
 
-            return redirect($result['Data']['InvoiceURL']);
+            return redirect($payment['invoiceURL']);
 
         } catch (\Exception $e) {
-            return $this->handlePaymentError($merchantId, $e->getMessage());
+            report($e);
+            return $this->handlePaymentError($merchantId, __('Payment processing failed. Please try again.'));
         }
     }
 
@@ -104,7 +107,13 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
         $merchantId = (int)$request->query('merchant_id');
         $paymentId = $request->query('paymentId');
 
-        if (!$merchantId) {
+        // Validate required parameters
+        if (!$merchantId || !$paymentId) {
+            return redirect(route('front.cart'))->with('unsuccess', __('Invalid payment response'));
+        }
+
+        // Validate paymentId format (alphanumeric with dashes)
+        if (!preg_match('/^[a-zA-Z0-9\-]+$/', $paymentId)) {
             return redirect(route('front.cart'))->with('unsuccess', __('Invalid payment response'));
         }
 
@@ -113,25 +122,27 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
             return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment session expired'));
         }
 
+        // Verify merchant_id matches stored session
+        if (($storedInput['merchant_id'] ?? null) !== $merchantId) {
+            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Invalid payment session'));
+        }
+
         $config = $this->getPaymentConfig($merchantId);
         if (!$config) {
             return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment configuration not found'));
         }
 
         try {
-            $apiKey = $config['credentials']['api_key'] ?? '';
-            $testMode = ($config['credentials']['sandbox'] ?? 0) == 1;
-            $baseUrl = $testMode ? 'https://apitest.myfatoorah.com' : 'https://api.myfatoorah.com';
+            $mfConfig = [
+                'apiKey'      => $config['credentials']['api_key'] ?? '',
+                'isTest'      => ($config['credentials']['sandbox'] ?? 0) == 1,
+                'countryCode' => 'SAU',
+            ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $apiKey,
-            ])->post($baseUrl . '/v2/GetPaymentStatus', [
-                'Key' => $paymentId,
-                'KeyType' => 'PaymentId',
-            ]);
+            $mfObj = new MyFatoorahPaymentStatus($mfConfig);
+            $data = $mfObj->getPaymentStatus($paymentId, 'PaymentId');
 
-            $result = $response->json();
-            $status = $result['Data']['InvoiceStatus'] ?? '';
+            $status = $data->InvoiceStatus ?? '';
 
             if ($status !== 'Paid') {
                 return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment was not completed'));
@@ -153,7 +164,8 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
             return redirect($this->getSuccessUrl($merchantId))->with('success', __('Payment successful!'));
 
         } catch (\Exception $e) {
-            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', $e->getMessage());
+            report($e);
+            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment verification failed. Please contact support.'));
         }
     }
 
@@ -164,5 +176,22 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
     public function notify(Request $request): RedirectResponse
     {
         return $this->handleCallback($request);
+    }
+
+    /**
+     * Sanitize string for API submission
+     */
+    private function sanitizeString(?string $value, int $maxLength = 100): string
+    {
+        if (empty($value)) {
+            return '';
+        }
+
+        // Remove potentially dangerous characters
+        $value = strip_tags($value);
+        $value = preg_replace('/[<>"\']/', '', $value);
+        $value = trim($value);
+
+        return mb_substr($value, 0, $maxLength);
     }
 }

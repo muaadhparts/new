@@ -430,69 +430,55 @@ const merchantId = {{ $merchant_id }};
 const apiBaseUrl = '/merchant/' + merchantId + '/checkout';
 const currencySign = '{{ $curr->sign ?? "" }}';
 const currencyFormat = {{ $gs->currency_format ?? 0 }};
-let baseTotal = {{ $totals['subtotal'] ?? $cart['total_price'] ?? 0 }};
-let taxAmount = {{ $totals['tax_amount'] ?? 0 }};
 // Track which API providers have been loaded
 let apiProvidersLoaded = {};
 
 // Store API response data including free shipping info
 let apiResponseData = {};
 
-// Format price
+// Format price (display only - no calculations)
 function formatPrice(amount) {
     const formatted = parseFloat(amount).toFixed(2);
     return currencyFormat === 0 ? currencySign + formatted : formatted + currencySign;
 }
 
-// Update summary totals
+// Update summary totals via API
 function updateSummary() {
     const deliveryType = $('#delivery_type').val();
-    let deliveryCost = 0;
-    let originalShippingCost = 0;
-    let isFreeShipping = false;
-    let deliveryName = '';
+    const shippingCost = parseFloat($('#selected_shipping_cost').val()) || 0;
+    const originalShippingCost = parseFloat($('#selected_shipping_original_cost').val()) || shippingCost;
+    const isFreeShipping = $('#selected_shipping_is_free').val() === '1';
+    const courierFee = parseFloat($('#selected_courier_fee').val()) || 0;
+    const packingCost = parseFloat($('#selected_packing_cost').val()) || 0;
+    const deliveryName = deliveryType === 'local_courier'
+        ? $('#selected_courier_name').val() || ''
+        : $('#selected_shipping_name').val() || '';
+    const packingName = $('#selected_packing_name').val() || '';
 
+    // Update UI labels and icons
     if (deliveryType === 'local_courier') {
-        // Courier delivery
-        deliveryCost = parseFloat($('#selected_courier_fee').val()) || 0;
-        originalShippingCost = deliveryCost;
-        deliveryName = $('#selected_courier_name').val() || '';
-
-        // Update icon and label for courier
         $('#shipping-icon').removeClass('fa-truck').addClass('fa-motorcycle');
         $('#shipping-label').text('@lang("Courier")');
         $('#shipping-name-display').text(deliveryName);
-
-        // Show price
-        $('#summary-shipping').text(formatPrice(deliveryCost));
+        $('#summary-shipping').text(formatPrice(courierFee));
     } else {
-        // Shipping delivery
-        deliveryCost = parseFloat($('#selected_shipping_cost').val()) || 0;
-        originalShippingCost = parseFloat($('#selected_shipping_original_cost').val()) || deliveryCost;
-        isFreeShipping = $('#selected_shipping_is_free').val() === '1';
-        deliveryName = $('#selected_shipping_name').val() || '';
-
-        // Update icon and label for shipping
         $('#shipping-icon').removeClass('fa-motorcycle').addClass('fa-truck');
         $('#shipping-label').text('@lang("Shipping")');
         $('#shipping-name-display').text(deliveryName);
 
-        // Show shipping cost - display original price with "Free" badge if applicable
         if (isFreeShipping && originalShippingCost > 0) {
             $('#summary-shipping').html(
                 '<span class="text-decoration-line-through text-muted me-1">' + formatPrice(originalShippingCost) + '</span>' +
                 '<span class="badge bg-success">@lang("Free")</span>'
             );
-        } else if (deliveryCost > 0 || deliveryName) {
-            $('#summary-shipping').text(formatPrice(deliveryCost));
+        } else if (shippingCost > 0 || deliveryName) {
+            $('#summary-shipping').text(formatPrice(shippingCost));
         } else {
             $('#summary-shipping').text('@lang("Select method")');
         }
     }
 
-    // Packaging
-    const packingCost = parseFloat($('#selected_packing_cost').val()) || 0;
-    const packingName = $('#selected_packing_name').val() || '';
+    // Packaging display
     if (packingCost > 0 || packingName) {
         $('.packing-row').removeClass('d-none');
         $('#packing-name-display').text(packingName);
@@ -501,9 +487,23 @@ function updateSummary() {
         $('.packing-row').addClass('d-none');
     }
 
-    // Calculate grand total
-    const grandTotal = baseTotal + taxAmount + deliveryCost + packingCost;
-    $('#summary-total').text(formatPrice(grandTotal));
+    // Call API to get calculated grand total
+    $.ajax({
+        url: apiBaseUrl + '/preview-totals',
+        method: 'POST',
+        data: {
+            _token: $('meta[name="csrf-token"]').attr('content'),
+            delivery_type: deliveryType,
+            shipping_cost: shippingCost,
+            courier_fee: courierFee,
+            packing_cost: packingCost
+        },
+        success: function(response) {
+            if (response.success && response.formatted) {
+                $('#summary-total').text(response.formatted.grand_total);
+            }
+        }
+    });
 }
 
 // Check if can submit

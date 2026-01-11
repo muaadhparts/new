@@ -290,11 +290,13 @@ class CheckoutMerchantController extends Controller
             return response()->json($result);
         }
 
-        // Get currency
-        $curr = $this->checkoutService->getPriceCalculator()->getCurrency();
+        // Get currency and price calculator
+        $priceCalculator = $this->checkoutService->getPriceCalculator();
+        $curr = $priceCalculator->getCurrency();
 
-        // Get wallet balance
+        // Get wallet balance and format it
         $walletBalance = auth()->check() ? auth()->user()->balance : 0;
+        $formattedWalletBalance = $curr->sign . number_format($walletBalance / ($curr->value ?? 1), 2);
 
         return view('merchant.checkout.payment', [
             'merchant_id' => $merchantId,
@@ -304,6 +306,7 @@ class CheckoutMerchantController extends Controller
             'address' => $result['data']['address'] ?? [],
             'payment_methods' => $result['data']['payment_methods'] ?? [],
             'wallet_balance' => $walletBalance,
+            'formatted_wallet_balance' => $formattedWalletBalance,
             'curr' => $curr,
             'gs' => \DB::table('muaadhsettings')->first(),
         ]);
@@ -518,6 +521,51 @@ class CheckoutMerchantController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('Location saved'),
+        ]);
+    }
+
+    /**
+     * POST /merchant/{merchantId}/checkout/preview-totals
+     * Calculate totals preview without saving to session (AJAX)
+     */
+    public function previewTotals(Request $request, int $merchantId): JsonResponse
+    {
+        $priceCalculator = $this->checkoutService->getPriceCalculator();
+        $cartService = $this->checkoutService->getCartService();
+
+        // Get cart and session data
+        $cartSummary = $cartService->getMerchantCartSummary($merchantId);
+        $addressData = $this->sessionManager->getAddressData($merchantId);
+        $discountData = $this->sessionManager->getDiscountData($merchantId);
+
+        // Get delivery costs from request
+        $deliveryType = $request->input('delivery_type', 'shipping');
+        $shippingCost = (float) $request->input('shipping_cost', 0);
+        $courierFee = (float) $request->input('courier_fee', 0);
+        $packingCost = (float) $request->input('packing_cost', 0);
+
+        // Calculate totals
+        $totals = $priceCalculator->calculateTotals($cartSummary['items'], [
+            'discount_amount' => $discountData['amount'] ?? 0,
+            'tax_rate' => $addressData['tax_rate'] ?? 0,
+            'shipping_cost' => $deliveryType === 'shipping' ? $shippingCost : 0,
+            'packing_cost' => $packingCost,
+            'courier_fee' => $deliveryType === 'local_courier' ? $courierFee : 0,
+        ]);
+
+        $curr = $priceCalculator->getCurrency();
+
+        return response()->json([
+            'success' => true,
+            'totals' => $totals,
+            'formatted' => [
+                'subtotal' => $curr->sign . number_format($totals['subtotal'], 2),
+                'shipping_cost' => $curr->sign . number_format($totals['shipping_cost'], 2),
+                'courier_fee' => $curr->sign . number_format($totals['courier_fee'], 2),
+                'packing_cost' => $curr->sign . number_format($totals['packing_cost'], 2),
+                'tax_amount' => $curr->sign . number_format($totals['tax_amount'], 2),
+                'grand_total' => $curr->sign . number_format($totals['grand_total'], 2),
+            ],
         ]);
     }
 
