@@ -9,6 +9,7 @@ use App\Services\MerchantCheckout\MerchantSessionManager;
 use App\Services\MerchantCheckout\MerchantCartService;
 use App\Services\MerchantCheckout\MerchantPriceCalculator;
 use App\Models\MerchantPayment;
+use App\Models\MerchantCredential;
 use App\Models\Purchase;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -48,24 +49,64 @@ abstract class BaseMerchantPaymentController extends Controller
 
     /**
      * Get payment gateway configuration
+     * Uses merchant_credentials table for API keys (secure storage)
+     * Uses merchant_payments table only to check if method is enabled
      */
     protected function getPaymentConfig(int $merchantId): ?array
     {
+        // Check if payment method is enabled for this merchant
         $payment = MerchantPayment::where('keyword', $this->paymentKeyword)
             ->where('user_id', $merchantId)
-            ->where('status', 1)
+            ->where('checkout', 1)
             ->first();
 
         if (!$payment) {
             return null;
         }
 
+        // Get credentials from merchant_credentials table (secure storage)
+        $credentials = $this->getMerchantCredentials($merchantId, $this->paymentKeyword);
+
+        if (empty($credentials) || empty($credentials['api_key'])) {
+            return null; // No valid credentials configured
+        }
+
         return [
             'id' => $payment->id,
             'keyword' => $payment->keyword,
             'title' => $payment->title ?? $payment->name,
-            'credentials' => $payment->convertAutoData(),
+            'credentials' => $credentials,
         ];
+    }
+
+    /**
+     * Get merchant credentials from merchant_credentials table
+     * All API keys/secrets are stored encrypted in this table
+     */
+    protected function getMerchantCredentials(int $merchantId, string $serviceName): array
+    {
+        $credentials = MerchantCredential::where('user_id', $merchantId)
+            ->where('service_name', $serviceName)
+            ->where('is_active', true)
+            ->get();
+
+        if ($credentials->isEmpty()) {
+            return [];
+        }
+
+        $result = [];
+        $environment = 'live'; // Default
+
+        foreach ($credentials as $cred) {
+            $result[$cred->key_name] = $cred->decrypted_value;
+            $environment = $cred->environment;
+        }
+
+        // Add environment info for sandbox detection
+        $result['sandbox'] = $environment === 'sandbox' ? 1 : 0;
+        $result['environment'] = $environment;
+
+        return $result;
     }
 
     /**

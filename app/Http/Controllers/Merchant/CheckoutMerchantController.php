@@ -172,9 +172,23 @@ class CheckoutMerchantController extends Controller
     {
         $validated = $request->validate([
             'delivery_type' => 'required|in:shipping,local_courier',
-            'shipping_id' => 'required_if:delivery_type,shipping|nullable|integer',
-            'courier_id' => 'required_if:delivery_type,local_courier|nullable|integer',
+            // Shipping fields
+            'shipping_id' => 'nullable',
+            'shipping_name' => 'nullable|string',
+            'shipping_cost' => 'nullable|numeric',
+            'shipping_original_cost' => 'nullable|numeric',
+            'shipping_is_free' => 'nullable|in:0,1',
+            'shipping_provider' => 'nullable|string',
+            // Courier fields
+            'courier_id' => 'nullable|integer',
+            'courier_name' => 'nullable|string',
+            'courier_fee' => 'nullable|numeric',
+            'service_area_id' => 'nullable|integer',
+            'merchant_location_id' => 'nullable|integer',
+            // Packing fields
             'packing_id' => 'nullable|integer',
+            'packing_name' => 'nullable|string',
+            'packing_cost' => 'nullable|numeric',
         ]);
 
         $result = $this->checkoutService->processShippingStep($merchantId, $validated);

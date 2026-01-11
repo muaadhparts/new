@@ -201,7 +201,7 @@
                                     </li>
                                 @endif
 
-                                @if(($totals['packing_cost'] ?? 0) > 0)
+                                @if(($totals['packing_cost'] ?? 0) > 0 || !empty($shipping['packing_name']))
                                 <li>
                                     <span>
                                         <i class="fas fa-box me-1 text-muted"></i>
@@ -210,7 +210,13 @@
                                             <small class="text-muted d-block">{{ $shipping['packing_name'] }}</small>
                                         @endif
                                     </span>
-                                    <span>{{ $curr->sign ?? '' }}{{ number_format($totals['packing_cost'] ?? 0, 2) }}</span>
+                                    <span>
+                                        @if(($totals['packing_cost'] ?? 0) > 0)
+                                            {{ $curr->sign ?? '' }}{{ number_format($totals['packing_cost'], 2) }}
+                                        @else
+                                            <span class="badge bg-success">@lang('Free')</span>
+                                        @endif
+                                    </span>
                                 </li>
                                 @endif
                                 @if(($totals['tax_amount'] ?? 0) > 0)

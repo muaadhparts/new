@@ -225,14 +225,28 @@ class MerchantCheckoutService
             $courierFee = (float)($input['courier_fee'] ?? 0);
             $serviceAreaId = (int)($input['service_area_id'] ?? 0);
             $merchantLocationId = (int)($input['merchant_location_id'] ?? 0);
+            $courierName = $input['courier_name'] ?? null;
 
-            // Get courier name from database
-            $courier = \App\Models\User::find($courierId);
-            $courierName = $courier ? ($courier->name ?? 'Courier') : 'Courier';
+            // Fallback: If courier_fee is 0 but we have service_area_id, lookup from database
+            if ($courierFee <= 0 && $serviceAreaId > 0) {
+                $serviceArea = CourierServiceArea::find($serviceAreaId);
+                if ($serviceArea) {
+                    $courierFee = (float)$serviceArea->price;
+                    if (empty($courierName)) {
+                        $courierName = $serviceArea->courier->shop_name ?? $serviceArea->courier->name ?? 'Courier';
+                    }
+                }
+            }
+
+            // Fallback: If still no name, lookup from courier user
+            if (empty($courierName) && $courierId > 0) {
+                $courier = \App\Models\User::find($courierId);
+                $courierName = $courier ? ($courier->shop_name ?? $courier->name ?? 'Courier') : 'Courier';
+            }
 
             $shippingData = array_merge($shippingData, [
                 'courier_id' => $courierId,
-                'courier_name' => $courierName,
+                'courier_name' => $courierName ?: 'Courier',
                 'courier_fee' => $courierFee,
                 'service_area_id' => $serviceAreaId,
                 'merchant_location_id' => $merchantLocationId,
@@ -253,11 +267,12 @@ class MerchantCheckoutService
                 $shippingCost = (float)($input['shipping_cost'] ?? 0);
                 $originalCost = (float)($input['shipping_original_cost'] ?? $shippingCost);
                 $isFree = ($input['shipping_is_free'] ?? '0') === '1';
+                $shippingName = $input['shipping_name'] ?? ucfirst($shippingProvider);
 
                 $shippingData = array_merge($shippingData, [
                     'shipping_id' => $input['shipping_id'] ?? '',
                     'shipping_provider' => $shippingProvider,
-                    'shipping_name' => ucfirst($shippingProvider),
+                    'shipping_name' => $shippingName,
                     'shipping_cost' => $isFree ? 0 : $shippingCost,
                     'original_shipping_cost' => $originalCost,
                     'is_free_shipping' => $isFree,
@@ -271,10 +286,13 @@ class MerchantCheckoutService
                     (int)($input['shipping_id'] ?? 0),
                     $cartSummary['total_price']
                 );
+                // Use name from form if provided, otherwise from database
+                $shippingName = !empty($input['shipping_name']) ? $input['shipping_name'] : $shippingInfo['shipping_name'];
+
                 $shippingData = array_merge($shippingData, [
                     'shipping_id' => $shippingInfo['shipping_id'],
                     'shipping_provider' => $shippingProvider,
-                    'shipping_name' => $shippingInfo['shipping_name'],
+                    'shipping_name' => $shippingName,
                     'shipping_cost' => $shippingInfo['shipping_cost'],
                     'original_shipping_cost' => $shippingInfo['original_cost'],
                     'is_free_shipping' => $shippingInfo['is_free'],
@@ -285,14 +303,21 @@ class MerchantCheckoutService
             }
         }
 
-        // Packaging
-        $packingInfo = $this->priceCalculator->calculatePackingCost(
-            (int)($input['packing_id'] ?? 0)
-        );
+        // Packaging - use name from form if provided, otherwise lookup from database
+        $packingId = (int)($input['packing_id'] ?? 0);
+        $packingName = $input['packing_name'] ?? null;
+        $packingCost = 0;
+
+        if ($packingId > 0) {
+            $packingInfo = $this->priceCalculator->calculatePackingCost($packingId);
+            $packingName = !empty($packingName) ? $packingName : $packingInfo['packing_name'];
+            $packingCost = $packingInfo['packing_cost'];
+        }
+
         $shippingData = array_merge($shippingData, [
-            'packing_id' => $packingInfo['packing_id'],
-            'packing_name' => $packingInfo['packing_name'],
-            'packing_cost' => $packingInfo['packing_cost'],
+            'packing_id' => $packingId,
+            'packing_name' => $packingName,
+            'packing_cost' => $packingCost,
         ]);
 
         // Get discount if any
@@ -408,7 +433,8 @@ class MerchantCheckoutService
         foreach ($shipping as $s) {
             $provider = $s->provider ?? 'manual';
             $freeAbove = (float)$s->free_above;
-            $isFree = $freeAbove > 0 && $itemsTotal >= $freeAbove;
+            // Free shipping if subtotal is BELOW free_above threshold
+            $isFree = $freeAbove > 0 && $itemsTotal < $freeAbove;
             $isApiProvider = $this->isApiProvider($provider);
 
             if (!isset($grouped[$provider])) {
@@ -568,9 +594,12 @@ class MerchantCheckoutService
             }
 
             // Both customer and merchant are within courier's service radius
+            // Use shop_name for display, fallback to name
+            $courierDisplayName = $sa->courier->shop_name ?? $sa->courier->name ?? 'Courier';
+
             $availableCouriers[] = [
                 'courier_id' => $sa->courier_id,
-                'courier_name' => $sa->courier->name ?? 'Courier',
+                'courier_name' => $courierDisplayName,
                 'courier_phone' => $sa->courier->phone ?? '',
                 'courier_photo' => $sa->courier->photo ?? null,
                 'delivery_fee' => round((float)$sa->price, 2),

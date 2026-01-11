@@ -165,12 +165,22 @@
                                         <span>-{{ $curr->sign ?? '' }}{{ number_format($totals['discount_amount'] ?? 0, 2) }}</span>
                                     </li>
                                     @endif
+                                    {{-- Shipping Row --}}
                                     <li class="shipping-row">
-                                        <span>@lang('Shipping')</span>
+                                        <span>
+                                            <i class="fas fa-truck me-1 text-muted" id="shipping-icon"></i>
+                                            <span id="shipping-label">@lang('Shipping')</span>
+                                            <small class="text-muted d-block" id="shipping-name-display"></small>
+                                        </span>
                                         <span id="summary-shipping">@lang('Select method')</span>
                                     </li>
+                                    {{-- Packaging Row --}}
                                     <li class="packing-row d-none">
-                                        <span>@lang('Packaging')</span>
+                                        <span>
+                                            <i class="fas fa-box me-1 text-muted"></i>
+                                            @lang('Packaging')
+                                            <small class="text-muted d-block" id="packing-name-display"></small>
+                                        </span>
                                         <span id="summary-packing">-</span>
                                     </li>
                                     @if(($totals['tax_amount'] ?? 0) > 0)
@@ -204,14 +214,20 @@
 
                 {{-- Hidden Fields --}}
                 <input type="hidden" name="delivery_type" id="delivery_type" value="shipping">
+                {{-- Shipping Fields --}}
                 <input type="hidden" name="shipping_id" id="selected_shipping_id" value="">
+                <input type="hidden" name="shipping_name" id="selected_shipping_name" value="">
                 <input type="hidden" name="shipping_cost" id="selected_shipping_cost" value="0">
                 <input type="hidden" name="shipping_original_cost" id="selected_shipping_original_cost" value="0">
                 <input type="hidden" name="shipping_is_free" id="selected_shipping_is_free" value="0">
                 <input type="hidden" name="shipping_provider" id="selected_shipping_provider" value="">
+                {{-- Packaging Fields --}}
                 <input type="hidden" name="packing_id" id="selected_packing_id" value="">
+                <input type="hidden" name="packing_name" id="selected_packing_name" value="">
                 <input type="hidden" name="packing_cost" id="selected_packing_cost" value="0">
+                {{-- Courier Fields --}}
                 <input type="hidden" name="courier_id" id="selected_courier_id" value="">
+                <input type="hidden" name="courier_name" id="selected_courier_name" value="">
                 <input type="hidden" name="courier_fee" id="selected_courier_fee" value="0">
                 <input type="hidden" name="service_area_id" id="selected_service_area_id" value="">
                 <input type="hidden" name="merchant_location_id" id="selected_merchant_location_id" value="">
@@ -434,40 +450,59 @@ function updateSummary() {
     let deliveryCost = 0;
     let originalShippingCost = 0;
     let isFreeShipping = false;
+    let deliveryName = '';
 
     if (deliveryType === 'local_courier') {
+        // Courier delivery
         deliveryCost = parseFloat($('#selected_courier_fee').val()) || 0;
         originalShippingCost = deliveryCost;
+        deliveryName = $('#selected_courier_name').val() || '';
+
+        // Update icon and label for courier
+        $('#shipping-icon').removeClass('fa-truck').addClass('fa-motorcycle');
+        $('#shipping-label').text('@lang("Courier")');
+        $('#shipping-name-display').text(deliveryName);
+
+        // Show price
+        $('#summary-shipping').text(formatPrice(deliveryCost));
     } else {
+        // Shipping delivery
         deliveryCost = parseFloat($('#selected_shipping_cost').val()) || 0;
-        // Get original price and check if free
-        const selectedOption = $('input[name="shipping_option"]:checked');
-        if (selectedOption.length) {
-            originalShippingCost = parseFloat(selectedOption.data('original-price')) || deliveryCost;
-            isFreeShipping = selectedOption.data('is-free') == '1';
+        originalShippingCost = parseFloat($('#selected_shipping_original_cost').val()) || deliveryCost;
+        isFreeShipping = $('#selected_shipping_is_free').val() === '1';
+        deliveryName = $('#selected_shipping_name').val() || '';
+
+        // Update icon and label for shipping
+        $('#shipping-icon').removeClass('fa-motorcycle').addClass('fa-truck');
+        $('#shipping-label').text('@lang("Shipping")');
+        $('#shipping-name-display').text(deliveryName);
+
+        // Show shipping cost - display original price with "Free" badge if applicable
+        if (isFreeShipping && originalShippingCost > 0) {
+            $('#summary-shipping').html(
+                '<span class="text-decoration-line-through text-muted me-1">' + formatPrice(originalShippingCost) + '</span>' +
+                '<span class="badge bg-success">@lang("Free")</span>'
+            );
+        } else if (deliveryCost > 0 || deliveryName) {
+            $('#summary-shipping').text(formatPrice(deliveryCost));
+        } else {
+            $('#summary-shipping').text('@lang("Select method")');
         }
     }
 
+    // Packaging
     const packingCost = parseFloat($('#selected_packing_cost').val()) || 0;
-    const grandTotal = baseTotal + taxAmount + deliveryCost + packingCost;
-
-    // Show shipping cost - display original price with "Free" badge if applicable
-    if (isFreeShipping && originalShippingCost > 0) {
-        $('#summary-shipping').html(
-            '<span class="text-muted">' + formatPrice(originalShippingCost) + '</span> ' +
-            '<span class="badge bg-success">@lang("Free")</span>'
-        );
-    } else {
-        $('#summary-shipping').text(formatPrice(deliveryCost));
-    }
-
-    if (packingCost > 0) {
+    const packingName = $('#selected_packing_name').val() || '';
+    if (packingCost > 0 || packingName) {
         $('.packing-row').removeClass('d-none');
+        $('#packing-name-display').text(packingName);
         $('#summary-packing').text(formatPrice(packingCost));
     } else {
         $('.packing-row').addClass('d-none');
     }
 
+    // Calculate grand total
+    const grandTotal = baseTotal + taxAmount + deliveryCost + packingCost;
     $('#summary-total').text(formatPrice(grandTotal));
 }
 
@@ -628,13 +663,15 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
 
     // Update shipping hidden fields
     $('#selected_shipping_id').val(option.val());
-    $('#selected_shipping_cost').val(chargeablePrice); // Customer pays this (0 if free)
-    $('#selected_shipping_original_cost').val(originalPrice); // Actual shipping cost (for merchant accounting)
+    $('#selected_shipping_name').val(title);
+    $('#selected_shipping_cost').val(chargeablePrice);
+    $('#selected_shipping_original_cost').val(originalPrice);
     $('#selected_shipping_is_free').val(isFree ? '1' : '0');
     $('#selected_shipping_provider').val(provider);
 
     // Clear courier selection
     $('#selected_courier_id').val('');
+    $('#selected_courier_name').val('');
     $('#selected_courier_fee').val('0');
     $('input[name="courier_option"]').prop('checked', false);
     $('.courier-option').removeClass('border-primary bg-light');
@@ -675,6 +712,7 @@ $(document).on('change', 'input[name="packaging_option"]', function() {
 
     // Update packing hidden fields
     $('#selected_packing_id').val(option.val());
+    $('#selected_packing_name').val(title); // Store packing name
     $('#selected_packing_cost').val(price);
 
     // Update button text
@@ -707,12 +745,14 @@ $(document).on('change', 'input[name="courier_option"]', function() {
 
     // Update courier hidden fields
     $('#selected_courier_id').val(option.val());
+    $('#selected_courier_name').val(courierName);
     $('#selected_courier_fee').val(price);
     $('#selected_service_area_id').val(serviceAreaId);
     $('#selected_merchant_location_id').val(merchantLocationId);
 
     // Clear shipping selection
     $('#selected_shipping_id').val('');
+    $('#selected_shipping_name').val('');
     $('#selected_shipping_cost').val('0');
     $('#selected_shipping_original_cost').val('0');
     $('#selected_shipping_is_free').val('0');

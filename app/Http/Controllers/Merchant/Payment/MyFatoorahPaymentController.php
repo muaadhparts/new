@@ -27,8 +27,14 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
 
         $config = $this->getPaymentConfig($merchantId);
         if (!$config) {
+            \Log::error('MyFatoorah: No config found', ['merchant_id' => $merchantId]);
             return $this->handlePaymentError($merchantId, __('MyFatoorah is not available for this merchant'));
         }
+        \Log::debug('MyFatoorah: Config loaded', [
+            'merchant_id' => $merchantId,
+            'has_api_key' => !empty($config['credentials']['api_key']),
+            'sandbox' => $config['credentials']['sandbox'] ?? 0,
+        ]);
 
         $checkoutData = $this->getCheckoutData($merchantId);
         $currency = $this->priceCalculator->getCurrency();
@@ -61,7 +67,18 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
 
             $result = $response->json();
 
+            \Log::debug('MyFatoorah: API Response', [
+                'status' => $response->status(),
+                'success' => $response->successful(),
+                'result' => $result,
+            ]);
+
             if (!$response->successful() || !isset($result['Data']['InvoiceURL'])) {
+                \Log::error('MyFatoorah: Payment failed', [
+                    'status' => $response->status(),
+                    'message' => $result['Message'] ?? 'No message',
+                    'validation_errors' => $result['ValidationErrors'] ?? null,
+                ]);
                 return $this->handlePaymentError($merchantId, $result['Message'] ?? __('Failed to create payment'));
             }
 

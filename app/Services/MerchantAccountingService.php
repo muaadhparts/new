@@ -415,7 +415,7 @@ class MerchantAccountingService
      */
     public function hasMerchantPaymentGateway(int $merchantId): bool
     {
-        return MerchantPayment::where('user_id', $merchantId)->where('status', 1)->exists();
+        return MerchantPayment::where('user_id', $merchantId)->where('checkout', 1)->exists();
     }
 
     /**

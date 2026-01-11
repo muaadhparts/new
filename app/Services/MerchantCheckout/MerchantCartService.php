@@ -85,7 +85,8 @@ class MerchantCartService
 
         foreach ($items as $item) {
             $totalQty += (int)($item['qty'] ?? 1);
-            $totalPrice += (float)($item['price'] ?? $item['total_price'] ?? 0);
+            // price in cart is already (unit_price * qty)
+            $totalPrice += (float)($item['price'] ?? 0);
         }
 
         return [
@@ -139,7 +140,8 @@ class MerchantCartService
             if ($itemMerchantId != $merchantId) {
                 $newItems[$key] = $item;
                 $newTotalQty += (int)($item['qty'] ?? 1);
-                $newTotalPrice += (float)($item['price'] ?? $item['total_price'] ?? 0);
+                // price in cart is already (unit_price * qty)
+                $newTotalPrice += (float)($item['price'] ?? 0);
             }
         }
 
@@ -186,7 +188,8 @@ class MerchantCartService
 
         foreach ($items as $item) {
             $totalQty += (int)($item['qty'] ?? 1);
-            $totalPrice += (float)($item['price'] ?? $item['total_price'] ?? 0);
+            // price in cart is already (unit_price * qty)
+            $totalPrice += (float)($item['price'] ?? 0);
         }
 
         return [

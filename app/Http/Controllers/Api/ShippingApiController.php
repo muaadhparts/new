@@ -266,19 +266,21 @@ class ShippingApiController extends Controller
 
         $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
 
-        // Calculate merchant's items total from cart
+        // Calculate merchant's items total from cart (price * qty)
         $itemsTotal = 0;
         if ($cart && !empty($cart->items)) {
             foreach ($cart->items as $item) {
-                $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? 0;
+                $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? data_get($item, 'user_id') ?? 0;
                 if ($itemMerchantId == $merchantId) {
-                    $itemsTotal += (float)($item['price'] ?? 0);
+                    $qty = (int)($item['qty'] ?? 1);
+                    $price = (float)($item['price'] ?? 0);
+                    $itemsTotal += ($price * $qty);
                 }
             }
         }
 
-        // Check if qualifies for free shipping
-        $qualifiesFree = $freeAbove > 0 && $itemsTotal >= $freeAbove;
+        // Free shipping if subtotal is BELOW free_above threshold
+        $qualifiesFree = $freeAbove > 0 && $itemsTotal < $freeAbove;
 
         return [
             'free_above' => round($freeAbove, 2),
