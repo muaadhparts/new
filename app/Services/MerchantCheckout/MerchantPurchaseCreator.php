@@ -139,7 +139,7 @@ class MerchantPurchaseCreator
 
             // Create courier delivery if needed
             if ($shippingData['delivery_type'] === 'local_courier' && $shippingData['courier_id']) {
-                $this->createCourierDelivery($purchase, $shippingData, $addressData);
+                $this->createCourierDelivery($purchase, $merchantId, $shippingData, $addressData, $paymentData);
             }
 
             // Create tracking record
@@ -236,21 +236,30 @@ class MerchantPurchaseCreator
     /**
      * Create courier delivery record
      */
-    protected function createCourierDelivery(Purchase $purchase, array $shippingData, array $addressData): void
-    {
+    protected function createCourierDelivery(
+        Purchase $purchase,
+        int $merchantId,
+        array $shippingData,
+        array $addressData,
+        array $paymentData
+    ): void {
+        // Determine payment method for courier (cod or online)
+        $paymentMethod = strtolower($paymentData['method'] ?? '');
+        $isCod = in_array($paymentMethod, ['cod', 'cash on delivery']);
+
         DeliveryCourier::create([
             'purchase_id' => $purchase->id,
-            'purchase_number' => $purchase->purchase_number,
+            'merchant_id' => $merchantId,
             'courier_id' => $shippingData['courier_id'],
             'service_area_id' => $shippingData['service_area_id'] ?? null,
+            'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
             'delivery_fee' => $shippingData['courier_fee'],
             'purchase_amount' => $purchase->pay_amount,
-            'customer_name' => $addressData['customer_name'],
-            'customer_phone' => $addressData['customer_phone'],
-            'customer_address' => $addressData['customer_address'],
-            'customer_latitude' => $addressData['latitude'] ?? null,
-            'customer_longitude' => $addressData['longitude'] ?? null,
-            'status' => 'pending',
+            'cod_amount' => $isCod ? $purchase->pay_amount : 0,
+            'payment_method' => $isCod ? DeliveryCourier::PAYMENT_COD : DeliveryCourier::PAYMENT_ONLINE,
+            'status' => DeliveryCourier::STATUS_PENDING,
+            'fee_status' => DeliveryCourier::FEE_PENDING,
+            'settlement_status' => DeliveryCourier::SETTLEMENT_PENDING,
         ]);
     }
 

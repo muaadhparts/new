@@ -185,19 +185,45 @@
                                             {{ $shipment->status_ar ?? $shipment->status }}
                                         </span>
                                     @elseif ($delivery)
-                                        {{-- Local Courier Delivery --}}
-                                        <span class="badge bg-secondary mb-1">@lang('Local Courier')</span>
-                                        <br>
-                                        <small>{{ $delivery->courier->name ?? 'N/A' }}</small>
-                                        <br>
-                                        <span class="badge
-                                            @if($delivery->status == 'delivered') bg-success
-                                            @elseif($delivery->status == 'accepted') bg-primary
-                                            @elseif($delivery->status == 'rejected') bg-danger
-                                            @else bg-warning
-                                            @endif">
-                                            {{ ucfirst($delivery->status) }}
+                                        {{-- ✅ Local Courier Delivery - NEW WORKFLOW --}}
+                                        <span class="badge bg-secondary mb-1">
+                                            <i class="fas fa-motorcycle"></i> @lang('Local Courier')
                                         </span>
+                                        <br>
+                                        <small><i class="fas fa-user"></i> {{ $delivery->courier->name ?? __('Awaiting Courier') }}</small>
+                                        <br>
+                                        {{-- ✅ Status Badge - NEW WORKFLOW --}}
+                                        @if($delivery->isPendingApproval())
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="fas fa-clock"></i> @lang('Waiting Approval')
+                                            </span>
+                                        @elseif($delivery->isApproved())
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-box-open"></i> @lang('Courier Approved')
+                                            </span>
+                                        @elseif($delivery->isReadyForPickup())
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-box"></i> @lang('Ready for Pickup')
+                                            </span>
+                                        @elseif($delivery->isPickedUp())
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-truck"></i> @lang('In Transit')
+                                            </span>
+                                        @elseif($delivery->isDelivered() || $delivery->isConfirmed())
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-double"></i> @lang('Delivered')
+                                            </span>
+                                        @elseif($delivery->isRejected())
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times"></i> @lang('Courier Rejected')
+                                            </span>
+                                        @endif
+                                        {{-- ✅ Payment Method Indicator --}}
+                                        @if($delivery->isCod())
+                                            <br><small class="text-success"><i class="fas fa-money-bill"></i> @lang('COD'): {{ $data->currency_sign }}{{ number_format($delivery->cod_amount, 2) }}</small>
+                                        @else
+                                            <br><small class="text-info"><i class="fas fa-credit-card"></i> @lang('Paid Online')</small>
+                                        @endif
                                     @else
                                         {{-- Not Assigned --}}
                                         <span class="badge bg-danger">@lang('Not Assigned')</span>
@@ -224,39 +250,92 @@
                                         <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-success">
                                             <i class="fas fa-eye"></i> @lang('View')
                                         </a>
-                                    @elseif ($delivery && $delivery->status == 'delivered')
+                                    @elseif ($delivery && ($delivery->isDelivered() || $delivery->isConfirmed()))
+                                        {{-- ✅ COMPLETED --}}
+                                        <span class="badge bg-success mb-1"><i class="fas fa-check"></i> @lang('Completed')</span>
+                                        <br>
                                         <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-success">
                                             <i class="fas fa-eye"></i> @lang('View')
                                         </a>
-                                    @elseif ($delivery && $delivery->status == 'pending')
-                                        {{-- ✅ Local Courier assigned - merchant needs to mark ready --}}
-                                        <form action="{{ route('merchant.ready.courier') }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <input type="hidden" name="purchase_id" value="{{ $data->id }}">
-                                            <button type="submit" class="btn btn-sm btn-success mb-1">
-                                                <i class="fas fa-check-circle"></i> @lang('Ready for Courier Collection')
-                                            </button>
-                                        </form>
-                                        <br>
+                                    @elseif ($delivery && $delivery->isPendingApproval())
+                                        {{-- ✅ STEP 1: Waiting for courier approval --}}
+                                        <div class="alert alert-warning py-1 px-2 mb-1" style="font-size: 0.75rem;">
+                                            <i class="fas fa-clock"></i>
+                                            @lang('Waiting courier approval')
+                                        </div>
+                                        <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary w-100">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @elseif ($delivery && $delivery->isApproved())
+                                        {{-- ✅ STEP 2: Courier approved, merchant prepares --}}
+                                        <div class="d-flex flex-column gap-1">
+                                            <div class="alert alert-info py-1 px-2 mb-1" style="font-size: 0.75rem;">
+                                                <i class="fas fa-box-open"></i>
+                                                @lang('Courier approved! Prepare order')
+                                            </div>
+                                            <form action="{{ route('merchant.ready.courier') }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="purchase_id" value="{{ $data->id }}">
+                                                <button type="submit" class="btn btn-sm btn-success mb-1 w-100">
+                                                    <i class="fas fa-box"></i> @lang('Mark Ready for Pickup')
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary w-100">
+                                                <i class="fas fa-eye"></i> @lang('View')
+                                            </a>
+                                        </div>
+                                    @elseif ($delivery && $delivery->isReadyForPickup())
+                                        {{-- ✅ STEP 3: Ready, waiting for courier to arrive --}}
+                                        <div class="d-flex flex-column gap-1">
+                                            <div class="alert alert-success py-1 px-2 mb-1" style="font-size: 0.75rem;">
+                                                <i class="fas fa-box"></i>
+                                                @lang('Ready! Courier coming to pick up')
+                                            </div>
+                                            <form action="{{ route('merchant.handover.courier') }}" method="POST" class="d-inline">
+                                                @csrf
+                                                <input type="hidden" name="purchase_id" value="{{ $data->id }}">
+                                                <button type="submit" class="btn btn-sm btn-primary mb-1 w-100">
+                                                    <i class="fas fa-handshake"></i> @lang('Confirm Handover')
+                                                </button>
+                                            </form>
+                                            <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary w-100">
+                                                <i class="fas fa-eye"></i> @lang('View')
+                                            </a>
+                                        </div>
+                                    @elseif ($delivery && $delivery->isPickedUp())
+                                        {{-- ✅ STEP 4: Courier picked up, delivering --}}
+                                        <div class="alert alert-primary py-1 px-2 mb-1" style="font-size: 0.75rem;">
+                                            <i class="fas fa-truck"></i>
+                                            @lang('Courier delivering to customer')
+                                        </div>
                                         <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">
                                             <i class="fas fa-eye"></i> @lang('View')
                                         </a>
-                                    @elseif ($delivery && in_array($delivery->status, ['ready_for_courier_collection', 'accepted']))
-                                        {{-- Waiting for courier to pick up or deliver --}}
-                                        <span class="badge bg-info mb-1">
-                                            <i class="fas fa-clock"></i> @lang('Waiting for Courier')
-                                        </span>
-                                        <br>
-                                        <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">
-                                            <i class="fas fa-eye"></i> @lang('View')
-                                        </a>
-                                    @else
+                                    @elseif ($delivery && $delivery->isRejected())
+                                        {{-- ✅ Rejected - Needs reassignment --}}
+                                        <div class="alert alert-danger py-1 px-2 mb-1" style="font-size: 0.75rem;">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                            @lang('Courier rejected - Reassign')
+                                        </div>
                                         <button type="button" class="btn btn-sm btn-primary mb-1 assignShippingBtn"
                                             data-purchase-id="{{ $data->id }}"
                                             data-customer-city="{{ $data->customer_city }}"
                                             data-customer-choice='@json($customerChoice)'
                                             data-bs-toggle="modal" data-bs-target="#shippingModal">
-                                            <i class="fas fa-shipping-fast"></i> @lang('Assign')
+                                            <i class="fas fa-redo"></i> @lang('Reassign')
+                                        </button>
+                                        <br>
+                                        <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">
+                                            <i class="fas fa-eye"></i> @lang('View')
+                                        </a>
+                                    @else
+                                        {{-- ✅ No delivery assigned - Assign shipping --}}
+                                        <button type="button" class="btn btn-sm btn-primary mb-1 assignShippingBtn"
+                                            data-purchase-id="{{ $data->id }}"
+                                            data-customer-city="{{ $data->customer_city }}"
+                                            data-customer-choice='@json($customerChoice)'
+                                            data-bs-toggle="modal" data-bs-target="#shippingModal">
+                                            <i class="fas fa-shipping-fast"></i> @lang('Assign Shipping')
                                         </button>
                                         <br>
                                         <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}" class="btn btn-sm btn-secondary">

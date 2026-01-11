@@ -414,12 +414,13 @@
                                         <td>{{ $delivery->courier->name ?? 'N/A' }}</td>
                                         <td>
                                             <span class="badge
-                                                @if($delivery->status == 'delivered') badge-success
-                                                @elseif($delivery->status == 'accepted') badge-primary
-                                                @elseif($delivery->status == 'rejected') badge-danger
-                                                @else badge-warning
+                                                @if($delivery->isConfirmed() || $delivery->isDelivered()) badge-success
+                                                @elseif($delivery->isPickedUp()) badge-primary
+                                                @elseif($delivery->isRejected()) badge-danger
+                                                @elseif($delivery->isPendingApproval()) badge-warning
+                                                @else badge-info
                                                 @endif">
-                                                {{ ucfirst($delivery->status) }}
+                                                {{ $delivery->status_label }}
                                             </span>
                                         </td>
                                         <td>{{ $delivery->servicearea->name ?? '-' }}</td>

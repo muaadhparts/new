@@ -197,14 +197,22 @@
                             @endif
                             <li>
                                 <span class="fw-semibold">@lang('Delivery Status :')</span>
-                                @if($invoiceDeliveryCourier->status == 'delivered')
+                                @if($invoiceDeliveryCourier->isConfirmed())
+                                    <span class="m-badge m-badge--success">@lang('Confirmed')</span>
+                                @elseif($invoiceDeliveryCourier->isDelivered())
                                     <span class="m-badge m-badge--success">@lang('Delivered')</span>
-                                @elseif($invoiceDeliveryCourier->status == 'accepted')
-                                    <span class="m-badge m-badge--primary">@lang('In Progress')</span>
-                                @elseif($invoiceDeliveryCourier->status == 'ready_for_courier_collection')
-                                    <span class="m-badge m-badge--info">@lang('Ready for Courier Collection')</span>
+                                @elseif($invoiceDeliveryCourier->isPickedUp())
+                                    <span class="m-badge m-badge--primary">@lang('Out for Delivery')</span>
+                                @elseif($invoiceDeliveryCourier->isReadyForPickup())
+                                    <span class="m-badge m-badge--info">@lang('Ready for Pickup')</span>
+                                @elseif($invoiceDeliveryCourier->isApproved())
+                                    <span class="m-badge m-badge--info">@lang('Courier Approved')</span>
+                                @elseif($invoiceDeliveryCourier->isPendingApproval())
+                                    <span class="m-badge m-badge--warning">@lang('Awaiting Approval')</span>
+                                @elseif($invoiceDeliveryCourier->isRejected())
+                                    <span class="m-badge m-badge--danger">@lang('Rejected')</span>
                                 @else
-                                    <span class="m-badge m-badge--warning">{{ ucfirst($invoiceDeliveryCourier->status) }}</span>
+                                    <span class="m-badge m-badge--secondary">{{ $invoiceDeliveryCourier->status_label }}</span>
                                 @endif
                             </li>
                             @if($invoiceDeliveryCourier->payment_method === 'cod')

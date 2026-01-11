@@ -11,215 +11,238 @@
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="ud-page-title-box gap-4">
-                        <!-- mobile sidebar trigger btn -->
                         <a href="{{ url()->previous() }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
-
                         <h3 class="ud-page-title">@lang('Delivery Details')</h3>
                     </div>
 
-                    <!-- Accept and reject button -->
-                    <div class="accept-reject-btn my-2">
+                    {{-- ✅ Delivery Workflow Progress Indicator (NEW WORKFLOW) --}}
+                    @include('includes.delivery-workflow', ['delivery' => $data])
 
-
-                        @if ($data->status == 'pending')
-                            <a class="template-btn green-btn"
-                                href="{{ route('courier-purchase-delivery-accept', $data->id) }}">@lang('Accept')</a>
-                            <a class="template-btn red-btn"
-                                href="{{ route('courier-purchase-delivery-reject', $data->id) }}">@lang('Reject')</a>
-                        @elseif($data->status == 'accepted')
-                            <a class="template-btn green-btn"
-                                href="{{ route('courier-purchase-delivery-complete', $data->id) }}">@lang('Make Delivered')</a>
-                        @elseif($data->status == 'rejected')
-                            <button class="template-btn red-btn">@lang('Rejected')</button>
-                        @else
-                            <button class="template-btn green-btn"> @lang('Delivered')</button>
-                        @endif
-
-
-
+                    {{-- ✅ Action Buttons (NEW WORKFLOW) --}}
+                    <div class="my-4">
+                        <div class="d-flex flex-wrap gap-2 justify-content-center">
+                            @if($data->isPendingApproval())
+                                {{-- STEP 1: Courier Approve/Reject --}}
+                                <a class="btn btn-lg btn-success"
+                                    href="{{ route('courier-purchase-delivery-accept', $data->id) }}">
+                                    <i class="fas fa-check me-2"></i> @lang('Approve Delivery')
+                                </a>
+                                <a class="btn btn-lg btn-outline-danger"
+                                    href="{{ route('courier-purchase-delivery-reject', $data->id) }}">
+                                    <i class="fas fa-times me-2"></i> @lang('Reject')
+                                </a>
+                            @elseif($data->isApproved())
+                                {{-- STEP 2: Waiting for merchant --}}
+                                <div class="alert alert-info w-100 text-center">
+                                    <i class="fas fa-hourglass-half me-2"></i>
+                                    <strong>@lang('Waiting for Merchant')</strong>
+                                    <br>
+                                    <small>@lang('The merchant is preparing the order. Please wait.')</small>
+                                </div>
+                            @elseif($data->isReadyForPickup())
+                                {{-- STEP 3: Waiting for merchant to hand over --}}
+                                <div class="alert alert-success w-100 text-center">
+                                    <i class="fas fa-box me-2"></i>
+                                    <strong>@lang('Order is Ready!')</strong>
+                                    <br>
+                                    <small>@lang('Go to the merchant location to pick up the order.')</small>
+                                </div>
+                            @elseif($data->isPickedUp())
+                                {{-- STEP 4: Courier delivers to customer --}}
+                                <a class="btn btn-lg btn-success"
+                                    href="{{ route('courier-purchase-delivery-complete', $data->id) }}">
+                                    <i class="fas fa-check-double me-2"></i> @lang('Mark as Delivered to Customer')
+                                </a>
+                            @elseif($data->isDelivered() || $data->isConfirmed())
+                                {{-- Completed --}}
+                                <div class="alert alert-success w-100 text-center">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    <strong>@lang('Delivery Completed!')</strong>
+                                    @if($data->delivered_at)
+                                        <br><small>@lang('Delivered on'): {{ $data->delivered_at->format('Y-m-d H:i') }}</small>
+                                    @endif
+                                    @if($data->isConfirmed())
+                                        <br><span class="badge bg-success">@lang('Customer Confirmed')</span>
+                                    @endif
+                                </div>
+                            @elseif($data->isRejected())
+                                {{-- Rejected --}}
+                                <div class="alert alert-danger w-100 text-center">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    <strong>@lang('You Rejected This Delivery')</strong>
+                                    @if($data->rejection_reason)
+                                        <br><small>@lang('Reason'): {{ $data->rejection_reason }}</small>
+                                    @endif
+                                </div>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="delivery-details">
                         <div class="row g-4 my-3">
+                            {{-- Customer Info --}}
                             <div class="col-md-6">
-                                <h5>@lang('Delivery Address')</h5>
-                                <div class="delivery-address-info">
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Name:') </span>
-                                        <span class="info-content">{{ $purchase->customer_name }}</span>
+                                <div class="card h-100">
+                                    <div class="card-header bg-primary text-white">
+                                        <i class="fas fa-user me-2"></i> @lang('Customer - Deliver To')
                                     </div>
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Email:') </span>
-                                        <span class="info-content">{{ $purchase->customer_email }}</span>
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-user"></i> @lang('Name'):</strong>
+                                            {{ $purchase->customer_name }}
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-phone"></i> @lang('Phone'):</strong>
+                                            <a href="tel:{{ $purchase->customer_phone }}" class="text-primary">
+                                                {{ $purchase->customer_phone }}
+                                            </a>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-city"></i> @lang('City'):</strong>
+                                            {{ $purchase->customer_city }}
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong><i class="fas fa-map-marker-alt"></i> @lang('Address'):</strong>
+                                            {{ $purchase->customer_address }}
+                                        </div>
+                                        @if($purchase->customer_zip)
+                                            <div class="mb-2">
+                                                <strong><i class="fas fa-mail-bulk"></i> @lang('ZIP'):</strong>
+                                                {{ $purchase->customer_zip }}
+                                            </div>
+                                        @endif
                                     </div>
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Phone:') </span>
-                                        <span class="info-content">{{ $purchase->customer_phone }}</span>
-                                    </div>
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('City:') </span>
-                                        <span class="info-content">{{ $purchase->customer_address }}</span>
-                                    </div>
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Address:') </span>
-                                        <span
-                                            class="info-content">{{ $purchase->customer_city }}-{{ $purchase->customer_zip }}</span>
-                                    </div>
-
                                 </div>
                             </div>
+
+                            {{-- Merchant Info --}}
                             <div class="col-md-6">
-                                <h5>@lang('Merchant Information')</h5>
-                                <div class="delivery-address-info">
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Shop Name:') </span>
-                                        <span class="info-content">{{ $data->merchant->shop_name }}</span>
+                                <div class="card h-100">
+                                    <div class="card-header bg-info text-white">
+                                        <i class="fas fa-store me-2"></i> @lang('Merchant - Pick Up From')
                                     </div>
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Email:') </span>
-                                        <span class="info-content">{{ $data->merchant->email }}</span>
+                                    <div class="card-body">
+                                        @if($data->merchant)
+                                            <div class="mb-2">
+                                                <strong><i class="fas fa-store"></i> @lang('Shop'):</strong>
+                                                {{ $data->merchant->shop_name ?? $data->merchant->name ?? 'N/A' }}
+                                            </div>
+                                            @if($data->merchant->phone)
+                                                <div class="mb-2">
+                                                    <strong><i class="fas fa-phone"></i> @lang('Phone'):</strong>
+                                                    <a href="tel:{{ $data->merchant->phone }}" class="text-primary">
+                                                        {{ $data->merchant->phone }}
+                                                    </a>
+                                                </div>
+                                            @endif
+                                            @if($data->merchantLocation && $data->merchantLocation->location)
+                                                <div class="mb-2 p-2 bg-light rounded">
+                                                    <strong><i class="fas fa-warehouse text-success"></i> @lang('Pickup Location'):</strong>
+                                                    <br>
+                                                    <span class="text-success">{{ $data->merchantLocation->location }}</span>
+                                                </div>
+                                            @endif
+                                            @if($data->merchant->address)
+                                                <div class="mb-2">
+                                                    <strong><i class="fas fa-map-marker-alt"></i> @lang('Address'):</strong>
+                                                    {{ $data->merchant->address }}
+                                                </div>
+                                            @endif
+                                        @else
+                                            <span class="text-muted">@lang('Merchant information not available')</span>
+                                        @endif
                                     </div>
-                                    <div class="account-info-item">
-                                        <span class="info-title">@lang('Phone:') </span>
-                                        <span class="info-content">{{ $data->merchant->phone }}</span>
-                                    </div>
-                                    @if ($data->merchant->city)
-                                        <div class="account-info-item">
-                                            <span class="info-title">@lang('City:') </span>
-                                            <span class="info-content">{{ $data->merchant->city }}</span>
-                                        </div>
-                                    @endif
-                                    @if ($data->merchant->address)
-                                        <div class="account-info-item">
-                                            <span class="info-title">@lang('Address:') </span>
-                                            <span class="info-content">{{ $data->merchant->address }}</span>
-                                        </div>
-                                    @endif
-
-                                    <div class="account-info-item">
-                                        <span class="info-title"><strong>@lang('Warehouse Location:')</strong> </span>
-                                        <span class="info-content">{{ $data->merchantLocation->location }}</span>
-                                    </div>
-
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="ordered-catalogItems">
-                        <h5>@lang('Purchased Items:') </h5>
-                        <div class="user-table-wrapper all-orders-table-wrapper wow-replaced" data-wow-delay=".1s">
+                    {{-- Payment Info --}}
+                    <div class="my-4">
+                        @php
+                            $totalToCollect = ($data->purchase_amount ?? 0) + ($data->delivery_fee ?? 0);
+                        @endphp
 
-                            <div class="user-table table-responsive position-relative">
-                                <table class="gs-data-table custom-table-courier w-100">
-                                    <tr class="ordered-tbg">
-                                        <th><span class="title">@lang('ID#')</span></th>
-                                        <th><span class="title">@lang('CatalogItem Name')</span></th>
-                                        <th><span class="title">@lang('Details')</span></th>
-
-                                    </tr>
-                                    @php
-                                        $extra_price = 0;
-                                    @endphp
-                                    @foreach ($purchase->getCartItems() as $catalogItem)
-                                        @if ($catalogItem['user_id'] == $data->merchant_id)
-                                            <tr>
-                                                <td data-label="{{ __('ID#') }}">
-                                                    <div>
-                                                    <span class="title">
-                                                        {{ $catalogItem['item']['id'] }}
-                                                    </span>
-                                                    </div>
-                                                </td>
-                                                <td data-label="{{ __('Name') }}">
-                                                  <span class="title">
-                                                    {{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}
-                                                  </span>
-
-                                                </td>
-                                                <td data-label="{{ __('Details') }}">
-                                                    <div>
-                                                        <b>{{ __('Quantity') }}</b>: {{ $catalogItem['qty'] }} <br>
-                                                        @if (!empty($catalogItem['size']))
-                                                            <b>{{ __('Size') }}</b>:
-                                                            {{ $catalogItem['item']['measure'] }}{{ str_replace('-', ' ', $catalogItem['size']) }}
-                                                            <br>
-                                                        @endif
-                                                        @if (!empty($catalogItem['color']))
-                                                            <div class="d-flex mt-2">
-                                                                <b>{{ __('Color') }}</b>: <span id="color-bar"
-                                                                    style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"></span>
-                                                            </div>
-                                                        @endif
-                                                        @if (!empty($catalogItem['keys']))
-                                                            @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
-                                                                <b>{{ ucwords(str_replace('_', ' ', $key)) }} : </b>
-                                                                {{ $value }} <br>
-                                                            @endforeach
-                                                        @endif
-                                                    </div>
-                                                </td>
-
-                                            </tr>
-                                        @endif
-                                    @endforeach
-
-                                </table>
-                            </div>
-
-
-
-
-                        </div>
-
-                        <div class="text-center mt-4">
-                            @php
-                                // المبلغ الإجمالي للتحصيل = مبلغ الطلب + رسوم التوصيل
-                                $totalToCollect = ($data->purchase_amount ?? 0) + ($data->delivery_fee ?? 0);
-                            @endphp
-
-                            @if ($data->payment_method === 'cod')
-                                <div class="alert alert-warning">
-                                    <h5 class="mb-3">
-                                        <i class="fas fa-money-bill-wave"></i>
-                                        @lang('Cash on Delivery - Amount to Collect')
-                                    </h5>
-                                    <table class="table table-sm table-borderless mb-0" style="max-width: 300px; margin: 0 auto;">
+                        @if ($data->isCod())
+                            <div class="card border-warning">
+                                <div class="card-header bg-warning text-dark">
+                                    <i class="fas fa-money-bill-wave me-2"></i>
+                                    <strong>@lang('Cash on Delivery - Collect from Customer')</strong>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-sm mb-0">
                                         <tr>
-                                            <td class="text-start">@lang('Items Total'):</td>
+                                            <td>@lang('Items Total'):</td>
                                             <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($data->purchase_amount ?? 0, $purchase->currency_sign) }}</td>
                                         </tr>
                                         <tr>
-                                            <td class="text-start">@lang('Delivery Fee'):</td>
+                                            <td>@lang('Delivery Fee'):</td>
                                             <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</td>
                                         </tr>
-                                        <tr class="border-top">
-                                            <td class="text-start"><strong>@lang('Total to Collect'):</strong></td>
-                                            <td class="text-end"><strong class="text-danger fs-5">{{ \PriceHelper::showAdminCurrencyPrice($totalToCollect, $purchase->currency_sign) }}</strong></td>
+                                        <tr class="table-warning">
+                                            <td><strong>@lang('TOTAL TO COLLECT'):</strong></td>
+                                            <td class="text-end"><strong class="fs-4 text-danger">{{ \PriceHelper::showAdminCurrencyPrice($totalToCollect, $purchase->currency_sign) }}</strong></td>
                                         </tr>
                                     </table>
                                 </div>
-                            @else
-                                <div class="alert alert-success">
-                                    <i class="fas fa-credit-card"></i>
-                                    <strong>@lang('Online Payment')</strong> - @lang('Customer already paid. Just deliver the order.')
-                                    <br>
-                                    <small class="text-muted">@lang('Your delivery fee'): {{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</small>
+                            </div>
+                        @else
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <i class="fas fa-credit-card me-2"></i>
+                                    <strong>@lang('Online Payment - Already Paid')</strong>
                                 </div>
-                            @endif
-                        </div>
-
-
+                                <div class="card-body">
+                                    <p class="mb-2">
+                                        <i class="fas fa-check-circle text-success"></i>
+                                        @lang('Customer already paid online. Just deliver the order.')
+                                    </p>
+                                    <p class="mb-0">
+                                        <strong>@lang('Your Delivery Fee'):</strong>
+                                        <span class="text-success fs-5">{{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        @endif
                     </div>
 
-
-                    <!-- recent orders -->
-
-
-                    <!-- account information -->
-
+                    {{-- Ordered Items --}}
+                    <div class="ordered-catalogItems">
+                        <h5 class="mb-3"><i class="fas fa-box-open me-2"></i> @lang('Items to Deliver')</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>@lang('ID')</th>
+                                        <th>@lang('Item Name')</th>
+                                        <th>@lang('Details')</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($purchase->getCartItems() as $catalogItem)
+                                        @if ($catalogItem['user_id'] == $data->merchant_id)
+                                            <tr>
+                                                <td>{{ $catalogItem['item']['id'] }}</td>
+                                                <td>{{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}</td>
+                                                <td>
+                                                    <strong>@lang('Qty'):</strong> {{ $catalogItem['qty'] }}
+                                                    @if (!empty($catalogItem['size']))
+                                                        <br><strong>@lang('Size'):</strong> {{ $catalogItem['item']['measure'] }}{{ str_replace('-', ' ', $catalogItem['size']) }}
+                                                    @endif
+                                                    @if (!empty($catalogItem['color']))
+                                                        <br><strong>@lang('Color'):</strong>
+                                                        <span style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"></span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

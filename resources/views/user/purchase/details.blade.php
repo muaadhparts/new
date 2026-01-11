@@ -213,6 +213,9 @@
                                                 <strong class="text-success">@lang('Local Courier Delivery')</strong>
                                             </div>
 
+                                            {{-- ✅ Delivery Workflow Progress Indicator --}}
+                                            @include('includes.delivery-workflow', ['delivery' => $deliveryCourier])
+
                                             <ul class="list-unstyled">
                                                 <li class="mb-2">
                                                     <i class="fas fa-user me-2 text-muted"></i>
@@ -246,22 +249,71 @@
                                                     </span>
                                                 </li>
 
+                                                {{-- ✅ Status - NEW WORKFLOW --}}
                                                 <li>
                                                     <i class="fas fa-info-circle me-2 text-muted"></i>
                                                     <strong>@lang('Status'):</strong>
-                                                    @if($deliveryCourier->status == 'pending')
-                                                        <span class="badge bg-warning">@lang('Pending')</span>
-                                                    @elseif($deliveryCourier->status == 'ready_for_courier_collection')
-                                                        <span class="badge bg-info">@lang('Ready for Courier Collection')</span>
-                                                    @elseif($deliveryCourier->status == 'accepted')
-                                                        <span class="badge bg-primary">@lang('In Transit')</span>
-                                                    @elseif($deliveryCourier->status == 'delivered')
-                                                        <span class="badge bg-success">@lang('Delivered')</span>
+                                                    @if($deliveryCourier->isPendingApproval())
+                                                        <span class="badge bg-warning text-dark">
+                                                            <i class="fas fa-clock"></i> @lang('Waiting Courier')
+                                                        </span>
+                                                    @elseif($deliveryCourier->isApproved())
+                                                        <span class="badge bg-info">
+                                                            <i class="fas fa-box-open"></i> @lang('Preparing')
+                                                        </span>
+                                                    @elseif($deliveryCourier->isReadyForPickup())
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-box"></i> @lang('Ready for Courier')
+                                                        </span>
+                                                    @elseif($deliveryCourier->isPickedUp())
+                                                        <span class="badge bg-primary">
+                                                            <i class="fas fa-truck"></i> @lang('On The Way')
+                                                        </span>
+                                                    @elseif($deliveryCourier->isDelivered())
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check-double"></i> @lang('Delivered')
+                                                        </span>
+                                                        @if($deliveryCourier->delivered_at)
+                                                            <br><small class="text-muted">{{ $deliveryCourier->delivered_at->format('Y-m-d H:i') }}</small>
+                                                        @endif
+                                                    @elseif($deliveryCourier->isConfirmed())
+                                                        <span class="badge bg-success">
+                                                            <i class="fas fa-check-circle"></i> @lang('Confirmed')
+                                                        </span>
+                                                        @if($deliveryCourier->confirmed_at)
+                                                            <br><small class="text-muted">{{ $deliveryCourier->confirmed_at->format('Y-m-d H:i') }}</small>
+                                                        @endif
+                                                    @elseif($deliveryCourier->isRejected())
+                                                        <span class="badge bg-danger">
+                                                            <i class="fas fa-times"></i> @lang('Reassigning Courier')
+                                                        </span>
                                                     @else
-                                                        <span class="badge bg-secondary">{{ ucfirst($deliveryCourier->status) }}</span>
+                                                        <span class="badge bg-secondary">{{ $deliveryCourier->status_label }}</span>
                                                     @endif
                                                 </li>
                                             </ul>
+
+                                            {{-- ✅ Confirm Delivery Button (Optional) --}}
+                                            @if($deliveryCourier->isDelivered() && !$deliveryCourier->customer_confirmed)
+                                                <div class="mt-3 p-3 border rounded bg-light">
+                                                    <p class="mb-2">
+                                                        <i class="fas fa-question-circle text-info"></i>
+                                                        @lang('Did you receive your order?')
+                                                    </p>
+                                                    <form action="{{ route('user-confirm-delivery', $purchase->id) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-success">
+                                                            <i class="fas fa-check"></i> @lang('Yes, I Received It')
+                                                        </button>
+                                                    </form>
+                                                </div>
+                                            @elseif($deliveryCourier->isConfirmed() || $deliveryCourier->customer_confirmed)
+                                                <div class="mt-3">
+                                                    <span class="badge bg-success py-2 px-3">
+                                                        <i class="fas fa-check-circle"></i> @lang('You confirmed receiving this order')
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
                                     @elseif ($purchase->shipping == 'shipto')
                                         {{-- Regular Shipping via Shipping Company --}}

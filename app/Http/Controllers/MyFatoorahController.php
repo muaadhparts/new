@@ -2,57 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use App\Http\Controllers\Merchant\Payment\MyFatoorahPaymentController;
 use Illuminate\Http\Request;
 
 /**
- * MyFatoorah Controller - Stub
+ * MyFatoorah Controller Stub
  *
- * This is a stub controller required by the myfatoorah/laravel-package.
- * All actual payment logic is handled by MyFatoorahPaymentController.
- *
- * @deprecated Use App\Http\Controllers\Merchant\Payment\MyFatoorahPaymentController instead
+ * Required by myfatoorah/laravel-package.
+ * All payment logic handled by Merchant\Payment\MyFatoorahPaymentController.
  */
 class MyFatoorahController extends Controller
 {
-    protected MyFatoorahPaymentController $paymentController;
-
-    public function __construct(MyFatoorahPaymentController $paymentController)
-    {
-        $this->paymentController = $paymentController;
-    }
-
     /**
-     * Redirect to new checkout flow
+     * Redirect to cart - old checkout not supported
      */
-    public function index(Request $request, int $merchantId = 0)
+    public function index(Request $request)
     {
-        if (!$merchantId) {
-            $merchantId = session('checkout_merchant_id', 0);
-        }
-
-        if (!$merchantId) {
-            return redirect()->route('front.cart')
-                ->with('unsuccess', __('Please start checkout from the cart'));
-        }
-
-        return $this->paymentController->processPayment($request, $merchantId);
+        return redirect()->route('front.cart')
+            ->with('unsuccess', __('Please use the merchant checkout'));
     }
 
     /**
-     * Handle MyFatoorah callback - delegate to new controller
-     */
-    public function notify(Request $request)
-    {
-        return $this->paymentController->notify($request);
-    }
-
-    /**
-     * Handle callback - delegate to new controller
+     * Callback - delegate to new controller
      */
     public function callback(Request $request)
     {
-        return $this->paymentController->handleCallback($request);
+        return app(\App\Http\Controllers\Merchant\Payment\MyFatoorahPaymentController::class)
+            ->handleCallback($request);
+    }
+
+    /**
+     * Checkout view - redirect to cart
+     */
+    public function checkout(Request $request)
+    {
+        return redirect()->route('front.cart')
+            ->with('unsuccess', __('Please use the merchant checkout'));
+    }
+
+    /**
+     * Webhook handler - delegate to new controller
+     */
+    public function webhook(Request $request)
+    {
+        return app(\App\Http\Controllers\Merchant\Payment\MyFatoorahPaymentController::class)
+            ->notify($request);
     }
 }

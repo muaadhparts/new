@@ -4,8 +4,10 @@ namespace App\Http\Controllers\User;
 
 use App\{
     Models\Purchase,
-    Models\CatalogItem
+    Models\CatalogItem,
+    Models\DeliveryCourier
 };
+use Illuminate\Http\Request;
 
 class PurchaseController extends UserBaseController
 {
@@ -83,6 +85,50 @@ class PurchaseController extends UserBaseController
         $purchase->update();
         $data = $purchase->txnid;
         return response()->json($data);
+    }
+
+    /**
+     * STEP 5 (Optional): Customer confirms delivery receipt
+     * NEW WORKFLOW: delivered -> confirmed
+     */
+    public function confirmDeliveryReceipt(Request $request, $purchaseId)
+    {
+        $user = $this->user;
+
+        // Security: Only allow confirming own purchases
+        $purchase = $user->purchases()->findOrFail($purchaseId);
+
+        // Find the delivery courier record(s) for this purchase
+        $deliveries = DeliveryCourier::where('purchase_id', $purchase->id)->get();
+
+        if ($deliveries->isEmpty()) {
+            return redirect()->back()->with('error', __('No courier delivery found for this purchase'));
+        }
+
+        $confirmed = 0;
+        foreach ($deliveries as $delivery) {
+            // Only confirm if status is 'delivered'
+            if ($delivery->isDelivered()) {
+                try {
+                    $delivery->confirmByCustomer();
+                    $confirmed++;
+                } catch (\Exception $e) {
+                    // Log error but continue
+                }
+            }
+        }
+
+        if ($confirmed > 0) {
+            // Add tracking entry
+            $purchase->tracks()->create([
+                'title' => __('Customer Confirmed Receipt'),
+                'text' => __('Customer has confirmed receiving the delivery')
+            ]);
+
+            return redirect()->back()->with('success', __('Thank you! You have confirmed receiving your order.'));
+        }
+
+        return redirect()->back()->with('error', __('Delivery is not in a state that can be confirmed'));
     }
 
 }

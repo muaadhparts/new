@@ -314,16 +314,22 @@
                                                 <div>
                                                     <small class="text-muted">@lang('Status')</small>
                                                     <p class="mb-0">
-                                                        @if($deliveryCourier->status == 'pending')
-                                                            <span class="badge bg-warning">@lang('Pending')</span>
-                                                        @elseif($deliveryCourier->status == 'ready_for_courier_collection')
-                                                            <span class="badge bg-info">@lang('Ready for Courier Collection')</span>
-                                                        @elseif($deliveryCourier->status == 'accepted')
-                                                            <span class="badge bg-primary">@lang('Accepted')</span>
-                                                        @elseif($deliveryCourier->status == 'delivered')
+                                                        @if($deliveryCourier->isPendingApproval())
+                                                            <span class="badge bg-warning">@lang('Waiting Courier Approval')</span>
+                                                        @elseif($deliveryCourier->isApproved())
+                                                            <span class="badge bg-info">@lang('Courier Approved - Preparing')</span>
+                                                        @elseif($deliveryCourier->isReadyForPickup())
+                                                            <span class="badge bg-info">@lang('Ready for Pickup')</span>
+                                                        @elseif($deliveryCourier->isPickedUp())
+                                                            <span class="badge bg-primary">@lang('Out for Delivery')</span>
+                                                        @elseif($deliveryCourier->isDelivered())
                                                             <span class="badge bg-success">@lang('Delivered')</span>
+                                                        @elseif($deliveryCourier->isConfirmed())
+                                                            <span class="badge bg-success">@lang('Delivery Confirmed')</span>
+                                                        @elseif($deliveryCourier->isRejected())
+                                                            <span class="badge bg-danger">@lang('Courier Rejected')</span>
                                                         @else
-                                                            <span class="badge bg-secondary">{{ ucfirst($deliveryCourier->status) }}</span>
+                                                            <span class="badge bg-secondary">{{ $deliveryCourier->status_label }}</span>
                                                         @endif
                                                     </p>
                                                 </div>

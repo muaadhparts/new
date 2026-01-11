@@ -124,7 +124,10 @@ Route::get('/refresh-stock/{token}', function ($token) {
     return "<pre>" . implode("\n\n", $output) . "</pre>";
 });
 
-Route::get('/checkout/quick', 'Front\QuickCheckoutController@quick')->name('front.checkout.quick');
+// Legacy quick checkout - redirect to cart
+Route::get('/checkout/quick', function() {
+    return redirect()->route('front.cart');
+})->name('front.checkout.quick');
 
 Route::prefix('modal')->name('modal.')->group(function () {
     Route::get('/catalog-item/id/{catalogItem}',   [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item.id');
@@ -1121,6 +1124,7 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/shipment-history/{purchaseId}', 'Merchant\DeliveryController@shipmentHistory')->name('merchant.shipment.history');
             Route::post('delivery/cancel-shipment', 'Merchant\DeliveryController@cancelShipment')->name('merchant.cancel.shipment');
             Route::post('delivery/ready-for-courier', 'Merchant\DeliveryController@markReadyForCourierCollection')->name('merchant.ready.courier');
+            Route::post('delivery/handover-to-courier', 'Merchant\DeliveryController@confirmHandoverToCourier')->name('merchant.handover.courier');
             Route::get('delivery/stats', 'Merchant\DeliveryController@shippingStats')->name('merchant.shipping.stats');
             Route::get('delivery/purchase-status/{purchaseId}', 'Merchant\DeliveryController@getPurchaseShipmentStatus')->name('merchant.purchase.shipment.status');
 
@@ -1433,6 +1437,7 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/download/purchase/{slug}/{id}', 'User\PurchaseController@purchasedownload')->name('user-purchase-download');
         Route::get('print/purchase/print/{id}', 'User\PurchaseController@purchaseprint')->name('user-purchase-print');
         Route::get('/json/trans', 'User\PurchaseController@trans');
+        Route::post('/purchase/{id}/confirm-delivery', 'User\PurchaseController@confirmDeliveryReceipt')->name('user-confirm-delivery');
 
         // User Purchases Ends
 
@@ -1875,73 +1880,17 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // CHECKOUT SECTION ENDS
 
-    //   Mobile Checkout section
+    // Legacy routes - redirect to new merchant checkout
+    Route::get('/payment/checkout', function() {
+        return redirect()->route('front.cart')->with('info', __('Please proceed with checkout from the cart page'));
+    })->name('payment.checkout');
 
-    Route::get('/payment/checkout', 'Api\Payment\CheckoutController@checkout')->name('payment.checkout');
-    Route::post('/payment/stripe-submit', 'Api\Payment\StripeController@store')->name('payment.stripe');
-    Route::get('/payment/stripe-notify', 'Api\Payment\StripeController@notify')->name('payment.notify');
-
-    Route::get('/topup/app/payment/{slug1}/{slug2}', 'Api\Payment\CheckoutController@topuploadpayment')->name('topup.app.payment');
-
-    // Legacy loadpayment route - redirect to cart (new checkout system uses different flow)
     Route::get('/checkout/payment/{slug1}/{slug2}', function() {
         return redirect()->route('front.cart')->with('info', __('Please proceed with checkout from the cart page'));
     })->name('front.load.payment');
 
-    // Note: Flutter Wave routes moved to Api\Payment section below
-    // Route::post('/api/flutter/submit', 'Api\Payment\FlutterWaveController@store')->name('api.flutter.submit');
-    // Route::post('/flutter/notify', 'Api\Payment\FlutterWaveController@notify')->name('api.flutter.notify');
-
     Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');
-
-    Route::post('/api/cod/submit', 'Api\Payment\CashOnDeliveryController@store')->name('api.cod.submit');
-    Route::post('/api/wallet/submit', 'Api\Payment\WalletController@store')->name('api.wallet.submit');
-    Route::post('/api/manual/submit', 'Api\Payment\ManualController@store')->name('api.manual.submit');
-
-    Route::post('/api/paystack/submit', 'Api\Payment\PaystackController@store')->name('api.paystack.submit');
-
-    Route::post('/api/instamojo/submit', 'Api\Payment\InstamojoController@store')->name('api.instamojo.submit');
-
-    Route::get('/api/checkout/instamojo/notify', 'Api\Payment\InstamojoController@notify')->name('api.instamojo.notify');
-
-    //flutter
-    Route::post('/api/flutter/submit', 'Api\Payment\FlutterWaveController@store')->name('api.flutter.submit');
-    Route::post('/api/flutter/notify', 'Api\Payment\FlutterWaveController@notify')->name('api.payment.flutter.notify');
-
-    // ssl Routes
-    Route::post('/api/ssl/submit', 'Api\Payment\SslController@store')->name('api.ssl.submit');
-    Route::post('/api/ssl/notify', 'Api\Payment\SslController@notify')->name('api.ssl.notify');
-    Route::post('/api/ssl/cancle', 'Api\Payment\SslController@cancle')->name('api.ssl.cancle');
     Route::get('/topup/payment/{number}', 'Api\User\TopUpController@sendTopUp')->name('user.topup.send');
-
-    // Paypal
-    Route::post('/checkout/payment/paypal-submit', 'Api\Payment\PaypalController@store')->name('api.paypal.submit');
-    Route::get('/api/checkout/paypal/notify', 'Api\Payment\PaypalController@notify')->name('api.paypal.notify');
-    Route::get('/api/checkout/payment/return', 'Api\Payment\PaypalController@payreturn')->name('api.paypal.return');
-    Route::get('/api/checkout/payment/cancle', 'Api\Payment\PaypalController@paycancle')->name('api.paypal.cancle');
-
-    Route::post('/api/payment/stripe-submit', 'Api\Payment\StripeController@store')->name('api.stripe.submit');
-
-    // Molly Routes
-    Route::post('/api/molly/submit', 'Api\Payment\MollyController@store')->name('api.molly.submit');
-    Route::get('/api/molly/notify', 'Api\Payment\MollyController@notify')->name('api.molly.notify');
-
-    //PayTM Routes
-    Route::post('/api/paytm-submit', 'Api\Payment\PaytmController@store')->name('api.paytm.submit');;
-    Route::post('/api/paytm-callback', 'Api\Payment\PaytmController@paytmCallback')->name('api.paytm.notify');
-
-    Route::post('/api/authorize-submit', 'Api\Payment\AuthorizeController@store')->name('api.authorize.submit');
-
-    //RazorPay Routes
-    Route::post('/api/razorpay-submit', 'Api\Payment\RazorpayController@store')->name('api.razorpay.submit');;
-    Route::post('/api/razorpay-callback', 'Api\Payment\RazorpayController@razorCallback')->name('api.razorpay.notify');
-
-    //   Mobile Checkout section
-
-    // Mercadopago Routes
-    Route::get('/api/checkout/mercadopago/return', 'Api\Payment\MercadopagoController@payreturn')->name('api.mercadopago.return');
-    Route::post('/api/checkout/mercadopago/notify', 'Api\Payment\MercadopagoController@notify')->name('api.mercadopago.notify');
-    Route::post('/api/checkout/mercadopago/submit', 'Api\Payment\MercadopagoController@store')->name('api.mercadopago.submit');
 
     // MERCHANT SECTION
 

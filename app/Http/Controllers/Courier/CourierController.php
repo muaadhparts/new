@@ -314,37 +314,56 @@ class CourierController extends CourierBaseController
 
     public function orders(Request $request)
     {
-        if ($request->type == 'complete') {
-            // ✅ Completed/delivered orders
+        $type = $request->type;
+
+        if ($type == 'completed') {
+            // Completed/delivered orders
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
-                ->where('status', 'delivered')
+                ->whereIn('status', [DeliveryCourier::STATUS_DELIVERED, DeliveryCourier::STATUS_CONFIRMED])
                 ->orderby('id', 'desc')
                 ->paginate(10);
-        } elseif ($request->type == 'pending') {
-            // ✅ Orders waiting for merchant to mark ready (courier can see but not act)
+        } elseif ($type == 'pending') {
+            // Orders waiting for courier approval
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
-                ->where('status', 'pending')
+                ->where('status', DeliveryCourier::STATUS_PENDING_APPROVAL)
+                ->orderby('id', 'desc')
+                ->paginate(10);
+        } elseif ($type == 'in_progress') {
+            // Orders in progress (approved, ready, picked up)
+            $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+                ->whereNotNull('purchase_id')
+                ->whereHas('purchase')
+                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
+                ->whereIn('status', [
+                    DeliveryCourier::STATUS_APPROVED,
+                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
+                    DeliveryCourier::STATUS_PICKED_UP,
+                ])
                 ->orderby('id', 'desc')
                 ->paginate(10);
         } else {
-            // ✅ Ready orders: ready_for_courier_collection (new) + accepted (in progress)
-            // Only show orders that merchant has marked as ready
+            // Default: All active orders (pending approval + in progress)
             $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
-                ->whereIn('status', ['ready_for_courier_collection', 'accepted'])
+                ->whereIn('status', [
+                    DeliveryCourier::STATUS_PENDING_APPROVAL,
+                    DeliveryCourier::STATUS_APPROVED,
+                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
+                    DeliveryCourier::STATUS_PICKED_UP,
+                ])
                 ->orderby('id', 'desc')
                 ->paginate(10);
         }
 
-        return view('courier.orders', compact('purchases'));
+        return view('courier.orders', compact('purchases', 'type'));
     }
 
     public function orderDetails($id)
@@ -363,22 +382,51 @@ class CourierController extends CourierBaseController
         return view('courier.purchase_details', compact('data'));
     }
 
+    /**
+     * Courier approves the delivery request
+     * STEP 1: pending_approval -> approved
+     */
     public function orderAccept($id)
     {
         $data = DeliveryCourier::where('courier_id', $this->courier->id)->where('id', $id)->first();
-        $data->status = 'accepted';
-        $data->save();
-        return back()->with('success', __('Successfully accepted this purchase'));
+
+        if (!$data) {
+            return back()->with('unsuccess', __('Delivery not found'));
+        }
+
+        if (!$data->canTransitionTo(DeliveryCourier::STATUS_APPROVED)) {
+            return back()->with('unsuccess', __('Cannot approve this delivery. Current status: ') . $data->status_label);
+        }
+
+        $data->approve();
+        return back()->with('success', __('Delivery approved successfully! Waiting for merchant to prepare the order.'));
     }
 
-    public function orderReject($id)
+    /**
+     * Courier rejects the delivery request
+     * STEP 1 ALT: pending_approval -> rejected
+     */
+    public function orderReject(Request $request, $id)
     {
         $data = DeliveryCourier::where('courier_id', $this->courier->id)->where('id', $id)->first();
-        $data->status = 'rejected';
-        $data->save();
-        return back()->with('success', __('Successfully rejected this purchase'));
+
+        if (!$data) {
+            return back()->with('unsuccess', __('Delivery not found'));
+        }
+
+        if (!$data->canTransitionTo(DeliveryCourier::STATUS_REJECTED)) {
+            return back()->with('unsuccess', __('Cannot reject this delivery. Current status: ') . $data->status_label);
+        }
+
+        $reason = $request->input('reason', null);
+        $data->reject($reason);
+        return back()->with('success', __('Delivery rejected successfully.'));
     }
 
+    /**
+     * Courier marks the order as delivered to customer
+     * STEP 4: picked_up -> delivered
+     */
     public function orderComplete($id)
     {
         $delivery = DeliveryCourier::where('courier_id', $this->courier->id)->where('id', $id)->first();
@@ -387,21 +435,14 @@ class CourierController extends CourierBaseController
             return back()->with('unsuccess', __('Delivery not found'));
         }
 
-        $delivery->status = 'delivered';
-        $delivery->delivered_at = now();
-        $delivery->save();
-
-        // Record COD collection if applicable
-        if ($delivery->payment_method === 'cod' && $delivery->purchase_amount > 0) {
-            $this->accountingService->recordCodCollection($id, $delivery->purchase_amount);
+        if (!$delivery->canTransitionTo(DeliveryCourier::STATUS_DELIVERED)) {
+            return back()->with('unsuccess', __('Cannot complete this delivery. Current status: ') . $delivery->status_label);
         }
 
-        // Record delivery fee earned
-        if ($delivery->delivery_fee > 0) {
-            $this->accountingService->recordDeliveryFeeEarned($id);
-        }
+        // Use model method which handles status transition and financial transactions
+        $delivery->markAsDelivered();
 
-        return back()->with('success', __('Successfully Delivered this purchase'));
+        return back()->with('success', __('Order delivered successfully to customer!'));
     }
 
     /**

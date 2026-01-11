@@ -270,12 +270,13 @@
                                     <span class="info-type">@lang('Status')</span>
                                     <span class="info">
                                         <span class="badge
-                                            @if($delivery->status == 'delivered') bg-success
-                                            @elseif($delivery->status == 'accepted') bg-primary
-                                            @elseif($delivery->status == 'rejected') bg-danger
-                                            @else bg-warning
+                                            @if($delivery->isConfirmed() || $delivery->isDelivered()) bg-success
+                                            @elseif($delivery->isPickedUp()) bg-primary
+                                            @elseif($delivery->isRejected()) bg-danger
+                                            @elseif($delivery->isPendingApproval()) bg-warning
+                                            @else bg-info
                                             @endif">
-                                            {{ ucfirst($delivery->status) }}
+                                            {{ $delivery->status_label }}
                                         </span>
                                     </span>
                                 </li>

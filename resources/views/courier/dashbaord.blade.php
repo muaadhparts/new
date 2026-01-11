@@ -142,11 +142,30 @@
                                     </td>
                                     <td data-label="{{ __('Purchase Status') }}">
                                         <div class="">
-                                            <span
-                                                class="px-3 py-2 md-btn rounded {{ $purchase->status == 'pending' ? 'bg-pending' : 'bg-complete' }} mx-auto">{{ ucwords($purchase->status) }}
-                                            </span>
-
-
+                                            {{-- ✅ Status - Using Model Methods --}}
+                                            @if($purchase->isPending())
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-hourglass-half"></i> @lang('Preparing')
+                                                </span>
+                                            @elseif($purchase->isReadyForCollection())
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-box"></i> @lang('Ready')
+                                                </span>
+                                            @elseif($purchase->isAccepted())
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-truck"></i> @lang('In Transit')
+                                                </span>
+                                            @elseif($purchase->isDelivered())
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-check-double"></i> @lang('Delivered')
+                                                </span>
+                                            @elseif($purchase->isRejected())
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times"></i> @lang('Rejected')
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ $purchase->status_label }}</span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td data-label="{{ __('View') }}">

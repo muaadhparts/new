@@ -53,7 +53,9 @@
       "Bash(for f in app/Http/Controllers/Payment/Checkout/*.php)",
       "Bash(do php -l \"$f\")",
       "Bash(done)",
-      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\merchant\\\\checkout\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\merchant\\\\checkout\")"
+      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\merchant\\\\checkout\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\merchant\\\\checkout\")",
+      "Bash(courier)",
+      "Bash(shipment \")"
     ]
   }
 }

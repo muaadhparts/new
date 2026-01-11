@@ -145,7 +145,7 @@ class DeliveryController extends MerchantBaseController
 
             ->addColumn('action', function (Purchase $data) {
                 $delevery = DeliveryCourier::where('merchant_id', auth()->id())->where('purchase_id', $data->id)->first();
-                if ($delevery && $delevery->status == 'delivered') {
+                if ($delevery && $delevery->status == DeliveryCourier::STATUS_DELIVERED) {
                     $auction = '<div class="action-list">
                     <a href="' . route('merchant-purchase-show', $data->purchase_number) . '" class="btn btn-outline-primary btn-sm"><i class="fa fa-eye"></i> ' . __('Purchase View') . '</a>
                     </div>';
@@ -194,6 +194,10 @@ class DeliveryController extends MerchantBaseController
     }
 
 
+    /**
+     * Assign courier to purchase
+     * NEW WORKFLOW: Creates delivery with pending_approval status
+     */
     public function findCourierSubmit(Request $request)
     {
         $service_area = CourierServiceArea::find($request->courier_id);
@@ -202,28 +206,58 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('Invalid courier selection'));
         }
 
+        $purchase = Purchase::find($request->purchase_id);
+        if (!$purchase) {
+            return redirect()->back()->with('error', __('Purchase not found'));
+        }
+
+        // Calculate amounts
+        $merchantOrder = $purchase->merchantPurchases()->where('user_id', auth()->id())->first();
+        $purchaseAmount = $merchantOrder ? $merchantOrder->price : 0;
+        $deliveryFee = $service_area->price ?? 0;
+
+        // Determine payment method
+        $paymentMethod = in_array($purchase->method, ['cod', 'Cash On Delivery'])
+            ? DeliveryCourier::PAYMENT_COD
+            : DeliveryCourier::PAYMENT_ONLINE;
+
+        // Check for existing delivery record (reassignment case)
         $delivery = DeliveryCourier::where('purchase_id', $request->purchase_id)
             ->where('merchant_id', auth()->id())
             ->first();
 
         if ($delivery) {
-            $delivery->courier_id = $service_area->courier_id;
-            $delivery->service_area_id = $service_area->id;
-            $delivery->merchant_location_id = $request->merchant_location_id;
-            $delivery->status = 'pending';
-            $delivery->save();
+            // Reassign courier (e.g., after rejection)
+            $delivery->initializeAssignment(
+                courierId: $service_area->courier_id,
+                serviceAreaId: $service_area->id,
+                merchantLocationId: $request->merchant_location_id,
+                deliveryFee: $deliveryFee,
+                purchaseAmount: $purchaseAmount,
+                paymentMethod: $paymentMethod
+            );
         } else {
-            $delivery = new DeliveryCourier();
-            $delivery->purchase_id = $request->purchase_id;
-            $delivery->merchant_id = auth()->id();
-            $delivery->courier_id = $service_area->courier_id;
-            $delivery->service_area_id = $service_area->id;
-            $delivery->merchant_location_id = $request->merchant_location_id;
-            $delivery->status = 'pending';
-            $delivery->save();
+            // Create new delivery record
+            $delivery = DeliveryCourier::createForPurchase(
+                purchaseId: $request->purchase_id,
+                merchantId: auth()->id(),
+                courierId: $service_area->courier_id,
+                serviceAreaId: $service_area->id,
+                merchantLocationId: $request->merchant_location_id,
+                deliveryFee: $deliveryFee,
+                purchaseAmount: $purchaseAmount,
+                paymentMethod: $paymentMethod
+            );
         }
 
-        return redirect()->back()->with('success', __('Courier Assigned Successfully'));
+        Log::info('Courier assigned to delivery', [
+            'delivery_id' => $delivery->id,
+            'purchase_id' => $request->purchase_id,
+            'courier_id' => $service_area->courier_id,
+            'status' => DeliveryCourier::STATUS_PENDING_APPROVAL,
+        ]);
+
+        return redirect()->back()->with('success', __('Courier assigned! Waiting for courier approval.'));
     }
 
     /**
@@ -685,7 +719,8 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * تحديث حالة الطلب من التاجر (جاهز لاستلام الكوريير)
+     * STEP 2: Merchant marks order ready for pickup
+     * NEW WORKFLOW: approved -> ready_for_pickup
      */
     public function markReadyForCourierCollection(Request $request)
     {
@@ -701,33 +736,107 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('This purchase does not belong to you'));
         }
 
-        // تحديث حالة الطلب في MerchantPurchase
-        $merchantOrder->status = 'ready_for_courier_collection';
-        $merchantOrder->save();
-
-        // ✅ تحديث حالة DeliveryCourier أيضاً
+        // Get DeliveryCourier record
         $deliveryCourier = DeliveryCourier::where('purchase_id', $purchase->id)
             ->where('merchant_id', $merchantId)
             ->first();
 
-        if ($deliveryCourier && $deliveryCourier->status === 'pending') {
-            $deliveryCourier->status = 'ready_for_courier_collection';
-            $deliveryCourier->save();
+        if (!$deliveryCourier) {
+            return redirect()->back()->with('error', __('No courier assigned to this purchase'));
+        }
 
-            Log::info('DeliveryCourier marked ready for courier collection', [
+        // Check if courier has approved (status should be 'approved')
+        if (!$deliveryCourier->isApproved()) {
+            return redirect()->back()->with('error', __('Courier has not approved this delivery yet. Current status: ') . $deliveryCourier->status_label);
+        }
+
+        // Transition to ready_for_pickup
+        try {
+            $deliveryCourier->markReadyForPickup();
+
+            Log::info('Merchant marked order ready for pickup', [
                 'delivery_courier_id' => $deliveryCourier->id,
                 'purchase_id' => $purchase->id,
                 'courier_id' => $deliveryCourier->courier_id,
             ]);
-        }
 
-        // إضافة تتبع
-        $purchase->tracks()->create([
-            'title' => __('Ready for Courier Collection'),
-            'text' => __('Merchant :merchant has marked the purchase as ready for courier collection', ['merchant' => $this->user->shop_name])
+            // Add tracking entry
+            $purchase->tracks()->create([
+                'title' => __('Ready for Courier Pickup'),
+                'text' => __('Merchant :merchant has prepared the order and is waiting for courier pickup', ['merchant' => $this->user->shop_name])
+            ]);
+
+            return redirect()->back()->with('success', __('Order marked as ready! Courier will pick it up soon.'));
+        } catch (\Exception $e) {
+            Log::error('Failed to mark ready for pickup', [
+                'error' => $e->getMessage(),
+                'delivery_id' => $deliveryCourier->id
+            ]);
+            return redirect()->back()->with('error', __('Failed to update status: ') . $e->getMessage());
+        }
+    }
+
+    /**
+     * STEP 3: Merchant confirms handover to courier
+     * NEW WORKFLOW: ready_for_pickup -> picked_up
+     */
+    public function confirmHandoverToCourier(Request $request)
+    {
+        $request->validate([
+            'purchase_id' => 'required|exists:purchases,id'
         ]);
 
-        return redirect()->back()->with('success', __('Purchase marked as ready for courier collection. Courier has been notified.'));
+        $purchase = Purchase::find($request->purchase_id);
+        $merchantId = $this->user->id;
+
+        $merchantOrder = $purchase->merchantPurchases()->where('user_id', $merchantId)->first();
+        if (!$merchantOrder) {
+            return redirect()->back()->with('error', __('This purchase does not belong to you'));
+        }
+
+        // Get DeliveryCourier record
+        $deliveryCourier = DeliveryCourier::where('purchase_id', $purchase->id)
+            ->where('merchant_id', $merchantId)
+            ->first();
+
+        if (!$deliveryCourier) {
+            return redirect()->back()->with('error', __('No courier assigned to this purchase'));
+        }
+
+        // Check if order is ready for pickup
+        if (!$deliveryCourier->isReadyForPickup()) {
+            return redirect()->back()->with('error', __('Order is not ready for pickup. Current status: ') . $deliveryCourier->status_label);
+        }
+
+        // Transition to picked_up
+        try {
+            $deliveryCourier->confirmHandoverToCourier();
+
+            // Update merchant purchase status
+            $merchantOrder->status = 'processing';
+            $merchantOrder->save();
+
+            Log::info('Merchant confirmed handover to courier', [
+                'delivery_courier_id' => $deliveryCourier->id,
+                'purchase_id' => $purchase->id,
+                'courier_id' => $deliveryCourier->courier_id,
+                'courier_name' => $deliveryCourier->courier->name ?? 'N/A',
+            ]);
+
+            // Add tracking entry
+            $purchase->tracks()->create([
+                'title' => __('Picked Up by Courier'),
+                'text' => __('Order has been handed over to courier :courier for delivery', ['courier' => $deliveryCourier->courier->name ?? 'Courier'])
+            ]);
+
+            return redirect()->back()->with('success', __('Order handed over to courier! They will deliver it to the customer.'));
+        } catch (\Exception $e) {
+            Log::error('Failed to confirm handover', [
+                'error' => $e->getMessage(),
+                'delivery_id' => $deliveryCourier->id
+            ]);
+            return redirect()->back()->with('error', __('Failed to update status: ') . $e->getMessage());
+        }
     }
 
     /**
