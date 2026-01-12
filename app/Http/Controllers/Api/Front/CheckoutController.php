@@ -250,7 +250,7 @@ class CheckoutController extends Controller
             unset($purchase['cart']);
             return response()->json([
                 'status' => true,
-                'data'   => route('payment.checkout') . '?purchase_number=' . $purchase->purchase_number,
+                'data'   => route('front.payment.success', $purchase->purchase_number),
                 'error'  => []
             ]);
         } catch (\Exception $e) {

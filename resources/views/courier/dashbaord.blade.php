@@ -142,22 +142,30 @@
                                     </td>
                                     <td data-label="{{ __('Purchase Status') }}">
                                         <div class="">
-                                            {{-- ✅ Status - Using Model Methods --}}
-                                            @if($purchase->isPending())
+                                            {{-- ✅ Status - Using NEW Workflow Model Methods --}}
+                                            @if($purchase->isPendingApproval())
                                                 <span class="badge bg-warning text-dark">
-                                                    <i class="fas fa-hourglass-half"></i> @lang('Preparing')
+                                                    <i class="fas fa-clock"></i> @lang('Awaiting Approval')
                                                 </span>
-                                            @elseif($purchase->isReadyForCollection())
+                                            @elseif($purchase->isApproved())
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-box-open"></i> @lang('Preparing')
+                                                </span>
+                                            @elseif($purchase->isReadyForPickup())
                                                 <span class="badge bg-success">
-                                                    <i class="fas fa-box"></i> @lang('Ready')
+                                                    <i class="fas fa-box"></i> @lang('Ready for Pickup')
                                                 </span>
-                                            @elseif($purchase->isAccepted())
+                                            @elseif($purchase->isPickedUp())
                                                 <span class="badge bg-primary">
                                                     <i class="fas fa-truck"></i> @lang('In Transit')
                                                 </span>
                                             @elseif($purchase->isDelivered())
-                                                <span class="badge bg-info">
+                                                <span class="badge bg-success">
                                                     <i class="fas fa-check-double"></i> @lang('Delivered')
+                                                </span>
+                                            @elseif($purchase->isConfirmed())
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check-circle"></i> @lang('Confirmed')
                                                 </span>
                                             @elseif($purchase->isRejected())
                                                 <span class="badge bg-danger">

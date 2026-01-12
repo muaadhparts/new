@@ -106,7 +106,8 @@ class RazorpayController extends Controller
         $json = json_encode($data);
         $displayCurrency = $this->displayCurrency;
 
-        return view('frontend.razorpay-checkout', compact('data', 'displayCurrency', 'json', 'notify_url'));
+        // Razorpay checkout view removed - payment method disabled
+        return redirect()->back()->with('error', __('Razorpay payment is currently unavailable. Please use another payment method.'));
 
     }
 

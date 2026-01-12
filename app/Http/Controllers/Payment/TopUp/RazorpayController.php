@@ -128,7 +128,8 @@ class RazorpayController extends TopUpBaseController
                     $displayCurrency = $this->displayCurrency;
                     Session::put('item_number',$item_number); 
                     
-        return view( 'frontend.razorpay-checkout', compact( 'data','displayCurrency','json','notify_url' ) );
+        // Razorpay checkout view removed - payment method disabled
+        return redirect()->back()->with('error', __('Razorpay payment is currently unavailable. Please use another payment method.'));
 
  }
 

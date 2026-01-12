@@ -608,47 +608,4 @@ class DeliveryCourier extends Model
         };
     }
 
-    // ============================================================
-    // BACKWARD COMPATIBILITY (DEPRECATED - Will be removed)
-    // ============================================================
-
-    /**
-     * @deprecated Use isPendingApproval() instead
-     */
-    public function isPending(): bool
-    {
-        return $this->isPendingApproval();
-    }
-
-    /**
-     * @deprecated Use isReadyForPickup() instead
-     */
-    public function isReadyForCollection(): bool
-    {
-        return $this->isReadyForPickup();
-    }
-
-    /**
-     * @deprecated Use isPickedUp() instead
-     */
-    public function isAccepted(): bool
-    {
-        return $this->isPickedUp();
-    }
-
-    /**
-     * @deprecated Use approve() instead
-     */
-    public function accept(): void
-    {
-        $this->approve();
-    }
-
-    /**
-     * @deprecated Use markReadyForPickup() instead
-     */
-    public function markReadyForCollection(): void
-    {
-        $this->markReadyForPickup();
-    }
 }

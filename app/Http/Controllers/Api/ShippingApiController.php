@@ -279,8 +279,8 @@ class ShippingApiController extends Controller
             }
         }
 
-        // Free shipping if subtotal is BELOW free_above threshold
-        $qualifiesFree = $freeAbove > 0 && $itemsTotal < $freeAbove;
+        // Free shipping if subtotal MEETS OR EXCEEDS free_above threshold
+        $qualifiesFree = $freeAbove > 0 && $itemsTotal >= $freeAbove;
 
         return [
             'free_above' => round($freeAbove, 2),

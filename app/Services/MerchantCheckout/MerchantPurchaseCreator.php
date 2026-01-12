@@ -257,7 +257,7 @@ class MerchantPurchaseCreator
             'purchase_amount' => $purchase->pay_amount,
             'cod_amount' => $isCod ? $purchase->pay_amount : 0,
             'payment_method' => $isCod ? DeliveryCourier::PAYMENT_COD : DeliveryCourier::PAYMENT_ONLINE,
-            'status' => DeliveryCourier::STATUS_PENDING,
+            'status' => DeliveryCourier::STATUS_PENDING_APPROVAL,
             'fee_status' => DeliveryCourier::FEE_PENDING,
             'settlement_status' => DeliveryCourier::SETTLEMENT_PENDING,
         ]);

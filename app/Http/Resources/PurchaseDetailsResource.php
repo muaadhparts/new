@@ -22,7 +22,7 @@ class PurchaseDetailsResource extends JsonResource
         'status' => $this->status,
         'payment_status' => $this->payment_status,
         'method' => $this->method,
-        'payment_url' => $this->payment_status == 'Pending' ? route('payment.checkout') . '?purchase_number=' . $this->purchase_number : null,
+        'payment_url' => null, // Legacy payment checkout removed - payment handled at cart
         'shipping_name' => $this->customer_name,
         'shipping_email' => $this->customer_email,
         'shipping_phone' => $this->customer_phone,
