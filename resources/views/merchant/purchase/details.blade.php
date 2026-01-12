@@ -185,74 +185,59 @@
                     </div>
                 </div>
 
-            {{-- ✅ Shipment Status Card --}}
-            @php
-                $merchantId = auth()->id();
-                $shipment = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                    ->where('merchant_id', $merchantId)
-                    ->orderBy('status_date', 'desc')
-                    ->orderBy('created_at', 'desc')
-                    ->first();
-
-                $delivery = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
-                    ->where('merchant_id', $merchantId)
-                    ->first();
-
-                $customerChoice = $purchase->getCustomerShippingChoice($merchantId);
-            @endphp
-
-            @if ($shipment || $delivery || $customerChoice)
+            {{-- Shipment Status Card (Data from Controller - No Logic Here) --}}
+            @if ($trackingData['hasTracking'])
                 <div class="col">
                     <div class="purchase-info-card">
                         <h5 class="title">
                             <i class="fas fa-truck"></i> @lang('Shipping Status')
                         </h5>
                         <ul class="info-list">
-                            @if ($shipment)
-                                {{-- Tryoto Shipment Info --}}
+                            @if ($trackingData['hasShipment'])
+                                {{-- API/Manual Shipment Info --}}
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Shipping Company')</span>
                                     <span class="info">
-                                        <span class="badge bg-info">{{ $shipment->company_name }}</span>
+                                        <span class="badge bg-info">{{ $trackingData['companyName'] }}</span>
                                     </span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Tracking Number')</span>
-                                    <span class="info text-primary fw-bold">{{ $shipment->tracking_number }}</span>
+                                    <span class="info text-primary fw-bold">{{ $trackingData['trackingNumber'] }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Status')</span>
                                     <span class="info">
-                                        <span class="badge
-                                            @if($shipment->status == 'delivered') bg-success
-                                            @elseif($shipment->status == 'in_transit') bg-primary
-                                            @elseif($shipment->status == 'out_for_delivery') bg-info
-                                            @elseif(in_array($shipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
-                                            @else bg-secondary
-                                            @endif">
-                                            {{ $shipment->status_ar ?? $shipment->status }}
+                                        <span class="badge bg-{{ $trackingData['statusColor'] }}">
+                                            {{ $trackingData['statusDisplay'] }}
                                         </span>
                                     </span>
                                 </li>
-                                @if($shipment->message_ar || $shipment->message)
+                                @if($trackingData['hasMessage'])
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Message')</span>
-                                    <span class="info">{{ $shipment->message_ar ?? $shipment->message }}</span>
+                                    <span class="info">{{ $trackingData['messageDisplay'] }}</span>
                                 </li>
                                 @endif
-                                @if($shipment->location)
+                                @if($trackingData['location'])
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Current Location')</span>
-                                    <span class="info">{{ $shipment->location }}</span>
+                                    <span class="info">{{ $trackingData['location'] }}</span>
                                 </li>
                                 @endif
-                                @if($shipment->status_date)
+                                @if($trackingData['occurredAt'])
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Last Update')</span>
-                                    <span class="info">{{ $shipment->status_date->format('Y-m-d H:i') }}</span>
+                                    <span class="info">{{ $trackingData['occurredAt'] }}</span>
                                 </li>
                                 @endif
-                            @elseif ($delivery)
+                                <li class="info-list-item">
+                                    <a href="{{ route('merchant.shipment-tracking.show', $purchase->id) }}"
+                                       class="m-btn m-btn--primary m-btn--sm">
+                                        <i class="fas fa-map-marker-alt"></i> @lang('Track Shipment')
+                                    </a>
+                                </li>
+                            @elseif ($trackingData['hasDelivery'])
                                 {{-- Local Courier Info --}}
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Delivery Type')</span>
@@ -260,27 +245,21 @@
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Courier Name')</span>
-                                    <span class="info">{{ $delivery->courier->name ?? 'N/A' }}</span>
+                                    <span class="info">{{ $trackingData['courierName'] ?? 'N/A' }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Delivery Cost')</span>
-                                    <span class="info">{{ PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price ?? 0) }}</span>
+                                    <span class="info">{{ PriceHelper::showAdminCurrencyPrice($trackingData['deliveryFee']) }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Status')</span>
                                     <span class="info">
-                                        <span class="badge
-                                            @if($delivery->isConfirmed() || $delivery->isDelivered()) bg-success
-                                            @elseif($delivery->isPickedUp()) bg-primary
-                                            @elseif($delivery->isRejected()) bg-danger
-                                            @elseif($delivery->isPendingApproval()) bg-warning
-                                            @else bg-info
-                                            @endif">
-                                            {{ $delivery->status_label }}
+                                        <span class="badge bg-{{ $trackingData['deliveryStatusBadgeColor'] }}">
+                                            {{ $trackingData['deliveryStatusLabel'] }}
                                         </span>
                                     </span>
                                 </li>
-                            @elseif ($customerChoice)
+                            @elseif ($trackingData['hasCustomerChoice'])
                                 {{-- Customer Choice (Not Yet Assigned) --}}
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Status')</span>
@@ -289,11 +268,11 @@
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Customer Selected')</span>
                                     <span class="info">
-                                        @if ($customerChoice['provider'] === 'tryoto')
-                                            <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'Tryoto' }}</span>
-                                            - {{ $purchase->currency_sign }}{{ number_format($customerChoice['price'] ?? 0, 2) }}
+                                        @if ($trackingData['customerChoiceIsTryoto'])
+                                            <span class="badge bg-primary">{{ $trackingData['customerChoiceCompany'] ?? 'Tryoto' }}</span>
+                                            - {{ $purchase->currency_sign }}{{ $trackingData['customerChoicePriceFormatted'] }}
                                         @else
-                                            {{ $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual' }}
+                                            {{ $trackingData['customerChoiceTitleDisplay'] }}
                                         @endif
                                     </span>
                                 </li>

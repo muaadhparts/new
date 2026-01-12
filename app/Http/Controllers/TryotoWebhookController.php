@@ -71,32 +71,25 @@ class TryotoWebhookController extends Controller
             // Use ShipmentTrackingService to update
             $trackingService = app(ShipmentTrackingService::class);
             $newTracking = $trackingService->updateFromApi(
-                purchaseId: $existingTracking->purchase_id,
-                merchantId: $existingTracking->merchant_id,
-                status: $status,
-                location: $location,
-                message: $message,
-                rawData: $request->all(),
-                occurredAt: $statusDate
+                $trackingNumber,
+                $status,
+                [
+                    'location' => $location,
+                    'latitude' => $latitude,
+                    'longitude' => $longitude,
+                    'message' => $message,
+                    'message_ar' => $this->getMessageArabic($status, $location),
+                    'occurred_at' => $statusDate,
+                    'raw_payload' => $request->all(),
+                ]
             );
 
             // ترجمة الحالة للعربية
             $statusAr = $this->getStatusArabic($status);
 
-            // Update Purchase status when delivered
-            if ($status === 'delivered') {
-                $purchase = Purchase::find($existingTracking->purchase_id);
-                if ($purchase && $purchase->status !== 'completed') {
-                    $purchase->status = 'completed';
-                    $purchase->save();
-
-                    // Add Track
-                    $purchase->tracks()->create([
-                        'title' => 'Completed',
-                        'text' => 'Purchase delivered successfully - Tracking: ' . $trackingNumber,
-                    ]);
-                }
-            }
+            // Note: Purchase status is now automatically updated via:
+            // ShipmentTrackingService → ShipmentTrackingObserver → OrderStatusResolverService
+            // No direct status modification needed here
 
             // إرسال Notification للتاجر عند التغييرات المهمة
             if (in_array($status, ['picked_up', 'delivered', 'failed', 'returned'])) {

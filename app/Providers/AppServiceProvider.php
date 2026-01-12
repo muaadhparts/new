@@ -6,6 +6,8 @@ use App\Models\Brand;
 use App\Models\Currency;
 use App\Models\Language;
 use App\Models\StaticContent;
+use App\Models\ShipmentTracking;
+use App\Observers\ShipmentTrackingObserver;
 use Illuminate\{Support\Facades\DB,
     Support\Collection,
     Support\Facades\URL,
@@ -26,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
 {
     public function boot()
     {
+        // Register ShipmentTracking Observer - Auto-resolves order status after each tracking insert
+        ShipmentTracking::observe(ShipmentTrackingObserver::class);
+
         // Cache::flush(); // معطل مؤقتاً - يمسح الكاش في كل request
         Paginator::useBootstrap();
 

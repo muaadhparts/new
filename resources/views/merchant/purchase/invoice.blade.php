@@ -94,40 +94,32 @@
                             <span class="fw-normal">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
                         </li>
 
-                        @php
-                            $invoiceMerchantId = $user->id;
-                            $invoiceCustomerChoice = $purchase->getCustomerShippingChoice($invoiceMerchantId);
-                        @endphp
-                        @if ($invoiceCustomerChoice)
+                        {{-- Customer Shipping Choice (from $trackingData) --}}
+                        @if ($trackingData['hasCustomerChoice'])
                             <li>
                                 <span class="fw-semibold">@lang('Customer Selected Shipping :')</span>
                                 <span class="fw-normal">
-                                    {{ $invoiceCustomerChoice['company_name'] ?? 'N/A' }}
-                                    @if(isset($invoiceCustomerChoice['price']))
-                                    | {{ \PriceHelper::showOrderCurrencyPrice($invoiceCustomerChoice['price'] * $purchase->currency_value, $purchase->currency_sign) }}
+                                    {{ $trackingData['customerChoiceCompany'] ?? 'N/A' }}
+                                    @if($trackingData['customerChoicePrice'])
+                                    | {{ \PriceHelper::showOrderCurrencyPrice($trackingData['customerChoicePrice'] * $purchase->currency_value, $purchase->currency_sign) }}
                                     @endif
                                 </span>
                             </li>
                         @endif
 
-                        @php
-                            $invoiceShipmentLog = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                                ->where('merchant_id', $invoiceMerchantId)
-                                ->orderBy('status_date', 'desc')
-                                ->first();
-                        @endphp
-                        @if ($invoiceShipmentLog)
+                        {{-- Shipment Tracking (from $trackingData) --}}
+                        @if ($trackingData['hasShipment'])
                             <li>
                                 <span class="fw-semibold">@lang('Tracking Number :')</span>
-                                <span class="fw-normal">{{ $invoiceShipmentLog->tracking_number }}</span>
+                                <span class="fw-normal">{{ $trackingData['trackingNumber'] ?? '-' }}</span>
                             </li>
                             <li>
                                 <span class="fw-semibold">@lang('Shipping Company :')</span>
-                                <span class="fw-normal">{{ $invoiceShipmentLog->company_name ?? 'N/A' }}</span>
+                                <span class="fw-normal">{{ $trackingData['companyName'] ?? 'N/A' }}</span>
                             </li>
                             <li>
                                 <span class="fw-semibold">@lang('Shipment Status :')</span>
-                                <span class="fw-normal">{{ ucfirst($invoiceShipmentLog->status) }}</span>
+                                <span class="fw-normal">{{ $trackingData['statusDisplay'] }}</span>
                             </li>
                         @endif
 
@@ -167,58 +159,52 @@
                             @endif
                         </li>
 
-                        {{-- ✅ Local Courier Details --}}
-                        @php
-                            $invoiceDeliveryCourier = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
-                                ->where('merchant_id', $invoiceMerchantId)
-                                ->with(['courier', 'merchantLocation'])
-                                ->first();
-                        @endphp
-                        @if($invoiceDeliveryCourier && $invoiceDeliveryCourier->courier)
+                        {{-- Local Courier Details (Pure DTO - No Model Calls) --}}
+                        @if($trackingData['hasDelivery'] && $trackingData['courierName'])
                             <li>
                                 <span class="fw-semibold">@lang('Courier Name :')</span>
-                                <span class="fw-normal">{{ $invoiceDeliveryCourier->courier->name }}</span>
+                                <span class="fw-normal">{{ $trackingData['courierName'] }}</span>
                             </li>
-                            @if($invoiceDeliveryCourier->courier->phone)
+                            @if($trackingData['hasCourierPhone'])
                             <li>
                                 <span class="fw-semibold">@lang('Courier Phone :')</span>
-                                <span class="fw-normal">{{ $invoiceDeliveryCourier->courier->phone }}</span>
+                                <span class="fw-normal">{{ $trackingData['courierPhone'] }}</span>
                             </li>
                             @endif
                             <li>
                                 <span class="fw-semibold">@lang('Delivery Fee :')</span>
-                                <span class="fw-normal">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                <span class="fw-normal">{{ \PriceHelper::showOrderCurrencyPrice($trackingData['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                             </li>
-                            @if($invoiceDeliveryCourier->merchantLocation)
+                            @if($trackingData['hasWarehouseLocation'])
                             <li>
                                 <span class="fw-semibold">@lang('Warehouse Location :')</span>
-                                <span class="fw-normal">{{ $invoiceDeliveryCourier->merchantLocation->location }}</span>
+                                <span class="fw-normal">{{ $trackingData['warehouseLocation'] }}</span>
                             </li>
                             @endif
                             <li>
                                 <span class="fw-semibold">@lang('Delivery Status :')</span>
-                                @if($invoiceDeliveryCourier->isConfirmed())
+                                @if($trackingData['isDeliveryConfirmed'])
                                     <span class="m-badge m-badge--success">@lang('Confirmed')</span>
-                                @elseif($invoiceDeliveryCourier->isDelivered())
+                                @elseif($trackingData['isDeliveryDelivered'])
                                     <span class="m-badge m-badge--success">@lang('Delivered')</span>
-                                @elseif($invoiceDeliveryCourier->isPickedUp())
+                                @elseif($trackingData['isDeliveryPickedUp'])
                                     <span class="m-badge m-badge--primary">@lang('Out for Delivery')</span>
-                                @elseif($invoiceDeliveryCourier->isReadyForPickup())
+                                @elseif($trackingData['isDeliveryReadyForPickup'])
                                     <span class="m-badge m-badge--info">@lang('Ready for Pickup')</span>
-                                @elseif($invoiceDeliveryCourier->isApproved())
+                                @elseif($trackingData['isDeliveryApproved'])
                                     <span class="m-badge m-badge--info">@lang('Courier Approved')</span>
-                                @elseif($invoiceDeliveryCourier->isPendingApproval())
+                                @elseif($trackingData['isDeliveryPending'])
                                     <span class="m-badge m-badge--warning">@lang('Awaiting Approval')</span>
-                                @elseif($invoiceDeliveryCourier->isRejected())
+                                @elseif($trackingData['isDeliveryRejected'])
                                     <span class="m-badge m-badge--danger">@lang('Rejected')</span>
                                 @else
-                                    <span class="m-badge m-badge--secondary">{{ $invoiceDeliveryCourier->status_label }}</span>
+                                    <span class="m-badge m-badge--secondary">{{ $trackingData['deliveryStatusLabel'] }}</span>
                                 @endif
                             </li>
-                            @if($invoiceDeliveryCourier->payment_method === 'cod')
+                            @if($trackingData['isCod'])
                             <li>
                                 <span class="fw-semibold">@lang('COD Amount :')</span>
-                                <span class="fw-normal text-warning">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->purchase_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                <span class="fw-normal text-warning">{{ \PriceHelper::showOrderCurrencyPrice($trackingData['purchaseAmount'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                             </li>
                             @endif
                         @endif
@@ -519,17 +505,17 @@
                     @endif
                 @endif
 
-                {{-- ✅ Local Courier Delivery Fee --}}
-                @if(isset($invoiceDeliveryCourier) && $invoiceDeliveryCourier && $invoiceDeliveryCourier->delivery_fee > 0)
+                {{-- Local Courier Delivery Fee (Pure DTO) --}}
+                @if($trackingData['hasDelivery'] && $trackingData['deliveryFee'] > 0)
                     <li class="calculation-list-item">
                         <span class="amount-type">
                             <i class="fas fa-motorcycle"></i>
                             @lang('Courier Delivery Fee')
                         </span>
-                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($trackingData['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
                     </li>
                     @php
-                        $data += round($invoiceDeliveryCourier->delivery_fee * $purchase->currency_value, 2);
+                        $data += round($trackingData['deliveryFee'] * $purchase->currency_value, 2);
                     @endphp
                 @endif
 

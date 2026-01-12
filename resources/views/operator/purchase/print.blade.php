@@ -66,24 +66,15 @@ html {
                             {{ __('Ship To Address') }}
                         </span><br>
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$purchase->method}}</span>
-                        @php
-                            $adminPrintShipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                                ->orderBy('status_date', 'desc')
-                                ->get()
-                                ->groupBy('merchant_id');
-                        @endphp
-                        @if($adminPrintShipments->count() > 0)
+                        {{-- Shipment Info - Pure DTO --}}
+                        @if($trackingData['hasTrackings'])
                         <br><br>
                         <p><strong>{{ __('Shipment Info') }}</strong></p>
-                        @foreach($adminPrintShipments as $merchantId => $logs)
-                            @php
-                                $latestLog = $logs->first();
-                                $merchant = App\Models\User::find($merchantId);
-                            @endphp
-                            <span><strong>{{ __('Merchant') }}:</strong> {{ $merchant->shop_name ?? $merchant->name ?? 'N/A' }}</span><br>
-                            <span><strong>{{ __('Tracking') }}:</strong> {{ $latestLog->tracking_number }}</span><br>
-                            <span><strong>{{ __('Company') }}:</strong> {{ $latestLog->company_name ?? 'N/A' }}</span><br>
-                            <span><strong>{{ __('Status') }}:</strong> {{ ucfirst($latestLog->status) }}</span><br>
+                        @foreach($trackingData['trackings'] as $tracking)
+                            <span><strong>{{ __('Merchant') }}:</strong> {{ $tracking['merchantName'] }}</span><br>
+                            <span><strong>{{ __('Tracking') }}:</strong> {{ $tracking['trackingNumber'] ?? '-' }}</span><br>
+                            <span><strong>{{ __('Company') }}:</strong> {{ $tracking['companyName'] ?? 'N/A' }}</span><br>
+                            <span><strong>{{ __('Status') }}:</strong> {{ $tracking['statusDisplay'] }}</span><br>
                             @if(!$loop->last)<hr style="margin:5px 0;">@endif
                         @endforeach
                         @endif

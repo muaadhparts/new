@@ -368,9 +368,7 @@
 
                                                 @php
                                                     // Check for tracking info
-                                                    $latestShipment = \App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                                                        ->orderBy('status_date', 'desc')
-                                                        ->first();
+                                                    $latestShipment = \App\Models\ShipmentTracking::getLatestForPurchase($purchase->id);
                                                 @endphp
 
                                                 @if($latestShipment && $latestShipment->tracking_number)

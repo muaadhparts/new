@@ -88,14 +88,10 @@
                                     ->where('merchant_id', $merchantId)
                                     ->first();
 
-                                // Check for Tryoto shipment
-                                $shipment = App\Models\ShipmentStatusLog::where('purchase_id', $data->id)
-                                    ->where('merchant_id', $merchantId)
-                                    ->orderBy('status_date', 'desc')
-                                    ->orderBy('created_at', 'desc')
-                                    ->first();
+                                // Check for shipment tracking
+                                $shipment = App\Models\ShipmentTracking::getLatestForPurchase($data->id, $merchantId);
 
-                                // ✅ Get customer's shipping choice
+                                // Get customer's shipping choice
                                 $customerChoice = $data->getCustomerShippingChoice($merchantId);
 
                                 // Calculate price

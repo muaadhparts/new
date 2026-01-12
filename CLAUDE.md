@@ -99,7 +99,7 @@ php artisan test --filter=TestName  # Run specific test
 - `MerchantPurchase` - per-merchant breakdown of purchases
 - `FavoriteSeller` - user favorites/wishlist
 - `CatalogReview` - product reviews
-- `ShipmentStatusLog` - Tryoto shipping integration tracking
+- `ShipmentTracking` - Unified shipment tracking (API + Manual)
 - `Callout` - diagram callout data for parts lookup
 - `VinDecodedCache` - cached VIN decode results
 

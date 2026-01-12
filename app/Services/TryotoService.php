@@ -767,7 +767,7 @@ class TryotoService
             // If no tracking number yet, use otoId as reference
             $trackingRef = $trackingNumber ?? ('OTO-' . $otoId);
 
-            // Save to shipment_status_logs
+            // Save to shipment_trackings
             $this->createInitialLog($purchase, $merchantId, $trackingRef, (string)$otoId, $company, $originCity, $data);
 
             // Send notification to merchant

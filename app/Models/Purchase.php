@@ -4,6 +4,7 @@ namespace App\Models;
 use DB;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Purchase Model
@@ -41,6 +42,48 @@ use Illuminate\Database\Eloquent\Model;
 class Purchase extends Model
 {
     protected $table = 'purchases';
+
+    /**
+     * STATUS PROTECTION FLAG
+     *
+     * Set to true to block direct status modifications.
+     * Status should ONLY be changed via ShipmentTracking → OrderStatusResolverService
+     *
+     * @see OrderStatusResolverService::resolveAndUpdate() - Uses updateQuietly() to bypass this
+     */
+    public static bool $strictStatusProtection = false;
+
+    /**
+     * Boot method - Register model events
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Protect status field from direct modification
+        static::saving(function (Purchase $purchase) {
+            if ($purchase->isDirty('status')) {
+                $oldStatus = $purchase->getOriginal('status');
+                $newStatus = $purchase->status;
+
+                // Log warning for direct status modification
+                Log::warning('Purchase: Direct status modification detected', [
+                    'purchase_id' => $purchase->id,
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus,
+                    'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5),
+                ]);
+
+                // Block if strict protection is enabled
+                if (static::$strictStatusProtection) {
+                    throw new \RuntimeException(
+                        'Direct status modification is not allowed. ' .
+                        'Use ShipmentTrackingService to create tracking records instead.'
+                    );
+                }
+            }
+        });
+    }
 
 	protected $fillable = ['user_id', 'cart', 'method', 'shipping', 'totalQty', 'pay_amount', 'txnid', 'charge_id', 'purchase_number', 'payment_status', 'customer_name', 'customer_email', 'customer_phone', 'customer_address', 'customer_city', 'customer_zip', 'customer_latitude', 'customer_longitude', 'customer_state', 'customer_country', 'purchase_note', 'discount_code', 'discount_amount', 'status', 'affilate_user', 'affilate_charge', 'currency_sign', 'currency_name', 'currency_value', 'shipping_cost', 'packing_cost', 'tax', 'tax_location', 'pay_id', 'merchant_shipping_id', 'merchant_packing_id', 'wallet_price', 'shipping_title', 'packing_title', 'affilate_users', 'commission', 'merchant_ids', 'customer_shipping_choice', 'shipping_status', 'couriers'];
 
@@ -235,20 +278,11 @@ class Purchase extends Model
     }
 
     /**
-     * علاقة مع ShipmentTracking (النظام الجديد)
+     * علاقة مع ShipmentTracking
      */
     public function shipmentTrackings()
     {
         return $this->hasMany('App\Models\ShipmentTracking', 'purchase_id')->orderBy('occurred_at', 'desc');
-    }
-
-    /**
-     * علاقة مع ShipmentStatusLog (للتوافق - سيتم إزالته)
-     * @deprecated Use shipmentTrackings() instead
-     */
-    public function shipmentLogs()
-    {
-        return $this->shipmentTrackings();
     }
 
     /**
@@ -272,7 +306,7 @@ class Purchase extends Model
      */
     public function hasShipments()
     {
-        return $this->shipmentLogs()->count() > 0;
+        return $this->shipmentTrackings()->count() > 0;
     }
 
     /**
@@ -294,18 +328,19 @@ class Purchase extends Model
     }
 
     /**
-     * Check if all shipments are delivered (Optimized - Single Query)
+     * Check if all shipments are delivered
      */
     public function allShipmentsDelivered()
     {
-        // استخدام subquery للحصول على آخر حالة لكل tracking number في استعلام واحد
-        $latestStatuses = DB::table('shipment_status_logs as s1')
-            ->select('s1.tracking_number', 's1.status')
-            ->leftJoin('shipment_status_logs as s2', function($join) {
-                $join->on('s1.tracking_number', '=', 's2.tracking_number')
-                     ->whereRaw('s1.status_date < s2.status_date OR (s1.status_date = s2.status_date AND s1.id < s2.id)');
+        // Get latest status per merchant from shipment_trackings
+        $latestStatuses = DB::table('shipment_trackings as s1')
+            ->select('s1.merchant_id', 's1.status')
+            ->whereIn('s1.id', function($sub) {
+                $sub->selectRaw('MAX(id)')
+                    ->from('shipment_trackings')
+                    ->where('purchase_id', $this->id)
+                    ->groupBy('merchant_id');
             })
-            ->whereNull('s2.id')
             ->where('s1.purchase_id', $this->id)
             ->get();
 
@@ -313,7 +348,7 @@ class Purchase extends Model
             return false;
         }
 
-        // التحقق من أن جميع الشحنات delivered
+        // Check all shipments are delivered
         foreach ($latestStatuses as $status) {
             if ($status->status !== 'delivered') {
                 return false;

@@ -7,6 +7,7 @@ use App\{
     Models\CatalogItem,
     Models\DeliveryCourier
 };
+use App\Services\TrackingViewService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends UserBaseController
@@ -22,7 +23,16 @@ class PurchaseController extends UserBaseController
     public function purchasetrack()
     {
         $user = $this->user;
-        return view('user.purchase-track',compact('user'));
+
+        // Get user's purchases (no eager loading - service handles all)
+        $purchases = Purchase::where('user_id', $user->id)
+            ->latest('id')
+            ->get();
+
+        // Prepare tracking DTOs via service (no models in Blade)
+        $purchasesData = app(TrackingViewService::class)->forPurchasesList($purchases);
+
+        return view('user.purchase-track', compact('user', 'purchasesData'));
     }
 
     public function trackload($id)
@@ -49,7 +59,11 @@ class PurchaseController extends UserBaseController
         $user = $this->user;
         $purchase = $user->purchases()->whereId($id)->firstOrFail();
         $cart = $purchase->cart; // Model cast handles decoding
-        return view('user.purchase.details',compact('user','purchase','cart'));
+
+        // Prepare tracking data for view (no logic in Blade)
+        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+
+        return view('user.purchase.details', compact('user', 'purchase', 'cart', 'trackingData'));
     }
 
     // Digital downloads removed - Physical-only system
@@ -64,7 +78,11 @@ class PurchaseController extends UserBaseController
         // Security: Only allow printing own purchases
         $purchase = $user->purchases()->whereId($id)->firstOrFail();
         $cart = $purchase->cart; // Model cast handles decoding
-        return view('user.purchase.print',compact('user','purchase','cart'));
+
+        // Prepare tracking data for view (no logic in Blade)
+        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+
+        return view('user.purchase.print', compact('user', 'purchase', 'cart', 'trackingData'));
     }
 
     public function trans()

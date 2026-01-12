@@ -77,7 +77,7 @@ sections
 seotools
 services
 settings
-shipment_status_logs
+shipment_trackings
 shippings
 sku_alternative_item
 sku_alternatives

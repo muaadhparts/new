@@ -70,8 +70,8 @@ class ShipmentTrackingService
             'source' => $data['source'] ?? 'system',
         ]);
 
-        // تحديث حالة الطلب إذا لزم الأمر
-        $this->syncPurchaseStatus($purchaseId, $status);
+        // Note: Purchase status is now updated automatically via ShipmentTrackingObserver
+        // calling OrderStatusResolverService - NO direct status modification here
 
         return $tracking;
     }
@@ -331,47 +331,6 @@ class ShipmentTrackingService
             'message' => $reason ?: 'Shipment cancelled',
             'message_ar' => $reason ?: 'تم إلغاء الشحنة',
         ]);
-    }
-
-    // =====================
-    // مزامنة حالة الطلب
-    // =====================
-
-    /**
-     * تحديث حالة الطلب بناءً على حالة الشحنة
-     */
-    private function syncPurchaseStatus(int $purchaseId, string $trackingStatus): void
-    {
-        $purchase = Purchase::find($purchaseId);
-
-        if (!$purchase) {
-            return;
-        }
-
-        // تحديث حالة الطلب بناءً على حالة الشحنة
-        $newPurchaseStatus = match ($trackingStatus) {
-            ShipmentTracking::STATUS_DELIVERED => 'completed',
-            ShipmentTracking::STATUS_CANCELLED => 'cancelled',
-            ShipmentTracking::STATUS_RETURNED => 'returned',
-            ShipmentTracking::STATUS_PICKED_UP,
-            ShipmentTracking::STATUS_IN_TRANSIT,
-            ShipmentTracking::STATUS_OUT_FOR_DELIVERY => 'processing',
-            default => null,
-        };
-
-        if ($newPurchaseStatus && $purchase->status !== $newPurchaseStatus) {
-            // لا نغير من completed أو cancelled
-            if (!in_array($purchase->status, ['completed', 'cancelled', 'returned'])) {
-                $purchase->status = $newPurchaseStatus;
-                $purchase->save();
-
-                Log::info('ShipmentTracking: Purchase status synced', [
-                    'purchase_id' => $purchaseId,
-                    'tracking_status' => $trackingStatus,
-                    'purchase_status' => $newPurchaseStatus,
-                ]);
-            }
-        }
     }
 
     // =====================

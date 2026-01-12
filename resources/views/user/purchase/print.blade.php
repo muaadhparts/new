@@ -104,39 +104,28 @@ html {
                                           {{$purchase->customer_city}}-{{$purchase->customer_zip}}
                                        </address>
                                        <h5>{{ __('Delivery Method') }}</h5>
-                                       @php
-                                          $printDeliveryCourier = \App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
-                                              ->with(['courier'])
-                                              ->first();
-                                       @endphp
-
-                                       @if ($printDeliveryCourier && $printDeliveryCourier->courier)
+                                       {{-- Pure DTO - No Model Calls --}}
+                                       @if ($trackingData['hasLocalCourier'] && $trackingData['firstDelivery'])
                                           <p><strong>{{ __('Local Courier Delivery') }}</strong></p>
                                           <p>
-                                             {{ __('Courier:') }} {{ $printDeliveryCourier->courier->name }}<br>
-                                             @if($printDeliveryCourier->courier->phone)
-                                             {{ __('Phone:') }} {{ $printDeliveryCourier->courier->phone }}<br>
+                                             {{ __('Courier:') }} {{ $trackingData['firstDelivery']['courierName'] }}<br>
+                                             @if($trackingData['firstDelivery']['hasCourierPhone'])
+                                             {{ __('Phone:') }} {{ $trackingData['firstDelivery']['courierPhone'] }}<br>
                                              @endif
-                                             {{ __('Delivery Fee:') }} {{ \PriceHelper::showOrderCurrencyPrice($printDeliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}<br>
-                                             {{ __('Status:') }} {{ ucfirst($printDeliveryCourier->status) }}
+                                             {{ __('Delivery Fee:') }} {{ \PriceHelper::showOrderCurrencyPrice($trackingData['firstDelivery']['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}<br>
+                                             {{ __('Status:') }} {{ $trackingData['firstDelivery']['statusLabel'] }}
                                           </p>
                                        @else
                                           <p>{{ __('Ship To Address') }}</p>
                                        @endif
-                                       @php
-                                          $printShipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                                              ->orderBy('status_date', 'desc')
-                                              ->get()
-                                              ->groupBy('tracking_number');
-                                       @endphp
-                                       @if($printShipments->count() > 0)
+                                       {{-- Shipment Tracking - Pure DTO --}}
+                                       @if($trackingData['hasTrackings'])
                                        <h5>{{ __('Shipment Info') }}</h5>
-                                       @foreach($printShipments as $trackingNum => $logs)
-                                          @php $latestLog = $logs->first(); @endphp
+                                       @foreach($trackingData['trackings'] as $tracking)
                                           <p>
-                                             <strong>{{ __('Tracking:') }}</strong> {{ $trackingNum }}<br>
-                                             <strong>{{ __('Company:') }}</strong> {{ $latestLog->company_name ?? 'N/A' }}<br>
-                                             <strong>{{ __('Status:') }}</strong> {{ ucfirst($latestLog->status) }}
+                                             <strong>{{ __('Tracking:') }}</strong> {{ $tracking['trackingNumber'] ?? '-' }}<br>
+                                             <strong>{{ __('Company:') }}</strong> {{ $tracking['companyName'] ?? 'N/A' }}<br>
+                                             <strong>{{ __('Status:') }}</strong> {{ $tracking['statusDisplay'] }}
                                           </p>
                                        @endforeach
                                        @endif

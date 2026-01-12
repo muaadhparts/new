@@ -2,19 +2,20 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Classes\MuaadhMailer;use App\Models\ReferralCommission;
-use App\Models\Cart;use App\Models\DeliveryCourier;
+use App\Classes\MuaadhMailer;
+use App\Models\ReferralCommission;
+use App\Models\Cart;
+use App\Models\DeliveryCourier;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
 use App\Models\Package;
-
 use App\Models\CatalogItem;
 use App\Models\Courier;
 use App\Models\CourierServiceArea;
 use App\Models\Shipping;
-
 use App\Models\User;
+use App\Services\TrackingViewService;
 use Carbon\Carbon;
 use Datatables;
 use Illuminate\Http\Request;
@@ -98,14 +99,22 @@ class PurchaseController extends OperatorBaseController
     {
         $purchase = Purchase::findOrFail($id);
         $cart = $purchase->cart; // Model cast handles decoding
-        return view('operator.purchase.details', compact('purchase', 'cart'));
+
+        // Prepare tracking data for view (no logic in Blade)
+        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+
+        return view('operator.purchase.details', compact('purchase', 'cart', 'trackingData'));
     }
 
     public function invoice($id)
     {
         $purchase = Purchase::findOrFail($id);
         $cart = $purchase->cart; // Model cast handles decoding
-        return view('operator.purchase.invoice', compact('purchase', 'cart'));
+
+        // Prepare tracking data for view (no logic in Blade)
+        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+
+        return view('operator.purchase.invoice', compact('purchase', 'cart', 'trackingData'));
     }
 
     public function emailsub(Request $request)
@@ -136,7 +145,11 @@ class PurchaseController extends OperatorBaseController
     {
         $purchase = Purchase::findOrFail($id);
         $cart = $purchase->cart; // Model cast handles decoding
-        return view('operator.purchase.print', compact('purchase', 'cart'));
+
+        // Prepare tracking data for view (no logic in Blade)
+        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+
+        return view('operator.purchase.print', compact('purchase', 'cart', 'trackingData'));
     }
 
     public function edit($id)

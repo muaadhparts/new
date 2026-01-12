@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Models\Purchase;
 use App\Models\MerchantPurchase;
+use App\Models\ShipmentTracking;
+use App\Services\ShipmentTrackingService;
+use App\Services\TrackingViewService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends MerchantBaseController
@@ -40,8 +43,12 @@ class PurchaseController extends MerchantBaseController
             abort(403, 'Unauthorized access to purchase');
         }
 
-        $cart = $purchase->cart; // Model cast handles decoding
-        return view('merchant.purchase.details', compact('user', 'purchase', 'cart'));
+        $cart = $purchase->cart;
+
+        // Prepare tracking data for view (no logic in Blade)
+        $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
+
+        return view('merchant.purchase.details', compact('user', 'purchase', 'cart', 'trackingData'));
     }
 
     public function invoice($slug)
@@ -54,8 +61,10 @@ class PurchaseController extends MerchantBaseController
             abort(403, 'Unauthorized access to purchase');
         }
 
-        $cart = $purchase->cart; // Model cast handles decoding
-        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart'));
+        $cart = $purchase->cart;
+        $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
+
+        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData'));
     }
 
     public function printpage($slug)
@@ -68,12 +77,17 @@ class PurchaseController extends MerchantBaseController
             abort(403, 'Unauthorized access to purchase');
         }
 
-        $cart = $purchase->cart; // Model cast handles decoding
-        return view('merchant.purchase.print', compact('user', 'purchase', 'cart'));
+        $cart = $purchase->cart;
+        $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
+
+        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData'));
     }
 
     /**
      * Update merchant purchase status
+     *
+     * Uses ShipmentTrackingService as the single source of truth.
+     * Status changes create tracking records, and the Observer updates purchase status automatically.
      *
      * @param string $slug Purchase number
      * @param string $status New status (pending, processing, on delivery, completed, declined)
@@ -95,23 +109,69 @@ class PurchaseController extends MerchantBaseController
             return redirect()->back()->with('success', __('This Purchase is Already Completed'));
         }
 
-        // Update status
-        $merchantPurchase->status = $status;
-        $merchantPurchase->save();
+        // Map purchase status to tracking status
+        $trackingStatus = $this->mapPurchaseStatusToTrackingStatus($status);
 
-        // If all merchant purchases for this purchase are completed, update main purchase
-        $purchase = $merchantPurchase->purchase;
-        if ($purchase && $status === 'completed') {
-            $allCompleted = $purchase->merchantPurchases()
-                ->where('status', '!=', 'completed')
-                ->count() === 0;
+        // Use ShipmentTrackingService to create tracking record
+        // The Observer will automatically update Purchase and MerchantPurchase status
+        $trackingService = app(ShipmentTrackingService::class);
 
-            if ($allCompleted) {
-                $purchase->status = 'completed';
-                $purchase->save();
+        // Check if shipment tracking exists for this merchant
+        $existingTracking = ShipmentTracking::getLatestForPurchase(
+            $merchantPurchase->purchase_id,
+            $user->id
+        );
+
+        if ($existingTracking) {
+            // Update existing shipment tracking
+            $trackingService->updateManually(
+                $merchantPurchase->purchase_id,
+                $user->id,
+                $trackingStatus,
+                null,
+                __('Status updated by merchant')
+            );
+        } else {
+            // Create new manual shipment tracking
+            $trackingService->createManualShipment(
+                $merchantPurchase->purchase_id,
+                $user->id,
+                0, // shipping_id - 0 for manual
+                'manual',
+                null,
+                __('Manual Delivery'),
+                0,
+                0
+            );
+
+            // If status is not just 'created', update to the requested status
+            if ($trackingStatus !== ShipmentTracking::STATUS_CREATED) {
+                $trackingService->updateManually(
+                    $merchantPurchase->purchase_id,
+                    $user->id,
+                    $trackingStatus,
+                    null,
+                    __('Status updated by merchant')
+                );
             }
         }
 
         return redirect()->route('merchant-purchase-index')->with('success', __('Purchase Status Updated Successfully'));
     }
+
+    /**
+     * Map purchase status to shipment tracking status
+     */
+    private function mapPurchaseStatusToTrackingStatus(string $purchaseStatus): string
+    {
+        return match ($purchaseStatus) {
+            'pending' => ShipmentTracking::STATUS_CREATED,
+            'processing' => ShipmentTracking::STATUS_PICKED_UP,
+            'on delivery' => ShipmentTracking::STATUS_IN_TRANSIT,
+            'completed' => ShipmentTracking::STATUS_DELIVERED,
+            'declined', 'cancelled' => ShipmentTracking::STATUS_CANCELLED,
+            default => ShipmentTracking::STATUS_CREATED,
+        };
+    }
+
 }

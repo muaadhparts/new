@@ -194,50 +194,43 @@
                                 </li>
                             </ul>
                         </div>
-                        <!-- Delivery Method -->
+                        <!-- Delivery Method (Pure DTO - No Model Calls) -->
                             <div class="col-lg-6 col-md-6 col-sm-12">
                                 <h5>@lang('Delivery Method')</h5>
                                 <div class="payment-information">
-                                    @php
-                                        // Check if this purchase has local courier delivery
-                                        $deliveryCourier = \App\Models\DeliveryCourier::where('purchase_id', $purchase->id)
-                                            ->with(['courier', 'merchantLocation'])
-                                            ->first();
-                                    @endphp
-
-                                    @if ($deliveryCourier && $deliveryCourier->courier)
-                                        {{-- Local Courier Delivery --}}
+                                    @if ($trackingData['hasLocalCourier'] && $trackingData['firstDelivery'])
+                                        {{-- Local Courier Delivery - Using pure DTO --}}
                                         <div class="courier-delivery-info">
                                             <div class="d-flex align-items-center gap-2 mb-3">
                                                 <i class="fas fa-motorcycle text-success fa-lg"></i>
                                                 <strong class="text-success">@lang('Local Courier Delivery')</strong>
                                             </div>
 
-                                            {{-- ✅ Delivery Workflow Progress Indicator --}}
-                                            @include('includes.delivery-workflow', ['delivery' => $deliveryCourier])
+                                            {{-- Delivery Workflow Progress Indicator --}}
+                                            @include('includes.delivery-workflow-dto', ['delivery' => $trackingData['firstDelivery']])
 
                                             <ul class="list-unstyled">
                                                 <li class="mb-2">
                                                     <i class="fas fa-user me-2 text-muted"></i>
                                                     <strong>@lang('Courier'):</strong>
-                                                    {{ $deliveryCourier->courier->name }}
+                                                    {{ $trackingData['firstDelivery']['courierName'] }}
                                                 </li>
 
-                                                @if($deliveryCourier->courier->phone)
+                                                @if($trackingData['firstDelivery']['hasCourierPhone'])
                                                 <li class="mb-2">
                                                     <i class="fas fa-phone me-2 text-muted"></i>
                                                     <strong>@lang('Phone'):</strong>
-                                                    <a href="tel:{{ $deliveryCourier->courier->phone }}" class="text-primary">
-                                                        {{ $deliveryCourier->courier->phone }}
+                                                    <a href="tel:{{ $trackingData['firstDelivery']['courierPhone'] }}" class="text-primary">
+                                                        {{ $trackingData['firstDelivery']['courierPhone'] }}
                                                     </a>
                                                 </li>
                                                 @endif
 
-                                                @if($deliveryCourier->merchantLocation && $deliveryCourier->merchantLocation->location)
+                                                @if($trackingData['firstDelivery']['hasWarehouseLocation'])
                                                 <li class="mb-2">
                                                     <i class="fas fa-store me-2 text-muted"></i>
                                                     <strong>@lang('Warehouse Location'):</strong>
-                                                    {{ $deliveryCourier->merchantLocation->location }}
+                                                    {{ $trackingData['firstDelivery']['warehouseLocation'] }}
                                                 </li>
                                                 @endif
 
@@ -245,56 +238,56 @@
                                                     <i class="fas fa-money-bill-wave me-2 text-muted"></i>
                                                     <strong>@lang('Delivery Fee'):</strong>
                                                     <span class="text-success fw-bold">
-                                                        {{ \PriceHelper::showOrderCurrencyPrice($deliveryCourier->delivery_fee * $purchase->currency_value, $purchase->currency_sign) }}
+                                                        {{ \PriceHelper::showOrderCurrencyPrice($trackingData['firstDelivery']['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}
                                                     </span>
                                                 </li>
 
-                                                {{-- ✅ Status - NEW WORKFLOW --}}
+                                                {{-- Status - Using pre-computed flags --}}
                                                 <li>
                                                     <i class="fas fa-info-circle me-2 text-muted"></i>
                                                     <strong>@lang('Status'):</strong>
-                                                    @if($deliveryCourier->isPendingApproval())
+                                                    @if($trackingData['firstDelivery']['isPending'])
                                                         <span class="badge bg-warning text-dark">
                                                             <i class="fas fa-clock"></i> @lang('Waiting Courier')
                                                         </span>
-                                                    @elseif($deliveryCourier->isApproved())
+                                                    @elseif($trackingData['firstDelivery']['isApproved'])
                                                         <span class="badge bg-info">
                                                             <i class="fas fa-box-open"></i> @lang('Preparing')
                                                         </span>
-                                                    @elseif($deliveryCourier->isReadyForPickup())
+                                                    @elseif($trackingData['firstDelivery']['isReadyForPickup'])
                                                         <span class="badge bg-success">
                                                             <i class="fas fa-box"></i> @lang('Ready for Courier')
                                                         </span>
-                                                    @elseif($deliveryCourier->isPickedUp())
+                                                    @elseif($trackingData['firstDelivery']['isPickedUp'])
                                                         <span class="badge bg-primary">
                                                             <i class="fas fa-truck"></i> @lang('On The Way')
                                                         </span>
-                                                    @elseif($deliveryCourier->isDelivered())
+                                                    @elseif($trackingData['firstDelivery']['isDelivered'])
                                                         <span class="badge bg-success">
                                                             <i class="fas fa-check-double"></i> @lang('Delivered')
                                                         </span>
-                                                        @if($deliveryCourier->delivered_at)
-                                                            <br><small class="text-muted">{{ $deliveryCourier->delivered_at->format('Y-m-d H:i') }}</small>
+                                                        @if($trackingData['firstDelivery']['deliveredAt'])
+                                                            <br><small class="text-muted">{{ $trackingData['firstDelivery']['deliveredAt'] }}</small>
                                                         @endif
-                                                    @elseif($deliveryCourier->isConfirmed())
+                                                    @elseif($trackingData['firstDelivery']['isConfirmed'])
                                                         <span class="badge bg-success">
                                                             <i class="fas fa-check-circle"></i> @lang('Confirmed')
                                                         </span>
-                                                        @if($deliveryCourier->confirmed_at)
-                                                            <br><small class="text-muted">{{ $deliveryCourier->confirmed_at->format('Y-m-d H:i') }}</small>
+                                                        @if($trackingData['firstDelivery']['confirmedAt'])
+                                                            <br><small class="text-muted">{{ $trackingData['firstDelivery']['confirmedAt'] }}</small>
                                                         @endif
-                                                    @elseif($deliveryCourier->isRejected())
+                                                    @elseif($trackingData['firstDelivery']['isRejected'])
                                                         <span class="badge bg-danger">
                                                             <i class="fas fa-times"></i> @lang('Reassigning Courier')
                                                         </span>
                                                     @else
-                                                        <span class="badge bg-secondary">{{ $deliveryCourier->status_label }}</span>
+                                                        <span class="badge bg-secondary">{{ $trackingData['firstDelivery']['statusLabel'] }}</span>
                                                     @endif
                                                 </li>
                                             </ul>
 
-                                            {{-- ✅ Confirm Delivery Button (Optional) --}}
-                                            @if($deliveryCourier->isDelivered() && !$deliveryCourier->customer_confirmed)
+                                            {{-- Confirm Delivery Button - Using pre-computed flag --}}
+                                            @if($trackingData['firstDelivery']['showConfirmButton'])
                                                 <div class="mt-3 p-3 border rounded bg-light">
                                                     <p class="mb-2">
                                                         <i class="fas fa-question-circle text-info"></i>
@@ -307,7 +300,7 @@
                                                         </button>
                                                     </form>
                                                 </div>
-                                            @elseif($deliveryCourier->isConfirmed() || $deliveryCourier->customer_confirmed)
+                                            @elseif($trackingData['firstDelivery']['showConfirmedBadge'])
                                                 <div class="mt-3">
                                                     <span class="badge bg-success py-2 px-3">
                                                         <i class="fas fa-check-circle"></i> @lang('You confirmed receiving this order')
@@ -349,48 +342,53 @@
                                 </div>
                             </div>
 
-                        {{-- ✅ Shipment Tracking Section --}}
-                        @php
-                            $shipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                                ->orderBy('status_date', 'desc')
-                                ->get()
-                                ->groupBy('merchant_id');
-                        @endphp
-
-                        @if($shipments->count() > 0)
+                        {{-- Shipment Tracking Section (Pure DTO - No Model Calls) --}}
+                        @if($trackingData['hasTrackings'])
                             <div class="address-item w-100">
                                 <h5><i class="fas fa-shipping-fast"></i> @lang('Shipment Tracking')</h5>
-                                @foreach($shipments as $merchantId => $merchantShipments)
-                                    @php
-                                        $latestShipment = $merchantShipments->first();
-                                        $merchant = App\Models\User::find($merchantId);
-                                    @endphp
+                                @foreach($trackingData['trackings'] as $tracking)
                                     <div class="shipment-item mb-3 p-3 border rounded">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <strong>{{ $merchant ? getLocalizedShopName($merchant) : 'Merchant' }}</strong>
-                                            <span class="badge
-                                                @if($latestShipment->status == 'delivered') bg-success
-                                                @elseif($latestShipment->status == 'in_transit') bg-primary
-                                                @elseif($latestShipment->status == 'out_for_delivery') bg-info
-                                                @elseif(in_array($latestShipment->status, ['failed', 'returned', 'cancelled'])) bg-danger
-                                                @else bg-secondary
-                                                @endif">
-                                                {{ $latestShipment->status_ar ?? ucfirst(str_replace('_', ' ', $latestShipment->status)) }}
+                                            <strong>{{ $tracking['merchantName'] }}</strong>
+                                            <span class="badge bg-{{ $tracking['statusColor'] }}">
+                                                <i class="{{ $tracking['statusIcon'] }}"></i>
+                                                {{ $tracking['statusDisplay'] }}
                                             </span>
                                         </div>
+
+                                        {{-- Progress Bar --}}
+                                        <div class="progress mb-3" style="height: 6px;">
+                                            <div class="progress-bar bg-{{ $tracking['statusColor'] }}"
+                                                 style="width: {{ $tracking['progressPercent'] }}%"></div>
+                                        </div>
+
                                         <ul class="list-unstyled mb-0">
-                                            <li><i class="fas fa-truck me-2"></i> <strong>@lang('Company'):</strong> {{ $latestShipment->company_name }}</li>
-                                            <li><i class="fas fa-barcode me-2"></i> <strong>@lang('Tracking'):</strong> <span class="text-primary">{{ $latestShipment->tracking_number }}</span></li>
-                                            @if($latestShipment->location)
-                                                <li><i class="fas fa-map-marker-alt me-2"></i> <strong>@lang('Location'):</strong> {{ $latestShipment->location }}</li>
+                                            @if($tracking['companyName'])
+                                            <li><i class="fas fa-truck me-2"></i> <strong>@lang('Company'):</strong> {{ $tracking['companyName'] }}</li>
                                             @endif
-                                            @if($latestShipment->message_ar || $latestShipment->message)
-                                                <li><i class="fas fa-info-circle me-2"></i> {{ $latestShipment->message_ar ?? $latestShipment->message }}</li>
+                                            @if($tracking['trackingNumber'])
+                                            <li><i class="fas fa-barcode me-2"></i> <strong>@lang('Tracking'):</strong> <span class="text-primary">{{ $tracking['trackingNumber'] }}</span></li>
                                             @endif
-                                            @if($latestShipment->status_date)
-                                                <li><i class="fas fa-clock me-2"></i> <strong>@lang('Last Update'):</strong> {{ $latestShipment->status_date->format('Y-m-d H:i') }}</li>
+                                            @if($tracking['location'])
+                                                <li><i class="fas fa-map-marker-alt me-2"></i> <strong>@lang('Location'):</strong> {{ $tracking['location'] }}</li>
+                                            @endif
+                                            @if($tracking['messageAr'] || $tracking['message'])
+                                                <li><i class="fas fa-info-circle me-2"></i> {{ $tracking['messageAr'] ?? $tracking['message'] }}</li>
+                                            @endif
+                                            @if($tracking['occurredAt'])
+                                                <li><i class="fas fa-clock me-2"></i> <strong>@lang('Last Update'):</strong> {{ $tracking['occurredAt'] }}</li>
                                             @endif
                                         </ul>
+
+                                        {{-- Track Details Button --}}
+                                        @if($tracking['trackingNumber'])
+                                        <div class="mt-2">
+                                            <a href="{{ route('front.tracking', ['tracking' => $tracking['trackingNumber']]) }}"
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-map-marker-alt"></i> @lang('Track Details')
+                                            </a>
+                                        </div>
+                                        @endif
                                     </div>
                                 @endforeach
                             </div>

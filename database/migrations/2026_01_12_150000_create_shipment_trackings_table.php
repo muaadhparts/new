@@ -5,9 +5,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * نظام التتبع الموحد الجديد
+ * نظام التتبع الموحد
  *
- * يستبدل: shipment_status_logs + أي JSON تتبع في purchases
+ * الجدول الوحيد للتتبع (API + Manual)
  * لا يؤثر على: delivery_couriers (تتبع المندوب المحلي)
  */
 return new class extends Migration

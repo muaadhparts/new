@@ -339,19 +339,8 @@
             </div>
         </div>
 
-        {{-- Shipment Status Section --}}
-        @php
-            $shipments = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                ->select('merchant_id', 'company_name', 'tracking_number', 'status', 'status_ar', 'message', 'message_ar', 'location', 'status_date')
-                ->orderBy('merchant_id')
-                ->orderBy('status_date', 'desc')
-                ->get()
-                ->groupBy('merchant_id');
-
-            $deliveries = App\Models\DeliveryCourier::where('purchase_id', $purchase->id)->get();
-        @endphp
-
-        @if($shipments->count() > 0 || $deliveries->count() > 0)
+        {{-- Shipment Status Section (using $trackingData from Controller) --}}
+        @if($trackingData['hasData'])
         <div class="row mt-4">
             <div class="col-lg-12">
                 <div class="special-box">
@@ -365,66 +354,73 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Merchant') }}</th>
-                                    <th>{{ __('Shipping Company') }}</th>
+                                    <th>{{ __('Type') }}</th>
                                     <th>{{ __('Tracking Number') }}</th>
                                     <th>{{ __('Status') }}</th>
+                                    <th>{{ __('Progress') }}</th>
                                     <th>{{ __('Location') }}</th>
                                     <th>{{ __('Last Update') }}</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($shipments as $merchantId => $merchantShipments)
-                                    @php
-                                        $latestShipment = $merchantShipments->first();
-                                        $merchant = App\Models\User::find($merchantId);
-                                    @endphp
+                                {{-- Shipment Trackings - Pure DTO --}}
+                                @foreach($trackingData['trackings'] as $tracking)
                                     <tr>
-                                        <td>{{ $merchant->shop_name ?? $merchant->name ?? 'Merchant #' . $merchantId }}</td>
+                                        <td>{{ $tracking['merchantName'] }}</td>
                                         <td>
-                                            <span class="badge badge-info">{{ $latestShipment->company_name }}</span>
+                                            @if($tracking['isApiType'])
+                                                <span class="badge badge-info">{{ $tracking['companyName'] ?? 'API' }}</span>
+                                            @else
+                                                <span class="badge badge-secondary">{{ __('Manual') }}</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            <strong class="text-primary">{{ $latestShipment->tracking_number }}</strong>
+                                            @if($tracking['trackingNumber'])
+                                                <strong class="text-primary">{{ $tracking['trackingNumber'] }}</strong>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
                                         </td>
                                         <td>
-                                            <span class="badge
-                                                @if($latestShipment->status == 'delivered') badge-success
-                                                @elseif($latestShipment->status == 'in_transit') badge-primary
-                                                @elseif($latestShipment->status == 'out_for_delivery') badge-info
-                                                @elseif(in_array($latestShipment->status, ['failed', 'returned', 'cancelled'])) badge-danger
-                                                @else badge-secondary
-                                                @endif">
-                                                {{ $latestShipment->status_ar ?? $latestShipment->status }}
+                                            <span class="badge badge-{{ $tracking['statusColor'] }}">
+                                                <i class="{{ $tracking['statusIcon'] }}"></i>
+                                                {{ $tracking['statusDisplay'] }}
                                             </span>
                                         </td>
-                                        <td>{{ $latestShipment->location ?? '-' }}</td>
-                                        <td>{{ $latestShipment->status_date ? $latestShipment->status_date->format('Y-m-d H:i') : '-' }}</td>
+                                        <td>
+                                            <div class="progress" style="height: 6px; width: 80px;">
+                                                <div class="progress-bar bg-{{ $tracking['statusColor'] }}"
+                                                     style="width: {{ $tracking['progressPercent'] }}%"></div>
+                                            </div>
+                                            <small>{{ $tracking['progressPercent'] }}%</small>
+                                        </td>
+                                        <td>{{ $tracking['location'] ?? '-' }}</td>
+                                        <td>{{ $tracking['occurredAt'] ?? '-' }}</td>
                                     </tr>
                                 @endforeach
 
-                                @foreach($deliveries as $delivery)
-                                    @php
-                                        $merchant = App\Models\User::find($delivery->merchant_id);
-                                    @endphp
+                                {{-- Local Courier Deliveries - Pure DTO --}}
+                                @foreach($trackingData['deliveries'] as $delivery)
                                     <tr>
-                                        <td>{{ $merchant->shop_name ?? $merchant->name ?? 'Merchant #' . $delivery->merchant_id }}</td>
+                                        <td>{{ $delivery['merchantName'] }}</td>
                                         <td>
                                             <span class="badge badge-secondary">{{ __('Local Courier') }}</span>
                                         </td>
-                                        <td>{{ $delivery->courier->name ?? 'N/A' }}</td>
+                                        <td>{{ $delivery['courierName'] }}</td>
                                         <td>
                                             <span class="badge
-                                                @if($delivery->isConfirmed() || $delivery->isDelivered()) badge-success
-                                                @elseif($delivery->isPickedUp()) badge-primary
-                                                @elseif($delivery->isRejected()) badge-danger
-                                                @elseif($delivery->isPendingApproval()) badge-warning
+                                                @if($delivery['isConfirmedOrDelivered']) badge-success
+                                                @elseif($delivery['isPickedUp']) badge-primary
+                                                @elseif($delivery['isRejected']) badge-danger
+                                                @elseif($delivery['isPending']) badge-warning
                                                 @else badge-info
                                                 @endif">
-                                                {{ $delivery->status_label }}
+                                                {{ $delivery['statusLabel'] }}
                                             </span>
                                         </td>
-                                        <td>{{ $delivery->servicearea->name ?? '-' }}</td>
-                                        <td>{{ $delivery->updated_at?->format('Y-m-d H:i') ?? '-' }}</td>
+                                        <td>-</td>
+                                        <td>{{ $delivery['serviceArea'] }}</td>
+                                        <td>{{ $delivery['updatedAt'] ?? '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>

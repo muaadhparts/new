@@ -65,21 +65,15 @@ html {
                             {{ __('Ship To Address') }}
                         </span><br>
                         <span> <strong>{{ __('Payment Method') }} :</strong> {{$purchase->method}}</span>
-                        @php
-                            $printMerchantId = $user->id;
-                            $printCustomerChoice = $purchase->getCustomerShippingChoice($printMerchantId);
-                            $printShipmentLog = App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                                ->where('merchant_id', $printMerchantId)
-                                ->orderBy('status_date', 'desc')
-                                ->first();
-                        @endphp
-                        @if ($printCustomerChoice)
-                        <br><span><strong>{{ __('Customer Selected') }}:</strong> {{ $printCustomerChoice['company_name'] ?? 'N/A' }}</span>
+                        {{-- Customer Shipping Choice (from $trackingData) --}}
+                        @if ($trackingData['hasCustomerChoice'])
+                        <br><span><strong>{{ __('Customer Selected') }}:</strong> {{ $trackingData['customerChoiceCompany'] ?? 'N/A' }}</span>
                         @endif
-                        @if ($printShipmentLog)
-                        <br><span><strong>{{ __('Tracking') }}:</strong> {{ $printShipmentLog->tracking_number }}</span>
-                        <br><span><strong>{{ __('Shipping Company') }}:</strong> {{ $printShipmentLog->company_name ?? 'N/A' }}</span>
-                        <br><span><strong>{{ __('Status') }}:</strong> {{ ucfirst($printShipmentLog->status) }}</span>
+                        {{-- Shipment Tracking (from $trackingData) --}}
+                        @if ($trackingData['hasShipment'])
+                        <br><span><strong>{{ __('Tracking') }}:</strong> {{ $trackingData['trackingNumber'] ?? '-' }}</span>
+                        <br><span><strong>{{ __('Shipping Company') }}:</strong> {{ $trackingData['companyName'] ?? 'N/A' }}</span>
+                        <br><span><strong>{{ __('Status') }}:</strong> {{ $trackingData['statusDisplay'] }}</span>
                         @endif
                     </div>
                 </div>

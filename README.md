@@ -195,7 +195,7 @@ php artisan test
 |-------|---------|------------|
 | `payment_gateways` | Available payment methods | `user_id` (0 = platform) |
 | `shipping_services` | Shipping providers | `user_id` (0 = platform) |
-| `shipment_status_logs` | Tracking updates | `purchase_id`, `status` |
+| `shipment_trackings` | Unified shipment tracking | `purchase_id`, `merchant_id`, `status` |
 
 ### Accounting
 

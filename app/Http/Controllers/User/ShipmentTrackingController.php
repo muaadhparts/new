@@ -100,62 +100,51 @@ class ShipmentTrackingController extends Controller
         $trackingNumber = $request->input('tracking');
         $purchaseNumber = $request->input('purchase');
 
+        // Default view data
+        $data = [
+            'trackingNumber' => $trackingNumber,
+            'orderNumber' => $purchaseNumber,
+            'shipment' => null,
+            'purchase' => null,
+            'history' => collect([]),
+        ];
+
+        // If no input, show search form
         if (!$trackingNumber && !$purchaseNumber) {
-            return view('frontend.tracking.search');
+            return view('frontend.tracking.index', $data);
         }
 
+        // Search by tracking number
         if ($trackingNumber) {
-            $latest = ShipmentTracking::getLatestByTracking($trackingNumber);
+            $shipment = ShipmentTracking::getLatestByTracking($trackingNumber);
 
-            if (!$latest) {
-                return view('frontend.tracking.search', [
-                    'error' => __('Tracking number not found'),
-                    'searched' => $trackingNumber,
-                ]);
+            if ($shipment) {
+                $data['shipment'] = $shipment;
+                $data['purchase'] = $shipment->purchase;
+                $data['history'] = ShipmentTracking::getHistoryByTracking($trackingNumber);
             }
 
-            $history = ShipmentTracking::getHistoryByTracking($trackingNumber);
-
-            return view('frontend.tracking.result', compact('latest', 'history'));
+            return view('frontend.tracking.index', $data);
         }
 
+        // Search by purchase number
         if ($purchaseNumber) {
             $purchase = Purchase::where('purchase_number', $purchaseNumber)->first();
 
-            if (!$purchase) {
-                return view('frontend.tracking.search', [
-                    'error' => __('Purchase number not found'),
-                    'searched' => $purchaseNumber,
-                ]);
+            if ($purchase) {
+                $shipment = ShipmentTracking::getLatestForPurchase($purchase->id);
+
+                if ($shipment) {
+                    $data['shipment'] = $shipment;
+                    $data['purchase'] = $purchase;
+                    $data['history'] = ShipmentTracking::getHistoryForPurchase($purchase->id);
+                }
             }
 
-            $trackings = ShipmentTracking::where('purchase_id', $purchase->id)
-                ->whereIn('id', function ($sub) use ($purchase) {
-                    $sub->selectRaw('MAX(id)')
-                        ->from('shipment_trackings')
-                        ->where('purchase_id', $purchase->id)
-                        ->groupBy('merchant_id');
-                })
-                ->with('merchant:id,shop_name,name')
-                ->get();
-
-            if ($trackings->isEmpty()) {
-                return view('frontend.tracking.search', [
-                    'error' => __('No tracking information available yet'),
-                    'searched' => $purchaseNumber,
-                ]);
-            }
-
-            $histories = [];
-            foreach ($trackings as $tracking) {
-                $histories[$tracking->merchant_id] = $this->trackingService->getTrackingHistory(
-                    $purchase->id,
-                    $tracking->merchant_id
-                );
-            }
-
-            return view('frontend.tracking.result-purchase', compact('purchase', 'trackings', 'histories'));
+            return view('frontend.tracking.index', $data);
         }
+
+        return view('frontend.tracking.index', $data);
     }
 
     /**
