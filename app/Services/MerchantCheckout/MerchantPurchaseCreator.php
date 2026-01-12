@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Currency;
 use App\Models\DeliveryCourier;
 use App\Classes\MuaadhMailer;
+use App\Traits\SavesCustomerShippingChoice;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\DB;
  */
 class MerchantPurchaseCreator
 {
+    use SavesCustomerShippingChoice;
     protected MerchantCartService $cartService;
     protected MerchantSessionManager $sessionManager;
     protected MerchantPriceCalculator $priceCalculator;
@@ -84,6 +86,8 @@ class MerchantPurchaseCreator
                 'customer_state' => $addressData['customer_state'] ?? '',
                 'customer_zip' => $addressData['customer_zip'] ?? '',
                 'customer_country' => $addressData['customer_country'] ?? '',
+                'customer_latitude' => $addressData['latitude'] ?? null,
+                'customer_longitude' => $addressData['longitude'] ?? null,
 
                 // Pricing
                 'pay_amount' => $this->priceCalculator->convertToBase($totals['grand_total']),
@@ -124,6 +128,9 @@ class MerchantPurchaseCreator
                     'courier_fee' => $shippingData['courier_fee'],
                     'service_area_id' => $shippingData['service_area_id'] ?? null,
                 ]) : null,
+
+                // ✅ اختيار العميل لشركة الشحن
+                'customer_shipping_choice' => $this->buildCustomerShippingChoice($merchantId, $shippingData),
             ]);
             $purchase->save();
 
@@ -331,5 +338,67 @@ class MerchantPurchaseCreator
             \Log::error('Failed to update payment status: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * ✅ بناء اختيار العميل لشركة الشحن من بيانات الشحن المحفوظة
+     *
+     * @param int $merchantId
+     * @param array $shippingData
+     * @return array|null
+     */
+    protected function buildCustomerShippingChoice(int $merchantId, array $shippingData): ?array
+    {
+        $deliveryType = $shippingData['delivery_type'] ?? null;
+        $shippingProvider = $shippingData['shipping_provider'] ?? null;
+
+        // ✅ حالة 1: توصيل محلي (كوريير)
+        if ($deliveryType === 'local_courier') {
+            return [
+                $merchantId => [
+                    'provider' => 'local_courier',
+                    'courier_id' => $shippingData['courier_id'] ?? null,
+                    'courier_name' => $shippingData['courier_name'] ?? 'Courier',
+                    'price' => (float)($shippingData['courier_fee'] ?? 0),
+                    'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
+                    'service_area_id' => $shippingData['service_area_id'] ?? null,
+                    'selected_at' => now()->toIso8601String(),
+                ]
+            ];
+        }
+
+        // ✅ حالة 2: Tryoto (API provider)
+        // shipping_provider = 'tryoto' AND shipping_id = delivery_option_id from API
+        if ($shippingProvider === 'tryoto') {
+            return [
+                $merchantId => [
+                    'provider' => 'tryoto',
+                    'delivery_option_id' => $shippingData['shipping_id'] ?? null, // shipping_id يحتوي على delivery_option_id
+                    'company_name' => $shippingData['shipping_name'] ?? '',
+                    'price' => (float)($shippingData['shipping_cost'] ?? 0),
+                    'original_price' => (float)($shippingData['original_shipping_cost'] ?? $shippingData['shipping_cost'] ?? 0),
+                    'is_free' => $shippingData['is_free_shipping'] ?? false,
+                    'selected_at' => now()->toIso8601String(),
+                ]
+            ];
+        }
+
+        // ✅ حالة 3: شحن عادي (من جدول shippings)
+        if (!empty($shippingData['shipping_id']) && is_numeric($shippingData['shipping_id'])) {
+            // جلب بيانات الشحن من الجدول
+            $shipping = \DB::table('shippings')->find($shippingData['shipping_id']);
+
+            return [
+                $merchantId => [
+                    'provider' => $shipping->provider ?? $shippingProvider, // من الجدول مباشرة
+                    'shipping_id' => (int)$shippingData['shipping_id'],
+                    'title' => $shippingData['shipping_name'] ?? $shipping->title ?? null,
+                    'price' => (float)($shippingData['shipping_cost'] ?? $shipping->price ?? 0),
+                    'selected_at' => now()->toIso8601String(),
+                ]
+            ];
+        }
+
+        return null;
     }
 }

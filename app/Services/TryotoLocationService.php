@@ -251,13 +251,80 @@ class TryotoLocationService
         // محاولة استخراج الكلمة الرئيسية من الاسم (مثل Province, Region, City)
         $mainName = $this->extractMainName($name);
         if ($mainName && $mainName !== $name) {
-            return City::where('country_id', $countryId)
+            $city = City::where('country_id', $countryId)
                 ->where('tryoto_supported', 1)
                 ->where('city_name', 'LIKE', "%{$mainName}%")
                 ->first();
+
+            if ($city) return $city;
+
+            // ✅ جديد: تجربة الأسماء البديلة (بدون Al، بدون The، إلخ)
+            $alternativeNames = $this->getAlternativeNames($mainName);
+            foreach ($alternativeNames as $altName) {
+                $city = City::where('country_id', $countryId)
+                    ->where('tryoto_supported', 1)
+                    ->where(function($q) use ($altName) {
+                        $q->where('city_name', $altName)
+                          ->orWhere('city_name', 'LIKE', "%{$altName}%");
+                    })
+                    ->first();
+
+                if ($city) return $city;
+            }
+        }
+
+        // ✅ جديد: تجربة الأسماء البديلة للاسم الأصلي
+        $alternativeNames = $this->getAlternativeNames($name);
+        foreach ($alternativeNames as $altName) {
+            $city = City::where('country_id', $countryId)
+                ->where('tryoto_supported', 1)
+                ->where(function($q) use ($altName) {
+                    $q->where('city_name', $altName)
+                      ->orWhere('city_name', 'LIKE', "%{$altName}%");
+                })
+                ->first();
+
+            if ($city) return $city;
         }
 
         return null;
+    }
+
+    /**
+     * توليد أسماء بديلة للمدينة
+     * مثال: "Al Qassim" => ["Qassim", "AlQassim"]
+     */
+    protected function getAlternativeNames(string $name): array
+    {
+        $alternatives = [];
+
+        // إزالة البادئات الشائعة
+        $prefixes = ['Al ', 'Al-', 'The ', 'As ', 'Ash ', 'Ad ', 'An '];
+        foreach ($prefixes as $prefix) {
+            if (stripos($name, $prefix) === 0) {
+                $alternatives[] = trim(substr($name, strlen($prefix)));
+            }
+        }
+
+        // إضافة البادئات إذا لم تكن موجودة
+        if (!preg_match('/^(Al|The|As|Ash|Ad|An)[\s\-]/i', $name)) {
+            $alternatives[] = 'Al ' . $name;
+            $alternatives[] = 'Al-' . $name;
+        }
+
+        // إزالة المسافات والشرطات
+        $noSpaces = str_replace([' ', '-'], '', $name);
+        if ($noSpaces !== $name) {
+            $alternatives[] = $noSpaces;
+        }
+
+        // إضافة نسخة بشرطة بدلاً من مسافة
+        $withDash = str_replace(' ', '-', $name);
+        if ($withDash !== $name) {
+            $alternatives[] = $withDash;
+        }
+
+        return array_unique($alternatives);
     }
 
     /**

@@ -9,6 +9,7 @@ use App\{
 };
 use App\Helpers\PriceHelper;
 use App\Models\City;
+use App\Models\Country;
 use App\Models\DeliveryCourier;
 use App\Models\Package;
 use App\Models\Courier;
@@ -311,19 +312,39 @@ class DeliveryController extends MerchantBaseController
                 ]);
             }
 
-            // حساب الوزن والأبعاد من السلة
-            $dimensions = $this->calculatePurchaseDimensions($purchase);
-            $weight = $dimensions['weight'];
+            // ✅ استخدام الوزن/الأبعاد من الطلب أو من المدخلات (للبحث مجدداً)
+            $useCustomDimensions = $request->has('weight') && $request->input('weight') > 0;
+
+            if ($useCustomDimensions) {
+                // المستخدم أدخل قيم مخصصة للبحث مجدداً
+                $dimensions = [
+                    'weight' => (float) $request->input('weight', 1),
+                    'length' => (float) $request->input('length', 30),
+                    'width' => (float) $request->input('width', 30),
+                    'height' => (float) $request->input('height', 30),
+                ];
+                $weight = $dimensions['weight'];
+            } else {
+                // حساب الوزن والأبعاد من السلة المحفوظة
+                $dimensions = $this->calculatePurchaseDimensions($purchase);
+                $weight = $dimensions['weight'];
+            }
 
             // حساب مبلغ COD إذا كان الدفع عند الاستلام
             $codAmount = in_array($purchase->method, ['cod', 'Cash On Delivery']) ? (float)$purchase->pay_amount : 0;
+
+            // ✅ جلب اختيار العميل للشحن
+            $customerChoice = $purchase->customer_shipping_choice[$merchant->id] ?? null;
 
             Log::debug('Merchant Delivery: Getting shipping options', [
                 'purchase_id' => $purchase->id,
                 'merchant_id' => $merchant->id,
                 'origin' => $originCity,
                 'destination' => $destinationCity,
-                'weight' => $weight
+                'weight' => $weight,
+                'dimensions' => $dimensions,
+                'custom_search' => $useCustomDimensions,
+                'customer_choice' => $customerChoice
             ]);
 
             // ✅ Use merchant-specific credentials
@@ -342,8 +363,33 @@ class DeliveryController extends MerchantBaseController
             }
 
             $result = $tryotoService->getDeliveryOptions($originCity, $destinationCity, $weight, $codAmount, $dimensions);
+            $options = $result['success'] ? ($result['options'] ?? []) : [];
+            $usedNearestCity = false;
+            $originalCustomerCity = $destinationCity; // ✅ حفظ المدينة الأصلية
 
-            if (!$result['success']) {
+            // ✅ إذا فشلت المدينة الأصلية، جرب أقرب مدينة مدعومة باستخدام الإحداثيات
+            if (empty($options) && $purchase->customer_latitude && $purchase->customer_longitude) {
+                $nearestCity = $this->findNearestSupportedCity($purchase);
+
+                if ($nearestCity && $nearestCity !== $destinationCity) {
+                    Log::debug('Merchant Delivery: Trying nearest city', [
+                        'purchase_id' => $purchase->id,
+                        'original_city' => $destinationCity,
+                        'nearest_city' => $nearestCity
+                    ]);
+
+                    $retryResult = $tryotoService->getDeliveryOptions($originCity, $nearestCity, $weight, $codAmount, $dimensions);
+
+                    if ($retryResult['success'] && !empty($retryResult['options'])) {
+                        $result = $retryResult;
+                        $options = $result['options'];
+                        $usedNearestCity = true;
+                        $destinationCity = $nearestCity; // ✅ تحديث المدينة المستخدمة
+                    }
+                }
+            }
+
+            if (!$result['success'] && empty($options)) {
                 // ✅ معالجة أخطاء محددة
                 $errorCode = $result['error_code'] ?? 'UNKNOWN';
                 $userFriendlyError = $this->getShippingErrorMessage($errorCode, $result['error'] ?? '');
@@ -352,7 +398,7 @@ class DeliveryController extends MerchantBaseController
                     'purchase_id' => $purchase->id,
                     'origin' => $originCity,
                     'destination' => $destinationCity,
-                    'error' => $result['error'],
+                    'error' => $result['error'] ?? 'No options',
                     'error_code' => $errorCode
                 ]);
 
@@ -363,8 +409,6 @@ class DeliveryController extends MerchantBaseController
                     'technical_error' => $result['error'] ?? null
                 ]);
             }
-
-            $options = $result['options'] ?? [];
 
             if (empty($options)) {
                 return response()->json([
@@ -406,7 +450,19 @@ class DeliveryController extends MerchantBaseController
                 'options' => $html,
                 'options_count' => count($options),
                 'origin' => $originCity,
-                'destination' => $destinationCity
+                'destination' => $destinationCity,
+                // ✅ المدينة الأصلية (قبل استخدام أقرب مدينة)
+                'original_city' => $originalCustomerCity,
+                'used_nearest_city' => $usedNearestCity,
+                // ✅ بيانات الشحنة للتعديل والبحث مجدداً
+                'dimensions' => [
+                    'weight' => $dimensions['weight'],
+                    'length' => $dimensions['length'],
+                    'width' => $dimensions['width'],
+                    'height' => $dimensions['height'],
+                ],
+                // ✅ اختيار العميل للاختيار التلقائي
+                'customer_choice' => $customerChoice,
             ]);
 
         } catch (\Exception $e) {
@@ -473,12 +529,15 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * ✅ مدينة العميل من الطلب
-     * customer_city يخزن ID المدينة (من الخريطة)
+     * ✅ مدينة العميل من الطلب المحفوظ
+     * المصدر الوحيد للحقيقة: purchases.customer_city
+     *
+     * إذا كانت المدينة غير مدعومة من Tryoto، نستخدم الإحداثيات
+     * لإيجاد أقرب مدينة مدعومة (في getShippingOptions)
      */
     private function resolveCustomerCity(Purchase $purchase): ?string
     {
-        // customer_city يحتوي على ID المدينة
+        // ✅ المصدر الوحيد للحقيقة: البيانات المحفوظة في الطلب
         $cityValue = $purchase->customer_city;
 
         if (!$cityValue) {
@@ -488,22 +547,87 @@ class DeliveryController extends MerchantBaseController
             return null;
         }
 
-        // إذا كان رقماً (ID)، نبحث عن المدينة
+        // إذا كان رقماً (ID)، نحوله لاسم المدينة
         if (is_numeric($cityValue)) {
             $city = City::find($cityValue);
             if ($city && $city->city_name) {
                 return $city->city_name;
             }
+        }
 
-            Log::warning('City not found for purchase', [
-                'purchase_id' => $purchase->id,
-                'customer_city' => $cityValue
+        // إرجاع المدينة كما هي محفوظة
+        return $cityValue;
+    }
+
+    /**
+     * ✅ إيجاد أقرب مدينة مدعومة مختلفة عن المدينة الأصلية
+     *
+     * المشكلة: أحياناً المدينة موجودة في DB كـ tryoto_supported لكن Tryoto API لا يخدمها فعلياً
+     * الحل: ابحث عن أقرب مدينة مختلفة باستخدام Haversine formula
+     */
+    private function findNearestSupportedCity(Purchase $purchase): ?string
+    {
+        $lat = $purchase->customer_latitude;
+        $lng = $purchase->customer_longitude;
+        $originalCity = $purchase->customer_city;
+
+        if (!$lat || !$lng) {
+            Log::debug('findNearestSupportedCity: No coordinates in purchase', [
+                'purchase_id' => $purchase->id
             ]);
             return null;
         }
 
-        // إذا كان نصاً، نستخدمه مباشرة (حالة قديمة)
-        return $cityValue;
+        try {
+            // إيجاد الدولة
+            $country = Country::where('country_name', 'like', '%' . ($purchase->customer_country ?? 'Saudi') . '%')
+                ->orWhere('country_name_ar', 'like', '%' . ($purchase->customer_country ?? 'سعودي') . '%')
+                ->first();
+
+            if (!$country) {
+                Log::debug('findNearestSupportedCity: Country not found');
+                return null;
+            }
+
+            // صيغة Haversine لحساب المسافة بالكيلومتر
+            $haversine = "(6371 * acos(
+                cos(radians(?)) *
+                cos(radians(latitude)) *
+                cos(radians(longitude) - radians(?)) +
+                sin(radians(?)) *
+                sin(radians(latitude))
+            ))";
+
+            // البحث عن أقرب مدينة مختلفة عن المدينة الأصلية (ضمن 100 كم)
+            $nearestCity = City::where('country_id', $country->id)
+                ->where('tryoto_supported', 1)
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->where('city_name', '!=', $originalCity) // ✅ استبعاد المدينة الأصلية
+                ->selectRaw("city_name, {$haversine} as distance_km", [(float)$lat, (float)$lng, (float)$lat])
+                ->havingRaw('distance_km <= ?', [100]) // حد أقصى 100 كم
+                ->orderBy('distance_km', 'asc')
+                ->first();
+
+            if ($nearestCity) {
+                Log::debug('findNearestSupportedCity: Found different city', [
+                    'purchase_id' => $purchase->id,
+                    'original_city' => $originalCity,
+                    'nearest_city' => $nearestCity->city_name,
+                    'distance_km' => round($nearestCity->distance_km, 2)
+                ]);
+                return $nearestCity->city_name;
+            }
+
+            Log::debug('findNearestSupportedCity: No different city found within 100km');
+
+        } catch (\Exception $e) {
+            Log::warning('findNearestSupportedCity: Failed', [
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return null;
     }
 
     /**

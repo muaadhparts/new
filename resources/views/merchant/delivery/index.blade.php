@@ -605,7 +605,7 @@
         });
     }
 
-    // ✅ Build Tryoto tab content (API-based)
+    // ✅ Build Tryoto tab content (API-based) with weight/dimensions inputs
     function buildTryotoTabContent(tabId, isActive) {
         return `
             <div class="tab-pane fade ${isActive ? 'show active' : ''}" id="${tabId}-content" role="tabpanel">
@@ -616,6 +616,68 @@
                     <input type="hidden" name="company" id="selected_company">
                     <input type="hidden" name="price" id="selected_price">
                     <input type="hidden" name="service_type" id="selected_service_type">
+
+                    {{-- ✅ عرض مسار الشحن (من → إلى) --}}
+                    <div class="card mb-3 border-primary">
+                        <div class="card-body py-2">
+                            <div class="row text-center">
+                                <div class="col-5">
+                                    <small class="text-muted d-block">@lang('From')</small>
+                                    <strong id="tryoto_origin_city" class="text-primary">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </strong>
+                                </div>
+                                <div class="col-2 align-self-center">
+                                    <i class="fas fa-arrow-right text-muted"></i>
+                                </div>
+                                <div class="col-5">
+                                    <small class="text-muted d-block">@lang('To')</small>
+                                    <strong id="tryoto_destination_city" class="text-success">
+                                        <i class="fas fa-spinner fa-spin"></i>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div id="tryoto_nearest_city_notice" class="d-none text-center mt-2">
+                                <small class="text-warning">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span id="tryoto_nearest_city_text"></span>
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- ✅ مربعات الوزن والأبعاد للبحث مجدداً --}}
+                    <div class="card mb-3 border-secondary">
+                        <div class="card-header bg-light py-2">
+                            <strong><i class="fas fa-box"></i> @lang('Package Dimensions')</strong>
+                            <small class="text-muted d-block">@lang('Adjust if package dimensions changed after preparation')</small>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small mb-1">@lang('Weight') (kg)</label>
+                                    <input type="number" step="0.1" min="0.1" class="form-control form-control-sm" id="tryoto_weight" value="1">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small mb-1">@lang('Length') (cm)</label>
+                                    <input type="number" step="1" min="1" class="form-control form-control-sm" id="tryoto_length" value="30">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small mb-1">@lang('Width') (cm)</label>
+                                    <input type="number" step="1" min="1" class="form-control form-control-sm" id="tryoto_width" value="30">
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label small mb-1">@lang('Height') (cm)</label>
+                                    <input type="number" step="1" min="1" class="form-control form-control-sm" id="tryoto_height" value="30">
+                                </div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100" id="tryotoResearchBtn">
+                                    <i class="fas fa-search"></i> @lang('Search Again with New Dimensions')
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="mb-3">
                         <label class="form-label">@lang('Select Shipping Company')</label>
@@ -717,31 +779,99 @@
         }
     }
 
-    // ✅ Load Tryoto options (API)
-    function loadTryotoOptions() {
-        $.get("{{ route('merchant.shipping.options') }}", { purchase_id: currentPurchaseId }, function(response) {
+    // ✅ Load Tryoto options (API) with dimensions support
+    function loadTryotoOptions(customDimensions = null) {
+        // إعداد البيانات للإرسال
+        let requestData = { purchase_id: currentPurchaseId };
+
+        // إذا كان هناك أبعاد مخصصة (بحث مجدداً)
+        if (customDimensions) {
+            requestData = { ...requestData, ...customDimensions };
+        }
+
+        // إظهار حالة التحميل
+        $('#tryotoShippingSelect').html('<option value="">@lang("Loading shipping options...")</option>');
+        $('#tryotoResearchBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> @lang("Searching...")');
+
+        $.get("{{ route('merchant.shipping.options') }}", requestData, function(response) {
+            // إعادة تفعيل زر البحث
+            $('#tryotoResearchBtn').prop('disabled', false).html('<i class="fas fa-search"></i> @lang("Search Again with New Dimensions")');
+
             if (response.success) {
                 $('#tryotoShippingSelect').html(response.options);
 
-                // Auto-select customer's choice if available
-                if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto' && currentCustomerChoice.delivery_option_id) {
-                    const optionToSelect = $('#tryotoShippingSelect option[value="' + currentCustomerChoice.delivery_option_id + '"]');
+                // ✅ عرض مسار الشحن (من → إلى)
+                if (response.origin) {
+                    $('#tryoto_origin_city').text(response.origin);
+                }
+                if (response.destination) {
+                    $('#tryoto_destination_city').text(response.destination);
+
+                    // ✅ إذا تم استخدام أقرب مدينة مختلفة عن مدينة العميل الأصلية
+                    if (response.original_city && response.destination !== response.original_city) {
+                        $('#tryoto_nearest_city_notice').removeClass('d-none');
+                        $('#tryoto_nearest_city_text').text(
+                            '@lang("Original city"): ' + response.original_city +
+                            ' → @lang("Nearest supported"): ' + response.destination
+                        );
+                    } else {
+                        $('#tryoto_nearest_city_notice').addClass('d-none');
+                    }
+                }
+
+                // ✅ ملء مربعات الأبعاد بالقيم من الطلب (فقط المرة الأولى)
+                if (!customDimensions && response.dimensions) {
+                    $('#tryoto_weight').val(response.dimensions.weight || 1);
+                    $('#tryoto_length').val(response.dimensions.length || 30);
+                    $('#tryoto_width').val(response.dimensions.width || 30);
+                    $('#tryoto_height').val(response.dimensions.height || 30);
+                }
+
+                // ✅ الاختيار التلقائي لشركة العميل
+                let customerChoiceForTryoto = response.customer_choice || currentCustomerChoice;
+                if (customerChoiceForTryoto && customerChoiceForTryoto.provider === 'tryoto' && customerChoiceForTryoto.delivery_option_id) {
+                    const optionToSelect = $('#tryotoShippingSelect option[value="' + customerChoiceForTryoto.delivery_option_id + '"]');
                     if (optionToSelect.length) {
                         optionToSelect.prop('selected', true);
                         $('#tryotoShippingSelect').trigger('change');
-                        toastr.info('@lang("Customer\'s preferred shipping company selected automatically")');
+                        if (!customDimensions) {
+                            toastr.info('@lang("Customer\'s preferred shipping company selected automatically")');
+                        }
                     }
                 }
             } else {
                 $('#tryotoShippingSelect').html('<option value="">@lang("Shipping temporarily unavailable")</option>');
+                $('#tryoto_origin_city').text('--');
+                $('#tryoto_destination_city').text('--');
                 if (response.error) {
                     toastr.error(response.error);
                 }
             }
         }).fail(function() {
+            $('#tryotoResearchBtn').prop('disabled', false).html('<i class="fas fa-search"></i> @lang("Search Again with New Dimensions")');
             $('#tryotoShippingSelect').html('<option value="">@lang("Connection error - Please try again")</option>');
+            $('#tryoto_origin_city').text('--');
+            $('#tryoto_destination_city').text('--');
         });
     }
+
+    // ✅ البحث مجدداً بأبعاد جديدة
+    $(document).on('click', '#tryotoResearchBtn', function() {
+        const customDimensions = {
+            weight: parseFloat($('#tryoto_weight').val()) || 1,
+            length: parseFloat($('#tryoto_length').val()) || 30,
+            width: parseFloat($('#tryoto_width').val()) || 30,
+            height: parseFloat($('#tryoto_height').val()) || 30
+        };
+
+        // التحقق من القيم
+        if (customDimensions.weight <= 0) {
+            toastr.warning('@lang("Please enter a valid weight")');
+            return;
+        }
+
+        loadTryotoOptions(customDimensions);
+    });
 
     // ✅ Load provider options (non-API)
     function loadProviderOptions(providerKey) {

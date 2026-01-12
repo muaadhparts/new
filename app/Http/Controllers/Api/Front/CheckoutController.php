@@ -180,6 +180,35 @@ class CheckoutController extends Controller
                 }
             }
 
+            // ✅ حفظ إحداثيات العميل
+            // المصدر 1: مباشرة من الـ request (إذا أرسلها الفرونت)
+            // المصدر 2: من الـ session (إذا تم حفظها في خطوة سابقة)
+            // ملاحظة: الفرونت قد يرسل latitude/longitude أو customer_latitude/customer_longitude
+            $reqLat = $input['customer_latitude'] ?? $input['latitude'] ?? null;
+            $reqLng = $input['customer_longitude'] ?? $input['longitude'] ?? null;
+
+            if (!empty($reqLat) && !empty($reqLng)) {
+                // الإحداثيات جاءت مباشرة من الـ request
+                $input['customer_latitude'] = (float) $reqLat;
+                $input['customer_longitude'] = (float) $reqLng;
+            } else {
+                // جرب الحصول عليها من الـ session
+                $merchantIdsArray = $merchant_ids ? explode(',', $merchant_ids) : [];
+                $firstMerchantId = $merchantIdsArray[0] ?? null;
+
+                if ($firstMerchantId) {
+                    $addressData = Session::get('checkout.merchant.' . $firstMerchantId . '.address')
+                        ?? Session::get('merchant_step1_' . $firstMerchantId)
+                        ?? Session::get('step1')
+                        ?? [];
+
+                    if (!empty($addressData['latitude']) && !empty($addressData['longitude'])) {
+                        $input['customer_latitude'] = (float) $addressData['latitude'];
+                        $input['customer_longitude'] = (float) $addressData['longitude'];
+                    }
+                }
+            }
+
             $purchase->fill($input)->save();
 
             // Create an OTO shipment (doesn't break the purchase on failure)
