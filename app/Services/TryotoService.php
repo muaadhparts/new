@@ -537,6 +537,21 @@ class TryotoService
             ];
         }
 
+        // ✅ جلب بيانات المستودع من merchant_locations (المصدر الأساسي)
+        $merchantLocation = \DB::table('merchant_locations')
+            ->where('user_id', $merchantId)
+            ->where('status', 1)
+            ->first();
+
+        // ✅ warehouseCode = user_id (كما هو في Tryoto)
+        $warehouseCode = $merchantLocation ? (string)$merchantLocation->user_id : (string)$merchantId;
+
+        // ✅ warehouseName من merchant_locations
+        $warehouseName = null;
+        if ($merchantLocation) {
+            $warehouseName = $merchantLocation->warehouse_hame ?: $merchantLocation->location;
+        }
+
         // استخدام مدينة التاجر من ShippingCalculatorService - بدون fallback
         $originCity = $merchantCityData['city_name'] ?? null;
 
@@ -549,7 +564,19 @@ class TryotoService
             ];
         }
 
-        $originAddress = $merchant->warehouse_address ?? $merchant->shop_address ?? $originCity;
+        // ✅ العنوان من merchant_locations فقط (المصدر الوحيد)
+        if (!$merchantLocation || !$merchantLocation->location) {
+            Log::error('Tryoto: createShipment - merchant location not configured', [
+                'merchant_id' => $merchantId,
+                'tip' => 'Configure merchant location in merchant_locations table'
+            ]);
+            return [
+                'success' => false,
+                'error' => 'Merchant warehouse location is not configured',
+                'error_code' => 'MERCHANT_LOCATION_MISSING'
+            ];
+        }
+        $originAddress = $merchantLocation->location;
 
         // مدينة العميل من الطلب
         $destinationCityValue = $purchase->customer_city;
@@ -677,6 +704,9 @@ class TryotoService
             'deliveryOptionId' => $deliveryOptionId,
             'serviceType' => $serviceType,
             'createShipment' => true,
+            // ✅ بيانات المستودع من merchant_locations
+            'warehouseCode' => $warehouseCode,
+            'warehouseName' => $warehouseName,
             'storeName' => $merchant->shop_name ?? $merchant->name ?? null,
             'payment_method' => $isCOD ? 'cod' : 'paid',
             'amount' => (float)$purchase->pay_amount,
@@ -719,6 +749,8 @@ class TryotoService
         Log::debug('Tryoto: Creating shipment', [
             'purchase_id' => $purchase->id,
             'tryoto_order_id' => $tryotoOrderId,
+            'warehouse_code' => $warehouseCode,
+            'warehouse_name' => $warehouseName,
             'origin' => $originCity,
             'destination' => $destinationCity,
             'company' => $company,

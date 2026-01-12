@@ -4,8 +4,6 @@ namespace App\Traits;
 
 use App\Helpers\PriceHelper;
 use App\Models\Purchase;
-use App\Models\User;
-use App\Models\City;
 use App\Models\UserCatalogEvent;
 use App\Services\TryotoService;
 use Illuminate\Support\Facades\Log;
@@ -81,16 +79,8 @@ trait CreatesTryotoShipments
                 continue; // Not OTO, could be an internal shipping ID
             }
             [$deliveryOptionId, $company, $price] = explode('#', $value);
-            $codAmount = ($purchase->method === 'cod' || $purchase->method === 'Cash On Delivery' || $purchase->payment_status === 'Cash On Delivery') ? (float)$purchase->pay_amount : 0.0;
 
-            // الحصول على warehouse address من التاجر
-            $merchant = User::find($merchantId);
-
-            // تحويل city ID إلى city name باستخدام TryotoService
-            $originCityValue = $merchant->city_id ?? $merchant->warehouse_city ?? $merchant->shop_city;
-            $originCity = $systemTryotoService->resolveCityName($originCityValue);
-
-            // ✅ Use merchant-specific credentials for shipment creation
+            // ✅ createShipment يجلب بيانات التاجر والمستودع من merchant_locations داخلياً
             $merchantTryotoService = app(TryotoService::class)->forMerchant((int)$merchantId);
             $result = $merchantTryotoService->createShipment(
                 $purchase,

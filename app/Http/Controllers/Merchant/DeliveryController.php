@@ -280,18 +280,17 @@ class DeliveryController extends MerchantBaseController
 
             $merchant = $this->user;
 
-            // ✅ مدينة التاجر من جدول users (city_id)
+            // ✅ مدينة التاجر من merchant_locations فقط
             $originCity = $this->resolveMerchantCity($merchant);
 
             if (!$originCity) {
-                Log::warning('Merchant Delivery: Merchant city not configured', [
+                Log::warning('Merchant Delivery: Merchant city not configured in merchant_locations', [
                     'merchant_id' => $merchant->id,
-                    'city_id' => $merchant->city_id,
-                    'shop_city' => $merchant->shop_city ?? null
+                    'tip' => 'Add merchant location in merchant_locations table'
                 ]);
                 return response()->json([
                     'success' => false,
-                    'error' => __('Please configure your city in merchant settings'),
+                    'error' => __('Please configure your warehouse location in merchant settings'),
                     'error_code' => 'MERCHANT_CITY_MISSING',
                     'show_settings_link' => true
                 ]);
@@ -482,11 +481,11 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * ✅ مدينة التاجر من merchant_locations أولاً، ثم users
+     * ✅ مدينة التاجر من merchant_locations فقط (المصدر الوحيد)
      */
     private function resolveMerchantCity($merchant): ?string
     {
-        // ✅ المحاولة الأولى: merchant_locations (المصدر الأساسي)
+        // ✅ merchant_locations هو المصدر الوحيد لعنوان التاجر
         $merchantLocation = \DB::table('merchant_locations')
             ->where('user_id', $merchant->id)
             ->where('status', 1)
@@ -499,42 +498,10 @@ class DeliveryController extends MerchantBaseController
             }
         }
 
-        // المحاولة الثانية: city_id من جدول users
-        if ($merchant->city_id) {
-            $city = City::find($merchant->city_id);
-            if ($city && $city->city_name) {
-                return $city->city_name;
-            }
-        }
-
-        // المحاولة الثالثة: shop_city (نص مباشر)
-        if (!empty($merchant->shop_city)) {
-            if (is_numeric($merchant->shop_city)) {
-                $city = City::find($merchant->shop_city);
-                if ($city && $city->city_name) {
-                    return $city->city_name;
-                }
-            }
-            return $merchant->shop_city;
-        }
-
-        // المحاولة الرابعة: warehouse_city
-        if (!empty($merchant->warehouse_city)) {
-            if (is_numeric($merchant->warehouse_city)) {
-                $city = City::find($merchant->warehouse_city);
-                if ($city && $city->city_name) {
-                    return $city->city_name;
-                }
-            }
-            return $merchant->warehouse_city;
-        }
-
-        Log::warning('Merchant has no city configured', [
+        Log::warning('Merchant has no location configured in merchant_locations', [
             'merchant_id' => $merchant->id,
             'merchant_name' => $merchant->name,
-            'merchant_location' => $merchantLocation ? 'exists but no city_id' : 'not found',
-            'city_id' => $merchant->city_id,
-            'shop_city' => $merchant->shop_city ?? null
+            'tip' => 'Add merchant location in merchant_locations table'
         ]);
 
         return null;
