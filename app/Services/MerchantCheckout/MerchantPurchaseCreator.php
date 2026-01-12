@@ -368,15 +368,29 @@ class MerchantPurchaseCreator
         }
 
         // ✅ حالة 2: Tryoto (API provider)
-        // shipping_provider = 'tryoto' AND shipping_id = delivery_option_id from API
+        // shipping_provider = 'tryoto' AND shipping_id = "deliveryOptionId#companyName#price"
         if ($shippingProvider === 'tryoto') {
+            $shippingIdValue = $shippingData['shipping_id'] ?? '';
+
+            // استخراج البيانات من القيمة المركبة "123456#Omni Llama#15"
+            $deliveryOptionId = $shippingIdValue;
+            $companyName = $shippingData['shipping_name'] ?? '';
+            $price = (float)($shippingData['shipping_cost'] ?? 0);
+
+            if (is_string($shippingIdValue) && strpos($shippingIdValue, '#') !== false) {
+                $parts = explode('#', $shippingIdValue);
+                $deliveryOptionId = $parts[0] ?? $shippingIdValue;
+                $companyName = $parts[1] ?? $companyName;
+                $price = isset($parts[2]) ? (float)$parts[2] : $price;
+            }
+
             return [
                 $merchantId => [
                     'provider' => 'tryoto',
-                    'delivery_option_id' => $shippingData['shipping_id'] ?? null, // shipping_id يحتوي على delivery_option_id
-                    'company_name' => $shippingData['shipping_name'] ?? '',
-                    'price' => (float)($shippingData['shipping_cost'] ?? 0),
-                    'original_price' => (float)($shippingData['original_shipping_cost'] ?? $shippingData['shipping_cost'] ?? 0),
+                    'delivery_option_id' => $deliveryOptionId,
+                    'company_name' => $companyName,
+                    'price' => $price,
+                    'original_price' => (float)($shippingData['original_shipping_cost'] ?? $price),
                     'is_free' => $shippingData['is_free_shipping'] ?? false,
                     'selected_at' => now()->toIso8601String(),
                 ]

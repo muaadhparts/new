@@ -482,11 +482,24 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * ✅ مدينة التاجر من جدول users (city_id أو shop_city)
+     * ✅ مدينة التاجر من merchant_locations أولاً، ثم users
      */
     private function resolveMerchantCity($merchant): ?string
     {
-        // المحاولة الأولى: city_id (الأفضل - مرتبط بجدول المدن)
+        // ✅ المحاولة الأولى: merchant_locations (المصدر الأساسي)
+        $merchantLocation = \DB::table('merchant_locations')
+            ->where('user_id', $merchant->id)
+            ->where('status', 1)
+            ->first();
+
+        if ($merchantLocation && $merchantLocation->city_id) {
+            $city = City::find($merchantLocation->city_id);
+            if ($city && $city->city_name) {
+                return $city->city_name;
+            }
+        }
+
+        // المحاولة الثانية: city_id من جدول users
         if ($merchant->city_id) {
             $city = City::find($merchant->city_id);
             if ($city && $city->city_name) {
@@ -494,20 +507,18 @@ class DeliveryController extends MerchantBaseController
             }
         }
 
-        // المحاولة الثانية: shop_city (نص مباشر)
+        // المحاولة الثالثة: shop_city (نص مباشر)
         if (!empty($merchant->shop_city)) {
-            // إذا كان رقماً، نبحث عن المدينة
             if (is_numeric($merchant->shop_city)) {
                 $city = City::find($merchant->shop_city);
                 if ($city && $city->city_name) {
                     return $city->city_name;
                 }
             }
-            // إذا كان نصاً، نستخدمه مباشرة
             return $merchant->shop_city;
         }
 
-        // المحاولة الثالثة: warehouse_city
+        // المحاولة الرابعة: warehouse_city
         if (!empty($merchant->warehouse_city)) {
             if (is_numeric($merchant->warehouse_city)) {
                 $city = City::find($merchant->warehouse_city);
@@ -521,6 +532,7 @@ class DeliveryController extends MerchantBaseController
         Log::warning('Merchant has no city configured', [
             'merchant_id' => $merchant->id,
             'merchant_name' => $merchant->name,
+            'merchant_location' => $merchantLocation ? 'exists but no city_id' : 'not found',
             'city_id' => $merchant->city_id,
             'shop_city' => $merchant->shop_city ?? null
         ]);

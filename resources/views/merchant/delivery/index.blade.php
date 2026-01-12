@@ -829,15 +829,36 @@
 
                 // ✅ الاختيار التلقائي لشركة العميل
                 let customerChoiceForTryoto = response.customer_choice || currentCustomerChoice;
+
+                // DEBUG: Log customer choice data
+                console.log('=== AUTO-SELECT DEBUG ===');
+                console.log('response.customer_choice:', response.customer_choice);
+                console.log('currentCustomerChoice:', currentCustomerChoice);
+                console.log('customerChoiceForTryoto:', customerChoiceForTryoto);
+
                 if (customerChoiceForTryoto && customerChoiceForTryoto.provider === 'tryoto' && customerChoiceForTryoto.delivery_option_id) {
+                    console.log('Looking for option with value:', customerChoiceForTryoto.delivery_option_id);
+
                     const optionToSelect = $('#tryotoShippingSelect option[value="' + customerChoiceForTryoto.delivery_option_id + '"]');
+                    console.log('Option found:', optionToSelect.length > 0 ? 'YES' : 'NO');
+
+                    // DEBUG: Log all available options
+                    console.log('Available options:');
+                    $('#tryotoShippingSelect option').each(function() {
+                        console.log('  - value:', $(this).val(), '| text:', $(this).text());
+                    });
+
                     if (optionToSelect.length) {
                         optionToSelect.prop('selected', true);
                         $('#tryotoShippingSelect').trigger('change');
                         if (!customDimensions) {
                             toastr.info('@lang("Customer\'s preferred shipping company selected automatically")');
                         }
+                    } else {
+                        console.log('❌ Option NOT found in the list!');
                     }
+                } else {
+                    console.log('❌ No valid customer choice or not tryoto provider');
                 }
             } else {
                 $('#tryotoShippingSelect').html('<option value="">@lang("Shipping temporarily unavailable")</option>');
