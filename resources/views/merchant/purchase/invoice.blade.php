@@ -427,12 +427,18 @@
                                                     @endif
 
                                                     @if ($catalogItem['color'])
+                                                        @php
+                                                            $clr = $catalogItem['color'];
+                                                            $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
+                                                        @endphp
+                                                        @if($colorHex)
                                                         <div class="d-flex align-items-center gap-2">
                                                             <span class="key">{{ __('Color') }} :</span>
                                                             <span
-                                                                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"
+                                                                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"
                                                                 class="value"></span>
                                                         </div>
+                                                        @endif
                                                     @endif
 
                                                     <div class="d-flex align-items-center gap-2">

@@ -138,23 +138,30 @@ class CourierAccountingService
     {
         $courier = Courier::findOrFail($courierId);
 
-        $deliveriesQuery = DeliveryCourier::where('courier_id', $courierId);
+        // ============================================================
+        // OPTIMIZED: Use database aggregation instead of loading all records
+        // Was: Loading all deliveries/transactions then filtering in PHP
+        // Now: Single query with conditional counts and sums
+        // ============================================================
+        $baseQuery = DeliveryCourier::where('courier_id', $courierId);
         if ($startDate) {
-            $deliveriesQuery->whereDate('created_at', '>=', $startDate);
+            $baseQuery->whereDate('created_at', '>=', $startDate);
         }
         if ($endDate) {
-            $deliveriesQuery->whereDate('created_at', '<=', $endDate);
+            $baseQuery->whereDate('created_at', '<=', $endDate);
         }
-        $deliveries = $deliveriesQuery->get();
 
-        $transactionsQuery = CourierTransaction::where('courier_id', $courierId);
-        if ($startDate) {
-            $transactionsQuery->whereDate('created_at', '>=', $startDate);
-        }
-        if ($endDate) {
-            $transactionsQuery->whereDate('created_at', '<=', $endDate);
-        }
-        $transactions = $transactionsQuery->get();
+        // Get all counts and sums in a single query
+        $stats = (clone $baseQuery)->selectRaw('
+            COUNT(*) as total_count,
+            SUM(CASE WHEN status = "delivered" OR status = "confirmed" THEN 1 ELSE 0 END) as completed_count,
+            SUM(CASE WHEN status = "pending_approval" THEN 1 ELSE 0 END) as pending_count,
+            SUM(CASE WHEN payment_method = "cod" THEN 1 ELSE 0 END) as cod_count,
+            SUM(CASE WHEN payment_method = "online" THEN 1 ELSE 0 END) as online_count,
+            SUM(delivery_fee) as total_fees,
+            SUM(CASE WHEN payment_method = "cod" THEN purchase_amount ELSE 0 END) as cod_collected,
+            SUM(CASE WHEN settlement_status = "pending" THEN 1 ELSE 0 END) as unsettled_count
+        ')->first();
 
         return [
             'courier_id' => $courierId,
@@ -165,14 +172,14 @@ class CourierAccountingService
             'total_collected' => $courier->total_collected,
             'total_delivered' => $courier->total_delivered,
             'total_fees_earned' => $courier->total_fees_earned,
-            'deliveries_count' => $deliveries->count(),
-            'deliveries_completed' => $deliveries->where('status', 'delivered')->count(),
-            'deliveries_pending' => $deliveries->where('status', 'pending')->count(),
-            'cod_deliveries' => $deliveries->where('payment_method', 'cod')->count(),
-            'online_deliveries' => $deliveries->where('payment_method', 'online')->count(),
-            'total_delivery_fees' => $deliveries->sum('delivery_fee'),
-            'total_cod_collected' => $deliveries->where('payment_method', 'cod')->sum('purchase_amount'),
-            'unsettled_deliveries' => $deliveries->where('settlement_status', 'pending')->count(),
+            'deliveries_count' => (int)($stats->total_count ?? 0),
+            'deliveries_completed' => (int)($stats->completed_count ?? 0),
+            'deliveries_pending' => (int)($stats->pending_count ?? 0),
+            'cod_deliveries' => (int)($stats->cod_count ?? 0),
+            'online_deliveries' => (int)($stats->online_count ?? 0),
+            'total_delivery_fees' => (float)($stats->total_fees ?? 0),
+            'total_cod_collected' => (float)($stats->cod_collected ?? 0),
+            'unsettled_deliveries' => (int)($stats->unsettled_count ?? 0),
         ];
     }
 

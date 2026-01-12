@@ -17,6 +17,9 @@ class UserCatalogEvent extends Model
 
     public static function countPurchase($id)
     {
-        return UserCatalogEvent::where('user_id', '=', $id)->where('is_read', '=', 0)->get()->count();
+        // OPTIMIZED: Use database count() instead of loading all records
+        return UserCatalogEvent::where('user_id', $id)
+            ->where('is_read', 0)
+            ->count();
     }
 }

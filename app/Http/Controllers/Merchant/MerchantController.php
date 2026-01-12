@@ -15,16 +15,36 @@ class MerchantController extends MerchantBaseController
     public function index()
     {
         try {
-            $data['days'] = "";
-            $data['sales'] = "";
-            for ($i = 0; $i < 30; $i++) {
-                $data['days'] .= "'" . date("d M", strtotime('-' . $i . ' days')) . "',";
-
-                $data['sales'] .= "'" . MerchantPurchase::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->sum("price") . "',";
-            }
-            // Retrieve recent catalog items for this merchant using the merchantItems relationship.
-            // Limit to 5 entries to avoid overwhelming the dashboard when there are many items.
             $userId = $this->user->id;
+
+            // ============================================================
+            // OPTIMIZED: Single query for 30-day sales chart (was 30 queries)
+            // ============================================================
+            $startDate = now()->subDays(29)->startOfDay();
+            $endDate = now()->endOfDay();
+
+            $salesData = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('DATE(created_at) as date, SUM(price) as total')
+                ->groupBy('date')
+                ->pluck('total', 'date')
+                ->toArray();
+
+            // Build chart arrays (reversed to show oldest first)
+            $days = [];
+            $sales = [];
+            for ($i = 29; $i >= 0; $i--) {
+                $date = date("Y-m-d", strtotime('-' . $i . ' days'));
+                $days[] = "'" . date("d M", strtotime('-' . $i . ' days')) . "'";
+                $sales[] = "'" . ($salesData[$date] ?? 0) . "'";
+            }
+            $data['days'] = implode(',', $days);
+            $data['sales'] = implode(',', $sales);
+
+            // ============================================================
+            // Catalog items (limited to 5)
+            // ============================================================
             $data['catalogItems'] = CatalogItem::whereHas('merchantItems', function ($q) use ($userId) {
                 $q->where('user_id', $userId);
             })
@@ -35,11 +55,30 @@ class MerchantController extends MerchantBaseController
                 }
             ])
             ->latest('catalog_items.id')->take(5)->get();
-            $data['recentMerchantPurchases'] = MerchantPurchase::where('user_id', '=', $this->user->id)->latest('id')->take(10)->get();
+
+            // Recent purchases (limited to 10)
+            $data['recentMerchantPurchases'] = MerchantPurchase::where('user_id', $userId)
+                ->latest('id')
+                ->take(10)
+                ->get();
+
             $data['user'] = $this->user;
-            $data['pending'] = MerchantPurchase::where('user_id', '=', $this->user->id)->where('status', '=', 'pending')->get();
-            $data['processing'] = MerchantPurchase::where('user_id', '=', $this->user->id)->where('status', '=', 'processing')->get();
-            $data['completed'] = MerchantPurchase::where('user_id', '=', $this->user->id)->where('status', '=', 'completed')->get();
+
+            // ============================================================
+            // OPTIMIZED: Use count() instead of get() for statistics
+            // ============================================================
+            $data['pending'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'pending')
+                ->count();
+
+            $data['processing'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'processing')
+                ->count();
+
+            $data['completed'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->count();
+
             return view('merchant.index', $data);
         } catch (\Exception $e) {
             \Log::error('MerchantController@index error: ' . $e->getMessage());

@@ -53,7 +53,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Pending')</p>
                         <h3 class="value">
-                            <span class="counter">{{ count($pending) }}</span>
+                            <span class="counter">{{ $pending }}</span>
                         </h3>
                     </div>
                 </div>
@@ -64,7 +64,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Processing')</p>
                         <h3 class="value">
-                            <span class="counter">{{ count($processing) }}</span>
+                            <span class="counter">{{ $processing }}</span>
                         </h3>
                     </div>
                 </div>
@@ -75,7 +75,7 @@
                     <div class="title-and-value-wrapper">
                         <p class="title">@lang('Purchases Completed!')</p>
                         <h3 class="value">
-                            <span class="counter">{{ count($completed) }}</span>
+                            <span class="counter">{{ $completed }}</span>
                         </h3>
                     </div>
                 </div>

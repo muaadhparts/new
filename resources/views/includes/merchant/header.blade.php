@@ -145,7 +145,15 @@
         </div>
         <ul>
             @php
-                $catalogEvents = App\Models\UserCatalogEvent::whereUserId(auth()->id())->orderby('id','desc')->get();
+                // Cached + Limited notifications (5 min cache, max 20 items)
+                $catalogEvents = Cache::remember(
+                    'merchant_events_' . auth()->id(),
+                    300,
+                    fn() => App\Models\UserCatalogEvent::whereUserId(auth()->id())
+                        ->orderby('id', 'desc')
+                        ->limit(20)
+                        ->get()
+                );
             @endphp
             @forelse ($catalogEvents as $data)
             <li>

@@ -168,7 +168,13 @@ html {
                                                 <b>{{ __('Size') }}</b>: {{ $catalogItem['item']['measure'] }}{{str_replace('-',' ',$catalogItem['size'])}} <br>
                                                 @endif
                                                 @if(!empty($catalogItem['color']))
-                                                <b>{{ __('Color') }}</b>:  <span id="color-bar" style="border-radius: 50%; vertical-align: bottom; border: 10px solid {{$catalogItem['color'] == "" ? "white" : '#'.$catalogItem['color']}};"></span>
+                                                @php
+                                                    $clr = $catalogItem['color'];
+                                                    $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
+                                                @endphp
+                                                @if($colorHex)
+                                                <b>{{ __('Color') }}</b>:  <span id="color-bar" style="border-radius: 50%; vertical-align: bottom; border: 10px solid #{{ $colorHex }};"></span>
+                                                @endif
                                                 @endif
                                                 @if(!empty($catalogItem['keys']))
                                                 @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)

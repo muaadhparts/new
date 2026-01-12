@@ -452,10 +452,16 @@
                                             <p><span>@lang('Color:')</span>
 
                                                 @if (!empty($catalogItem['color']))
+                                                    @php
+                                                        $clr = $catalogItem['color'];
+                                                        $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
+                                                    @endphp
+                                                    @if($colorHex)
                                                     <div class="d-flex mt-2">
                                                         <b>{{ __('Color') }}</b>: <span class="color-show-btn mt-1 ms-3 muaadh-success-color-swatch" id="color-bar"
-                                                            style="--swatch-color: #{{ $catalogItem['color'] == '' ? 'fff' : $catalogItem['color'] }};"></span>
+                                                            style="--swatch-color: #{{ $colorHex }};"></span>
                                                     </div>
+                                                    @endif
                                                 @endif
                                             </p>
 

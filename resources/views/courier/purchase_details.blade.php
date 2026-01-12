@@ -232,8 +232,14 @@
                                                         <br><strong>@lang('Size'):</strong> {{ $catalogItem['item']['measure'] }}{{ str_replace('-', ' ', $catalogItem['size']) }}
                                                     @endif
                                                     @if (!empty($catalogItem['color']))
+                                                        @php
+                                                            $clr = $catalogItem['color'];
+                                                            $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
+                                                        @endphp
+                                                        @if($colorHex)
                                                         <br><strong>@lang('Color'):</strong>
-                                                        <span style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"></span>
+                                                        <span style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"></span>
+                                                        @endif
                                                     @endif
                                                 </td>
                                             </tr>

@@ -457,10 +457,21 @@
                                                     </li>
                                                 @endif
                                                 @if (!empty($catalogItem['color']))
+                                                    @php
+                                                        $colorValue = $catalogItem['color'];
+                                                        // Handle both array and string formats
+                                                        if (is_array($colorValue)) {
+                                                            $colorCode = $colorValue['code'] ?? $colorValue['color'] ?? '';
+                                                        } else {
+                                                            $colorCode = $colorValue;
+                                                        }
+                                                    @endphp
+                                                    @if (!empty($colorCode))
                                                     <li><b><span>Color:</span></b>
                                                         <span id="color-bar"
-                                                            style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $catalogItem['color'] }};"></span>
+                                                            style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorCode }};"></span>
                                                     </li>
+                                                    @endif
                                                 @endif
 
                                                 @if (!empty($catalogItem['keys']))

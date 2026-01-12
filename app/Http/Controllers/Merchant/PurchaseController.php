@@ -12,14 +12,20 @@ class PurchaseController extends MerchantBaseController
     public function index()
     {
         $user = $this->user;
-        $purchases = Purchase::with(array('merchantPurchases' => function ($query) use ($user) {
+
+        // ============================================================
+        // OPTIMIZED: Query purchases directly via MerchantPurchase
+        // Was: Loading ALL purchases then filtering in PHP (N+1 problem)
+        // Now: Single query with proper database filtering + pagination
+        // ============================================================
+        $purchases = Purchase::whereHas('merchantPurchases', function ($query) use ($user) {
             $query->where('user_id', $user->id);
-        }))->orderby('id', 'desc')->get()->reject(function ($item) use ($user) {
-            if ($item->merchantPurchases()->where('user_id', '=', $user->id)->count() == 0) {
-                return true;
-            }
-            return false;
-        })->paginate(3);
+        })
+        ->with(['merchantPurchases' => function ($query) use ($user) {
+            $query->where('user_id', $user->id);
+        }])
+        ->orderby('id', 'desc')
+        ->paginate(15);
 
         return view('merchant.purchase.index', compact('purchases', 'user'));
     }

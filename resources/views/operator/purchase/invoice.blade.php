@@ -177,10 +177,16 @@
                                                </p>
                                                @endif
                                                @if($catalogItem['color'])
+                                                @php
+                                                    $clr = $catalogItem['color'];
+                                                    $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
+                                                @endphp
+                                                @if($colorHex)
                                                 <p>
                                                         <strong>{{ __('color') }} :</strong> <span
-                                                        style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$catalogItem['color']}};"></span>
+                                                        style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"></span>
                                                 </p>
+                                                @endif
                                                 @endif
                                                 <p>
                                                         <strong>{{ __('Price') }} :</strong>{{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) * $purchase->currency_value) }}
