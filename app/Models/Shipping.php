@@ -34,7 +34,9 @@ class Shipping extends Model
     ];
 
     /**
-     * يعيد شحنات التاجر + الشحنات العامة (user_id = 0)
+     * يعيد شحنات التاجر + الشحنات العامة (الأوبريتور)
+     * user_id = 0 (operator/platform) - متاحة لجميع التجار
+     * user_id = $merchantId - شحنات التاجر الخاصة
      * ويقدّم شحنات التاجر في الترتيب.
      */
     public function scopeForMerchant(Builder $query, int $merchantId): Builder

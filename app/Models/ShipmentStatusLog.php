@@ -12,6 +12,7 @@ class ShipmentStatusLog extends Model
         'tracking_number',
         'shipment_id',
         'company_name',
+        'provider',
         'status',
         'status_ar',
         'message',

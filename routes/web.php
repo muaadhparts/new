@@ -1128,6 +1128,12 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/stats', 'Merchant\DeliveryController@shippingStats')->name('merchant.shipping.stats');
             Route::get('delivery/purchase-status/{purchaseId}', 'Merchant\DeliveryController@getPurchaseShipmentStatus')->name('merchant.purchase.shipment.status');
 
+            // Dynamic Shipping Provider Routes
+            Route::get('delivery/shipping-providers', 'Merchant\DeliveryController@getShippingProviders')->name('merchant.shipping.providers');
+            Route::get('delivery/provider-options', 'Merchant\DeliveryController@getProviderShippingOptions')->name('merchant.provider.shipping.options');
+            Route::post('delivery/send-provider-shipping', 'Merchant\DeliveryController@sendProviderShipping')->name('merchant.send.provider.shipping');
+            Route::get('delivery/couriers', 'Merchant\DeliveryController@findCourier')->name('merchant.delivery.couriers');
+
             //------------ SUBCATEGORY SECTION ------------
 
             Route::get('/load/subcategories/{id}/', 'Merchant\MerchantController@subcatload')->name('merchant-subcat-load'); //JSON REQUEST

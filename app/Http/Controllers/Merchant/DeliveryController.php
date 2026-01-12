@@ -883,4 +883,234 @@ class DeliveryController extends MerchantBaseController
             'message' => $latestStatus->message_ar ?? $latestStatus->message
         ]);
     }
+
+    /**
+     * ✅ Get Available Shipping Providers (Dynamic Tabs)
+     * Returns distinct providers from shippings table for this merchant
+     */
+    public function getShippingProviders(Request $request)
+    {
+        try {
+            $merchantId = $this->user->id;
+
+            // Get distinct providers for this merchant (merchant's + platform/operator default)
+            // Note: Don't use forMerchant scope here as it adds ORDER BY which conflicts with DISTINCT
+            // user_id=0 → Operator/Platform (متاح للجميع)
+            // user_id=$merchantId → شحنات التاجر الخاصة
+            $providers = Shipping::whereIn('user_id', [0, $merchantId])
+                ->whereNotNull('provider')
+                ->where('provider', '!=', '')
+                ->select('provider')
+                ->distinct()
+                ->pluck('provider')
+                ->toArray();
+
+            // Provider display names (can be extended)
+            $providerLabels = [
+                'tryoto' => __('Smart Shipping (Tryoto)'),
+                'manual' => __('Manual Shipping'),
+                'Saudi' => __('Saudi Post'),
+                'debts' => __('Debts Shipping'),
+            ];
+
+            // Provider icons
+            $providerIcons = [
+                'tryoto' => 'fas fa-shipping-fast',
+                'manual' => 'fas fa-truck',
+                'Saudi' => 'fas fa-mail-bulk',
+                'debts' => 'fas fa-file-invoice-dollar',
+            ];
+
+            $result = [];
+            foreach ($providers as $provider) {
+                $result[] = [
+                    'key' => $provider,
+                    'label' => $providerLabels[$provider] ?? ucfirst($provider),
+                    'icon' => $providerIcons[$provider] ?? 'fas fa-box',
+                    'has_api' => ($provider === 'tryoto'), // Only tryoto has API currently
+                ];
+            }
+
+            return response()->json([
+                'success' => true,
+                'providers' => $result
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Get Shipping Providers Error', [
+                'merchant_id' => $this->user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => __('Failed to load shipping providers'),
+                'providers' => []
+            ]);
+        }
+    }
+
+    /**
+     * ✅ Get Shipping Options for a specific Provider
+     * Returns shipping methods for the specified provider
+     */
+    public function getProviderShippingOptions(Request $request)
+    {
+        try {
+            $merchantId = $this->user->id;
+            $provider = $request->input('provider');
+
+            if (empty($provider)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('Provider is required'),
+                    'options' => []
+                ]);
+            }
+
+            // For tryoto, return empty (options come from API via getShippingOptions)
+            if ($provider === 'tryoto') {
+                return response()->json([
+                    'success' => true,
+                    'has_api' => true,
+                    'message' => __('Use Tryoto API to get options'),
+                    'options' => []
+                ]);
+            }
+
+            // Get shipping methods for this provider
+            $shippings = Shipping::forMerchant($merchantId)
+                ->where('provider', $provider)
+                ->orderBy('price', 'asc')
+                ->get();
+
+            if ($shippings->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('No shipping methods found for this provider'),
+                    'options' => []
+                ]);
+            }
+
+            $options = $shippings->map(function ($shipping) {
+                return [
+                    'id' => $shipping->id,
+                    'title' => $shipping->title,
+                    'subtitle' => $shipping->subtitle,
+                    'price' => (float) $shipping->price,
+                    'display_price' => PriceHelper::showAdminCurrencyPrice($shipping->price),
+                    'free_above' => $shipping->free_above,
+                    'provider' => $shipping->provider,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'has_api' => false,
+                'options' => $options
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Provider Shipping Options Error', [
+                'merchant_id' => $this->user->id,
+                'provider' => $request->input('provider'),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => __('Failed to load shipping methods'),
+                'options' => []
+            ]);
+        }
+    }
+
+    /**
+     * ✅ Assign Provider Shipping to Purchase (Dynamic - works for any provider except tryoto)
+     * Creates a shipment record with the specified provider
+     */
+    public function sendProviderShipping(Request $request)
+    {
+        $request->validate([
+            'purchase_id' => 'required|exists:purchases,id',
+            'shipping_id' => 'required|exists:shippings,id',
+            'tracking_number' => 'nullable|string|max:100',
+        ]);
+
+        $purchase = Purchase::find($request->purchase_id);
+        $merchantId = $this->user->id;
+
+        // Verify this purchase belongs to this merchant
+        $merchantOrder = $purchase->merchantPurchases()->where('user_id', $merchantId)->first();
+        if (!$merchantOrder) {
+            return redirect()->back()->with('error', __('This purchase does not belong to you'));
+        }
+
+        // Check for existing shipment
+        $existingShipment = ShipmentStatusLog::where('purchase_id', $purchase->id)
+            ->where('merchant_id', $merchantId)
+            ->whereNotIn('status', ['cancelled', 'returned'])
+            ->first();
+
+        if ($existingShipment) {
+            return redirect()->back()->with('error', __('A shipment already exists for this purchase. Tracking: ') . $existingShipment->tracking_number);
+        }
+
+        // Get the selected shipping method
+        $shipping = Shipping::find($request->shipping_id);
+        if (!$shipping) {
+            return redirect()->back()->with('error', __('Invalid shipping method'));
+        }
+
+        // Generate tracking number with provider prefix
+        $providerPrefix = strtoupper(substr($shipping->provider ?? 'MAN', 0, 3));
+        $trackingNumber = $request->tracking_number ?: $providerPrefix . '-' . strtoupper(uniqid()) . '-' . $purchase->id;
+
+        // Create shipment log entry
+        ShipmentStatusLog::create([
+            'purchase_id' => $purchase->id,
+            'merchant_id' => $merchantId,
+            'tracking_number' => $trackingNumber,
+            'company_name' => $shipping->title,
+            'provider' => $shipping->provider ?? 'manual',
+            'status' => 'processing',
+            'status_ar' => 'قيد التجهيز',
+            'message' => __('Shipment assigned by merchant via :provider', ['provider' => $shipping->provider ?? 'manual']),
+            'message_ar' => 'تم تعيين الشحنة بواسطة التاجر عبر ' . ($shipping->provider ?? 'يدوي'),
+            'status_date' => now(),
+            'raw_data' => [
+                'shipping_id' => $shipping->id,
+                'shipping_title' => $shipping->title,
+                'shipping_price' => $shipping->price,
+                'provider' => $shipping->provider,
+                'assigned_by' => $merchantId,
+                'assigned_at' => now()->toIso8601String(),
+            ],
+        ]);
+
+        // Update merchant purchase status
+        $merchantOrder->status = 'processing';
+        $merchantOrder->save();
+
+        // Add tracking entry to purchase
+        $purchase->tracks()->create([
+            'title' => __('Shipping Assigned'),
+            'text' => __('Shipment assigned to :company (:provider). Tracking: :tracking', [
+                'company' => $shipping->title,
+                'provider' => $shipping->provider ?? 'manual',
+                'tracking' => $trackingNumber
+            ])
+        ]);
+
+        Log::info('Provider shipping assigned', [
+            'purchase_id' => $purchase->id,
+            'merchant_id' => $merchantId,
+            'shipping_id' => $shipping->id,
+            'shipping_title' => $shipping->title,
+            'provider' => $shipping->provider,
+            'tracking_number' => $trackingNumber,
+        ]);
+
+        return redirect()->back()->with('success', __('Shipping assigned successfully. Tracking Number: ') . $trackingNumber);
+    }
 }

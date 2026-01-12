@@ -385,49 +385,23 @@
                         </small>
                     </div>
 
-                    {{-- Tryoto Shipping Form --}}
-                    <div class="tryoto-shipping-content">
-                            <form id="tryotoForm" action="{{ route('merchant.send.tryoto') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="purchase_id" id="tryoto_purchase_id">
-                                <input type="hidden" name="delivery_option_id" id="delivery_option_id">
-                                <input type="hidden" name="company" id="selected_company">
-                                <input type="hidden" name="price" id="selected_price">
-                                <input type="hidden" name="service_type" id="selected_service_type">
+                    {{-- ✅ Dynamic Provider Tabs (Built from database) --}}
+                    <ul class="nav nav-tabs mb-3" id="shippingProviderTabs" role="tablist">
+                        {{-- Tabs will be built dynamically via JavaScript --}}
+                        <li class="nav-item" role="presentation">
+                            <span class="nav-link disabled">
+                                <i class="fas fa-spinner fa-spin"></i> @lang('Loading providers...')
+                            </span>
+                        </li>
+                    </ul>
 
-                                <div class="mb-3">
-                                    <label class="form-label">@lang('Select Shipping Company')</label>
-                                    <select class="form-select" id="shippingCompanySelect" required>
-                                        <option value="">@lang('Loading shipping options...')</option>
-                                    </select>
-                                </div>
-
-                                <div id="shippingDetails" class="d-none mb-3 p-3 bg-light rounded">
-                                    <div class="row">
-                                        <div class="col-6">
-                                            <strong>@lang('Company:')</strong>
-                                            <span id="detail_company"></span>
-                                        </div>
-                                        <div class="col-6">
-                                            <strong>@lang('Price:')</strong>
-                                            <span id="detail_price"></span>
-                                        </div>
-                                        <div class="col-12 mt-2">
-                                            <strong>@lang('Estimated Delivery:')</strong>
-                                            <span id="detail_days"></span> @lang('days')
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i>
-                                    @lang('The shipment will be created with Tryoto and you will receive a tracking number.')
-                                </div>
-
-                                <button type="submit" class="template-btn w-100" id="submitTryotoBtn" disabled>
-                                    <i class="fas fa-paper-plane"></i> @lang('Create Shipment')
-                                </button>
-                            </form>
+                    <div class="tab-content" id="shippingProviderContent">
+                        {{-- Tab content will be built dynamically via JavaScript --}}
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -494,28 +468,23 @@
 (function($) {
     "use strict";
 
-    // Store customer choice globally
+    // Store data globally
     let currentCustomerChoice = null;
+    let currentPurchaseId = null;
+    let currentCustomerCity = null;
+    let loadedProviders = [];
 
     // Open shipping modal
     $(document).on('click', '.assignShippingBtn', function() {
-        const purchaseId = $(this).data('purchase-id');
-        const customerCity = $(this).data('customer-city');
+        currentPurchaseId = $(this).data('purchase-id');
+        currentCustomerCity = $(this).data('customer-city');
         currentCustomerChoice = $(this).data('customer-choice');
 
-        $('#modal_purchase_id').val(purchaseId);
-        $('#tryoto_purchase_id').val(purchaseId);
+        // Set purchase ID
+        $('#modal_purchase_id').val(currentPurchaseId);
 
-        // ✅ Show customer choice alert if exists
-        if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto') {
-            $('#customerChoiceAlert').removeClass('d-none');
-            $('#customerChoiceText').html(
-                '<span class="badge bg-primary">' + (currentCustomerChoice.company_name || 'Tryoto') + '</span> - ' +
-                '@lang("Price"): ' + (currentCustomerChoice.price || 0) + ' @lang("SAR")'
-            );
-        } else {
-            $('#customerChoiceAlert').addClass('d-none');
-        }
+        // ✅ Show customer choice alert
+        showCustomerChoiceAlert();
 
         // ✅ Show free shipping warning if applicable
         if (currentCustomerChoice && currentCustomerChoice.is_free_shipping) {
@@ -525,58 +494,291 @@
             $('#freeShippingWarning').addClass('d-none');
         }
 
-        // Reset forms
-        $('#shippingCompanySelect').html('<option value="">@lang("Loading shipping options...")</option>');
-        $('#shippingDetails').addClass('d-none');
-        $('#submitTryotoBtn').prop('disabled', true);
+        // ✅ Load providers and build tabs dynamically
+        loadShippingProviders();
+    });
 
-        // Load Tryoto options
-        $.get("{{ route('merchant.shipping.options') }}", { purchase_id: purchaseId }, function(response) {
+    // ✅ Show customer choice alert based on provider
+    function showCustomerChoiceAlert() {
+        if (!currentCustomerChoice || !currentCustomerChoice.provider) {
+            $('#customerChoiceAlert').addClass('d-none');
+            return;
+        }
+
+        let providerText = '<span class="badge bg-secondary">' +
+            (currentCustomerChoice.company_name || currentCustomerChoice.title || currentCustomerChoice.provider) +
+            '</span>';
+
+        $('#customerChoiceAlert').removeClass('d-none');
+        $('#customerChoiceText').html(
+            providerText + ' - @lang("Price"): ' + (currentCustomerChoice.price || 0) + ' @lang("SAR")'
+        );
+    }
+
+    // ✅ Load shipping providers and build tabs
+    function loadShippingProviders() {
+        $.get("{{ route('merchant.shipping.providers') }}", function(response) {
+            if (response.success && response.providers.length > 0) {
+                loadedProviders = response.providers;
+                buildProviderTabs(response.providers);
+            } else {
+                $('#shippingProviderTabs').html(`
+                    <li class="nav-item">
+                        <span class="nav-link text-danger">
+                            <i class="fas fa-exclamation-triangle"></i> @lang('No shipping providers available')
+                        </span>
+                    </li>
+                `);
+                $('#shippingProviderContent').html(`
+                    <div class="alert alert-warning">
+                        @lang('No shipping providers configured. Please contact administrator.')
+                    </div>
+                `);
+            }
+        }).fail(function() {
+            $('#shippingProviderTabs').html(`
+                <li class="nav-item">
+                    <span class="nav-link text-danger">
+                        <i class="fas fa-exclamation-triangle"></i> @lang('Failed to load providers')
+                    </span>
+                </li>
+            `);
+        });
+    }
+
+    // ✅ Build tabs dynamically from providers
+    function buildProviderTabs(providers) {
+        let tabsHtml = '';
+        let contentHtml = '';
+        let firstTab = true;
+
+        // Determine which tab to show first based on customer choice
+        let defaultProvider = providers[0]?.key || 'tryoto';
+        if (currentCustomerChoice && currentCustomerChoice.provider) {
+            const matchingProvider = providers.find(p => p.key === currentCustomerChoice.provider);
+            if (matchingProvider) {
+                defaultProvider = matchingProvider.key;
+            }
+        }
+
+        providers.forEach(function(provider, index) {
+            const isActive = provider.key === defaultProvider;
+            const tabId = 'provider-' + provider.key;
+
+            // Build tab button
+            tabsHtml += `
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link ${isActive ? 'active' : ''}"
+                            id="${tabId}-tab"
+                            data-bs-toggle="tab"
+                            data-bs-target="#${tabId}-content"
+                            data-provider="${provider.key}"
+                            data-has-api="${provider.has_api}"
+                            type="button" role="tab"
+                            aria-controls="${tabId}-content"
+                            aria-selected="${isActive}">
+                        <i class="${provider.icon}"></i> ${provider.label}
+                    </button>
+                </li>
+            `;
+
+            // Build tab content
+            if (provider.has_api && provider.key === 'tryoto') {
+                // Tryoto has API integration
+                contentHtml += buildTryotoTabContent(tabId, isActive);
+            } else {
+                // Other providers - generic form
+                contentHtml += buildGenericProviderTabContent(tabId, provider, isActive);
+            }
+        });
+
+        $('#shippingProviderTabs').html(tabsHtml);
+        $('#shippingProviderContent').html(contentHtml);
+
+        // Load data for the active tab
+        loadProviderData(defaultProvider);
+
+        // Handle tab change
+        $(document).on('shown.bs.tab', '#shippingProviderTabs button[data-bs-toggle="tab"]', function(e) {
+            const provider = $(e.target).data('provider');
+            loadProviderData(provider);
+        });
+    }
+
+    // ✅ Build Tryoto tab content (API-based)
+    function buildTryotoTabContent(tabId, isActive) {
+        return `
+            <div class="tab-pane fade ${isActive ? 'show active' : ''}" id="${tabId}-content" role="tabpanel">
+                <form id="tryotoForm" action="{{ route('merchant.send.tryoto') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="purchase_id" class="provider-purchase-id" value="${currentPurchaseId}">
+                    <input type="hidden" name="delivery_option_id" id="delivery_option_id">
+                    <input type="hidden" name="company" id="selected_company">
+                    <input type="hidden" name="price" id="selected_price">
+                    <input type="hidden" name="service_type" id="selected_service_type">
+
+                    <div class="mb-3">
+                        <label class="form-label">@lang('Select Shipping Company')</label>
+                        <select class="form-select" id="tryotoShippingSelect" required>
+                            <option value="">@lang('Loading shipping options...')</option>
+                        </select>
+                    </div>
+
+                    <div id="tryotoDetails" class="d-none mb-3 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>@lang('Company:')</strong>
+                                <span id="tryoto_detail_company"></span>
+                            </div>
+                            <div class="col-6">
+                                <strong>@lang('Price:')</strong>
+                                <span id="tryoto_detail_price"></span>
+                            </div>
+                            <div class="col-12 mt-2">
+                                <strong>@lang('Estimated Delivery:')</strong>
+                                <span id="tryoto_detail_days"></span> @lang('days')
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        @lang('The shipment will be created with Tryoto and you will receive a tracking number.')
+                    </div>
+
+                    <button type="submit" class="template-btn w-100" id="submitTryotoBtn" disabled>
+                        <i class="fas fa-paper-plane"></i> @lang('Create Shipment')
+                    </button>
+                </form>
+            </div>
+        `;
+    }
+
+    // ✅ Build generic provider tab content (non-API)
+    function buildGenericProviderTabContent(tabId, provider, isActive) {
+        return `
+            <div class="tab-pane fade ${isActive ? 'show active' : ''}" id="${tabId}-content" role="tabpanel">
+                <form class="providerShippingForm" action="{{ route('merchant.send.provider.shipping') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="purchase_id" class="provider-purchase-id" value="${currentPurchaseId}">
+                    <input type="hidden" name="shipping_id" class="provider-shipping-id">
+
+                    <div class="mb-3">
+                        <label class="form-label">@lang('Select Shipping Option')</label>
+                        <select class="form-select provider-shipping-select" data-provider="${provider.key}" required>
+                            <option value="">@lang('Loading...')</option>
+                        </select>
+                    </div>
+
+                    <div class="provider-details d-none mb-3 p-3 bg-light rounded">
+                        <div class="row">
+                            <div class="col-6">
+                                <strong>@lang('Method:')</strong>
+                                <span class="detail-title"></span>
+                            </div>
+                            <div class="col-6">
+                                <strong>@lang('Price:')</strong>
+                                <span class="detail-price"></span>
+                            </div>
+                            <div class="col-12 mt-2 detail-subtitle-row d-none">
+                                <strong>@lang('Delivery Time:')</strong>
+                                <span class="detail-subtitle"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">@lang('Tracking Number (Optional)')</label>
+                        <input type="text" name="tracking_number" class="form-control" placeholder="@lang('Enter tracking number if available')">
+                    </div>
+
+                    <div class="alert alert-secondary">
+                        <i class="fas fa-info-circle"></i>
+                        @lang('Select a shipping option and optionally enter a tracking number.')
+                    </div>
+
+                    <button type="submit" class="template-btn w-100 submit-provider-btn" disabled>
+                        <i class="fas fa-check"></i> @lang('Assign Shipping')
+                    </button>
+                </form>
+            </div>
+        `;
+    }
+
+    // ✅ Load provider data
+    function loadProviderData(providerKey) {
+        const provider = loadedProviders.find(p => p.key === providerKey);
+        if (!provider) return;
+
+        if (provider.has_api && providerKey === 'tryoto') {
+            loadTryotoOptions();
+        } else {
+            loadProviderOptions(providerKey);
+        }
+    }
+
+    // ✅ Load Tryoto options (API)
+    function loadTryotoOptions() {
+        $.get("{{ route('merchant.shipping.options') }}", { purchase_id: currentPurchaseId }, function(response) {
             if (response.success) {
-                $('#shippingCompanySelect').html(response.options);
+                $('#tryotoShippingSelect').html(response.options);
 
-                // ✅ Auto-select customer's choice if available
+                // Auto-select customer's choice if available
                 if (currentCustomerChoice && currentCustomerChoice.provider === 'tryoto' && currentCustomerChoice.delivery_option_id) {
-                    const optionToSelect = $('#shippingCompanySelect option[value="' + currentCustomerChoice.delivery_option_id + '"]');
+                    const optionToSelect = $('#tryotoShippingSelect option[value="' + currentCustomerChoice.delivery_option_id + '"]');
                     if (optionToSelect.length) {
                         optionToSelect.prop('selected', true);
-                        $('#shippingCompanySelect').trigger('change');
+                        $('#tryotoShippingSelect').trigger('change');
                         toastr.info('@lang("Customer\'s preferred shipping company selected automatically")');
                     }
                 }
             } else {
-                // ✅ تحسين معالجة الأخطاء
-                let errorHtml = '<option value="">@lang("Shipping temporarily unavailable")</option>';
-                $('#shippingCompanySelect').html(errorHtml);
-
-                // عرض رسالة خطأ مناسبة
-                if (response.error_code === 'MERCHANT_CITY_MISSING') {
-                    toastr.warning('@lang("Please configure your city in merchant settings")');
-                    if (response.show_settings_link) {
-                        $('#shippingCompanySelect').after('<a href="{{ route("merchant-profile") }}" class="btn btn-sm btn-link">@lang("Go to Settings")</a>');
-                    }
-                } else if (response.error_code === 'CUSTOMER_CITY_MISSING') {
-                    toastr.warning('@lang("Customer city not specified in purchase")');
-                } else if (response.error_code === 'TRYOTO_NOT_CONFIGURED') {
-                    toastr.error('@lang("Smart Shipping is not configured. Contact admin.")');
-                } else if (response.error) {
+                $('#tryotoShippingSelect').html('<option value="">@lang("Shipping temporarily unavailable")</option>');
+                if (response.error) {
                     toastr.error(response.error);
                 }
-
-                // ✅ عرض تفاصيل تقنية في الـ console للتشخيص
-                if (response.technical_error) {
-                    console.warn('Shipping Error Details:', response);
-                }
             }
-        }).fail(function(xhr) {
-            $('#shippingCompanySelect').html('<option value="">@lang("Connection error - Please try again")</option>');
-            toastr.error('@lang("Failed to connect to shipping service")');
-            console.error('Shipping API Error:', xhr);
+        }).fail(function() {
+            $('#tryotoShippingSelect').html('<option value="">@lang("Connection error - Please try again")</option>');
         });
-    });
+    }
 
-    // Shipping company selection
-    $(document).on('change', '#shippingCompanySelect', function() {
+    // ✅ Load provider options (non-API)
+    function loadProviderOptions(providerKey) {
+        const $select = $(`.provider-shipping-select[data-provider="${providerKey}"]`);
+
+        $.get("{{ route('merchant.provider.shipping.options') }}", { provider: providerKey }, function(response) {
+            if (response.success && response.options.length > 0) {
+                let html = '<option value="">@lang("Select Shipping Option")</option>';
+                response.options.forEach(function(option) {
+                    html += `<option value="${option.id}"
+                                data-title="${escapeHtml(option.title)}"
+                                data-subtitle="${escapeHtml(option.subtitle || '')}"
+                                data-price="${option.price}"
+                                data-display-price="${option.display_price}">
+                                ${option.title} - ${option.display_price}
+                            </option>`;
+                });
+                $select.html(html);
+
+                // Auto-select if customer chose this provider
+                if (currentCustomerChoice && currentCustomerChoice.provider === providerKey && currentCustomerChoice.shipping_id) {
+                    const optionToSelect = $select.find(`option[value="${currentCustomerChoice.shipping_id}"]`);
+                    if (optionToSelect.length) {
+                        optionToSelect.prop('selected', true);
+                        $select.trigger('change');
+                    }
+                }
+            } else {
+                $select.html('<option value="">@lang("No options available")</option>');
+            }
+        }).fail(function() {
+            $select.html('<option value="">@lang("Failed to load options")</option>');
+        });
+    }
+
+    // ✅ Tryoto selection change
+    $(document).on('change', '#tryotoShippingSelect', function() {
         const selected = $(this).find('option:selected');
         const deliveryOptionId = $(this).val();
 
@@ -586,17 +788,54 @@
             $('#selected_price').val(selected.data('price'));
             $('#selected_service_type').val(selected.data('service-type') || 'express');
 
-            $('#detail_company').text(selected.data('company'));
-            $('#detail_price').text(selected.data('display-price'));
-            $('#detail_days').text(selected.data('days') || 'N/A');
+            $('#tryoto_detail_company').text(selected.data('company'));
+            $('#tryoto_detail_price').text(selected.data('display-price'));
+            $('#tryoto_detail_days').text(selected.data('days') || 'N/A');
 
-            $('#shippingDetails').removeClass('d-none');
+            $('#tryotoDetails').removeClass('d-none');
             $('#submitTryotoBtn').prop('disabled', false);
         } else {
-            $('#shippingDetails').addClass('d-none');
+            $('#tryotoDetails').addClass('d-none');
             $('#submitTryotoBtn').prop('disabled', true);
         }
     });
+
+    // ✅ Generic provider selection change
+    $(document).on('change', '.provider-shipping-select', function() {
+        const $form = $(this).closest('form');
+        const selected = $(this).find('option:selected');
+        const shippingId = $(this).val();
+
+        if (shippingId) {
+            $form.find('.provider-shipping-id').val(shippingId);
+            $form.find('.detail-title').text(selected.data('title'));
+            $form.find('.detail-price').text(selected.data('display-price'));
+
+            const subtitle = selected.data('subtitle');
+            if (subtitle) {
+                $form.find('.detail-subtitle').text(subtitle);
+                $form.find('.detail-subtitle-row').removeClass('d-none');
+            } else {
+                $form.find('.detail-subtitle-row').addClass('d-none');
+            }
+
+            $form.find('.provider-details').removeClass('d-none');
+            $form.find('.submit-provider-btn').prop('disabled', false);
+        } else {
+            $form.find('.provider-details').addClass('d-none');
+            $form.find('.submit-provider-btn').prop('disabled', true);
+        }
+    });
+
+    // Helper function to escape HTML
+    function escapeHtml(text) {
+        if (!text) return '';
+        return String(text).replace(/&/g, "&amp;")
+                   .replace(/</g, "&lt;")
+                   .replace(/>/g, "&gt;")
+                   .replace(/"/g, "&quot;")
+                   .replace(/'/g, "&#039;");
+    }
 
     // Track shipment
     $(document).on('click', '.trackShipmentBtn', function() {
