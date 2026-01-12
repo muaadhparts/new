@@ -31,11 +31,11 @@ class PurchaseController extends UserBaseController
         $purchase = $user->purchases()->where('purchase_number','=',$id)->first();
         $datas = array('Pending','Processing','On Delivery','Completed');
 
-        // Load shipment logs for tracking display
+        // Load shipment trackings for tracking display
         $shipmentLogs = collect();
         if ($purchase) {
-            $shipmentLogs = \App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                ->orderBy('status_date', 'desc')
+            $shipmentLogs = \App\Models\ShipmentTracking::where('purchase_id', $purchase->id)
+                ->orderBy('occurred_at', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->get();
         }

@@ -235,11 +235,20 @@ class Purchase extends Model
     }
 
     /**
-     * علاقة مع ShipmentStatusLog
+     * علاقة مع ShipmentTracking (النظام الجديد)
+     */
+    public function shipmentTrackings()
+    {
+        return $this->hasMany('App\Models\ShipmentTracking', 'purchase_id')->orderBy('occurred_at', 'desc');
+    }
+
+    /**
+     * علاقة مع ShipmentStatusLog (للتوافق - سيتم إزالته)
+     * @deprecated Use shipmentTrackings() instead
      */
     public function shipmentLogs()
     {
-        return $this->hasMany('App\Models\ShipmentStatusLog', 'purchase_id')->orderBy('status_date', 'desc');
+        return $this->shipmentTrackings();
     }
 
     /**
@@ -247,7 +256,7 @@ class Purchase extends Model
      */
     public function getLatestShipmentStatus()
     {
-        return $this->shipmentLogs()->first();
+        return $this->shipmentTrackings()->first();
     }
 
     /**
@@ -255,7 +264,7 @@ class Purchase extends Model
      */
     public function getTrackingNumbers()
     {
-        return $this->shipmentLogs()->pluck('tracking_number')->unique()->values();
+        return $this->shipmentTrackings()->pluck('tracking_number')->unique()->values();
     }
 
     /**

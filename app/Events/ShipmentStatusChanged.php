@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -15,15 +15,15 @@ class ShipmentStatusChanged implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $shipmentLog;
+    public $shipmentTracking;
     public $oldStatus;
 
     /**
      * Create a new event instance.
      */
-    public function __construct(ShipmentStatusLog $shipmentLog, ?string $oldStatus = null)
+    public function __construct(ShipmentTracking $shipmentTracking, ?string $oldStatus = null)
     {
-        $this->shipmentLog = $shipmentLog;
+        $this->shipmentTracking = $shipmentTracking;
         $this->oldStatus = $oldStatus;
     }
 
@@ -35,13 +35,13 @@ class ShipmentStatusChanged implements ShouldBroadcast
         $channels = [];
 
         // Channel for the customer (if purchase has user_id)
-        if ($this->shipmentLog->purchase && $this->shipmentLog->purchase->user_id) {
-            $channels[] = new PrivateChannel('user.' . $this->shipmentLog->purchase->user_id);
+        if ($this->shipmentTracking->purchase && $this->shipmentTracking->purchase->user_id) {
+            $channels[] = new PrivateChannel('user.' . $this->shipmentTracking->purchase->user_id);
         }
 
         // Channel for the merchant
-        if ($this->shipmentLog->merchant_id) {
-            $channels[] = new PrivateChannel('merchant.' . $this->shipmentLog->merchant_id);
+        if ($this->shipmentTracking->merchant_id) {
+            $channels[] = new PrivateChannel('merchant.' . $this->shipmentTracking->merchant_id);
         }
 
         // Admin channel
@@ -56,16 +56,16 @@ class ShipmentStatusChanged implements ShouldBroadcast
     public function broadcastWith(): array
     {
         return [
-            'tracking_number' => $this->shipmentLog->tracking_number,
-            'purchase_id' => $this->shipmentLog->purchase_id,
-            'purchase_number' => $this->shipmentLog->purchase?->purchase_number,
+            'tracking_number' => $this->shipmentTracking->tracking_number,
+            'purchase_id' => $this->shipmentTracking->purchase_id,
+            'purchase_number' => $this->shipmentTracking->purchase?->purchase_number,
             'old_status' => $this->oldStatus,
-            'new_status' => $this->shipmentLog->status,
-            'status_ar' => $this->shipmentLog->status_ar,
-            'message' => $this->shipmentLog->message_ar,
-            'location' => $this->shipmentLog->location,
-            'company_name' => $this->shipmentLog->company_name,
-            'status_date' => $this->shipmentLog->status_date?->toISOString(),
+            'new_status' => $this->shipmentTracking->status,
+            'status_ar' => $this->shipmentTracking->status_ar,
+            'message' => $this->shipmentTracking->message_ar ?? $this->shipmentTracking->message,
+            'location' => $this->shipmentTracking->location,
+            'company_name' => $this->shipmentTracking->company_name,
+            'occurred_at' => $this->shipmentTracking->occurred_at?->toISOString(),
         ];
     }
 

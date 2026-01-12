@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Purchase;
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 use App\Models\UserCatalogEvent;
+use App\Services\ShipmentTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -60,40 +61,31 @@ class TryotoWebhookController extends Controller
             }
 
             // البحث عن الشحنة في النظام
-            $existingLog = ShipmentStatusLog::where('tracking_number', $trackingNumber)
-                                            ->latest('created_at')
-                                            ->first();
+            $existingTracking = ShipmentTracking::getLatestByTracking($trackingNumber);
 
-            if (!$existingLog) {
+            if (!$existingTracking) {
                 Log::warning('Tryoto Webhook: Tracking number not found', ['tracking' => $trackingNumber]);
                 return response()->json(['success' => false, 'message' => 'Tracking number not found'], 404);
             }
 
+            // Use ShipmentTrackingService to update
+            $trackingService = app(ShipmentTrackingService::class);
+            $newTracking = $trackingService->updateFromApi(
+                purchaseId: $existingTracking->purchase_id,
+                merchantId: $existingTracking->merchant_id,
+                status: $status,
+                location: $location,
+                message: $message,
+                rawData: $request->all(),
+                occurredAt: $statusDate
+            );
+
             // ترجمة الحالة للعربية
             $statusAr = $this->getStatusArabic($status);
-            $messageAr = $this->getMessageArabic($status, $location);
-
-            // حفظ الحالة الجديدة
-            $newLog = ShipmentStatusLog::create([
-                'purchase_id' => $existingLog->purchase_id,
-                'merchant_id' => $existingLog->merchant_id,
-                'tracking_number' => $trackingNumber,
-                'shipment_id' => $shipmentId ?: $existingLog->shipment_id,
-                'company_name' => $existingLog->company_name,
-                'status' => $status,
-                'status_ar' => $statusAr,
-                'message' => $message,
-                'message_ar' => $messageAr,
-                'location' => $location,
-                'latitude' => $latitude,
-                'longitude' => $longitude,
-                'status_date' => $statusDate,
-                'raw_data' => $request->all(),
-            ]);
 
             // Update Purchase status when delivered
             if ($status === 'delivered') {
-                $purchase = Purchase::find($existingLog->purchase_id);
+                $purchase = Purchase::find($existingTracking->purchase_id);
                 if ($purchase && $purchase->status !== 'completed') {
                     $purchase->status = 'completed';
                     $purchase->save();
@@ -108,14 +100,14 @@ class TryotoWebhookController extends Controller
 
             // إرسال Notification للتاجر عند التغييرات المهمة
             if (in_array($status, ['picked_up', 'delivered', 'failed', 'returned'])) {
-                if ($existingLog->merchant_id) {
+                if ($existingTracking->merchant_id) {
                     try {
                         $notification = new UserCatalogEvent();
-                        $notification->user_id = $existingLog->merchant_id;
-                        $notification->purchase_number = $existingLog->purchase->purchase_number ?? 'N/A';
+                        $notification->user_id = $existingTracking->merchant_id;
+                        $notification->purchase_number = $existingTracking->purchase->purchase_number ?? 'N/A';
                         // فقط إضافة purchase_id إذا كان العمود موجوداً
                         if (\Schema::hasColumn('user_catalog_events', 'purchase_id')) {
-                            $notification->purchase_id = $existingLog->purchase_id;
+                            $notification->purchase_id = $existingTracking->purchase_id;
                         }
                         $notification->is_read = 0;
                         $notification->save();
@@ -123,7 +115,7 @@ class TryotoWebhookController extends Controller
                         // تجاهل أخطاء الـ notification - ليست حرجة
                         Log::warning('Tryoto Webhook: Notification failed', [
                             'error' => $notifError->getMessage(),
-                            'merchant_id' => $existingLog->merchant_id,
+                            'merchant_id' => $existingTracking->merchant_id,
                         ]);
                     }
                 }
@@ -132,7 +124,7 @@ class TryotoWebhookController extends Controller
             Log::debug('Tryoto Webhook Processed Successfully', [
                 'tracking' => $trackingNumber,
                 'status' => $status,
-                'purchase_id' => $existingLog->purchase_id,
+                'purchase_id' => $existingTracking->purchase_id,
             ]);
 
             return response()->json([
@@ -164,8 +156,7 @@ class TryotoWebhookController extends Controller
      */
     private function getStatusArabic($status)
     {
-        $translations = ShipmentStatusLog::getStatusTranslations();
-        return $translations[$status] ?? $status;
+        return ShipmentTracking::getStatusTranslation($status);
     }
 
     /**

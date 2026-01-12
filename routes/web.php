@@ -1307,16 +1307,17 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT SOCIAL LINK ENDS ------------
 
-            //------------ MERCHANT SHIPMENTS SECTION ------------
+            //------------ MERCHANT SHIPMENT TRACKING (NEW SYSTEM) ------------
 
-            Route::get('/shipments', 'Merchant\ShipmentController@index')->name('merchant.shipments.index');
-            Route::get('/shipments/show/{tracking}', 'Merchant\ShipmentController@show')->name('merchant.shipments.show');
-            Route::get('/shipments/refresh/{tracking}', 'Merchant\ShipmentController@refresh')->name('merchant.shipments.refresh');
-            Route::post('/shipments/cancel/{tracking}', 'Merchant\ShipmentController@cancel')->name('merchant.shipments.cancel');
-            Route::get('/shipments/export', 'Merchant\ShipmentController@export')->name('merchant.shipments.export');
-            Route::post('/shipments/bulk-refresh', 'Merchant\ShipmentController@bulkRefresh')->name('merchant.shipments.bulk-refresh');
+            Route::get('/shipment-tracking', 'Merchant\ShipmentTrackingController@index')->name('merchant.shipment-tracking.index');
+            Route::get('/shipment-tracking/{purchaseId}', 'Merchant\ShipmentTrackingController@show')->name('merchant.shipment-tracking.show');
+            Route::put('/shipment-tracking/{purchaseId}', 'Merchant\ShipmentTrackingController@updateStatus')->name('merchant.shipment-tracking.update');
+            Route::post('/shipment-tracking/{purchaseId}/start', 'Merchant\ShipmentTrackingController@startManualShipment')->name('merchant.shipment-tracking.start');
+            Route::get('/shipment-tracking/{purchaseId}/refresh', 'Merchant\ShipmentTrackingController@refreshFromApi')->name('merchant.shipment-tracking.refresh');
+            Route::get('/shipment-tracking/{purchaseId}/history', 'Merchant\ShipmentTrackingController@getHistory')->name('merchant.shipment-tracking.history');
+            Route::get('/shipment-tracking-stats', 'Merchant\ShipmentTrackingController@stats')->name('merchant.shipment-tracking.stats');
 
-            //------------ MERCHANT SHIPMENTS SECTION ENDS------------
+            //------------ MERCHANT SHIPMENT TRACKING ENDS ------------
 
             //------------ MERCHANT DISCOUNT CODE SECTION ------------
 
@@ -1663,10 +1664,15 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/purchase/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
 
     // SHIPMENT TRACKING SECTION
-    Route::get('/tracking', 'Front\ShipmentTrackingController@index')->name('front.tracking');
-    Route::get('/tracking/status', 'Front\ShipmentTrackingController@getStatus')->name('front.tracking.status');
-    Route::get('/tracking/refresh', 'Front\ShipmentTrackingController@refresh')->name('front.tracking.refresh');
-    Route::get('/my-shipments', 'Front\ShipmentTrackingController@myShipments')->name('front.my-shipments');
+    // SHIPMENT TRACKING (NEW SYSTEM) - Public tracking page
+    Route::get('/tracking', 'User\ShipmentTrackingController@track')->name('front.tracking');
+    Route::get('/tracking/status', 'User\ShipmentTrackingController@getStatus')->name('front.tracking.status');
+
+    // User shipment tracking (requires auth)
+    Route::middleware('auth')->group(function() {
+        Route::get('/my-shipments', 'User\ShipmentTrackingController@index')->name('user.shipment-tracking.index');
+        Route::get('/my-shipments/{purchaseId}', 'User\ShipmentTrackingController@show')->name('user.shipment-tracking.show');
+    });
     // SHIPMENT TRACKING SECTION ENDS
 
     // PUBLICATION SECTION

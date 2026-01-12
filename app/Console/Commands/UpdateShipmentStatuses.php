@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Events\ShipmentStatusChanged;
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 use App\Services\TryotoService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -53,11 +53,13 @@ class UpdateShipmentStatuses extends Command
         $merchantId = $this->option('merchant');
         $force = $this->option('force');
 
-        // Get unique tracking numbers with their latest status
-        $query = ShipmentStatusLog::query()
+        // Get unique tracking numbers with their latest status (API shipments only)
+        $query = ShipmentTracking::query()
+            ->where('integration_type', ShipmentTracking::INTEGRATION_API)
             ->whereIn('id', function ($sub) use ($statuses, $merchantId) {
                 $sub->selectRaw('MAX(id)')
-                    ->from('shipment_status_logs')
+                    ->from('shipment_trackings')
+                    ->where('integration_type', ShipmentTracking::INTEGRATION_API)
                     ->whereIn('status', $statuses)
                     ->when($merchantId, function ($q) use ($merchantId) {
                         $q->where('merchant_id', $merchantId);
@@ -90,7 +92,9 @@ class UpdateShipmentStatuses extends Command
 
         foreach ($shipments as $shipment) {
             try {
-                $result = $this->tryotoService->trackShipment($shipment->tracking_number);
+                // Use merchant-specific credentials
+                $tryotoService = (new TryotoService())->forMerchant($shipment->merchant_id);
+                $result = $tryotoService->trackShipment($shipment->tracking_number);
 
                 if ($result['success']) {
                     $newStatus = $result['status'] ?? 'unknown';

@@ -4,19 +4,22 @@ namespace App\Http\Controllers\Operator;
 
 use App\Models\Purchase;
 use App\Models\User;
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 use App\Services\TryotoService;
+use App\Services\ShipmentTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ShipmentController extends OperatorBaseController
 {
     protected $tryotoService;
+    protected $trackingService;
 
     public function __construct()
     {
         parent::__construct();
         $this->tryotoService = new TryotoService();
+        $this->trackingService = app(ShipmentTrackingService::class);
     }
 
     /**
@@ -31,7 +34,7 @@ class ShipmentController extends OperatorBaseController
         $search = $request->get('search');
 
         // Get operator statistics
-        $stats = $this->tryotoService->getAdminStatistics();
+        $stats = $this->trackingService->getOperatorStats();
 
         // Get all merchants for filter dropdown
         $merchants = User::where('is_merchant', 2)
@@ -40,9 +43,9 @@ class ShipmentController extends OperatorBaseController
             ->get();
 
         // Get shipments with filters
-        $shipments = ShipmentStatusLog::whereIn('id', function ($sub) use ($status, $merchantId, $dateFrom, $dateTo, $search) {
+        $shipments = ShipmentTracking::whereIn('id', function ($sub) use ($status, $merchantId, $dateFrom, $dateTo, $search) {
                 $sub->selectRaw('MAX(id)')
-                    ->from('shipment_status_logs')
+                    ->from('shipment_trackings')
                     ->when($status, function ($q) use ($status) {
                         $q->where('status', $status);
                     })
@@ -50,10 +53,10 @@ class ShipmentController extends OperatorBaseController
                         $q->where('merchant_id', $merchantId);
                     })
                     ->when($dateFrom, function ($q) use ($dateFrom) {
-                        $q->whereDate('status_date', '>=', $dateFrom);
+                        $q->whereDate('occurred_at', '>=', $dateFrom);
                     })
                     ->when($dateTo, function ($q) use ($dateTo) {
-                        $q->whereDate('status_date', '<=', $dateTo);
+                        $q->whereDate('occurred_at', '<=', $dateTo);
                     })
                     ->when($search, function ($q) use ($search) {
                         $q->where(function ($sq) use ($search) {
@@ -66,7 +69,7 @@ class ShipmentController extends OperatorBaseController
                     ->groupBy('tracking_number');
             })
             ->with(['purchase:id,purchase_number,customer_name,pay_amount,currency_sign', 'merchant:id,shop_name,name'])
-            ->orderBy('status_date', 'desc')
+            ->orderBy('occurred_at', 'desc')
             ->paginate(25);
 
         return view('operator.shipments.index', compact('stats', 'shipments', 'merchants', 'status', 'merchantId', 'dateFrom', 'dateTo', 'search'));
@@ -77,19 +80,23 @@ class ShipmentController extends OperatorBaseController
      */
     public function show($trackingNumber)
     {
-        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
-            ->latest('status_date')
+        $shipment = ShipmentTracking::where('tracking_number', $trackingNumber)
+            ->latest('occurred_at')
             ->firstOrFail();
 
-        $history = ShipmentStatusLog::where('tracking_number', $trackingNumber)
-            ->orderBy('status_date', 'desc')
+        $history = ShipmentTracking::where('tracking_number', $trackingNumber)
+            ->orderBy('occurred_at', 'desc')
             ->get();
 
         $purchase = Purchase::with('user')->find($shipment->purchase_id);
         $merchant = User::find($shipment->merchant_id);
 
-        // Try to get live status
-        $liveStatus = $this->tryotoService->trackShipment($trackingNumber);
+        // Try to get live status for API shipments
+        $liveStatus = ['success' => false];
+        if ($shipment->integration_type === ShipmentTracking::INTEGRATION_API) {
+            $tryotoService = (new TryotoService())->forMerchant($shipment->merchant_id);
+            $liveStatus = $tryotoService->trackShipment($trackingNumber);
+        }
 
         return view('operator.shipments.show', compact('shipment', 'history', 'purchase', 'merchant', 'liveStatus'));
     }
@@ -99,16 +106,25 @@ class ShipmentController extends OperatorBaseController
      */
     public function cancel(Request $request, $trackingNumber)
     {
-        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+        $shipment = ShipmentTracking::where('tracking_number', $trackingNumber)
             ->firstOrFail();
 
         // Check if can be cancelled
-        if (in_array($shipment->status, ['delivered', 'cancelled', 'returned'])) {
+        if (in_array($shipment->status, [ShipmentTracking::STATUS_DELIVERED, ShipmentTracking::STATUS_CANCELLED, ShipmentTracking::STATUS_RETURNED])) {
             return back()->with('error', __('This shipment cannot be cancelled'));
         }
 
         $reason = $request->get('reason', 'Cancelled by admin');
-        $result = $this->tryotoService->cancelShipment($trackingNumber, $reason);
+
+        // API shipments: call Tryoto API
+        if ($shipment->integration_type === ShipmentTracking::INTEGRATION_API) {
+            $tryotoService = (new TryotoService())->forMerchant($shipment->merchant_id);
+            $result = $tryotoService->cancelShipment($trackingNumber, $reason);
+        } else {
+            // Manual shipments: use tracking service
+            $result = $this->trackingService->cancelShipment($shipment->purchase_id, $shipment->merchant_id, $reason);
+            $result = ['success' => (bool)$result];
+        }
 
         if ($result['success']) {
             return back()->with('success', __('Shipment cancelled successfully'));
@@ -122,11 +138,17 @@ class ShipmentController extends OperatorBaseController
      */
     public function refresh($trackingNumber)
     {
-        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
+        $shipment = ShipmentTracking::where('tracking_number', $trackingNumber)
             ->firstOrFail();
 
+        // Only API shipments can be refreshed
+        if ($shipment->integration_type !== ShipmentTracking::INTEGRATION_API) {
+            return back()->with('error', __('Only API shipments can be refreshed'));
+        }
+
         // Use refreshShipmentStatus for better data (includes tracking number updates)
-        $result = $this->tryotoService->refreshShipmentStatus($trackingNumber);
+        $tryotoService = (new TryotoService())->forMerchant($shipment->merchant_id);
+        $result = $tryotoService->refreshShipmentStatus($trackingNumber);
 
         if ($result['success']) {
             $message = __('Shipment status updated');
@@ -152,7 +174,7 @@ class ShipmentController extends OperatorBaseController
         $dateFrom = $request->get('date_from');
         $dateTo = $request->get('date_to');
 
-        $query = ShipmentStatusLog::with(['purchase:id,purchase_number,customer_name,pay_amount', 'merchant:id,shop_name'])
+        $query = ShipmentTracking::with(['purchase:id,purchase_number,customer_name,pay_amount', 'merchant:id,shop_name'])
             ->when($status, function ($q) use ($status) {
                 $q->where('status', $status);
             })
@@ -160,12 +182,12 @@ class ShipmentController extends OperatorBaseController
                 $q->where('merchant_id', $merchantId);
             })
             ->when($dateFrom, function ($q) use ($dateFrom) {
-                $q->whereDate('status_date', '>=', $dateFrom);
+                $q->whereDate('occurred_at', '>=', $dateFrom);
             })
             ->when($dateTo, function ($q) use ($dateTo) {
-                $q->whereDate('status_date', '<=', $dateTo);
+                $q->whereDate('occurred_at', '<=', $dateTo);
             })
-            ->orderBy('status_date', 'desc')
+            ->orderBy('occurred_at', 'desc')
             ->get();
 
         $filename = 'all_shipments_' . date('Y-m-d_His') . '.csv';
@@ -203,7 +225,7 @@ class ShipmentController extends OperatorBaseController
                     $shipment->status,
                     $shipment->status_ar,
                     $shipment->location,
-                    $shipment->status_date?->format('Y-m-d H:i'),
+                    $shipment->occurred_at?->format('Y-m-d H:i'),
                 ]);
             }
 
@@ -224,11 +246,18 @@ class ShipmentController extends OperatorBaseController
         $failed = 0;
 
         foreach ($trackingNumbers as $tracking) {
-            $result = $this->tryotoService->trackShipment($tracking);
-            if ($result['success']) {
-                $updated++;
-            } else {
-                $failed++;
+            $shipment = ShipmentTracking::where('tracking_number', $tracking)
+                ->where('integration_type', ShipmentTracking::INTEGRATION_API)
+                ->first();
+
+            if ($shipment) {
+                $tryotoService = (new TryotoService())->forMerchant($shipment->merchant_id);
+                $result = $tryotoService->trackShipment($tracking);
+                if ($result['success']) {
+                    $updated++;
+                } else {
+                    $failed++;
+                }
             }
         }
 
@@ -257,10 +286,10 @@ class ShipmentController extends OperatorBaseController
         };
 
         // Overall Statistics
-        $overallStats = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
+        $overallStats = ShipmentTracking::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
                 $sub->selectRaw('MAX(id)')
-                    ->from('shipment_status_logs')
-                    ->where('status_date', '>=', $dateFrom)
+                    ->from('shipment_trackings')
+                    ->where('occurred_at', '>=', $dateFrom)
                     ->when($merchantId, function ($q) use ($merchantId) {
                         $q->where('merchant_id', $merchantId);
                     })
@@ -272,7 +301,7 @@ class ShipmentController extends OperatorBaseController
             ->toArray();
 
         // Top Merchants by Shipments
-        $topMerchants = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
+        $topMerchants = ShipmentTracking::where('occurred_at', '>=', $dateFrom)
             ->whereNotNull('merchant_id')
             ->select('merchant_id', DB::raw('COUNT(DISTINCT tracking_number) as total'))
             ->groupBy('merchant_id')
@@ -282,15 +311,15 @@ class ShipmentController extends OperatorBaseController
             ->get();
 
         // Daily Shipments Chart Data
-        $dailyShipments = ShipmentStatusLog::where('status_date', '>=', $dateFrom)
+        $dailyShipments = ShipmentTracking::where('occurred_at', '>=', $dateFrom)
             ->when($merchantId, function ($q) use ($merchantId) {
                 $q->where('merchant_id', $merchantId);
             })
             ->select(
-                DB::raw('DATE(status_date) as date'),
+                DB::raw('DATE(occurred_at) as date'),
                 DB::raw('COUNT(DISTINCT tracking_number) as count')
             )
-            ->groupBy(DB::raw('DATE(status_date)'))
+            ->groupBy(DB::raw('DATE(occurred_at)'))
             ->orderBy('date')
             ->get();
 
@@ -309,10 +338,10 @@ class ShipmentController extends OperatorBaseController
         $successRate = $total > 0 ? round(($delivered / $total) * 100, 1) : 0;
 
         // Companies Performance
-        $companiesPerformance = ShipmentStatusLog::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
+        $companiesPerformance = ShipmentTracking::whereIn('id', function ($sub) use ($dateFrom, $merchantId) {
                 $sub->selectRaw('MAX(id)')
-                    ->from('shipment_status_logs')
-                    ->where('status_date', '>=', $dateFrom)
+                    ->from('shipment_trackings')
+                    ->where('occurred_at', '>=', $dateFrom)
                     ->when($merchantId, function ($q) use ($merchantId) {
                         $q->where('merchant_id', $merchantId);
                     })
@@ -345,13 +374,14 @@ class ShipmentController extends OperatorBaseController
 
     /**
      * Webhook handler for Tryoto status updates
+     * NOTE: Use TryotoWebhookController instead - this is kept for backwards compatibility
      */
     public function webhook(Request $request)
     {
         $payload = $request->all();
 
         // Log the webhook
-        \Log::channel('tryoto')->info('Webhook received', $payload);
+        \Log::channel('tryoto')->info('Webhook received (Operator controller)', $payload);
 
         // Validate the webhook
         $trackingNumber = $payload['trackingNumber'] ?? null;
@@ -361,11 +391,9 @@ class ShipmentController extends OperatorBaseController
         }
 
         // Find existing shipment
-        $existingLog = ShipmentStatusLog::where('tracking_number', $trackingNumber)
-            ->latest('status_date')
-            ->first();
+        $existingTracking = ShipmentTracking::getLatestByTracking($trackingNumber);
 
-        if (!$existingLog) {
+        if (!$existingTracking) {
             return response()->json(['error' => 'Shipment not found'], 404);
         }
 
@@ -374,32 +402,25 @@ class ShipmentController extends OperatorBaseController
         $statusDate = isset($payload['statusDate']) ? \Carbon\Carbon::parse($payload['statusDate']) : now();
 
         // Check if this status is newer
-        if ($existingLog->status_date && $statusDate->lte($existingLog->status_date)) {
+        if ($existingTracking->occurred_at && $statusDate->lte($existingTracking->occurred_at)) {
             return response()->json(['message' => 'Status already up to date']);
         }
 
-        $oldStatus = $existingLog->status;
+        $oldStatus = $existingTracking->status;
 
-        // Create new log entry
-        $newLog = ShipmentStatusLog::create([
-            'purchase_id' => $existingLog->purchase_id,
-            'merchant_id' => $existingLog->merchant_id,
-            'tracking_number' => $trackingNumber,
-            'shipment_id' => $payload['shipmentId'] ?? $existingLog->shipment_id,
-            'company_name' => $payload['companyName'] ?? $existingLog->company_name,
-            'status' => $newStatus,
-            'status_ar' => $payload['statusAr'] ?? ShipmentStatusLog::getStatusTranslations()[$newStatus] ?? $newStatus,
-            'message' => $payload['message'] ?? null,
-            'message_ar' => $payload['messageAr'] ?? null,
-            'location' => $payload['location'] ?? null,
-            'latitude' => $payload['latitude'] ?? null,
-            'longitude' => $payload['longitude'] ?? null,
-            'status_date' => $statusDate,
-            'raw_data' => $payload,
-        ]);
+        // Use tracking service to update
+        $newTracking = $this->trackingService->updateFromApi(
+            purchaseId: $existingTracking->purchase_id,
+            merchantId: $existingTracking->merchant_id,
+            status: $newStatus,
+            location: $payload['location'] ?? null,
+            message: $payload['message'] ?? null,
+            rawData: $payload,
+            occurredAt: $statusDate
+        );
 
         // Fire event to send notifications
-        event(new \App\Events\ShipmentStatusChanged($newLog, $oldStatus));
+        event(new \App\Events\ShipmentStatusChanged($newTracking, $oldStatus));
 
         return response()->json(['success' => true]);
     }

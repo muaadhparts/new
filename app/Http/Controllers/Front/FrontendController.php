@@ -586,8 +586,8 @@ class FrontendController extends FrontBaseController
         // إذا لم نجد Purchase، نبحث في tracking numbers
         $shipmentLogs = [];
         if (!$purchase) {
-            $shipmentLogs = \App\Models\ShipmentStatusLog::where('tracking_number', $id)
-                           ->orderBy('status_date', 'desc')
+            $shipmentLogs = \App\Models\ShipmentTracking::where('tracking_number', $id)
+                           ->orderBy('occurred_at', 'desc')
                            ->orderBy('created_at', 'desc')
                            ->get();
 
@@ -596,8 +596,8 @@ class FrontendController extends FrontBaseController
             }
         } else {
             // إذا وجدنا Purchase، نجلب جميع shipment logs له
-            $shipmentLogs = \App\Models\ShipmentStatusLog::where('purchase_id', $purchase->id)
-                           ->orderBy('status_date', 'desc')
+            $shipmentLogs = \App\Models\ShipmentTracking::where('purchase_id', $purchase->id)
+                           ->orderBy('occurred_at', 'desc')
                            ->orderBy('created_at', 'desc')
                            ->get();
         }

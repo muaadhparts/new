@@ -15,9 +15,10 @@ use App\Models\Package;
 use App\Models\Courier;
 use App\Models\CourierServiceArea;
 use App\Models\Shipping;
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 use App\Models\Muaadhsetting;
 use App\Services\TryotoService;
+use App\Services\ShipmentTrackingService;
 use Datatables;
 use Illuminate\Support\Facades\Log;
 
@@ -711,12 +712,9 @@ class DeliveryController extends MerchantBaseController
         }
 
         // التحقق من عدم وجود شحنة سابقة لهذا الطلب من هذا التاجر
-        $existingShipment = ShipmentStatusLog::where('purchase_id', $purchase->id)
-            ->where('merchant_id', $merchantId)
-            ->whereNotIn('status', ['cancelled', 'returned'])
-            ->first();
+        $existingShipment = ShipmentTracking::getLatestForPurchase($purchase->id, $merchantId);
 
-        if ($existingShipment) {
+        if ($existingShipment && !$existingShipment->is_final) {
             return redirect()->back()->with('error', __('A shipment already exists for this purchase. Tracking: ') . $existingShipment->tracking_number);
         }
 
@@ -772,15 +770,12 @@ class DeliveryController extends MerchantBaseController
     {
         $merchantId = $this->user->id;
 
-        $logs = ShipmentStatusLog::where('purchase_id', $purchaseId)
-            ->where('merchant_id', $merchantId)
-            ->orderBy('status_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        $trackingService = app(ShipmentTrackingService::class);
+        $history = $trackingService->getTrackingHistory($purchaseId, $merchantId);
 
         return response()->json([
             'success' => true,
-            'logs' => $logs
+            'logs' => $history
         ]);
     }
 
@@ -797,28 +792,47 @@ class DeliveryController extends MerchantBaseController
         $merchantId = $this->user->id;
 
         // التحقق من أن الشحنة تخص هذا التاجر
-        $shipment = ShipmentStatusLog::where('tracking_number', $request->tracking_number)
-            ->where('merchant_id', $merchantId)
-            ->first();
+        $shipment = ShipmentTracking::getLatestByTracking($request->tracking_number);
 
-        if (!$shipment) {
+        if (!$shipment || $shipment->merchant_id != $merchantId) {
             return redirect()->back()->with('error', __('Shipment not found or does not belong to you'));
         }
 
         // التحقق من أن الشحنة قابلة للإلغاء
-        $nonCancellableStatuses = ['delivered', 'out_for_delivery', 'cancelled'];
+        $nonCancellableStatuses = [
+            ShipmentTracking::STATUS_DELIVERED,
+            ShipmentTracking::STATUS_OUT_FOR_DELIVERY,
+            ShipmentTracking::STATUS_CANCELLED
+        ];
         if (in_array($shipment->status, $nonCancellableStatuses)) {
             return redirect()->back()->with('error', __('This shipment cannot be cancelled'));
         }
 
-        $tryotoService = new TryotoService();
-        $result = $tryotoService->cancelShipment($request->tracking_number, $request->reason ?? '');
+        // API shipments: call Tryoto API to cancel
+        if ($shipment->integration_type === ShipmentTracking::INTEGRATION_API) {
+            $tryotoService = (new TryotoService())->forMerchant($merchantId);
+            $result = $tryotoService->cancelShipment($request->tracking_number, $request->reason ?? '');
 
-        if ($result['success']) {
+            if ($result['success']) {
+                return redirect()->back()->with('success', __('Shipment cancelled successfully'));
+            }
+
+            return redirect()->back()->with('error', __('Failed to cancel shipment: ') . ($result['error'] ?? __('Unknown error')));
+        }
+
+        // Manual shipments: use tracking service to cancel
+        $trackingService = app(ShipmentTrackingService::class);
+        $result = $trackingService->cancelShipment(
+            $shipment->purchase_id,
+            $merchantId,
+            $request->reason ?? 'Cancelled by merchant'
+        );
+
+        if ($result) {
             return redirect()->back()->with('success', __('Shipment cancelled successfully'));
         }
 
-        return redirect()->back()->with('error', __('Failed to cancel shipment: ') . ($result['error'] ?? __('Unknown error')));
+        return redirect()->back()->with('error', __('Failed to cancel shipment'));
     }
 
     /**
@@ -962,11 +976,7 @@ class DeliveryController extends MerchantBaseController
     {
         $merchantId = $this->user->id;
 
-        $latestStatus = ShipmentStatusLog::where('purchase_id', $purchaseId)
-            ->where('merchant_id', $merchantId)
-            ->orderBy('status_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->first();
+        $latestStatus = ShipmentTracking::getLatestForPurchase($purchaseId, $merchantId);
 
         if (!$latestStatus) {
             return response()->json([
@@ -982,7 +992,7 @@ class DeliveryController extends MerchantBaseController
             'company' => $latestStatus->company_name,
             'status' => $latestStatus->status,
             'status_ar' => $latestStatus->status_ar,
-            'status_date' => $latestStatus->status_date?->format('Y-m-d H:i'),
+            'occurred_at' => $latestStatus->occurred_at?->format('Y-m-d H:i'),
             'message' => $latestStatus->message_ar ?? $latestStatus->message
         ]);
     }
@@ -1150,12 +1160,9 @@ class DeliveryController extends MerchantBaseController
         }
 
         // Check for existing shipment
-        $existingShipment = ShipmentStatusLog::where('purchase_id', $purchase->id)
-            ->where('merchant_id', $merchantId)
-            ->whereNotIn('status', ['cancelled', 'returned'])
-            ->first();
+        $existingShipment = ShipmentTracking::getLatestForPurchase($purchase->id, $merchantId);
 
-        if ($existingShipment) {
+        if ($existingShipment && !$existingShipment->is_final) {
             return redirect()->back()->with('error', __('A shipment already exists for this purchase. Tracking: ') . $existingShipment->tracking_number);
         }
 
@@ -1165,35 +1172,25 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('Invalid shipping method'));
         }
 
-        // Generate tracking number with provider prefix
-        $providerPrefix = strtoupper(substr($shipping->provider ?? 'MAN', 0, 3));
-        $trackingNumber = $request->tracking_number ?: $providerPrefix . '-' . strtoupper(uniqid()) . '-' . $purchase->id;
-
-        // Create shipment log entry
-        ShipmentStatusLog::create([
-            'purchase_id' => $purchase->id,
-            'merchant_id' => $merchantId,
-            'tracking_number' => $trackingNumber,
-            'company_name' => $shipping->title,
-            'provider' => $shipping->provider ?? 'manual',
-            'status' => 'processing',
-            'status_ar' => 'قيد التجهيز',
-            'message' => __('Shipment assigned by merchant via :provider', ['provider' => $shipping->provider ?? 'manual']),
-            'message_ar' => 'تم تعيين الشحنة بواسطة التاجر عبر ' . ($shipping->provider ?? 'يدوي'),
-            'status_date' => now(),
-            'raw_data' => [
-                'shipping_id' => $shipping->id,
-                'shipping_title' => $shipping->title,
-                'shipping_price' => $shipping->price,
-                'provider' => $shipping->provider,
-                'assigned_by' => $merchantId,
-                'assigned_at' => now()->toIso8601String(),
-            ],
-        ]);
+        // Use tracking service to create manual shipment
+        $trackingService = app(ShipmentTrackingService::class);
+        $trackingService->createManualShipment(
+            purchaseId: $purchase->id,
+            merchantId: $merchantId,
+            shippingId: $shipping->id,
+            provider: $shipping->provider ?? 'manual',
+            trackingNumber: $request->tracking_number,
+            companyName: $shipping->title,
+            shippingCost: $shipping->price
+        );
 
         // Update merchant purchase status
         $merchantOrder->status = 'processing';
         $merchantOrder->save();
+
+        // Get the created tracking to get the tracking number
+        $tracking = ShipmentTracking::getLatestForPurchase($purchase->id, $merchantId);
+        $trackingNumber = $tracking->tracking_number ?? 'N/A';
 
         // Add tracking entry to purchase
         $purchase->tracks()->create([

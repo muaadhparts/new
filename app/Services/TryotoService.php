@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Models\Purchase;
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 use App\Models\User;
 use App\Models\City;
 use App\Models\UserCatalogEvent;
@@ -833,7 +833,7 @@ class TryotoService
     public function trackShipment(string $trackingNumber, ?string $companyName = null): array
     {
         if (!$companyName) {
-            $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)->first();
+            $shipment = ShipmentTracking::getLatestByTracking($trackingNumber);
             $companyName = $shipment?->company_name;
         }
 
@@ -854,7 +854,7 @@ class TryotoService
 
         $data = $result['data'];
 
-        // Update local log if there's new status
+        // Update local tracking if there's new status
         $this->syncTrackingStatus($trackingNumber, $data);
 
         return [
@@ -883,24 +883,22 @@ class TryotoService
         ]);
 
         if ($result['success']) {
-            // Update local status
-            $log = ShipmentStatusLog::where('tracking_number', $trackingNumber)->latest()->first();
-            if ($log) {
-                ShipmentStatusLog::create([
-                    'purchase_id' => $log->purchase_id,
-                    'merchant_id' => $log->merchant_id,
-                    'tracking_number' => $trackingNumber,
-                    'shipment_id' => $log->shipment_id,
-                    'company_name' => $log->company_name,
-                    'status' => 'cancelled',
-                    'status_ar' => 'ملغي',
-                    'message' => 'Shipment cancelled: ' . $reason,
-                    'message_ar' => 'تم إلغاء الشحنة: ' . $reason,
-                    'status_date' => now(),
-                ]);
+            // Update local tracking using new system
+            $latest = ShipmentTracking::getLatestByTracking($trackingNumber);
+            if ($latest) {
+                $trackingService = app(ShipmentTrackingService::class);
+                $trackingService->cancelShipment(
+                    $latest->purchase_id,
+                    $latest->merchant_id,
+                    ShipmentTracking::SOURCE_API,
+                    $reason ?: 'Cancelled via Tryoto API'
+                );
 
                 // Notify merchant
-                $this->notifyMerchant($log->merchant_id, $log->purchase, 'shipment_cancelled', $trackingNumber);
+                $purchase = Purchase::find($latest->purchase_id);
+                if ($purchase) {
+                    $this->notifyMerchant($latest->merchant_id, $purchase, 'shipment_cancelled', $trackingNumber);
+                }
             }
 
             return ['success' => true, 'message' => 'Shipment cancelled successfully'];
@@ -961,15 +959,13 @@ class TryotoService
      */
     public function refreshShipmentStatus(string $trackingNumber): array
     {
-        $shipment = ShipmentStatusLog::where('tracking_number', $trackingNumber)
-            ->latest('created_at')
-            ->first();
+        $shipment = ShipmentTracking::getLatestByTracking($trackingNumber);
 
         if (!$shipment) {
             return ['success' => false, 'error' => 'Shipment not found in local database'];
         }
 
-        $rawData = $shipment->raw_data;
+        $rawData = $shipment->raw_payload;
         $orderId = null;
 
         if (is_array($rawData)) {
@@ -991,21 +987,32 @@ class TryotoService
 
         $newTrackingNumber = $details['tracking_number'];
         if ($newTrackingNumber && $newTrackingNumber !== $trackingNumber && !str_starts_with($newTrackingNumber, 'OTO-')) {
-            ShipmentStatusLog::create([
-                'purchase_id' => $shipment->purchase_id,
-                'merchant_id' => $shipment->merchant_id,
-                'tracking_number' => $newTrackingNumber,
-                'shipment_id' => $details['oto_id'],
-                'company_name' => $details['company_name'] ?? $shipment->company_name,
-                'status' => $details['status'],
-                'status_ar' => $details['status_ar'],
-                'message' => 'Tracking number assigned',
-                'message_ar' => 'تم تعيين رقم التتبع: ' . $newTrackingNumber,
-                'status_date' => now(),
-                'raw_data' => $details['raw'],
-            ]);
+            // Create tracking record with new tracking number
+            $trackingService = app(ShipmentTrackingService::class);
+            $trackingService->createTrackingRecord(
+                $shipment->purchase_id,
+                $shipment->merchant_id,
+                $details['status'],
+                [
+                    'shipping_id' => $shipment->shipping_id,
+                    'integration_type' => ShipmentTracking::INTEGRATION_API,
+                    'provider' => 'tryoto',
+                    'tracking_number' => $newTrackingNumber,
+                    'external_shipment_id' => $details['oto_id'],
+                    'company_name' => $details['company_name'] ?? $shipment->company_name,
+                    'status_ar' => $details['status_ar'],
+                    'message' => 'Tracking number assigned: ' . $newTrackingNumber,
+                    'message_ar' => 'تم تعيين رقم التتبع: ' . $newTrackingNumber,
+                    'source' => ShipmentTracking::SOURCE_API,
+                    'raw_payload' => $details['raw'],
+                    'awb_url' => $details['awb_url'] ?? null,
+                ]
+            );
 
-            $this->notifyMerchant($shipment->merchant_id, $shipment->purchase, 'tracking_assigned', $newTrackingNumber);
+            $purchase = Purchase::find($shipment->purchase_id);
+            if ($purchase) {
+                $this->notifyMerchant($shipment->merchant_id, $purchase, 'tracking_assigned', $newTrackingNumber);
+            }
 
             $details['tracking_updated'] = true;
             $details['old_tracking'] = $trackingNumber;
@@ -1228,20 +1235,19 @@ class TryotoService
 
     /**
      * Get shipment history for a purchase
+     * يستخدم النظام الجديد shipment_trackings
      *
      * @param int $purchaseId
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getShipmentHistory(int $purchaseId)
     {
-        return ShipmentStatusLog::where('purchase_id', $purchaseId)
-            ->orderBy('status_date', 'desc')
-            ->orderBy('created_at', 'desc')
-            ->get();
+        return ShipmentTracking::getHistoryForPurchase($purchaseId);
     }
 
     /**
      * Get merchant shipments
+     * يستخدم النظام الجديد shipment_trackings
      *
      * @param int $merchantId
      * @param string|null $status
@@ -1250,10 +1256,14 @@ class TryotoService
      */
     public function getMerchantShipments(int $merchantId, ?string $status = null, int $limit = 50)
     {
-        $query = ShipmentStatusLog::where('merchant_id', $merchantId)
-            ->select('tracking_number', 'purchase_id', 'company_name', 'status', 'status_ar', 'status_date')
-            ->groupBy('tracking_number')
-            ->orderBy('created_at', 'desc');
+        // Get latest status for each unique purchase+merchant combination
+        $subQuery = ShipmentTracking::where('merchant_id', $merchantId)
+            ->selectRaw('MAX(id) as max_id')
+            ->groupBy('purchase_id', 'merchant_id');
+
+        $query = ShipmentTracking::whereIn('id', $subQuery)
+            ->select('tracking_number', 'purchase_id', 'company_name', 'status', 'status_ar', 'occurred_at')
+            ->orderBy('occurred_at', 'desc');
 
         if ($status) {
             $query->where('status', $status);
@@ -1264,69 +1274,56 @@ class TryotoService
 
     /**
      * Get shipping statistics for merchant
+     * يستخدم ShipmentTrackingService
      *
      * @param int $merchantId
      * @return array
      */
     public function getMerchantStatistics(int $merchantId): array
     {
-        $stats = ShipmentStatusLog::where('merchant_id', $merchantId)
-            ->selectRaw('
-                COUNT(DISTINCT tracking_number) as total_shipments,
-                SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered,
-                SUM(CASE WHEN status = "in_transit" THEN 1 ELSE 0 END) as in_transit,
-                SUM(CASE WHEN status = "out_for_delivery" THEN 1 ELSE 0 END) as out_for_delivery,
-                SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as failed,
-                SUM(CASE WHEN status = "returned" THEN 1 ELSE 0 END) as returned
-            ')
-            ->first();
+        $trackingService = app(ShipmentTrackingService::class);
+        $stats = $trackingService->getMerchantStats($merchantId);
 
         return [
-            'total' => $stats->total_shipments ?? 0,
-            'delivered' => $stats->delivered ?? 0,
-            'in_transit' => $stats->in_transit ?? 0,
-            'out_for_delivery' => $stats->out_for_delivery ?? 0,
-            'failed' => $stats->failed ?? 0,
-            'returned' => $stats->returned ?? 0,
-            'success_rate' => $stats->total_shipments > 0
-                ? round(($stats->delivered / $stats->total_shipments) * 100, 1)
+            'total' => $stats['total'] ?? 0,
+            'delivered' => $stats['delivered'] ?? 0,
+            'in_transit' => $stats['in_transit'] ?? 0,
+            'out_for_delivery' => 0, // Included in in_transit
+            'failed' => $stats['failed'] ?? 0,
+            'returned' => $stats['returned'] ?? 0,
+            'success_rate' => $stats['total'] > 0
+                ? round(($stats['delivered'] / $stats['total']) * 100, 1)
                 : 0
         ];
     }
 
     /**
      * Get admin statistics
+     * يستخدم ShipmentTrackingService
      *
      * @return array
      */
     public function getAdminStatistics(): array
     {
-        $stats = ShipmentStatusLog::selectRaw('
-                COUNT(DISTINCT tracking_number) as total_shipments,
-                SUM(CASE WHEN status = "delivered" THEN 1 ELSE 0 END) as delivered,
-                SUM(CASE WHEN status = "in_transit" THEN 1 ELSE 0 END) as in_transit,
-                SUM(CASE WHEN status = "pending" OR status = "created" THEN 1 ELSE 0 END) as pending,
-                SUM(CASE WHEN status = "failed" THEN 1 ELSE 0 END) as failed,
-                SUM(CASE WHEN status = "returned" THEN 1 ELSE 0 END) as returned
-            ')
-            ->first();
+        $trackingService = app(ShipmentTrackingService::class);
+        $stats = $trackingService->getOperatorStats();
 
-        $byCompany = ShipmentStatusLog::selectRaw('company_name, COUNT(DISTINCT tracking_number) as count')
+        $byCompany = ShipmentTracking::selectRaw('company_name, COUNT(DISTINCT CONCAT(purchase_id, "-", merchant_id)) as count')
             ->groupBy('company_name')
             ->get()
             ->pluck('count', 'company_name')
             ->toArray();
 
         return [
-            'total' => $stats->total_shipments ?? 0,
-            'delivered' => $stats->delivered ?? 0,
-            'in_transit' => $stats->in_transit ?? 0,
-            'pending' => $stats->pending ?? 0,
-            'failed' => $stats->failed ?? 0,
-            'returned' => $stats->returned ?? 0,
+            'total' => $stats['total'] ?? 0,
+            'delivered' => $stats['by_status']['delivered'] ?? 0,
+            'in_transit' => ($stats['by_status']['in_transit'] ?? 0) + ($stats['by_status']['out_for_delivery'] ?? 0),
+            'pending' => ($stats['by_status']['created'] ?? 0) + ($stats['by_status']['picked_up'] ?? 0),
+            'failed' => $stats['by_status']['failed'] ?? 0,
+            'returned' => $stats['by_status']['returned'] ?? 0,
             'by_company' => $byCompany,
-            'success_rate' => $stats->total_shipments > 0
-                ? round(($stats->delivered / $stats->total_shipments) * 100, 1)
+            'success_rate' => ($stats['total'] ?? 0) > 0
+                ? round((($stats['by_status']['delivered'] ?? 0) / $stats['total']) * 100, 1)
                 : 0
         ];
     }
@@ -1426,78 +1423,66 @@ class TryotoService
     }
 
     /**
-     * Create initial shipment log
+     * Create initial shipment tracking record
+     * يستخدم النظام الجديد shipment_trackings
      */
-    private function createInitialLog(Purchase $purchase, int $merchantId, ?string $trackingNumber, ?string $shipmentId, string $company, string $originCity, array $rawData): void
+    private function createInitialLog(Purchase $purchase, int $merchantId, ?string $trackingNumber, ?string $shipmentId, string $company, string $originCity, array $rawData, ?int $shippingId = null, float $shippingCost = 0, float $codAmount = 0): void
     {
         if (!$trackingNumber) return;
 
         try {
-            DB::table('shipment_status_logs')->insert([
-                'purchase_id' => $purchase->id,
-                'merchant_id' => $merchantId,
-                'tracking_number' => $trackingNumber,
-                'shipment_id' => $shipmentId,
-                'company_name' => $company,
-                'status' => 'created',
-                'status_ar' => 'تم إنشاء الشحنة',
-                'message' => 'Shipment created successfully',
-                'message_ar' => 'تم إنشاء الشحنة بنجاح. في انتظار استلام السائق من المستودع.',
-                'location' => $originCity,
-                'status_date' => now(),
-                'raw_data' => json_encode($rawData),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            $trackingService = app(ShipmentTrackingService::class);
+            $trackingService->createApiShipment(
+                purchaseId: $purchase->id,
+                merchantId: $merchantId,
+                shippingId: $shippingId ?? 0,
+                provider: 'tryoto',
+                trackingNumber: $trackingNumber,
+                externalShipmentId: $shipmentId ?? '',
+                companyName: $company,
+                shippingCost: $shippingCost,
+                codAmount: $codAmount,
+                awbUrl: $rawData['awbUrl'] ?? null,
+                rawPayload: $rawData
+            );
         } catch (\Exception $e) {
-            Log::error('Tryoto: Failed to create initial log', ['error' => $e->getMessage()]);
+            Log::error('Tryoto: Failed to create tracking record', ['error' => $e->getMessage()]);
         }
     }
 
     /**
      * Sync tracking status from API response
+     * يستخدم النظام الجديد shipment_trackings
      */
     private function syncTrackingStatus(string $trackingNumber, array $data): void
     {
-        $existingLog = ShipmentStatusLog::where('tracking_number', $trackingNumber)->latest()->first();
-
-        if (!$existingLog) return;
-
         $currentStatus = $data['status'] ?? null;
+        if (!$currentStatus) return;
 
-        if ($currentStatus && $currentStatus !== $existingLog->status) {
-            ShipmentStatusLog::create([
-                'purchase_id' => $existingLog->purchase_id,
-                'merchant_id' => $existingLog->merchant_id,
-                'tracking_number' => $trackingNumber,
-                'shipment_id' => $existingLog->shipment_id,
-                'company_name' => $existingLog->company_name,
-                'status' => $currentStatus,
-                'status_ar' => $this->getStatusArabic($currentStatus),
+        try {
+            $trackingService = app(ShipmentTrackingService::class);
+            $result = $trackingService->updateFromApi($trackingNumber, $currentStatus, [
+                'location' => $data['location'] ?? null,
                 'message' => $data['message'] ?? null,
                 'message_ar' => $this->getMessageArabic($currentStatus, $data['location'] ?? null),
-                'location' => $data['location'] ?? null,
-                'status_date' => $data['statusDate'] ?? now(),
-                'raw_data' => $data,
+                'status_ar' => $this->getStatusArabic($currentStatus),
+                'status_en' => ShipmentTracking::getStatusTranslationEn($currentStatus),
+                'occurred_at' => $data['statusDate'] ?? now(),
+                'raw_payload' => $data,
             ]);
 
-            // Update purchase status if delivered
-            if ($currentStatus === 'delivered') {
-                $purchase = Purchase::find($existingLog->purchase_id);
-                if ($purchase && $purchase->status !== 'completed') {
-                    $purchase->status = 'completed';
-                    $purchase->save();
-                    $purchase->tracks()->create([
-                        'title' => 'Completed',
-                        'text' => 'Purchase delivered - Tracking: ' . $trackingNumber,
-                    ]);
+            // Notify merchant on important status changes
+            if ($result && in_array($currentStatus, ['picked_up', 'delivered', 'failed', 'returned'])) {
+                $purchase = Purchase::find($result->purchase_id);
+                if ($purchase) {
+                    $this->notifyMerchant($result->merchant_id, $purchase, 'status_' . $currentStatus, $trackingNumber);
                 }
             }
-
-            // Notify merchant on important status changes
-            if (in_array($currentStatus, ['picked_up', 'delivered', 'failed', 'returned'])) {
-                $this->notifyMerchant($existingLog->merchant_id, $existingLog->purchase, 'status_' . $currentStatus, $trackingNumber);
-            }
+        } catch (\Exception $e) {
+            Log::error('Tryoto: Failed to sync tracking status', [
+                'tracking_number' => $trackingNumber,
+                'error' => $e->getMessage()
+            ]);
         }
     }
 

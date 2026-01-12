@@ -6,21 +6,21 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\ShipmentStatusLog;
+use App\Models\ShipmentTracking;
 
 class ShipmentStatusUpdated extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    protected $shipmentLog;
+    protected $shipmentTracking;
     protected $oldStatus;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(ShipmentStatusLog $shipmentLog, ?string $oldStatus = null)
+    public function __construct(ShipmentTracking $shipmentTracking, ?string $oldStatus = null)
     {
-        $this->shipmentLog = $shipmentLog;
+        $this->shipmentTracking = $shipmentTracking;
         $this->oldStatus = $oldStatus;
     }
 
@@ -37,8 +37,7 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
      */
     public function toMail($notifiable): MailMessage
     {
-        $statusTranslations = ShipmentStatusLog::getStatusTranslations();
-        $statusText = $statusTranslations[$this->shipmentLog->status] ?? $this->shipmentLog->status;
+        $statusText = $this->shipmentTracking->status_ar;
 
         $subject = $this->getSubjectByStatus();
 
@@ -46,12 +45,12 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
             ->subject($subject)
             ->greeting(__('Hello') . ' ' . ($notifiable->name ?? __('Customer')) . ',')
             ->line($this->getMessageByStatus())
-            ->line(__('Tracking Number') . ': ' . $this->shipmentLog->tracking_number)
+            ->line(__('Tracking Number') . ': ' . $this->shipmentTracking->tracking_number)
             ->line(__('Status') . ': ' . $statusText)
-            ->when($this->shipmentLog->location, function ($message) {
-                return $message->line(__('Location') . ': ' . $this->shipmentLog->location);
+            ->when($this->shipmentTracking->location, function ($message) {
+                return $message->line(__('Location') . ': ' . $this->shipmentTracking->location);
             })
-            ->action(__('Track Shipment'), route('front.tracking', ['tracking' => $this->shipmentLog->tracking_number]))
+            ->action(__('Track Shipment'), route('front.tracking', ['tracking' => $this->shipmentTracking->tracking_number]))
             ->line(__('Thank you for your purchase!'));
     }
 
@@ -62,15 +61,15 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
     {
         return [
             'type' => 'shipment_status_updated',
-            'tracking_number' => $this->shipmentLog->tracking_number,
-            'purchase_id' => $this->shipmentLog->purchase_id,
+            'tracking_number' => $this->shipmentTracking->tracking_number,
+            'purchase_id' => $this->shipmentTracking->purchase_id,
             'old_status' => $this->oldStatus,
-            'new_status' => $this->shipmentLog->status,
-            'status_ar' => $this->shipmentLog->status_ar,
-            'message' => $this->shipmentLog->message_ar,
-            'location' => $this->shipmentLog->location,
-            'company_name' => $this->shipmentLog->company_name,
-            'status_date' => $this->shipmentLog->status_date?->toISOString(),
+            'new_status' => $this->shipmentTracking->status,
+            'status_ar' => $this->shipmentTracking->status_ar,
+            'message' => $this->shipmentTracking->message_ar ?? $this->shipmentTracking->message,
+            'location' => $this->shipmentTracking->location,
+            'company_name' => $this->shipmentTracking->company_name,
+            'occurred_at' => $this->shipmentTracking->occurred_at?->toISOString(),
         ];
     }
 
@@ -79,7 +78,7 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
      */
     protected function getSubjectByStatus(): string
     {
-        return match($this->shipmentLog->status) {
+        return match($this->shipmentTracking->status) {
             'created' => __('Your shipment has been created'),
             'picked_up' => __('Your shipment has been picked up'),
             'in_transit' => __('Your shipment is on the way'),
@@ -97,7 +96,7 @@ class ShipmentStatusUpdated extends Notification implements ShouldQueue
      */
     protected function getMessageByStatus(): string
     {
-        return match($this->shipmentLog->status) {
+        return match($this->shipmentTracking->status) {
             'created' => __('Your purchase has been shipped and a tracking number has been assigned.'),
             'picked_up' => __('Your shipment has been picked up from the warehouse and is being processed.'),
             'in_transit' => __('Your package is currently in transit to your delivery address.'),
