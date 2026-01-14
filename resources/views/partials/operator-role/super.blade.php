@@ -65,16 +65,16 @@
     </a>
     <ul class="collapse list-unstyled" id="settlement-menu" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator.settlement.index') }}"> {{ __('Settlement Dashboard') }}</a>
+            <a href="{{ route('operator.accounts.settlements') }}"> {{ __('Settlement Dashboard') }}</a>
         </li>
         <li>
-            <a href="{{ route('operator.settlement.merchants') }}"> {{ __('Merchant Settlements') }}</a>
+            <a href="{{ route('operator.accounts.merchants') }}"> {{ __('Merchant Accounts') }}</a>
         </li>
         <li>
-            <a href="{{ route('operator.settlement.couriers') }}"> {{ __('Courier Settlements') }}</a>
+            <a href="{{ route('operator.accounts.couriers') }}"> {{ __('Courier Accounts') }}</a>
         </li>
         <li>
-            <a href="{{ route('operator.settlement.revenue-report') }}"> {{ __('Revenue Report') }}</a>
+            <a href="{{ route('operator.accounts.reports.platform') }}"> {{ __('Revenue Report') }}</a>
         </li>
     </ul>
 </li>

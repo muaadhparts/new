@@ -21,6 +21,7 @@ class MerchantLocation extends Model
 
     protected $fillable = [
         'user_id',
+        'warehouse_name',
         'country_id',
         'location',
         'city_id',

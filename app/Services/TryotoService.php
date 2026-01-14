@@ -549,7 +549,7 @@ class TryotoService
         // ✅ warehouseName من merchant_locations
         $warehouseName = null;
         if ($merchantLocation) {
-            $warehouseName = $merchantLocation->warehouse_hame ?: $merchantLocation->location;
+            $warehouseName = $merchantLocation->warehouse_name ?: $merchantLocation->location;
         }
 
         // استخدام مدينة التاجر من ShippingCalculatorService - بدون fallback

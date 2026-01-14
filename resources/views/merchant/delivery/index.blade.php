@@ -136,7 +136,14 @@
                                                 <i class="fas fa-user-check"></i> @lang('Customer Selected:')
                                             </small>
                                             <br>
-                                            <span class="badge bg-primary">{{ $customerChoice['company_name'] ?? 'N/A' }}</span>
+                                            {{-- ✅ عرض اسم الشركة حسب نوع الشحن --}}
+                                            @php
+                                                $shippingName = $customerChoice['company_name']
+                                                    ?? $customerChoice['title']
+                                                    ?? $customerChoice['courier_name']
+                                                    ?? __('N/A');
+                                            @endphp
+                                            <span class="badge bg-primary">{{ $shippingName }}</span>
                                             <br>
                                             @if($isFreeShipping)
                                                 {{-- ✅ Free Shipping Alert --}}
