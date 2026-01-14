@@ -322,40 +322,27 @@ class TryotoService
     }
 
     /**
-     * ✅ Get warehouses from Tryoto API
-     * جلب المستودعات المسجلة في Tryoto
+     * Get warehouses from Tryoto API
      */
     public function getWarehouses(): array
     {
         $result = $this->makeApiRequest('GET', '/rest/v2/warehouses');
 
         if ($result['success']) {
-            Log::info('Tryoto: getWarehouses success', [
-                'warehouses' => $result['data']
-            ]);
             return $result;
         }
 
         // Try alternative endpoint
         $result2 = $this->makeApiRequest('GET', '/rest/v2/getWarehouses');
         if ($result2['success']) {
-            Log::info('Tryoto: getWarehouses (alt) success', [
-                'warehouses' => $result2['data']
-            ]);
             return $result2;
         }
-
-        Log::warning('Tryoto: getWarehouses failed', [
-            'error1' => $result['error'] ?? null,
-            'error2' => $result2['error'] ?? null,
-        ]);
 
         return $result;
     }
 
     /**
-     * ✅ Create or update warehouse in Tryoto
-     * إنشاء أو تحديث مستودع في Tryoto
+     * Create or update warehouse in Tryoto
      */
     public function createWarehouse(array $warehouseData): array
     {
@@ -369,17 +356,7 @@ class TryotoService
             'email' => $warehouseData['email'] ?? null,
         ];
 
-        Log::info('Tryoto: createWarehouse request', $payload);
-
-        $result = $this->makeApiRequest('POST', '/rest/v2/warehouse', $payload);
-
-        Log::info('Tryoto: createWarehouse response', [
-            'success' => $result['success'],
-            'data' => $result['data'] ?? null,
-            'error' => $result['error'] ?? null,
-        ]);
-
-        return $result;
+        return $this->makeApiRequest('POST', '/rest/v2/warehouse', $payload);
     }
 
     /**
@@ -632,12 +609,6 @@ class TryotoService
             ];
         }
 
-        Log::info('Tryoto: Using pickupLocationCode', [
-            'pickupLocationCode' => $pickupLocationCode,
-            'warehouse_name' => $merchantLocation->warehouse_name ?? null,
-            'merchant_location_id' => $merchantLocationId,
-        ]);
-
         // استخدام مدينة التاجر من ShippingCalculatorService - بدون fallback
         $originCity = $merchantCityData['city_name'] ?? null;
 
@@ -832,28 +803,7 @@ class TryotoService
             'items' => $purchaseItems
         ];
 
-        Log::debug('Tryoto: Creating shipment', [
-            'purchase_id' => $purchase->id,
-            'tryoto_order_id' => $tryotoOrderId,
-            'pickupLocationCode' => $pickupLocationCode,
-            'origin' => $originCity,
-            'destination' => $destinationCity,
-            'company' => $company,
-            'dimensions' => $dims,
-        ]);
-
-        // ✅ Log full payload for debugging
-        Log::info('Tryoto: Full createOrder payload', $payload);
-
         $result = $this->makeApiRequest('POST', '/rest/v2/createOrder', $payload);
-
-        // ✅ Log full response for debugging
-        Log::info('Tryoto: createOrder response', [
-            'success' => $result['success'],
-            'data' => $result['data'] ?? null,
-            'error' => $result['error'] ?? null,
-            'raw' => $result['raw'] ?? null,
-        ]);
 
         if ($result['success']) {
             $data = $result['data'];
@@ -868,12 +818,6 @@ class TryotoService
 
             // Send notification to merchant
             $this->notifyMerchant($merchantId, $purchase, 'shipment_created', $trackingRef);
-
-            Log::debug('Tryoto: Shipment created successfully', [
-                'purchase_id' => $purchase->id,
-                'oto_id' => $otoId,
-                'tracking_number' => $trackingNumber,
-            ]);
 
             return [
                 'success' => true,

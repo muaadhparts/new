@@ -1098,15 +1098,11 @@
         }
     });
 
-    // ✅ Handle merchant location dropdown change
+    // Handle merchant location dropdown change
     $(document).on('change', '.merchant-location-select', function() {
         const selectedId = $(this).val();
         const $form = $(this).closest('form');
-        // Update the hidden input in the same form
         $form.find('input[name="merchant_location_id"]').val(selectedId);
-
-        // Log for debugging
-        console.log('Location selected:', selectedId, 'Form:', $form.attr('id') || $form.attr('class'));
     });
 
     // Helper function to escape HTML
