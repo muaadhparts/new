@@ -313,10 +313,34 @@ class CourierController extends CourierBaseController
     public function orders(Request $request)
     {
         $type = $request->type;
+        $courierId = $this->courier->id;
+
+        // ✅ حساب counts للـ tabs في الـ Controller بدلاً من الـ View
+        // هذا يتبع مبدأ "لا استعلامات في العروض"
+        $tabCounts = [
+            'active' => DeliveryCourier::where('courier_id', $courierId)
+                ->whereIn('status', [
+                    DeliveryCourier::STATUS_PENDING_APPROVAL,
+                    DeliveryCourier::STATUS_APPROVED,
+                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
+                    DeliveryCourier::STATUS_PICKED_UP,
+                ])
+                ->count(),
+            'pending' => DeliveryCourier::where('courier_id', $courierId)
+                ->where('status', DeliveryCourier::STATUS_PENDING_APPROVAL)
+                ->count(),
+            'in_progress' => DeliveryCourier::where('courier_id', $courierId)
+                ->whereIn('status', [
+                    DeliveryCourier::STATUS_APPROVED,
+                    DeliveryCourier::STATUS_READY_FOR_PICKUP,
+                    DeliveryCourier::STATUS_PICKED_UP,
+                ])
+                ->count(),
+        ];
 
         if ($type == 'completed') {
             // Completed/delivered orders
-            $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+            $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
@@ -325,7 +349,7 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         } elseif ($type == 'pending') {
             // Orders waiting for courier approval
-            $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+            $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
@@ -334,7 +358,7 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         } elseif ($type == 'in_progress') {
             // Orders in progress (approved, ready, picked up)
-            $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+            $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
@@ -347,7 +371,7 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         } else {
             // Default: All active orders (pending approval + in progress)
-            $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
+            $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
                 ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
@@ -361,7 +385,7 @@ class CourierController extends CourierBaseController
                 ->paginate(10);
         }
 
-        return view('courier.orders', compact('purchases', 'type'));
+        return view('courier.orders', compact('purchases', 'type', 'tabCounts'));
     }
 
     public function orderDetails($id)

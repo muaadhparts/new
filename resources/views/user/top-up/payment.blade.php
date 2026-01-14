@@ -69,7 +69,7 @@
                             <input type="hidden" id="preamount" value="{{ $topUp->amount * $curr->value }}">
                             <input type="hidden" name="topup_number" value="{{ $topUp->topup_number }}">
                             <input type="hidden" name="email"
-                                value="{{ App\Models\User::findOrFail($topUp->user_id)->email }}">
+                                value="{{ $userEmail ?? '' }}">
                             <input type="hidden" name="ref_id" id="ref_id" value="">
 
                             <button type="submit" class="template-btn inline-block">submit</button>

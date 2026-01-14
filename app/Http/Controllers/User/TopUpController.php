@@ -12,11 +12,21 @@ use App\Models\TopUp;
 class TopUpController extends UserBaseController
 {
     public function index() {
-      return view('user.top-up.index');
+      // ✅ تحميل البيانات في الـ Controller بدلاً من الـ View
+      $topUps = TopUp::where('user_id', $this->user->id)
+          ->latest()
+          ->paginate(12);
+
+      return view('user.top-up.index', compact('topUps'));
     }
 
     public function walletLogs() {
-      return view('user.wallet-logs');
+      // ✅ تحميل البيانات في الـ Controller بدلاً من الـ View
+      $walletLogs = WalletLog::where('user_id', $this->user->id)
+          ->latest()
+          ->paginate(12);
+
+      return view('user.wallet-logs', compact('walletLogs'));
     }
 
     public function transhow($id) {
@@ -50,10 +60,13 @@ class TopUpController extends UserBaseController
     $paystack = MerchantPayment::whereKeyword('paystack')->first();
     $paystackData = $paystack->convertAutoData();
 
+    // ✅ تحميل بريد المستخدم في الـ Controller
+    $userEmail = \App\Models\User::find($topUp->user_id)?->email ?? '';
+
     if($topUp->status == 1){
         return response()->json(['status'=>false,'data'=>[],'error'=>"Top Up Already Added."]);
     }
-    return view('user.top-up.payment',compact('topUp','gateways','paystackData'));
+    return view('user.top-up.payment',compact('topUp','gateways','paystackData', 'userEmail'));
 }
 
 }

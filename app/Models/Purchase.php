@@ -286,6 +286,14 @@ class Purchase extends Model
     }
 
     /**
+     * علاقة مع DeliveryCourier (التوصيل المحلي)
+     */
+    public function deliveryCouriers()
+    {
+        return $this->hasMany('App\Models\DeliveryCourier', 'purchase_id');
+    }
+
+    /**
      * Get latest shipment status for this purchase
      */
     public function getLatestShipmentStatus()

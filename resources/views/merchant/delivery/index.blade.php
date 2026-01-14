@@ -81,22 +81,13 @@
                     <tbody>
                         @foreach ($datas as $data)
                             @php
-                                $merchantId = auth()->id();
-
-                                // Check for local courier delivery
-                                $delivery = App\Models\DeliveryCourier::where('purchase_id', $data->id)
-                                    ->where('merchant_id', $merchantId)
-                                    ->first();
-
-                                // Check for shipment tracking
-                                $shipment = App\Models\ShipmentTracking::getLatestForPurchase($data->id, $merchantId);
-
-                                // Get customer's shipping choice
-                                $customerChoice = $data->getCustomerShippingChoice($merchantId);
-
-                                // Calculate price
-                                $purchase = $data;
-                                $price = $purchase->merchantPurchases()->where('user_id', $merchantId)->sum('price');
+                                // ✅ استخدام البيانات المحملة مسبقاً من الـ Controller
+                                // لا استعلامات قاعدة بيانات في الـ View
+                                $pData = $purchaseData[$data->id] ?? [];
+                                $delivery = $pData['delivery'] ?? null;
+                                $shipment = $pData['shipment'] ?? null;
+                                $customerChoice = $pData['customerChoice'] ?? null;
+                                $price = $pData['price'] ?? 0;
                             @endphp
                             <tr>
                                 <!-- Purchase Number -->

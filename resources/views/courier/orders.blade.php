@@ -16,23 +16,14 @@
                     </div>
 
                     {{-- ✅ Order Status Tabs (NEW WORKFLOW) --}}
+                    {{-- استخدام counts محملة مسبقاً من الـ Controller --}}
                     <ul class="nav nav-tabs mb-4" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link {{ !$type || $type == 'all' ? 'active' : '' }}"
                                href="{{ route('courier-purchases') }}">
                                 <i class="fas fa-list"></i> @lang('All Active')
-                                @php
-                                    $activeCount = \App\Models\DeliveryCourier::where('courier_id', auth('courier')->id())
-                                        ->whereIn('status', [
-                                            \App\Models\DeliveryCourier::STATUS_PENDING_APPROVAL,
-                                            \App\Models\DeliveryCourier::STATUS_APPROVED,
-                                            \App\Models\DeliveryCourier::STATUS_READY_FOR_PICKUP,
-                                            \App\Models\DeliveryCourier::STATUS_PICKED_UP,
-                                        ])
-                                        ->count();
-                                @endphp
-                                @if($activeCount > 0)
-                                    <span class="badge bg-primary ms-1">{{ $activeCount }}</span>
+                                @if(($tabCounts['active'] ?? 0) > 0)
+                                    <span class="badge bg-primary ms-1">{{ $tabCounts['active'] }}</span>
                                 @endif
                             </a>
                         </li>
@@ -40,13 +31,8 @@
                             <a class="nav-link {{ $type == 'pending' ? 'active' : '' }}"
                                href="{{ route('courier-purchases', ['type' => 'pending']) }}">
                                 <i class="fas fa-clock"></i> @lang('Pending Approval')
-                                @php
-                                    $pendingCount = \App\Models\DeliveryCourier::where('courier_id', auth('courier')->id())
-                                        ->where('status', \App\Models\DeliveryCourier::STATUS_PENDING_APPROVAL)
-                                        ->count();
-                                @endphp
-                                @if($pendingCount > 0)
-                                    <span class="badge bg-warning text-dark ms-1">{{ $pendingCount }}</span>
+                                @if(($tabCounts['pending'] ?? 0) > 0)
+                                    <span class="badge bg-warning text-dark ms-1">{{ $tabCounts['pending'] }}</span>
                                 @endif
                             </a>
                         </li>
@@ -54,17 +40,8 @@
                             <a class="nav-link {{ $type == 'in_progress' ? 'active' : '' }}"
                                href="{{ route('courier-purchases', ['type' => 'in_progress']) }}">
                                 <i class="fas fa-truck"></i> @lang('In Progress')
-                                @php
-                                    $progressCount = \App\Models\DeliveryCourier::where('courier_id', auth('courier')->id())
-                                        ->whereIn('status', [
-                                            \App\Models\DeliveryCourier::STATUS_APPROVED,
-                                            \App\Models\DeliveryCourier::STATUS_READY_FOR_PICKUP,
-                                            \App\Models\DeliveryCourier::STATUS_PICKED_UP,
-                                        ])
-                                        ->count();
-                                @endphp
-                                @if($progressCount > 0)
-                                    <span class="badge bg-info ms-1">{{ $progressCount }}</span>
+                                @if(($tabCounts['in_progress'] ?? 0) > 0)
+                                    <span class="badge bg-info ms-1">{{ $tabCounts['in_progress'] }}</span>
                                 @endif
                             </a>
                         </li>

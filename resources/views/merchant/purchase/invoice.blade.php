@@ -370,10 +370,9 @@
                                         <tr>
 
                                             <td>
-
                                                 @if ($catalogItem['item']['user_id'] != 0)
+                                                    {{-- ✅ URL يُحسب من بيانات الـ cart - لا query --}}
                                                     @php
-                                                        $user = App\Models\User::find($catalogItem['item']['user_id']);
                                                         $merchantInvoiceProductUrl = '#';
                                                         if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
                                                             $merchantInvoiceProductUrl = route('front.catalog-item', [

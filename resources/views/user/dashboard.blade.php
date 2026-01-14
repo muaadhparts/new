@@ -45,7 +45,7 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ Auth::user()->purchases()->count() }}</h5>
+                                <h5>{{ $dashboardStats['totalPurchases'] ?? 0 }}</h5>
                                 <p>@lang('Total Purchases')</p>
                             </div>
                         </div>
@@ -76,7 +76,7 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ Auth::user()->purchases()->where('status', 'pending')->count() }}</h5>
+                                <h5>{{ $dashboardStats['pendingPurchases'] ?? 0 }}</h5>
                                 <p>@lang('Pending Purchases')</p>
                             </div>
                         </div>

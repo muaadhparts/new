@@ -36,19 +36,72 @@ class PurchaseController extends MerchantBaseController
     public function show($slug)
     {
         $user = $this->user;
+        $merchantId = $user->id;
+
         $purchase = Purchase::where('purchase_number', '=', $slug)->first();
 
         // Security: Verify merchant has items in this purchase
-        if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $user->id)->exists()) {
+        if (!$purchase || !$purchase->merchantPurchases()->where('user_id', $merchantId)->exists()) {
             abort(403, 'Unauthorized access to purchase');
         }
 
         $cart = $purchase->cart;
 
         // Prepare tracking data for view (no logic in Blade)
-        $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
+        $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $merchantId);
 
-        return view('merchant.purchase.details', compact('user', 'purchase', 'cart', 'trackingData'));
+        // ✅ تحميل بيانات التاجر في الـ Controller بدلاً من الـ View
+        $merchantPurchaseData = $purchase->merchantPurchases()
+            ->where('user_id', $merchantId)
+            ->selectRaw('SUM(qty) as total_qty, SUM(price) as total_price, COUNT(*) as items_count')
+            ->first();
+
+        // ✅ فحص حالة التوصيل والإكمال في الـ Controller
+        $deliveryCourier = \App\Models\DeliveryCourier::where('merchant_id', $merchantId)
+            ->where('purchase_id', $purchase->id)
+            ->first();
+
+        $completedCount = $purchase->merchantPurchases()
+            ->where('user_id', $merchantId)
+            ->where('status', 'completed')
+            ->count();
+
+        $purchaseStats = [
+            'totalQty' => (int) ($merchantPurchaseData->total_qty ?? 0),
+            'totalPrice' => (float) ($merchantPurchaseData->total_price ?? 0),
+            'itemsCount' => (int) ($merchantPurchaseData->items_count ?? 0),
+            'isDelivered' => $deliveryCourier && $deliveryCourier->status === 'delivered',
+            'completedCount' => $completedCount,
+            'canMarkComplete' => $deliveryCourier
+                && $deliveryCourier->status === 'delivered'
+                && $completedCount === 0,
+        ];
+
+        // ✅ تحميل بيانات التجار وحالات الطلبات مسبقاً (بدلاً من queries في الـ View)
+        $cartItems = $cart['items'] ?? [];
+        $merchantIds = collect($cartItems)->pluck('item.user_id')->filter()->unique()->values()->toArray();
+
+        // تحميل كل التجار مرة واحدة
+        $merchantsLookup = \App\Models\User::whereIn('id', $merchantIds)
+            ->get()
+            ->keyBy('id')
+            ->toArray();
+
+        // تحميل كل MerchantPurchases لهذا الـ Purchase مرة واحدة
+        $merchantPurchasesLookup = $purchase->merchantPurchases()
+            ->get()
+            ->keyBy('user_id')
+            ->toArray();
+
+        return view('merchant.purchase.details', compact(
+            'user',
+            'purchase',
+            'cart',
+            'trackingData',
+            'purchaseStats',
+            'merchantsLookup',
+            'merchantPurchasesLookup'
+        ));
     }
 
     public function invoice($slug)

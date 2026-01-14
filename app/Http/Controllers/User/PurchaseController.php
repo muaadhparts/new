@@ -16,8 +16,12 @@ class PurchaseController extends UserBaseController
     public function purchases()
     {
         $user = $this->user;
-        $purchases = Purchase::where('user_id','=',$user->id)->latest('id')->get();
-        return view('user.purchase.index',compact('user','purchases'));
+        // ✅ استخدام paginate بدلاً من get لتوفير التصفح
+        $purchases = Purchase::where('user_id', '=', $user->id)
+            ->latest('id')
+            ->paginate(12);
+
+        return view('user.purchase.index', compact('user', 'purchases'));
     }
 
     public function purchasetrack()

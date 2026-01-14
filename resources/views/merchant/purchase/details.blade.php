@@ -47,7 +47,8 @@
 
                         <h5 class="title">@lang('Purchase Details')
                         </h5>
-                        @if (@App\Models\DeliveryCourier::where('merchant_id', auth()->id())->where('purchase_id', $purchase->id)->first()->status == 'delivered' && $purchase->merchantPurchases()->where('status', 'completed')->count() == 0)
+                        {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
+                        @if ($purchaseStats['canMarkComplete'] ?? false)
                             <a href="{{ route('merchant-purchase-status', ['id1' => $purchase->purchase_number, 'status' => 'completed']) }}"
                                 class="m-btn m-btn--success m-btn--sm">@lang('Make Complete')</a>
                         @endif
@@ -58,20 +59,14 @@
                         </li>
                         <li class="info-list-item">
                             <span class="info-type">@lang('Total CatalogItem')</span> <span
-                                class="info">{{ $purchase->merchantPurchases()->where('user_id', '=', $user->id)->sum('qty') }}</span>
+                                class="info">{{ $purchaseStats['totalQty'] ?? 0 }}</span>
                         </li>
 
-                        @php
-
-                            $price = $purchase
-                                ->merchantPurchases()
-                                ->where('user_id', '=', $user->id)
-                                ->sum('price');
-                        @endphp
+                        {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Total Cost')</span> <span
-                                class="info">{{ \PriceHelper::showOrderCurrencyPrice($price * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                class="info">{{ \PriceHelper::showOrderCurrencyPrice(($purchaseStats['totalPrice'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
                         </li>
 
                         <li class="info-list-item">
@@ -316,12 +311,13 @@
                                         <!-- Shop Name -->
                                         <td class="text-start">
                                                 @if ($catalogItem['item']['user_id'] != 0)
+                                                    {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
                                                     @php
-                                                        $user = App\Models\User::find($catalogItem['item']['user_id']);
+                                                        $itemMerchant = $merchantsLookup[$catalogItem['item']['user_id']] ?? null;
                                                     @endphp
-                                                    @if (isset($user))
+                                                    @if ($itemMerchant)
                                                         <a class="title-hover-color content" target="_blank"
-                                                            href="{{ route('operator-merchant-show', $user->id) }}">{{ $user->shop_name }}</a>
+                                                            href="{{ route('operator-merchant-show', $itemMerchant['id']) }}">{{ $itemMerchant['shop_name'] }}</a>
                                                     @else
                                                         {{ __('Merchant Removed') }}
                                                     @endif
@@ -330,34 +326,31 @@
                                         <!-- Status -->
                                         <td>
                                             @if ($catalogItem['item']['user_id'] != 0)
+                                                {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
                                                 @php
-                                                    $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id', '=', $purchase->id)
-                                                        ->where('user_id', '=', $catalogItem['item']['user_id'])
-                                                        ->first();
+                                                    $itemMerchantPurchase = $merchantPurchasesLookup[$catalogItem['item']['user_id']] ?? null;
                                                 @endphp
-
-                                                    @if ($merchantPurchase->status == 'pending')
-                                                        <span class="m-badge m-badge--pending">{{ ucwords($merchantPurchase->status) }}</span>
-                                                    @elseif($merchantPurchase->status == 'processing')
-                                                        <span class="m-badge m-badge--processing">{{ ucwords($merchantPurchase->status) }}</span>
-                                                    @elseif($merchantPurchase->status == 'on delivery')
-                                                        <span class="m-badge m-badge--shipped">{{ ucwords($merchantPurchase->status) }}</span>
-                                                    @elseif($merchantPurchase->status == 'completed')
-                                                        <span class="m-badge m-badge--completed">{{ ucwords($merchantPurchase->status) }}</span>
-                                                    @elseif($merchantPurchase->status == 'declined')
-                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($merchantPurchase->status) }}</span>
+                                                @if ($itemMerchantPurchase)
+                                                    @if ($itemMerchantPurchase['status'] == 'pending')
+                                                        <span class="m-badge m-badge--pending">{{ ucwords($itemMerchantPurchase['status']) }}</span>
+                                                    @elseif($itemMerchantPurchase['status'] == 'processing')
+                                                        <span class="m-badge m-badge--processing">{{ ucwords($itemMerchantPurchase['status']) }}</span>
+                                                    @elseif($itemMerchantPurchase['status'] == 'on delivery')
+                                                        <span class="m-badge m-badge--shipped">{{ ucwords($itemMerchantPurchase['status']) }}</span>
+                                                    @elseif($itemMerchantPurchase['status'] == 'completed')
+                                                        <span class="m-badge m-badge--completed">{{ ucwords($itemMerchantPurchase['status']) }}</span>
+                                                    @elseif($itemMerchantPurchase['status'] == 'declined')
+                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($itemMerchantPurchase['status']) }}</span>
                                                     @endif
+                                                @endif
                                             @endif
                                         </td>
 
                                         <!-- CatalogItem Title -->
                                         <td>
-
                                             @if ($catalogItem['item']['user_id'] != 0)
+                                            {{-- ✅ URL الرابط يُحسب بدون query - البيانات موجودة في الـ cart --}}
                                             @php
-                                                $user = App\Models\User::find(
-                                                    $catalogItem['item']['user_id'],
-                                                );
                                                 $merchantOrderProductUrl = '#';
                                                 if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
                                                     $merchantOrderProductUrl = route('front.catalog-item', [

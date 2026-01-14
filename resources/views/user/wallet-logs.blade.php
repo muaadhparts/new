@@ -32,12 +32,8 @@
                             </tr>
 
                         </thead>
+                        {{-- ✅ البيانات محملة من الـ Controller --}}
                         <tbody>
-                            @php
-                            $walletLogs = App\Models\WalletLog::where('user_id', Auth::user()->id)
-                            ->latest()
-                            ->paginate(12);
-                            @endphp
                             @foreach ($walletLogs as $data)
                             <!-- table data row 1 start  -->
                             <tr>

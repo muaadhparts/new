@@ -35,9 +35,7 @@
                             </tr>
 
                         </thead>
-                        @php
-                        $topUps = App\Models\TopUp::where('user_id', Auth::user()->id)->latest()->paginate(12);
-                        @endphp
+                        {{-- ✅ البيانات محملة من الـ Controller --}}
                         <tbody>
                             @forelse ($topUps as $data)
                             <!-- table data row 1 start  -->

@@ -27,28 +27,65 @@ class DeliveryController extends MerchantBaseController
     public function index()
     {
         $user = $this->user;
+        $merchantId = $user->id;
 
-        // ✅ FIX: Use explicit query instead of silent reject
+        // ✅ FIX: Use explicit query with eager loading
         // Get purchases that have merchant_purchases for this merchant
         $datas = Purchase::orderby('id', 'desc')
-            ->whereHas('merchantPurchases', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
+            ->whereHas('merchantPurchases', function ($query) use ($merchantId) {
+                $query->where('user_id', $merchantId);
             })
-            ->with(['merchantPurchases' => function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            }])
+            ->with([
+                // ✅ Eager load merchant purchases for this merchant
+                'merchantPurchases' => function ($query) use ($merchantId) {
+                    $query->where('user_id', $merchantId);
+                },
+                // ✅ Eager load delivery couriers for this merchant
+                'deliveryCouriers' => function ($query) use ($merchantId) {
+                    $query->where('merchant_id', $merchantId)->with('courier');
+                },
+                // ✅ Eager load shipment trackings for this merchant
+                'shipmentTrackings' => function ($query) use ($merchantId) {
+                    $query->where('merchant_id', $merchantId)
+                          ->orderBy('occurred_at', 'desc');
+                },
+            ])
             ->get();
+
+        // ✅ تحضير البيانات لكل طلب في الـ Controller بدلاً من الـ View
+        // هذا يتبع مبدأ "لا استعلامات في العروض"
+        $purchaseData = [];
+        foreach ($datas as $purchase) {
+            // Get delivery courier for this merchant (already eager loaded)
+            $delivery = $purchase->deliveryCouriers->first();
+
+            // Get latest shipment tracking for this merchant (already eager loaded)
+            $shipment = $purchase->shipmentTrackings->first();
+
+            // Get customer's shipping choice from model accessor (no query, uses stored JSON)
+            $customerChoice = $purchase->getCustomerShippingChoice($merchantId);
+
+            // Calculate price from eager-loaded merchantPurchases
+            $price = $purchase->merchantPurchases->sum('price');
+
+            $purchaseData[$purchase->id] = [
+                'delivery' => $delivery,
+                'shipment' => $shipment,
+                'customerChoice' => $customerChoice,
+                'price' => $price,
+            ];
+        }
 
         // ✅ Log for debugging if no purchases found
         if ($datas->isEmpty()) {
             Log::info('Merchant Delivery: No purchases found for merchant', [
-                'merchant_id' => $user->id,
+                'merchant_id' => $merchantId,
                 'merchant_name' => $user->shop_name ?? $user->name,
                 'tip' => 'Check if merchant_purchases table has records with this user_id'
             ]);
         } else {
             Log::debug('Merchant Delivery: Found purchases', [
-                'merchant_id' => $user->id,
+                'merchant_id' => $merchantId,
                 'purchase_count' => $datas->count()
             ]);
         }
@@ -56,7 +93,7 @@ class DeliveryController extends MerchantBaseController
         // ✅ Check Tryoto configuration status
         $tryotoStatus = $this->checkTryotoStatus();
 
-        return view('merchant.delivery.index', compact('datas', 'tryotoStatus'));
+        return view('merchant.delivery.index', compact('datas', 'tryotoStatus', 'purchaseData'));
     }
 
     /**

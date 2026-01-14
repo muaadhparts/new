@@ -32,11 +32,7 @@
                                 </tr>
 
                             </thead>
-                            @php
-                                $purchases = App\Models\Purchase::where('user_id', Auth::user()->id)
-                                    ->latest()
-                                    ->paginate(12);
-                            @endphp
+                            {{-- ✅ البيانات محملة من الـ Controller --}}
                             <tbody>
                                 @foreach ($purchases as $purchase)
                                     <!-- table data row 1 start  -->

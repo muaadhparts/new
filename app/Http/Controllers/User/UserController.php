@@ -15,7 +15,14 @@ class UserController extends UserBaseController
     public function index()
     {
         $user = $this->user;
-        return view('user.dashboard', compact('user'));
+
+        // ✅ حساب الإحصائيات في الـ Controller بدلاً من الـ View
+        $dashboardStats = [
+            'totalPurchases' => $user->purchases()->count(),
+            'pendingPurchases' => $user->purchases()->where('status', 'pending')->count(),
+        ];
+
+        return view('user.dashboard', compact('user', 'dashboardStats'));
     }
 
     public function profile()
