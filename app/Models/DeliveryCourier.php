@@ -432,11 +432,14 @@ class DeliveryCourier extends Model
      * Initialize or reassign courier for delivery
      * Used when creating new delivery record or reassigning after rejection
      *
+     * ⚠️ IMPORTANT: $purchaseAmount should be pay_amount (TOTAL including delivery_fee)
+     * cod_amount = purchaseAmount (NOT purchaseAmount + deliveryFee!)
+     *
      * @param int $courierId
      * @param int $serviceAreaId
      * @param int|null $merchantLocationId
-     * @param float $deliveryFee
-     * @param float $purchaseAmount
+     * @param float $deliveryFee - Courier's fee portion (already included in purchaseAmount)
+     * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee + packing)
      * @param string $paymentMethod (cod|online)
      */
     public function initializeAssignment(
@@ -454,7 +457,8 @@ class DeliveryCourier extends Model
         $this->delivery_fee = $deliveryFee;
         $this->purchase_amount = $purchaseAmount;
         $this->payment_method = $paymentMethod;
-        $this->cod_amount = $paymentMethod === self::PAYMENT_COD ? ($purchaseAmount + $deliveryFee) : 0;
+        // ✅ cod_amount = purchaseAmount (already includes delivery_fee)
+        $this->cod_amount = $paymentMethod === self::PAYMENT_COD ? $purchaseAmount : 0;
 
         // Reset timestamps from previous assignment (if reassigning)
         $this->approved_at = null;
@@ -471,13 +475,16 @@ class DeliveryCourier extends Model
     /**
      * Create new delivery record for a purchase
      *
+     * ⚠️ IMPORTANT: $purchaseAmount should be pay_amount (TOTAL including delivery_fee)
+     * cod_amount = purchaseAmount (NOT purchaseAmount + deliveryFee!)
+     *
      * @param int $purchaseId
      * @param int $merchantId
      * @param int $courierId
      * @param int $serviceAreaId
      * @param int|null $merchantLocationId
-     * @param float $deliveryFee
-     * @param float $purchaseAmount
+     * @param float $deliveryFee - Courier's fee portion (already included in purchaseAmount)
+     * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee + packing)
      * @param string $paymentMethod
      * @return static
      */
@@ -501,7 +508,8 @@ class DeliveryCourier extends Model
         $delivery->delivery_fee = $deliveryFee;
         $delivery->purchase_amount = $purchaseAmount;
         $delivery->payment_method = $paymentMethod;
-        $delivery->cod_amount = $paymentMethod === self::PAYMENT_COD ? ($purchaseAmount + $deliveryFee) : 0;
+        // ✅ cod_amount = purchaseAmount (already includes delivery_fee)
+        $delivery->cod_amount = $paymentMethod === self::PAYMENT_COD ? $purchaseAmount : 0;
         $delivery->save();
 
         return $delivery;

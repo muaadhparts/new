@@ -98,17 +98,22 @@
                                 @if(!empty($shipping_providers) && count($shipping_providers) > 0)
                                 <div class="row g-3">
                                     @foreach($shipping_providers as $providerData)
+                                    @php
+                                        // Sanitize provider name for use in HTML IDs (remove spaces, special chars)
+                                        $providerSlug = Str::slug($providerData['provider'], '_');
+                                    @endphp
                                     <div class="col-md-6">
                                         <button type="button" class="m-btn m-btn--outline w-100 d-flex align-items-center justify-content-between provider-btn"
-                                                id="provider-btn-{{ $providerData['provider'] }}"
+                                                id="provider-btn-{{ $providerSlug }}"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#modal_{{ $providerData['provider'] }}_{{ $merchant_id }}"
-                                                data-provider="{{ $providerData['provider'] }}">
+                                                data-bs-target="#modal_{{ $providerSlug }}_{{ $merchant_id }}"
+                                                data-provider="{{ $providerSlug }}"
+                                                data-provider-name="{{ $providerData['provider'] }}">
                                             <span>
                                                 <i class="{{ $providerData['icon'] }} me-2"></i>
                                                 {{ $providerData['label'] }}
                                             </span>
-                                            <span class="provider-selected-text text-muted" id="provider-text-{{ $providerData['provider'] }}">
+                                            <span class="provider-selected-text text-muted" id="provider-text-{{ $providerSlug }}">
                                                 @lang('Select')
                                             </span>
                                         </button>
@@ -238,9 +243,13 @@
     {{-- Provider Modals - Dynamic for each provider --}}
     @if(!empty($shipping_providers))
         @foreach($shipping_providers as $providerData)
+            @php
+                // Sanitize provider name for use in HTML IDs (remove spaces, special chars)
+                $providerSlug = Str::slug($providerData['provider'], '_');
+            @endphp
             @if($providerData['is_api'] ?? false)
                 {{-- API Provider Modal (e.g., Tryoto) - Loads from API --}}
-                <div class="modal fade gs-modal api-provider-modal" id="modal_{{ $providerData['provider'] }}_{{ $merchant_id }}" data-provider="{{ $providerData['provider'] }}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal fade gs-modal api-provider-modal" id="modal_{{ $providerSlug }}_{{ $merchant_id }}" data-provider="{{ $providerSlug }}" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -251,7 +260,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body p-0">
-                                <div id="api-options-{{ $providerData['provider'] }}" class="shipping-options-list api-options-container p-3" data-provider="{{ $providerData['provider'] }}" style="max-height: 400px; overflow-y: auto;">
+                                <div id="api-options-{{ $providerSlug }}" class="shipping-options-list api-options-container p-3" data-provider="{{ $providerSlug }}" style="max-height: 400px; overflow-y: auto;">
                                     <div class="text-center py-4">
                                         <i class="fas fa-spinner fa-spin fa-2x text-muted"></i>
                                         <p class="mt-2 text-muted">@lang('Loading shipping options...')</p>
@@ -263,7 +272,7 @@
                 </div>
             @else
                 {{-- Regular Provider Modal - Data from DB --}}
-                <div class="modal fade gs-modal" id="modal_{{ $providerData['provider'] }}_{{ $merchant_id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal fade gs-modal" id="modal_{{ $providerSlug }}_{{ $merchant_id }}" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -283,7 +292,7 @@
                                                    data-price="{{ $method['chargeable_price'] }}"
                                                    data-original-price="{{ $method['original_price'] }}"
                                                    data-title="{{ $method['title'] }}"
-                                                   data-provider="{{ $providerData['provider'] }}"
+                                                   data-provider="{{ $providerSlug }}"
                                                    data-free-above="{{ $method['free_above'] }}"
                                                    data-is-free="{{ $method['is_free'] ? '1' : '0' }}">
                                             <label class="form-check-label w-100 d-flex justify-content-between align-items-center" for="ship_{{ $method['id'] }}">
@@ -300,9 +309,13 @@
                                                     @endif
                                                 </div>
                                                 <div class="text-end">
-                                                    <span class="fw-bold">{{ $curr->sign ?? '' }}{{ number_format($method['original_price'], 2) }}</span>
-                                                    @if($method['is_free'])
-                                                    <br><span class="badge bg-success">@lang('Free')</span>
+                                                    @if($method['original_price'] > 0)
+                                                        <span class="fw-bold">{{ $curr->sign ?? '' }}{{ number_format($method['original_price'], 2) }}</span>
+                                                        @if($method['is_free'])
+                                                        <br><span class="badge bg-success">@lang('Free')</span>
+                                                        @endif
+                                                    @else
+                                                        <span class="badge bg-success">@lang('Free')</span>
                                                     @endif
                                                 </div>
                                             </label>

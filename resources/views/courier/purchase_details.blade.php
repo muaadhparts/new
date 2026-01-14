@@ -162,7 +162,12 @@
                     {{-- Payment Info --}}
                     <div class="my-4">
                         @php
-                            $totalToCollect = ($data->purchase_amount ?? 0) + ($data->delivery_fee ?? 0);
+                            // purchase_amount = pay_amount from Purchase = TOTAL (items + tax + delivery_fee + packing)
+                            // delivery_fee = courier's portion
+                            // Order amount (without delivery) = purchase_amount - delivery_fee
+                            $deliveryFee = (float)($data->delivery_fee ?? 0);
+                            $totalAmount = (float)($data->purchase_amount ?? 0);
+                            $orderAmount = $totalAmount - $deliveryFee;
                         @endphp
 
                         @if ($data->isCod())
@@ -174,16 +179,16 @@
                                 <div class="card-body">
                                     <table class="table table-sm mb-0">
                                         <tr>
-                                            <td>@lang('Items Total'):</td>
-                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($data->purchase_amount ?? 0, $purchase->currency_sign) }}</td>
+                                            <td>@lang('Order Amount'):</td>
+                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($orderAmount, $purchase->currency_sign) }}</td>
                                         </tr>
                                         <tr>
                                             <td>@lang('Delivery Fee'):</td>
-                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</td>
+                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($deliveryFee, $purchase->currency_sign) }}</td>
                                         </tr>
                                         <tr class="table-warning">
                                             <td><strong>@lang('TOTAL TO COLLECT'):</strong></td>
-                                            <td class="text-end"><strong class="fs-4 text-danger">{{ \PriceHelper::showAdminCurrencyPrice($totalToCollect, $purchase->currency_sign) }}</strong></td>
+                                            <td class="text-end"><strong class="fs-4 text-danger">{{ \PriceHelper::showAdminCurrencyPrice($totalAmount, $purchase->currency_sign) }}</strong></td>
                                         </tr>
                                     </table>
                                 </div>

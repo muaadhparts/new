@@ -270,15 +270,16 @@ class ShippingApiController extends Controller
 
         $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
 
-        // Calculate merchant's items total from cart (price * qty)
+        // Calculate merchant's items total from cart
+        // NOTE: $item['price'] in cart is ALREADY (unit_price * qty), don't multiply again!
         $itemsTotal = 0;
         if ($cart && !empty($cart->items)) {
             foreach ($cart->items as $item) {
                 $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? data_get($item, 'user_id') ?? 0;
                 if ($itemMerchantId == $merchantId) {
-                    $qty = (int)($item['qty'] ?? 1);
+                    // price in cart is already (unit_price * qty) - just add it directly
                     $price = (float)($item['price'] ?? 0);
-                    $itemsTotal += ($price * $qty);
+                    $itemsTotal += $price;
                 }
             }
         }

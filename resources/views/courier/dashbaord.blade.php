@@ -132,8 +132,8 @@
 
                                     <td data-label="{{ __('Purchase Total') }}">
                                         @php
-                                            // المبلغ الإجمالي = مبلغ الطلب + رسوم التوصيل
-                                            $totalAmount = ($purchase->purchase_amount ?? 0) + ($purchase->delivery_fee ?? 0);
+                                            // purchase_amount = pay_amount = TOTAL (already includes delivery_fee)
+                                            $totalAmount = (float)($purchase->purchase_amount ?? 0);
                                         @endphp
                                         {{ \PriceHelper::showAdminCurrencyPrice($totalAmount, $purchase->purchase->currency_sign ?? 'SAR') }}
                                         @if($purchase->payment_method === 'cod')
