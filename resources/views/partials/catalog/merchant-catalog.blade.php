@@ -46,25 +46,6 @@
                 </ul>
             </div>
 
-            <div id="bigbazar-price-filter-list-1"
-                class="widget bigbazar_widget_price_filter_list widget_layered_nav widget-toggle">
-                <h2 class="widget-title">{{ __('Filter by Price') }}</h2>
-                <ul class="price-filter-list">
-                    <div class="price-range-block">
-                        <div id="slider-range" class="price-filter-range" name="rangeInput"></div>
-                        <div class="livecount">
-                            <input type="number" name="min" oninput="" id="min_price" class="price-range-field" />
-                            <span>
-                                {{ __('To') }}
-                            </span>
-                            <input type="number" name="max" oninput="" id="max_price" class="price-range-field" />
-                        </div>
-                    </div>
-
-                    <button class="filter-btn btn btn-primary mt-3 mb-4" type="submit">{{ __('Search') }}</button>
-                </ul>
-            </div>
-
         </form>
 
 

@@ -13,6 +13,8 @@ use App\{
     Models\UserCatalogEvent
 };
 use App\Models\ReferralCommission;
+use App\Services\PaymentAccountingService;
+use App\Services\AccountLedgerService;
 use Auth;
 use Session;
 use Illuminate\Support\Str;
@@ -226,6 +228,9 @@ class PurchaseHelper
             $paymentMethod = strtolower($purchase->method ?? '');
             $isCOD = (strpos($paymentMethod, 'cod') !== false || strpos($paymentMethod, 'cash') !== false);
 
+            // Get accounting service
+            $accountingService = app(PaymentAccountingService::class);
+
             // Create one MerchantPurchase per merchant
             foreach ($merchantGroups as $merchantId => $merchantData) {
                 // Calculate commission
@@ -251,36 +256,40 @@ class PurchaseHelper
                 $paymentOwnerId = self::determinePaymentOwner($purchase, $checkoutData, $shippingData, $isCOD);
                 $paymentType = ($paymentOwnerId === 0) ? 'platform' : 'merchant';
 
-                // Determine who physically receives the money
-                $moneyReceivedBy = self::determineMoneyReceiver($isCOD, $shippingData, $paymentOwnerId);
-
                 // Calculate net amount (what merchant should receive after deductions)
-                // IMPORTANT: Tax is NOT deducted from net - it's informational only!
-                // Tax is a pass-through (collected from customer, paid to tax authority)
-                // It should NOT affect merchant-platform settlements
                 $netAmount = $itemsTotal - $commissionAmount;
+
+                // Determine delivery method for accounting service
+                $deliveryMethod = match ($shippingData['type']) {
+                    'courier' => MerchantPurchase::DELIVERY_LOCAL_COURIER,
+                    'platform', 'merchant' => MerchantPurchase::DELIVERY_SHIPPING_COMPANY,
+                    'pickup' => MerchantPurchase::DELIVERY_PICKUP,
+                    default => MerchantPurchase::DELIVERY_NONE,
+                };
+
+                // Determine delivery provider
+                $deliveryProvider = ($shippingData['type'] === 'courier')
+                    ? 'courier_' . ($shippingData['courier_id'] ?? 0)
+                    : ($shippingChoice['provider'] ?? null);
 
                 // Calculate platform services fees (only if platform provides the service)
                 $platformShippingFee = ($shippingData['owner_id'] === 0) ? $shippingData['cost'] : 0;
                 $platformPackingFee = 0; // Packing owner handled separately
 
-                // Calculate financial balances based on payment owner
-                // CRITICAL: Tax is NOT included in settlements!
-                // Tax is accounting information, not money for platform or merchant
-                $merchantOwesPlatform = 0;
-                $platformOwesMerchant = 0;
-
-                if ($paymentOwnerId > 0) {
-                    // Payment owner receives money directly (including tax)
-                    // Merchant owes platform ONLY: commission + platform services
-                    // Tax is NOT owed - it's a pass-through to tax authority
-                    $merchantOwesPlatform = $commissionAmount + $platformShippingFee + $platformPackingFee;
-                } else {
-                    // Platform receives money (payment_owner_id = 0)
-                    // Platform owes merchant: net amount (sales minus commission)
-                    // Tax is NOT part of this - platform collects tax separately for tax authority
-                    $platformOwesMerchant = $netAmount;
-                }
+                // === Calculate Debt Ledger via Accounting Service ===
+                $accountingData = $accountingService->calculateDebtLedger([
+                    'payment_method' => $isCOD ? 'cod' : 'online',
+                    'payment_owner_id' => $paymentOwnerId,
+                    'delivery_method' => $deliveryMethod,
+                    'delivery_provider' => $deliveryProvider,
+                    'price' => $itemsTotal,
+                    'commission_amount' => $commissionAmount,
+                    'tax_amount' => $taxAmount,
+                    'shipping_cost' => $shippingData['cost'],
+                    'courier_fee' => ($shippingData['type'] === 'courier') ? $shippingData['cost'] : 0,
+                    'platform_shipping_fee' => $platformShippingFee,
+                    'platform_packing_fee' => $platformPackingFee,
+                ]);
 
                 $merchantPurchase = new MerchantPurchase();
                 $merchantPurchase->purchase_id = $purchase->id;
@@ -298,17 +307,39 @@ class PurchaseHelper
                 $merchantPurchase->platform_shipping_fee = $platformShippingFee;
                 $merchantPurchase->platform_packing_fee = $platformPackingFee;
                 $merchantPurchase->net_amount = $netAmount;
-                $merchantPurchase->merchant_owes_platform = $merchantOwesPlatform;
-                $merchantPurchase->platform_owes_merchant = $platformOwesMerchant;
                 $merchantPurchase->payment_type = $paymentType;
                 $merchantPurchase->shipping_type = $shippingData['type'];
-                $merchantPurchase->money_received_by = $moneyReceivedBy;
                 $merchantPurchase->payment_owner_id = $paymentOwnerId;
                 $merchantPurchase->shipping_owner_id = $shippingData['owner_id'];
                 $merchantPurchase->packing_owner_id = 0; // Default to platform
                 $merchantPurchase->shipping_id = $shippingData['shipping_id'];
                 $merchantPurchase->courier_id = $shippingData['courier_id'];
+
+                // === Accounting Fields from Service ===
+                $merchantPurchase->money_holder = $accountingData['money_holder'];
+                $merchantPurchase->delivery_method = $accountingData['delivery_method'];
+                $merchantPurchase->delivery_provider = $accountingData['delivery_provider'];
+                $merchantPurchase->cod_amount = $accountingData['cod_amount'];
+                $merchantPurchase->collection_status = $accountingData['collection_status'];
+
+                // === Debt Ledger from Service ===
+                $merchantPurchase->platform_owes_merchant = $accountingData['platform_owes_merchant'];
+                $merchantPurchase->merchant_owes_platform = $accountingData['merchant_owes_platform'];
+                $merchantPurchase->courier_owes_merchant = $accountingData['courier_owes_merchant'];
+                $merchantPurchase->courier_owes_platform = $accountingData['courier_owes_platform'];
+                $merchantPurchase->shipping_company_owes_merchant = $accountingData['shipping_company_owes_merchant'];
+                $merchantPurchase->shipping_company_owes_platform = $accountingData['shipping_company_owes_platform'];
+
+                $merchantPurchase->settlement_status = 'pending';
                 $merchantPurchase->save();
+
+                // === Record Ledger Entries ===
+                try {
+                    $ledgerService = app(AccountLedgerService::class);
+                    $ledgerService->recordDebtsForMerchantPurchase($merchantPurchase);
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to record ledger entries for purchase #' . $merchantPurchase->purchase_number . ': ' . $e->getMessage());
+                }
 
                 // Create notification for merchant
                 $notification = new UserCatalogEvent;
@@ -383,29 +414,6 @@ class PurchaseHelper
 
         // Default: Platform gateway (0)
         return 0;
-    }
-
-    /**
-     * Determine who physically receives the money
-     *
-     * @param bool $isCOD
-     * @param array $shippingData
-     * @param int $paymentOwnerId
-     * @return string 'platform', 'merchant', or 'courier'
-     */
-    private static function determineMoneyReceiver(bool $isCOD, array $shippingData, int $paymentOwnerId): string
-    {
-        if ($isCOD) {
-            // COD: physical money receiver depends on delivery method
-            if ($shippingData['type'] === 'courier') {
-                return 'courier'; // Courier collects and delivers to platform
-            }
-            // Shipping company collects
-            return ($shippingData['owner_id'] === 0) ? 'platform' : 'merchant';
-        }
-
-        // Online payment: receiver is the payment owner
-        return ($paymentOwnerId === 0) ? 'platform' : 'merchant';
     }
 
     /**

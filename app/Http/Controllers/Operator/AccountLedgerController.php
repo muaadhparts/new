@@ -1,0 +1,610 @@
+<?php
+
+namespace App\Http\Controllers\Operator;
+
+use App\Models\AccountParty;
+use App\Models\AccountingLedger;
+use App\Models\AccountBalance;
+use App\Models\SettlementBatch;
+use App\Models\Currency;
+use App\Services\AccountLedgerService;
+use App\Services\AccountingEntryService;
+use App\Services\AccountingReportService;
+use App\Services\MerchantStatementService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+
+/**
+ * AccountLedgerController - إدارة سجل الحسابات
+ *
+ * الصفحة الموحدة لجميع الحسابات:
+ * - التجار
+ * - المناديب
+ * - شركات الشحن
+ * - شركات الدفع
+ *
+ * القاعدة: كل الأرقام من Ledger فقط - لا قراءة مباشرة من الطلبات
+ */
+class AccountLedgerController extends OperatorBaseController
+{
+    protected AccountLedgerService $ledgerService;
+    protected AccountingEntryService $entryService;
+    protected AccountingReportService $reportService;
+    protected MerchantStatementService $statementService;
+
+    public function __construct(
+        AccountLedgerService $ledgerService,
+        AccountingEntryService $entryService,
+        AccountingReportService $reportService,
+        MerchantStatementService $statementService
+    ) {
+        parent::__construct();
+        $this->ledgerService = $ledgerService;
+        $this->entryService = $entryService;
+        $this->reportService = $reportService;
+        $this->statementService = $statementService;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // DASHBOARD - لوحة التحكم الموحدة
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * لوحة التحكم الرئيسية للحسابات
+     */
+    public function index()
+    {
+        $dashboard = $this->ledgerService->getPlatformDashboard();
+        $currency = Currency::where('is_default', 1)->first();
+
+        // ملخص سريع لكل نوع طرف
+        $summary = [
+            'merchants' => $this->getQuickSummary(AccountParty::TYPE_MERCHANT),
+            'couriers' => $this->getQuickSummary(AccountParty::TYPE_COURIER),
+            'shipping' => $this->getQuickSummary(AccountParty::TYPE_SHIPPING_PROVIDER),
+            'payment' => $this->getQuickSummary(AccountParty::TYPE_PAYMENT_PROVIDER),
+        ];
+
+        return view('operator.accounts.index', [
+            'dashboard' => $dashboard,
+            'summary' => $summary,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * ملخص سريع لنوع طرف
+     */
+    protected function getQuickSummary(string $partyType): array
+    {
+        $parties = AccountParty::where('party_type', $partyType)
+            ->where('is_active', true)
+            ->count();
+
+        $receivable = AccountBalance::whereHas('party', function ($q) use ($partyType) {
+            $q->where('party_type', $partyType);
+        })->where('balance_type', AccountBalance::TYPE_RECEIVABLE)
+          ->sum('pending_amount');
+
+        $payable = AccountBalance::whereHas('party', function ($q) use ($partyType) {
+            $q->where('party_type', $partyType);
+        })->where('balance_type', AccountBalance::TYPE_PAYABLE)
+          ->sum('pending_amount');
+
+        return [
+            'count' => $parties,
+            'receivable' => $receivable,
+            'payable' => $payable,
+            'net' => $receivable - $payable,
+        ];
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PARTIES LIST - قوائم الأطراف
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * قائمة التجار وحساباتهم
+     */
+    public function merchants(Request $request)
+    {
+        return $this->partyList(AccountParty::TYPE_MERCHANT, 'operator.accounts.merchants', $request);
+    }
+
+    /**
+     * قائمة المناديب وحساباتهم
+     */
+    public function couriers(Request $request)
+    {
+        return $this->partyList(AccountParty::TYPE_COURIER, 'operator.accounts.couriers', $request);
+    }
+
+    /**
+     * قائمة شركات الشحن وحساباتهم
+     */
+    public function shippingProviders(Request $request)
+    {
+        return $this->partyList(AccountParty::TYPE_SHIPPING_PROVIDER, 'operator.accounts.shipping', $request);
+    }
+
+    /**
+     * قائمة شركات الدفع وحساباتهم
+     */
+    public function paymentProviders(Request $request)
+    {
+        return $this->partyList(AccountParty::TYPE_PAYMENT_PROVIDER, 'operator.accounts.payment', $request);
+    }
+
+    /**
+     * Helper لعرض قائمة الأطراف
+     */
+    protected function partyList(string $partyType, string $view, Request $request)
+    {
+        $query = AccountParty::where('party_type', $partyType);
+
+        if ($request->has('search') && $request->search) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('code', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->has('has_balance')) {
+            $query->whereHas('balances', function ($q) {
+                $q->where('pending_amount', '>', 0);
+            });
+        }
+
+        $parties = $query->with(['balances.counterparty'])
+            ->withCount('outgoingTransactions as transactions_count')
+            ->orderBy('name')
+            ->paginate(20);
+
+        // إضافة ملخص لكل طرف
+        $parties->getCollection()->transform(function ($party) {
+            $party->summary = $this->ledgerService->getPartySummary($party);
+            return $party;
+        });
+
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view($view, [
+            'parties' => $parties,
+            'partyType' => $partyType,
+            'currency' => $currency,
+        ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // PARTY DETAILS - تفاصيل الطرف
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * كشف حساب طرف
+     */
+    public function partyStatement(Request $request, AccountParty $party)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        // الطرف المقابل (إذا تم اختياره)
+        $counterparty = null;
+        if ($request->counterparty_id) {
+            $counterparty = AccountParty::find($request->counterparty_id);
+        }
+
+        $statement = $this->ledgerService->getAccountStatement($party, $counterparty, $startDate, $endDate);
+        $summary = $this->ledgerService->getPartySummary($party);
+
+        // الأطراف المقابلة المتاحة
+        $counterparties = AccountParty::where('id', '!=', $party->id)
+            ->where('is_active', true)
+            ->orderBy('party_type')
+            ->orderBy('name')
+            ->get();
+
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.statement', [
+            'party' => $party,
+            'statement' => $statement,
+            'summary' => $summary,
+            'counterparties' => $counterparties,
+            'selectedCounterparty' => $counterparty,
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تفاصيل معاملة
+     */
+    public function transactionDetails(AccountingLedger $transaction)
+    {
+        $transaction->load(['fromParty', 'toParty', 'purchase', 'merchantPurchase', 'settlementBatch']);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.transaction-details', [
+            'transaction' => $transaction,
+            'currency' => $currency,
+        ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SETTLEMENTS - التسويات
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * قائمة دفعات التسوية
+     */
+    public function settlements(Request $request)
+    {
+        $query = SettlementBatch::with(['fromParty', 'toParty']);
+
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->party_id) {
+            $query->forParty($request->party_id);
+        }
+
+        $settlements = $query->orderBy('created_at', 'desc')->paginate(20);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.settlements', [
+            'settlements' => $settlements,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * إنشاء تسوية جديدة - عرض النموذج
+     */
+    public function createSettlementForm(Request $request)
+    {
+        $party = null;
+        if ($request->party_id) {
+            $party = AccountParty::find($request->party_id);
+        }
+
+        $parties = AccountParty::where('is_active', true)
+            ->where('party_type', '!=', AccountParty::TYPE_PLATFORM)
+            ->orderBy('party_type')
+            ->orderBy('name')
+            ->get()
+            ->groupBy('party_type');
+
+        $platform = $this->ledgerService->getPlatformParty();
+        $currency = Currency::where('is_default', 1)->first();
+
+        $pendingBalance = 0;
+        if ($party) {
+            $summary = $this->ledgerService->getPartySummary($party);
+            $pendingBalance = $summary['total_payable'] ?? 0;
+        }
+
+        return view('operator.accounts.create-settlement', [
+            'party' => $party,
+            'parties' => $parties,
+            'platform' => $platform,
+            'pendingBalance' => $pendingBalance,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * حفظ تسوية جديدة
+     */
+    public function storeSettlement(Request $request)
+    {
+        $request->validate([
+            'from_party_id' => 'required|exists:account_parties,id',
+            'to_party_id' => 'required|exists:account_parties,id|different:from_party_id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string',
+            'payment_reference' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $fromParty = AccountParty::findOrFail($request->from_party_id);
+        $toParty = AccountParty::findOrFail($request->to_party_id);
+
+        try {
+            $settlement = $this->ledgerService->recordSettlement(
+                $fromParty,
+                $toParty,
+                $request->amount,
+                $request->payment_method,
+                $request->payment_reference,
+                auth('operator')->id()
+            );
+
+            return redirect()
+                ->route('operator.accounts.settlements')
+                ->with('success', __('Settlement recorded successfully. Reference: :ref', ['ref' => $settlement->transaction_ref]));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * تفاصيل دفعة تسوية
+     */
+    public function settlementDetails(SettlementBatch $batch)
+    {
+        $batch->load(['fromParty', 'toParty', 'ledgerEntries', 'createdByUser', 'approvedByUser']);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.settlement-details', [
+            'batch' => $batch,
+            'currency' => $currency,
+        ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SYNC - مزامنة الأطراف
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * مزامنة جميع الأطراف
+     */
+    public function syncParties()
+    {
+        $counts = [
+            'merchants' => $this->ledgerService->syncMerchantParties(),
+            'couriers' => $this->ledgerService->syncCourierParties(),
+            'shipping' => $this->ledgerService->syncShippingProviders(),
+            'payment' => $this->ledgerService->syncPaymentProviders(),
+        ];
+
+        $total = array_sum($counts);
+
+        return back()->with('success', __('Synced :count parties successfully.', ['count' => $total]));
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // REPORTS - التقارير
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * تقرير الذمم المدينة
+     */
+    public function receivablesReport(Request $request)
+    {
+        $platform = $this->ledgerService->getPlatformParty();
+
+        $receivables = AccountBalance::where('party_id', $platform->id)
+            ->where('balance_type', AccountBalance::TYPE_RECEIVABLE)
+            ->where('pending_amount', '>', 0)
+            ->with('counterparty')
+            ->orderBy('pending_amount', 'desc')
+            ->get();
+
+        $total = $receivables->sum('pending_amount');
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.receivables', [
+            'receivables' => $receivables,
+            'total' => $total,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير الذمم الدائنة
+     */
+    public function payablesReport(Request $request)
+    {
+        $platform = $this->ledgerService->getPlatformParty();
+
+        $payables = AccountBalance::where('party_id', $platform->id)
+            ->where('balance_type', AccountBalance::TYPE_PAYABLE)
+            ->where('pending_amount', '>', 0)
+            ->with('counterparty')
+            ->orderBy('pending_amount', 'desc')
+            ->get();
+
+        $total = $payables->sum('pending_amount');
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.payables', [
+            'payables' => $payables,
+            'total' => $total,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير شركات الشحن
+     */
+    public function shippingReport(Request $request)
+    {
+        $shippingParties = AccountParty::where('party_type', AccountParty::TYPE_SHIPPING_PROVIDER)
+            ->where('is_active', true)
+            ->get();
+
+        $report = [];
+        foreach ($shippingParties as $party) {
+            $summary = $this->ledgerService->getPartySummary($party);
+            $report[] = [
+                'party' => $party,
+                'summary' => $summary,
+            ];
+        }
+
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.shipping', [
+            'report' => $report,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير شركات الدفع
+     */
+    public function paymentReport(Request $request)
+    {
+        $paymentParties = AccountParty::where('party_type', AccountParty::TYPE_PAYMENT_PROVIDER)
+            ->where('is_active', true)
+            ->get();
+
+        $report = [];
+        foreach ($paymentParties as $party) {
+            $summary = $this->ledgerService->getPartySummary($party);
+            $report[] = [
+                'party' => $party,
+                'summary' => $summary,
+            ];
+        }
+
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.payment', [
+            'report' => $report,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير الضرائب المحصلة (من Ledger فقط)
+     */
+    public function taxReport(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        $report = $this->reportService->getTaxReport($startDate, $endDate);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.tax', [
+            'report' => $report,
+            'taxEntries' => $report['entries'],
+            'byLocation' => $report['by_location'],
+            'byMonth' => $report['by_month'],
+            'totalTax' => $report['totals']['collected'],
+            'pendingTax' => $report['totals']['pending'],
+            'remittedTax' => $report['totals']['remitted'],
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ENHANCED REPORTS - التقارير المحسنة (من Ledger فقط)
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * تقرير المنصة الشامل
+     */
+    public function platformReport(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        $report = $this->reportService->getPlatformReport($startDate, $endDate);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.platform', [
+            'report' => $report,
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * ملخص جميع التجار
+     */
+    public function merchantsSummary(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        $merchants = $this->reportService->getMerchantsSummaryReport($startDate, $endDate);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.merchants-summary', [
+            'merchants' => $merchants,
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * كشف حساب تاجر (من Ledger فقط)
+     */
+    public function merchantStatement(Request $request, $merchantId)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        $statement = $this->statementService->generateStatement($merchantId, $startDate, $endDate);
+        $pendingAmounts = $this->statementService->getPendingAmounts($merchantId);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.merchant-statement', [
+            'statement' => $statement,
+            'pendingAmounts' => $pendingAmounts,
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير المناديب
+     */
+    public function couriersReport(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        $couriers = $this->reportService->getCouriersReport($startDate, $endDate);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.couriers', [
+            'couriers' => $couriers,
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير شركات الشحن (محسن)
+     */
+    public function shippingCompaniesReport(Request $request)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
+
+        $companies = $this->reportService->getShippingCompaniesReport($startDate, $endDate);
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.shipping-companies', [
+            'companies' => $companies,
+            'startDate' => $startDate?->format('Y-m-d') ?? '',
+            'endDate' => $endDate?->format('Y-m-d') ?? '',
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * تقرير الذمم الشامل (مدينة ودائنة)
+     */
+    public function receivablesPayablesReport(Request $request)
+    {
+        $report = $this->reportService->getReceivablesPayablesReport();
+        $currency = Currency::where('is_default', 1)->first();
+
+        return view('operator.accounts.reports.receivables-payables', [
+            'report' => $report,
+            'currency' => $currency,
+        ]);
+    }
+}

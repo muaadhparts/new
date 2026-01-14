@@ -210,14 +210,6 @@
                             </div>
                         </div>
 
-                        {{-- Price Range - Hidden --}}
-                        <div class="d-none">
-                            <input id="start_value" type="number" name="min"
-                                value="{{ isset($_GET['min']) ? $_GET['min'] : $gs->min_price }}">
-                            <input id="end_value" type="number"
-                                value="{{ isset($_GET['max']) ? $_GET['max'] : $gs->max_price }}">
-                            <input id="max_value" type="number" name="max" value="{{ $gs->max_price }}">
-                        </div>
 
 
 
@@ -580,9 +572,6 @@
     </div>
     <!-- catalogItem wrapper end -->
 
-    <input type="hidden" id="update_min_price" value="">
-    <input type="hidden" id="update_max_price" value="">
-
 @endsection
 
 
@@ -639,16 +628,6 @@
                 // Sort - always use persistent global sort state
                 if (categoryPageSort && categoryPageSort !== '') {
                     params.set('sort', categoryPageSort);
-                }
-
-                // Price filter
-                const minPrice = $("#update_min_price").val();
-                const maxPrice = $("#update_max_price").val();
-                if (minPrice && minPrice !== '') {
-                    params.set('min', minPrice);
-                }
-                if (maxPrice && maxPrice !== '') {
-                    params.set('max', maxPrice);
                 }
 
                 // View mode
@@ -790,25 +769,6 @@
             });
 
             // ========================================
-            // Price Filter
-            // ========================================
-            $(document).on("click", "#price_filter", function() {
-                let amountString = $("#amount").val();
-                amountString = amountString.replace(/\$/g, '');
-
-                let amounts = amountString.split('-');
-                let amount1 = amounts[0].trim();
-                let amount2 = amounts[1].trim();
-
-                $("#update_min_price").val(amount1);
-                $("#update_max_price").val(amount2);
-
-                // Reset to page 1 and load
-                currentPage = 1;
-                loadContent(1);
-            });
-
-            // ========================================
             // Pagination Events
             // ========================================
             // Previous button
@@ -891,35 +851,6 @@
         })(jQuery);
     </script>
 
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-            $(function() {
-                const start_value = $("#start_value").val();
-                const end_value = $("#end_value").val();
-                const max_value = $("#max_value").val();
-
-                $("#slider-range").slider({
-                    range: true,
-                    min: 0,
-                    max: max_value,
-                    values: [start_value, end_value],
-                    step: 10,
-                    slide: function(event, ui) {
-                        $("#amount").val("$" + ui.values[0] + " - $" + ui.values[1]);
-                    },
-                });
-                $("#amount").val(
-                    "$" +
-                    $("#slider-range").slider("values", 0) +
-                    " - $" +
-                    $("#slider-range").slider("values", 5000)
-                );
-            });
-
-        })(jQuery);
-    </script>
-
     {{-- Multi-Step Category Selector JavaScript (5 Levels - AJAX) --}}
     <script>
         (function($) {
@@ -956,11 +887,6 @@
                         params.append(name, $(this).val());
                     }
                 });
-
-                const minPrice = $("#update_min_price").val();
-                const maxPrice = $("#update_max_price").val();
-                if (minPrice && minPrice !== '') params.set('min', minPrice);
-                if (maxPrice && maxPrice !== '') params.set('max', maxPrice);
 
                 const viewMode = $('.check_view.active').data('shopview');
                 if (viewMode) params.set('view_check', viewMode);

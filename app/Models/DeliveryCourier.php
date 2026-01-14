@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\PaymentAccountingService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -348,6 +349,46 @@ class DeliveryCourier extends Model
             $this->courier->recordCodCollection($this->purchase_amount);
             $this->fee_status = self::FEE_COLLECTED;
             $this->save();
+
+            // Update purchase payment_status when COD is collected
+            // Courier has collected payment on behalf of merchant
+            $this->updatePurchasePaymentStatusIfAllDelivered();
+        }
+    }
+
+    /**
+     * Update purchase and MerchantPurchase statuses when COD is collected
+     * Only for COD: When courier collects, payment is received
+     */
+    protected function updatePurchasePaymentStatusIfAllDelivered(): void
+    {
+        $purchase = $this->purchase;
+        if (!$purchase) {
+            return;
+        }
+
+        // Update MerchantPurchase collection_status via PaymentAccountingService
+        $accountingService = app(PaymentAccountingService::class);
+
+        // Find the MerchantPurchase for this delivery's merchant
+        $merchantPurchase = MerchantPurchase::where('purchase_id', $purchase->id)
+            ->where('user_id', $this->merchant_id)
+            ->where('collection_status', MerchantPurchase::COLLECTION_PENDING)
+            ->first();
+
+        if ($merchantPurchase) {
+            $accountingService->markCollectedByCourier($merchantPurchase, $this->courier_id);
+        }
+
+        // Check if all deliveries for this purchase are delivered
+        $pendingDeliveries = DeliveryCourier::where('purchase_id', $purchase->id)
+            ->whereNotIn('status', [self::STATUS_DELIVERED, self::STATUS_CONFIRMED])
+            ->count();
+
+        if ($pendingDeliveries === 0) {
+            // All deliveries complete - COD has been fully collected
+            $purchase->payment_status = 'Completed';
+            $purchase->save();
         }
     }
 

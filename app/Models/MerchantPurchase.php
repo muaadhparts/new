@@ -46,8 +46,22 @@ class MerchantPurchase extends Model
         'platform_shipping_fee',
         'platform_packing_fee',
         'net_amount',
+        // === Debt Ledger ===
         'merchant_owes_platform',
         'platform_owes_merchant',
+        'courier_owes_merchant',
+        'courier_owes_platform',
+        'shipping_company_owes_merchant',
+        'shipping_company_owes_platform',
+        // === COD & Money Tracking ===
+        'cod_amount',
+        'money_holder',
+        'delivery_method',
+        'delivery_provider',
+        'collection_status',
+        'collected_at',
+        'collected_by',
+        // === Ownership & Gateway ===
         'payment_type',
         'shipping_type',
         'money_received_by',
@@ -73,14 +87,58 @@ class MerchantPurchase extends Model
         'platform_shipping_fee' => 'decimal:2',
         'platform_packing_fee' => 'decimal:2',
         'net_amount' => 'decimal:2',
+        'price' => 'decimal:2',
+        // === Debt Ledger ===
         'merchant_owes_platform' => 'decimal:2',
         'platform_owes_merchant' => 'decimal:2',
-        'price' => 'decimal:2',
+        'courier_owes_merchant' => 'decimal:2',
+        'courier_owes_platform' => 'decimal:2',
+        'shipping_company_owes_merchant' => 'decimal:2',
+        'shipping_company_owes_platform' => 'decimal:2',
+        'cod_amount' => 'decimal:2',
+        // === Dates ===
         'settled_at' => 'datetime',
+        'collected_at' => 'datetime',
+        // === IDs ===
         'payment_owner_id' => 'integer',
         'shipping_owner_id' => 'integer',
         'packing_owner_id' => 'integer',
     ];
+
+    // === Money Holder Constants ===
+    const MONEY_HOLDER_PLATFORM = 'platform';
+    const MONEY_HOLDER_MERCHANT = 'merchant';
+    const MONEY_HOLDER_COURIER = 'courier';
+    const MONEY_HOLDER_SHIPPING = 'shipping_company';
+    const MONEY_HOLDER_PENDING = 'pending';
+
+    // === Delivery Method Constants ===
+    const DELIVERY_LOCAL_COURIER = 'local_courier';
+    const DELIVERY_SHIPPING_COMPANY = 'shipping_company';
+    const DELIVERY_PICKUP = 'pickup';
+    const DELIVERY_DIGITAL = 'digital';
+    const DELIVERY_NONE = 'none';
+
+    // === Collection Status Constants ===
+    // ═══════════════════════════════════════════════════════════════════════════
+    // CRITICAL: collection_status is INDEPENDENT from delivery_status
+    // ═══════════════════════════════════════════════════════════════════════════
+    // collection_status = ACCOUNTING status (was COD money collected?)
+    // delivery_status   = LOGISTICS status (was package delivered?)
+    //
+    // Valid combinations:
+    // - delivery=pending,     collection=pending     → Order in transit
+    // - delivery=delivered,   collection=pending     → Package delivered, awaiting COD confirmation
+    // - delivery=delivered,   collection=collected   → Complete (package + money received)
+    // - delivery=failed,      collection=failed      → Delivery failed, no COD collected
+    // - delivery=returned,    collection=not_applicable → Return processed
+    //
+    // RULE: These statuses MUST be updated independently via their respective services
+    // ═══════════════════════════════════════════════════════════════════════════
+    const COLLECTION_NOT_APPLICABLE = 'not_applicable';
+    const COLLECTION_PENDING = 'pending';
+    const COLLECTION_COLLECTED = 'collected';
+    const COLLECTION_FAILED = 'failed';
 
     public function user()
     {
@@ -286,28 +344,21 @@ class MerchantPurchase extends Model
 
     /**
      * Recalculate and update financial balances
-     * Call this after setting owner IDs to update owes amounts
+     *
+     * @deprecated Use PaymentAccountingService::calculateDebtLedger() instead
+     *
+     * ARCHITECTURAL RULE: All debt calculations MUST go through PaymentAccountingService
+     * This method is kept for reference only and throws an exception.
+     *
+     * @throws \RuntimeException Always - use PaymentAccountingService
      */
     public function recalculateFinancialBalance(): self
     {
-        // Net amount = Gross - Commission - Tax
-        $this->net_amount = (float) $this->price
-            - (float) $this->commission_amount
-            - (float) $this->tax_amount;
-
-        if ($this->moneyReceivedByMerchant()) {
-            // Merchant received money directly
-            // Merchant owes platform: commission + tax + platform services
-            $this->merchant_owes_platform = $this->calculateMerchantOwes();
-            $this->platform_owes_merchant = 0;
-        } else {
-            // Platform received money
-            // Platform owes merchant: net amount
-            $this->platform_owes_merchant = $this->calculatePlatformOwes();
-            $this->merchant_owes_platform = 0;
-        }
-
-        return $this;
+        throw new \RuntimeException(
+            'Direct debt modification is forbidden. ' .
+            'Use PaymentAccountingService::calculateDebtLedger() for new records ' .
+            'or settlement methods for existing debts.'
+        );
     }
 
     // ============================================================

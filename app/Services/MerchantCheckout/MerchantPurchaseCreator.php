@@ -9,6 +9,8 @@ use App\Models\Currency;
 use App\Models\DeliveryCourier;
 use App\Classes\MuaadhMailer;
 use App\Traits\SavesCustomerShippingChoice;
+use App\Services\PaymentAccountingService;
+use App\Services\AccountLedgerService;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,15 +26,21 @@ class MerchantPurchaseCreator
     protected MerchantCartService $cartService;
     protected MerchantSessionManager $sessionManager;
     protected MerchantPriceCalculator $priceCalculator;
+    protected PaymentAccountingService $accountingService;
+    protected AccountLedgerService $ledgerService;
 
     public function __construct(
         MerchantCartService $cartService,
         MerchantSessionManager $sessionManager,
-        MerchantPriceCalculator $priceCalculator
+        MerchantPriceCalculator $priceCalculator,
+        PaymentAccountingService $accountingService,
+        ?AccountLedgerService $ledgerService = null
     ) {
         $this->cartService = $cartService;
         $this->sessionManager = $sessionManager;
         $this->priceCalculator = $priceCalculator;
+        $this->accountingService = $accountingService;
+        $this->ledgerService = $ledgerService ?? app(AccountLedgerService::class);
     }
 
     /**
@@ -187,6 +195,8 @@ class MerchantPurchaseCreator
 
     /**
      * Create merchant purchase record
+     *
+     * Integrates with PaymentAccountingService for debt tracking
      */
     protected function createMerchantPurchase(
         Purchase $purchase,
@@ -201,6 +211,40 @@ class MerchantPurchaseCreator
         $grossPrice = $totals['items_total'];
         $commissionAmount = ($grossPrice * $commissionRate) / 100;
         $netAmount = $grossPrice - $commissionAmount - $totals['tax_amount'];
+
+        // Determine payment method (cod vs online)
+        $paymentMethod = strtolower($paymentData['method'] ?? '');
+        $isCod = in_array($paymentMethod, ['cod', 'cash on delivery']);
+
+        // Determine delivery method
+        $deliveryType = $shippingData['delivery_type'] ?? null;
+        $deliveryMethod = match ($deliveryType) {
+            'local_courier' => MerchantPurchase::DELIVERY_LOCAL_COURIER,
+            'shipping_company', 'tryoto' => MerchantPurchase::DELIVERY_SHIPPING_COMPANY,
+            'pickup' => MerchantPurchase::DELIVERY_PICKUP,
+            default => MerchantPurchase::DELIVERY_NONE,
+        };
+
+        // Determine delivery provider
+        $deliveryProvider = match ($deliveryType) {
+            'local_courier' => 'courier_' . ($shippingData['courier_id'] ?? 0),
+            default => $shippingData['shipping_provider'] ?? null,
+        };
+
+        // === Calculate Debt Ledger via Accounting Service ===
+        $accountingData = $this->accountingService->calculateDebtLedger([
+            'payment_method' => $isCod ? 'cod' : 'online',
+            'payment_owner_id' => $merchantId, // Merchant receives payment directly in this checkout
+            'delivery_method' => $deliveryMethod,
+            'delivery_provider' => $deliveryProvider,
+            'price' => $grossPrice,
+            'commission_amount' => $commissionAmount,
+            'tax_amount' => $totals['tax_amount'],
+            'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
+            'courier_fee' => $shippingData['courier_fee'] ?? 0,
+            'platform_shipping_fee' => $shippingData['platform_shipping_fee'] ?? 0,
+            'platform_packing_fee' => $shippingData['platform_packing_fee'] ?? 0,
+        ]);
 
         $merchantPurchase = new MerchantPurchase();
         $merchantPurchase->fill([
@@ -223,19 +267,42 @@ class MerchantPurchaseCreator
             'packing_owner_id' => $merchantId,
 
             // Payment type
-            'payment_type' => 'merchant',
-            'money_received_by' => $shippingData['delivery_type'] === 'local_courier' ? 'courier' : 'merchant',
+            'payment_type' => $isCod ? 'cod' : ($paymentData['method'] ?? 'online'),
             'payment_gateway_id' => $paymentData['pay_id'] ?? null,
 
             // Shipping type
-            'shipping_type' => $shippingData['delivery_type'] === 'local_courier' ? 'courier' : 'merchant',
+            'shipping_type' => $deliveryType === 'local_courier' ? 'courier' : 'merchant',
             'shipping_id' => $shippingData['shipping_id'] ?? null,
             'courier_id' => $shippingData['courier_id'] ?? null,
+
+            // === Accounting Fields from Service ===
+            'money_holder' => $accountingData['money_holder'],
+            'delivery_method' => $accountingData['delivery_method'],
+            'delivery_provider' => $accountingData['delivery_provider'],
+            'cod_amount' => $accountingData['cod_amount'],
+            'collection_status' => $accountingData['collection_status'],
+
+            // === Debt Ledger ===
+            'platform_owes_merchant' => $accountingData['platform_owes_merchant'],
+            'merchant_owes_platform' => $accountingData['merchant_owes_platform'],
+            'courier_owes_merchant' => $accountingData['courier_owes_merchant'],
+            'courier_owes_platform' => $accountingData['courier_owes_platform'],
+            'shipping_company_owes_merchant' => $accountingData['shipping_company_owes_merchant'],
+            'shipping_company_owes_platform' => $accountingData['shipping_company_owes_platform'],
 
             // Settlement
             'settlement_status' => 'pending',
         ]);
         $merchantPurchase->save();
+
+        // === Record Ledger Entries ===
+        // تسجيل الديون في سجل الحركات المالية
+        try {
+            $this->ledgerService->recordDebtsForMerchantPurchase($merchantPurchase);
+        } catch (\Exception $e) {
+            // Log but don't fail - accounting entries can be reconciled later
+            \Log::warning('Failed to record ledger entries for purchase #' . $merchantPurchase->purchase_number . ': ' . $e->getMessage());
+        }
 
         return $merchantPurchase;
     }
@@ -254,15 +321,18 @@ class MerchantPurchaseCreator
         $paymentMethod = strtolower($paymentData['method'] ?? '');
         $isCod = in_array($paymentMethod, ['cod', 'cash on delivery']);
 
+        $deliveryFee = $shippingData['courier_fee'];
+
         DeliveryCourier::create([
             'purchase_id' => $purchase->id,
             'merchant_id' => $merchantId,
             'courier_id' => $shippingData['courier_id'],
             'service_area_id' => $shippingData['service_area_id'] ?? null,
             'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
-            'delivery_fee' => $shippingData['courier_fee'],
+            'delivery_fee' => $deliveryFee,
             'purchase_amount' => $purchase->pay_amount,
-            'cod_amount' => $isCod ? $purchase->pay_amount : 0,
+            // COD amount = purchase total + delivery fee (courier collects both)
+            'cod_amount' => $isCod ? ($purchase->pay_amount + $deliveryFee) : 0,
             'payment_method' => $isCod ? DeliveryCourier::PAYMENT_COD : DeliveryCourier::PAYMENT_ONLINE,
             'status' => DeliveryCourier::STATUS_PENDING_APPROVAL,
             'fee_status' => DeliveryCourier::FEE_PENDING,

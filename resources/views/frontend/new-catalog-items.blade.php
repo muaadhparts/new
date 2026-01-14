@@ -139,15 +139,6 @@
                             </div>
                         </div>
 
-                        {{-- Price Range - Hidden --}}
-                        <div class="d-none">
-                            <input id="start_value" type="number" name="min"
-                                value="{{ isset($_GET['min']) ? $_GET['min'] : $gs->min_price }}">
-                            <input id="end_value" type="number"
-                                value="{{ isset($_GET['max']) ? $_GET['max'] : $gs->max_price }}">
-                            <input id="max_value" type="number" name="max" value="{{ $gs->max_price }}">
-                        </div>
-
                     </div>
                 </div>
 
@@ -293,9 +284,6 @@
         </div>
     </div>
     <!-- catalogItem wrapper end -->
-
-    <input type="hidden" id="update_min_price" value="">
-    <input type="hidden" id="update_max_price" value="">
 
 @endsection
 

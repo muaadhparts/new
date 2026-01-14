@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Purchase;
+use App\Models\MerchantPurchase;
 use App\Models\ShipmentTracking;
 use App\Models\UserCatalogEvent;
 use App\Services\ShipmentTrackingService;
+use App\Services\PaymentAccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -90,6 +92,12 @@ class TryotoWebhookController extends Controller
             // Note: Purchase status is now automatically updated via:
             // ShipmentTrackingService → ShipmentTrackingObserver → OrderStatusResolverService
             // No direct status modification needed here
+
+            // === COD Collection Status Update ===
+            // When shipment is delivered, update COD collection status
+            if ($status === 'delivered' && $existingTracking->purchase_id) {
+                $this->updateCodCollectionStatus($existingTracking->purchase_id);
+            }
 
             // إرسال Notification للتاجر عند التغييرات المهمة
             if (in_array($status, ['picked_up', 'delivered', 'failed', 'returned'])) {
@@ -180,6 +188,37 @@ class TryotoWebhookController extends Controller
             'message' => 'Tryoto Webhook endpoint is working',
             'timestamp' => now()->toDateTimeString(),
         ]);
+    }
+
+    /**
+     * Update COD collection status when shipment is delivered
+     *
+     * Uses PaymentAccountingService to mark COD as collected
+     */
+    private function updateCodCollectionStatus(int $purchaseId): void
+    {
+        try {
+            $accountingService = app(PaymentAccountingService::class);
+
+            // Get all MerchantPurchases for this purchase that have COD
+            $merchantPurchases = MerchantPurchase::where('purchase_id', $purchaseId)
+                ->where('collection_status', MerchantPurchase::COLLECTION_PENDING)
+                ->where('delivery_method', MerchantPurchase::DELIVERY_SHIPPING_COMPANY)
+                ->get();
+
+            foreach ($merchantPurchases as $mp) {
+                $accountingService->markCollectedByShippingCompany($mp, 'tryoto');
+                Log::debug('COD Collection marked for MerchantPurchase', [
+                    'merchant_purchase_id' => $mp->id,
+                    'purchase_id' => $purchaseId,
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to update COD collection status', [
+                'purchase_id' => $purchaseId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

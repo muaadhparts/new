@@ -361,6 +361,49 @@ Route::prefix('operator')->group(function () {
     });
     // ========================== END SETTLEMENT SYSTEM ==========================//
 
+    // ========================== ACCOUNTING LEDGER SYSTEM ==========================//
+    Route::group(['prefix' => 'accounts'], function () {
+        // Dashboard
+        Route::get('/', 'Operator\AccountLedgerController@index')->name('operator.accounts.index');
+
+        // Parties Lists
+        Route::get('/merchants', 'Operator\AccountLedgerController@merchants')->name('operator.accounts.merchants');
+        Route::get('/couriers', 'Operator\AccountLedgerController@couriers')->name('operator.accounts.couriers');
+        Route::get('/shipping', 'Operator\AccountLedgerController@shippingProviders')->name('operator.accounts.shipping');
+        Route::get('/payment', 'Operator\AccountLedgerController@paymentProviders')->name('operator.accounts.payment');
+
+        // Party Statement
+        Route::get('/party/{party}/statement', 'Operator\AccountLedgerController@partyStatement')->name('operator.accounts.party.statement');
+        Route::get('/transaction/{transaction}', 'Operator\AccountLedgerController@transactionDetails')->name('operator.accounts.transaction');
+
+        // Settlements
+        Route::get('/settlements', 'Operator\AccountLedgerController@settlements')->name('operator.accounts.settlements');
+        Route::get('/settlements/create', 'Operator\AccountLedgerController@createSettlementForm')->name('operator.accounts.settlements.create');
+        Route::post('/settlements', 'Operator\AccountLedgerController@storeSettlement')->name('operator.accounts.settlements.store');
+        Route::get('/settlements/{batch}', 'Operator\AccountLedgerController@settlementDetails')->name('operator.accounts.settlements.show');
+
+        // Sync Parties
+        Route::post('/sync-parties', 'Operator\AccountLedgerController@syncParties')->name('operator.accounts.sync');
+
+        // Reports
+        Route::get('/reports/receivables', 'Operator\AccountLedgerController@receivablesReport')->name('operator.accounts.reports.receivables');
+        Route::get('/reports/payables', 'Operator\AccountLedgerController@payablesReport')->name('operator.accounts.reports.payables');
+        Route::get('/reports/shipping', 'Operator\AccountLedgerController@shippingReport')->name('operator.accounts.reports.shipping');
+        Route::get('/reports/payment', 'Operator\AccountLedgerController@paymentReport')->name('operator.accounts.reports.payment');
+        Route::get('/reports/tax', 'Operator\AccountLedgerController@taxReport')->name('operator.accounts.reports.tax');
+
+        // التقارير المحسنة (من Ledger فقط)
+        Route::get('/reports/platform', 'Operator\AccountLedgerController@platformReport')->name('operator.accounts.reports.platform');
+        Route::get('/reports/merchants-summary', 'Operator\AccountLedgerController@merchantsSummary')->name('operator.accounts.reports.merchants-summary');
+        Route::get('/reports/couriers', 'Operator\AccountLedgerController@couriersReport')->name('operator.accounts.reports.couriers');
+        Route::get('/reports/shipping-companies', 'Operator\AccountLedgerController@shippingCompaniesReport')->name('operator.accounts.reports.shipping-companies');
+        Route::get('/reports/receivables-payables', 'Operator\AccountLedgerController@receivablesPayablesReport')->name('operator.accounts.reports.receivables-payables');
+
+        // كشف حساب التاجر
+        Route::get('/merchant-statement/{merchantId}', 'Operator\AccountLedgerController@merchantStatement')->name('operator.accounts.merchant-statement');
+    });
+    // ========================== END ACCOUNTING LEDGER SYSTEM ==========================//
+
     /////////////////////////////// ////////////////////////////////////////////
 
     // Note: Old Category/Subcategory/Childcategory and Attribute routes removed - now using TreeCategories

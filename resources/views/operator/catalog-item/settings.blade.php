@@ -339,35 +339,6 @@
                                 <h4 class="text-center">{{ __('CATALOG & FILTER SECTION') }}</h4>
           
                                 <hr>
-    
-                                <div class="row justify-content-center">
-                                    <div class="col-lg-3">
-                                        <div class="left-area">
-                                            <h4 class="heading">{{ __('Minimum Price') }} *
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <input type="number" class="form-control"
-                                            placeholder="{{ __('Minimum Price') }}" name="min_price"
-                                            value="{{ $gs->min_price }}" required="" min="0">
-                                    </div>
-                                </div>
-
-                                <div class="row justify-content-center">
-                                    <div class="col-lg-3">
-                                        <div class="left-area">
-                                            <h4 class="heading">{{ __('Maximum Price') }} *
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <input type="number" class="form-control"
-                                            placeholder="{{ __('Maximum Price') }}" name="max_price"
-                                            value="{{ $gs->max_price }}" required="" min="0">
-                                    </div>
-                                </div>
-
 
                                 <div class="row justify-content-center">
                                     <div class="col-lg-3">

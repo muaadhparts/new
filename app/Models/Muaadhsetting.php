@@ -180,7 +180,7 @@ class Muaadhsetting extends Model
         'best_seller_count', 'popular_count', 'top_rated_count',
         'big_save_count', 'trending_count', 'page_count',
         'seller_item_count', 'favorite_count', 'merchant_page_count',
-        'min_price', 'max_price', 'item_page', 'post_count', 'favorite_page',
+        'item_page', 'post_count', 'favorite_page',
         'decimal_separator', 'thousand_separator', 'version',
         'is_reward', 'reward_point', 'reward_dolar',
         'physical', 'affilite',

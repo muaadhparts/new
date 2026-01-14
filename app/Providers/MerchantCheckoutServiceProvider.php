@@ -8,6 +8,7 @@ use App\Services\MerchantCheckout\MerchantSessionManager;
 use App\Services\MerchantCheckout\MerchantPriceCalculator;
 use App\Services\MerchantCheckout\MerchantCheckoutService;
 use App\Services\MerchantCheckout\MerchantPurchaseCreator;
+use App\Services\PaymentAccountingService;
 
 class MerchantCheckoutServiceProvider extends ServiceProvider
 {
@@ -33,7 +34,8 @@ class MerchantCheckoutServiceProvider extends ServiceProvider
             return new MerchantPurchaseCreator(
                 $app->make(MerchantCartService::class),
                 $app->make(MerchantSessionManager::class),
-                $app->make(MerchantPriceCalculator::class)
+                $app->make(MerchantPriceCalculator::class),
+                $app->make(PaymentAccountingService::class)
             );
         });
     }
