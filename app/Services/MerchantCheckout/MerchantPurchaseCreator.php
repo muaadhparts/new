@@ -266,8 +266,9 @@ class MerchantPurchaseCreator
             'shipping_owner_id' => $merchantId,
             'packing_owner_id' => $merchantId,
 
-            // Payment type
-            'payment_type' => $isCod ? 'cod' : ($paymentData['method'] ?? 'online'),
+            // Payment type (who owns the payment gateway: merchant or platform)
+            // For COD, platform handles collection through courier
+            'payment_type' => $isCod ? 'platform' : ($this->determinePaymentType($merchantId, $paymentData)),
             'payment_gateway_id' => $paymentData['pay_id'] ?? null,
 
             // Shipping type
@@ -454,6 +455,10 @@ class MerchantPurchaseCreator
                 $price = isset($parts[2]) ? (float)$parts[2] : $price;
             }
 
+            // ✅ الحصول على المدينة المدعومة من الجلسة (تم تحديدها عند جلب خيارات الشحن)
+            $addressData = $this->sessionManager->getAddressData($merchantId);
+            $shippingCity = $addressData['shipping_city'] ?? $addressData['customer_city'] ?? null;
+
             return [
                 $merchantId => [
                     'provider' => 'tryoto',
@@ -462,6 +467,7 @@ class MerchantPurchaseCreator
                     'price' => $price,
                     'original_price' => (float)($shippingData['original_shipping_cost'] ?? $price),
                     'is_free' => $shippingData['is_free_shipping'] ?? false,
+                    'shipping_city' => $shippingCity, // ✅ المدينة المدعومة للشحن
                     'selected_at' => now()->toIso8601String(),
                 ]
             ];
@@ -484,5 +490,24 @@ class MerchantPurchaseCreator
         }
 
         return null;
+    }
+
+    /**
+     * Determine payment type (who owns the payment gateway)
+     *
+     * @param int $merchantId
+     * @param array $paymentData
+     * @return string 'merchant' or 'platform'
+     */
+    protected function determinePaymentType(int $merchantId, array $paymentData): string
+    {
+        // Check if merchant has their own payment credentials
+        $merchantHasGateway = \App\Models\MerchantCredential::where('user_id', $merchantId)
+            ->where('is_active', true)
+            ->exists();
+
+        // If merchant has active gateway credentials, use 'merchant'
+        // Otherwise, platform handles payment
+        return $merchantHasGateway ? 'merchant' : 'platform';
     }
 }

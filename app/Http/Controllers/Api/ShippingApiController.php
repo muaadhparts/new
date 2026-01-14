@@ -159,6 +159,9 @@ class ShippingApiController extends Controller
             // Convert prices and apply free shipping logic
             $convertedOptions = $this->convertDeliveryOptionsPrices($deliveryCompany, $freeShippingInfo);
 
+            // ✅ Save resolved city to session for later use (order creation)
+            $this->saveResolvedCity($merchantId, $destinationCity);
+
             return response()->json([
                 'success' => true,
                 'merchant_id' => $merchantId,
@@ -166,6 +169,7 @@ class ShippingApiController extends Controller
                 'count' => count($convertedOptions),
                 'weight' => $weight,
                 'free_shipping' => $freeShippingInfo,
+                'resolved_city' => $destinationCity, // ✅ المدينة المدعومة للشحن
             ]);
 
         } catch (\Exception $e) {
@@ -548,5 +552,29 @@ class ShippingApiController extends Controller
         }
 
         return 'عذراً، خدمة الشحن الذكي غير متاحة حالياً.';
+    }
+
+    /**
+     * Save resolved city to session for use when creating purchase
+     * This ensures the supported city is used for shipping, not the raw map city
+     */
+    protected function saveResolvedCity(int $merchantId, string $resolvedCity): void
+    {
+        // Save to the address session data
+        $addressKey = 'checkout.merchant.' . $merchantId . '.address';
+        $addressData = Session::get($addressKey, []);
+
+        if (!empty($addressData)) {
+            // Add the resolved/supported city for shipping
+            $addressData['shipping_city'] = $resolvedCity;
+            Session::put($addressKey, $addressData);
+            Session::save();
+
+            Log::debug('ShippingApiController: Saved resolved city to session', [
+                'merchant_id' => $merchantId,
+                'original_city' => $addressData['customer_city'] ?? 'N/A',
+                'shipping_city' => $resolvedCity,
+            ]);
+        }
     }
 }

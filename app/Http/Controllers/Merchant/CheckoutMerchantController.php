@@ -129,7 +129,8 @@ class CheckoutMerchantController extends Controller
             if (request()->wantsJson()) {
                 return response()->json($result, 400);
             }
-            return redirect()->route($result['redirect'] ?? 'merchant.checkout.address', $merchantId)
+            $redirectUrl = $result['redirect'] ?? route('merchant.checkout.address', $merchantId);
+            return redirect()->to($redirectUrl)
                 ->with('unsuccess', $result['message'] ?? __('Please complete previous step'));
         }
 
@@ -278,7 +279,7 @@ class CheckoutMerchantController extends Controller
             }
 
             if (isset($result['redirect'])) {
-                return redirect()->route($result['redirect'], $merchantId)
+                return redirect()->to($result['redirect'])
                     ->with('unsuccess', $result['message'] ?? __('Please complete previous steps'));
             }
 

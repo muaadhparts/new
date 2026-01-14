@@ -510,14 +510,33 @@ class DeliveryController extends MerchantBaseController
 
     /**
      * ✅ مدينة العميل من الطلب المحفوظ
-     * المصدر الوحيد للحقيقة: purchases.customer_city
      *
-     * إذا كانت المدينة غير مدعومة من Tryoto، نستخدم الإحداثيات
-     * لإيجاد أقرب مدينة مدعومة (في getShippingOptions)
+     * الأولوية:
+     * 1. shipping_city من customer_shipping_choice (المدينة المدعومة التي تم تحديدها أثناء الـ checkout)
+     * 2. customer_city (المدينة الأصلية من الخريطة)
+     *
+     * هذا يضمن استخدام نفس المدينة التي عُرضت بها خيارات الشحن للعميل
      */
     private function resolveCustomerCity(Purchase $purchase): ?string
     {
-        // ✅ المصدر الوحيد للحقيقة: البيانات المحفوظة في الطلب
+        $merchantId = $this->user->id;
+
+        // ✅ أولاً: التحقق من shipping_city في customer_shipping_choice
+        // هذه المدينة تم تحديدها أثناء الـ checkout وهي المدينة المدعومة فعلياً
+        $customerShippingChoice = $purchase->customer_shipping_choice;
+        if (is_array($customerShippingChoice) && isset($customerShippingChoice[$merchantId])) {
+            $merchantChoice = $customerShippingChoice[$merchantId];
+            if (!empty($merchantChoice['shipping_city'])) {
+                Log::debug('resolveCustomerCity: Using shipping_city from customer_shipping_choice', [
+                    'purchase_id' => $purchase->id,
+                    'shipping_city' => $merchantChoice['shipping_city'],
+                    'original_customer_city' => $purchase->customer_city
+                ]);
+                return $merchantChoice['shipping_city'];
+            }
+        }
+
+        // ✅ Fallback: استخدام customer_city من الطلب
         $cityValue = $purchase->customer_city;
 
         if (!$cityValue) {

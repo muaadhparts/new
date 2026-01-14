@@ -37,10 +37,12 @@ class AccountingViewService
 
         return [
             // === Payment Method Info ===
-            'paymentMethod' => $mp->payment_type ?? 'N/A',
-            'paymentMethodLabel' => $this->getPaymentMethodLabel($mp->payment_type),
-            'isOnlinePayment' => !in_array(strtolower($mp->payment_type ?? ''), ['cod', 'cash on delivery']),
-            'isCod' => in_array(strtolower($mp->payment_type ?? ''), ['cod', 'cash on delivery']),
+            // payment_type = 'merchant' or 'platform' (who owns the payment gateway)
+            // COD is determined by cod_amount > 0
+            'paymentType' => $mp->payment_type ?? 'platform',
+            'paymentTypeLabel' => $this->getPaymentTypeLabel($mp->payment_type),
+            'isCod' => ($mp->cod_amount ?? 0) > 0,
+            'isOnlinePayment' => ($mp->cod_amount ?? 0) == 0,
 
             // === Payment Status ===
             'paymentStatus' => $mp->purchase->payment_status ?? 'Pending',
@@ -206,6 +208,18 @@ class AccountingViewService
             'myfatoorah' => __('MyFatoorah'),
             'wallet' => __('المحفظة'),
             default => $method ?? __('غير محدد'),
+        };
+    }
+
+    /**
+     * Get payment type label (who owns the payment gateway)
+     */
+    protected function getPaymentTypeLabel(?string $type): string
+    {
+        return match (strtolower($type ?? '')) {
+            'merchant' => __('بوابة التاجر'),
+            'platform' => __('بوابة المنصة'),
+            default => __('غير محدد'),
         };
     }
 
