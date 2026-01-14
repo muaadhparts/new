@@ -22,6 +22,7 @@ class MerchantLocation extends Model
     protected $fillable = [
         'user_id',
         'warehouse_name',
+        'tryoto_warehouse_code', // Warehouse Code from Tryoto dashboard
         'country_id',
         'location',
         'city_id',

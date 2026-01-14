@@ -70,6 +70,8 @@ class MerchantLocationController extends MerchantBaseController
     {
         //--- Validation Section
         $rules = [
+            'warehouse_name' => 'required|string|max:100',
+            'tryoto_warehouse_code' => 'nullable|string|max:50',
             'location' => 'required',
             'country_id' => 'required|exists:countries,id',
             'city_id' => 'required|exists:cities,id',
@@ -79,6 +81,8 @@ class MerchantLocationController extends MerchantBaseController
         $request->validate($rules);
 
         $data = new MerchantLocation();
+        $data->warehouse_name = $request->warehouse_name;
+        $data->tryoto_warehouse_code = $request->tryoto_warehouse_code;
         $data->location = $request->location;
         $data->country_id = $request->country_id;
         $data->city_id = $request->city_id;
@@ -118,6 +122,8 @@ class MerchantLocationController extends MerchantBaseController
     public function update(Request $request, $id)
     {
         $rules = [
+            'warehouse_name' => 'required|string|max:100',
+            'tryoto_warehouse_code' => 'nullable|string|max:50',
             'location' => 'required',
             'country_id' => 'required|exists:countries,id',
             'city_id' => 'required|exists:cities,id',
@@ -127,6 +133,8 @@ class MerchantLocationController extends MerchantBaseController
         $request->validate($rules);
 
         $data = MerchantLocation::findOrFail($id);
+        $data->warehouse_name = $request->warehouse_name;
+        $data->tryoto_warehouse_code = $request->tryoto_warehouse_code;
         $data->location = $request->location;
         $data->country_id = $request->country_id;
         $data->city_id = $request->city_id;

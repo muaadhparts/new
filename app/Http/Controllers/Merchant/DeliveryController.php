@@ -756,6 +756,7 @@ class DeliveryController extends MerchantBaseController
             'company' => 'required|string',
             'price' => 'required|numeric',
             'service_type' => 'nullable|string',
+            'merchant_location_id' => 'nullable|exists:merchant_locations,id',
         ]);
 
         $purchase = Purchase::find($request->purchase_id);
@@ -774,6 +775,27 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('A shipment already exists for this purchase. Tracking: ') . $existingShipment->tracking_number);
         }
 
+        // ✅ Validate merchant_location_id - NO silent fallback if multiple locations
+        $merchantLocationId = $request->merchant_location_id;
+        $activeLocations = \DB::table('merchant_locations')
+            ->where('user_id', $merchantId)
+            ->where('status', 1)
+            ->get();
+
+        if ($activeLocations->isEmpty()) {
+            return redirect()->back()->with('error', __('No warehouse location configured. Please add a location in settings.'));
+        }
+
+        if (!$merchantLocationId) {
+            if ($activeLocations->count() === 1) {
+                // Safe: only one location, use it
+                $merchantLocationId = $activeLocations->first()->id;
+            } else {
+                // Unsafe: multiple locations, cannot guess
+                return redirect()->back()->with('error', __('Please select a pickup location. You have multiple warehouses configured.'));
+            }
+        }
+
         // ✅ Use merchant-specific credentials
         $tryotoService = (new TryotoService())->forMerchant($merchantId);
         $result = $tryotoService->createShipment(
@@ -782,7 +804,9 @@ class DeliveryController extends MerchantBaseController
             $request->delivery_option_id,
             $request->company,
             $request->price,
-            $request->service_type ?? 'express'
+            $request->service_type ?? 'express',
+            null, // merchantShippingData
+            $merchantLocationId // ✅ Pass merchant_location_id
         );
 
         if ($result['success']) {
@@ -1204,6 +1228,7 @@ class DeliveryController extends MerchantBaseController
             'purchase_id' => 'required|exists:purchases,id',
             'shipping_id' => 'required|exists:shippings,id',
             'tracking_number' => 'nullable|string|max:100',
+            'merchant_location_id' => 'nullable|exists:merchant_locations,id',
         ]);
 
         $purchase = Purchase::find($request->purchase_id);
@@ -1228,6 +1253,27 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('Invalid shipping method'));
         }
 
+        // ✅ Validate merchant_location_id - NO silent fallback if multiple locations
+        $merchantLocationId = $request->merchant_location_id;
+        $activeLocations = \DB::table('merchant_locations')
+            ->where('user_id', $merchantId)
+            ->where('status', 1)
+            ->get();
+
+        if ($activeLocations->isEmpty()) {
+            return redirect()->back()->with('error', __('No warehouse location configured. Please add a location in settings.'));
+        }
+
+        if (!$merchantLocationId) {
+            if ($activeLocations->count() === 1) {
+                // Safe: only one location, use it
+                $merchantLocationId = $activeLocations->first()->id;
+            } else {
+                // Unsafe: multiple locations, cannot guess
+                return redirect()->back()->with('error', __('Please select a pickup location. You have multiple warehouses configured.'));
+            }
+        }
+
         // Use tracking service to create manual shipment
         $trackingService = app(ShipmentTrackingService::class);
         $trackingService->createManualShipment(
@@ -1237,7 +1283,8 @@ class DeliveryController extends MerchantBaseController
             provider: $shipping->provider ?? 'manual',
             trackingNumber: $request->tracking_number,
             companyName: $shipping->title,
-            shippingCost: $shipping->price
+            shippingCost: $shipping->price,
+            merchantLocationId: $merchantLocationId // ✅ Pass merchant_location_id
         );
 
         // Update merchant purchase status
@@ -1268,5 +1315,82 @@ class DeliveryController extends MerchantBaseController
         ]);
 
         return redirect()->back()->with('success', __('Shipping assigned successfully. Tracking Number: ') . $trackingNumber);
+    }
+
+    /**
+     * ✅ Get Merchant Locations (Warehouses/Pickup Points)
+     * Returns all active locations for the current merchant
+     */
+    public function getMerchantLocations(Request $request)
+    {
+        try {
+            $merchantId = $this->user->id;
+
+            $locations = \DB::table('merchant_locations')
+                ->where('user_id', $merchantId)
+                ->where('status', 1)
+                ->select('id', 'warehouse_name', 'tryoto_warehouse_code', 'location', 'city_id')
+                ->get();
+
+            if ($locations->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => __('No warehouse locations configured. Please add a location in settings.'),
+                    'locations' => [],
+                    'show_settings_link' => true
+                ]);
+            }
+
+            // Get city names for each location
+            $cityIds = $locations->pluck('city_id')->filter()->unique()->toArray();
+            $cities = City::whereIn('id', $cityIds)->pluck('city_name', 'id')->toArray();
+
+            $result = $locations->map(function ($loc) use ($cities) {
+                $cityName = $cities[$loc->city_id] ?? '';
+                $displayName = $loc->warehouse_name ?: __('Warehouse');
+
+                // Add Tryoto code if available (helps user verify)
+                $tryotoCode = $loc->tryoto_warehouse_code;
+                if ($tryotoCode) {
+                    $displayName .= ' [' . $tryotoCode . ']';
+                }
+
+                // Add city name if available
+                if ($cityName) {
+                    $displayName .= ' - ' . $cityName;
+                }
+
+                // Warning if no Tryoto code configured
+                $hasTryotoCode = !empty($tryotoCode);
+
+                return [
+                    'id' => $loc->id,
+                    'warehouse_name' => $loc->warehouse_name,
+                    'tryoto_code' => $tryotoCode,
+                    'has_tryoto_code' => $hasTryotoCode,
+                    'location' => $loc->location,
+                    'city_name' => $cityName,
+                    'display_name' => $displayName,
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'locations' => $result,
+                'default_id' => $locations->first()->id ?? null
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Get Merchant Locations Error', [
+                'merchant_id' => $this->user->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => __('Failed to load warehouse locations'),
+                'locations' => []
+            ]);
+        }
     }
 }

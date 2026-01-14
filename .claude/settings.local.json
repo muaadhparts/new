@@ -55,7 +55,13 @@
       "Bash(done)",
       "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\merchant\\\\checkout\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\merchant\\\\checkout\")",
       "Bash(courier)",
-      "Bash(shipment \")"
+      "Bash(shipment \")",
+      "Bash(git checkout:*)",
+      "WebFetch(domain:api.tryoto.com)",
+      "WebSearch",
+      "WebFetch(domain:apis.tryoto.com)",
+      "WebFetch(domain:help.tryoto.com)",
+      "WebFetch(domain:github.com)"
     ]
   }
 }

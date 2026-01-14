@@ -125,8 +125,22 @@ class ShipmentTrackingService
         ?string $trackingNumber = null,
         ?string $companyName = null,
         float $shippingCost = 0,
-        float $codAmount = 0
+        float $codAmount = 0,
+        ?int $merchantLocationId = null
     ): ShipmentTracking {
+
+        // ✅ جلب بيانات موقع الاستلام لتضمينها في raw_payload
+        $pickupLocationData = null;
+        if ($merchantLocationId) {
+            $location = \DB::table('merchant_locations')->find($merchantLocationId);
+            if ($location) {
+                $pickupLocationData = [
+                    'merchant_location_id' => $merchantLocationId,
+                    'warehouse_name' => $location->warehouse_name,
+                    'address' => $location->location,
+                ];
+            }
+        }
 
         return $this->createTrackingRecord($purchaseId, $merchantId, ShipmentTracking::STATUS_CREATED, [
             'shipping_id' => $shippingId,
@@ -139,6 +153,7 @@ class ShipmentTrackingService
             'cod_amount' => $codAmount,
             'message' => 'Manual shipment created',
             'message_ar' => 'تم إنشاء الشحنة يدوياً',
+            'raw_payload' => $pickupLocationData ? ['pickup_location' => $pickupLocationData] : null,
         ]);
     }
 

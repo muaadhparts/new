@@ -1144,6 +1144,7 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/provider-options', 'Merchant\DeliveryController@getProviderShippingOptions')->name('merchant.provider.shipping.options');
             Route::post('delivery/send-provider-shipping', 'Merchant\DeliveryController@sendProviderShipping')->name('merchant.send.provider.shipping');
             Route::get('delivery/couriers', 'Merchant\DeliveryController@findCourier')->name('merchant.delivery.couriers');
+            Route::get('delivery/merchant-locations', 'Merchant\DeliveryController@getMerchantLocations')->name('merchant.delivery.locations');
 
             //------------ SUBCATEGORY SECTION ------------
 

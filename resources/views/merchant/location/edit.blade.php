@@ -42,6 +42,26 @@
                     <div class="row">
 
                         <div class="form-group col-md-6 mb-3">
+                            <label for="warehouse_name">@lang('Warehouse Name') <span class="text-danger">*</span></label>
+                            <input type="text" id="warehouse_name" class="form-control" placeholder="@lang('e.g. Main Warehouse')" value="{{ $data->warehouse_name }}"
+                                name="warehouse_name" required>
+                            <small class="text-muted">@lang('A unique name to identify this warehouse')</small>
+                            @error('warehouse_name')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group col-md-6 mb-3">
+                            <label for="tryoto_warehouse_code">@lang('Tryoto Warehouse Code')</label>
+                            <input type="text" id="tryoto_warehouse_code" class="form-control" placeholder="@lang('e.g. 1 or WH001')" value="{{ $data->tryoto_warehouse_code }}"
+                                name="tryoto_warehouse_code">
+                            <small class="text-muted">@lang('The Warehouse Code from your Tryoto dashboard (if using Tryoto shipping)')</small>
+                            @error('tryoto_warehouse_code')
+                                <span class="text-danger">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="form-group col-md-6 mb-3">
                             <label for="country_id">@lang('Country') <span class="text-danger">*</span></label>
                             <select name="country_id" id="country_id" class="form-control" required>
                                 <option value="">@lang('Select Country')</option>
