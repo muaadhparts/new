@@ -577,6 +577,7 @@ class GeocodingController extends Controller
         $validator = Validator::make($request->all(), [
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
+            'locale' => 'nullable|string|in:ar,en',
         ]);
 
         if ($validator->fails()) {
@@ -588,21 +589,24 @@ class GeocodingController extends Controller
 
         $latitude = (float) $request->latitude;
         $longitude = (float) $request->longitude;
+        $locale = $request->input('locale', app()->getLocale());
 
         $countryName = null;
         $countryCode = null;
         $cityName = null;
         $stateName = null;
         $formattedAddress = null;
+        $formattedAddressAr = null;
+        $formattedAddressEn = null;
         $postalCode = null;
         $geocodingSuccess = false;
 
-        // 1. Geocoding بالعربية للحصول على العنوان المنسق
+        // 1. Geocoding بالعربية
         try {
             $geocodeResultAr = $this->googleMapsService->reverseGeocode($latitude, $longitude, 'ar');
 
             if ($geocodeResultAr['success'] && !empty($geocodeResultAr['data'])) {
-                $formattedAddress = $geocodeResultAr['data']['address'] ?? null;
+                $formattedAddressAr = $geocodeResultAr['data']['address'] ?? null;
                 $postalCode = $geocodeResultAr['data']['postal_code'] ?? null;
             }
         } catch (\Exception $e) {
@@ -622,6 +626,7 @@ class GeocodingController extends Controller
                 $countryCode = $geocodeResult['data']['country_code'] ?? null;
                 $cityName = $geocodeResult['data']['city'] ?? null;
                 $stateName = $geocodeResult['data']['state'] ?? null;
+                $formattedAddressEn = $geocodeResult['data']['address'] ?? null;
                 // Use English postal code if Arabic didn't have it
                 if (!$postalCode) {
                     $postalCode = $geocodeResult['data']['postal_code'] ?? null;
@@ -635,6 +640,9 @@ class GeocodingController extends Controller
                 'error' => $e->getMessage()
             ]);
         }
+
+        // Select address based on requested locale
+        $formattedAddress = ($locale === 'ar') ? ($formattedAddressAr ?? $formattedAddressEn) : ($formattedAddressEn ?? $formattedAddressAr);
 
         // 3. البحث عن الدولة في قاعدة البيانات
         $country = null;

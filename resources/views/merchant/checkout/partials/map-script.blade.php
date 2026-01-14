@@ -206,6 +206,7 @@ function confirmLocation() {
             latitude: selectedLat,
             longitude: selectedLng,
             merchant_id: merchantId,
+            locale: currentLocale,
             _token: $('meta[name="csrf-token"]').attr('content')
         },
         success: function(response) {
@@ -217,10 +218,10 @@ function confirmLocation() {
             if (response.city_name) $('#customer_city').val(response.city_name);
             if (response.state_name) $('#customer_state').val(response.state_name);
             if (response.formatted_address) {
-                $('textarea[name="customer_address"]').val(response.formatted_address);
+                $('#customer_address').val(response.formatted_address);
             }
             if (response.postal_code) {
-                $('input[name="customer_zip"]').val(response.postal_code);
+                $('#customer_zip').val(response.postal_code);
             }
 
             // Save IDs for tax calculation

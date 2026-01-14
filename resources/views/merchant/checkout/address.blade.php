@@ -68,32 +68,8 @@
                                     </div>
                                 </div>
 
-                                {{-- Contact Information --}}
+                                {{-- Order Note Only --}}
                                 <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <label class="form-label">@lang('Full Name') <span class="text-danger">*</span></label>
-                                        <input type="text" name="customer_name" class="form-control" required
-                                               value="{{ $address['customer_name'] ?? (auth()->user()->name ?? '') }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">@lang('Email') <span class="text-danger">*</span></label>
-                                        <input type="email" name="customer_email" class="form-control" required
-                                               value="{{ $address['customer_email'] ?? (auth()->user()->email ?? '') }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">@lang('Phone') <span class="text-danger">*</span></label>
-                                        <input type="tel" name="customer_phone" class="form-control" required
-                                               value="{{ $address['customer_phone'] ?? (auth()->user()->phone ?? '') }}">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">@lang('Postal Code')</label>
-                                        <input type="text" name="customer_zip" class="form-control"
-                                               value="{{ $address['customer_zip'] ?? '' }}">
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">@lang('Address Details')</label>
-                                        <textarea name="customer_address" class="form-control" rows="2">{{ $address['customer_address'] ?? '' }}</textarea>
-                                    </div>
                                     <div class="col-12">
                                         <label class="form-label">@lang('Order Note') (@lang('Optional'))</label>
                                         <textarea name="purchase_note" class="form-control" rows="2" placeholder="@lang('Special instructions for delivery...')">{{ $address['purchase_note'] ?? '' }}</textarea>
@@ -141,7 +117,7 @@
                     </div>
                 </div>
 
-                {{-- Hidden Fields --}}
+                {{-- Hidden Fields - Location --}}
                 <input type="hidden" name="latitude" id="latitude" value="{{ $address['latitude'] ?? '' }}">
                 <input type="hidden" name="longitude" id="longitude" value="{{ $address['longitude'] ?? '' }}">
                 <input type="hidden" name="customer_country" id="customer_country" value="{{ $address['customer_country'] ?? '' }}">
@@ -150,6 +126,13 @@
                 <input type="hidden" name="country_id" id="country_id" value="{{ $address['country_id'] ?? '' }}">
                 <input type="hidden" name="state_id" id="state_id" value="{{ $address['state_id'] ?? '' }}">
                 <input type="hidden" name="city_id" id="city_id" value="{{ $address['city_id'] ?? '' }}">
+
+                {{-- Hidden Fields - Customer Info (from authenticated user) --}}
+                <input type="hidden" name="customer_name" id="customer_name" value="{{ $address['customer_name'] ?? (auth()->user()->name ?? '') }}">
+                <input type="hidden" name="customer_email" id="customer_email" value="{{ $address['customer_email'] ?? (auth()->user()->email ?? '') }}">
+                <input type="hidden" name="customer_phone" id="customer_phone" value="{{ $address['customer_phone'] ?? (auth()->user()->phone ?? '') }}">
+                <input type="hidden" name="customer_zip" id="customer_zip" value="{{ $address['customer_zip'] ?? '' }}">
+                <input type="hidden" name="customer_address" id="customer_address" value="{{ $address['customer_address'] ?? '' }}">
             </form>
         </div>
     </div>
