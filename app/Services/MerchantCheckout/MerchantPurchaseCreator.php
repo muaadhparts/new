@@ -324,6 +324,8 @@ class MerchantPurchaseCreator
 
         $deliveryFee = $shippingData['courier_fee'];
 
+        // ✅ pay_amount يتضمن بالفعل: items + tax + shipping/courier_fee + packing
+        // لذلك cod_amount = pay_amount (لا نضيف delivery_fee مرة أخرى)
         DeliveryCourier::create([
             'purchase_id' => $purchase->id,
             'merchant_id' => $merchantId,
@@ -332,8 +334,8 @@ class MerchantPurchaseCreator
             'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
             'delivery_fee' => $deliveryFee,
             'purchase_amount' => $purchase->pay_amount,
-            // COD amount = purchase total + delivery fee (courier collects both)
-            'cod_amount' => $isCod ? ($purchase->pay_amount + $deliveryFee) : 0,
+            // COD amount = المبلغ الكامل الذي يجمعه الكوريير (يتضمن بالفعل رسوم التوصيل)
+            'cod_amount' => $isCod ? $purchase->pay_amount : 0,
             'payment_method' => $isCod ? DeliveryCourier::PAYMENT_COD : DeliveryCourier::PAYMENT_ONLINE,
             'status' => DeliveryCourier::STATUS_PENDING_APPROVAL,
             'fee_status' => DeliveryCourier::FEE_PENDING,
