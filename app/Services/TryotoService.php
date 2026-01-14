@@ -866,12 +866,81 @@ class TryotoService
     /**
      * Track a shipment
      *
+     * Handles both real tracking numbers and OTO- prefixed temporary IDs.
+     * For OTO- IDs, uses orderDetails API instead of trackShipment.
+     *
      * @param string $trackingNumber
      * @param string|null $companyName
      * @return array
      */
     public function trackShipment(string $trackingNumber, ?string $companyName = null): array
     {
+        // ✅ Handle OTO- prefixed temporary IDs
+        // When Tryoto hasn't assigned a real tracking number yet, we use OTO-{otoId} format
+        // The trackShipment API doesn't recognize this - we need to use orderDetails instead
+        if (str_starts_with($trackingNumber, 'OTO-')) {
+            $otoId = substr($trackingNumber, 4); // Extract the ID after "OTO-"
+
+            $orderResult = $this->getOrderDetails($otoId);
+
+            if (!$orderResult['success']) {
+                return ['success' => false, 'error' => $orderResult['error']];
+            }
+
+            // If a real tracking number is now available, update local record
+            $realTrackingNumber = $orderResult['tracking_number'] ?? null;
+            if ($realTrackingNumber && !str_starts_with($realTrackingNumber, 'OTO-')) {
+                // Update the shipment tracking record with the real tracking number
+                $shipment = ShipmentTracking::getLatestByTracking($trackingNumber);
+                if ($shipment) {
+                    try {
+                        $trackingService = app(ShipmentTrackingService::class);
+                        $trackingService->createTrackingRecord(
+                            $shipment->purchase_id,
+                            $shipment->merchant_id,
+                            $orderResult['status'],
+                            [
+                                'shipping_id' => $shipment->shipping_id,
+                                'integration_type' => ShipmentTracking::INTEGRATION_API,
+                                'provider' => 'tryoto',
+                                'tracking_number' => $realTrackingNumber,
+                                'external_shipment_id' => $orderResult['oto_id'],
+                                'company_name' => $orderResult['company_name'] ?? $shipment->company_name,
+                                'status_ar' => $orderResult['status_ar'],
+                                'message' => 'Tracking number assigned: ' . $realTrackingNumber,
+                                'message_ar' => 'تم تعيين رقم التتبع: ' . $realTrackingNumber,
+                                'source' => ShipmentTracking::SOURCE_API,
+                                'raw_payload' => $orderResult['raw'] ?? [],
+                                'awb_url' => $orderResult['awb_url'] ?? null,
+                            ]
+                        );
+                    } catch (\Exception $e) {
+                        Log::warning('Tryoto: Failed to update tracking number', ['error' => $e->getMessage()]);
+                    }
+                }
+
+                $orderResult['tracking_updated'] = true;
+                $orderResult['old_tracking'] = $trackingNumber;
+                $orderResult['tracking_number'] = $realTrackingNumber;
+            }
+
+            // Return in the same format as regular trackShipment
+            return [
+                'success' => true,
+                'status' => $orderResult['status'] ?? 'unknown',
+                'status_ar' => $orderResult['status_ar'] ?? $this->getStatusArabic($orderResult['status'] ?? 'unknown'),
+                'location' => null,
+                'events' => [],
+                'estimated_delivery' => $orderResult['estimated_delivery'] ?? null,
+                'tracking_number' => $orderResult['tracking_number'] ?? $trackingNumber,
+                'tracking_updated' => $orderResult['tracking_updated'] ?? false,
+                'oto_id' => $orderResult['oto_id'] ?? $otoId,
+                'awb_url' => $orderResult['awb_url'] ?? null,
+                'raw' => $orderResult['raw'] ?? []
+            ];
+        }
+
+        // ✅ Standard tracking for real tracking numbers
         if (!$companyName) {
             $shipment = ShipmentTracking::getLatestByTracking($trackingNumber);
             $companyName = $shipment?->company_name;

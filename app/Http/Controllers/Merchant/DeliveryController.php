@@ -101,7 +101,7 @@ class DeliveryController extends MerchantBaseController
      */
     private function checkTryotoStatus(): array
     {
-        $tryotoService = new TryotoService();
+        $tryotoService = (new TryotoService())->forMerchant($this->user->id);
         $config = $tryotoService->checkConfiguration($this->user->id);
 
         $status = [
@@ -837,7 +837,7 @@ class DeliveryController extends MerchantBaseController
             return response()->json(['success' => false, 'error' => __('Tracking number is required')]);
         }
 
-        $tryotoService = new TryotoService();
+        $tryotoService = (new TryotoService())->forMerchant($this->user->id);
         $result = $tryotoService->trackShipment($trackingNumber);
 
         return response()->json($result);
@@ -1043,7 +1043,7 @@ class DeliveryController extends MerchantBaseController
     {
         $merchantId = $this->user->id;
 
-        $tryotoService = new TryotoService();
+        $tryotoService = (new TryotoService())->forMerchant($merchantId);
         $stats = $tryotoService->getMerchantStatistics($merchantId);
 
         return view('merchant.delivery.stats', compact('stats'));
