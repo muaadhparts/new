@@ -65,10 +65,17 @@ class AccountLedgerController extends OperatorBaseController
             'payment' => $this->getQuickSummary(AccountParty::TYPE_PAYMENT_PROVIDER),
         ];
 
+        // آخر المعاملات - جلب من الـ Controller وليس من الـ View
+        $recentTransactions = AccountingLedger::with(['fromParty', 'toParty'])
+            ->orderBy('created_at', 'desc')
+            ->limit(10)
+            ->get();
+
         return view('operator.accounts.index', [
             'dashboard' => $dashboard,
             'summary' => $summary,
             'currency' => $currency,
+            'recentTransactions' => $recentTransactions,
         ]);
     }
 

@@ -63,8 +63,8 @@
 
         <!-- Action Buttons -->
         <div class="mb-4">
-            <a href="{{ route('operator-courier-create-settlement', $courier->id) }}" class="btn btn-success">
-                <i class="fas fa-dollar-sign"></i> {{ __('Create Settlement') }}
+            <a href="{{ route('operator.accounts.couriers') }}" class="btn btn-success">
+                <i class="fas fa-dollar-sign"></i> {{ __('Manage Settlements') }}
             </a>
             <a href="{{ route('operator-courier-unsettled', $courier->id) }}" class="btn btn-warning">
                 <i class="fas fa-list"></i> {{ __('Unsettled Deliveries') }}
@@ -133,57 +133,64 @@
                 </div>
             </div>
 
-            <!-- Recent Transactions -->
+            <!-- Recent Deliveries -->
             <div class="col-lg-8 mb-4">
                 <div class="card h-100">
                     <div class="card-header">
-                        <h5 class="mb-0">{{ __('Recent Transactions') }}</h5>
+                        <h5 class="mb-0">{{ __('Recent Deliveries') }}</h5>
                     </div>
                     <div class="card-body p-0">
                         <div class="table-responsive">
                             <table class="table table-hover mb-0">
                                 <thead>
                                     <tr>
-                                        <th>{{ __('Type') }}</th>
+                                        <th>{{ __('Purchase') }}</th>
+                                        <th>{{ __('Payment') }}</th>
                                         <th>{{ __('Amount') }}</th>
-                                        <th>{{ __('Balance After') }}</th>
+                                        <th>{{ __('Fee') }}</th>
+                                        <th>{{ __('Status') }}</th>
                                         <th>{{ __('Date') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @forelse($transactions as $transaction)
+                                    @forelse($recentDeliveries as $delivery)
                                     <tr>
                                         <td>
-                                            @switch($transaction->type)
-                                                @case('cod_collected')
-                                                    <span class="badge bg-warning">{{ __('COD') }}</span>
-                                                    @break
-                                                @case('fee_earned')
-                                                    <span class="badge bg-success">{{ __('Fee') }}</span>
-                                                    @break
-                                                @case('settlement_paid')
-                                                    <span class="badge bg-info">{{ __('Paid') }}</span>
-                                                    @break
-                                                @case('settlement_received')
-                                                    <span class="badge bg-primary">{{ __('Received') }}</span>
-                                                    @break
-                                            @endswitch
-                                        </td>
-                                        <td>
-                                            @if($transaction->type == 'cod_collected')
-                                                <span class="text-danger">-{{ $currency->sign }}{{ number_format($transaction->amount, 2) }}</span>
+                                            @if($delivery->purchase)
+                                                {{ $delivery->purchase->purchase_number }}
                                             @else
-                                                <span class="text-success">+{{ $currency->sign }}{{ number_format($transaction->amount, 2) }}</span>
+                                                -
                                             @endif
                                         </td>
-                                        <td class="{{ $transaction->balance_after >= 0 ? 'text-success' : 'text-danger' }}">
-                                            {{ $currency->sign }}{{ number_format($transaction->balance_after, 2) }}
+                                        <td>
+                                            @if($delivery->payment_method === 'cod')
+                                                <span class="badge bg-warning">{{ __('COD') }}</span>
+                                            @else
+                                                <span class="badge bg-success">{{ __('Online') }}</span>
+                                            @endif
                                         </td>
-                                        <td>{{ $transaction->created_at->format('d-m-Y H:i') }}</td>
+                                        <td>{{ $currency->sign }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}</td>
+                                        <td class="text-success">{{ $currency->sign }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}</td>
+                                        <td>
+                                            @if($delivery->isDelivered() || $delivery->isConfirmed())
+                                                <span class="badge bg-success">{{ __('Delivered') }}</span>
+                                            @elseif($delivery->isPickedUp())
+                                                <span class="badge bg-primary">{{ __('In Transit') }}</span>
+                                            @elseif($delivery->isReadyForPickup())
+                                                <span class="badge bg-info">{{ __('Ready') }}</span>
+                                            @elseif($delivery->isPendingApproval())
+                                                <span class="badge bg-warning">{{ __('Pending') }}</span>
+                                            @elseif($delivery->isRejected())
+                                                <span class="badge bg-danger">{{ __('Rejected') }}</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ $delivery->status }}</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $delivery->created_at->format('d-m-Y H:i') }}</td>
                                     </tr>
                                     @empty
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-3">{{ __('No transactions yet') }}</td>
+                                        <td colspan="6" class="text-center text-muted py-3">{{ __('No deliveries yet') }}</td>
                                     </tr>
                                     @endforelse
                                 </tbody>
@@ -194,68 +201,42 @@
             </div>
         </div>
 
-        <!-- Recent Settlements -->
+        <!-- Settlement Info Card -->
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">{{ __('Recent Settlements') }}</h5>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">{{ __('Settlement Summary') }}</h5>
+                <a href="{{ route('operator.accounts.couriers') }}" class="btn btn-sm btn-primary">
+                    {{ __('Go to Accounting') }} <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>{{ __('Type') }}</th>
-                                <th>{{ __('Amount') }}</th>
-                                <th>{{ __('Status') }}</th>
-                                <th>{{ __('Payment Method') }}</th>
-                                <th>{{ __('Date') }}</th>
-                                <th>{{ __('Actions') }}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($settlements as $settlement)
-                            <tr>
-                                <td>
-                                    @if($settlement->type == 'pay_to_courier')
-                                        <span class="badge bg-success">{{ __('Paid to Courier') }}</span>
-                                    @else
-                                        <span class="badge bg-warning">{{ __('Received') }}</span>
-                                    @endif
-                                </td>
-                                <td><strong>{{ $currency->sign }}{{ number_format($settlement->amount, 2) }}</strong></td>
-                                <td>
-                                    @switch($settlement->status)
-                                        @case('pending')
-                                            <span class="badge bg-warning">{{ __('Pending') }}</span>
-                                            @break
-                                        @case('completed')
-                                            <span class="badge bg-success">{{ __('Completed') }}</span>
-                                            @break
-                                        @case('cancelled')
-                                            <span class="badge bg-danger">{{ __('Cancelled') }}</span>
-                                            @break
-                                    @endswitch
-                                </td>
-                                <td>{{ $settlement->payment_method ?? '-' }}</td>
-                                <td>{{ $settlement->created_at->format('d-m-Y') }}</td>
-                                <td>
-                                    @if($settlement->status == 'pending')
-                                        <form action="{{ route('operator-settlement-process', $settlement->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            <button type="submit" class="btn btn-sm btn-success" title="{{ __('Approve') }}">
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-3">{{ __('No settlements yet') }}</td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <h6 class="text-muted">{{ __('COD Collected (Unsettled)') }}</h6>
+                        <h4 class="text-danger">{{ $currency->sign }}{{ number_format($settlementCalc['cod_amount'] ?? 0, 2) }}</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted">{{ __('Fees Earned (Online)') }}</h6>
+                        <h4 class="text-success">{{ $currency->sign }}{{ number_format($settlementCalc['fees_earned_online'] ?? 0, 2) }}</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted">{{ __('Fees Earned (COD)') }}</h6>
+                        <h4 class="text-success">{{ $currency->sign }}{{ number_format($settlementCalc['fees_earned_cod'] ?? 0, 2) }}</h4>
+                    </div>
+                    <div class="col-md-3">
+                        <h6 class="text-muted">{{ __('Net Amount') }}</h6>
+                        @php $netAmount = $settlementCalc['net_amount'] ?? 0; @endphp
+                        <h4 class="{{ $netAmount >= 0 ? 'text-success' : 'text-danger' }}">
+                            {{ $currency->sign }}{{ number_format(abs($netAmount), 2) }}
+                            <small class="d-block text-muted fs-6">
+                                @if($netAmount >= 0)
+                                    {{ __('(Platform owes)') }}
+                                @else
+                                    {{ __('(Courier owes)') }}
+                                @endif
+                            </small>
+                        </h4>
+                    </div>
                 </div>
             </div>
         </div>

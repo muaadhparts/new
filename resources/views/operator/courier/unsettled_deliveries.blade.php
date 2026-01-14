@@ -113,23 +113,19 @@
                         <tr>
                             <td colspan="4" class="text-end"><strong>{{ __('Totals') }}:</strong></td>
                             <td class="text-danger">
-                                <strong>{{ $currency->sign }}{{ number_format($unsettled->where('payment_method', 'cod')->sum('purchase_amount'), 2) }}</strong>
+                                <strong>{{ $currency->sign }}{{ number_format($summary['cod_total'], 2) }}</strong>
                             </td>
                             <td class="text-success">
-                                <strong>{{ $currency->sign }}{{ number_format($unsettled->sum('delivery_fee'), 2) }}</strong>
+                                <strong>{{ $currency->sign }}{{ number_format($summary['fees_total'], 2) }}</strong>
                             </td>
                             <td colspan="2"></td>
                         </tr>
                         <tr>
                             <td colspan="4" class="text-end"><strong>{{ __('Net (Fees - COD)') }}:</strong></td>
-                            @php
-                                $codTotal = $unsettled->where('payment_method', 'cod')->sum('purchase_amount');
-                                $feesTotal = $unsettled->sum('delivery_fee');
-                                $net = $feesTotal - $codTotal;
-                            @endphp
-                            <td colspan="2" class="{{ $net >= 0 ? 'text-success' : 'text-danger' }}">
-                                <strong>{{ $currency->sign }}{{ number_format($net, 2) }}</strong>
-                                @if($net >= 0)
+                            {{-- جميع القيم من الـ Controller - لا حسابات هنا --}}
+                            <td colspan="2" class="{{ $summary['net'] >= 0 ? 'text-success' : 'text-danger' }}">
+                                <strong>{{ $currency->sign }}{{ number_format($summary['net'], 2) }}</strong>
+                                @if($summary['net'] >= 0)
                                     <br><small>({{ __('Platform pays Courier') }})</small>
                                 @else
                                     <br><small>({{ __('Courier pays Platform') }})</small>

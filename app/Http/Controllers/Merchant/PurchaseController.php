@@ -64,7 +64,24 @@ class PurchaseController extends MerchantBaseController
         $cart = $purchase->cart;
         $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
 
-        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData'));
+        // جلب بيانات MerchantPurchase في الـ Controller بدلاً من الـ View
+        $merchantPurchase = $purchase->merchantPurchases()
+            ->where('user_id', $user->id)
+            ->first();
+
+        // تحضير البيانات المالية للعرض - كل القيم من قاعدة البيانات
+        $merchantInvoiceData = [
+            'price' => $merchantPurchase ? $merchantPurchase->price : 0,
+            'commission_amount' => $merchantPurchase ? ($merchantPurchase->commission_amount ?? 0) : 0,
+            'net_amount' => $merchantPurchase ? ($merchantPurchase->net_amount ?? $merchantPurchase->price ?? 0) : 0,
+            'payment_type' => $merchantPurchase ? ($merchantPurchase->payment_type ?? 'platform') : 'platform',
+            'shipping_type' => $merchantPurchase ? ($merchantPurchase->shipping_type ?? 'shipping') : 'shipping',
+            'money_received_by' => $merchantPurchase ? ($merchantPurchase->money_received_by ?? 'platform') : 'platform',
+            'courier_fee' => $merchantPurchase ? ($merchantPurchase->courier_fee ?? 0) : 0,
+            'tax_amount' => $merchantPurchase ? ($merchantPurchase->tax_amount ?? 0) : 0,
+        ];
+
+        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData', 'merchantInvoiceData'));
     }
 
     public function printpage($slug)

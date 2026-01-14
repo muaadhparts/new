@@ -4,13 +4,15 @@ namespace App\Services;
 
 use App\Models\Courier;
 use App\Models\CourierServiceArea;
-use App\Models\CourierSettlement;
-use App\Models\CourierTransaction;
 use App\Models\DeliveryCourier;
 use App\Models\MerchantLocation;
 
 class CourierAccountingService
 {
+    // Settlement type constants (used for calculation display)
+    const TYPE_PAY_TO_COURIER = 'pay_to_courier';
+    const TYPE_RECEIVE_FROM_COURIER = 'receive_from_courier';
+
     public function getAvailableCouriersForCity(int $cityId): \Illuminate\Database\Eloquent\Collection
     {
         return CourierServiceArea::where('city_id', $cityId)
@@ -63,69 +65,30 @@ class CourierAccountingService
         return $couriers;
     }
 
+    /**
+     * Record COD collection by courier
+     * Updates courier balance (decreases as courier owes the platform)
+     */
     public function recordCodCollection(int $deliveryCourierId, float $orderAmount): void
     {
         $delivery = DeliveryCourier::findOrFail($deliveryCourierId);
         $courier = $delivery->courier;
 
-        $balanceBefore = $courier->balance;
-
+        // Courier collected COD, so they owe it to the platform
         $courier->recordCodCollection($orderAmount);
-
-        CourierTransaction::create([
-            'courier_id' => $courier->id,
-            'delivery_courier_id' => $deliveryCourierId,
-            'type' => CourierTransaction::TYPE_COD_COLLECTED,
-            'amount' => $orderAmount,
-            'balance_before' => $balanceBefore,
-            'balance_after' => $courier->balance,
-            'notes' => 'COD collected for delivery #' . $deliveryCourierId,
-        ]);
     }
 
+    /**
+     * Record delivery fee earned by courier
+     * Updates courier balance (increases as platform owes the courier)
+     */
     public function recordDeliveryFeeEarned(int $deliveryCourierId): void
     {
         $delivery = DeliveryCourier::findOrFail($deliveryCourierId);
         $courier = $delivery->courier;
 
-        $balanceBefore = $courier->balance;
-
+        // Courier earned delivery fee
         $courier->recordDeliveryFeeEarned($delivery->delivery_fee);
-
-        CourierTransaction::create([
-            'courier_id' => $courier->id,
-            'delivery_courier_id' => $deliveryCourierId,
-            'type' => CourierTransaction::TYPE_FEE_EARNED,
-            'amount' => $delivery->delivery_fee,
-            'balance_before' => $balanceBefore,
-            'balance_after' => $courier->balance,
-            'notes' => 'Delivery fee earned for delivery #' . $deliveryCourierId,
-        ]);
-    }
-
-    public function createSettlement(
-        int $courierId,
-        float $amount,
-        string $type,
-        ?string $paymentMethod = null,
-        ?string $referenceNumber = null,
-        ?string $notes = null
-    ): CourierSettlement {
-        return CourierSettlement::create([
-            'courier_id' => $courierId,
-            'amount' => $amount,
-            'type' => $type,
-            'status' => CourierSettlement::STATUS_PENDING,
-            'payment_method' => $paymentMethod,
-            'reference_number' => $referenceNumber,
-            'notes' => $notes,
-        ]);
-    }
-
-    public function processSettlement(int $settlementId, int $processedBy): bool
-    {
-        $settlement = CourierSettlement::findOrFail($settlementId);
-        return $settlement->process($processedBy);
     }
 
     public function getCourierBalance(int $courierId): float
@@ -236,8 +199,8 @@ class CourierAccountingService
             'platform_owes' => $platformOwes,
             'net_amount' => $netAmount,
             'settlement_type' => $netAmount >= 0
-                ? CourierSettlement::TYPE_PAY_TO_COURIER
-                : CourierSettlement::TYPE_RECEIVE_FROM_COURIER,
+                ? self::TYPE_PAY_TO_COURIER
+                : self::TYPE_RECEIVE_FROM_COURIER,
         ];
     }
 }

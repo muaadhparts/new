@@ -9,87 +9,119 @@
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('Transaction History')</h3>
+                        <h3 class="ud-page-title">@lang('Delivery History')</h3>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Total Deliveries')</h6>
+                                <h4>{{ $report['deliveries_count'] ?? 0 }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Completed')</h6>
+                                <h4 class="text-success">{{ $report['deliveries_completed'] ?? 0 }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('COD Collected')</h6>
+                                <h4 class="text-warning">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_cod_collected'] ?? 0, 2) }}</h4>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Fees Earned')</h6>
+                                <h4 class="text-primary">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_delivery_fees'] ?? 0, 2) }}</h4>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Filter -->
                     <div class="mb-4">
                         <form action="{{ route('courier-transactions') }}" method="GET" class="d-flex gap-2 flex-wrap">
-                            <select name="type" class="form-select" style="max-width: 200px;">
-                                <option value="">@lang('All Types')</option>
-                                <option value="cod_collected" {{ request('type') == 'cod_collected' ? 'selected' : '' }}>@lang('COD Collected')</option>
-                                <option value="fee_earned" {{ request('type') == 'fee_earned' ? 'selected' : '' }}>@lang('Fee Earned')</option>
-                                <option value="settlement_paid" {{ request('type') == 'settlement_paid' ? 'selected' : '' }}>@lang('Settlement Paid')</option>
-                                <option value="settlement_received" {{ request('type') == 'settlement_received' ? 'selected' : '' }}>@lang('Settlement Received')</option>
+                            <select name="status" class="form-select" style="max-width: 200px;">
+                                <option value="">@lang('All Status')</option>
+                                <option value="pending_approval" {{ request('status') == 'pending_approval' ? 'selected' : '' }}>@lang('Pending Approval')</option>
+                                <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>@lang('Approved')</option>
+                                <option value="picked_up" {{ request('status') == 'picked_up' ? 'selected' : '' }}>@lang('Picked Up')</option>
+                                <option value="delivered" {{ request('status') == 'delivered' ? 'selected' : '' }}>@lang('Delivered')</option>
+                                <option value="confirmed" {{ request('status') == 'confirmed' ? 'selected' : '' }}>@lang('Confirmed')</option>
                             </select>
                             <button type="submit" class="btn btn-primary">@lang('Filter')</button>
                             <a href="{{ route('courier-transactions') }}" class="btn btn-secondary">@lang('Reset')</a>
                         </form>
                     </div>
 
-                    <!-- Transactions Table -->
+                    <!-- Deliveries Table -->
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th><span class="header-title">{{ __('#') }}</span></th>
-                                    <th><span class="header-title">{{ __('Type') }}</span></th>
+                                    <th><span class="header-title">{{ __('Purchase') }}</span></th>
+                                    <th><span class="header-title">{{ __('Payment') }}</span></th>
                                     <th><span class="header-title">{{ __('Amount') }}</span></th>
-                                    <th><span class="header-title">{{ __('Balance Before') }}</span></th>
-                                    <th><span class="header-title">{{ __('Balance After') }}</span></th>
-                                    <th><span class="header-title">{{ __('Notes') }}</span></th>
+                                    <th><span class="header-title">{{ __('Fee') }}</span></th>
+                                    <th><span class="header-title">{{ __('Status') }}</span></th>
                                     <th><span class="header-title">{{ __('Date') }}</span></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($transactions as $key => $transaction)
+                                @forelse ($deliveries as $key => $delivery)
                                     <tr>
                                         <td data-label="{{ __('#') }}">
-                                            {{ $transactions->firstItem() + $key }}
+                                            {{ $deliveries->firstItem() + $key }}
                                         </td>
-                                        <td data-label="{{ __('Type') }}">
-                                            @switch($transaction->type)
-                                                @case('cod_collected')
-                                                    <span class="badge bg-warning">@lang('COD Collected')</span>
-                                                    @break
-                                                @case('fee_earned')
-                                                    <span class="badge bg-success">@lang('Fee Earned')</span>
-                                                    @break
-                                                @case('settlement_paid')
-                                                    <span class="badge bg-info">@lang('Settlement Paid')</span>
-                                                    @break
-                                                @case('settlement_received')
-                                                    <span class="badge bg-primary">@lang('Settlement Received')</span>
-                                                    @break
-                                                @default
-                                                    <span class="badge bg-secondary">{{ $transaction->type }}</span>
-                                            @endswitch
-                                        </td>
-                                        <td data-label="{{ __('Amount') }}">
-                                            @if($transaction->type == 'cod_collected')
-                                                <span class="text-danger">-{{ $currency->sign }}{{ number_format($transaction->amount, 2) }}</span>
+                                        <td data-label="{{ __('Purchase') }}">
+                                            @if($delivery->purchase)
+                                                <a href="{{ route('courier-purchase-details', $delivery->id) }}">
+                                                    {{ $delivery->purchase->purchase_number }}
+                                                </a>
                                             @else
-                                                <span class="text-success">+{{ $currency->sign }}{{ number_format($transaction->amount, 2) }}</span>
+                                                -
                                             @endif
                                         </td>
-                                        <td data-label="{{ __('Balance Before') }}">
-                                            {{ $currency->sign }}{{ number_format($transaction->balance_before, 2) }}
+                                        <td data-label="{{ __('Payment') }}">
+                                            @if($delivery->payment_method === 'cod')
+                                                <span class="badge bg-warning">@lang('COD')</span>
+                                            @else
+                                                <span class="badge bg-success">@lang('Online')</span>
+                                            @endif
                                         </td>
-                                        <td data-label="{{ __('Balance After') }}">
-                                            <strong class="{{ $transaction->balance_after < 0 ? 'text-danger' : 'text-success' }}">
-                                                {{ $currency->sign }}{{ number_format($transaction->balance_after, 2) }}
-                                            </strong>
+                                        <td data-label="{{ __('Amount') }}">
+                                            {{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}
                                         </td>
-                                        <td data-label="{{ __('Notes') }}">
-                                            {{ $transaction->notes ?? '-' }}
+                                        <td data-label="{{ __('Fee') }}">
+                                            <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}</span>
+                                        </td>
+                                        <td data-label="{{ __('Status') }}">
+                                            @if($delivery->isDelivered() || $delivery->isConfirmed())
+                                                <span class="badge bg-success">@lang('Delivered')</span>
+                                            @elseif($delivery->isPickedUp())
+                                                <span class="badge bg-primary">@lang('In Transit')</span>
+                                            @elseif($delivery->isReadyForPickup())
+                                                <span class="badge bg-info">@lang('Ready')</span>
+                                            @elseif($delivery->isApproved())
+                                                <span class="badge bg-secondary">@lang('Preparing')</span>
+                                            @elseif($delivery->isPendingApproval())
+                                                <span class="badge bg-warning">@lang('Pending')</span>
+                                            @elseif($delivery->isRejected())
+                                                <span class="badge bg-danger">@lang('Rejected')</span>
+                                            @else
+                                                <span class="badge bg-secondary">{{ $delivery->status }}</span>
+                                            @endif
                                         </td>
                                         <td data-label="{{ __('Date') }}">
-                                            {{ $transaction->created_at->format('d-m-Y H:i') }}
+                                            {{ $delivery->created_at->format('d-m-Y H:i') }}
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">{{ __('No transactions found') }}</td>
+                                        <td colspan="7" class="text-center">{{ __('No deliveries found') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -98,7 +130,7 @@
 
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-4">
-                        {{ $transactions->links() }}
+                        {{ $deliveries->links() }}
                     </div>
 
                 </div>

@@ -64,17 +64,13 @@
 
 
                 @php
-                    $merchantPurchase = $purchase
-                        ->merchantPurchases()
-                        ->where('user_id', '=', $user->id)
-                        ->first();
-
-                    $price = $merchantPurchase ? $merchantPurchase->price : 0;
-                    $commissionAmount = $merchantPurchase ? ($merchantPurchase->commission_amount ?? 0) : 0;
-                    $netAmount = $merchantPurchase ? ($merchantPurchase->net_amount ?? $price) : $price;
-                    $paymentType = $merchantPurchase ? ($merchantPurchase->payment_type ?? 'platform') : 'platform';
-                    $shippingType = $merchantPurchase ? ($merchantPurchase->shipping_type ?? 'shipping') : 'shipping';
-                    $moneyReceivedBy = $merchantPurchase ? ($merchantPurchase->money_received_by ?? 'platform') : 'platform';
+                    // جميع القيم المالية تأتي من الـ Controller - لا queries هنا
+                    $price = $merchantInvoiceData['price'];
+                    $commissionAmount = $merchantInvoiceData['commission_amount'];
+                    $netAmount = $merchantInvoiceData['net_amount'];
+                    $paymentType = $merchantInvoiceData['payment_type'];
+                    $shippingType = $merchantInvoiceData['shipping_type'];
+                    $moneyReceivedBy = $merchantInvoiceData['money_received_by'];
                 @endphp
 
 

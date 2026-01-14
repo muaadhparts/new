@@ -159,17 +159,8 @@
                         </div>
                     </div>
 
-                    {{-- Payment Info --}}
+                    {{-- Payment Info - All values from database only, no calculations --}}
                     <div class="my-4">
-                        @php
-                            // purchase_amount = pay_amount from Purchase = TOTAL (items + tax + delivery_fee + packing)
-                            // delivery_fee = courier's portion
-                            // Order amount (without delivery) = purchase_amount - delivery_fee
-                            $deliveryFee = (float)($data->delivery_fee ?? 0);
-                            $totalAmount = (float)($data->purchase_amount ?? 0);
-                            $orderAmount = $totalAmount - $deliveryFee;
-                        @endphp
-
                         @if ($data->isCod())
                             <div class="card border-warning">
                                 <div class="card-header bg-warning text-dark">
@@ -178,19 +169,25 @@
                                 </div>
                                 <div class="card-body">
                                     <table class="table table-sm mb-0">
-                                        <tr>
-                                            <td>@lang('Order Amount'):</td>
-                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($orderAmount, $purchase->currency_sign) }}</td>
-                                        </tr>
-                                        <tr>
-                                            <td>@lang('Delivery Fee'):</td>
-                                            <td class="text-end">{{ \PriceHelper::showAdminCurrencyPrice($deliveryFee, $purchase->currency_sign) }}</td>
-                                        </tr>
                                         <tr class="table-warning">
                                             <td><strong>@lang('TOTAL TO COLLECT'):</strong></td>
-                                            <td class="text-end"><strong class="fs-4 text-danger">{{ \PriceHelper::showAdminCurrencyPrice($totalAmount, $purchase->currency_sign) }}</strong></td>
+                                            <td class="text-end">
+                                                <strong class="fs-4 text-danger">
+                                                    {{ \PriceHelper::showAdminCurrencyPrice($data->cod_amount, $purchase->currency_sign) }}
+                                                </strong>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>@lang('Your Delivery Fee'):</td>
+                                            <td class="text-end text-success">
+                                                {{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee, $purchase->currency_sign) }}
+                                            </td>
                                         </tr>
                                     </table>
+                                    <div class="alert alert-info mt-3 mb-0 py-2">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <small>@lang('Collect the total amount from customer. Your delivery fee is included in this amount.')</small>
+                                    </div>
                                 </div>
                             </div>
                         @else
@@ -206,7 +203,9 @@
                                     </p>
                                     <p class="mb-0">
                                         <strong>@lang('Your Delivery Fee'):</strong>
-                                        <span class="text-success fs-5">{{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee ?? 0, $purchase->currency_sign) }}</span>
+                                        <span class="text-success fs-5">
+                                            {{ \PriceHelper::showAdminCurrencyPrice($data->delivery_fee, $purchase->currency_sign) }}
+                                        </span>
                                     </p>
                                 </div>
                             </div>

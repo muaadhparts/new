@@ -9,26 +9,55 @@
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('Settlements')</h3>
+                        <h3 class="ud-page-title">@lang('Accounting Summary')</h3>
                     </div>
 
-                    <!-- Current Settlement Status -->
+                    <!-- Current Balance Card -->
+                    <div class="row g-4 mb-4">
+                        <div class="col-lg-4 col-md-6">
+                            <div class="account-info-box text-center {{ ($report['current_balance'] ?? 0) < 0 ? 'border-danger' : (($report['current_balance'] ?? 0) > 0 ? 'border-success' : '') }}">
+                                <h6>@lang('Current Balance')</h6>
+                                <h3 class="{{ ($report['current_balance'] ?? 0) < 0 ? 'text-danger' : 'text-success' }}">
+                                    {{ $currency->sign ?? 'SAR ' }}{{ number_format($report['current_balance'] ?? 0, 2) }}
+                                </h3>
+                                @if(($report['is_in_debt'] ?? false))
+                                    <small class="text-danger">@lang('You owe to platform')</small>
+                                @elseif(($report['has_credit'] ?? false))
+                                    <small class="text-success">@lang('Platform owes you')</small>
+                                @endif
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Total COD Collected')</h6>
+                                <h3 class="text-warning">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_cod_collected'] ?? 0, 2) }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="account-info-box text-center">
+                                <h6>@lang('Total Fees Earned')</h6>
+                                <h3 class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($report['total_fees_earned'] ?? 0, 2) }}</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Current Settlement Calculation -->
                     <div class="row g-4 mb-4">
                         <div class="col-lg-6">
                             <div class="account-info-box">
-                                <h5>@lang('Current Settlement Status')</h5>
+                                <h5>@lang('Unsettled Deliveries Breakdown')</h5>
                                 <div class="account-info">
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-title">@lang('COD Amount (You Owe)')</span>
-                                        <span class="text-danger">{{ $currency->sign }}{{ number_format($settlementCalc['cod_amount'] ?? 0, 2) }}</span>
+                                        <span class="text-danger">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['cod_amount'] ?? 0, 2) }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-title">@lang('Fees Earned (Online)')</span>
-                                        <span class="text-success">{{ $currency->sign }}{{ number_format($settlementCalc['fees_earned_online'] ?? 0, 2) }}</span>
+                                        <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['fees_earned_online'] ?? 0, 2) }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
                                         <span class="info-title">@lang('Fees Earned (COD)')</span>
-                                        <span class="text-success">{{ $currency->sign }}{{ number_format($settlementCalc['fees_earned_cod'] ?? 0, 2) }}</span>
+                                        <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['fees_earned_cod'] ?? 0, 2) }}</span>
                                     </div>
                                     <hr>
                                     <div class="account-info-item d-flex justify-content-between">
@@ -37,7 +66,7 @@
                                             $netAmount = $settlementCalc['net_amount'] ?? 0;
                                         @endphp
                                         <span class="{{ $netAmount >= 0 ? 'text-success' : 'text-danger' }}">
-                                            <strong>{{ $currency->sign }}{{ number_format(abs($netAmount), 2) }}</strong>
+                                            <strong>{{ $currency->sign ?? 'SAR ' }}{{ number_format(abs($netAmount), 2) }}</strong>
                                             @if($netAmount >= 0)
                                                 <small>(@lang('Platform owes you'))</small>
                                             @else
@@ -66,82 +95,70 @@
                                     </p>
                                     <p class="mb-0">
                                         <i class="fas fa-hand-holding-usd text-primary me-2"></i>
-                                        @lang('Settlements are processed by the admin.')
+                                        @lang('Settlements are processed by the admin via the accounting system.')
                                     </p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Settlements History -->
-                    <h4 class="table-title mt-4">@lang('Settlement History')</h4>
+                    <!-- Unsettled Deliveries -->
+                    <h4 class="table-title mt-4">@lang('Unsettled Deliveries')</h4>
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th><span class="header-title">{{ __('#') }}</span></th>
-                                    <th><span class="header-title">{{ __('Type') }}</span></th>
-                                    <th><span class="header-title">{{ __('Amount') }}</span></th>
-                                    <th><span class="header-title">{{ __('Status') }}</span></th>
-                                    <th><span class="header-title">{{ __('Payment Method') }}</span></th>
-                                    <th><span class="header-title">{{ __('Reference') }}</span></th>
+                                    <th><span class="header-title">{{ __('Purchase') }}</span></th>
+                                    <th><span class="header-title">{{ __('Payment') }}</span></th>
+                                    <th><span class="header-title">{{ __('COD Amount') }}</span></th>
+                                    <th><span class="header-title">{{ __('Delivery Fee') }}</span></th>
                                     <th><span class="header-title">{{ __('Date') }}</span></th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($settlements as $key => $settlement)
+                                @forelse ($unsettledDeliveries as $key => $delivery)
                                     <tr>
                                         <td data-label="{{ __('#') }}">
-                                            {{ $settlements->firstItem() + $key }}
+                                            {{ $key + 1 }}
                                         </td>
-                                        <td data-label="{{ __('Type') }}">
-                                            @if($settlement->type == 'pay_to_courier')
-                                                <span class="badge bg-success">@lang('Received')</span>
+                                        <td data-label="{{ __('Purchase') }}">
+                                            @if($delivery->purchase)
+                                                <a href="{{ route('courier-purchase-details', $delivery->id) }}">
+                                                    {{ $delivery->purchase->purchase_number }}
+                                                </a>
                                             @else
-                                                <span class="badge bg-warning">@lang('Paid')</span>
+                                                -
                                             @endif
                                         </td>
-                                        <td data-label="{{ __('Amount') }}">
-                                            <strong>{{ $currency->sign }}{{ number_format($settlement->amount, 2) }}</strong>
+                                        <td data-label="{{ __('Payment') }}">
+                                            @if($delivery->payment_method === 'cod')
+                                                <span class="badge bg-warning">@lang('COD')</span>
+                                            @else
+                                                <span class="badge bg-success">@lang('Online')</span>
+                                            @endif
                                         </td>
-                                        <td data-label="{{ __('Status') }}">
-                                            @switch($settlement->status)
-                                                @case('pending')
-                                                    <span class="badge bg-warning">@lang('Pending')</span>
-                                                    @break
-                                                @case('completed')
-                                                    <span class="badge bg-success">@lang('Completed')</span>
-                                                    @break
-                                                @case('cancelled')
-                                                    <span class="badge bg-danger">@lang('Cancelled')</span>
-                                                    @break
-                                            @endswitch
+                                        <td data-label="{{ __('COD Amount') }}">
+                                            @if($delivery->payment_method === 'cod')
+                                                <span class="text-danger">{{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->purchase_amount ?? 0, 2) }}</span>
+                                            @else
+                                                -
+                                            @endif
                                         </td>
-                                        <td data-label="{{ __('Payment Method') }}">
-                                            {{ $settlement->payment_method ?? '-' }}
-                                        </td>
-                                        <td data-label="{{ __('Reference') }}">
-                                            {{ $settlement->reference_number ?? '-' }}
+                                        <td data-label="{{ __('Delivery Fee') }}">
+                                            <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($delivery->delivery_fee ?? 0, 2) }}</span>
                                         </td>
                                         <td data-label="{{ __('Date') }}">
-                                            {{ $settlement->created_at->format('d-m-Y') }}
-                                            @if($settlement->processed_at)
-                                                <br><small class="text-muted">@lang('Processed'): {{ $settlement->processed_at->format('d-m-Y') }}</small>
-                                            @endif
+                                            {{ $delivery->delivered_at ? $delivery->delivered_at->format('d-m-Y') : $delivery->created_at->format('d-m-Y') }}
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="7" class="text-center">{{ __('No settlements found') }}</td>
+                                        <td colspan="6" class="text-center">{{ __('No unsettled deliveries') }}</td>
                                     </tr>
                                 @endforelse
                             </tbody>
                         </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="d-flex justify-content-center mt-4">
-                        {{ $settlements->links() }}
                     </div>
 
                 </div>

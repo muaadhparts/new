@@ -253,12 +253,6 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                    $recentTransactions = \App\Models\AccountingLedger::with(['fromParty', 'toParty'])
-                                        ->orderBy('created_at', 'desc')
-                                        ->limit(10)
-                                        ->get();
-                                @endphp
                                 @forelse($recentTransactions as $txn)
                                 <tr>
                                     <td>

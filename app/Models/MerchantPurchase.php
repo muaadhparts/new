@@ -189,9 +189,9 @@ class MerchantPurchase extends Model
         return $this->belongsTo(MerchantLocation::class, 'merchant_location_id')->withDefault();
     }
 
-    public function settlement()
+    public function settlementBatch()
     {
-        return $this->belongsTo(MerchantSettlement::class, 'merchant_settlement_id');
+        return $this->belongsTo(SettlementBatch::class, 'merchant_settlement_id');
     }
 
     public function isCourierDelivery(): bool

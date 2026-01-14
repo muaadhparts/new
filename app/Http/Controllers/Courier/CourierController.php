@@ -7,8 +7,6 @@ use App\Models\Country;
 use App\Models\Currency;
 use App\Models\DeliveryCourier;
 use App\Models\CourierServiceArea;
-use App\Models\CourierTransaction;
-use App\Models\CourierSettlement;
 use App\Services\CourierAccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -446,36 +444,35 @@ class CourierController extends CourierBaseController
     }
 
     /**
-     * View courier transactions
+     * View courier deliveries history (transactions)
      */
     public function transactions(Request $request)
     {
-        $query = CourierTransaction::where('courier_id', $this->courier->id)
+        $query = DeliveryCourier::where('courier_id', $this->courier->id)
             ->orderBy('created_at', 'desc');
 
-        if ($request->type) {
-            $query->where('type', $request->type);
+        if ($request->status) {
+            $query->where('status', $request->status);
         }
 
-        $transactions = $query->paginate(20);
+        $deliveries = $query->paginate(20);
         $currency = Currency::where('is_default', 1)->first();
+        $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        return view('courier.transactions', compact('transactions', 'currency'));
+        return view('courier.transactions', compact('deliveries', 'currency', 'report'));
     }
 
     /**
-     * View courier settlements
+     * View courier settlements / accounting summary
      */
     public function settlements()
     {
-        $settlements = CourierSettlement::where('courier_id', $this->courier->id)
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
-
         $currency = Currency::where('is_default', 1)->first();
         $settlementCalc = $this->accountingService->calculateSettlementAmount($this->courier->id);
+        $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
+        $report = $this->accountingService->getCourierReport($this->courier->id);
 
-        return view('courier.settlements', compact('settlements', 'currency', 'settlementCalc'));
+        return view('courier.settlements', compact('currency', 'settlementCalc', 'unsettledDeliveries', 'report'));
     }
 
     /**

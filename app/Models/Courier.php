@@ -35,14 +35,14 @@ class Courier extends Authenticatable
         return $this->hasMany(CourierServiceArea::class);
     }
 
-    public function transactions()
+    /**
+     * Get accounting party for this courier
+     */
+    public function accountParty()
     {
-        return $this->hasMany(CourierTransaction::class);
-    }
-
-    public function settlements()
-    {
-        return $this->hasMany(CourierSettlement::class);
+        return $this->hasOne(AccountParty::class, 'reference_id')
+            ->where('party_type', 'courier')
+            ->where('reference_type', 'Courier');
     }
 
     public function getCurrentBalance(): float
