@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * MerchantPurchase Model
  *
+ * ════════════════════════════════════════════════════════════════════════════
+ * ⚠️  WARNING: cod_amount CALCULATION RULES
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ * cod_amount = Accounting bucket for COD (items_price + delivery_fee)
+ * Does NOT include tax (tax is tracked separately in debts)
+ *
+ * MUST be calculated via PaymentAccountingService::calculateMerchantPurchaseCodAmount()
+ *
+ * @see \App\Services\PaymentAccountingService::calculateMerchantPurchaseCodAmount()
+ * @see \App\Services\PaymentAccountingService::calculateDebtLedger()
+ *
+ * ════════════════════════════════════════════════════════════════════════════
+ *
  * ARCHITECTURAL PRINCIPLE (2026-01-09):
  * - Sales are ALWAYS registered to merchant in this table with Gross, Commission, Net
  * - user_id = 0 → Platform service → Money goes to platform

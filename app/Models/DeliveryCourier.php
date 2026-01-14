@@ -9,9 +9,23 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * DeliveryCourier - Local Courier Delivery Record
  *
- * ============================================================
+ * ════════════════════════════════════════════════════════════════════════════
+ * ⚠️  WARNING: cod_amount CALCULATION RULES
+ * ════════════════════════════════════════════════════════════════════════════
+ *
+ * cod_amount = The ACTUAL cash amount the courier collects from customer
+ *
+ * MUST be calculated via PaymentAccountingService::calculateCourierCodAmount()
+ * or PaymentAccountingService::prepareDeliveryCourierData()
+ *
+ * NEVER calculate cod_amount manually! It equals pay_amount (not pay_amount + fee!)
+ * pay_amount already includes: items + tax + courier_fee + packing
+ *
+ * @see \App\Services\PaymentAccountingService::prepareDeliveryCourierData()
+ *
+ * ════════════════════════════════════════════════════════════════════════════
  * STATUS STATE MACHINE (NEW WORKFLOW)
- * ============================================================
+ * ════════════════════════════════════════════════════════════════════════════
  *
  * DELIVERY STATUS (status column):
  * ┌─────────────────────┐

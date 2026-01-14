@@ -310,6 +310,9 @@ class MerchantPurchaseCreator
 
     /**
      * Create courier delivery record
+     *
+     * ⚠️ WARNING: cod_amount is calculated via PaymentAccountingService!
+     *    DO NOT calculate it manually here. Use accountingService->prepareDeliveryCourierData()
      */
     protected function createCourierDelivery(
         Purchase $purchase,
@@ -318,29 +321,18 @@ class MerchantPurchaseCreator
         array $addressData,
         array $paymentData
     ): void {
-        // Determine payment method for courier (cod or online)
-        $paymentMethod = strtolower($paymentData['method'] ?? '');
-        $isCod = in_array($paymentMethod, ['cod', 'cash on delivery']);
+        $paymentMethod = $paymentData['method'] ?? 'online';
 
-        $deliveryFee = $shippingData['courier_fee'];
+        // ✅ Use centralized service for cod_amount calculation
+        // @see PaymentAccountingService::prepareDeliveryCourierData()
+        $courierData = $this->accountingService->prepareDeliveryCourierData(
+            $purchase,
+            $merchantId,
+            $shippingData,
+            $paymentMethod
+        );
 
-        // ✅ pay_amount يتضمن بالفعل: items + tax + shipping/courier_fee + packing
-        // لذلك cod_amount = pay_amount (لا نضيف delivery_fee مرة أخرى)
-        DeliveryCourier::create([
-            'purchase_id' => $purchase->id,
-            'merchant_id' => $merchantId,
-            'courier_id' => $shippingData['courier_id'],
-            'service_area_id' => $shippingData['service_area_id'] ?? null,
-            'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
-            'delivery_fee' => $deliveryFee,
-            'purchase_amount' => $purchase->pay_amount,
-            // COD amount = المبلغ الكامل الذي يجمعه الكوريير (يتضمن بالفعل رسوم التوصيل)
-            'cod_amount' => $isCod ? $purchase->pay_amount : 0,
-            'payment_method' => $isCod ? DeliveryCourier::PAYMENT_COD : DeliveryCourier::PAYMENT_ONLINE,
-            'status' => DeliveryCourier::STATUS_PENDING_APPROVAL,
-            'fee_status' => DeliveryCourier::FEE_PENDING,
-            'settlement_status' => DeliveryCourier::SETTLEMENT_PENDING,
-        ]);
+        DeliveryCourier::create($courierData);
     }
 
     /**

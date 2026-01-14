@@ -87,8 +87,9 @@ class PaymentAccountingService
             ? $courierFee
             : $shippingCost;
 
-        // COD amount = price + delivery fee (what collector receives)
-        $codAmount = $paymentMethod === 'cod' ? ($price + $deliveryFee) : 0;
+        // ✅ COD amount for merchant_purchases (accounting purposes)
+        // Uses centralized calculation - see calculateMerchantPurchaseCodAmount()
+        $codAmount = $this->calculateMerchantPurchaseCodAmount($paymentMethod, $price, $deliveryFee);
 
         // Platform services total
         $platformServices = $platformShippingFee + $platformPackingFee;
@@ -521,5 +522,105 @@ class PaymentAccountingService
             'merchant_purchase_id' => $mp->id,
             'reason' => $reason,
         ]);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // COD AMOUNT CALCULATION - SINGLE SOURCE OF TRUTH
+    // ═══════════════════════════════════════════════════════════════════════════════
+    //
+    // ⚠️  WARNING: DO NOT CALCULATE cod_amount ANYWHERE ELSE IN THE CODEBASE!
+    // ⚠️  ALL cod_amount CALCULATIONS MUST USE THESE METHODS!
+    //
+    // The cod_amount has TWO different meanings depending on context:
+    //
+    // 1. merchant_purchases.cod_amount = Accounting bucket (items + delivery)
+    //    - Used for debt ledger calculations
+    //    - Does NOT include tax (tax tracked separately in debts)
+    //
+    // 2. delivery_couriers.cod_amount = Physical cash collected by courier
+    //    - The ACTUAL amount the courier collects from customer
+    //    - EQUALS pay_amount (includes everything: items + tax + shipping + packing)
+    //
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /**
+     * Calculate cod_amount for merchant_purchases table (accounting purposes)
+     *
+     * Formula: items_price + delivery_fee (without tax - tax tracked separately)
+     *
+     * @param string $paymentMethod 'cod' or 'online'
+     * @param float $itemsPrice Total price of items (gross)
+     * @param float $deliveryFee Shipping cost OR courier fee (whichever applies)
+     * @return float
+     */
+    public function calculateMerchantPurchaseCodAmount(
+        string $paymentMethod,
+        float $itemsPrice,
+        float $deliveryFee
+    ): float {
+        if (strtolower($paymentMethod) !== 'cod') {
+            return 0;
+        }
+
+        return round($itemsPrice + $deliveryFee, 2);
+    }
+
+    /**
+     * Calculate cod_amount for delivery_couriers table (actual cash collection)
+     *
+     * This is the TOTAL amount the courier physically collects from customer.
+     * It equals pay_amount which already includes: items + tax + shipping/courier + packing
+     *
+     * @param string $paymentMethod 'cod' or 'online'
+     * @param float $payAmount The total order amount (from purchases.pay_amount)
+     * @return float
+     */
+    public function calculateCourierCodAmount(
+        string $paymentMethod,
+        float $payAmount
+    ): float {
+        if (!in_array(strtolower($paymentMethod), ['cod', 'cash on delivery'])) {
+            return 0;
+        }
+
+        // pay_amount already includes EVERYTHING (items + tax + courier_fee + packing)
+        // DO NOT add delivery_fee again - it's already in pay_amount!
+        return round($payAmount, 2);
+    }
+
+    /**
+     * Prepare all data for delivery_couriers record
+     *
+     * ⚠️ USE THIS METHOD when creating DeliveryCourier records!
+     *
+     * @param Purchase $purchase The purchase record
+     * @param int $merchantId Merchant ID
+     * @param array $shippingData Shipping/courier data from session
+     * @param string $paymentMethod Payment method (cod/online)
+     * @return array Data ready for DeliveryCourier::create()
+     */
+    public function prepareDeliveryCourierData(
+        Purchase $purchase,
+        int $merchantId,
+        array $shippingData,
+        string $paymentMethod
+    ): array {
+        $isCod = in_array(strtolower($paymentMethod), ['cod', 'cash on delivery']);
+        $deliveryFee = (float) ($shippingData['courier_fee'] ?? 0);
+
+        return [
+            'purchase_id' => $purchase->id,
+            'merchant_id' => $merchantId,
+            'courier_id' => $shippingData['courier_id'] ?? null,
+            'service_area_id' => $shippingData['service_area_id'] ?? null,
+            'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
+            'delivery_fee' => $deliveryFee,
+            'purchase_amount' => $purchase->pay_amount,
+            'cod_amount' => $this->calculateCourierCodAmount($paymentMethod, $purchase->pay_amount),
+            'payment_method' => $isCod ? 'cod' : 'online',
+            'status' => 'pending_approval',
+            'fee_status' => 'pending',
+            'settlement_status' => 'pending',
+        ];
     }
 }
