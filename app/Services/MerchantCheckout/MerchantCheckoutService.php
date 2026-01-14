@@ -432,10 +432,15 @@ class MerchantCheckoutService
         $grouped = [];
         foreach ($shipping as $s) {
             $provider = $s->provider ?? 'manual';
+            $integrationType = $s->integration_type ?? 'manual';
             $freeAbove = (float)$s->free_above;
-            // Free shipping if subtotal is BELOW free_above threshold
-            $isFree = $freeAbove > 0 && $itemsTotal < $freeAbove;
-            $isApiProvider = $this->isApiProvider($provider);
+
+            // ✅ Free shipping if subtotal >= free_above threshold
+            // مثال: إذا free_above = 2000 والفاتورة = 2500 → الشحن مجاني
+            $isFree = $freeAbove > 0 && $itemsTotal >= $freeAbove;
+
+            // ✅ Use integration_type to determine if API provider
+            $isApiProvider = $integrationType === 'api';
 
             if (!isset($grouped[$provider])) {
                 $grouped[$provider] = [
