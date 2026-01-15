@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\MerchantCommission;
 use App\Models\MerchantPurchase;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
@@ -120,12 +121,10 @@ class FixPurchaseData extends Command
                     }
                 }
 
-                // Calculate commission
+                // Calculate commission (per-merchant from merchant_commissions table)
                 $itemsTotal = $merchantData['totalPrice'];
-                $commissionAmount = 0;
-                if ($gs) {
-                    $commissionAmount = ($gs->fixed_commission ?? 0) + ($itemsTotal * ($gs->percentage_commission ?? 0) / 100);
-                }
+                $merchantCommission = MerchantCommission::getOrCreateForMerchant($merchantId);
+                $commissionAmount = $merchantCommission->calculateCommission($itemsTotal);
 
                 // Calculate tax (proportional)
                 $purchaseTax = (float)$purchase->tax;

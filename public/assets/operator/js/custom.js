@@ -32,14 +32,21 @@
     height: "auto",
   });
   $("#sidebar a").each(function () {
-    var pageUrl = window.location.href;
+    var pageUrl = window.location.href.split('?')[0]; // Remove query params
+    var linkUrl = this.href.split('?')[0]; // Remove query params
 
-
-    if (this.href == pageUrl) {
+    // Check if URLs match (ignoring query params and trailing slashes)
+    if (linkUrl.replace(/\/$/, '') == pageUrl.replace(/\/$/, '')) {
       $(this).addClass("active");
       $(this).parent().addClass("active"); // add active to li of the current link
-      $(this).parent().parent().prev().addClass("active"); // add active class to an anchor
-      $(this).parent().parent().prev().click(); // click the item to make it drop
+
+      // For submenu items, expand the parent menu
+      var $parentUl = $(this).parent().parent();
+      if ($parentUl.hasClass('collapse')) {
+        $parentUl.addClass("show"); // Bootstrap 5 collapse show class
+        $parentUl.prev().addClass("active"); // add active to parent toggle
+        $parentUl.prev().attr("aria-expanded", "true");
+      }
     }
   });
 

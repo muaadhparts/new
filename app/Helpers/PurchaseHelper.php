@@ -9,6 +9,7 @@ use App\{
     Models\CatalogItem,
     Models\WalletLog,
     Models\MerchantPurchase,
+    Models\MerchantCommission,
     Models\CatalogEvent,
     Models\UserCatalogEvent
 };
@@ -233,12 +234,10 @@ class PurchaseHelper
 
             // Create one MerchantPurchase per merchant
             foreach ($merchantGroups as $merchantId => $merchantData) {
-                // Calculate commission
+                // Calculate commission (per-merchant from merchant_commissions table)
                 $itemsTotal = $merchantData['totalPrice'];
-                $commissionAmount = 0;
-                if ($gs) {
-                    $commissionAmount = $gs->fixed_commission + ($itemsTotal * $gs->percentage_commission / 100);
-                }
+                $merchantCommission = MerchantCommission::getOrCreateForMerchant($merchantId);
+                $commissionAmount = $merchantCommission->calculateCommission($itemsTotal);
 
                 // Calculate tax (proportional to merchant's share)
                 $purchaseTax = (float)$purchase->tax;

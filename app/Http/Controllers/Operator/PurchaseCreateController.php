@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\Currency;
+use App\Models\MerchantCommission;
 use App\Models\Purchase;
 use App\Models\FrontendSetting;
 use App\Models\CatalogItem;
@@ -52,10 +53,10 @@ class PurchaseCreateController extends OperatorBaseController
                 $catalogItem = $mi->catalogItem;
                 if (!$catalogItem) return __('N/A');
 
-                // Price from merchant_items with commission
-                $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => \DB::table('muaadhsettings')->first());
+                // Price from merchant_items with commission (per-merchant)
                 $price = (float) $mi->price;
-                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+                $commission = MerchantCommission::getOrCreateForMerchant($mi->user_id);
+                $base = $commission->getPriceWithCommission($price);
                 $finalPrice = $base * $this->curr->value;
 
                 $photoUrl = filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
@@ -168,7 +169,8 @@ class PurchaseCreateController extends OperatorBaseController
             ->first();
 
         if ($merchantItem) {
-            $prc = $merchantItem->price + $this->gs->fixed_commission + ($merchantItem->price / 100) * $this->gs->percentage_commission;
+            $commission = MerchantCommission::getOrCreateForMerchant($merchantItem->user_id);
+            $prc = $commission->getPriceWithCommission($merchantItem->price);
             $catalogItem->price = round($prc, 2);
             // Use merchant item data
             $catalogItem->stock = $merchantItem->stock;

@@ -170,7 +170,7 @@ class Muaadhsetting extends Model
         'mail_driver', 'mail_host', 'mail_port', 'mail_encryption',
         'mail_user', 'mail_pass', 'from_email', 'from_name',
         'is_affilate', 'affilate_charge', 'affilate_banner',
-        'fixed_commission', 'percentage_commission',
+        // Commission is now per-merchant in merchant_commissions table
         'multiple_shipping', 'merchant_ship_info', 'is_verification_email',
         'wholesell', 'is_capcha', 'error_banner_404', 'error_banner_500',
         'popup_title', 'popup_text', 'popup_background',

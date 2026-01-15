@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Operator;
 use App\{
     Models\CatalogItem,
     Models\Currency,
+    Models\MerchantCommission,
     Models\MerchantPhoto
 };
 use App\Models\MerchantItem;
@@ -79,10 +80,9 @@ class ImportController extends OperatorBaseController
                 return '<a href="' . route('operator-merchant-show', $mi->user_id) . '" target="_blank">' . $shopName . '</a>';
             })
             ->addColumn('price', function (MerchantItem $mi) {
-                $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
                 $price = (float) $mi->price;
-                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+                $commission = MerchantCommission::getOrCreateForMerchant($mi->user_id);
+                $base = $commission->getPriceWithCommission($price);
 
                 return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })

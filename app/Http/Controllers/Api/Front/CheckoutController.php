@@ -21,6 +21,7 @@ use App\Models\CatalogItem;
 use App\Models\Reward;
 use App\Models\Shipping;
 use App\Models\User;
+use App\Models\MerchantCommission;
 use App\Models\MerchantPurchase;
 use Auth;
 use Illuminate\Http\Request;
@@ -496,10 +497,10 @@ class CheckoutController extends Controller
             $cartItem->user_id              = $merchantId;             // inject merchant context
             $cartItem->merchant_item_id  = $mp->id;
 
-            // سعر أساسي + عمولة + سعر مقاس إن وجد
-            $gs  = Muaadhsetting::find(1);
+            // سعر أساسي + عمولة + سعر مقاس إن وجد (per-merchant)
             $basePrice = (float)$mp->price;
-            $withCommission = $basePrice + (float)$gs->fixed_commission + ($basePrice * (float)$gs->percentage_commission / 100);
+            $commission = MerchantCommission::getOrCreateForMerchant($merchantId);
+            $withCommission = $commission->getPriceWithCommission($basePrice);
 
             // إن كان لديك آلية size_price متقدمة على MP، طبّقها هنا
             if (!empty($mp->size_price) && $size !== '' && $size !== null) {

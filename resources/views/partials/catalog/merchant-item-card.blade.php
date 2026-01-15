@@ -41,9 +41,8 @@
         ? asset('assets/images/thumbnails/' . $thumbnailPath)
         : $photo;
 
-    // Price with commission
-    $price = (float) $merchantItem->price;
-    $finalPrice = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+    // Price with commission (from MerchantItem model method)
+    $finalPrice = $merchantItem->merchantSizePrice();
 
     // Stock
     $stock = $merchantItem->stock ?? 0;

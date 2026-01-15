@@ -165,35 +165,17 @@
                               </div>
       
                               <div class="tab-pane fade show" id="nav-merchant" role="tabpanel" aria-labelledby="nav-merchant-tab">
-                                <div class="row justify-content-center">
-                                  <div class="col-lg-4">
-                                    <div class="left-area">
-                                        <h4 class="heading">{{ __('Fixed Commission') }} *
-                                          </h4>
-                                          <p class="sub-heading">{{ __('Fixed Commission Charge(CatalogItem Price + Commission)') }}</p>
-                                          <p class="sub-heading">{{ __("(If you don't want to add any fixed commission, just set it to 0)") }}</p>
+                                <div class="row justify-content-center mb-4">
+                                  <div class="col-lg-10">
+                                    <div class="alert alert-info">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        <strong>{{ __('Merchant Commission') }}</strong><br>
+                                        {{ __('Commission is now managed per-merchant from') }}
+                                        <a href="{{ route('operator-merchant-commission-index') }}">{{ __('Merchant Commissions') }}</a>
                                     </div>
                                   </div>
-                                  <div class="col-lg-6">
-                                    <input type="text" class="form-control" placeholder="{{ __('Fixed Commission') }}" name="fixed_commission" value="{{ $gs->fixed_commission }}" required="">
-                                  </div>
                                 </div>
-        
-        
-                                <div class="row justify-content-center">
-                                  <div class="col-lg-4">
-                                    <div class="left-area">
-                                        <h4 class="heading">{{ __('Percentage Commission(%)') }} *
-                                          </h4>
-                                          <p class="sub-heading">{{ __('Percentage Commission Charge(CatalogItem Price + Commission(%))') }}</p>
-                                          <p class="sub-heading">{{ __("(If you don't want to add any percentage commission, just set it to 0)") }}</p>
-                                    </div>
-                                  </div>
-                                  <div class="col-lg-6">
-                                    <input type="text" class="form-control" placeholder="{{ __('Percentage Commission') }}" name="percentage_commission" value="{{ $gs->percentage_commission }}" required="">
-                                  </div>
-                                </div>
-        
+
                                 <div class="row justify-content-center">
                                   <div class="col-lg-4">
                                     <div class="left-area">
