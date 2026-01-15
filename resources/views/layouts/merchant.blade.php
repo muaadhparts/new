@@ -64,7 +64,7 @@
 
 </head>
 
-{{-- Header data ($categories, $static_content, $currencies, $languges) provided by AppServiceProvider with caching --}}
+{{-- Header data ($brands, $static_content, $currencies, $languges) provided by GlobalDataMiddleware with caching --}}
 <body class="m-theme-scope">
 
     <div class="frontend-header-wrapper">

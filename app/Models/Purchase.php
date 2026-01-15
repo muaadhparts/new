@@ -66,13 +66,15 @@ class Purchase extends Model
                 $oldStatus = $purchase->getOriginal('status');
                 $newStatus = $purchase->status;
 
-                // Log warning for direct status modification
-                Log::warning('Purchase: Direct status modification detected', [
-                    'purchase_id' => $purchase->id,
-                    'old_status' => $oldStatus,
-                    'new_status' => $newStatus,
-                    'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5),
-                ]);
+                // Log warning فقط في debug mode (debug_backtrace بطيء)
+                if (config('app.debug')) {
+                    Log::warning('Purchase: Direct status modification detected', [
+                        'purchase_id' => $purchase->id,
+                        'old_status' => $oldStatus,
+                        'new_status' => $newStatus,
+                        'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 5),
+                    ]);
+                }
 
                 // Block if strict protection is enabled
                 if (static::$strictStatusProtection) {

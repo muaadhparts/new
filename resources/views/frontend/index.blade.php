@@ -99,7 +99,7 @@ Sections are rendered based on theme settings and purchase
 
             <div class="muaadh-categories-grid">
                 @foreach ($featured_categories as $fcategory)
-                    <a href="{{ route('front.category', $fcategory->slug) }}" class="muaadh-category-card">
+                    <a href="{{ route('front.catalog', $fcategory->slug) }}" class="muaadh-category-card">
                         <div class="muaadh-category-img">
                             <img src="{{ asset('assets/images/categories/' . $fcategory->image) }}" alt="{{ $fcategory->name }}" loading="lazy">
                             <span class="muaadh-category-count">{{ $fcategory->products_count }}</span>

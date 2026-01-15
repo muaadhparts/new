@@ -137,7 +137,7 @@ class SeoService
      */
     public function forCategory($category): self
     {
-        $this->setCanonical(route('front.category', ['category' => $category->slug]));
+        $this->setCanonical(route('front.catalog', ['category' => $category->slug]));
 
         $this->addSchema(
             BreadcrumbSchema::create()

@@ -32,12 +32,12 @@ class BreadcrumbSchema extends SchemaBuilder
     public function forProduct($product): self
     {
         $this->addItem(__('Home'), url('/'));
-        $this->addItem(__('Catalog'), route('front.category'));
+        $this->addItem(__('Catalog'), route('front.catalog'));
 
         if ($product->brand) {
             $this->addItem(
                 $product->brand->name,
-                route('front.category', ['category' => $product->brand->slug])
+                route('front.catalog', ['category' => $product->brand->slug])
             );
         }
 
@@ -52,13 +52,13 @@ class BreadcrumbSchema extends SchemaBuilder
     public function forCategory($category, $parent = null): self
     {
         $this->addItem(__('Home'), url('/'));
-        $this->addItem(__('Catalog'), route('front.category'));
+        $this->addItem(__('Catalog'), route('front.catalog'));
 
         if ($parent) {
-            $this->addItem($parent->name, route('front.category', ['category' => $parent->slug]));
+            $this->addItem($parent->name, route('front.catalog', ['category' => $parent->slug]));
         }
 
-        $this->addItem($category->name, route('front.category', ['category' => $category->slug]));
+        $this->addItem($category->name, route('front.catalog', ['category' => $category->slug]));
 
         return $this->build();
     }

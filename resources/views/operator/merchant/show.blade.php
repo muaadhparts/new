@@ -113,9 +113,9 @@
                                             <div class="purchase-table-wrap">
                                                 <div class="purchase-details-table">
                                                     <div class="mr-table">
-                                                        <h4 class="title">{{ __("Items Added") }}</h4>
+                                                        <h4 class="title">{{ __("Items Added") }} ({{ $data->merchantItems()->count() }})</h4>
                                                         <div class="table-responsive">
-                                                                <table id="example2" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                                                <table id="merchant-items-table" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                                     <thead>
                                                                         <tr>
                                                                             <th>{{ __("MP ID") }}</th>
@@ -129,58 +129,6 @@
                                                                             <th></th>
                                                                         </tr>
                                                                     </thead>
-                                                                    <tbody>
-                                                                        @foreach($data->merchantItems as $merchantItem)
-                                                                        @php
-                                                                            // Get the actual catalog item
-                                                                            $dt = $merchantItem->catalogItem;
-
-                                                                            $adminMerchantUrl = $dt && $dt->slug
-                                                                                ? route('front.catalog-item', ['slug' => $dt->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
-                                                                                : '#';
-
-
-                                                                            // حالة المنتج (جديد/مستعمل)
-                                                                            $condition = $merchantItem->item_condition == 1 ? __('Used') : __('New');
-
-                                                                            // المخزون
-                                                                            $stck = $merchantItem->stock;
-                                                                            if($stck === null || $stck === '')
-                                                                                $stckDisplay = __('Unlimited');
-                                                                            elseif((int)$stck === 0)
-                                                                                $stckDisplay = '<span class="text-danger">'.__('Out Of Stock').'</span>';
-                                                                            else
-                                                                                $stckDisplay = $stck;
-
-                                                                            // السعر مع العمولة
-                                                                            $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-                                                                            $price = (float) $merchantItem->price;
-                                                                            $finalPrice = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
-                                                                        @endphp
-                                                                        <tr>
-                                                                            <td><a href="{{ $adminMerchantUrl }}" target="_blank">{{ sprintf("%'.06d", $merchantItem->id) }}</a></td>
-                                                                            <td>{{ $dt ? getLocalizedCatalogItemName($dt, 50) : __('N/A') }}</td>
-                                                                            <td>{{ $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A') }}</td>
-                                                                            <td>{{ $merchantItem->qualityBrand ? getLocalizedQualityName($merchantItem->qualityBrand) : __('N/A') }}</td>
-                                                                            <td><span class="badge {{ $merchantItem->item_condition == 1 ? 'badge-warning' : 'badge-success' }}">{{ $condition }}</span></td>
-                                                                            <td>{!! $stckDisplay !!}</td>
-                                                                            <td>{{ \PriceHelper::showAdminCurrencyPrice($finalPrice) }}</td>
-                                                                            <td>
-                                                                                <div class="action-list">
-                                                                                <select class="process select droplinks {{ $merchantItem->status == 1 ? 'drop-success' : 'drop-danger' }}">
-                                                                                    <option data-val="1" value="{{ route('operator-merchant-item-status',['id' => $merchantItem->id, 'status' => 1]) }}" {{ $merchantItem->status == 1 ? 'selected' : '' }}>{{ __("Activated") }}</option>
-                                                                                    <option data-val="0" value="{{ route('operator-merchant-item-status',['id' => $merchantItem->id, 'status' => 0]) }}" {{ $merchantItem->status == 0 ? 'selected' : '' }}>{{ __("Deactivated") }}</option>
-                                                                                </select>
-                                                                                </div>
-                                                                            </td>
-                                                                            <td>
-                                                                                <a href="{{ route('operator-catalog-item-edit', $dt->id ?? 0) }}" class="view-details">
-                                                                                    <i class="fas fa-eye"></i>{{ __("Details") }}
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                        @endforeach
-                                                                    </tbody>
                                                                 </table>
                                                         </div>
                                                     </div>
@@ -278,17 +226,30 @@
 <script type="text/javascript">
 
 (function($) {
-		"use strict";
+    "use strict";
 
-$('#example2').dataTable( {
-  "ordering": false,
-      'lengthChange': false,
-      'searching'   : false,
-      'ordering'    : false,
-      'info'        : false,
-      'autoWidth'   : false,
-      'responsive'  : true
-} );
+    $('#merchant-items-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: '{{ route('operator-merchant-items-datatables', $data->id) }}',
+        columns: [
+            { data: 'mp_id', name: 'id' },
+            { data: 'name', name: 'name', orderable: false },
+            { data: 'brand', name: 'brand', orderable: false },
+            { data: 'quality_brand', name: 'quality_brand', orderable: false },
+            { data: 'condition', name: 'condition', orderable: false },
+            { data: 'stock', name: 'stock', orderable: false },
+            { data: 'price', name: 'price', orderable: false },
+            { data: 'status', name: 'status', orderable: false },
+            { data: 'action', name: 'action', orderable: false, searchable: false }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 10,
+        responsive: true,
+        language: {
+            processing: '<img src="{{ asset('assets/images/' . $gs->admin_loader) }}">'
+        }
+    });
 
 })(jQuery);
 

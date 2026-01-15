@@ -50,13 +50,14 @@ class BladeQueryGuardServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Only enable in local environment
-        if (!app()->environment('local')) {
+        // معطّل افتراضياً - يجب تفعيله صراحةً
+        // BLADE_QUERY_GUARD=true في .env للتفعيل
+        if (!env('BLADE_QUERY_GUARD', false)) {
             return;
         }
 
-        // Skip if explicitly disabled
-        if (env('BLADE_QUERY_GUARD_DISABLED', false)) {
+        // يعمل فقط في local
+        if (!app()->environment('local')) {
             return;
         }
 

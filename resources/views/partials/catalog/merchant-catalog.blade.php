@@ -1,7 +1,7 @@
 <div class="col-lg-3">
     <div id="sidebar" class="widget-title-bordered-full">
         <form id="catalogForm"
-            action="{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
+            action="{{ route('front.catalog', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
             method="GET">
 
             <div id="woocommerce_product_categories-4"
@@ -11,7 +11,7 @@
                     @foreach (App\Models\Category::where('status', 1)->get() as $category)
 
                         <li class="cat-item cat-parent">
-                            <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
+                            <a href="{{route('front.catalog', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                 class="category-link" id="cat">{{ $category->name }} <span class="count"></span></a>
 
                             @if($category->subs->count() > 0)
@@ -19,7 +19,7 @@
                                 <ul class="children">
                                     @foreach (App\Models\Subcategory::where('category_id', $category->id)->get() as $subcategory)
                                         <li class="cat-item cat-parent">
-                                            <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
+                                            <a href="{{route('front.catalog', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                 class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
                                                 <span class="count"></span></a>
 
@@ -29,7 +29,7 @@
                                                 <ul class="children">
                                                     @foreach (DB::table('childcategories')->where('subcategory_id', $subcategory->id)->get() as $key => $childelement)
                                                         <li class="cat-item ">
-                                                            <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
+                                                            <a href="{{route('front.catalog', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
                                                                 class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
                                                                 {{$childelement->name}} <span class="count"></span></a>
                                                         </li>
@@ -52,7 +52,7 @@
         @if ((!empty($cat) && !empty(json_decode($cat->attributes, true))) || (!empty($subcat) && !empty(json_decode($subcat->attributes, true))) || (!empty($childcat) && !empty(json_decode($childcat->attributes, true))))
 
             <form id="attrForm"
-                action="{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
+                action="{{ route('front.catalog', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
                 method="post">
 
                 @if (!empty($cat) && !empty(json_decode($cat->attributes, true)))

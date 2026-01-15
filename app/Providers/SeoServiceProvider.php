@@ -2,13 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Blade;
-use App\Services\SEO\SeoService;
-use App\Services\SEO\ConsentModeService;
 use App\Services\SEO\IndexingApiService;
-use App\Services\SEO\Schema\OrganizationSchema;
-use App\Services\SEO\Schema\WebsiteSchema;
+use App\Services\SEO\SeoService;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\ServiceProvider;
 
 class SeoServiceProvider extends ServiceProvider
 {
@@ -39,8 +36,12 @@ class SeoServiceProvider extends ServiceProvider
         // Register Blade directives
         $this->registerBladeDirectives();
 
-        // Share global schemas with all views
-        $this->shareGlobalSchemas();
+        // =========================================================
+        // ملاحظة مهمة:
+        // تم نقل view()->composer('*', ...) إلى GlobalDataMiddleware
+        // SEO schemas تُحمَّل الآن مرة واحدة في GlobalDataService
+        // بدلاً من تكرارها لكل view
+        // =========================================================
     }
 
     /**
@@ -86,28 +87,6 @@ class SeoServiceProvider extends ServiceProvider
         // @globalSchemas - Render Organization & Website schemas
         Blade::directive('globalSchemas', function () {
             return '<?php echo view("includes.seo.global-schemas")->render(); ?>';
-        });
-    }
-
-    /**
-     * Share global schemas with views
-     */
-    protected function shareGlobalSchemas(): void
-    {
-        // Share global schemas using view composer
-        view()->composer('*', function ($view) {
-            // Only add if not already added
-            if (!isset($view->getData()['globalSchemasLoaded'])) {
-                $gs = $view->getData()['gs'] ?? null;
-                $seo = $view->getData()['seo'] ?? null;
-                $social = $view->getData()['socialsetting'] ?? null;
-
-                if ($gs) {
-                    $view->with('organizationSchema', OrganizationSchema::fromSettings($gs, $seo, $social));
-                    $view->with('websiteSchema', WebsiteSchema::fromSettings($gs));
-                    $view->with('globalSchemasLoaded', true);
-                }
-            }
         });
     }
 }

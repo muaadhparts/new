@@ -148,53 +148,35 @@
     <nav class="muaadh-navbar d-none d-xl-block">
         <div class="container">
             <div class="muaadh-navbar-inner">
-                {{-- Categories Mega Menu --}}
+                {{-- Brands Mega Menu --}}
                 <div class="muaadh-categories-dropdown">
                     <button type="button" class="muaadh-categories-toggle">
                         <i class="fas fa-bars"></i>
-                        <span>@lang('All Categories')</span>
+                        <span>@lang('All Brands')</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div class="muaadh-categories-menu">
-                        @foreach ($categories as $category)
-                            <div class="muaadh-category-item {{ $category->subs->count() > 0 ? 'has-children' : '' }}">
-                                <a href="{{ route('front.category', [$category->slug]) }}">
-                                    @if($category->photo)
-                                        <img src="{{ asset('assets/images/categories/' . $category->photo) }}" alt="{{ $category->name }}">
+                        @foreach ($brands as $brand)
+                            <div class="muaadh-category-item {{ $brand->catalogs && $brand->catalogs->count() > 0 ? 'has-children' : '' }}">
+                                <a href="{{ route('front.catalog', [$brand->slug]) }}">
+                                    @if($brand->photo)
+                                        <img src="{{ asset('assets/images/brand/' . $brand->photo) }}" alt="{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}">
                                     @else
-                                        <i class="fas fa-folder"></i>
+                                        <i class="fas fa-car"></i>
                                     @endif
-                                    <span>{{ $category->name }}</span>
-                                    @if ($category->subs->count() > 0)
+                                    <span>{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}</span>
+                                    @if ($brand->catalogs && $brand->catalogs->count() > 0)
                                         <i class="fas fa-chevron-right muaadh-category-arrow"></i>
                                     @endif
                                 </a>
-                                @if ($category->subs->count() > 0)
+                                @if ($brand->catalogs && $brand->catalogs->count() > 0)
                                     <div class="muaadh-subcategory-panel">
                                         <div class="muaadh-subcategory-grid">
-                                            @foreach ($category->subs as $subcategory)
+                                            @foreach ($brand->catalogs as $catalog)
                                                 <div class="muaadh-subcategory-group">
-                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}" class="muaadh-subcategory-title">
-                                                        {{ $subcategory->name }}
+                                                    <a href="{{ route('front.catalog', [$brand->slug, $catalog->slug]) }}" class="muaadh-subcategory-title">
+                                                        {{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}
                                                     </a>
-                                                    @if ($subcategory->childs && $subcategory->childs->count() > 0)
-                                                        <ul class="muaadh-child-list">
-                                                            @foreach ($subcategory->childs->take(5) as $child)
-                                                                <li>
-                                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug, $child->slug]) }}">
-                                                                        {{ $child->name }}
-                                                                    </a>
-                                                                </li>
-                                                            @endforeach
-                                                            @if ($subcategory->childs->count() > 5)
-                                                                <li>
-                                                                    <a href="{{ route('front.category', [$category->slug, $subcategory->slug]) }}" class="muaadh-view-all">
-                                                                        @lang('View All') →
-                                                                    </a>
-                                                                </li>
-                                                            @endif
-                                                        </ul>
-                                                    @endif
                                                 </div>
                                             @endforeach
                                         </div>
@@ -213,8 +195,8 @@
                             <span>@lang('Home')</span>
                         </a>
                     </li>
-                    <li class="{{ request()->is('category*') ? 'active' : '' }}">
-                        <a href="{{ route('front.category') }}">
+                    <li class="{{ request()->is('brands*') ? 'active' : '' }}">
+                        <a href="{{ route('front.catalog') }}">
                             <i class="fas fa-box-open"></i>
                             <span>@lang('CatalogItems')</span>
                         </a>

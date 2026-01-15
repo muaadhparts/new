@@ -358,13 +358,11 @@ class DiscountCodeController extends FrontBaseController
 
     /**
      * Check if catalog item matches discount code category
-     * @deprecated Old category system removed - category_id/subcategory_id/childcategory_id no longer exist
-     * Category-based discount codes are no longer supported
+     * تم إلغاء منطق الفئات - جميع المنتجات مؤهلة
      */
     private function catalogItemMatchesDiscountCodeCategory($catalogItem, $discountCode)
     {
-        // Old category columns removed from catalog_items
-        // Category-based discount codes not supported with new NewCategory system
-        return false;
+        // تم إلغاء الخصم حسب الفئات - جميع المنتجات مؤهلة
+        return true;
     }
 }

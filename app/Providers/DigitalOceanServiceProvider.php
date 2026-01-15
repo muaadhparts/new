@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Services\ApiCredentialService;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -32,20 +33,24 @@ class DigitalOceanServiceProvider extends ServiceProvider
         }
 
         try {
-            $credentialService = app(ApiCredentialService::class);
+            // استخدام Cache لتجنب query في كل request
+            $credentials = Cache::remember('do_credentials', 3600, function () {
+                $credentialService = app(ApiCredentialService::class);
+                return [
+                    'key' => $credentialService->getDigitalOceanKey(),
+                    'secret' => $credentialService->getDigitalOceanSecret(),
+                ];
+            });
 
-            $accessKey = $credentialService->getDigitalOceanKey();
-            $secretKey = $credentialService->getDigitalOceanSecret();
-
-            // تحديث الـ config إذا وجدت credentials في قاعدة البيانات
-            if ($accessKey) {
-                config(['filesystems.disks.do.key' => $accessKey]);
-                config(['filesystems.disks.s3.key' => $accessKey]);
+            // تحديث الـ config إذا وجدت credentials
+            if (!empty($credentials['key'])) {
+                config(['filesystems.disks.do.key' => $credentials['key']]);
+                config(['filesystems.disks.s3.key' => $credentials['key']]);
             }
 
-            if ($secretKey) {
-                config(['filesystems.disks.do.secret' => $secretKey]);
-                config(['filesystems.disks.s3.secret' => $secretKey]);
+            if (!empty($credentials['secret'])) {
+                config(['filesystems.disks.do.secret' => $credentials['secret']]);
+                config(['filesystems.disks.s3.secret' => $credentials['secret']]);
             }
 
         } catch (\Exception $e) {

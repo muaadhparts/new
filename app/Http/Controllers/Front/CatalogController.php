@@ -47,20 +47,20 @@ class CatalogController extends FrontBaseController
         return view('frontend.catalog-items', $data);
     }
 
-    // -------------------------------- CATEGORY SECTION ----------------------------------------
+    // -------------------------------- CATALOG SECTION ----------------------------------------
 
     /**
-     * Unified 5-level category route
-     * Structure: /category/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
+     * Unified 5-level catalog route
+     * Structure: /catalog/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
      *
      * @param Request $request
-     * @param string|null $slug Brand slug (e.g., "nissan")
-     * @param string|null $slug1 Catalog slug (e.g., "safari-patrol-1997")
-     * @param string|null $slug2 NewCategory L1 slug (e.g., "engine")
-     * @param string|null $slug3 NewCategory L2 slug (e.g., "cooling")
-     * @param string|null $slug4 NewCategory L3 slug (e.g., "radiator")
+     * @param string|null $brand Brand slug (e.g., "nissan")
+     * @param string|null $catalog Catalog slug (e.g., "safari-patrol-1997")
+     * @param string|null $cat1 NewCategory L1 slug (e.g., "engine")
+     * @param string|null $cat2 NewCategory L2 slug (e.g., "cooling")
+     * @param string|null $cat3 NewCategory L3 slug (e.g., "radiator")
      */
-    public function category(Request $request, $slug = null, $slug1 = null, $slug2 = null, $slug3 = null, $slug4 = null)
+    public function catalog(Request $request, $brand = null, $catalog = null, $cat1 = null, $cat2 = null, $cat3 = null)
     {
         // Handle view mode
         if ($request->view_check) {
@@ -76,13 +76,13 @@ class CatalogController extends FrontBaseController
         // Pass all 5 levels: brand, catalog, cat1, cat2, cat3
         $data = $this->filterService->getCatalogItemResults(
             $request,
-            $slug,       // Brand slug
-            $slug1,      // Catalog slug
-            $slug2,      // NewCategory L1 slug
+            $brand,      // Brand slug
+            $catalog,    // Catalog slug
+            $cat1,       // NewCategory L1 slug
             $perPage,
             $currValue,
-            $slug3,      // NewCategory L2 slug
-            $slug4       // NewCategory L3 slug
+            $cat2,       // NewCategory L2 slug
+            $cat3        // NewCategory L3 slug
         );
 
         if ($request->ajax()) {

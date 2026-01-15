@@ -1,11 +1,8 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('styles')
-
 <link href="{{asset('assets/operator/css/jquery-ui.css')}}" rel="stylesheet" type="text/css">
-
 @endsection
-
 
 @section('content')
 
@@ -36,7 +33,7 @@
                     <div class="catalogItem-description">
                       <div class="body-area">
                         <div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
-                        @include('alerts.operator.form-both') 
+                        @include('alerts.operator.form-both')
                       <form id="muaadhform" action="{{route('operator-discount-code-update',$data->id)}}" method="POST" enctype="multipart/form-data">
                         {{csrf_field()}}
 
@@ -48,7 +45,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control" name="code" placeholder="{{ __('Enter Code') }}" required="" value="{{$data->code}}">
+                            <input type="text" class="form-control" name="code" placeholder="{{ __('Enter Code') }}" required="" value="{{ $data->code }}">
                           </div>
                         </div>
 
@@ -56,79 +53,16 @@
                           <div class="col-lg-4">
                             <div class="left-area">
                                 <h4 class="heading">{{ __('Merchant') }}</h4>
+                                <p class="sub-heading">{{ __('(Optional)') }}</p>
                             </div>
                           </div>
                           <div class="col-lg-7">
                               <select name="user_id">
-                                  <option value="">{{ __('Select Merchant') }}</option>
+                                  <option value="">{{ __('All Merchants') }}</option>
                                   @foreach($merchants as $merchant)
                                     <option value="{{ $merchant->id }}" {{ $data->user_id == $merchant->id ? 'selected' : '' }}>{{ $merchant->shop_name ?? $merchant->name }}</option>
                                   @endforeach
                               </select>
-                          </div>
-                        </div>
-
-                        <div class="row">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-                                <h4 class="heading">{{ __('Allow CatalogItem Type') }}*</h4>
-                            </div>
-                          </div>
-                          <div class="col-lg-7">
-                              <select  name="apply_to" required="" id="select_apply_to">
-                                  <option value="">{{ __('Select Type') }}</option>
-                                  <option value="category" {{$data->apply_to == 'category' ? 'selected' : ''}} >{{ __('Category') }}</option>
-                                  <option value="sub_category" {{$data->apply_to == 'sub_category' ? 'selected' : ''}}>{{ __('Sub Category') }}</option>
-                                  <option value="child_category" {{$data->apply_to == 'child_category' ? 'selected' : ''}}>{{ __('Child Category') }}</option>
-                              </select>
-                          </div>
-                        </div>
-
-                        <div class="row {{$data->category ? '' :'d-none'}}" id="category">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-                                <h4 class="heading">{{ __('Category') }}*</h4>
-                            </div>
-                          </div>
-                          <div class="col-lg-7">
-                              <select  name="category">
-                                  <option value="">{{ __('Select Category') }}</option>
-                                    @foreach($categories as $cat)
-                                      <option value="{{ $cat->id }}" {{$data->category == $cat->id ? 'selected':''}} >{{ $cat->name }}</option>
-                                    @endforeach
-                                </select>
-                          </div>
-                        </div>
-
-                        <div class="row {{$data->sub_category ? '' :'d-none'}}" id="sub_category">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-                                <h4 class="heading">{{ __('Subcategory') }}*</h4>
-                            </div>
-                          </div>
-                          <div class="col-lg-7">
-                              <select  name="sub_category" >
-                                  <option value="">{{ __('Select Subcategory') }}</option>
-                                    @foreach($sub_categories as $scat)
-                                      <option value="{{ $scat->id }}" {{$data->sub_category == $scat->id ? 'selected':''}}>{{ $scat->name }}</option>
-                                    @endforeach
-                                </select>
-                          </div>
-                        </div>
-
-                        <div class="row {{$data->child_category ? '' :'d-none'}}" id="child_category">
-                          <div class="col-lg-4">
-                            <div class="left-area">
-                                <h4 class="heading">{{ __('Child Category') }}*</h4>
-                            </div>
-                          </div>
-                          <div class="col-lg-7">
-                              <select  name="child_category" >
-                                  <option value="">{{ __('Select Child Category') }}</option>
-                                    @foreach($child_categories as $ccat)
-                                      <option value="{{ $ccat->id }}" {{$data->child_category == $ccat->id ? 'selected':''}}>{{ $ccat->name }}</option>
-                                    @endforeach
-                                </select>
                           </div>
                         </div>
 
@@ -141,22 +75,20 @@
                           <div class="col-lg-7">
                               <select id="type" name="type" required="">
                                 <option value="">{{ __('Choose a type') }}</option>
-                                <option value="0" {{$data->type == 0 ? "selected":""}}>{{ __('Discount By Percentage') }}</option>
-                                <option value="1" {{$data->type == 1 ? "selected":""}}>{{ __('Discount By Amount') }}</option>
+                                <option value="0" {{ $data->type == 0 ? 'selected' : '' }}>{{ __('Discount By Percentage') }}</option>
+                                <option value="1" {{ $data->type == 1 ? 'selected' : '' }}>{{ __('Discount By Amount') }}</option>
                               </select>
                           </div>
                         </div>
 
-                        
-
-                        <div class="row hidden">
+                        <div class="row" id="price-row" style="{{ $data->type !== null ? 'display: flex;' : 'display: none;' }}">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading"></h4>
+                                <h4 class="heading" id="price-label">{{ $data->type == 0 ? __('Percentage') : __('Amount') }} *</h4>
                             </div>
                           </div>
                           <div class="col-lg-3">
-                            <input type="text" class="form-control less-width" name="price" placeholder="" required="" value="{{$data->price}}"><span></span>
+                            <input type="number" step="0.01" min="0" class="form-control less-width" name="price" placeholder="{{ $data->type == 0 ? __('Enter Percentage') : __('Enter Amount') }}" required="" value="{{ $data->price }}"><span id="price-suffix">{{ $data->type == 0 ? '%' : $curr->sign }}</span>
                           </div>
                         </div>
 
@@ -167,34 +99,32 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                              <select id="times" required="">
-                                <option value="0" {{$data->times == null ? "selected":""}}>{{ __('Unlimited') }}</option>
-                                <option value="1" {{$data->times != null ? "selected":""}}>{{ __('Limited') }}</option>
+                              <select id="times-type" required="">
+                                <option value="0" {{ empty($data->times) ? 'selected' : '' }}>{{ __('Unlimited') }}</option>
+                                <option value="1" {{ !empty($data->times) ? 'selected' : '' }}>{{ __('Limited') }}</option>
                               </select>
                           </div>
                         </div>
 
-                        <div class="row hidden">
+                        <div class="row" id="times-row" style="{{ !empty($data->times) ? 'display: flex;' : 'display: none;' }}">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Value') }} *</h4>
+                                <h4 class="heading">{{ __('Usage Limit') }} *</h4>
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control less-width" name="times" placeholder="{{ __('Enter Value') }}" value="{{$data->times}}"><span></span>
+                            <input type="number" min="1" class="form-control less-width" name="times" placeholder="{{ __('Enter Usage Limit') }}" value="{{ $data->times }}">
                           </div>
                         </div>
-
 
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
                                 <h4 class="heading">{{ __('Start Date') }} *</h4>
-                                <p class="sub-heading">{{ __('(In Any Language)') }}</p>
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control" name="start_date" autocomplete="off" id="from" placeholder="{{ __('Select a date') }}" required="" value="{{$data->start_date}}">
+                            <input type="text" class="form-control" name="start_date" autocomplete="off" id="from" placeholder="{{ __('Select a date') }}" required="" value="{{ $data->start_date }}">
                           </div>
                         </div>
 
@@ -202,11 +132,10 @@
                           <div class="col-lg-4">
                             <div class="left-area">
                                 <h4 class="heading">{{ __('End Date') }} *</h4>
-                                <p class="sub-heading">{{ __('(In Any Language)') }}</p>
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control" name="end_date" id="to" autocomplete="off" placeholder="{{ __('Select a date') }}" required="" value="{{$data->end_date}}">
+                            <input type="text" class="form-control" name="end_date" id="to" autocomplete="off" placeholder="{{ __('Select a date') }}" required="" value="{{ $data->end_date }}">
                           </div>
                         </div>
 
@@ -214,7 +143,7 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                              
+
                             </div>
                           </div>
                           <div class="col-lg-7">
@@ -235,123 +164,55 @@
 
 <script type="text/javascript">
 
-{{-- Discount Function --}}
-
-(function () {
-
-      var val = $('#type').val();
-      var selector = $('#type').parent().parent().next();
-      if(val == "")
-      {
-        selector.hide();
-      }
-      else {
-        if(val == 0)
-        {
-          selector.find('.heading').html('{{ __('Percentage') }} *');
-          selector.find('input').attr("placeholder", "{{ __('Enter Percentage') }}").next().html('%');
-          selector.css('display','flex');
-        }
-        else if(val == 1){
-          selector.find('.heading').html('{{ __('Amount') }} *');
-          selector.find('input').attr("placeholder", "{{ __('Enter Amount') }}").next().html('$');
-          selector.css('display','flex');
-        }
-      }
-})();
-
-{{-- Discount Type --}}
-
-    $('#type').on('change', function() {
-      var val = $(this).val();
-      var selector = $(this).parent().parent().next();
-      if(val == "")
-      {
-        selector.hide();
-      }
-      else {
-        if(val == 0)
-        {
-          selector.find('.heading').html('{{ __('Percentage') }} *');
-          selector.find('input').attr("placeholder", "{{ __('Enter Percentage') }}").next().html('%');
-          selector.css('display','flex');
-        }
-        else if(val == 1){
-          selector.find('.heading').html('{{ __('Amount') }} *');
-          selector.find('input').attr("placeholder", "{{ __('Enter Amount') }}").next().html('$');
-          selector.css('display','flex');
-        }
-      }
-    });
-
-
-{{-- Discount Qty --}}
-
-
-
-(function () {
-
-    var val = $("#times").val();
-    var selector = $("#times").parent().parent().next();
-    if(val == 1){
-    selector.css('display','flex');
-    }
-    else{
-    selector.find('input').val("");
-    selector.hide();    
-    }
-
-})();
-
-
-  $(document).on("change", "#times" , function(){
+// Discount Type - عرض/إخفاء حقل السعر
+$('#type').on('change', function() {
     var val = $(this).val();
-    var selector = $(this).parent().parent().next();
-    if(val == 1){
-    selector.css('display','flex');
-    }
-    else{
-    selector.find('input').val("");
-    selector.hide();    
+    var priceRow = $('#price-row');
+
+    if (val === "") {
+        priceRow.hide();
+    } else {
+        if (val == 0) {
+            $('#price-label').html('{{ __('Percentage') }} *');
+            $('input[name="price"]').attr("placeholder", "{{ __('Enter Percentage') }}");
+            $('#price-suffix').html('%');
+        } else {
+            $('#price-label').html('{{ __('Amount') }} *');
+            $('input[name="price"]').attr("placeholder", "{{ __('Enter Amount') }}");
+            $('#price-suffix').html('{{ $curr->sign }}');
+        }
+        priceRow.css('display', 'flex');
     }
 });
 
-</script>
+// Quantity Type - عرض/إخفاء حقل عدد الاستخدامات
+$('#times-type').on('change', function() {
+    var val = $(this).val();
+    var timesRow = $('#times-row');
 
-<script type="text/javascript">
-    var dateToday = new Date();
-    var dates =  $( "#from,#to" ).datepicker({
-        defaultDate: "+1w",
-        changeMonth: true,
-        changeYear: true,
-        minDate: dateToday,
-        onSelect: function(selectedDate) {
+    if (val == 1) {
+        timesRow.css('display', 'flex');
+        $('input[name="times"]').prop('required', true);
+    } else {
+        timesRow.hide();
+        $('input[name="times"]').val('').prop('required', false);
+    }
+});
+
+// Date Picker
+var dates = $("#from, #to").datepicker({
+    defaultDate: "+1w",
+    changeMonth: true,
+    changeYear: true,
+    dateFormat: 'yy-mm-dd',
+    onSelect: function(selectedDate) {
         var option = this.id == "from" ? "minDate" : "maxDate",
-          instance = $(this).data("datepicker"),
-          date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
-          dates.not(this).datepicker("option", option, date);
+            instance = $(this).data("datepicker"),
+            date = $.datepicker.parseDate(instance.settings.dateFormat || $.datepicker._defaults.dateFormat, selectedDate, instance.settings);
+        dates.not(this).datepicker("option", option, date);
     }
 });
 
-
-
-$(document).on('change','#select_apply_to',function(){
-  let apply_to = $(this).val();
-  if(apply_to == 'category'){
-    $('#category').removeClass('d-none');
-    $('#child_category').addClass('d-none');
-    $('#sub_category').addClass('d-none');
-  }else if(apply_to =='sub_category'){
-    $('#category').addClass('d-none');
-    $('#child_category').addClass('d-none');
-    $('#sub_category').removeClass('d-none');
-  }else{
-    $('#category').addClass('d-none');
-    $('#child_category').removeClass('d-none');
-    $('#sub_category').addClass('d-none');
-  }
-})
 </script>
 
 @endsection
-

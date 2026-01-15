@@ -3,38 +3,33 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use Illuminate\Support\Facades\Session;
-use App\Models\Language;
-use App\Models\Currency;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * LocalizationMiddleware
+ *
+ * @deprecated تم نقل كل الوظائف إلى GlobalDataMiddleware
+ *
+ * هذا الـ middleware أصبح pass-through فقط للتوافق مع الـ routes القديمة
+ * التي تستخدم 'localization' middleware alias.
+ *
+ * GlobalDataMiddleware يقوم الآن بـ:
+ * - تحميل اللغة والعملة
+ * - تعيين locale
+ * - مشاركة البيانات مع الـ views
+ */
 class LocalizationMiddleware
 {
-    public function handle($request, $next)
+    /**
+     * Handle an incoming request.
+     *
+     * @deprecated Use GlobalDataMiddleware instead
+     */
+    public function handle(Request $request, Closure $next): Response
     {
-        // Language setup
-        if (Session::has('language')) {
-            $language = Language::find(Session::get('language'));
-        } else {
-            $language = Language::where('is_default', 1)->first();
-        }
-
-        // Currency setup
-        if (Session::has('currency')) {
-            $currency = Currency::find(Session::get('currency'));
-        } else {
-            $currency = Currency::where('is_default', 1)->first();
-        }
-
-        // Share variables with all views
-        view()->share('langg', $language);
-        app()->setLocale($language->name);
-        // dd($language);
-        // Popup handling
-        if (!Session::has('popup')) {
-            view()->share('visited', 1);
-        }
-        Session::put('popup', 1);
-
+        // تم نقل كل المنطق إلى GlobalDataMiddleware
+        // هذا الـ middleware يمرر الـ request فقط للتوافق
         return $next($request);
     }
 }

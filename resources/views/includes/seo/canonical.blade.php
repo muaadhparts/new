@@ -91,14 +91,14 @@
                     "@type": "ListItem",
                     "position": 2,
                     "name": {!! json_encode(__('Catalog')) !!},
-                    "item": {!! json_encode(route('front.category')) !!}
+                    "item": {!! json_encode(route('front.catalog')) !!}
                 }
                 @if($catalogItem->brand)
                 ,{
                     "@type": "ListItem",
                     "position": 3,
                     "name": {!! json_encode($catalogItem->brand->name) !!},
-                    "item": {!! json_encode(route('front.category', ['category' => $catalogItem->brand->slug])) !!}
+                    "item": {!! json_encode(route('front.catalog', ['category' => $catalogItem->brand->slug])) !!}
                 },
                 {
                     "@type": "ListItem",

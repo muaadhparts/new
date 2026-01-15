@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
+use App\Models\MerchantCommission;
+use App\Models\MerchantItem;
 use App\Models\Muaadhsetting;
 use App\Models\MembershipPlan;
 use App\Models\User;
@@ -136,12 +138,74 @@ class MerchantController extends OperatorBaseController
     //*** GET Request
     public function show($id)
     {
-        $data = User::with([
-            'merchantItems' => function($query) {
-                $query->with(['catalogItem.brand', 'qualityBrand', 'user']);
-            }
-        ])->findOrFail($id);
+        $data = User::findOrFail($id);
         return view('operator.merchant.show', compact('data'));
+    }
+
+    //*** JSON Request - Merchant Items DataTables
+    public function merchantItemsDatatables($id)
+    {
+        $datas = MerchantItem::with(['catalogItem.brand', 'qualityBrand'])
+            ->where('user_id', $id)
+            ->latest('id');
+
+        $commission = MerchantCommission::getOrCreateForMerchant($id);
+
+        return Datatables::of($datas)
+            ->addColumn('mp_id', function (MerchantItem $data) {
+                $dt = $data->catalogItem;
+                $adminMerchantUrl = $dt && $dt->slug
+                    ? route('front.catalog-item', ['slug' => $dt->slug, 'merchant_id' => $data->user_id, 'merchant_item_id' => $data->id])
+                    : '#';
+                return '<a href="' . $adminMerchantUrl . '" target="_blank">' . sprintf("%'.06d", $data->id) . '</a>';
+            })
+            ->addColumn('name', function (MerchantItem $data) {
+                $dt = $data->catalogItem;
+                return $dt ? getLocalizedCatalogItemName($dt, 50) : __('N/A');
+            })
+            ->addColumn('brand', function (MerchantItem $data) {
+                $dt = $data->catalogItem;
+                return $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A');
+            })
+            ->addColumn('quality_brand', function (MerchantItem $data) {
+                return $data->qualityBrand ? getLocalizedQualityName($data->qualityBrand) : __('N/A');
+            })
+            ->addColumn('condition', function (MerchantItem $data) {
+                $condition = $data->item_condition == 1 ? __('Used') : __('New');
+                $class = $data->item_condition == 1 ? 'badge-warning' : 'badge-success';
+                return '<span class="badge ' . $class . '">' . $condition . '</span>';
+            })
+            ->addColumn('stock', function (MerchantItem $data) {
+                $stck = $data->stock;
+                if ($stck === null || $stck === '') {
+                    return __('Unlimited');
+                } elseif ((int)$stck === 0) {
+                    return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
+                }
+                return $stck;
+            })
+            ->addColumn('price', function (MerchantItem $data) use ($commission) {
+                $price = (float) $data->price;
+                $finalPrice = $commission->getPriceWithCommission($price);
+                return \PriceHelper::showAdminCurrencyPrice($finalPrice);
+            })
+            ->addColumn('status', function (MerchantItem $data) {
+                $class = $data->status == 1 ? 'drop-success' : 'drop-danger';
+                return '<div class="action-list">
+                    <select class="process select droplinks ' . $class . '">
+                        <option data-val="1" value="' . route('operator-merchant-item-status', ['id' => $data->id, 'status' => 1]) . '" ' . ($data->status == 1 ? 'selected' : '') . '>' . __("Activated") . '</option>
+                        <option data-val="0" value="' . route('operator-merchant-item-status', ['id' => $data->id, 'status' => 0]) . '" ' . ($data->status == 0 ? 'selected' : '') . '>' . __("Deactivated") . '</option>
+                    </select>
+                </div>';
+            })
+            ->addColumn('action', function (MerchantItem $data) {
+                $dt = $data->catalogItem;
+                return '<a href="' . route('operator-catalog-item-edit', $dt->id ?? 0) . '" class="view-details">
+                    <i class="fas fa-eye"></i>' . __("Details") . '
+                </a>';
+            })
+            ->rawColumns(['mp_id', 'condition', 'stock', 'status', 'action'])
+            ->toJson();
     }
 
     //*** GET Request

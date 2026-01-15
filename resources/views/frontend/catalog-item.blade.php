@@ -10,7 +10,7 @@
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         @if ($catalogItem->brand)
-                            <li><a href="{{ route('front.category', $catalogItem->brand->slug) }}">{{ $catalogItem->brand->localized_name }}</a></li>
+                            <li><a href="{{ route('front.catalog', $catalogItem->brand->slug) }}">{{ $catalogItem->brand->localized_name }}</a></li>
                         @endif
                         <li><a href="javascript:;">{{ Str::limit($catalogItem->localized_name, 30) }}</a></li>
                     </ul>

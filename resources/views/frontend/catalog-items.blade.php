@@ -99,7 +99,7 @@
                                         $currentLevel3Slug = Request::segment(6);
 
                                         // Resolve ONLY what's needed (no recursive loading)
-                                        $selectedBrand = $currentBrandSlug ? $categories->firstWhere('slug', $currentBrandSlug) : null;
+                                        $selectedBrand = $currentBrandSlug ? $brands->firstWhere('slug', $currentBrandSlug) : null;
 
                                         // Load catalogs ONLY for selected brand
                                         $brandCatalogs = $selectedBrand
@@ -131,10 +131,10 @@
                                         <label class="step-label">@lang('Brand')</label>
                                         <select class="form-select category-select" id="brand-select">
                                             <option value="">-- @lang('Select Brand') --</option>
-                                            @foreach ($categories as $brand)
+                                            @foreach ($brands as $brand)
                                                 <option value="{{ $brand->slug }}"
                                                     {{ $currentBrandSlug === $brand->slug ? 'selected' : '' }}>
-                                                    {{ $brand->localized_name }}
+                                                    {{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -203,7 +203,7 @@
                                     {!! json_encode([
                                         'catalogs' => route('front.api.catalogs'),
                                         'tree' => route('front.api.tree'),
-                                        'category' => route('front.category')
+                                        'category' => route('front.catalog')
                                     ]) !!}
                                 </script>
 
@@ -319,7 +319,7 @@
                             @endif
                         @endif
 
-                        {{-- <a href="{{ route('front.category') }}" class="template-btn dark-btn">Clear Filter</a> --}}
+                        {{-- <a href="{{ route('front.catalog') }}" class="template-btn dark-btn">Clear Filter</a> --}}
 
                         <!-- Merchant Filter -->
                         @if(isset($merchants) && $merchants->count() > 0)
@@ -586,7 +586,7 @@
             // ========================================
             // Category Items AJAX System
             // ========================================
-            const baseUrl = '{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
+            const baseUrl = '{{ route('front.catalog', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
             const $scrollContainer = $('.category-catalogItems-scroll');
             const $itemsContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
@@ -858,7 +858,7 @@
 
             // API URLs
             const apiUrls = JSON.parse($('#category-api-urls').text() || '{}');
-            const categoryBaseUrl = apiUrls.category || '{{ route("front.category") }}';
+            const categoryBaseUrl = apiUrls.category || '{{ route("front.catalog") }}';
 
             // Reference to AJAX system
             const $scrollContainer = $('.category-catalogItems-scroll');

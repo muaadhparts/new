@@ -41,13 +41,13 @@
                     </div>
                 </div>
 
-                {{-- Column 2: Categories --}}
+                {{-- Column 2: Brands --}}
                 <div class="muaadh-footer-col">
-                    <h5 class="muaadh-footer-title">@lang('Categories')</h5>
+                    <h5 class="muaadh-footer-title">@lang('Brands')</h5>
                     <ul class="muaadh-footer-links">
-                        @foreach ($categories->take(6) as $cate)
+                        @foreach ($brands->take(6) as $brand)
                             <li>
-                                <a href="{{ route('front.category', $cate->slug) }}">{{ $cate->name }}</a>
+                                <a href="{{ route('front.catalog', $brand->slug) }}">{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}</a>
                             </li>
                         @endforeach
                     </ul>
@@ -60,7 +60,7 @@
                         @if ($ps->home == 1)
                             <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         @endif
-                        <li><a href="{{ route('front.category') }}">@lang('CatalogItems')</a></li>
+                        <li><a href="{{ route('front.catalog') }}">@lang('CatalogItems')</a></li>
                         @if ($ps->contact == 1)
                             <li><a href="{{ route('front.contact') }}">@lang('Contact Us')</a></li>
                         @endif

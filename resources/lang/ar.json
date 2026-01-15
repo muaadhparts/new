@@ -1317,7 +1317,8 @@
     "Size Price :": "سعر الحجم :",
     "Size Qty": "كمية الحجم",
     "Size Qty :": "الكمية حسب الحجم:",
-    "PART_NUMBER": "كود المنتج",
+    "PART_NUMBER": "رقم القطعة",
+    "Condition": "الحالة",
     "Slider": "سلايدر",
     "SLIDER": "السلايدر",
     "Sliders": "السلايدرات",
@@ -3849,7 +3850,14 @@
     "International payment gateway": "بوابة دفع دولية",
     "Online payment system": "نظام دفع إلكتروني",
     "Customer Top Ups": "شحن رصيد العملاء",
-    "Brands": "العلامات التجارية"
+    "Brands": "العلامات التجارية",
+
+    "Apply Scope": "نطاق التطبيق",
+    "All Brands": "جميع العلامات التجارية",
+    "All Catalogs": "جميع الكتالوجات",
+    "Usage Limit": "حد الاستخدام",
+    "Enter Usage Limit": "أدخل حد الاستخدام",
+    "View Discount Code Lists": "عرض قائمة أكواد الخصم"
 }
 
 

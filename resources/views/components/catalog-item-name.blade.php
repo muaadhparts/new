@@ -75,12 +75,12 @@
         );
 
         // Keep catalog-item route for:
-        // 1. search-results-page and category pages (front.category)
+        // 1. search-results-page and category pages (front.catalog)
         // 2. merchant dashboard (all merchant pages)
         // 3. admin purchases and invoices (merchant-specific pages)
         // 4. cart, checkout, and purchase pages (user)
         $keepCatalogItemRoute =
-            in_array($currentRouteName, ['search.result', 'front.category']) ||
+            in_array($currentRouteName, ['search.result', 'front.catalog']) ||
             str_starts_with($currentPath, 'merchant/') ||
             $isAdminPurchaseOrInvoice ||
             str_starts_with($currentPath, 'user/purchase') ||

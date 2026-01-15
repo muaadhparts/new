@@ -27,43 +27,43 @@ class CatalogReview extends Model
     }
 
     public static function averageScore($catalogItemId){
-        $stars = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->avg('rating');
+        $stars = self::where('catalog_item_id', $catalogItemId)->avg('rating');
         return number_format($stars,1);
     }
 
     public static function scorePercentage($catalogItemId){
-        $stars = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->avg('rating');
+        $stars = self::where('catalog_item_id', $catalogItemId)->avg('rating');
         $percentage = number_format((float)$stars, 1, '.', '') * 20;
         return $percentage;
     }
 
     public static function reviewCount($catalogItemId){
-        $count = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->count();
+        $count = self::where('catalog_item_id', $catalogItemId)->count();
         return number_format($count);
     }
 
     public static function customScorePercentage($catalogItemId, $score){
-        $totalCount = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->count();
+        $totalCount = self::where('catalog_item_id', $catalogItemId)->count();
         if($totalCount == 0){
             return 0;
         }
-        $scoreCount = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->where('rating', $score)->count();
+        $scoreCount = self::where('catalog_item_id', $catalogItemId)->where('rating', $score)->count();
         $avg = ($scoreCount / $totalCount) * 100;
         return $avg;
     }
 
     public static function customReviewPercentage($catalogItemId, $score){
-        $totalCount = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->count();
+        $totalCount = self::where('catalog_item_id', $catalogItemId)->count();
         if($totalCount == 0){
             return 0;
         }
-        $scoreCount = CatalogTestimonial::where('catalog_item_id', $catalogItemId)->where('rating', $score)->count();
+        $scoreCount = self::where('catalog_item_id', $catalogItemId)->where('rating', $score)->count();
         $avg = ($scoreCount / $totalCount) * 100;
         return round($avg, 2).'%';
     }
 
     public static function merchantScorePercentage($user_id){
-        $stars = CatalogTestimonial::whereHas('merchantItem', function($query) use ($user_id) {
+        $stars = self::whereHas('merchantItem', function($query) use ($user_id) {
             $query->where('user_id', '=', $user_id);
         })->avg('rating');
         $percentage = number_format((float)$stars, 1, '.', '') * 20;
@@ -71,7 +71,7 @@ class CatalogReview extends Model
     }
 
     public static function merchantReviewCount($user_id){
-        $count = CatalogTestimonial::whereHas('merchantItem', function($query) use ($user_id) {
+        $count = self::whereHas('merchantItem', function($query) use ($user_id) {
             $query->where('user_id', '=', $user_id);
         })->count();
         return $count;

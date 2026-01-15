@@ -93,10 +93,7 @@
     </div>
 
 
-    @php
-    $categories = App\Models\Category::with('subs')->where('status',1)->get();
-    $static_content = App\Models\StaticContent::get();
-    @endphp
+    {{-- $brands و $static_content متاحة من GlobalDataMiddleware --}}
     <div class="main-nav py-4 d-none d-lg-block">
         <div class="container-fluid">
             <div class="row">
@@ -111,29 +108,29 @@
                         </button>
                         <div class="collapse navbar-collapse" id="navbarSupportedContent">
                             <ul class="navbar-nav ms-md-5">
-                               
+
                                 <li class="nav-item dropdown {{ request()->path() == '/' ? 'active':''}}">
                                     <a class="nav-link dropdown-toggle" href="{{ route('front.index') }}">{{ __('Home')
                                         }}</a>
                                 </li>
                                 @if ($ps->home == 1)
                                 <li class="nav-item dropdown mega-dropdown">
-                                    <a class="nav-link dropdown-toggle" href="{{ route('front.category') }}">{{
+                                    <a class="nav-link dropdown-toggle" href="{{ route('front.catalog') }}">{{
                                         __('CatalogItem') }}</a>
                                     <ul class="dropdown-menu mega-dropdown-menu">
                                         <li class="mega-container">
                                             <div class="row row-cols-lg-4 row-cols-sm-2 row-cols-1">
 
-                                                @foreach ($categories as $category)
+                                                @foreach ($brands as $brand)
                                                 <div class="col">
                                                     <span
                                                         class="d-inline-block px-3 font-600 text-uppercase text-secondary pb-2">{{
-                                                        $category->name }}</span>
+                                                        app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}</span>
                                                     <ul>
-                                                        @if($category->subs->count() > 0)
-                                                        @foreach ($category->subs as $subcategory)
+                                                        @if($brand->catalogs->count() > 0)
+                                                        @foreach ($brand->catalogs as $catalog)
                                                         <li><a class="dropdown-item"
-                                                                href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search='.request()->input('search') : ''}}">{{$subcategory->name}}</a>
+                                                                href="{{route('front.catalog', [$brand->slug, $catalog->slug])}}{{!empty(request()->input('search')) ? '?search='.request()->input('search') : ''}}">{{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}</a>
                                                         </li>
                                                         @endforeach
                                                         @endif
@@ -182,7 +179,7 @@
                     <div class="margin-right-1 d-flex align-items-center justify-content-end h-100">
                         <div class="catalogItem-search-one flex-grow-1 global-search touch-screen-view">
                             <form id="searchForm" class="search-form form-inline search-pill-shape"
-                                action="{{ route('front.category', [Request::route('category'),Request::route('subcategory'),Request::route('childcategory')]) }}"
+                                action="{{ route('front.catalog', [Request::route('category'),Request::route('subcategory'),Request::route('childcategory')]) }}"
                                 method="GET">
 
                                 @if (!empty(request()->input('sort')))
@@ -198,11 +195,11 @@
                                     placeholder="@lang('Search CatalogItem For')" value="{{ request()->input('search') }}">
                                 <div class=" categori-container select-appearance-none " id="catSelectForm">
                                     <select name="category" class="form-control categoris select2-js-search-init">
-                                        <option selected="">{{ __('All Categories') }}</option>
-                                        @foreach($categories->where('status',1) as $data)
-                                        <option value="{{ $data->slug }}" {{ Request::route('category')==$data->slug ?
+                                        <option selected="">{{ __('All Brands') }}</option>
+                                        @foreach($brands as $brand)
+                                        <option value="{{ $brand->slug }}" {{ Request::route('category')==$brand->slug ?
                                             'selected' : '' }}>
-                                            {{ $data->name }}
+                                            {{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}
                                         </option>
                                         @endforeach
                                     </select>
@@ -309,7 +306,7 @@
                                                                 __('Home') }}</a>
                                                         </li>
                                                         <li class="nav-item ">
-                                                            <a class="nav-link" href="{{ route('front.category') }}">{{
+                                                            <a class="nav-link" href="{{ route('front.catalog') }}">{{
                                                                 __('PRODUCT') }}</a>
                                                         </li>
                                                         <li class="nav-item dropdown">
@@ -343,9 +340,9 @@
                                                 aria-labelledby="pills-push-categories-tab">
                                                 <div class="categories-menu">
                                                     <ul class="menu">
-                                                        @foreach ($categories as $category)
+                                                        @foreach ($brands as $brand)
                                                         <li class="menu-item-has-children"><a
-                                                                href="{{route('front.category',$category->slug)}}">{{$category->name}}</a>
+                                                                href="{{route('front.catalog',$brand->slug)}}">{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}</a>
                                                         </li>
                                                         @endforeach
                                                     </ul>
@@ -437,7 +434,7 @@
                     <div class="catalogItem-search-one">
 
                         <form id="searchForm" class="search-form form-inline search-pill-shape"
-                            action="{{ route('front.category', [Request::route('category'),Request::route('subcategory'),Request::route('childcategory')]) }}"
+                            action="{{ route('front.catalog', [Request::route('category'),Request::route('subcategory'),Request::route('childcategory')]) }}"
                             method="GET">
 
                             @if (!empty(request()->input('sort')))
@@ -453,11 +450,11 @@
                                 placeholder="@lang('Search CatalogItem For')" value="{{ request()->input('search') }}">
                             <div class=" categori-container select-appearance-none " id="catSelectForm">
                                 <select name="category" class="form-control categoris select2-js-search-init">
-                                    <option selected="">{{ __('All Categories') }}</option>
-                                    @foreach($categories->where('status',1) as $data)
-                                    <option value="{{ $data->slug }}" {{ Request::route('category')==$data->slug ?
+                                    <option selected="">{{ __('All Brands') }}</option>
+                                    @foreach($brands as $brand)
+                                    <option value="{{ $brand->slug }}" {{ Request::route('category')==$brand->slug ?
                                         'selected' : '' }}>
-                                        {{ $data->name }}
+                                        {{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}
                                     </option>
                                     @endforeach
                                 </select>

@@ -580,6 +580,7 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchants', 'Operator\MerchantController@index')->name('operator-merchant-index');
 
         Route::get('/merchants/{id}/show', 'Operator\MerchantController@show')->name('operator-merchant-show');
+        Route::get('/merchants/{id}/items/datatables', 'Operator\MerchantController@merchantItemsDatatables')->name('operator-merchant-items-datatables');
         Route::get('/merchants/secret/login/{id}', 'Operator\MerchantController@secret')->name('operator-merchant-secret');
         Route::get('/merchant/edit/{id}', 'Operator\MerchantController@edit')->name('operator-merchant-edit');
         Route::post('/merchant/edit/{id}', 'Operator\MerchantController@update')->name('operator-merchant-update');
@@ -1717,16 +1718,16 @@ Route::group(['middleware' => 'maintenance'], function () {
     // NEW: Unified catalog tree with recursive category traversal
     // Shows all items from selected category AND all descendants
     // UNIFIED: 5-level category route
-    // Structure: /category/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
+    // Structure: /brands/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}
     // - brand = Brand slug (e.g., "nissan")
     // - catalog = Catalog slug (e.g., "safari-patrol-1997")
     // - cat1/cat2/cat3 = NewCategory slugs (levels 1, 2, 3)
-    Route::get('/category/{category?}/{subcategory?}/{childcategory?}/{cat2?}/{cat3?}', 'Front\CatalogController@category')->name('front.category');
+    Route::get('/brands/{brand?}/{catalog?}/{cat1?}/{cat2?}/{cat3?}', 'Front\CatalogController@catalog')->name('front.catalog');
 
-    // AJAX APIs for category selector (lightweight on-demand loading)
-    Route::get('/api/category/catalogs', 'Front\CatalogController@getCatalogs')->name('front.api.catalogs');
-    Route::get('/api/category/tree', 'Front\CatalogController@getTreeCategories')->name('front.api.tree');
-    // CATEGORY SECTION ENDS
+    // AJAX APIs for catalog selector (lightweight on-demand loading)
+    Route::get('/api/catalog/catalogs', 'Front\CatalogController@getCatalogs')->name('front.api.catalogs');
+    Route::get('/api/catalog/tree', 'Front\CatalogController@getTreeCategories')->name('front.api.tree');
+    // CATALOG SECTION ENDS
 
     // TAG SECTION
     Route::get('/tag/{slug}', 'Front\CatalogController@tag')->name('front.tag');

@@ -118,7 +118,7 @@
         sorting: false,
         paging: false,
 
-        ajax: '{{ route('operator-purchase-catalogItem-datatables') }}',
+        ajax: '{{ route('operator-purchase-catalog-item-datatables') }}',
         columns: [
                 { data: 'name', name: 'name' },
                 { data: 'action', searchable: false, orderable: false }

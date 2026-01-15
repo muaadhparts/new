@@ -1,7 +1,4 @@
-@php
-    $categories = App\Models\Category::with('subs')->where('status', 1)->get();
-    $static_content = App\Models\StaticContent::get();
-@endphp
+{{-- $brands و $static_content متاحة من GlobalDataMiddleware --}}
 @if($ps->newsletter == 1)
     <!--==================== Newsleter Section Start ====================-->
     <div class="full-row bg-dark py-30">
@@ -66,11 +63,11 @@
             </div>
             <div class="col">
                 <div class="footer-widget category-widget my-5">
-                    <h3 class="widget-title mb-4">{{ __('CatalogItem Category') }}</h3>
+                    <h3 class="widget-title mb-4">{{ __('Brands') }}</h3>
                     <ul>
-                        @foreach ($categories->take(6) as $cate)
+                        @foreach ($brands->take(6) as $brand)
                             <li><a
-                                    href="{{route('front.category', $cate->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}">{{ $cate->name }}</a>
+                                    href="{{route('front.catalog', $brand->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}">{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}</a>
                             </li>
                         @endforeach
                     </ul>

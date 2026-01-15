@@ -85,7 +85,7 @@
                     <i class="fas fa-home"></i>
                     <span>@lang('Home')</span>
                 </a>
-                <a href="{{ route('front.category') }}" class="muaadh-mobile-nav-item {{ request()->is('category*') ? 'active' : '' }}">
+                <a href="{{ route('front.catalog') }}" class="muaadh-mobile-nav-item {{ request()->is('brands*') ? 'active' : '' }}">
                     <i class="fas fa-box-open"></i>
                     <span>@lang('CatalogItems')</span>
                 </a>
@@ -152,88 +152,62 @@
         {{-- Categories Tab - Multi-Step Selector --}}
         <div class="muaadh-mobile-tab-pane" id="menu-categories">
             @php
-                $currentCatSlug = Request::segment(2);
-                $currentSubcatSlug = Request::segment(3);
-                $currentChildcatSlug = Request::segment(4);
+                $currentBrandSlug = Request::segment(2);
+                $currentCatalogSlug = Request::segment(3);
 
-                $selectedCat = $categories->firstWhere('slug', $currentCatSlug);
-                $selectedSubcat = $selectedCat && $selectedCat->subs ? $selectedCat->subs->firstWhere('slug', $currentSubcatSlug) : null;
-                $selectedChildcat = $selectedSubcat && $selectedSubcat->childs ? $selectedSubcat->childs->firstWhere('slug', $currentChildcatSlug) : null;
+                $selectedBrand = $brands->firstWhere('slug', $currentBrandSlug);
+                $selectedCatalog = $selectedBrand && $selectedBrand->catalogs ? $selectedBrand->catalogs->firstWhere('slug', $currentCatalogSlug) : null;
             @endphp
 
             <div class="muaadh-mobile-category-selector">
                 {{-- Current Selection Breadcrumb --}}
-                @if($selectedCat)
+                @if($selectedBrand)
                 <div class="muaadh-mobile-selection-breadcrumb">
                     <span class="muaadh-selection-label">@lang('Selected'):</span>
                     <div class="muaadh-selection-tags">
-                        <span class="muaadh-selection-tag primary">{{ $selectedCat->localized_name }}</span>
-                        @if($selectedSubcat)
+                        <span class="muaadh-selection-tag primary">{{ app()->getLocale() == 'ar' ? ($selectedBrand->name_ar ?: $selectedBrand->name) : $selectedBrand->name }}</span>
+                        @if($selectedCatalog)
                             <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
-                            <span class="muaadh-selection-tag secondary">{{ $selectedSubcat->localized_name }}</span>
-                        @endif
-                        @if($selectedChildcat)
-                            <i class="fas fa-chevron-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }}"></i>
-                            <span class="muaadh-selection-tag info">{{ $selectedChildcat->localized_name }}</span>
+                            <span class="muaadh-selection-tag secondary">{{ app()->getLocale() == 'ar' ? ($selectedCatalog->name_ar ?: $selectedCatalog->name) : $selectedCatalog->name }}</span>
                         @endif
                     </div>
-                    <a href="{{ route('front.category') }}" class="muaadh-clear-selection">
+                    <a href="{{ route('front.catalog') }}" class="muaadh-clear-selection">
                         <i class="fas fa-times"></i>
                     </a>
                 </div>
                 @endif
 
-                {{-- Step 1: Main Category --}}
+                {{-- Step 1: Brand --}}
                 <div class="muaadh-mobile-step">
                     <label class="muaadh-mobile-step-label">
                         <i class="fas fa-car"></i>
-                        @lang('Category')
+                        @lang('Brand')
                     </label>
                     <select class="muaadh-mobile-select-input" id="mobile-main-category">
-                        <option value="">-- @lang('Select Category') --</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->slug }}"
-                                data-has-subs="{{ $category->subs && $category->subs->count() > 0 ? '1' : '0' }}"
-                                {{ $currentCatSlug === $category->slug ? 'selected' : '' }}>
-                                {{ $category->localized_name }}
+                        <option value="">-- @lang('Select Brand') --</option>
+                        @foreach ($brands as $brand)
+                            <option value="{{ $brand->slug }}"
+                                data-has-subs="{{ $brand->catalogs && $brand->catalogs->count() > 0 ? '1' : '0' }}"
+                                {{ $currentBrandSlug === $brand->slug ? 'selected' : '' }}>
+                                {{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- Step 2: Subcategory --}}
-                <div class="muaadh-mobile-step {{ $selectedCat && $selectedCat->subs && $selectedCat->subs->count() > 0 ? '' : 'd-none' }}" id="mobile-subcategory-step">
+                {{-- Step 2: Catalog --}}
+                <div class="muaadh-mobile-step {{ $selectedBrand && $selectedBrand->catalogs && $selectedBrand->catalogs->count() > 0 ? '' : 'd-none' }}" id="mobile-subcategory-step">
                     <label class="muaadh-mobile-step-label">
-                        <i class="fas fa-cogs"></i>
-                        @lang('Model')
+                        <i class="fas fa-book"></i>
+                        @lang('Catalog')
                     </label>
                     <select class="muaadh-mobile-select-input" id="mobile-subcategory">
-                        <option value="">-- @lang('Select Model') --</option>
-                        @if($selectedCat && $selectedCat->subs)
-                            @foreach ($selectedCat->subs as $subcategory)
-                                <option value="{{ $subcategory->slug }}"
-                                    data-has-childs="{{ $subcategory->childs && $subcategory->childs->count() > 0 ? '1' : '0' }}"
-                                    {{ $currentSubcatSlug === $subcategory->slug ? 'selected' : '' }}>
-                                    {{ $subcategory->localized_name }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-
-                {{-- Step 3: Child Category --}}
-                <div class="muaadh-mobile-step {{ $selectedSubcat && $selectedSubcat->childs && $selectedSubcat->childs->count() > 0 ? '' : 'd-none' }}" id="mobile-childcategory-step">
-                    <label class="muaadh-mobile-step-label">
-                        <i class="fas fa-puzzle-piece"></i>
-                        @lang('Part Type')
-                    </label>
-                    <select class="muaadh-mobile-select-input" id="mobile-childcategory">
-                        <option value="">-- @lang('Select Part Type') --</option>
-                        @if($selectedSubcat && $selectedSubcat->childs)
-                            @foreach ($selectedSubcat->childs as $child)
-                                <option value="{{ $child->slug }}"
-                                    {{ $currentChildcatSlug === $child->slug ? 'selected' : '' }}>
-                                    {{ $child->localized_name }}
+                        <option value="">-- @lang('Select Catalog') --</option>
+                        @if($selectedBrand && $selectedBrand->catalogs)
+                            @foreach ($selectedBrand->catalogs as $catalog)
+                                <option value="{{ $catalog->slug }}"
+                                    {{ $currentCatalogSlug === $catalog->slug ? 'selected' : '' }}>
+                                    {{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}
                                 </option>
                             @endforeach
                         @endif
@@ -249,26 +223,20 @@
 
             {{-- Hidden JSON Data for JS --}}
             @php
-                $mobileCategoriesJson = $categories->map(function($cat) {
+                $mobileBrandsJson = $brands->map(function($brand) {
                     return [
-                        'slug' => $cat->slug,
-                        'name' => $cat->localized_name,
-                        'subs' => $cat->subs ? $cat->subs->map(function($sub) use ($cat) {
+                        'slug' => $brand->slug,
+                        'name' => app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name,
+                        'subs' => $brand->catalogs ? $brand->catalogs->map(function($catalog) {
                             return [
-                                'slug' => $sub->slug,
-                                'name' => $sub->localized_name,
-                                'childs' => $sub->childs ? $sub->childs->map(function($child) {
-                                    return [
-                                        'slug' => $child->slug,
-                                        'name' => $child->localized_name,
-                                    ];
-                                })->values() : []
+                                'slug' => $catalog->slug,
+                                'name' => app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name,
                             ];
-                        })->values() : []
+                        })->values()->toArray() : []
                     ];
                 })->values();
             @endphp
-            <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileCategoriesJson) !!}</script>
+            <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileBrandsJson) !!}</script>
         </div>
 
         {{-- Account Tab - Using $authUser/$courierUser from HeaderComposer --}}
@@ -536,7 +504,7 @@
 {{-- Mobile Category Selector JavaScript --}}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const mobileBaseUrl = '{{ route("front.category") }}';
+    const mobileBaseUrl = '{{ route("front.catalog") }}';
     let mobileCategoriesData = [];
 
     // Try to parse JSON data

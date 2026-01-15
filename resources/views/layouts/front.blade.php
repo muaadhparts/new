@@ -76,7 +76,7 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     @endif
 
-    {{-- Header data ($categories, $static_content, $currencies, $languges) provided by AppServiceProvider with caching --}}
+    {{-- Header data ($brands, $static_content, $currencies, $languges) provided by GlobalDataMiddleware with caching --}}
     <!-- header area -->
     @include('includes.frontend.header')
 

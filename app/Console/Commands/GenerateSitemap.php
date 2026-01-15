@@ -134,7 +134,7 @@ class GenerateSitemap extends Command
 
         // Add main category page
         $sitemap->add(
-            Url::create(route('front.category'))
+            Url::create(route('front.catalog'))
                 ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
                 ->setPriority(0.9)
         );
@@ -147,7 +147,7 @@ class GenerateSitemap extends Command
         $count = 0;
         foreach ($brands as $brand) {
             $sitemap->add(
-                Url::create(route('front.category', ['category' => $brand->slug]))
+                Url::create(route('front.catalog', ['category' => $brand->slug]))
                     ->setLastModificationDate($brand->updated_at ? Carbon::parse($brand->updated_at) : Carbon::now())
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_WEEKLY)
                     ->setPriority(0.7)
@@ -173,7 +173,7 @@ class GenerateSitemap extends Command
         // Add main category listing
         try {
             $sitemap->add(
-                Url::create(route('front.category'))
+                Url::create(route('front.catalog'))
                     ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
                     ->setPriority(0.9)
             );

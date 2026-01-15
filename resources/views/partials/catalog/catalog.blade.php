@@ -1,50 +1,30 @@
-@php
-    // ✅ N+1 FIX: Eager load subs AND childs
-    $categories = App\Models\Category::with('subs.childs')->withCount('subs')->where('status', 1)->get();
-
-@endphp
+{{-- استخدام $brands من GlobalDataMiddleware --}}
 <div class="col-xl-3">
     <div id="sidebar" class="widget-title-bordered-full">
         <div class="dashbaord-sidebar-close d-xl-none">
             <i class="fas fa-times"></i>
         </div>
         <form id="catalogForm"
-            action="{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
+            action="{{ route('front.catalog', [Request::route('brand'), Request::route('catalog'), Request::route('cat1')]) }}"
             method="GET">
 
             <div id="woocommerce_product_categories-4"
                 class="widget woocommerce widget_product_categories widget-toggle">
-                <h2 class="widget-title">{{ __('CatalogItem categories') }}</h2>
+                <h2 class="widget-title">{{ __('Brands') }}</h2>
                 <ul class="catalogItem-categories">
-                    @foreach ($categories as $category)
+                    @foreach ($brands as $brand)
                         <li class="cat-item cat-parent">
-                            <a href="{{route('front.category', $category->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                class="category-link" id="cat">{{ $category->name }} <span class="count"></span></a>
+                            <a href="{{route('front.catalog', $brand->slug)}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
+                                class="category-link" id="cat">{{ app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name }} <span class="count"></span></a>
 
-                            @if($category->subs_count > 0)
+                            @if($brand->catalogs && $brand->catalogs->count() > 0)
                                 <span class="has-child"></span>
                                 <ul class="children">
-                                    {{-- ✅ N+1 FIX: Use eager-loaded subs --}}
-                                    @foreach ($category->subs as $subcategory)
+                                    @foreach ($brand->catalogs as $catalog)
                                         <li class="cat-item cat-parent">
-                                            <a href="{{route('front.category', [$category->slug, $subcategory->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                                class="category-link {{ isset($subcat) ? ($subcat->id == $subcategory->id ? 'active' : '') : '' }}">{{$subcategory->name}}
+                                            <a href="{{route('front.catalog', [$brand->slug, $catalog->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
+                                                class="category-link">{{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}
                                                 <span class="count"></span></a>
-
-                                            @if($subcategory->childs->count() != 0)
-                                                <span class="has-child"></span>
-                                                <ul class="children">
-                                                    {{-- ✅ N+1 FIX: Use eager-loaded childs --}}
-                                                    @foreach ($subcategory->childs as $childelement)
-                                                        <li class="cat-item ">
-                                                            <a href="{{route('front.category', [$category->slug, $subcategory->slug, $childelement->slug])}}{{!empty(request()->input('search')) ? '?search=' . request()->input('search') : ''}}"
-                                                                class="category-link {{ isset($childcat) ? ($childcat->id == $childelement->id ? 'active' : '') : '' }}">
-                                                                {{$childelement->name}} <span class="count"></span></a>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-
-                                            @endif
                                         </li>
                                     @endforeach
                                 </ul>
@@ -60,7 +40,7 @@
         @if ((!empty($cat) && !empty(json_decode($cat->attributes, true))) || (!empty($subcat) && !empty(json_decode($subcat->attributes, true))) || (!empty($childcat) && !empty(json_decode($childcat->attributes, true))))
 
             <form id="attrForm"
-                action="{{ route('front.category', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
+                action="{{ route('front.catalog', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}"
                 method="post">
 
                 @if (!empty($cat) && !empty(json_decode($cat->attributes, true)))
