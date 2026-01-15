@@ -34,7 +34,7 @@ use Validator;
 
 class FrontendController extends Controller
 {
-    // Display Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands
+    // Display Nav Shortcuts, Banners & Brands
 
     public function section_customization()
     {
@@ -222,7 +222,7 @@ class FrontendController extends Controller
         }
     }
 
-    // Display Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands Ends
+    // Display Nav Shortcuts, Banners & Brands Ends
 
     // Display All Type Of CatalogItems
 

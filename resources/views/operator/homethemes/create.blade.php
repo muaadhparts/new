@@ -191,15 +191,6 @@
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Capabilities') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_capabilities" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
                                                 <label class="control-label">{{ __('Newsletter') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_newsletter" value="1" checked>
@@ -259,12 +250,8 @@
                                             <input type="number" class="form-control" name="order_blogs" value="11" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Services Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_capabilities" value="12" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Newsletter Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_newsletter" value="13" min="1">
+                                            <input type="number" class="form-control" name="order_newsletter" value="12" min="1">
                                         </div>
                                     </div>
                                 </div>

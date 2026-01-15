@@ -246,15 +246,6 @@ class FrontendController extends FrontBaseController
             });
         }
 
-        // ============================================================================
-        // SECTION: Capabilities (if enabled in theme)
-        // ============================================================================
-        if ($theme->show_capabilities) {
-            $data['capabilities'] = Cache::remember('homepage_capabilities', 3600, function () {
-                return DB::table('capabilities')->get();
-            });
-        }
-
         return view('frontend.index', $data);
     }
 

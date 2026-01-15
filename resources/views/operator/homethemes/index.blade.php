@@ -57,7 +57,6 @@
                                     @if($theme->show_trending)<span class="badge bg-primary">Trending</span>@endif
                                     @if($theme->show_best_sellers)<span class="badge bg-primary">Best Sellers</span>@endif
                                     @if($theme->show_blogs)<span class="badge bg-primary">Blogs</span>@endif
-                                    @if($theme->show_capabilities)<span class="badge bg-primary">Capabilities</span>@endif
                                     @if($theme->show_newsletter)<span class="badge bg-primary">Newsletter</span>@endif
                                 </div>
                             </div>

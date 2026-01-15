@@ -30,9 +30,7 @@ return new class extends Migration
      */
     protected array $tablesToRename = [
         'abuse_flags',
-        'ad_displays',
         'announcements',
-        'capabilities',
         'featured_promos',
         'help_articles',
         'packages',

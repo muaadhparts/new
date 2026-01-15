@@ -36,7 +36,6 @@ class MerchantController extends FrontBaseController
         }
 
         $data['merchant']     = $merchant;
-        $data['capabilities']   = DB::table('capabilities')->where('user_id', '=', $merchant->id)->get();
         // TODO: Removed - old category system
         $data['categories'] = collect(); // Category::where('status', 1)->get();
 

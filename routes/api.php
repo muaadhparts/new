@@ -194,7 +194,6 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/arrival', 'Api\Front\FrontendController@arrival');
     Route::get('/arrival', 'Api\Front\FrontendController@arrival');
 
-    Route::get('/capabilities', 'Api\Front\FrontendController@capabilities');
     Route::get('/banners', 'Api\Front\FrontendController@banners');
     Route::get('/brands', 'Api\Front\FrontendController@brands');
     Route::get('/catalog-items', 'Api\Front\FrontendController@catalogItems');
