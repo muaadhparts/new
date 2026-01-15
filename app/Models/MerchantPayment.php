@@ -3,18 +3,56 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class MerchantPayment extends Model
 {
     protected $table = 'merchant_payments';
 
-    protected $fillable = ['title', 'details', 'subtitle', 'name', 'type', 'information', 'currency_id'];
+    protected $fillable = ['user_id', 'title', 'details', 'subtitle', 'name', 'type', 'information', 'currency_id', 'keyword', 'checkout', 'topup', 'subscription', 'status'];
 
     public $timestamps = false;
 
     public function currency()
     {
         return $this->belongsTo('App\Models\Currency')->withDefault();
+    }
+
+    /**
+     * يعيد بوابات الدفع للتاجر + البوابات العامة (الأوبريتور)
+     * user_id = 0 (operator/platform) - متاحة لجميع التجار
+     * user_id = $merchantId - بوابات التاجر الخاصة
+     * ويقدّم بوابات التاجر في الترتيب.
+     */
+    public function scopeForMerchant(Builder $query, int $merchantId): Builder
+    {
+        return $query
+            ->whereIn('user_id', [0, $merchantId])
+            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId]);
+    }
+
+    /**
+     * فقط بوابات المنصة (الأوبريتور)
+     */
+    public function scopePlatformOnly(Builder $query): Builder
+    {
+        return $query->where('user_id', 0);
+    }
+
+    /**
+     * هل هذه البوابة تابعة للمنصة؟
+     */
+    public function isPlatformOwned(): bool
+    {
+        return $this->user_id === 0 || $this->user_id === null;
+    }
+
+    /**
+     * هل هذه البوابة تابعة لتاجر محدد؟
+     */
+    public function isMerchantOwned(int $merchantId): bool
+    {
+        return $this->user_id > 0 && $this->user_id === $merchantId;
     }
 
     public static function scopeHasGateway($curr)

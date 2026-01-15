@@ -26,11 +26,13 @@ class Shipping extends Model
 
     protected $fillable = [
         'user_id',
+        'integration_type', // none, manual, api
         'provider',
         'title',
         'subtitle',
         'price',
         'free_above',
+        'status',
     ];
 
     /**

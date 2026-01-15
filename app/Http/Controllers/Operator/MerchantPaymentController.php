@@ -12,7 +12,8 @@ class MerchantPaymentController extends OperatorBaseController
     //*** JSON Request
     public function datatables()
     {
-         $datas = MerchantPayment::latest('id')->get();
+        // Only platform payment gateways (user_id = 0)
+        $datas = MerchantPayment::where('user_id', 0)->latest('id')->get();
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
                             ->editColumn('title', function(MerchantPayment $data) {
@@ -130,6 +131,8 @@ class MerchantPaymentController extends OperatorBaseController
         $data = new MerchantPayment();
         $input = $request->all();
         $input['type'] = "manual";
+        // Platform payment gateway - user_id = 0
+        $input['user_id'] = 0;
         $data->fill($input)->save();
         //--- Logic Section Ends
 
@@ -142,7 +145,8 @@ class MerchantPaymentController extends OperatorBaseController
     //*** GET Request
     public function edit($id)
     {
-        $data = MerchantPayment::findOrFail($id);
+        // Only allow editing platform payment gateways (user_id = 0)
+        $data = MerchantPayment::where('id', $id)->where('user_id', 0)->firstOrFail();
         return view('operator.merchant-payment.edit',compact('data'));
     }
 
@@ -158,8 +162,8 @@ class MerchantPaymentController extends OperatorBaseController
     //*** POST Request
     public function update(Request $request, $id)
     {
-
-        $data = MerchantPayment::findOrFail($id);
+        // Only allow updating platform payment gateways (user_id = 0)
+        $data = MerchantPayment::where('id', $id)->where('user_id', 0)->firstOrFail();
         $prev = '';
         if($data->type == "automatic"){
 
@@ -239,7 +243,8 @@ class MerchantPaymentController extends OperatorBaseController
       //*** GET Request Status
       public function status($field,$id1,$id2)
         {
-            $data = MerchantPayment::findOrFail($id1);
+            // Only allow updating platform payment gateways (user_id = 0)
+            $data = MerchantPayment::where('id', $id1)->where('user_id', 0)->firstOrFail();
             $data[$field] = $id2;
             $data->update();
             //--- Redirect Section
@@ -251,7 +256,8 @@ class MerchantPaymentController extends OperatorBaseController
     //*** GET Request Delete
     public function destroy($id)
     {
-        $data = MerchantPayment::findOrFail($id);
+        // Only allow deleting platform payment gateways (user_id = 0)
+        $data = MerchantPayment::where('id', $id)->where('user_id', 0)->firstOrFail();
         if($data->type == 'manual' || $data->keyword != null){
             $data->delete();
         }

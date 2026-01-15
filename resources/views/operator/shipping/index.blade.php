@@ -47,9 +47,12 @@
                         <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                           <thead>
                             <tr>
-                                        
                                           <th>{{ __('Title') }}</th>
+                                          <th>{{ __('Provider') }}</th>
+                                          <th>{{ __('Integration') }}</th>
                                           <th>{{ __('Price') }}</th>
+                                          <th>{{ __('Free Above') }}</th>
+                                          <th>{{ __('Status') }}</th>
                                           <th>{{ __('Options') }}</th>
                             </tr>
                           </thead>
@@ -144,13 +147,16 @@
                ajax: '{{ route('operator-shipping-datatables') }}',
                columns: [
                   { data: 'title', name: 'title' },
+                  { data: 'provider', name: 'provider' },
+                  { data: 'integration_type_label', name: 'integration_type_label', searchable: false },
                   { data: 'price', name: 'price' },
+                  { data: 'free_above_display', name: 'free_above_display', searchable: false },
+                  { data: 'status_label', name: 'status_label', searchable: false },
                   { data: 'action', searchable: false, orderable: false }
-
-                     ],
-                language : {
+               ],
+               language : {
                   processing: '<img src="{{asset('assets/images/'.$gs->admin_loader)}}">'
-                }
+               }
             });
 
         $(function() {
