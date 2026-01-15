@@ -148,8 +148,8 @@ php artisan test
 
 | Term | Description |
 |------|-------------|
-| `merchant` | Seller/vendor on the platform |
-| `catalog_item` | Product in the catalog (no pricing) |
+| `merchant` | Seller on the platform |
+| `catalog_item` | Item in the catalog (no pricing) |
 | `merchant_item` | Merchant's listing of a catalog item (with pricing) |
 | `purchase` | Customer order |
 | `courier` | Delivery personnel |
@@ -186,8 +186,8 @@ php artisan test
 | Table | Purpose | Key Fields |
 |-------|---------|------------|
 | `users` | All users (customers, merchants, admins) | `is_merchant`, `is_admin` |
-| `favorite_sellers` | User wishlist/favorites | `user_id`, `merchant_item_id` |
-| `catalog_reviews` | Product reviews | `catalog_item_id`, `user_id`, `rating` |
+| `favorite_sellers` | User favorites | `user_id`, `merchant_item_id` |
+| `catalog_reviews` | CatalogItem reviews | `catalog_item_id`, `user_id`, `rating` |
 
 ### Payments & Shipping
 
