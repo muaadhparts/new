@@ -199,8 +199,8 @@ class MerchantController extends MerchantBaseController
     public function trustBadge()
     {
         $data = $this->user;
-        if ($data->isTrustBadgeVerified()) {
-            return redirect()->route('merchant-profile')->with('success', __('Your Account is already verified.'));
+        if ($data->isTrustBadgeTrusted()) {
+            return redirect()->route('merchant-profile')->with('success', __('Your Account is already trusted.'));
         }
         return view('merchant.trust-badge', compact('data'));
     }

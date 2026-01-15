@@ -147,8 +147,8 @@ class ImportController extends MerchantBaseController
         // // dd(['merchant_items_count' => $prods]); // اختباري
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                return response()->json(array('errors' => [0 => __('You must complete your verfication first.')]));
+            if (!$user->isTrustBadgeTrusted()) {
+                return response()->json(array('errors' => [0 => __('You must complete your trust badge first.')]));
             }
         }
 

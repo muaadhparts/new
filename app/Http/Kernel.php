@@ -68,6 +68,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admininistrator' => \App\Http\Middleware\Administrator::class,
         'merchant' => \App\Http\Middleware\Merchant::class,
+        'trusted.merchant' => \App\Http\Middleware\TrustedMerchant::class,
         'permissions' => \App\Http\Middleware\Permissions::class,
         'super' => \App\Http\Middleware\SuperAdmin::class,
         'maintenance' => \App\Http\Middleware\MaintenanceMode::class,

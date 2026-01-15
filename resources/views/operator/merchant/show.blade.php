@@ -95,11 +95,11 @@
                                                         </tr>
                                                         <tr>
                                                             <td>
-                                                                    @if($data->isTrustBadgeVerified())
-                                                                    <a class="badge badge-success verify-link" href="javascript:;">Verified</a>
-                                                                    <a class="set-gallery1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="{{ $data->trustBadges()->where('status','=','Verified')->first()->id }}">(View)</a>
+                                                                    @if($data->isTrustBadgeTrusted())
+                                                                    <a class="badge badge-success verify-link" href="javascript:;">{{ __('Trusted') }}</a>
+                                                                    <a class="set-gallery1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="{{ $data->trustBadges()->where('status','=','Trusted')->first()->id }}">({{ __('View') }})</a>
                                                                     @else
-                                                                    <a class="badge badge-danger verify-link" href="javascript:;">Unverified</a>
+                                                                    <a class="badge badge-danger verify-link" href="javascript:;">{{ __('Untrusted') }}</a>
                                                                     @endif
                                                             </td>
                                                             <td>

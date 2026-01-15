@@ -47,8 +47,8 @@ class CatalogItemController extends MerchantBaseController
         $user = $this->user;
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                Session::flash('unsuccess', __('You must complete your verfication first.'));
+            if (!$user->isTrustBadgeTrusted()) {
+                Session::flash('unsuccess', __('You must complete your trust badge first.'));
                 return redirect()->route('merchant-trust-badge');
             }
         }
@@ -144,8 +144,8 @@ class CatalogItemController extends MerchantBaseController
         $user = $this->user;
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                Session::flash('unsuccess', __('You must complete your verfication first.'));
+            if (!$user->isTrustBadgeTrusted()) {
+                Session::flash('unsuccess', __('You must complete your trust badge first.'));
                 return redirect()->route('merchant-trust-badge');
             }
         }
@@ -168,8 +168,8 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                Session::flash('unsuccess', __('You must complete your verfication first.'));
+            if (!$user->isTrustBadgeTrusted()) {
+                Session::flash('unsuccess', __('You must complete your trust badge first.'));
                 return redirect()->route('merchant-trust-badge');
             }
         }
@@ -267,8 +267,8 @@ class CatalogItemController extends MerchantBaseController
         $prods = $user->merchantItems()->count();
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                return back()->with('unsuccess', __('You must complete your verfication first.'));
+            if (!$user->isTrustBadgeTrusted()) {
+                return back()->with('unsuccess', __('You must complete your trust badge first.'));
             }
         }
 
@@ -571,8 +571,8 @@ class CatalogItemController extends MerchantBaseController
         $prods   = $user->merchantItems()->count();
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                return back()->with('unsuccess', __('You must complete your verfication first.'));
+            if (!$user->isTrustBadgeTrusted()) {
+                return back()->with('unsuccess', __('You must complete your trust badge first.'));
             }
         }
 
@@ -814,8 +814,8 @@ class CatalogItemController extends MerchantBaseController
         $prods = $user->merchantItems()->count();
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeVerified()) {
-                return back()->with('unsuccess', __('You must complete your verfication first.'));
+            if (!$user->isTrustBadgeTrusted()) {
+                return back()->with('unsuccess', __('You must complete your trust badge first.'));
             }
         }
 

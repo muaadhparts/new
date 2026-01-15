@@ -1122,11 +1122,26 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     Route::prefix('merchant')->group(function () {
 
+        // ============ BASIC MERCHANT ACCESS (Trusted & Untrusted) ============
+        // هذه المسارات متاحة لجميع التجار بما في ذلك غير الموثقين
         Route::group(['middleware' => 'merchant'], function () {
 
-            // MERCHANT DASHBOARD
-
+            // MERCHANT DASHBOARD - يمكن لجميع التجار رؤية الداشبورد
             Route::get('/dashboard', 'Merchant\MerchantController@index')->name('merchant.dashboard');
+
+            // TRUST BADGE - يمكن لجميع التجار رفع مستندات التوثيق
+            Route::get('/trust-badge', 'Merchant\MerchantController@trustBadge')->name('merchant-trust-badge');
+            Route::get('/warning/trust-badge/{id}', 'Merchant\MerchantController@warningTrustBadge')->name('merchant-warning');
+            Route::post('/trust-badge', 'Merchant\MerchantController@trustBadgeSubmit')->name('merchant-trust-badge-submit');
+
+            // PROFILE - يمكن لجميع التجار رؤية وتعديل بروفايلهم
+            Route::get('/profile', 'Merchant\MerchantController@profile')->name('merchant-profile');
+            Route::post('/profile', 'Merchant\MerchantController@profileupdate')->name('merchant-profile-update');
+        });
+
+        // ============ TRUSTED MERCHANT ONLY ============
+        // هذه المسارات متاحة فقط للتجار الموثقين (is_merchant = 2)
+        Route::group(['middleware' => ['merchant', 'trusted.merchant']], function () {
 
             //------------ PURCHASE SECTION ------------
 
@@ -1281,11 +1296,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT CATALOG EVENT SECTION ENDS ------------
 
-            // Merchant Profile
-            Route::get('/profile', 'Merchant\MerchantController@profile')->name('merchant-profile');
-            Route::post('/profile', 'Merchant\MerchantController@profileupdate')->name('merchant-profile-update');
-            // Merchant Profile Ends
-
             // Merchant Shipping Cost
             Route::get('/banner', 'Merchant\MerchantController@banner')->name('merchant-banner');
 
@@ -1377,10 +1387,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('total/earning', "Merchant\IncomeController@index")->name('merchant.income');
             Route::get('tax-report', "Merchant\IncomeController@taxReport")->name('merchant.tax-report');
             Route::get('statement', "Merchant\IncomeController@statement")->name('merchant.statement');
-
-            Route::get('/trust-badge', 'Merchant\MerchantController@trustBadge')->name('merchant-trust-badge');
-            Route::get('/warning/trust-badge/{id}', 'Merchant\MerchantController@warningTrustBadge')->name('merchant-warning');
-            Route::post('/trust-badge', 'Merchant\MerchantController@trustBadgeSubmit')->name('merchant-trust-badge-submit');
         });
     });
 

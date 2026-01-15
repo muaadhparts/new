@@ -249,9 +249,9 @@ class User extends Authenticatable implements JWTSubject
             (empty($this->trustBadges()->where('admin_warning', '=', '0')->latest('id')->first()->status) ? false : ($this->trustBadges()->latest('id')->first()->status == 'Pending' ? true : false)) : false;
     }
 
-    public function isTrustBadgeVerified()
+    public function isTrustBadgeTrusted()
     {
-        return count($this->trustBadges) > 0 ? ($this->trustBadges()->latest('id')->first()->status == 'Verified' ? true : false) : false;
+        return count($this->trustBadges) > 0 ? ($this->trustBadges()->latest('id')->first()->status == 'Trusted' ? true : false) : false;
     }
 
     public function hasTrustBadgeWarning()

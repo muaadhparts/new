@@ -33,13 +33,13 @@ class TrustBadgeController extends OperatorBaseController
                                 return  $details;
                             })
                             ->addColumn('status', function(TrustBadge $data) {
-                                $class = $data->status == 'Pending' ? '' : ($data->status == 'Verified' ? 'drop-success' : 'drop-danger');
-                                $s = $data->status == 'Verified' ? 'selected' : '';
-                                $ns = $data->status == 'Declined' ? 'selected' : '';
+                                $class = $data->status == 'Pending' ? '' : ($data->status == 'Trusted' ? 'drop-success' : 'drop-danger');
+                                $s = $data->status == 'Trusted' ? 'selected' : '';
+                                $ns = $data->status == 'Rejected' ? 'selected' : '';
                                 return '<div class="action-list"><select class="process select merchant-droplinks '.$class.'">'.
                                  '<option value="'. route('operator-trust-badge-status',['id1' => $data->id, 'id2' => 'Pending']).'" '.$s.'>'.__("Pending").'</option>'.
-                                '<option value="'. route('operator-trust-badge-status',['id1' => $data->id, 'id2' => 'Verified']).'" '.$s.'>'.__("Verified").'</option>'.
-                                '<option value="'. route('operator-trust-badge-status',['id1' => $data->id, 'id2' => 'Declined']).'" '.$ns.'>'.__("Declined").'</option></select></div>';
+                                '<option value="'. route('operator-trust-badge-status',['id1' => $data->id, 'id2' => 'Trusted']).'" '.$s.'>'.__("Trusted").'</option>'.
+                                '<option value="'. route('operator-trust-badge-status',['id1' => $data->id, 'id2' => 'Rejected']).'" '.$ns.'>'.__("Rejected").'</option></select></div>';
                             })
                             ->addColumn('action', function(TrustBadge $data) {
                                 return '<div class="action-list">
@@ -77,8 +77,8 @@ class TrustBadgeController extends OperatorBaseController
             $data[0] = 1;
             $data[1] = $attachments;
             $data[2] = $trustBadge->text;
-            $data[3] = ''.route('operator-trust-badge-status',['id1' => $trustBadge->id, 'id2' => 'Verified']).'';
-            $data[4] = ''.route('operator-trust-badge-status',['id1' => $trustBadge->id, 'id2' => 'Declined']).'';
+            $data[3] = ''.route('operator-trust-badge-status',['id1' => $trustBadge->id, 'id2' => 'Trusted']).'';
+            $data[4] = ''.route('operator-trust-badge-status',['id1' => $trustBadge->id, 'id2' => 'Rejected']).'';
         }
         return response()->json($data);
     }
@@ -121,13 +121,13 @@ class TrustBadgeController extends OperatorBaseController
         $trustBadge->update();
 
         // When trust badge is approved, activate merchant account
-        if ($id2 == 'Verified' && $trustBadge->user) {
+        if ($id2 == 'Trusted' && $trustBadge->user) {
             $trustBadge->user->is_merchant = 2;
             $trustBadge->user->save();
         }
 
         // When declined, return merchant status to pending verification
-        if ($id2 == 'Declined' && $trustBadge->user) {
+        if ($id2 == 'Rejected' && $trustBadge->user) {
             $trustBadge->user->is_merchant = 1;
             $trustBadge->user->save();
         }
