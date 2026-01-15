@@ -61,7 +61,11 @@
       "WebSearch",
       "WebFetch(domain:apis.tryoto.com)",
       "WebFetch(domain:help.tryoto.com)",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(git -C \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\" log --all --decorate --oneline)",
+      "Bash(git -C \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\" branch -a)",
+      "Bash(wc -l:*)",
+      "Bash(xargs:*)"
     ]
   }
 }

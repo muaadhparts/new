@@ -6147,6 +6147,51 @@ select option {
 }
 
 /* ============================================================================
+   SECTION: LEGACY CLASS ALIASES (DEPRECATION LAYER)
+   ============================================================================
+   These aliases map old class names to new m-* equivalents.
+   Purpose: Maintain backward compatibility while transitioning to new naming.
+   Note: These are DEPRECATED - use m-* classes for all new code.
+   ============================================================================ */
+
+/* ----- Button Aliases ----- */
+.template-btn,
+.muaadh-btn {
+    /* Maps to .m-btn--primary */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: var(--btn-padding-y, 0.625rem) var(--btn-padding-x, 1.25rem);
+    font-size: var(--btn-font-size, 0.875rem);
+    font-weight: var(--btn-font-weight, 600);
+    line-height: 1.5;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: var(--action-primary);
+    color: var(--text-on-primary);
+    border-color: var(--action-primary);
+}
+
+.template-btn:hover,
+.muaadh-btn:hover {
+    background: var(--action-primary-hover);
+    border-color: var(--action-primary-hover);
+    color: var(--text-on-primary);
+    text-decoration: none;
+}
+
+/* ----- Wishlist to Favorite Alias ----- */
+.wishlist-btn,
+.add-to-wishlist,
+.wishlist-icon {
+    /* These now map to favorite functionality */
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 
