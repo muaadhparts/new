@@ -184,7 +184,6 @@ Route::group(['prefix' => 'front'], function () {
 
     //------------ Frontend Controller ------------
     Route::get('/section-customization', 'Api\Front\FrontendController@section_customization');
-    Route::get('/hero-carousels', 'Api\Front\FrontendController@heroCarousels');
     Route::get('/default/language', 'Api\Front\FrontendController@defaultLanguage');
     Route::get('/language/{id}', 'Api\Front\FrontendController@language');
     Route::get('/languages', 'Api\Front\FrontendController@languages');

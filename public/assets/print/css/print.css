@@ -417,7 +417,7 @@ a[data-bs-toggle="collapse"] {
   height: 34px;
 }
 .switch input {display:none;}
-.slider {
+.toggle-switch {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -428,7 +428,7 @@ a[data-bs-toggle="collapse"] {
   -webkit-transition: .4s;
   transition: .4s;
 }
-.slider:before {
+.toggle-switch:before {
   position: absolute;
   content: "";
   height: 26px;
@@ -439,22 +439,22 @@ a[data-bs-toggle="collapse"] {
   -webkit-transition: .4s;
   transition: .4s;
 }
-input:checked + .slider {
+input:checked + .toggle-switch {
   background-color: #009432;
 }
-input:focus + .slider {
+input:focus + .toggle-switch {
   box-shadow: 0 0 1px #2196F3;
 }
-input:checked + .slider:before {
+input:checked + .toggle-switch:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);
 }
-/* Rounded sliders */
-.slider.round {
+/* Rounded toggle-switches */
+.toggle-switch.round {
   border-radius: 34px;
 }
-.slider.round:before {
+.toggle-switch.round:before {
   border-radius: 50%;
 }
 /* Ending of Dashboard Social Links area */

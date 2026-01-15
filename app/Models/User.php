@@ -116,11 +116,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Capability');
     }
 
-    public function heroCarousels()
-    {
-        return $this->hasMany('App\Models\HeroCarousel');
-    }
-
     public function senders()
     {
         return $this->hasMany('App\Models\ChatThread', 'sent_user');

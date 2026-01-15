@@ -41,7 +41,7 @@
                   <label class="control-label" for="home">{{ __('CatalogItem') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="home" value="1" {{$data->home==1?"checked":""}}>
-                    <span class="slider round"></span>
+                    <span class="toggle-switch round"></span>
                   </label>
                 </div>
 
@@ -51,7 +51,7 @@
                   <label class="control-label" for="blog">{{ __('Blog') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="blog" value="1" {{$data->blog==1?"checked":""}}>
-                    <span class="slider round"></span>
+                    <span class="toggle-switch round"></span>
                   </label>
                 </div>
 
@@ -63,7 +63,7 @@
                   <label class="control-label" for="faq">{{ __('Faq') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="faq" value="1" {{$data->faq==1?"checked":""}}>
-                    <span class="slider round"></span>
+                    <span class="toggle-switch round"></span>
                   </label>
                 </div>
 
@@ -73,7 +73,7 @@
                   <label class="control-label" for="contact_us">{{ __('Contact Us') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="contact" value="1" {{$data->contact==1?"checked":""}}>
-                    <span class="slider round"></span>
+                    <span class="toggle-switch round"></span>
                   </label>
                 </div>
 

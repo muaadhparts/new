@@ -307,9 +307,6 @@
         <li>
             <a href="{{ route('operator-home-page-index') }}"><span>{{ __('Home Pages') }}</span></a>
         </li>
-        <li>
-            <a href="{{ route('operator-hero-carousel-index') }}"><span>{{ __('Hero Carousels') }}</span></a>
-        </li>
 
         <li>
             <a href="{{ route('operator-fs-deal') }}"><span>{{ __('Deal of the day') }}</span></a>

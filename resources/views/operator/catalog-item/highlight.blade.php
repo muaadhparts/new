@@ -29,7 +29,7 @@
                                             <label class="switch">
                                                 <input type="checkbox" name="latest" value="1"
                                                     {{ $data->latest == 1 ? 'checked' : '' }}>
-                                                <span class="slider round"></span>
+                                                <span class="toggle-switch round"></span>
                                             </label>
                                         </div>
                                     </div>
@@ -46,7 +46,7 @@
                                             <label class="switch">
                                                 <input type="checkbox" name="best" value="1"
                                                     {{ $data->best == 1 ? 'checked' : '' }}>
-                                                <span class="slider round"></span>
+                                                <span class="toggle-switch round"></span>
                                             </label>
                                         </div>
                                     </div>
@@ -63,7 +63,7 @@
                                             <label class="switch">
                                                 <input type="checkbox" name="featured" value="1"
                                                     {{ $data->featured == 1 ? 'checked' : '' }}>
-                                                <span class="slider round"></span>
+                                                <span class="toggle-switch round"></span>
                                             </label>
                                         </div>
                                     </div>
@@ -79,7 +79,7 @@
                                             <label class="switch">
                                                 <input type="checkbox" name="popular" value="1"
                                                     {{ $data->popular == 1 ? 'checked' : '' }}>
-                                                <span class="slider round"></span>
+                                                <span class="toggle-switch round"></span>
                                             </label>
                                         </div>
                                     </div>
@@ -96,7 +96,7 @@
                                             <label class="switch">
                                                 <input type="checkbox" name="trending" value="1"
                                                     {{ $data->trending == 1 ? 'checked' : '' }}>
-                                                <span class="slider round"></span>
+                                                <span class="toggle-switch round"></span>
                                             </label>
                                         </div>
                                     </div>

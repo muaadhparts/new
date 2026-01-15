@@ -38,7 +38,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="f_status" value="1" {{$data->f_status==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -51,7 +51,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="g_status" value="1" {{$data->g_status==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -64,7 +64,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="t_status" value="1" {{$data->t_status==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -77,7 +77,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="l_status" value="1" {{$data->l_status==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -91,7 +91,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="d_status" value="1" {{$data->d_status==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>

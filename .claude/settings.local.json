@@ -65,7 +65,8 @@
       "Bash(git -C \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\" log --all --decorate --oneline)",
       "Bash(git -C \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\" branch -a)",
       "Bash(wc -l:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(rg:*)"
     ]
   }
 }

@@ -1,15 +1,15 @@
 {{--
 ================================================================================
-SECTION PARTIAL: CatalogItem Slider
+SECTION PARTIAL: CatalogItem Carousel
 ================================================================================
 Receives: $merchantItems (collection of MerchantItem models)
 Each MerchantItem = one listing (catalogItem + merchant + quality brand)
-Uses the same slider style as Related Products
+Uses the same carousel style as Related Products
 ================================================================================
 --}}
 
-<div class="gs-catalogItem-cards-slider-area">
-    <div class="catalogItem-cards-slider">
+<div class="gs-catalogItem-cards-carousel-area">
+    <div class="catalogItem-cards-carousel">
         @foreach($merchantItems as $mp)
             @include('includes.frontend.home_catalog_item', [
                 'class' => '',

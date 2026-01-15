@@ -652,28 +652,28 @@
 
 
 /* ========================================
-   SLIDER CONTEXT
+   CAROUSEL CONTEXT
    ======================================== */
 /*
- * Slider layout ONLY - no card overrides.
+ * Carousel layout ONLY - no card overrides.
  * Card inherits 100% from base .catalogItem-card (grid view).
- * Slider controls: slidesToShow, spacing.
+ * Carousel controls: slidesToShow, spacing.
  * Card appearance: identical to Category/Search/Wishlist.
  */
 
 /* Slick track - flex for equal heights */
-.catalogItem-cards-slider .slick-track {
+.catalogItem-cards-carousel .slick-track {
     display: flex !important;
 }
 
 /* Slide wrapper - flex item */
-.catalogItem-cards-slider .slick-slide {
+.catalogItem-cards-carousel .slick-slide {
     height: auto;
     padding: 0 12px;
 }
 
 /* Slide inner div - full height */
-.catalogItem-cards-slider .slick-slide > div {
+.catalogItem-cards-carousel .slick-slide > div {
     height: 100%;
 }
 

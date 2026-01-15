@@ -61,7 +61,7 @@
 
                 <!-- Modal body -->
                 <div class="modal-body">
-                    <p class="text-center">{{ __('You are about to delete this Slider.') }}</p>
+                    <p class="text-center">{{ __('You are about to delete this Featured Promo.') }}</p>
                     <p class="text-center">{{ __('Do you want to proceed?') }}</p>
                 </div>
 

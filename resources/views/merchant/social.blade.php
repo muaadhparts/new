@@ -36,7 +36,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="f_check" value="1" {{$data->f_check==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -49,7 +49,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="g_check" value="1" {{$data->g_check==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -62,7 +62,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="t_check" value="1" {{$data->t_check==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>
@@ -75,7 +75,7 @@
                   <div class="col-sm-3">
                     <label class="switch">
                       <input type="checkbox" name="l_check" value="1" {{$data->l_check==1?"checked":""}}>
-                      <span class="slider round"></span>
+                      <span class="toggle-switch round"></span>
                     </label>
                   </div>
                 </div>

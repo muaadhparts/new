@@ -39,7 +39,7 @@
                             $galleryMerchantId = $merchant->user_id;
                             $merchantGalleries = $catalogItem->merchantPhotosForMerchant($galleryMerchantId, 10);
                         @endphp
-                        <div class="catalogItem-main-slider">
+                        <div class="catalogItem-main-carousel">
                             <img src="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
                                 data-zoom-image="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
@@ -51,7 +51,7 @@
                             @endforeach
                         </div>
 
-                        <div class="catalogItem-nav-slider">
+                        <div class="catalogItem-nav-carousel">
                             <img src="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
                                 alt="Thumb Image"
                                 data-zoom-image="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}"
@@ -794,13 +794,13 @@
 
 
 
-    <!-- Related Items slider start -->
+    <!-- Related Items carousel start -->
     {{-- NOTE: $relatedMerchantItems is pre-loaded from Controller (optimized, no N+1) --}}
     @if($relatedMerchantItems->count() > 0)
-    <div class="gs-catalogItem-cards-slider-area wow-replaced" data-wow-delay=".1s">
+    <div class="gs-catalogItem-cards-carousel-area wow-replaced" data-wow-delay=".1s">
         <div class="container">
             <h2 class="name text-center">@lang('Related Items')</h2>
-            <div class="catalogItem-cards-slider">
+            <div class="catalogItem-cards-carousel">
                 @foreach ($relatedMerchantItems as $merchantItem)
                     @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
                 @endforeach
@@ -808,15 +808,15 @@
         </div>
     </div>
     @endif
-    <!-- Related Items slider end -->
+    <!-- Related Items carousel end -->
 
-    <!-- More Items By Seller slider start -->
+    <!-- More Items By Seller carousel start -->
     @if (isset($merchantListings) && $merchantListings->count() > 0)
-        <div class="gs-catalogItem-cards-slider-section more-catalogItems-by-seller  wow-replaced" data-wow-delay=".1s">
-            <div class="gs-catalogItem-cards-slider-area more-catalogItems-by-seller">
+        <div class="gs-catalogItem-cards-carousel-section more-catalogItems-by-seller  wow-replaced" data-wow-delay=".1s">
+            <div class="gs-catalogItem-cards-carousel-area more-catalogItems-by-seller">
                 <div class="container">
                     <h2 class="name text-center">@lang('More Items By Seller')</h2>
-                    <div class="catalogItem-cards-slider">
+                    <div class="catalogItem-cards-carousel">
                         @foreach ($merchantListings as $merchantItem)
                             @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
                         @endforeach
@@ -825,7 +825,7 @@
             </div>
         </div>
     @endif
-    <!-- More Items By Seller slider end -->
+    <!-- More Items By Seller carousel end -->
 
 
 
@@ -961,7 +961,7 @@
     {{-- ElevateZoom from CDN --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/elevatezoom/3.0.8/jquery.elevatezoom.min.js"></script>
 
-    <!-- Initializing the slider -->
+    <!-- Initializing the carousel -->
 
 
     <script type="text/javascript">

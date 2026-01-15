@@ -49,17 +49,6 @@ Sections are rendered based on theme settings and purchase
     @endif
 
     {{-- ===================================================================
-         SECTION: Hero Carousel (if enabled: $theme->show_hero_carousel)
-         =================================================================== --}}
-    @if(($theme->show_hero_carousel ?? false) && isset($heroCarousels) && count($heroCarousels) > 0)
-    <section class="muaadh-section muaadh-slider-section">
-        <div class="container">
-            @include('frontend.sections.hero-carousel', ['heroCarousels' => $heroCarousels])
-        </div>
-    </section>
-    @endif
-
-    {{-- ===================================================================
          SECTION: Brands (if enabled: $theme->show_brands)
          =================================================================== --}}
     @if(($theme->show_brands ?? false) && isset($brands) && count($brands) > 0)
@@ -117,13 +106,13 @@ Sections are rendered based on theme settings and purchase
 
     {{-- ===================================================================
          SECTION: Featured Items (if enabled: $theme->show_featured_items)
-         Uses slider like Related Items - each card is a MerchantItem
+         Uses carousel like Related Items - each card is a MerchantItem
          =================================================================== --}}
     @if(($theme->show_featured_items ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
             <h2 class="name text-center">{{ $theme->name_featured_items ?? __('Featured Items') }}</h2>
-            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $featured_merchants])
+            @include('frontend.sections.catalog-item-carousel', ['merchantItems' => $featured_merchants])
         </div>
     </section>
     @endif
@@ -142,52 +131,52 @@ Sections are rendered based on theme settings and purchase
 
     {{-- ===================================================================
          SECTION: Top Rated Items (if enabled: $theme->show_top_rated)
-         Uses slider like Related Items
+         Uses carousel like Related Items
          =================================================================== --}}
     @if(($theme->show_top_rated ?? false) && isset($top_merchants) && count($top_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
             <h2 class="name text-center">{{ $theme->name_top_rated ?? __('Top Rated Items') }}</h2>
-            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $top_merchants])
+            @include('frontend.sections.catalog-item-carousel', ['merchantItems' => $top_merchants])
         </div>
     </section>
     @endif
 
     {{-- ===================================================================
          SECTION: Big Save Items (if enabled: $theme->show_big_save)
-         Uses slider like Related Items
+         Uses carousel like Related Items
          =================================================================== --}}
     @if(($theme->show_big_save ?? false) && isset($big_merchants) && count($big_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
             <h2 class="name text-center">{{ $theme->name_big_save ?? __('Big Save Items') }}</h2>
-            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $big_merchants])
+            @include('frontend.sections.catalog-item-carousel', ['merchantItems' => $big_merchants])
         </div>
     </section>
     @endif
 
     {{-- ===================================================================
          SECTION: Trending Items (if enabled: $theme->show_trending)
-         Uses slider like Related Items
+         Uses carousel like Related Items
          =================================================================== --}}
     @if(($theme->show_trending ?? false) && isset($trending_merchants) && count($trending_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
             <h2 class="name text-center">{{ $theme->name_trending ?? __('Trending Items') }}</h2>
-            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $trending_merchants])
+            @include('frontend.sections.catalog-item-carousel', ['merchantItems' => $trending_merchants])
         </div>
     </section>
     @endif
 
     {{-- ===================================================================
          SECTION: Best Selling Items (if enabled: $theme->show_best_sellers)
-         Uses slider like Related Items
+         Uses carousel like Related Items
          =================================================================== --}}
     @if(($theme->show_best_sellers ?? false) && isset($best_merchants) && count($best_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
             <h2 class="name text-center">{{ $theme->name_best_sellers ?? __('Best Selling Items') }}</h2>
-            @include('frontend.sections.catalog-item-slider', ['merchantItems' => $best_merchants])
+            @include('frontend.sections.catalog-item-carousel', ['merchantItems' => $best_merchants])
         </div>
     </section>
     @endif

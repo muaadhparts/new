@@ -725,17 +725,6 @@ Route::prefix('operator')->group(function () {
 
         Route::get('/home-page-settings', 'Operator\MuaadhSettingController@homepage')->name('operator-home-page-index');
 
-        //------------ OPERATOR HERO CAROUSEL SECTION ------------
-
-        Route::get('/hero-carousel/datatables', 'Operator\HeroCarouselController@datatables')->name('operator-hero-carousel-datatables'); //JSON REQUEST
-        Route::get('/hero-carousel', 'Operator\HeroCarouselController@index')->name('operator-hero-carousel-index');
-        Route::get('/hero-carousel/create', 'Operator\HeroCarouselController@create')->name('operator-hero-carousel-create');
-        Route::post('/hero-carousel/create', 'Operator\HeroCarouselController@store')->name('operator-hero-carousel-store');
-        Route::get('/hero-carousel/edit/{id}', 'Operator\HeroCarouselController@edit')->name('operator-hero-carousel-edit');
-        Route::post('/hero-carousel/edit/{id}', 'Operator\HeroCarouselController@update')->name('operator-hero-carousel-update');
-        Route::delete('/hero-carousel/delete/{id}', 'Operator\HeroCarouselController@destroy')->name('operator-hero-carousel-delete');
-
-        //------------ OPERATOR HERO CAROUSEL SECTION ENDS ------------
 
         //------------ OPERATORHOME PAGE THEMES SECTION ------------
 

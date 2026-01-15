@@ -124,7 +124,7 @@
                                 <div class="col-lg-7">
                                     <label class="switch">
                                         <input type="checkbox" name="is_active" value="1" {{ $credential->is_active ? 'checked' : '' }}>
-                                        <span class="slider round"></span>
+                                        <span class="toggle-switch round"></span>
                                     </label>
                                     <span class="ms-2">{{ __('Active') }}</span>
                                 </div>

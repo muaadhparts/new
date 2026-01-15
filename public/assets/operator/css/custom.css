@@ -84,10 +84,10 @@ a:not([href]) {
   text-align: right;
 }
 
-.slider-panel {
+.toggle-switch-panel {
   margin: 20px 20px;
 }
-.slider-name {
+.toggle-switch-name {
 }
 .catalogItem-description .panel-heading.text-center h3 {
   background-color: #1f224f;

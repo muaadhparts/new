@@ -50,7 +50,7 @@
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-5 mb-3">
                                     <a href="{{ route('operator-fs-customize') }}" class="btn btn-outline-primary w-100">
-                                        <i class="fas fa-sliders-h me-2"></i>
+                                        <i class="fas fa-cog me-2"></i>
                                         {{ __('Legacy Customization') }}
                                     </a>
                                 </div>

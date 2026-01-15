@@ -93,13 +93,13 @@ body[dir="rtl"] {
     left: 12px;
 }
 
-/* Slick Slider RTL Support */
+/* Slick Carousel RTL Support */
 /* Slick handles RTL internally when rtl: true is set */
 /* Only override where needed for content display */
 
 /* CRITICAL: Ensure slick slides are visible in RTL */
-[dir="rtl"] .slick-slider {
-    direction: ltr; /* Slider container should be LTR for proper slide positioning */
+[dir="rtl"] .slick-carousel {
+    direction: ltr; /* Carousel container should be LTR for proper slide positioning */
 }
 
 [dir="rtl"] .slick-track {
@@ -137,7 +137,7 @@ body[dir="rtl"] {
 }
 
 /* Related Products section names */
-[dir="rtl"] .gs-catalogItem-cards-slider-area .name {
+[dir="rtl"] .gs-catalogItem-cards-carousel-area .name {
     direction: rtl;
     text-align: center;
 }
@@ -185,7 +185,7 @@ body[dir="rtl"] {
     text-align: right;
 }
 
-/* Sliders & Carousels */
+/* Carousels & Carousels */
 [dir="rtl"] .slick-prev {
     right: auto;
     left: 25px;
@@ -439,8 +439,8 @@ body[dir="rtl"] {
     }
 }
 
-/* Fix slick slider overflow in RTL */
-[dir="rtl"] .slick-slider {
+/* Fix slick carousel overflow in RTL */
+[dir="rtl"] .slick-carousel {
     max-width: 100%;
     overflow: hidden;
 }

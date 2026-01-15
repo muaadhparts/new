@@ -22,7 +22,7 @@
         data-bs-toggle="offcanvas"
         data-bs-target="#specsOffcanvas"
         aria-controls="specsOffcanvas">
-    <i class="fas fa-sliders-h me-1"></i>
+    <i class="fas fa-filter me-1"></i>
     {{ __('Specifications') }}
 
     @php

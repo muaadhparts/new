@@ -91,15 +91,6 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Hero Carousel (if enabled in theme)
-        // ============================================================================
-        if ($theme->show_hero_carousel) {
-            $data['heroCarousels'] = Cache::remember('homepage_hero_carousels', 3600, function () {
-                return DB::table('hero_carousels')->get();
-            });
-        }
-
-        // ============================================================================
         // SECTION: Brand (if enabled in theme)
         // ============================================================================
         if ($theme->show_brands) {

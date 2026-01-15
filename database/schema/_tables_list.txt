@@ -81,7 +81,6 @@ shipment_trackings
 shippings
 sku_alternative_item
 sku_alternatives
-sliders
 social_links
 socialsettings
 specification_items

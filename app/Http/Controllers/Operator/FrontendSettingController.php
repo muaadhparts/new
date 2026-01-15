@@ -109,9 +109,6 @@ class FrontendSettingController extends OperatorBaseController
         if ($request->third_left_banner == ""){
             $input['third_left_banner'] = 0;
         }
-        if ($request->slider == ""){
-            $input['slider'] = 0;
-        }
         if ($request->flash_deal == ""){
             $input['flash_deal'] = 0;
         }

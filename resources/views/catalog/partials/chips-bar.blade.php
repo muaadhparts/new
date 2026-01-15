@@ -14,7 +14,7 @@
     <div class="catalog-chips-bar">
         <div class="catalog-chips-header">
             <strong class="catalog-chips-name">
-                <i class="fas {{ $hasVinSource ? 'fa-car' : 'fa-sliders-h' }}"></i>
+                <i class="fas {{ $hasVinSource ? 'fa-car' : 'fa-filter' }}"></i>
                 {{ $hasVinSource ? __('ui.vin_specs') : __('ui.selected_specs') }}
             </strong>
             <span class="catalog-chips-count">{{ count($chips) }}</span>

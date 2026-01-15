@@ -15,7 +15,7 @@ use App\Http\Resources\StaticContentResource;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\CapabilityResource;
-use App\Http\Resources\HeroCarouselResource;use App\Models\FeaturedPromo;
+use App\Models\FeaturedPromo;
 use App\Models\Announcement;
 use App\Models\Publication;
 use App\Models\MonetaryUnit;
@@ -30,7 +30,6 @@ use App\Models\FrontendSetting;
 use App\Models\Brand;
 use App\Models\CatalogItem;
 use App\Models\Capability;
-use App\Models\HeroCarousel;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -39,7 +38,7 @@ use Validator;
 
 class FrontendController extends Controller
 {
-    // Display Hero Carousels, Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands
+    // Display Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands
 
     public function section_customization()
     {
@@ -167,16 +166,6 @@ class FrontendController extends Controller
         }
     }
 
-    public function heroCarousels()
-    {
-        try {
-            $heroCarousels = HeroCarousel::all();
-            return response()->json(['status' => true, 'data' => HeroCarouselResource::collection($heroCarousels), 'error' => []]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
-    }
-
     public function navShortcuts()
     {
         try {
@@ -257,7 +246,7 @@ class FrontendController extends Controller
         }
     }
 
-    // Display Hero Carousels, Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands Ends
+    // Display Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands Ends
 
     // Display All Type Of CatalogItems
 

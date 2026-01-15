@@ -327,9 +327,6 @@
     </a>
     <ul class="collapse list-unstyled" id="homepage" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-hero-carousel-index') }}"><span>{{ __('Hero Carousels') }}</span></a>
-        </li>
-        <li>
             <a href="{{ route('operator-fs-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
         </li>
         <li>

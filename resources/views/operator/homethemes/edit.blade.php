@@ -76,7 +76,7 @@
                                                 <label class="control-label">{{ __('Set as Active') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="is_active" value="1" {{ $theme->is_active ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -93,19 +93,10 @@
                                     <div class="row">
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Hero Carousel') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_hero_carousel" value="1" {{ $theme->show_hero_carousel ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
                                                 <label class="control-label">{{ __('Hero Search') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_hero_search" value="1" {{ $theme->show_hero_search ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -114,7 +105,7 @@
                                                 <label class="control-label">{{ __('Brands') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_brands" value="1" {{ $theme->show_brands ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -123,7 +114,7 @@
                                                 <label class="control-label">{{ __('Categories') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_categories" value="1" {{ $theme->show_categories ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -132,7 +123,7 @@
                                                 <label class="control-label">{{ __('Arrival Section') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_arrival" value="1" {{ $theme->show_arrival ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -141,7 +132,7 @@
                                                 <label class="control-label">{{ __('Featured CatalogItems') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_featured_items" value="1" {{ $theme->show_featured_items ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -150,7 +141,7 @@
                                                 <label class="control-label">{{ __('Deal of the Day') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_deal_of_day" value="1" {{ $theme->show_deal_of_day ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -159,7 +150,7 @@
                                                 <label class="control-label">{{ __('Top Rated') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_top_rated" value="1" {{ $theme->show_top_rated ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -168,7 +159,7 @@
                                                 <label class="control-label">{{ __('Big Save') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_big_save" value="1" {{ $theme->show_big_save ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -177,7 +168,7 @@
                                                 <label class="control-label">{{ __('Trending') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_trending" value="1" {{ $theme->show_trending ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -186,7 +177,7 @@
                                                 <label class="control-label">{{ __('Best Sellers') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_best_sellers" value="1" {{ $theme->show_best_sellers ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -195,7 +186,7 @@
                                                 <label class="control-label">{{ __('Blogs') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_blogs" value="1" {{ $theme->show_blogs ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -204,7 +195,7 @@
                                                 <label class="control-label">{{ __('Capabilities') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_capabilities" value="1" {{ $theme->show_capabilities ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -213,7 +204,7 @@
                                                 <label class="control-label">{{ __('Newsletter') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_newsletter" value="1" {{ $theme->show_newsletter ? 'checked' : '' }}>
-                                                    <span class="slider round"></span>
+                                                    <span class="toggle-switch round"></span>
                                                 </label>
                                             </div>
                                         </div>
@@ -228,10 +219,6 @@
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Slider Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_hero_carousel" value="{{ $theme->order_hero_carousel }}" min="1">
-                                        </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Brands Purchase') }}</label>
                                             <input type="number" class="form-control" name="order_brands" value="{{ $theme->order_brands }}" min="1">

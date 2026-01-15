@@ -53,7 +53,7 @@
                             <label class="control-label">{{ __('Purchases') }} *</label>
                             <label class="switch">
                               <input type="checkbox" name="section[]" value="purchases" {{ $data->sectionCheck('purchases') ? 'checked' : '' }}>
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
 
@@ -63,7 +63,7 @@
                             <label class="control-label">{{ __('Manage Categories') }} *</label>
                             <label class="switch">
                               <input type="checkbox" name="section[]" value="categories" {{ $data->sectionCheck('categories') ? 'checked' : '' }}>
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
 
@@ -76,7 +76,7 @@
                           <label class="control-label">{{ __('Manage country') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="manage-country"  {{ $data->sectionCheck('manage-country') ? 'checked' : '' }}>
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -86,7 +86,7 @@
                           <label class="control-label">{{ __('Tax Calculate') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="earning" {{ $data->sectionCheck('earning') ? 'checked' : '' }}>
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
                     </div>
@@ -97,7 +97,7 @@
                           <label class="control-label">{{ __('Catalog Items') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="catalogItems" {{ $data->sectionCheck('catalogItems') ? 'checked' : '' }}>
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -107,7 +107,7 @@
                           <label class="control-label">{{ __('Affiliate Catalog Items') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="affilate_products" {{ $data->sectionCheck('affilate_products') ? 'checked' : '' }}>
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -119,7 +119,7 @@
                         <label class="control-label">{{ __('Bulk CatalogItem Upload') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="bulk_product_upload" {{ $data->sectionCheck('bulk_product_upload') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -129,7 +129,7 @@
                         <label class="control-label">{{ __('CatalogItem Discussion') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="product_discussion" {{ $data->sectionCheck('product_discussion') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -141,7 +141,7 @@
                         <label class="control-label">{{ __('Set Discount Codes') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="set_discount_codes" {{ $data->sectionCheck('set_discount_codes') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -151,7 +151,7 @@
                         <label class="control-label">{{ __('Customers') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="customers" {{ $data->sectionCheck('customers') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -163,7 +163,7 @@
                         <label class="control-label">{{ __('Customer Top Ups') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="customer_topups" {{ $data->sectionCheck('customer_topups') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -173,7 +173,7 @@
                         <label class="control-label">{{ __('Merchants') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="merchants" {{ $data->sectionCheck('merchants') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -185,7 +185,7 @@
                         <label class="control-label">{{ __('Merchant Subscriptions') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="merchant_subscriptions" {{ $data->sectionCheck('merchant_subscriptions') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -195,7 +195,7 @@
                         <label class="control-label">{{ __('Merchant Verifications') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="merchant_verifications" {{ $data->sectionCheck('merchant_verifications') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -207,7 +207,7 @@
                         <label class="control-label">{{ __('Merchant Subscription Plans') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="merchant_subscription_plans" {{ $data->sectionCheck('merchant_subscription_plans') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -217,7 +217,7 @@
                         <label class="control-label">{{ __('Messages') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="chat_entries" {{ $data->sectionCheck('chat_entries') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -229,7 +229,7 @@
                         <label class="control-label">{{ __('General Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="muaadh_settings" {{ $data->sectionCheck('muaadh_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -239,7 +239,7 @@
                         <label class="control-label">{{ __('Home Page Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="home_page_settings" {{ $data->sectionCheck('home_page_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -251,7 +251,7 @@
                         <label class="control-label">{{ __('Menu Page Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="menu_page_settings" {{ $data->sectionCheck('menu_page_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -261,7 +261,7 @@
                         <label class="control-label">{{ __('Email Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="emails_settings" {{ $data->sectionCheck('email_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -273,7 +273,7 @@
                         <label class="control-label">{{ __('Payment Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="payment_settings" {{ $data->sectionCheck('payment_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -283,7 +283,7 @@
                         <label class="control-label">{{ __('Social Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="social_settings" {{ $data->sectionCheck('social_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -295,7 +295,7 @@
                         <label class="control-label">{{ __('Language Settings') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="language_settings" {{ $data->sectionCheck('language_settings') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -305,7 +305,7 @@
                         <label class="control-label">{{ __('SEO Tools') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="seo_tools" {{ $data->sectionCheck('seo_tools') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -317,7 +317,7 @@
                         <label class="control-label">{{ __('Manage Staffs') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="manage_staffs" {{ $data->sectionCheck('manage_staffs') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 
@@ -327,7 +327,7 @@
                         <label class="control-label">{{ __('Subscribers') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="mailing_list" {{ $data->sectionCheck('mailing_list') ? 'checked' : '' }}>
-                          <span class="slider round"></span>
+                          <span class="toggle-switch round"></span>
                         </label>
                       </div>
 

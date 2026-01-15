@@ -187,7 +187,7 @@
                                   <div class="col-lg-6">
                                     <label class="switch">
                                       <input type="checkbox" name="multiple_shipping" value="1" {{ $gs->multiple_shipping == 1 ? "checked":"" }}>
-                                      <span class="slider round"></span>
+                                      <span class="toggle-switch round"></span>
                                     </label>
                                   </div>
                                   </div>
@@ -204,7 +204,7 @@
                                   <div class="col-lg-6">
                                     <label class="switch">
                                       <input type="checkbox" name="merchant_ship_info" value="1" {{ $gs->merchant_ship_info == 1 ? "checked" : "" }}>
-                                      <span class="slider round"></span>
+                                      <span class="toggle-switch round"></span>
                                     </label>
                                   </div>
                                   </div>

@@ -46,7 +46,6 @@
 
                                 <h6 class="mb-2">{{ __('Enabled Sections') }}:</h6>
                                 <div class="d-flex flex-wrap gap-1 mb-3">
-                                    @if($theme->show_hero_carousel)<span class="badge bg-primary">Hero Carousel</span>@endif
                                     @if($theme->show_hero_search)<span class="badge bg-primary">Hero Search</span>@endif
                                     @if($theme->show_brands)<span class="badge bg-primary">Brands</span>@endif
                                     @if($theme->show_categories)<span class="badge bg-primary">Categories</span>@endif

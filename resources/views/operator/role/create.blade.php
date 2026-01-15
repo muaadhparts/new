@@ -53,7 +53,7 @@
                               <label class="control-label">{{ __('Purchases') }} *</label>
                               <label class="switch">
                                 <input type="checkbox" name="section[]" value="purchases">
-                                <span class="slider round"></span>
+                                <span class="toggle-switch round"></span>
                               </label>
                             </div>
 
@@ -63,7 +63,7 @@
                               <label class="control-label">{{ __('Manage Categories') }} *</label>
                               <label class="switch">
                                 <input type="checkbox" name="section[]" value="categories">
-                                <span class="slider round"></span>
+                                <span class="toggle-switch round"></span>
                               </label>
                             </div>
 
@@ -75,7 +75,7 @@
                             <label class="control-label">{{ __('Manage country') }} *</label>
                             <label class="switch">
                               <input type="checkbox" name="section[]" value="manage-country">
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
 
@@ -85,7 +85,7 @@
                             <label class="control-label">{{ __('Tax Calculate') }} *</label>
                             <label class="switch">
                               <input type="checkbox" name="section[]" value="earning">
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
                       </div>
@@ -96,7 +96,7 @@
                             <label class="control-label">{{ __('Catalog Items') }} *</label>
                             <label class="switch">
                               <input type="checkbox" name="section[]" value="catalogItems">
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
 
@@ -106,7 +106,7 @@
                             <label class="control-label">{{ __('Affiliate Catalog Items') }} *</label>
                             <label class="switch">
                               <input type="checkbox" name="section[]" value="affilate_products">
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
 
@@ -118,7 +118,7 @@
                           <label class="control-label">{{ __('Bulk CatalogItem Upload') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="bulk_product_upload">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -128,7 +128,7 @@
                           <label class="control-label">{{ __('CatalogItem Discussion') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="product_discussion">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -140,7 +140,7 @@
                           <label class="control-label">{{ __('Set Discount Codes') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="set_discount_codes">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -150,7 +150,7 @@
                           <label class="control-label">{{ __('Customers') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="customers">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -162,7 +162,7 @@
                           <label class="control-label">{{ __('Customer Top Ups') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="customer_topups">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -172,7 +172,7 @@
                           <label class="control-label">{{ __('Merchants') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="merchants">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -184,7 +184,7 @@
                           <label class="control-label">{{ __('Merchant Subscriptions') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="merchant_subscriptions">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -194,7 +194,7 @@
                           <label class="control-label">{{ __('Merchant Verifications') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="merchant_verifications">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -206,7 +206,7 @@
                           <label class="control-label">{{ __('Merchant Subscription Plans') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="merchant_subscription_plans">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -216,7 +216,7 @@
                           <label class="control-label">{{ __('Messages') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="chat_entries">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -228,7 +228,7 @@
                           <label class="control-label">{{ __('General Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="muaadh_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -238,7 +238,7 @@
                           <label class="control-label">{{ __('Home Page Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="home_page_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -250,7 +250,7 @@
                           <label class="control-label">{{ __('Menu Page Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="menu_page_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -260,7 +260,7 @@
                           <label class="control-label">{{ __('Email Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="emails_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -272,7 +272,7 @@
                           <label class="control-label">{{ __('Payment Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="payment_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -282,7 +282,7 @@
                           <label class="control-label">{{ __('Social Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="social_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -294,7 +294,7 @@
                           <label class="control-label">{{ __('Language Settings') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="language_settings">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -304,7 +304,7 @@
                           <label class="control-label">{{ __('SEO Tools') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="seo_tools">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -316,7 +316,7 @@
                           <label class="control-label">{{ __('Manage Staffs') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="manage_staffs">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 
@@ -326,7 +326,7 @@
                           <label class="control-label">{{ __('Subscribers') }} *</label>
                           <label class="switch">
                             <input type="checkbox" name="section[]" value="mailing_list">
-                            <span class="slider round"></span>
+                            <span class="toggle-switch round"></span>
                           </label>
                         </div>
 

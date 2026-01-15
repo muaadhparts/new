@@ -1070,7 +1070,7 @@ div.modal {
 .social-links-area {
   background: #fff;
   padding: 30px 30px 30px;
-  /* Rounded sliders */ }
+  /* Rounded toggle-switches */ }
   .social-links-area .control-label {
     text-align: right;
     font-size: 16px;
@@ -1101,7 +1101,7 @@ div.modal {
     opacity: 0;
     width: 0;
     height: 0; }
-  .social-links-area .slider {
+  .social-links-area .toggle-switch {
     position: absolute;
     cursor: pointer;
     top: 0;
@@ -1112,7 +1112,7 @@ div.modal {
     -webkit-transition: .4s;
     -o-transition: .4s;
     transition: .4s; }
-  .social-links-area .slider:before {
+  .social-links-area .toggle-switch:before {
     position: absolute;
     content: "";
     height: 26px;
@@ -1123,19 +1123,19 @@ div.modal {
     -webkit-transition: .4s;
     -o-transition: .4s;
     transition: .4s; }
-  .social-links-area input:checked + .slider {
+  .social-links-area input:checked + .toggle-switch {
     background-color: #2d3274;
     }
-  .social-links-area input:focus + .slider {
+  .social-links-area input:focus + .toggle-switch {
     -webkit-box-shadow: 0 0 1px #2196F3;
     box-shadow: 0 0 1px #2196F3; }
-  .social-links-area input:checked + .slider:before {
+  .social-links-area input:checked + .toggle-switch:before {
     -webkit-transform: translateX(26px);
     -ms-transform: translateX(26px);
     transform: translateX(26px); }
-  .social-links-area .slider.round {
+  .social-links-area .toggle-switch.round {
     border-radius: 34px; }
-  .social-links-area .slider.round:before {
+  .social-links-area .toggle-switch.round:before {
     border-radius: 50%; }
 
 /*----------------------------------

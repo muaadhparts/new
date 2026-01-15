@@ -8,14 +8,14 @@ $(document).ready(function () {
   6. WOW JS
   7. HIDE & SHOW PASSWORD
   8. COUNTDOWN STARTS
-  9. HERO SECTION SLIDER
-  10. HOME CATE SLIDER
-  11. PRODUCT DETAILS SLIDER
-  12. PRICE RANGE SLIDER
+  9. HERO SECTION CAROUSEL
+  10. HOME CATE CAROUSEL
+  11. PRODUCT DETAILS CAROUSEL
+  12. PRICE RANGE CAROUSEL
   13. ADD DYNAMIC CLASS FOR SVG
   14. TOGGLE VENDOR DASHBOARD SIDEBAR
   15. DATA TABLE
-  16. PRODUCT CARDS SLIDER
+  16. PRODUCT CARDS CAROUSEL
   17. COUNTER UP
   18. CHANGE FILE NAME OF FILE INPUT
   19. TOGGLING ADD PRODUCT FORM  BASED ON SELECTED PRODUCT TYPE
@@ -276,28 +276,12 @@ $(document).ready(function () {
     }, 1000);
   }
 
-  // Detect RTL mode (used for all sliders)
+  // Detect RTL mode (used for all carousels)
   var isRTL = $('html').attr('dir') === 'rtl' || $('body').attr('dir') === 'rtl';
 
-  //****** 9. HERO SECTION SLIDER ******//
-  if (typeof $.fn.slick !== 'undefined' && $(".hero-slider-wrapper").length > 0) {
-    $(".hero-slider-wrapper").slick({
-      arrows: true,
-      dots: false,
-      infinite: true,
-      speed: 300,
-      slidesToShow: 1,
-      autoplay: true,
-      prevArrow:
-        '<button class="slick-prev slick-arrow" aria-label="Previous" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-      nextArrow:
-        '<button class="slick-next slick-arrow" aria-label="Next" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>',
-    });
-  }
-
-  //****** 10. HOME CATE SLIDER ******//
-  if (typeof $.fn.slick !== 'undefined' && $(".home-category-slider").length > 0) {
-    $(".home-category-slider").slick({
+  //****** 9. HOME CATE CAROUSEL ******//
+  if (typeof $.fn.slick !== 'undefined' && $(".home-category-carousel").length > 0) {
+    $(".home-category-carousel").slick({
       dots: false,
       infinite: true,
       speed: 300,
@@ -338,22 +322,22 @@ $(document).ready(function () {
     });
   }
 
-  //****** 11. PRODUCT DETAILS SLIDER ******//
+  //****** 11. PRODUCT DETAILS CAROUSEL ******//
 
-  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-main-slider").length > 0) {
-    $(".catalogItem-main-slider").slick({
+  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-main-carousel").length > 0) {
+    $(".catalogItem-main-carousel").slick({
       slidesToShow: 1,
       slidesToScroll: 1,
       arrows: false,
       // fade: true,
-      asNavFor: ".catalogItem-nav-slider",
+      asNavFor: ".catalogItem-nav-carousel",
     });
   }
-  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-nav-slider").length > 0) {
-    $(".catalogItem-nav-slider").slick({
+  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-nav-carousel").length > 0) {
+    $(".catalogItem-nav-carousel").slick({
       slidesToShow: 3,
       slidesToScroll: 1,
-      asNavFor: ".catalogItem-main-slider",
+      asNavFor: ".catalogItem-main-carousel",
       dots: false,
       focusOnSelect: true,
       variableWidth: true,
@@ -415,10 +399,10 @@ $(document).ready(function () {
   //   },
   // });
 
-  //****** 16. PRODUCT CARDS SLIDER ******//
+  //****** 16. PRODUCT CARDS CAROUSEL ******//
   // Updated to match grid layout: col-6 col-md-4 col-lg-3 (4 cards on lg, 3 on md, 2 on sm)
-  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-cards-slider").length > 0) {
-    $(".catalogItem-cards-slider").slick({
+  if (typeof $.fn.slick !== 'undefined' && $(".catalogItem-cards-carousel").length > 0) {
+    $(".catalogItem-cards-carousel").slick({
       dots: false,
       infinite: true,
       speed: 300,

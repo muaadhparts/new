@@ -12,7 +12,6 @@ class HomePageTheme extends Model
         'is_active',
         'layout',
         // Section Toggles
-        'show_hero_carousel',
         'show_hero_search',
         'show_brands',
         'show_categories',
@@ -27,7 +26,6 @@ class HomePageTheme extends Model
         'show_capabilities',
         'show_newsletter',
         // Section Purchase
-        'order_hero_carousel',
         'order_brands',
         'order_categories',
         'order_arrival',
@@ -64,7 +62,6 @@ class HomePageTheme extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'show_hero_carousel' => 'boolean',
         'show_hero_search' => 'boolean',
         'show_brands' => 'boolean',
         'show_categories' => 'boolean',
@@ -122,7 +119,6 @@ class HomePageTheme extends Model
     public function getOrderedSections()
     {
         $sections = [
-            'hero_carousel' => ['show' => $this->show_hero_carousel, 'purchase' => $this->order_hero_carousel],
             'brands' => ['show' => $this->show_brands, 'purchase' => $this->order_brands, 'name' => $this->name_brands],
             'categories' => ['show' => $this->show_categories, 'purchase' => $this->order_categories, 'name' => $this->name_categories],
             'arrival' => ['show' => $this->show_arrival, 'purchase' => $this->order_arrival, 'name' => $this->name_arrival],

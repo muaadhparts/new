@@ -43,7 +43,7 @@
                           <div class="col-lg-7">
                             <label class="switch">
                               <input type="checkbox" name="pkey[{{ __($pkey) }}]" value="1" {{ $pdata == 1 ? "checked":"" }}>
-                              <span class="slider round"></span>
+                              <span class="toggle-switch round"></span>
                             </label>
                           </div>
                         </div>
