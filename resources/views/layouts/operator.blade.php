@@ -260,6 +260,30 @@
 	<script src="{{asset('assets/operator/plugins/fullside-menu/waves.min.js')}}"></script>
 
 	<script src="{{asset('assets/operator/js/plugin.js')}}"></script>
+
+	{{-- DataTables Arabic Language Defaults --}}
+	@if(app()->getLocale() == 'ar')
+	<script>
+		$.extend(true, $.fn.dataTable.defaults, {
+			language: {
+				emptyTable: "{{ __('No data available in table') }}",
+				zeroRecords: "{{ __('No matching records found') }}",
+				info: "{{ __('Showing _START_ to _END_ of _TOTAL_ entries') }}",
+				infoEmpty: "{{ __('Showing 0 to 0 of 0 entries') }}",
+				infoFiltered: "{{ __('(filtered from _MAX_ total entries)') }}",
+				lengthMenu: "{{ __('Show _MENU_ entries') }}",
+				search: "{{ __('Search:') }}",
+				paginate: {
+					first: "{{ __('First') }}",
+					last: "{{ __('Last') }}",
+					next: "{{ __('Next') }}",
+					previous: "{{ __('Previous') }}"
+				}
+			}
+		});
+	</script>
+	@endif
+
 	<script src="{{asset('assets/operator/js/Chart.min.js')}}"></script>
 	<script src="{{asset('assets/operator/js/tag-it.js')}}"></script>
 	<script src="{{asset('assets/operator/js/nicEdit.js')}}"></script>

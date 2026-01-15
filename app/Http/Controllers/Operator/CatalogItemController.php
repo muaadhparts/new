@@ -8,6 +8,7 @@ use App\Models\Currency;
 use App\Models\MerchantPhoto;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
+use App\Models\MerchantCommission;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
@@ -80,10 +81,18 @@ class CatalogItemController extends OperatorBaseController
                 return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
             })
             ->addColumn('price', function (MerchantItem $mp) {
-                $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
                 $price = (float) $mp->price;
-                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+                // استخدام عمولة التاجر الخاصة بدلاً من العمولة العامة
+                $commission = MerchantCommission::where('user_id', $mp->user_id)
+                    ->where('is_active', true)
+                    ->first();
+
+                if ($commission) {
+                    $base = $commission->getPriceWithCommission($price);
+                } else {
+                    $base = $price; // لا عمولة إذا لم يتم تعيينها
+                }
 
                 return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })
@@ -185,10 +194,18 @@ class CatalogItemController extends OperatorBaseController
                 return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
             })
             ->addColumn('price', function (MerchantItem $mp) {
-                $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
                 $price = (float) $mp->price;
-                $base = $price + (float) $gs->fixed_commission + ($price * (float) $gs->percentage_commission / 100);
+
+                // استخدام عمولة التاجر الخاصة بدلاً من العمولة العامة
+                $commission = MerchantCommission::where('user_id', $mp->user_id)
+                    ->where('is_active', true)
+                    ->first();
+
+                if ($commission) {
+                    $base = $commission->getPriceWithCommission($price);
+                } else {
+                    $base = $price; // لا عمولة إذا لم يتم تعيينها
+                }
 
                 return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
             })

@@ -213,14 +213,10 @@ abstract class BaseMerchantPaymentController extends Controller
 
     /**
      * Get success redirect URL
+     * Always shows success page - the page will display "Continue to Other Items" button if needed
      */
     protected function getSuccessUrl(int $merchantId): string
     {
-        // Check if other merchants have items
-        if ($this->cartService->hasOtherMerchants($merchantId)) {
-            return route('front.cart') . '?checkout_success=1';
-        }
-
         return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'success']);
     }
 

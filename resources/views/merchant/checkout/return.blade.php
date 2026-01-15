@@ -75,9 +75,15 @@
 
                                     {{-- Check if there are more merchants to checkout --}}
                                     @if($has_more_merchants ?? false)
-                                    <a href="{{ route('front.cart') }}" class="m-btn m-btn--success">
-                                        <i class="fas fa-shopping-cart me-2"></i>@lang('Continue to Other Items')
-                                    </a>
+                                    <div class="w-100 mt-3">
+                                        <div class="m-alert m-alert--warning mb-3">
+                                            <i class="fas fa-info-circle me-2"></i>
+                                            @lang('You still have items from other merchants in your cart')
+                                        </div>
+                                        <a href="{{ route('front.cart') }}" class="m-btn m-btn--warning w-100">
+                                            <i class="fas fa-shopping-cart me-2"></i>@lang('Complete Other Merchants Orders')
+                                        </a>
+                                    </div>
                                     @endif
                                 </div>
                             </div>

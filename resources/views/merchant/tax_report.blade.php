@@ -146,7 +146,24 @@
     if ($.fn.DataTable) {
         $('#taxTable').DataTable({
             order: [[4, 'desc']],
-            pageLength: 25
+            pageLength: 25,
+            language: {
+                lengthMenu: "@lang('Show _MENU_ entries')",
+                info: "@lang('Showing _START_ to _END_ of _TOTAL_ entries')",
+                infoEmpty: "@lang('Showing 0 to 0 of 0 entries')",
+                infoFiltered: "@lang('(filtered from _MAX_ total entries)')",
+                zeroRecords: "@lang('No matching records found')",
+                search: "@lang('Search:')",
+                paginate: {
+                    first: "@lang('First')",
+                    last: "@lang('Last')",
+                    next: "@lang('Next')",
+                    previous: "@lang('Previous')"
+                },
+                emptyTable: "@lang('No data available in table')",
+                loadingRecords: "@lang('Loading...')",
+                processing: "@lang('Processing...')"
+            }
         });
     }
 </script>
