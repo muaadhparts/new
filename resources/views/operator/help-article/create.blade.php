@@ -36,10 +36,10 @@
                             @csrf
 
                             @include('components.operator.form-row', [
-                                'label' => __('Title'),
-                                'name' => 'title',
-                                'value' => old('title'),
-                                'placeholder' => __('Title'),
+                                'label' => __('Name'),
+                                'name' => 'name',
+                                'value' => old('name'),
+                                'placeholder' => __('Name'),
                                 'required' => true,
                                 'subheading' => __('(In Any Language)')
                             ])

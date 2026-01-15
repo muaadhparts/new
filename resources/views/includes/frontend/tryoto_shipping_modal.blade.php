@@ -1,9 +1,9 @@
 <div class="modal fade gs-modal" id="{{ $modalId }}" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    aria-labelledby="exampleModalCenterName" aria-hidden="true">
     <div class="modal-dialog xsend-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
             <div class="modal-header w-100">
-                <h4 class="title" id="exampleModalLongTitle">{{ $providerLabel }}</h4>
+                <h4 class="name" id="exampleModalLongName">{{ $providerLabel }}</h4>
                 <button type="button" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                 </button>

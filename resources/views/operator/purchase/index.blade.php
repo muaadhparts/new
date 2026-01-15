@@ -56,7 +56,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Update Status') }}</h5>
+                    <h5 class="modal-name">{{ __('Update Status') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -64,7 +64,7 @@
                     <p class="text-center">{{ __('Do you want to proceed?') }}</p>
                     <input type="hidden" id="t-add" value="{{ route('operator-purchase-timeline-add') }}">
                     <input type="hidden" id="t-id" value="">
-                    <input type="hidden" id="t-title" value="">
+                    <input type="hidden" id="t-name" value="">
                     <textarea class="form-control" placeholder="{{ __('Enter Your Tracking Note (Optional)') }}" id="t-txt" rows="3"></textarea>
                 </div>
                 <div class="modal-footer">
@@ -83,7 +83,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchantformLabel">{{ __('Send Email') }}</h5>
+                    <h5 class="modal-name" id="merchantformLabel">{{ __('Send Email') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -111,7 +111,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title"></h5>
+                    <h5 class="modal-name"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body"></div>

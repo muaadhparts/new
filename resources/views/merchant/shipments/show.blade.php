@@ -4,7 +4,7 @@
 <div class="gs-merchant-outlet">
     <!-- Breadcrumb -->
     <div class="gs-merchant-breadcrumb has-mb">
-        <div class="gs-topup-title d-flex align-items-center gap-4">
+        <div class="gs-topup-name d-flex align-items-center gap-4">
             <a href="{{ route('merchant.shipments.index') }}" class="btn btn-outline-secondary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> @lang('Back')
             </a>
@@ -296,7 +296,7 @@
             <form action="{{ route('merchant.shipments.cancel', $shipment->tracking_number) }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">@lang('Cancel Shipment')</h5>
+                    <h5 class="modal-name">@lang('Cancel Shipment')</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">

@@ -115,7 +115,7 @@ const ShippingQuote = (function() {
 
         const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
         const t = {
-            title: isRtl ? 'تكلفة الشحن' : 'Shipping Cost',
+            name: isRtl ? 'تكلفة الشحن' : 'Shipping Cost',
             loading: isRtl ? 'جاري حساب تكلفة الشحن...' : 'Calculating shipping...',
             close: isRtl ? 'إغلاق' : 'Close',
         };
@@ -127,8 +127,8 @@ const ShippingQuote = (function() {
             <div class="customer-location-modal__backdrop"></div>
             <div class="customer-location-modal__content">
                 <div class="customer-location-modal__header">
-                    <h3 class="customer-location-modal__title">
-                        <i class="fas fa-truck"></i> ${t.title}
+                    <h3 class="customer-location-modal__name">
+                        <i class="fas fa-truck"></i> ${t.name}
                     </h3>
                     <button type="button" class="customer-location-modal__close">
                         <i class="fas fa-times"></i>

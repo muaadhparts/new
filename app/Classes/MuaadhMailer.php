@@ -60,7 +60,7 @@ class MuaadhMailer
             $body = preg_replace("/{admin_name}/", $mailData['aname'], $body);
             $body = preg_replace("/{admin_email}/", $mailData['aemail'], $body);
             $body = preg_replace("/{order_number}/", $mailData['onumber'], $body);
-            $body = preg_replace("/{website_title}/", $this->gs->site_name, $body);
+            $body = preg_replace("/{website_name}/", $this->gs->site_name, $body);
 
 
             $dir = public_path('assets/temp_files');
@@ -118,7 +118,7 @@ class MuaadhMailer
             $body = preg_replace("/{admin_name}/", $mailData['aname'], $body);
             $body = preg_replace("/{admin_email}/", $mailData['aemail'], $body);
             $body = preg_replace("/{order_number}/", $mailData['onumber'], $body);
-            $body = preg_replace("/{website_title}/", $this->gs->site_name, $body);
+            $body = preg_replace("/{website_name}/", $this->gs->site_name, $body);
 
             //Recipients
             $this->mail->setFrom($this->gs->from_email, $this->gs->from_name);

@@ -59,7 +59,7 @@
                                                         <img  src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
                                                 </div>
     <div class="modal-header d-block text-center">
-        <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
+        <h4 class="modal-name d-inline-block">{{ __('Update Status') }}</h4>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                 
             </button>
@@ -90,7 +90,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchantformLabel">{{ __('Send Email') }}</h5>
+                    <h5 class="modal-name" id="merchantformLabel">{{ __('Send Email') }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                             
                         </button>
@@ -137,7 +137,7 @@
                                                         <img  src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
                                                 </div>
                                             <div class="modal-header">
-                                            <h5 class="modal-title"></h5>
+                                            <h5 class="modal-name"></h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                                                 
                                             </button>

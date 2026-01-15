@@ -101,14 +101,14 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control" name="title" placeholder="{{ __('Name') }}" value="{{$data->title}}" required="">
+                            <input type="text" class="form-control" name="name" placeholder="{{ __('Name') }}" value="{{$data->name}}" required="">
                           </div>
                         </div>
 
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Subtitle') }} *</h4>
+                                <h4 class="heading">{{ __('Subname') }} *</h4>
                                 @if($data->keyword == null)
                                 <p class="sub-heading">{{ __('(Optional)') }}</p>
                                 @else 
@@ -117,7 +117,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                              <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Subtitle') }}" value="{{$data->subtitle}}">
+                              <input type="text" class="form-control" name="subname" placeholder="{{ __('Subname') }}" value="{{$data->subname}}">
                           </div>
                         </div>
 

@@ -170,7 +170,7 @@ class ShipmentTrackingController extends MerchantBaseController
             shippingId: $shipping->id,
             provider: $shipping->provider,
             trackingNumber: $request->tracking_number,
-            companyName: $shipping->title
+            companyName: $shipping->name
         );
 
         return back()->with('success', __('Shipment tracking started'));

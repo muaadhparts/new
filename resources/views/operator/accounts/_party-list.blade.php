@@ -1,15 +1,15 @@
 {{-- Shared Party List Template --}}
-{{-- Required variables: $parties, $partyType, $currency, $title, $icon, $headerColor --}}
+{{-- Required variables: $parties, $partyType, $currency, $name, $icon, $headerColor --}}
 
 <div class="content-area">
     <div class="mr-breadcrumb">
         <div class="row">
             <div class="col-lg-12">
-                <h4 class="heading">{{ $title }}</h4>
+                <h4 class="heading">{{ $name }}</h4>
                 <ul class="links">
                     <li><a href="{{ route('operator.dashboard') }}">{{ __('Dashboard') }}</a></li>
                     <li><a href="{{ route('operator.accounts.index') }}">{{ __('Accounts') }}</a></li>
-                    <li><a href="javascript:;">{{ $title }}</a></li>
+                    <li><a href="javascript:;">{{ $name }}</a></li>
                 </ul>
             </div>
         </div>
@@ -44,7 +44,7 @@
     {{-- Parties Table --}}
     <div class="card">
         <div class="card-header bg-{{ $headerColor }} text-white d-flex justify-content-between align-items-center">
-            <strong><i class="{{ $icon }} me-2"></i>{{ $title }}</strong>
+            <strong><i class="{{ $icon }} me-2"></i>{{ $name }}</strong>
             <span class="badge bg-light text-dark">{{ $parties->total() }} {{ __('Party') }}</span>
         </div>
         <div class="card-body p-0">
@@ -109,11 +109,11 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('operator.accounts.party.statement', $party) }}" class="btn btn-outline-primary" title="{{ __('Statement') }}">
+                                    <a href="{{ route('operator.accounts.party.statement', $party) }}" class="btn btn-outline-primary" name="{{ __('Statement') }}">
                                         <i class="fas fa-file-invoice"></i>
                                     </a>
                                     @if(($party->summary['total_payable'] ?? 0) > 0)
-                                        <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $party->id]) }}" class="btn btn-outline-success" title="{{ __('Create Settlement') }}">
+                                        <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $party->id]) }}" class="btn btn-outline-success" name="{{ __('Create Settlement') }}">
                                             <i class="fas fa-money-check"></i>
                                         </a>
                                     @endif

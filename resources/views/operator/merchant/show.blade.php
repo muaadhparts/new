@@ -113,7 +113,7 @@
                                             <div class="purchase-table-wrap">
                                                 <div class="purchase-details-table">
                                                     <div class="mr-table">
-                                                        <h4 class="title">{{ __("Items Added") }} ({{ $data->merchantItems()->count() }})</h4>
+                                                        <h4 class="name">{{ __("Items Added") }} ({{ $data->merchantItems()->count() }})</h4>
                                                         <div class="table-responsive">
                                                                 <table id="merchant-items-table" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                                                     <thead>
@@ -146,7 +146,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
+                    <h5 class="modal-name" id="merchantformLabel">{{ __("Send Message") }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                             
                         </button>
@@ -191,7 +191,7 @@
 		<div class="modal-dialog modal-dialog-centered modal-lg" role="document">
 			<div class="modal-content">
 			<div class="modal-header">
-				<h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Attachments') }}</h5>
+				<h5 class="modal-name" id="exampleModalCenterName">{{ __('Attachments') }}</h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 				
 				</button>

@@ -17,7 +17,7 @@
         {{-- Open Graph Meta Tags --}}
         <meta property="og:type" content="product">
         <meta property="og:url" content="{{ $productUrl }}">
-        <meta property="og:title" content="{{ $catalogItem->name }}">
+        <meta property="og:name" content="{{ $catalogItem->name }}">
         <meta property="og:description" content="{{ Str::limit($description, 200) }}">
         <meta property="og:image" content="{{ $imageUrl }}">
         <meta property="og:site_name" content="{{ $gs->site_name ?? config('app.name') }}">
@@ -31,7 +31,7 @@
 
         {{-- Twitter Card --}}
         <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="{{ $catalogItem->name }}">
+        <meta name="twitter:name" content="{{ $catalogItem->name }}">
         <meta name="twitter:description" content="{{ Str::limit($description, 200) }}">
         <meta name="twitter:image" content="{{ $imageUrl }}">
 

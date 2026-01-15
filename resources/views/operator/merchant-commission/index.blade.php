@@ -25,7 +25,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="heading-area">
-                    <h4 class="title">{{ __('Merchant Commission Settings') }}</h4>
+                    <h4 class="name">{{ __('Merchant Commission Settings') }}</h4>
                 </div>
                 <div class="mr-table allproduct">
                     @include('alerts.operator.form-success')

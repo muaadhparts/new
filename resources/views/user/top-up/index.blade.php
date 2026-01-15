@@ -10,10 +10,10 @@
             @include('includes.user.sidebar')
             <!-- main content -->
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                <!-- page title -->
-                <div class="ud-page-title-box d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <!-- page name -->
+                <div class="ud-page-name-box d-flex justify-content-between align-items-center flex-wrap gap-3">
                     <!-- mobile sidebar trigger btn -->
-                    <h3 class="ud-page-title">@lang('Top Up')</h3>
+                    <h3 class="ud-page-name">@lang('Top Up')</h3>
                     <a class="template-btn md-btn black-btn data-table-btn mb-0"
                         href="{{ route('user-top-up-create') }}">
                         <i class="fas fa-plus"></i> @lang('Add Top Up')</a>

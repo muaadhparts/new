@@ -30,7 +30,7 @@
             <div class="col-lg-6">
                 <div class="special-box">
                     <div class="heading-area">
-                        <h4 class="title">
+                        <h4 class="name">
                             {{ __('Purchase Details') }}
                         </h4>
                     </div>
@@ -47,11 +47,11 @@
                                     <td width="10%">:</td>
                                     <td width="45%">{{$purchase->totalQty}}</td>
                                 </tr>
-                                @if($purchase->shipping_title != null)
+                                @if($purchase->shipping_name != null)
                                 <tr>
                                     <th width="45%">{{ __('Shipping Method') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{ $purchase->shipping_title }}</td>
+                                    <td width="45%">{{ $purchase->shipping_name }}</td>
                                 </tr>
                                 @endif
 
@@ -74,11 +74,11 @@
                                 </tr>
                                 @endif
 
-                                @if($purchase->packing_title != null)
+                                @if($purchase->packing_name != null)
                                 <tr>
                                     <th width="45%">{{ __('Packaging Method') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{ $purchase->packing_title }}</td>
+                                    <td width="45%">{{ $purchase->packing_name }}</td>
                                 </tr>
                                 @endif
 
@@ -174,7 +174,7 @@
             <div class="col-lg-6">
                 <div class="special-box">
                     <div class="heading-area">
-                        <h4 class="title">
+                        <h4 class="name">
                             {{ __('Billing Details') }}
                             <a class="f15" href="javascript:;" data-bs-toggle="modal"
                                 data-bs-target="#billing-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
@@ -276,7 +276,7 @@
             <div class="col-lg-6">
                 <div class="special-box">
                     <div class="heading-area">
-                        <h4 class="title">
+                        <h4 class="name">
                             {{ __('Shipping Details') }}
                             <a class="f15" href="javascript:;" data-bs-toggle="modal"
                                 data-bs-target="#shipping-details-edit"><i class="fas fa-edit"></i>{{ __("Edit") }}</a>
@@ -345,7 +345,7 @@
             <div class="col-lg-12">
                 <div class="special-box">
                     <div class="heading-area">
-                        <h4 class="title">
+                        <h4 class="name">
                             <i class="fas fa-truck"></i> {{ __('Shipment Status') }}
                         </h4>
                     </div>
@@ -460,7 +460,7 @@
                 }
                 @endphp
                 <div class="mr-table">
-                    <h4 class="title">
+                    <h4 class="name">
                         <a href="javascript:;" data-bs-toggle="modal" merchant="{{$key1}}"
                             merchant-store="{{$merchantName}}" class="btn btn-primary btn-sm pl-2 show_add_product"
                             data-bs-target="#add-catalogItem"><i class="fas fa-plus"></i>{{ __("Add Item") }}</a> {{
@@ -475,7 +475,7 @@
                                     <th>{{ __('Item ID#') }}</th>
                                     <th>{{ __('Shop Name') }}</th>
                                     <th>{{ __('Merchant Status') }}</th>
-                                    <th>{{ __('Item Title') }}</th>
+                                    <th>{{ __('Item Name') }}</th>
                                     <th>{{ __('Details') }}</th>
                                     <th>{{ __('Total Price') }}</th>
                                     <th>{{ __('Action') }}</th>
@@ -686,7 +686,7 @@
                                         @if ($shipping)
                                         <p>
                                             {{ __('Shipping Method') }} :
-                                            <strong>{{$shipping->title}} | {{
+                                            <strong>{{$shipping->name}} | {{
                                                 \PriceHelper::showCurrencyPrice($shipping->price *
                                                 $purchase->currency_value) }}</strong>
                                         </p>
@@ -695,7 +695,7 @@
 
                                         <p>
                                             {{ __('Packaging Method') }} :
-                                            <strong>{{$package->title}} | {{
+                                            <strong>{{$package->name}} | {{
                                                 \PriceHelper::showCurrencyPrice($package->price *
                                                 $purchase->currency_value) }}</strong>
                                         </p>
@@ -765,7 +765,7 @@
                 <img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
             </div>
             <div class="modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-name">
                     {{ __('Edit Item') }}
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
@@ -795,7 +795,7 @@
         <div class="modal-content">
 
             <div class="modal-header d-block text-center">
-                <h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
+                <h4 class="modal-name d-inline-block">{{ __('Confirm Delete') }}</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     
                 </button>
@@ -828,7 +828,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchantformLabel">{{ __('Send Email') }}</h5>
+                    <h5 class="modal-name" id="merchantformLabel">{{ __('Send Email') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                         
                     </button>
@@ -878,7 +878,7 @@
                 <img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
             </div>
             <div class="modal-header d-block text-center">
-                <h4 class="modal-title d-inline-block">{{ __('Update Status') }}</h4>
+                <h4 class="modal-name d-inline-block">{{ __('Update Status') }}</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
                 </button>

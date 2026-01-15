@@ -4,7 +4,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Blog')</h2>
+                    <h2 class="breadcrumb-name">@lang('Blog')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.publications') }}">@lang('Blog')</a></li>
@@ -23,7 +23,7 @@
                     <div class="gs-blog-sidebar-wrapper">
                         <!-- search wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Search')</h5>
+                            <h5 class="widget-name">@lang('Search')</h5>
                             <form class="search-form" action="{{ route('front.publicationsearch') }}" method="GET">
                                 <input class="input-box" type="text" name="search"
                                     value="{{ isset($_GET['search']) ? $_GET['search'] : '' }}"
@@ -42,7 +42,7 @@
 
                         <!-- categories wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Categories')</h5>
+                            <h5 class="widget-name">@lang('Categories')</h5>
                             <ul class="cat-wrapper">
                                 @foreach ($bcats as $cat)
                                     <li><a class="{{ isset($bcat) ? ($bcat->id == $cat->id ? 'active' : '') : '' }}"
@@ -55,7 +55,7 @@
 
                         <!-- recent post wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Recent Posts')</h5>
+                            <h5 class="widget-name">@lang('Recent Posts')</h5>
                             <div class="gs-sm-recent-post-wrapper">
 
 
@@ -64,8 +64,8 @@
                                         <img src="{{ $recent->photo ? asset('assets/images/publications/' . $recent->photo) : asset('assets/images/noimage.png') }}"
                                             alt="recent post">
                                         <div class="recent-post-content">
-                                            <h6 class="post-title">
-                                                {{ mb_strlen($recent->title, 'UTF-8') > 45 ? mb_substr($recent->title, 0, 45, 'UTF-8') . '..' : $recent->title }}
+                                            <h6 class="post-name">
+                                                {{ mb_strlen($recent->name, 'UTF-8') > 45 ? mb_substr($recent->name, 0, 45, 'UTF-8') . '..' : $recent->name }}
                                             </h6>
                                             <span class="post-date">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
@@ -99,7 +99,7 @@
 
                         <!-- tags wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Popular Tags')</h5>
+                            <h5 class="widget-name">@lang('Popular Tags')</h5>
                             <ul class="tags-wrapper">
                                 @foreach ($tags as $tag)
                                     @if (!empty($tag))
@@ -127,8 +127,8 @@
                             </div>
                             <div class="right-side-content">
                                 <h4>
-                                    <a class="title" href="{{ route('front.publicationshow', $publication->slug) }}">
-                                        {{ mb_strlen($publication->title, 'UTF-8') > 60 ? mb_substr($publication->title, 0, 60, 'UTF-8') . '..' : $publication->title }}
+                                    <a class="name" href="{{ route('front.publicationshow', $publication->slug) }}">
+                                        {{ mb_strlen($publication->name, 'UTF-8') > 60 ? mb_substr($publication->name, 0, 60, 'UTF-8') . '..' : $publication->name }}
                                     </a>
                                 </h4>
                                 <p class="des">

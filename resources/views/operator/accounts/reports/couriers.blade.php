@@ -126,12 +126,12 @@
                             </td>
                             <td>
                                 <a href="{{ route('operator.accounts.party.statement', $data['courier']->id) }}"
-                                   class="btn btn-sm btn-outline-primary" title="{{ __('View Statement') }}">
+                                   class="btn btn-sm btn-outline-primary" name="{{ __('View Statement') }}">
                                     <i class="fas fa-file-invoice"></i>
                                 </a>
                                 @if($data['owes_to_platform'] > 0)
                                 <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $data['courier']->id]) }}"
-                                   class="btn btn-sm btn-outline-success" title="{{ __('Record Settlement') }}">
+                                   class="btn btn-sm btn-outline-success" name="{{ __('Record Settlement') }}">
                                     <i class="fas fa-money-bill"></i>
                                 </a>
                                 @endif

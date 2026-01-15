@@ -8,7 +8,7 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-user-conversation-content-wrapper gs-dashboard-outlet">
-                    <div class="gs-topup-title ms-0 mb-4 d-flex align-items-center">
+                    <div class="gs-topup-name ms-0 mb-4 d-flex align-items-center">
 
                         <a href="{{ url()->previous() }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>

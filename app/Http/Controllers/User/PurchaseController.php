@@ -143,7 +143,7 @@ class PurchaseController extends UserBaseController
         if ($confirmed > 0) {
             // Add tracking entry
             $purchase->tracks()->create([
-                'title' => __('Customer Confirmed Receipt'),
+                'name' => __('Customer Confirmed Receipt'),
                 'text' => __('Customer has confirmed receiving the delivery')
             ]);
 

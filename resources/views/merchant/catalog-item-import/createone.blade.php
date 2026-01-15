@@ -583,7 +583,7 @@
                                             <div class="col-lg-12">
                                                 <div class="featured-keyword-area">
                                                     <div class="heading-area">
-                                                        <h4 class="title">{{ __('Feature Tags') }}</h4>
+                                                        <h4 class="name">{{ __('Feature Tags') }}</h4>
                                                     </div>
 
                                                     <div class="feature-tag-top-filds" id="feature-section">
@@ -648,7 +648,7 @@
         <div class="modal-dialog modal-dialog-centered  modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalCenterTitle">{{ __('Image Gallery') }}</h5>
+                    <h5 class="modal-name" id="exampleModalCenterName">{{ __('Image Gallery') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                         
                     </button>

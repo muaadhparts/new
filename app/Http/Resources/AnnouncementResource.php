@@ -18,7 +18,7 @@ class AnnouncementResource extends JsonResource
         'id' => $this->id,
         'image' => url('/') . '/assets/images/announcements/'.$this->photo,
         'link' => $this->link,
-        'title' => $this->title,
+        'name' => $this->name,
         'text' => $this->text
       ];
     }

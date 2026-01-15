@@ -16,7 +16,7 @@
         display: none;
     }
 
-    .chart-title-dropdown-wrapper {
+    .chart-name-dropdown-wrapper {
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -32,7 +32,7 @@
             flex-direction: column;
         }
 
-        .chart-title {
+        .chart-name {
             color: $text-color-950;
             font-weight: 500;
         }

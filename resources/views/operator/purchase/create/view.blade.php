@@ -39,7 +39,7 @@
         
           <div class="col-lg-12 purchase-details-table">
             <div class="mr-table">
-                <h4 class="title">
+                <h4 class="name">
                     {{ __('CatalogItems') }}
                 </h4>
                 <div class="table-responsive">
@@ -48,7 +48,7 @@
                            <tr>
                            <tr>
                               <th>{{ __('CatalogItem ID#') }}</th>
-                              <th>{{ __('CatalogItem Title') }}</th>
+                              <th>{{ __('CatalogItem Name') }}</th>
                               <th>{{ __('Price') }}</th>
                               <th>{{ __('Details') }}</th>
                               <th>{{ __('Subtotal') }}</th>
@@ -123,7 +123,7 @@
           <div class="col-lg-8 my-5">
              <div class="special-box">
                 <div class="heading-area">
-                   <h4 class="title">
+                   <h4 class="name">
                       {{ __('Customer Details') }} 
                    </h4>
                 </div>
@@ -180,7 +180,7 @@
           <div class="col-lg-4 my-5 ">
              <div class="special-box">
                 <div class="heading-area">
-                   <h4 class="title">
+                   <h4 class="name">
                       {{ __('Purchase Details') }} 
                    </h4>
                 </div>

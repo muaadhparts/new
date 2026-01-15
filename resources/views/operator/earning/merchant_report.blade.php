@@ -172,23 +172,23 @@
                             <td class="text-end">{{ $currency->sign }}{{ number_format($merchant['total_net'], 2) }}</td>
                             <td class="text-center">
                                 @if($merchant['platform_payments_count'] > 0)
-                                    <span class="badge bg-primary" title="{{ __('Platform received') }}">
+                                    <span class="badge bg-primary" name="{{ __('Platform received') }}">
                                         {{ $merchant['platform_payments_count'] }} <i class="fas fa-arrow-down"></i>
                                     </span>
                                 @endif
                                 @if($merchant['merchant_payments_count'] > 0)
-                                    <span class="badge bg-warning" title="{{ __('Merchant received') }}">
+                                    <span class="badge bg-warning" name="{{ __('Merchant received') }}">
                                         {{ $merchant['merchant_payments_count'] }} <i class="fas fa-arrow-up"></i>
                                     </span>
                                 @endif
                             </td>
                             <td class="text-end">
                                 @if($merchant['net_balance'] >= 0)
-                                    <span class="text-success" title="{{ __('Platform owes merchant') }}">
+                                    <span class="text-success" name="{{ __('Platform owes merchant') }}">
                                         +{{ $currency->sign }}{{ number_format($merchant['net_balance'], 2) }}
                                     </span>
                                 @else
-                                    <span class="text-danger" title="{{ __('Merchant owes platform') }}">
+                                    <span class="text-danger" name="{{ __('Merchant owes platform') }}">
                                         {{ $currency->sign }}{{ number_format($merchant['net_balance'], 2) }}
                                     </span>
                                 @endif

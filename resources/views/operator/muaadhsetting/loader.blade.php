@@ -27,7 +27,7 @@
                 <div class="col-lg-6">
                     <div class="special-box">
                         <div class="heading-area">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Website Loader') }}
                             </h4>
                         </div>
@@ -36,7 +36,7 @@
                           {{csrf_field()}}   
                           @include('alerts.operator.form-both') 
                           <div class="loader-switcher">
-                            <h4 class="title" style="margin-left: 80px;">
+                            <h4 class="name" style="margin-left: 80px;">
                                 {{ __('Loader') }} :
                               </h4>
                                       <div class="action-list">
@@ -47,13 +47,13 @@
                                         </div>
                           </div>
                           <div class="currrent-logo">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Current Loader') }} :
                             </h4>
                             <img src="{{ $gs->loader ? asset('assets/images/'.$gs->loader):asset('assets/images/noimage.png')}}" alt="">
                           </div>
                           <div class="set-logo">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Set New Loader') }} :
                             </h4>
                             <input class="img-upload1" type="file" name="loader">
@@ -68,7 +68,7 @@
                 <div class="col-lg-6">
                     <div class="special-box">
                         <div class="heading-area">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Admin Loader') }}
                             </h4>
                         </div>
@@ -77,7 +77,7 @@
                           {{csrf_field()}}   
                           @include('alerts.operator.form-both') 
                           <div class="loader-switcher">
-                            <h4 class="title" style="margin-left: 80px;">
+                            <h4 class="name" style="margin-left: 80px;">
                                 {{ __('Loader') }} :
                               </h4>
                                       <div class="action-list">
@@ -90,7 +90,7 @@
            
 
                           <div class="currrent-logo">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Current Loader') }} :
                             </h4>
 
@@ -98,7 +98,7 @@
                           </div>
                           
                           <div class="set-logo">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Set New Loader') }} :
                             </h4>
                             <input class="img-upload1" type="file" name="admin_loader">

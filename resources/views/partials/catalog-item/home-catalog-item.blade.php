@@ -28,38 +28,38 @@
             {{-- item_type and affiliate_link are now on merchant_items --}}
             @if($homeProdMerchant && $homeProdMerchant->item_type == "affiliate" && $homeProdMerchant->affiliate_link)
             <div class="cart-button">
-               <a href="javascript:;" data-href="{{ $homeProdMerchant->affiliate_link }}" class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip" data-bs-placement="right" title="" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
+               <a href="javascript:;" data-href="{{ $homeProdMerchant->affiliate_link }}" class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip" data-bs-placement="right" name="" data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
             </div>
             @else
             @if($cartItem->emptyStock())
             <div class="closed">
-               <a class="cart-out-of-stock button add_to_cart_button"  href="#" title="{{ __('Out Of Stock') }}" ><i class="flaticon-cancel flat-mini mx-auto"></i></a>
+               <a class="cart-out-of-stock button add_to_cart_button"  href="#" name="{{ __('Out Of Stock') }}" ><i class="flaticon-cancel flat-mini mx-auto"></i></a>
             </div>
             @else
                <div class="cart-button">
 
                   <a href="javascript:;"
-                  data-bs-toggle="modal"  {{$cartItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}  data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}" data-cross-href="{{route('front.show.cross.catalogItem',$cartItem->id)}}" class="add-cart button add_to_cart_button {{$cartItem->cross_items ? 'view_cross_product' : ''}}"  data-bs-placement="right"  title="Add To Cart" data-bs-original-title="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
+                  data-bs-toggle="modal"  {{$cartItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}  data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}" data-cross-href="{{route('front.show.cross.catalogItem',$cartItem->id)}}" class="add-cart button add_to_cart_button {{$cartItem->cross_items ? 'view_cross_product' : ''}}"  data-bs-placement="right"  name="Add To Cart" data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
             @endif
             @endif
             @if(Auth::check())
             <div class="favorite-button">
-               <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;" data-href="{{ route('user-favorite-add',$cartItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Add to Favorites" title="{{ __('Favorites') }}" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
+               <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;" data-href="{{ route('user-favorite-add',$cartItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-name="Add to Favorites" name="{{ __('Favorites') }}" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
             </div>
             @else
             <div class="favorite-button">
-               <a class="add_to_favorite button add_to_cart_button" href="{{ route('user.login') }}" data-bs-toggle="tooltip" data-bs-placement="right" title="{{ __('Favorites') }}" data-bs-original-title="{{ __('Favorites') }}" aria-label="{{ __('Favorites') }}">{{ __('Favorites') }}</a>
+               <a class="add_to_favorite button add_to_cart_button" href="{{ route('user.login') }}" data-bs-toggle="tooltip" data-bs-placement="right" name="{{ __('Favorites') }}" data-bs-original-name="{{ __('Favorites') }}" aria-label="{{ __('Favorites') }}">{{ __('Favorites') }}</a>
             </div>
             @endif
 
                <div class="compare-button">
-                  <a class="compare button add_to_cart_button" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" href="javascrit:;" data-bs-toggle="tooltip" data-bs-placement="right" title="{{__('Compare')}}" data-bs-original-title="{{__('Compare')}}" aria-label="{{__('Compare')}}">{{ __('Compare') }}</a>
+                  <a class="compare button add_to_cart_button" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" href="javascrit:;" data-bs-toggle="tooltip" data-bs-placement="right" name="{{__('Compare')}}" data-bs-original-name="{{__('Compare')}}" aria-label="{{__('Compare')}}">{{ __('Compare') }}</a>
                </div>
          </div>
        </div>
        <div class="catalogItem-info">
-          <h3 class="catalogItem-title"><a href="{{ $homeProdUrl }}">{{ $cartItem->showName() }}</a></h3>
+          <h3 class="catalogItem-name"><a href="{{ $homeProdUrl }}">{{ $cartItem->showName() }}</a></h3>
           <div class="catalogItem-price">
              <div class="price">
                 <ins>{{ $cartItem->showPrice() }} </ins>

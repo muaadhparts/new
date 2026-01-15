@@ -5,7 +5,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Courier Forgot Password')</h2>
+                    <h2 class="breadcrumb-name">@lang('Courier Forgot Password')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">Home</a></li>
                         <li><a href="#">@lang('Courier Forgot Password')</a></li>

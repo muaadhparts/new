@@ -284,7 +284,7 @@
         $("#t-txt").removeClass("d-none");
       }
       $("#t-id").val($(this).data("id"));
-      $("#t-title").val(data);
+      $("#t-name").val(data);
     });
 
     $(document).on("change", ".merchant-droplinks", function (e) {
@@ -307,7 +307,7 @@
         $(".submit-loader").show();
       }
       $("#modal1")
-        .find(".modal-title")
+        .find(".modal-name")
         .html("ADD NEW " + $("#headerdata").val());
       $("#modal1 .modal-content .modal-body")
         .html("")
@@ -328,7 +328,7 @@
       if (admin_loader == 1) {
         $(".submit-loader").show();
       }
-      $("#attribute").find(".modal-title").html($("#attribute_data").val());
+      $("#attribute").find(".modal-name").html($("#attribute_data").val());
       $("#attribute .modal-content .modal-body")
         .html("")
         .load($(this).attr("data-href"), function (response, status, xhr) {
@@ -349,7 +349,7 @@
         $(".submit-loader").show();
       }
       $("#modal1")
-        .find(".modal-title")
+        .find(".modal-name")
         .html("EDIT " + $("#headerdata").val());
       $("#modal1 .modal-content .modal-body")
         .html("")
@@ -371,7 +371,7 @@
         $(".submit-loader").show();
       }
       $("#modal2")
-        .find(".modal-title")
+        .find(".modal-name")
         .html($("#headerdata").val() + " Highlight");
       $("#modal2 .modal-content .modal-body")
         .html("")
@@ -400,7 +400,7 @@
         $(".submit-loader").show();
       }
       $("#modal1")
-        .find(".modal-title")
+        .find(".modal-name")
         .html($("#headerdata").val() + " DETAILS");
       $("#modal1 .modal-content .modal-body")
         .html("")
@@ -422,7 +422,7 @@
         $(".submit-loader").show();
       }
       $("#modal1")
-        .find(".modal-title")
+        .find(".modal-name")
         .html("TRACK " + $("#headerdata").val());
       $("#modal1 .modal-content .modal-body")
         .html("")
@@ -443,7 +443,7 @@
       if (admin_loader == 1) {
         $(".submit-loader").show();
       }
-      $("#modal1").find(".modal-title").html("DELIVERY STATUS");
+      $("#modal1").find(".modal-name").html("DELIVERY STATUS");
       $("#modal1 .modal-content .modal-body")
         .html("")
         .load($(this).attr("data-href"), function (response, status, xhr) {
@@ -725,12 +725,12 @@
 
         if (tdata.length > 0) {
           var id = $("#t-id").val();
-          var title = $("#t-title").val();
+          var name = $("#t-name").val();
           var text = $("#t-txt").val();
           $.ajax({
             url: $("#t-add").val(),
             method: "GET",
-            data: { id: id, title: title, text: text },
+            data: { id: id, name: name, text: text },
           });
         }
       }
@@ -1162,11 +1162,11 @@
   // ORDER TRACKING STARTS
 
   $(document).on("click", ".track-edit", function () {
-    $("#track-title").focus();
-    var title = $(this).parent().parent().parent().find(".t-title").text();
+    $("#track-name").focus();
+    var name = $(this).parent().parent().parent().find(".t-name").text();
     var text = $(this).parent().parent().parent().find(".t-text").text();
 
-    $("#track-title").val(title);
+    $("#track-name").val(name);
     $("#track-details").val(text);
 
     $("#track-btn").text($("#edit-text").val());
@@ -1177,7 +1177,7 @@
   $(document).on("click", "#cancel-btn", function () {
     $(this).addClass("d-none");
     $("#track-btn").text($("#add-text").val());
-    $("#track-title").val("");
+    $("#track-name").val("");
     $("#track-details").val("");
     $("#trackform").prop("action", $("#track-store").val());
   });

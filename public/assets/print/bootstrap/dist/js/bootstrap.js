@@ -1292,7 +1292,7 @@ if (typeof jQuery === 'undefined') {
     selector: false,
     template: '<div class="tooltip" role="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
     trigger: 'hover focus',
-    title: '',
+    name: '',
     delay: 0,
     html: false,
     container: false,
@@ -1332,7 +1332,7 @@ if (typeof jQuery === 'undefined') {
 
     this.options.selector ?
       (this._options = $.extend({}, this.options, { trigger: 'manual', selector: '' })) :
-      this.fixTitle()
+      this.fixName()
   }
 
   Tooltip.prototype.getDefaults = function () {
@@ -1560,9 +1560,9 @@ if (typeof jQuery === 'undefined') {
 
   Tooltip.prototype.setContent = function () {
     var $tip  = this.tip()
-    var title = this.getTitle()
+    var name = this.getName()
 
-    $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](title)
+    $tip.find('.tooltip-inner')[this.options.html ? 'html' : 'text'](name)
     $tip.removeClass('fade in top bottom left right')
   }
 
@@ -1598,15 +1598,15 @@ if (typeof jQuery === 'undefined') {
     return this
   }
 
-  Tooltip.prototype.fixTitle = function () {
+  Tooltip.prototype.fixName = function () {
     var $e = this.$element
-    if ($e.attr('title') || typeof $e.attr('data-original-title') != 'string') {
-      $e.attr('data-original-title', $e.attr('title') || '').attr('title', '')
+    if ($e.attr('name') || typeof $e.attr('data-original-name') != 'string') {
+      $e.attr('data-original-name', $e.attr('name') || '').attr('name', '')
     }
   }
 
   Tooltip.prototype.hasContent = function () {
-    return this.getTitle()
+    return this.getName()
   }
 
   Tooltip.prototype.getPosition = function ($element) {
@@ -1666,15 +1666,15 @@ if (typeof jQuery === 'undefined') {
     return delta
   }
 
-  Tooltip.prototype.getTitle = function () {
-    var title
+  Tooltip.prototype.getName = function () {
+    var name
     var $e = this.$element
     var o  = this.options
 
-    title = $e.attr('data-original-title')
-      || (typeof o.title == 'function' ? o.title.call($e[0]) :  o.title)
+    name = $e.attr('data-original-name')
+      || (typeof o.name == 'function' ? o.name.call($e[0]) :  o.name)
 
-    return title
+    return name
   }
 
   Tooltip.prototype.getUID = function (prefix) {
@@ -1802,7 +1802,7 @@ if (typeof jQuery === 'undefined') {
     placement: 'right',
     trigger: 'click',
     content: '',
-    template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'
+    template: '<div class="popover" role="tooltip"><div class="arrow"></div><h3 class="popover-name"></h3><div class="popover-content"></div></div>'
   })
 
 
@@ -1819,10 +1819,10 @@ if (typeof jQuery === 'undefined') {
 
   Popover.prototype.setContent = function () {
     var $tip    = this.tip()
-    var title   = this.getTitle()
+    var name   = this.getName()
     var content = this.getContent()
 
-    $tip.find('.popover-title')[this.options.html ? 'html' : 'text'](title)
+    $tip.find('.popover-name')[this.options.html ? 'html' : 'text'](name)
     $tip.find('.popover-content').children().detach().end()[ // we use append for html objects to maintain js events
       this.options.html ? (typeof content == 'string' ? 'html' : 'append') : 'text'
     ](content)
@@ -1831,11 +1831,11 @@ if (typeof jQuery === 'undefined') {
 
     // IE8 doesn't accept hiding via the `:empty` pseudo selector, we have to do
     // this manually by checking the contents.
-    if (!$tip.find('.popover-title').html()) $tip.find('.popover-title').hide()
+    if (!$tip.find('.popover-name').html()) $tip.find('.popover-name').hide()
   }
 
   Popover.prototype.hasContent = function () {
-    return this.getTitle() || this.getContent()
+    return this.getName() || this.getContent()
   }
 
   Popover.prototype.getContent = function () {

@@ -8,8 +8,8 @@
                 @include('includes.courier.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('Accounting Summary')</h3>
+                    <div class="ud-page-name-box">
+                        <h3 class="ud-page-name">@lang('Accounting Summary')</h3>
                     </div>
 
                     <!-- Current Balance Card -->
@@ -48,20 +48,20 @@
                                 <h5>@lang('Unsettled Deliveries Breakdown')</h5>
                                 <div class="account-info">
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('COD Amount (You Owe)')</span>
+                                        <span class="info-name">@lang('COD Amount (You Owe)')</span>
                                         <span class="text-danger">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['cod_amount'] ?? 0, 2) }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('Fees Earned (Online)')</span>
+                                        <span class="info-name">@lang('Fees Earned (Online)')</span>
                                         <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['fees_earned_online'] ?? 0, 2) }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('Fees Earned (COD)')</span>
+                                        <span class="info-name">@lang('Fees Earned (COD)')</span>
                                         <span class="text-success">{{ $currency->sign ?? 'SAR ' }}{{ number_format($settlementCalc['fees_earned_cod'] ?? 0, 2) }}</span>
                                     </div>
                                     <hr>
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title"><strong>@lang('Net Amount')</strong></span>
+                                        <span class="info-name"><strong>@lang('Net Amount')</strong></span>
                                         @php
                                             $netAmount = $settlementCalc['net_amount'] ?? 0;
                                         @endphp
@@ -103,17 +103,17 @@
                     </div>
 
                     <!-- Unsettled Deliveries -->
-                    <h4 class="table-title mt-4">@lang('Unsettled Deliveries')</h4>
+                    <h4 class="table-name mt-4">@lang('Unsettled Deliveries')</h4>
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th><span class="header-title">{{ __('#') }}</span></th>
-                                    <th><span class="header-title">{{ __('Purchase') }}</span></th>
-                                    <th><span class="header-title">{{ __('Payment') }}</span></th>
-                                    <th><span class="header-title">{{ __('COD Amount') }}</span></th>
-                                    <th><span class="header-title">{{ __('Delivery Fee') }}</span></th>
-                                    <th><span class="header-title">{{ __('Date') }}</span></th>
+                                    <th><span class="header-name">{{ __('#') }}</span></th>
+                                    <th><span class="header-name">{{ __('Purchase') }}</span></th>
+                                    <th><span class="header-name">{{ __('Payment') }}</span></th>
+                                    <th><span class="header-name">{{ __('COD Amount') }}</span></th>
+                                    <th><span class="header-name">{{ __('Delivery Fee') }}</span></th>
+                                    <th><span class="header-name">{{ __('Date') }}</span></th>
                                 </tr>
                             </thead>
                             <tbody>

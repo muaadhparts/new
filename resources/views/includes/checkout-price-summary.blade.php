@@ -78,7 +78,7 @@
      PRICE SUMMARY BOX
      ============================================================================ -->
 <div class="summary-inner-box" id="price-summary-box">
-    <h6 class="summary-title">@lang('Price Details')</h6>
+    <h6 class="summary-name">@lang('Price Details')</h6>
     <div class="details-wrapper">
 
         {{-- ================================================================
@@ -111,7 +111,7 @@
                 </span>
                 @if($currentStep == 3)
                 <button type="button" class="btn btn-link btn-sm text-danger p-0 remove-discount-btn"
-                        title="@lang('Remove Discount')">
+                        name="@lang('Remove Discount')">
                     <i class="fas fa-times-circle"></i>
                 </button>
                 @endif

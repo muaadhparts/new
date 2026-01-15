@@ -6,7 +6,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Checkout')</h2>
+                    <h2 class="breadcrumb-name">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
@@ -127,12 +127,12 @@
                                                value="{{ $method['keyword'] }}" class="d-none">
                                         <label for="pay_{{ $method['keyword'] }}" class="d-flex flex-column align-items-center text-center cursor-pointer w-100 h-100">
                                             @if(!empty($method['image']))
-                                            <img src="{{ asset('assets/images/'.$method['image']) }}" alt="{{ $method['title'] }}"
+                                            <img src="{{ asset('assets/images/'.$method['image']) }}" alt="{{ $method['name'] }}"
                                                  style="max-height: 40px; max-width: 100px;" class="mb-2">
                                             @else
                                             <i class="fas fa-credit-card fa-2x text-muted mb-2"></i>
                                             @endif
-                                            <span class="small">{{ $method['title'] }}</span>
+                                            <span class="small">{{ $method['name'] }}</span>
                                         </label>
                                     </div>
                                 </div>
@@ -150,7 +150,7 @@
                 {{-- Order Summary --}}
                 <div class="col-lg-5 col-xl-4">
                     <div class="summary-box sticky-top" style="top: 20px;">
-                        <h4 class="form-title">@lang('Order Summary')</h4>
+                        <h4 class="form-name">@lang('Order Summary')</h4>
 
                         <div class="summary-inner-box">
                             <ul class="summary-list">

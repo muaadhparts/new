@@ -31,7 +31,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Featured Image') }}</th>
-                                    <th width="40%">{{ __('Post Title') }}</th>
+                                    <th width="40%">{{ __('Post Name') }}</th>
                                     <th>{{ __('Views') }}</th>
                                     <th>{{ __('Options') }}</th>
                                 </tr>
@@ -62,7 +62,7 @@
         ajax: '{{ route('operator-publication-datatables') }}',
         columns: [
             { data: 'photo', name: 'photo', searchable: false, orderable: false },
-            { data: 'title', name: 'title' },
+            { data: 'name', name: 'name' },
             { data: 'views', name: 'views' },
             { data: 'action', searchable: false, orderable: false }
         ],

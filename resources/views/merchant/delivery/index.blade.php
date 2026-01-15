@@ -105,7 +105,7 @@
                                     <br>
                                     <small><i class="fas fa-city"></i> {{ $data->customer_city }}</small>
                                     <br>
-                                    <small title="{{ $data->customer_address }}"><i class="fas fa-map-marker-alt"></i> {{ Str::limit($data->customer_address, 25) }}</small>
+                                    <small name="{{ $data->customer_address }}"><i class="fas fa-map-marker-alt"></i> {{ Str::limit($data->customer_address, 25) }}</small>
                                 </td>
 
                                 <!-- Total Cost -->
@@ -139,7 +139,7 @@
                                             {{-- ✅ عرض اسم الشركة حسب نوع الشحن --}}
                                             @php
                                                 $shippingName = $customerChoice['company_name']
-                                                    ?? $customerChoice['title']
+                                                    ?? $customerChoice['name']
                                                     ?? $customerChoice['courier_name']
                                                     ?? __('N/A');
                                             @endphp
@@ -352,7 +352,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">@lang('Assign Shipping Method')</h5>
+                    <h5 class="modal-name">@lang('Assign Shipping Method')</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -407,7 +407,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">@lang('Shipment Tracking')</h5>
+                    <h5 class="modal-name">@lang('Shipment Tracking')</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -433,7 +433,7 @@
                     <input type="hidden" name="tracking_number" id="cancel_tracking_number">
 
                     <div class="modal-header">
-                        <h5 class="modal-title">@lang('Cancel Shipment')</h5>
+                        <h5 class="modal-name">@lang('Cancel Shipment')</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -614,7 +614,7 @@
         }
 
         let providerText = '<span class="badge bg-secondary">' +
-            (currentCustomerChoice.company_name || currentCustomerChoice.title || currentCustomerChoice.provider) +
+            (currentCustomerChoice.company_name || currentCustomerChoice.name || currentCustomerChoice.provider) +
             '</span>';
 
         $('#customerChoiceAlert').removeClass('d-none');
@@ -856,15 +856,15 @@
                         <div class="row">
                             <div class="col-6">
                                 <strong>@lang('Method:')</strong>
-                                <span class="detail-title"></span>
+                                <span class="detail-name"></span>
                             </div>
                             <div class="col-6">
                                 <strong>@lang('Price:')</strong>
                                 <span class="detail-price"></span>
                             </div>
-                            <div class="col-12 mt-2 detail-subtitle-row d-none">
+                            <div class="col-12 mt-2 detail-subname-row d-none">
                                 <strong>@lang('Delivery Time:')</strong>
-                                <span class="detail-subtitle"></span>
+                                <span class="detail-subname"></span>
                             </div>
                         </div>
                     </div>
@@ -1023,11 +1023,11 @@
                 let html = '<option value="">@lang("Select Shipping Option")</option>';
                 response.options.forEach(function(option) {
                     html += `<option value="${option.id}"
-                                data-title="${escapeHtml(option.title)}"
-                                data-subtitle="${escapeHtml(option.subtitle || '')}"
+                                data-name="${escapeHtml(option.name)}"
+                                data-subname="${escapeHtml(option.subname || '')}"
                                 data-price="${option.price}"
                                 data-display-price="${option.display_price}">
-                                ${option.title} - ${option.display_price}
+                                ${option.name} - ${option.display_price}
                             </option>`;
                 });
                 $select.html(html);
@@ -1079,15 +1079,15 @@
 
         if (shippingId) {
             $form.find('.provider-shipping-id').val(shippingId);
-            $form.find('.detail-title').text(selected.data('title'));
+            $form.find('.detail-name').text(selected.data('name'));
             $form.find('.detail-price').text(selected.data('display-price'));
 
-            const subtitle = selected.data('subtitle');
-            if (subtitle) {
-                $form.find('.detail-subtitle').text(subtitle);
-                $form.find('.detail-subtitle-row').removeClass('d-none');
+            const subname = selected.data('subname');
+            if (subname) {
+                $form.find('.detail-subname').text(subname);
+                $form.find('.detail-subname-row').removeClass('d-none');
             } else {
-                $form.find('.detail-subtitle-row').addClass('d-none');
+                $form.find('.detail-subname-row').addClass('d-none');
             }
 
             $form.find('.provider-details').removeClass('d-none');

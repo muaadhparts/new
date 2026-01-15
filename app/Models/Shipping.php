@@ -15,7 +15,7 @@ class Shipping extends Model
         'integration_type', // none, manual, api
         'provider',
         'name',
-        'subtitle',
+        'subname',
         'price',
         'free_above',
         'status',

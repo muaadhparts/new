@@ -190,7 +190,7 @@ const CustomerLocation = (function() {
 
         const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
         const t = {
-            title: isRtl ? 'اختر مدينتك' : 'Select Your City',
+            name: isRtl ? 'اختر مدينتك' : 'Select Your City',
             search: isRtl ? 'ابحث عن مدينتك...' : 'Search for your city...',
             cancel: isRtl ? 'إلغاء' : 'Cancel',
             noResults: isRtl ? 'لم يتم العثور على نتائج' : 'No results found',
@@ -203,8 +203,8 @@ const CustomerLocation = (function() {
             <div class="customer-location-modal__backdrop"></div>
             <div class="customer-location-modal__content">
                 <div class="customer-location-modal__header">
-                    <h3 class="customer-location-modal__title">
-                        <i class="fas fa-map-marker-alt"></i> ${t.title}
+                    <h3 class="customer-location-modal__name">
+                        <i class="fas fa-map-marker-alt"></i> ${t.name}
                     </h3>
                     <button type="button" class="customer-location-modal__close">
                         <i class="fas fa-times"></i>

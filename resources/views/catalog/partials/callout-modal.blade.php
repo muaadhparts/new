@@ -17,15 +17,15 @@
 
             {{-- Header - Responsive --}}
             <div class="modal-header bg-primary text-white border-0 py-2 py-md-3">
-                <h5 class="modal-title fs-6 fs-md-5 mb-0">
-                    <span id="ill-modal-title">@lang('catalog.modal.title')</span>
+                <h5 class="modal-name fs-6 fs-md-5 mb-0">
+                    <span id="ill-modal-name">@lang('catalog.modal.name')</span>
                 </h5>
 
                 <div class="d-flex align-items-center gap-1 gap-md-2">
                     <button type="button"
                             id="ill-back-btn"
                             class="btn btn-sm btn-light d-none px-2 py-1 px-md-3 py-md-2"
-                            title="@lang('catalog.modal.back')">
+                            name="@lang('catalog.modal.back')">
                         <i class="fas fa-arrow-left d-md-none"></i>
                         <span class="d-none d-md-inline">@lang('catalog.modal.back')</span>
                     </button>
@@ -89,11 +89,11 @@ window.i18n = {
     "labels.fits": "@lang('labels.fits')",
 
     /* عناوين شاشات المودال */
-    "catalog.modal.title": "@lang('catalog.modal.title')",
-    "catalog.quickview.title": "@lang('catalog.quickview.title')",
-    "catalog.alternative_modal.title": "@lang('catalog.alternative_modal.title')",
-    "catalog.compatibility_modal.title": "@lang('catalog.compatibility_modal.title')",
-    "catalog.product_modal.title": "@lang('catalog.product_modal.title')",
+    "catalog.modal.name": "@lang('catalog.modal.name')",
+    "catalog.quickview.name": "@lang('catalog.quickview.name')",
+    "catalog.alternative_modal.name": "@lang('catalog.alternative_modal.name')",
+    "catalog.compatibility_modal.name": "@lang('catalog.compatibility_modal.name')",
+    "catalog.product_modal.name": "@lang('catalog.product_modal.name')",
     "catalog.modal.back": "@lang('catalog.modal.back')",
     "catalog.modal.loading": "@lang('catalog.modal.loading')",
 

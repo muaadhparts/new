@@ -1,5 +1,5 @@
 ﻿                                            <tr>
-                                                <th>{{ __("Title") }}</th>
+                                                <th>{{ __("Name") }}</th>
                                                 <th>{{ __("Details") }}</th>
                                                 <th>{{ __("Date") }}</th>
                                                 <th>{{ __("Time") }}</th>
@@ -8,7 +8,7 @@
                                             @foreach($purchase->timelines as $track)
 
                                             <tr data-id="{{ $track->id }}">
-                                                <td width="30%">{{ $track->title }}</td>
+                                                <td width="30%">{{ $track->name }}</td>
                                                 <td width="30%">{{ $track->text }}</td>
                                                 <td>{{  date('Y-m-d',strtotime($track->created_at)) }}</td>
                                                 <td>{{  date('h:i:s:a',strtotime($track->created_at)) }}</td>

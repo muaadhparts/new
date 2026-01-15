@@ -63,7 +63,7 @@
             </div>
             <div class="col">
                 <div class="footer-widget category-widget my-5">
-                    <h3 class="widget-title mb-4">{{ __('Brands') }}</h3>
+                    <h3 class="widget-name mb-4">{{ __('Brands') }}</h3>
                     <ul>
                         @foreach ($brands->take(6) as $brand)
                             <li><a
@@ -75,7 +75,7 @@
             </div>
             <div class="col">
                 <div class="footer-widget category-widget my-5">
-                    <h6 class="widget-title mb-sm-4">{{ __('Customer Care') }}</h6>
+                    <h6 class="widget-name mb-sm-4">{{ __('Customer Care') }}</h6>
                     <ul>
                         @if($ps->home == 1)
                             <li>
@@ -94,7 +94,7 @@
                         @endif
                         {{-- Using cached $footerPages from AppServiceProvider --}}
                         @foreach($footerPages as $data)
-                            <li><a href="{{ route('front.merchant', $data->slug) }}">{{ $data->title }}</a></li>
+                            <li><a href="{{ route('front.merchant', $data->slug) }}">{{ $data->name }}</a></li>
                         @endforeach
                         @if($ps->contact == 1)
                             <li>
@@ -106,7 +106,7 @@
             </div>
             <div class="col">
                 <div class="footer-widget widget-nav my-5">
-                    <h6 class="widget-title mb-sm-4">{{ __('Recent Post') }}</h6>
+                    <h6 class="widget-name mb-sm-4">{{ __('Recent Post') }}</h6>
                     <ul>
                         @foreach (($footer_publications ?? []) as $footer_publication)
                             <li>
@@ -116,8 +116,8 @@
                                     </div>
                                     <div class="post-details">
                                         <a href="{{ route('front.publicationshow', $footer_publication->slug) }}">
-                                            <h4 class="post-title">
-                                                {{mb_strlen($footer_publication->title, 'UTF-8') > 45 ? mb_substr($footer_publication->title, 0, 45, 'UTF-8') . " .." : $footer_publication->title}}
+                                            <h4 class="post-name">
+                                                {{mb_strlen($footer_publication->name, 'UTF-8') > 45 ? mb_substr($footer_publication->name, 0, 45, 'UTF-8') . " .." : $footer_publication->name}}
                                             </h4>
                                         </a>
                                         <p class="date">

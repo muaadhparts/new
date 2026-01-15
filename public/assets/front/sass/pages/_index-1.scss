@@ -44,11 +44,11 @@
   }
 
   .slick-current.slick-active {
-    .subtitle, .title, .des, .hero-shop-now-btn {
+    .subname, .name, .des, .hero-shop-now-btn {
       -webkit-animation: 1.4s ease-in-out fadeInUp;
       animation: 1.4s ease-in-out fadeInUp;
     }
-    .title {
+    .name {
       animation-delay: 0.1s;
     }
     .des {
@@ -78,10 +78,10 @@
       text-align: center;
     }
 
-    .subtitle {
+    .subname {
       margin-bottom: 6px;
     }
-    .title {
+    .name {
       margin-bottom: 24px;
     }
     .des {

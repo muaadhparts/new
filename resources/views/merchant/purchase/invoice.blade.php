@@ -6,7 +6,7 @@
         <!-- breadcrumb start  -->
         <div class="gs-merchant-breadcrumb has-mb">
 
-            <div class="gs-topup-title d-flex align-items-center gap-4">
+            <div class="gs-topup-name d-flex align-items-center gap-4">
                 <a href="{{route("merchant-purchase-index")}}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>
@@ -44,7 +44,7 @@
         <!-- Merchant Purchase Invoice start  -->
         <div class="gs-merchant-purchase-invoice">
             <!-- purchase address info -->
-            <div class="user-purchase-title-wrapper">
+            <div class="user-purchase-name-wrapper">
                 <div>
                     <h4 class="purchase-number">{{ $gs->site_name ?? 'MUAADH EPC' }}</h4>
                 </div>
@@ -346,13 +346,13 @@
             <!-- ordered catalogItems table -->
             <div class="merchant-table-wrapper purchase-details-table-wrapper">
                 <div class="user-table table-responsive  position-relative">
-                    <h4 class="table-title">@lang('Items Purchased')</h4>
+                    <h4 class="table-name">@lang('Items Purchased')</h4>
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
-                                <th><span class="header-title">@lang('CatalogItem Title')</span></th>
-                                <th><span class="header-title">@lang('Details')</span></th>
-                                <th><span class="header-title">@lang('Total Price')</span></th>
+                                <th><span class="header-name">@lang('CatalogItem Name')</span></th>
+                                <th><span class="header-name">@lang('Details')</span></th>
+                                <th><span class="header-name">@lang('Total Price')</span></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -384,7 +384,7 @@
                                                             $merchantInvoiceProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                         }
                                                     @endphp
-                                                    <span class="content catalogItem-title d-inline-block">
+                                                    <span class="content catalogItem-name d-inline-block">
                                                         <a target="_blank" href="{{ $merchantInvoiceProductUrl }}">
                                                             {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                                         </a>

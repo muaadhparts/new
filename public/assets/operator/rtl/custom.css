@@ -76,7 +76,7 @@ background-position: center !important; }
 .slider-panel {
 margin: 20px 20px;
 }
-.slider-title {
+.slider-name {
 
 }
 .catalogItem-description .panel-heading.text-center h3 {
@@ -110,7 +110,7 @@ width: 90%;
 .hidden {
 display: none;
 }
-.ui-datepicker-title select {
+.ui-datepicker-name select {
 height: auto !important;
 }
 .add-input-fild{
@@ -188,7 +188,7 @@ a.clear {
     .sub-categori .modal .modal-dialog .modal-header {
       background: #16193a;
       }
-      .sub-categori .modal .modal-dialog .modal-header .modal-title {
+      .sub-categori .modal .modal-dialog .modal-header .modal-name {
         color: #fff;
         font-size: 18px;
         font-weight: 600; }
@@ -260,7 +260,7 @@ padding: 30px 30px 30px; }
 padding: 0px;
 margin-top: 20px;
 text-align: center; }
-.purchase-table-wrap .mr-table .title {
+.purchase-table-wrap .mr-table .name {
   font-weight: 600;
   font-size: 19px;
   display: inline-block;
@@ -315,8 +315,8 @@ text-align: right; }
 font-size: 18px;
 font-weight: 700; }
 
-.invoice__orderDetails .title,
-.invoice__shipping .title {
+.invoice__orderDetails .name,
+.invoice__shipping .name {
 font-size: 20px;
 font-weight: 600; }
 
@@ -380,7 +380,7 @@ background: #eaeaf1;
 border-bottom: 0px;
 padding: 10px 30px 10px;
 }
-.special-box .heading-area .title{
+.special-box .heading-area .name{
 font-size: 19px;
 font-weight: 600;
 padding: 0px;
@@ -432,7 +432,7 @@ border: 0px;
 /* Special-box Box Area End */
 
 /* Products Purchase Area Start */
-.purchase-table-wrap .mr-table .title{
+.purchase-table-wrap .mr-table .name{
   background: #eaeaf1;
   display: block;
   width: 100%;
@@ -670,7 +670,7 @@ border-color: #129021;
 text-align: center;
 margin-top: 20px;
 }
-.c-info-box-area .c-info-box-content .title{
+.c-info-box-area .c-info-box-content .name{
 font-size: 18px;
 font-weight: 600;
 margin-bottom: 2px;

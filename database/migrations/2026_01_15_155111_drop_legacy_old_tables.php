@@ -47,7 +47,7 @@ return new class extends Migration
         if (!Schema::hasTable('membership_plans_old')) {
             Schema::create('membership_plans_old', function (Blueprint $table) {
                 $table->id();
-                $table->string('title')->nullable();
+                $table->string('name')->nullable();
                 $table->text('description')->nullable();
                 $table->decimal('price', 10, 2)->default(0);
                 $table->integer('duration')->default(30);

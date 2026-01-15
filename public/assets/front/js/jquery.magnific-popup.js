@@ -89,7 +89,7 @@ var _mfpOn = function(name, f) {
 	},
 	_getCloseBtn = function(type) {
 		if(type !== _currPopupType || !mfp.currTemplate.closeBtn) {
-			mfp.currTemplate.closeBtn = $( mfp.st.closeMarkup.replace('%title%', mfp.st.tClose ) );
+			mfp.currTemplate.closeBtn = $( mfp.st.closeMarkup.replace('%name%', mfp.st.tClose ) );
 			_currPopupType = type;
 		}
 		return mfp.currTemplate.closeBtn;
@@ -901,7 +901,7 @@ $.magnificPopup = {
 
 		overflowY: 'auto',
 
-		closeMarkup: '<button title="%title%" type="button" class="mfp-close">&#215;</button>',
+		closeMarkup: '<button name="%name%" type="button" class="mfp-close">&#215;</button>',
 
 		tClose: 'Close (Esc)',
 
@@ -1122,11 +1122,11 @@ $.magnificPopup.registerModule(AJAX_NS, {
 
 /*>>image*/
 var _imgInterval,
-	_getTitle = function(item) {
-		if(item.data && item.data.title !== undefined)
-			return item.data.title;
+	_getName = function(item) {
+		if(item.data && item.data.name !== undefined)
+			return item.data.name;
 
-		var src = mfp.st.image.titleSrc;
+		var src = mfp.st.image.nameSrc;
 
 		if(src) {
 			if(typeof src === "function") {
@@ -1147,14 +1147,14 @@ $.magnificPopup.registerModule('image', {
 						'<div class="mfp-img"></div>'+
 						'<figcaption>'+
 							'<div class="mfp-bottom-bar">'+
-								'<div class="mfp-title"></div>'+
+								'<div class="mfp-name"></div>'+
 								'<div class="mfp-counter"></div>'+
 							'</div>'+
 						'</figcaption>'+
 					'</figure>'+
 				'</div>',
 		cursor: 'mfp-zoom-out-cur',
-		titleSrc: 'title',
+		nameSrc: 'name',
 		verticalFit: true,
 		tError: 'The image could not be loaded.'
 	},
@@ -1335,7 +1335,7 @@ $.magnificPopup.registerModule('image', {
 			}
 
 			mfp._parseMarkup(template, {
-				title: _getTitle(item),
+				name: _getName(item),
 				img_replaceWith: item.img
 			}, item);
 
@@ -1687,7 +1687,7 @@ $.magnificPopup.registerModule('gallery', {
 
 	options: {
 		enabled: false,
-		arrowMarkup: '<button title="%title%" type="button" class="mfp-arrow mfp-arrow-%dir%"></button>',
+		arrowMarkup: '<button name="%name%" type="button" class="mfp-arrow mfp-arrow-%dir%"></button>',
 		preload: [0,2],
 		navigateByImgClick: true,
 		arrows: true,
@@ -1774,8 +1774,8 @@ $.magnificPopup.registerModule('gallery', {
 					}
 
 					var markup     = gSt.arrowMarkup,
-					    arrowLeft  = mfp.arrowLeft = $( markup.replace(/%title%/gi, arrowLeftDesc).replace(/%action%/gi, arrowLeftAction).replace(/%dir%/gi, 'left') ).addClass(PREVENT_CLOSE_CLASS),
-					    arrowRight = mfp.arrowRight = $( markup.replace(/%title%/gi, arrowRightDesc).replace(/%action%/gi, arrowRightAction).replace(/%dir%/gi, 'right') ).addClass(PREVENT_CLOSE_CLASS);
+					    arrowLeft  = mfp.arrowLeft = $( markup.replace(/%name%/gi, arrowLeftDesc).replace(/%action%/gi, arrowLeftAction).replace(/%dir%/gi, 'left') ).addClass(PREVENT_CLOSE_CLASS),
+					    arrowRight = mfp.arrowRight = $( markup.replace(/%name%/gi, arrowRightDesc).replace(/%action%/gi, arrowRightAction).replace(/%dir%/gi, 'right') ).addClass(PREVENT_CLOSE_CLASS);
 
 					if (gSt.langDir === 'rtl') {
 						mfp.arrowNext = arrowLeft;

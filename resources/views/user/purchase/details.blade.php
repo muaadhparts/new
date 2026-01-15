@@ -8,13 +8,13 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <!-- page title -->
-                    <div class="gs-topup-title ms-0 mb-4 d-flex align-items-center">
+                    <!-- page name -->
+                    <div class="gs-topup-name ms-0 mb-4 d-flex align-items-center">
                         <a href="{{ route('user-purchases') }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
 
-                        <h3 class="ud-page-title">@lang('Purchase Items')</h3>
+                        <h3 class="ud-page-name">@lang('Purchase Items')</h3>
                     </div>
 
 
@@ -23,7 +23,7 @@
 
 
                     <!-- purchase address info -->
-                    <div class="user-purchase-title-wrapper">
+                    <div class="user-purchase-name-wrapper">
                         <div>
                             <h4 class="purchase-number">@lang("Purchase")# {{ $purchase->purchase_number }}[{{ $purchase->status }}]</h4>
                             <span>@lang('Purchase Date') {{ date('d-M-Y', strtotime($purchase->created_at)) }}</span>
@@ -316,12 +316,12 @@
                                                 <strong class="text-primary">@lang('Shipping Company Delivery')</strong>
                                             </div>
 
-                                            @if ($purchase->shipping_title && !empty($purchase->shipping_title) && !is_array(json_decode($purchase->shipping_title, true)))
+                                            @if ($purchase->shipping_name && !empty($purchase->shipping_name) && !is_array(json_decode($purchase->shipping_name, true)))
                                             <ul class="list-unstyled">
                                                 <li class="mb-2">
                                                     <i class="fas fa-building me-2 text-muted"></i>
                                                     <strong>@lang('Company'):</strong>
-                                                    {{ $purchase->shipping_title }}
+                                                    {{ $purchase->shipping_name }}
                                                 </li>
 
                                                 @if($purchase->shipping_cost > 0)
@@ -407,20 +407,20 @@
                         <div class="user-table table-responsive position-relative">
                             <table class="gs-data-table w-100">
                                 <tr class="thead-bg">
-                                    <th><span class="title">@lang('ID#')</span></th>
-                                    <th><span class="title">@lang('CatalogItem Name')</span></th>
-                                    <th><span class="title">@lang('Details')</span></th>
-                                    <th><span class="title">@lang('Unit Price')</span></th>
-                                    <th><span class="title">@lang('Total Price')</span></th>
+                                    <th><span class="name">@lang('ID#')</span></th>
+                                    <th><span class="name">@lang('CatalogItem Name')</span></th>
+                                    <th><span class="name">@lang('Details')</span></th>
+                                    <th><span class="name">@lang('Unit Price')</span></th>
+                                    <th><span class="name">@lang('Total Price')</span></th>
                                 </tr>
 
                                 @foreach ($cart['items'] as $catalogItem)
                                     <tr class="tbody-catalogItem">
-                                        <td><b><span class="td-title">{{ $catalogItem['item']['id'] }}</span></b></td>
+                                        <td><b><span class="td-name">{{ $catalogItem['item']['id'] }}</span></b></td>
 
                                         <td class="td-catalogItem-name">
 
-                                            <div class="td-title td-catalogItem-namee">
+                                            <div class="td-name td-catalogItem-namee">
                                                 @php
                                                     $userPurchaseProductUrl = '#';
                                                     if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
@@ -434,7 +434,7 @@
                                                     }
                                                 @endphp
                                                 <b>
-                                                    <a class="a_title_link d-block title-hover-color" target="_blank"
+                                                    <a class="a_name_link d-block name-hover-color" target="_blank"
                                                         href="{{ $userPurchaseProductUrl }}">
                                                         {{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}
                                                     </a>
@@ -482,10 +482,10 @@
                                         </td>
 
                                         <td><b><span
-                                                    class="td-title">{{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value) }}</span></b>
+                                                    class="td-name">{{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value) }}</span></b>
                                         </td>
                                         <td>
-                                            <b><span class="td-title">{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
+                                            <b><span class="td-name">{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
                                                     <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small></small></span></b>
                                         </td>
                                     </tr>

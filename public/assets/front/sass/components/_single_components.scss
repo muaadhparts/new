@@ -1,6 +1,6 @@
-// gs-title-box
-.gs-title-box {
-  .title {
+// gs-name-box
+.gs-name-box {
+  .name {
     margin-bottom: 24px;
   }
 }
@@ -67,7 +67,7 @@
     transition: $transition;
   }
 
-  .title {
+  .name {
     margin-bottom: 4px;
   }
 
@@ -111,11 +111,11 @@
       border-radius: 12px;
       padding: 32px;
 
-      .upper-title {
+      .upper-name {
         font-size: 16px;
       }
 
-      .btm-title {
+      .btm-name {
         font-size: 18px;
       }
 
@@ -124,12 +124,12 @@
         bottom: 8px;
         padding: 16px;
 
-        .upper-title,
-        .btm-title {
+        .upper-name,
+        .btm-name {
           font-size: 10px;
         }
 
-        .main-title {
+        .main-name {
           font-size: 18px;
         }
       }
@@ -150,13 +150,13 @@
     text-align: right;
     color: $text-color-950;
 
-    .main-title {
+    .main-name {
       font-weight: 500;
       line-height: 130%;
     }
 
-    .upper-title,
-    .btm-title {
+    .upper-name,
+    .btm-name {
       font-size: 12px;
       font-weight: 400;
       line-height: 170%;
@@ -166,12 +166,12 @@
       top: 8px;
       right: 8px;
 
-      .upper-title,
-      .btm-title {
+      .upper-name,
+      .btm-name {
         font-size: 8px;
       }
 
-      .main-title {
+      .main-name {
         font-size: 12px;
       }
     }
@@ -264,7 +264,7 @@
     background-color: $white-color;
   }
 
-  .catalogItem-title {
+  .catalogItem-name {
     color: $text-color-950;
     font-size: 16px;
     font-style: normal;
@@ -302,7 +302,7 @@
     gap: 9px;
   }
 
-  .rating-title {
+  .rating-name {
     color: $text-color-950;
     text-align: right;
     font-family: $template-font-2;
@@ -368,7 +368,7 @@
   &.list-view {
     display: flex;
 
-    .catalogItem-title {
+    .catalogItem-name {
       font-size: 32px;
       font-style: normal;
       font-weight: 400;
@@ -395,7 +395,7 @@
       transform: scale(1.04);
     }
 
-    .catalogItem-title {
+    .catalogItem-name {
       color: $primary-color-500;
 
       a {
@@ -431,7 +431,7 @@
     flex-grow: 1;
   }
 
-  .catalogItem-title,
+  .catalogItem-name,
   .price-wrapper h4 {
     font-size: 32px; 
     del {
@@ -442,7 +442,7 @@
     }
   }
 
-  .rating-title {
+  .rating-name {
     font-size: 20px;
   }
 
@@ -489,12 +489,12 @@
     }
   }
   @include screen-1200 {
-    .catalogItem-title,
+    .catalogItem-name,
     .price-wrapper h4 {
       font-size: 24px;
     }
 
-    .rating-title {
+    .rating-name {
       font-size: 18px;
     }
   }
@@ -510,12 +510,12 @@
   }
 
   @include screen-768 {
-    .catalogItem-title,
+    .catalogItem-name,
     .price-wrapper h4 {
       font-size: 20px;
     }
 
-    .rating-title {
+    .rating-name {
       font-size: 16px;
     }
 
@@ -535,7 +535,7 @@
   position: relative;
 
   &.gs-deal-of-day-home2 {
-    .deal-of-day-wrapper .deal-of-day-content .title {
+    .deal-of-day-wrapper .deal-of-day-content .name {
       &::after {
         content: "";
         display: block;
@@ -595,7 +595,7 @@
     margin-bottom: 120px;
 
     .deal-of-day-content {
-      .title {
+      .name {
         // width: 282px;
         // font-size: 24px;
         font-weight: 700;
@@ -605,7 +605,7 @@
         text-transform: uppercase;
       }
 
-      .sub-title {
+      .sub-name {
         font-size: 20px;
         font-weight: 500;
         line-height: 130%;
@@ -639,7 +639,7 @@
           align-items: center;
 
           .countdown-number,
-          .countdown-title {
+          .countdown-name {
             font-size: 14px;
             font-weight: 600;
             color: $text-color-950;
@@ -668,7 +668,7 @@
         .content-wrapper {
           padding: 16px;
 
-          .catalogItem-title {
+          .catalogItem-name {
             font-size: 14px;
           }
 
@@ -712,7 +712,7 @@
     }
 
     .deal-of-day-wrapper {
-      .sub-title {
+      .sub-name {
         font-size: 18px !important;
       }
 
@@ -731,7 +731,7 @@
       margin-top: 60px;
       margin-bottom: 60px;
 
-      .sub-title {
+      .sub-name {
         font-size: 20px !important;
       }
 
@@ -745,11 +745,11 @@
   @include screen-768 {
     .deal-of-day-wrapper {
       .deal-of-day-content {
-        .title {
+        .name {
           font-size: 32px;
         }
 
-        .sub-title {
+        .sub-name {
           font-size: 18px;
         }
 
@@ -769,7 +769,7 @@
             padding: 10px 16px;
 
             .countdown-number,
-            .countdown-title {
+            .countdown-name {
               font-size: 12px;
             }
           }
@@ -781,12 +781,12 @@
   @include screen-576 {
     .deal-of-day-wrapper {
       .deal-of-day-content {
-        .title {
+        .name {
           font-size: 28px;
           margin-bottom: 14px;
         }
 
-        .sub-title {
+        .sub-name {
           font-size: 16px;
           margin-bottom: 10px;
         }
@@ -805,7 +805,7 @@
             padding: 10px 16px;
 
             .countdown-number,
-            .countdown-title {
+            .countdown-name {
               font-size: 12px;
             }
           }
@@ -855,7 +855,7 @@
       height: 70px;
     }
 
-    .post-title {
+    .post-name {
       font-size: 16px;
       font-weight: 500;
       margin: 0;
@@ -876,7 +876,7 @@
     }
 
     &:hover {
-      .post-title {
+      .post-name {
         color: $primary-color-500;
       }
     }
@@ -919,7 +919,7 @@
       padding: 16px;
     }
 
-    .title {
+    .name {
       display: inline-block;
       color: $text-color-950;
       margin-bottom: 16px;
@@ -949,7 +949,7 @@
     }
 
     @include screen-1240 {
-      .title {
+      .name {
         margin-bottom: 10px;
       }
 
@@ -966,7 +966,7 @@
 
   &:hover {
     .right-side-content {
-      .title {
+      .name {
         color: $primary-color-500;
       }
     }
@@ -977,7 +977,7 @@
 .single-blog-widget {
   padding: 24px 24px 24px 24px;
 
-  .widget-title {
+  .widget-name {
     color: $text-color-950;
     font-style: normal;
     font-weight: 500;
@@ -1067,7 +1067,7 @@
       height: 80px;
     }
 
-    .post-title {
+    .post-name {
       color: $text-color-950;
       font-size: 20px;
 
@@ -1129,7 +1129,7 @@
   // border-radius: 12px;
   background: $white-color;
 
-  .widget-title {
+  .widget-name {
     color: $text-color-950;
     font-style: normal;
     font-weight: 500;
@@ -1139,7 +1139,7 @@
   }
 
   &.contact-merchant-wrapper {
-    .widget-title {
+    .widget-name {
       border-bottom: none;
       text-align: center;
       margin-bottom: 0;
@@ -1248,7 +1248,7 @@
     flex-direction: column;
     gap: 8px;
 
-    .title {
+    .name {
       color: $text-color-950;
       font-size: 14px;
       font-style: normal;
@@ -1298,7 +1298,7 @@
     }
 
     .content-wrapper {
-      .title {
+      .name {
         color: $primary-color-500;
       }
     }
@@ -1427,7 +1427,7 @@
           }
         }
 
-        .post-title,
+        .post-name,
         .date,
         .post-desc,
         .read-more {
@@ -1478,7 +1478,7 @@
     }
 
     .post-content {
-      .post-title {
+      .post-name {
         margin-bottom: 8px;
         transition: $transition;
 
@@ -1646,14 +1646,14 @@
               .cart-catalogItem-info {
                 text-align: left;
 
-                .cart-title {
+                .cart-name {
                   // width: 165px;
                   font-size: 18px;
                   font-weight: 400;
                   color: $text-color-950;
                   margin-bottom: 15px;
                 }
-                a.cart-title {
+                a.cart-name {
                   &:hover {
                     color: $primary-color-500;
                   }
@@ -1699,7 +1699,7 @@
         background-color: $text-color-50;
         padding: 40px 24px;
 
-        .cart-summary-title {
+        .cart-summary-name {
           color: #000;
           font-weight: 600;
           margin-bottom: 32px;
@@ -1710,7 +1710,7 @@
             border-bottom: 1px solid $text-color-300;
           }
 
-          .cart-summary-subtitle {
+          .cart-summary-subname {
             font-family: $template-font-2;
             text-transform: uppercase;
             font-size: 20px;
@@ -1778,11 +1778,11 @@
                 }
 
                 .cart-catalogItem-info {
-                  .cart-title {
+                  .cart-name {
                     font-size: 14px;
                     margin-bottom: 10px;
                   }
-                  a.cart-title {
+                  a.cart-name {
                     &:hover {
                       color: $primary-color-500;
                     }
@@ -1816,13 +1816,13 @@
         .cart-summary {
           padding: 24px;
 
-          .cart-summary-title {
+          .cart-summary-name {
             font-size: 24px;
             margin-bottom: 24px;
           }
 
           .cart-summary-content {
-            .cart-summary-subtitle {
+            .cart-summary-subname {
               font-size: 16px;
               margin-bottom: 12px;
             }
@@ -1879,11 +1879,11 @@
                 }
 
                 .cart-catalogItem-info {
-                  .cart-title {
+                  .cart-name {
                     font-size: 12px;
                     margin-bottom: 10px;
                   }
-                  a.cart-title {
+                  a.cart-name {
                     &:hover {
                       color: $primary-color-500;
                     }
@@ -1917,13 +1917,13 @@
         .cart-summary {
           padding: 20px;
 
-          .cart-summary-title {
+          .cart-summary-name {
             font-size: 20px;
             margin-bottom: 20px;
           }
 
           .cart-summary-content {
-            .cart-summary-subtitle {
+            .cart-summary-subname {
               font-size: 14px;
               margin-bottom: 10px;
             }
@@ -1977,12 +1977,12 @@
                 }
 
                 .cart-catalogItem-info {
-                  .cart-title {
+                  .cart-name {
                     font-size: 12px;
                     margin-bottom: 8px;
                   }
 
-                  a.cart-title {
+                  a.cart-name {
                     &:hover {
                       color: $primary-color-500;
                     }
@@ -2017,13 +2017,13 @@
         .cart-summary {
           padding: 16px;
 
-          .cart-summary-title {
+          .cart-summary-name {
             font-size: 20px;
             margin-bottom: 16px;
           }
 
           .cart-summary-content {
-            .cart-summary-subtitle {
+            .cart-summary-subname {
               font-size: 14px;
               margin-bottom: 8px;
             }
@@ -2758,25 +2758,25 @@
   &:hover {
     &.box1 {
       border-left: 4px solid #25cd7f;
-      .title {
+      .name {
         color: #25cd7f;
       }
     }
     &.box2 {
       border-left: 4px solid #ffb134;
-      .title {
+      .name {
         color: #ffb134;
       }
     }
     &.box3 {
       border-left: 4px solid #da55f0;
-      .title {
+      .name {
         color: #da55f0;
       }
     }
     &.box4 {
       border-left: 4px solid #0ea5e9;
-      .title {
+      .name {
         color: #0ea5e9;
       }
     }
@@ -2804,7 +2804,7 @@
     }
   }
 
-  .title {
+  .name {
     text-transform: capitalize;
     color: $text-color-900;
     transition: $transition;
@@ -2831,7 +2831,7 @@
     transition: $transition;
   }
 
-  .title {
+  .name {
     color: $white-color;
     text-align: center;
     font-style: normal;
@@ -2862,7 +2862,7 @@
     z-index: 1;
     transition: $transition;
 
-    .cr-title {
+    .cr-name {
       color: $white-color;
       text-align: center;
       font-size: 32px;
@@ -2870,7 +2870,7 @@
       font-weight: 600;
       line-height: 130%;
     }
-    .cr-sm-title {
+    .cr-sm-name {
       color: $white-color;
       font-size: 18px;
       font-style: normal;
@@ -2879,7 +2879,7 @@
     }
   }
 
-  .pricing-title {
+  .pricing-name {
     color: $text-color-950;
     margin-bottom: 12px;
     text-align: center;

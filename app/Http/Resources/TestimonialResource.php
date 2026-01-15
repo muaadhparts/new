@@ -17,8 +17,8 @@ class TestimonialResource extends JsonResource
       return [
         'id' => $this->id,
         'image' => url('/') . '/assets/images/reviews/'.$this->photo,
-        'title' => $this->title,
-        'subtitle' => $this->subtitle,
+        'name' => $this->name,
+        'subname' => $this->subname,
         'details' => $this->details
       ];
     }

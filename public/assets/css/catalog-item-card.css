@@ -12,7 +12,7 @@
  * - .catalog-item-card__wishlist : Wishlist button
  * - .catalog-item-card__actions  : Quick action buttons
  * - .catalog-item-card__content  : Content section
- * - .catalog-item-card__title    : Catalog item name
+ * - .catalog-item-card__name    : Catalog item name
  * - .catalog-item-card__info     : PART_NUMBER, vendor, brand info
  * - .catalog-item-card__price    : Price section
  * - .catalog-item-card__rating   : Rating section
@@ -272,9 +272,9 @@
     flex-grow: 1;
 }
 
-/* Title */
-.catalog-item-card__title,
-.catalogItem-card__title {
+/* Name */
+.catalog-item-card__name,
+.catalogItem-card__name {
     font-size: 14px;
     font-weight: 600;
     line-height: 1.4;
@@ -286,15 +286,15 @@
     overflow: hidden;
 }
 
-.catalog-item-card__title a,
-.catalogItem-card__title a {
+.catalog-item-card__name a,
+.catalogItem-card__name a {
     color: var(--pc-text);
     text-decoration: none;
     transition: color 0.2s;
 }
 
-.catalog-item-card__title a:hover,
-.catalogItem-card__title a:hover {
+.catalog-item-card__name a:hover,
+.catalogItem-card__name a:hover {
     color: var(--pc-primary);
 }
 
@@ -559,8 +559,8 @@
     gap: 12px;
 }
 
-.catalog-item-card--list .catalog-item-card__title,
-.catalogItem-card--list .catalogItem-card__title {
+.catalog-item-card--list .catalog-item-card__name,
+.catalogItem-card--list .catalogItem-card__name {
     font-size: 18px;
     min-height: auto;
     -webkit-line-clamp: unset;
@@ -615,8 +615,8 @@
         padding: 16px;
     }
 
-    .catalog-item-card--list .catalog-item-card__title,
-    .catalogItem-card--list .catalogItem-card__title {
+    .catalog-item-card--list .catalog-item-card__name,
+    .catalogItem-card--list .catalogItem-card__name {
         font-size: 16px;
     }
 }
@@ -628,8 +628,8 @@
         padding: 12px;
     }
 
-    .catalog-item-card__title,
-    .catalogItem-card__title {
+    .catalog-item-card__name,
+    .catalogItem-card__name {
         font-size: 13px;
         min-height: 36px;
     }
@@ -702,8 +702,8 @@
         max-width: 36px;
     }
 
-    .catalog-item-card--list .catalog-item-card__title,
-    .catalogItem-card--list .catalogItem-card__title {
+    .catalog-item-card--list .catalog-item-card__name,
+    .catalogItem-card--list .catalogItem-card__name {
         font-size: 14px;
     }
 

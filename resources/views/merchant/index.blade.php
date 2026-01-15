@@ -50,8 +50,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card purchase-pending">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_8.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Purchases Pending')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Purchases Pending')</p>
                         <h3 class="value">
                             <span class="counter">{{ $pending }}</span>
                         </h3>
@@ -61,8 +61,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card purchase-processing">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_7.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Purchases Processing')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Purchases Processing')</p>
                         <h3 class="value">
                             <span class="counter">{{ $processing }}</span>
                         </h3>
@@ -72,8 +72,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card purchase-delivered">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_6.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Purchases Completed!')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Purchases Completed!')</p>
                         <h3 class="value">
                             <span class="counter">{{ $completed }}</span>
                         </h3>
@@ -83,8 +83,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card total-purchase">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_5.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Total CatalogItems!')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Total CatalogItems!')</p>
                         <h3 class="value">
                             <span class="counter">{{ $user->merchantItems()->count() }}</span>
                         </h3>
@@ -94,8 +94,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card total-item-sold">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_1.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Total Item Sold!')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Total Item Sold!')</p>
                         <h3 class="value">
                             <span
                                 class="counter">{{ App\Models\MerchantPurchase::where('user_id', '=', $user->id)->where('status', '=', 'completed')->sum('qty') }}</span>
@@ -106,8 +106,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card current-balance">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_2.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Current Balance')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Current Balance')</p>
                         <h3 class="value">{{$curr->sign}}<span class="counter">
                                 {{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice(auth()->user()->current_balance) }}</span></h3>
                     </div>
@@ -116,8 +116,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card total-earning">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_3.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Total Earning')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Total Earning')</p>
                         @php
                             $datas = App\Models\MerchantPurchase::with('purchase')->where('user_id', Auth::user()->id);
                             $totalPrice = $datas->count() > 0 ? $datas->sum('price') : 0;
@@ -130,8 +130,8 @@
             <div class="col">
                 <div class="merchant-panel-info-card pending-commision">
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_4.svg" alt="">
-                    <div class="title-and-value-wrapper">
-                        <p class="title">@lang('Pending Commision')</p>
+                    <div class="name-and-value-wrapper">
+                        <p class="name">@lang('Pending Commision')</p>
                         @php
                             $totalPrice = $user->merchantPurchases->where('status', 'completed')->sum(function ($merchantPurchase) {
                                 return $merchantPurchase->price * $merchantPurchase->qty;
@@ -151,22 +151,22 @@
             <!-- Recent CatalogItem(s) Table -->
             <div class="col-xxl-8">
                 <div class="merchant-table-wrapper recent-catalogItems-table-wrapper">
-                    <h4 class="table-title">@lang('Recent CatalogItem(s)')</h4>
+                    <h4 class="table-name">@lang('Recent CatalogItem(s)')</h4>
                     <div class="user-table table-responsive">
                         <table id="recent-catalogItem-table" class="gs-data-table w-100">
                             <thead>
                                 <tr>
                                     <th class="text-center">
-                                        <span class="header-title text-center">@lang('Image')</span>
+                                        <span class="header-name text-center">@lang('Image')</span>
                                     </th>
                                     <th>
-                                        <span class="header-title">@lang('CatalogItem Name')</span>
+                                        <span class="header-name">@lang('CatalogItem Name')</span>
                                     </th>
-                                    <th><span class="header-title">@lang('Brand')</span></th>
-                                    <th><span class="header-title">@lang('Quality Brand')</span></th>
-                                    <th><span class="header-title">@lang('Price')</span></th>
+                                    <th><span class="header-name">@lang('Brand')</span></th>
+                                    <th><span class="header-name">@lang('Quality Brand')</span></th>
+                                    <th><span class="header-name">@lang('Price')</span></th>
                                     <th class="text-center">
-                                        <span class="header-title">@lang('Details')</span>
+                                        <span class="header-name">@lang('Details')</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -239,17 +239,17 @@
             <!-- Recent Purchase(s) Table  -->
             <div class="col-xxl-4">
                 <div class="merchant-table-wrapper recent-orders-table-wrapper">
-                    <h4 class="table-title">@lang('Recent Purchase(s)')</h4>
+                    <h4 class="table-name">@lang('Recent Purchase(s)')</h4>
                     <div class="user-table table-responsive">
                         <table id="recent-purchase-table" class="gs-data-table w-100">
                             <thead>
                                 <tr>
                                     <th>
-                                        <span class="header-title">@lang('Purchase Number')</span>
+                                        <span class="header-name">@lang('Purchase Number')</span>
                                     </th>
-                                    <th><span class="header-title">@lang('Purchase Date')</span></th>
+                                    <th><span class="header-name">@lang('Purchase Date')</span></th>
                                     <th class="text-center">
-                                        <span class="header-title">@lang('Details')</span>
+                                        <span class="header-name">@lang('Details')</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -297,8 +297,8 @@
 
         <!-- Chart area start -->
         <div class="gs-chart-wrapper merchant-monthly-sales-chart d-none d-md-block">
-            <div class="chart-title-dropdown-wrapper">
-                <h4 class="chart-title">@lang('Monthly Sales Overview')</h4>
+            <div class="chart-name-dropdown-wrapper">
+                <h4 class="chart-name">@lang('Monthly Sales Overview')</h4>
             </div>
             <div id="chart">
             </div>

@@ -16,7 +16,7 @@ class HelpArticleResource extends JsonResource
     {
       return [
         'id' => $this->id,
-        'title' => $this->title,
+        'name' => $this->name,
         'details' => strip_tags($this->details)
       ];
     }

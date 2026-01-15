@@ -31,7 +31,7 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Featured Image') }}</th>
-                                    <th width="40%">{{ __('Title') }}</th>
+                                    <th width="40%">{{ __('Name') }}</th>
                                     <th>{{ __('Options') }}</th>
                                 </tr>
                             </thead>
@@ -61,7 +61,7 @@
         ajax: '{{ route('operator-hero-carousel-datatables') }}',
         columns: [
             { data: 'photo', name: 'photo', searchable: false, orderable: false },
-            { data: 'title_text', name: 'title_text' },
+            { data: 'name_text', name: 'name_text' },
             { data: 'action', searchable: false, orderable: false }
         ],
         language: {

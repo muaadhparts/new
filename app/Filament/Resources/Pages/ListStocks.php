@@ -27,7 +27,7 @@ class ListStocks extends ListRecords
 
                     Notification::make()
                         ->success()
-                        ->title('Stock updated')
+                        ->name('Stock updated')
                         ->body("File: {$path}\nRows imported: {$count}")
                         ->send();
                 }),

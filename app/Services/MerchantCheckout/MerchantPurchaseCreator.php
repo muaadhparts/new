@@ -123,7 +123,7 @@ class MerchantPurchaseCreator
                 // Status
                 'status' => 'pending',
                 'shipping' => 'shipto',
-                'shipping_title' => $shippingData['shipping_name'] ?? $shippingData['courier_name'] ?? '',
+                'shipping_name' => $shippingData['shipping_name'] ?? $shippingData['courier_name'] ?? '',
 
                 // Multi-merchant
                 'merchant_ids' => json_encode([$merchantId]),
@@ -159,7 +159,7 @@ class MerchantPurchaseCreator
 
             // Create tracking record
             $purchase->tracks()->create([
-                'title' => 'Pending',
+                'name' => 'Pending',
                 'text' => __('Your order has been placed and is awaiting confirmation.'),
             ]);
 
@@ -393,7 +393,7 @@ class MerchantPurchaseCreator
             // Add tracking
             if ($status === 'Completed') {
                 $purchase->tracks()->create([
-                    'title' => 'Payment Confirmed',
+                    'name' => 'Payment Confirmed',
                     'text' => __('Payment has been confirmed.'),
                 ]);
             }
@@ -476,7 +476,7 @@ class MerchantPurchaseCreator
                 $merchantId => [
                     'provider' => $shipping->provider ?? $shippingProvider, // من الجدول مباشرة
                     'shipping_id' => (int)$shippingData['shipping_id'],
-                    'title' => $shippingData['shipping_name'] ?? $shipping->title ?? null,
+                    'name' => $shippingData['shipping_name'] ?? $shipping->name ?? null,
                     'price' => (float)($shippingData['shipping_cost'] ?? $shipping->price ?? 0),
                     'selected_at' => now()->toIso8601String(),
                 ]

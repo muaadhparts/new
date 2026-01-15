@@ -94,7 +94,7 @@ class AccountLedgerService
         $dbProviders = DB::table('shippings')
             ->whereNotNull('provider')
             ->distinct()
-            ->pluck('title', 'provider');
+            ->pluck('name', 'provider');
 
         foreach ($dbProviders as $code => $name) {
             $providers[$code] = $name;

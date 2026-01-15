@@ -565,7 +565,7 @@ $(document).ready(function () {
   //     }
 
   //   },
-  //   title: {
+  //   name: {
   //     text: 'Monthly Inflation in Argentina, 2002',
   //     floating: true,
   //     offsetY: 330,

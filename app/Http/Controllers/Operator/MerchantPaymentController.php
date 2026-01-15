@@ -16,11 +16,11 @@ class MerchantPaymentController extends OperatorBaseController
         $datas = MerchantPayment::where('user_id', 0)->latest('id')->get();
          //--- Integrating This Collection Into Datatables
          return Datatables::of($datas)
-                            ->editColumn('title', function(MerchantPayment $data) {
+                            ->editColumn('name', function(MerchantPayment $data) {
                                 if($data->type == 'automatic'){
                                     return  $data->name;
                                 }else{
-                                    return  $data->title;
+                                    return  $data->name;
                                 }
                             })
                             ->editColumn('details', function(MerchantPayment $data) {
@@ -28,7 +28,7 @@ class MerchantPaymentController extends OperatorBaseController
                                     return $data->getAutoDataText();
                                 }else {
                                     if($data->keyword == 'cod'){
-                                        return $data->subtitle;
+                                        return $data->subname;
                                     }else{
                                         $details = mb_strlen(strip_tags($data->details),'utf-8') > 250 ? mb_substr(strip_tags($data->details),0,250,'utf-8').'...' : strip_tags($data->details);
                                         return  $details;
@@ -119,7 +119,7 @@ class MerchantPaymentController extends OperatorBaseController
     public function store(Request $request)
     {
         //--- Validation Section
-        $rules = ['title' => 'unique:merchant_payments'];
+        $rules = ['name' => 'unique:merchant_payments'];
 
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
@@ -215,7 +215,7 @@ class MerchantPaymentController extends OperatorBaseController
         }
         else{
             //--- Validation Section
-            $rules = ['title' => 'unique:merchant_payments,title,'.$id];
+            $rules = ['name' => 'unique:merchant_payments,name,'.$id];
 
             $validator = Validator::make($request->all(), $rules);
 

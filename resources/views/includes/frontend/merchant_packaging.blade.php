@@ -1,9 +1,9 @@
 <div class="modal fade gs-modal" id="merchant_package{{ $merchant_id }}" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    aria-labelledby="exampleModalCenterName" aria-hidden="true">
     <div class="modal-dialog send-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
             <div class="modal-header w-100">
-                <h4 class="title" id="exampleModalLongTitle">@lang('Packaging')</h4>
+                <h4 class="name" id="exampleModalLongName">@lang('Packaging')</h4>
                 <button type="button" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                 </button>
@@ -15,7 +15,7 @@
                         <div class="gs-radio-wrapper">
                             <input type="radio" class="packing"
                                 view="{{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}"
-                                data-form="{{ $data->title }}"
+                                data-form="{{ $data->name }}"
                                 id="free-package{{ $data->id }}"
                                 ref="{{ $merchant_id }}"
                                 data-price="{{ round($data->price * $curr->value, 2) }}"
@@ -29,11 +29,11 @@
                                 </svg>
                             </label>
                             <label for="free-package{{ $data->id }}">
-                                {{ $data->title }}
+                                {{ $data->name }}
                                 @if ($data->price != 0)
                                 + {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
                                 @endif
-                                <small>{{ $data->subtitle }}</small>
+                                <small>{{ $data->subname }}</small>
                             </label>
                         </div>
                         @empty
@@ -66,12 +66,12 @@
                 if (!this.checked) return;
 
                 const price = parseFloat(this.getAttribute('data-price')) || 0;
-                const title = this.getAttribute('data-form');
+                const name = this.getAttribute('data-form');
 
                 // Update packing text display
                 const packingText = document.getElementById('packing_text' + merchantId);
                 if (packingText) {
-                    packingText.textContent = title + ': ' + currSign + price.toFixed(2);
+                    packingText.textContent = name + ': ' + currSign + price.toFixed(2);
                 }
 
                 // ✅ Update PriceSummary directly

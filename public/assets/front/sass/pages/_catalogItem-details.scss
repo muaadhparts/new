@@ -192,7 +192,7 @@
 
   // attribute-wrapper
   .attribute-wrapper {
-    .attribute-title {
+    .attribute-name {
       color: $text-color-950;
       font-size: 18px;
       font-style: normal;
@@ -210,7 +210,7 @@
     gap: 16px;
   }
 
-  .varition-title {
+  .varition-name {
     color: $text-color-950;
     font-size: 16px;
     font-style: normal;
@@ -362,7 +362,7 @@
     }
 
     .link {
-      .title {
+      .name {
         color: $text-color-950;
         font-size: 18px;
         font-style: normal;
@@ -380,7 +380,7 @@
       &:hover {
         color: $primary-color-500;
 
-        .title {
+        .name {
           color: $primary-color-500;
         }
 
@@ -514,7 +514,7 @@
       margin-bottom: 16px;
     }
 
-    .review-area .title {
+    .review-area .name {
       margin-top: 30px;
       margin-bottom: 5px;
     }
@@ -585,7 +585,7 @@
       border-radius: 0 0 5px 5px;
 
       .price-summary-content {
-        .title {
+        .name {
           font-weight: 500;
           background: $text-color-100;
           color: $text-color-950;
@@ -622,7 +622,7 @@
 
   padding: 120px 0;
 
-  .title {
+  .name {
     margin-bottom: 60px;
 
     @include screen-992 {

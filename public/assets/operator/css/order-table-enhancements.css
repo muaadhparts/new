@@ -46,8 +46,8 @@
     min-width: 60px;
 }
 
-.purchase-table-enhanced th.col-title,
-.purchase-table-enhanced td.col-title {
+.purchase-table-enhanced th.col-name,
+.purchase-table-enhanced td.col-name {
     min-width: 180px;
     max-width: 250px;
     white-space: normal;
@@ -214,8 +214,8 @@
         font-size: 11px;
     }
 
-    .purchase-table-enhanced th.col-title,
-    .purchase-table-enhanced td.col-title {
+    .purchase-table-enhanced th.col-name,
+    .purchase-table-enhanced td.col-name {
         max-width: 180px;
     }
 
@@ -263,8 +263,8 @@
         padding: 8px 5px !important;
     }
 
-    .purchase-table-enhanced th.col-title,
-    .purchase-table-enhanced td.col-title {
+    .purchase-table-enhanced th.col-name,
+    .purchase-table-enhanced td.col-name {
         min-width: 140px;
         max-width: 160px;
     }
@@ -288,8 +288,8 @@
         min-width: 50px;
     }
 
-    .purchase-table-enhanced th.col-title,
-    .purchase-table-enhanced td.col-title {
+    .purchase-table-enhanced th.col-name,
+    .purchase-table-enhanced td.col-name {
         min-width: 120px;
         max-width: 140px;
     }

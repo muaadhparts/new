@@ -11,9 +11,9 @@
 
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="ud-page-title-box">
+                    <div class="ud-page-name-box">
                         <!-- mobile sidebar trigger btn -->
-                        <h3 class="ud-page-title">@lang('Dashboard')</h3>
+                        <h3 class="ud-page-name">@lang('Dashboard')</h3>
                     </div>
 
                     <!-- dashboard statatics -->
@@ -193,14 +193,14 @@
 
                     <!-- recent purchases -->
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
-                        <h4 class="table-title">@lang('Recent Purchases')</h4>
+                        <h4 class="table-name">@lang('Recent Purchases')</h4>
                         <table class="table table-bordered">
                             <tr>
-                                <th><span class="header-title">@lang('#Purchase')</span></th>
-                                <th><span class="header-title">@lang('Date')</span></th>
-                                <th><span class="header-title">@lang('Purchase Total')</span></th>
-                                <th><span class="header-title">@lang('Purchase Status')</span></th>
-                                <th><span class="header-title">@lang('View')</span></th>
+                                <th><span class="header-name">@lang('#Purchase')</span></th>
+                                <th><span class="header-name">@lang('Date')</span></th>
+                                <th><span class="header-name">@lang('Purchase Total')</span></th>
+                                <th><span class="header-name">@lang('Purchase Status')</span></th>
+                                <th><span class="header-name">@lang('View')</span></th>
                             </tr>
                             @foreach (Auth::user()->purchases()->latest()->take(6)->get() as $purchase)
                                 <tr>

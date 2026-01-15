@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $gs->site_name }} Top Up</title>
+    <name>{{ $gs->site_name }} Top Up</name>
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
 
@@ -32,7 +32,7 @@
                 <div class="row gy-4">
                     <div class="col-lg-7 col-xl-8 wow-replaced" data-wow-delay=".1s">
                         <div class="select-payment-list-wrapper">
-                            <h5 class="title">@lang('Select payment Method')</h5>
+                            <h5 class="name">@lang('Select payment Method')</h5>
 
                             <div class="list-wrapper mb-4">
                                 @foreach ($gateways as $gt)
@@ -53,9 +53,9 @@
                                                 </svg>
                                             </label>
                                             <label class="label-wrapper" for="pl{{ $gt->id }}">
-                                                <span class="label-title"> {{ $gt->name }}</span>
+                                                <span class="label-name"> {{ $gt->name }}</span>
                                                 @if ($gt->information != null)
-                                                    <span class="label-subtitle">{{ $gt->getAutoDataText() }}</span>
+                                                    <span class="label-subname">{{ $gt->getAutoDataText() }}</span>
                                                 @endif
                                             </label>
                                         </div>
@@ -79,11 +79,11 @@
                     </div>
                     <div class="col-lg-5 col-xl-4 purchase-0 purchase-lg-1">
                         <div class="summary-box">
-                            <h4 class="form-title">@lang('PRICE DETAILS')</h4>
+                            <h4 class="form-name">@lang('PRICE DETAILS')</h4>
 
                             <!-- shipping methods -->
                             <div class="summary-inner-box d-flex gap-4 justify-content-between">
-                                <h6 class="summary-title">Amount</h6>
+                                <h6 class="summary-name">Amount</h6>
 
                                 @if ($gs->currency_format == 0)
                                     <p>{{ $curr->sign }} {{ $topUp->amount * $curr->value }}</p>

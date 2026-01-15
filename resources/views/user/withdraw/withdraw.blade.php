@@ -8,7 +8,7 @@
             <!-- main content -->
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                 <div class="gs-topup-section">
-                    <div class="gs-topup-title d-flex align-items-center">
+                    <div class="gs-topup-name d-flex align-items-center">
                         <a href="{{ route('user-wwt-index') }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
@@ -16,7 +16,7 @@
                         <h3>@lang('My Withdraws')</h3>
                     </div>
                     <div class="topup-area">
-                        <div class="topup-area-title">
+                        <div class="topup-area-name">
                             <h4>@lang('Withdraw Now')</h4>
                         </div>
                         <form action="{{route('user-wwt-store')}}" method="POST">

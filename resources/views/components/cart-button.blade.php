@@ -168,7 +168,7 @@
                                 data-color="{{ $clr }}"
                                 data-color-price="{{ $colorPrices[$i] ?? 0 }}"
                                 style="background-color: #{{ $clr }};"
-                                title="#{{ $clr }}">
+                                name="#{{ $clr }}">
                         </button>
                     @endforeach
                 </div>

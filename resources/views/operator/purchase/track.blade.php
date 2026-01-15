@@ -20,12 +20,12 @@
                                                 <div class="row">
                                                     <div class="col-lg-5">
                                                         <div class="left-area">
-                                                                <h4 class="heading">{{ __('Title') }} *</h4>
+                                                                <h4 class="heading">{{ __('Name') }} *</h4>
                                                                 <p class="sub-heading">{{ __('(In Any Language)') }}</p>
                                                         </div>
                                                     </div>
                                                     <div class="col-lg-7">
-                                                        <textarea class="form-control" id="track-title" name="title" placeholder="{{ __('Title') }}" required=""></textarea>
+                                                        <textarea class="form-control" id="track-name" name="name" placeholder="{{ __('Name') }}" required=""></textarea>
                                                     </div>
                                                 </div>
 
@@ -81,7 +81,7 @@
                                     <div class="table-responsive show-table ml-3 mr-3">
                                         <table class="table" id="track-load" data-href={{ route('operator-purchase-timeline-load',$purchase->id) }}>
                                             <tr>
-                                                <th>{{ __("Title") }}</th>
+                                                <th>{{ __("Name") }}</th>
                                                 <th>{{ __("Details") }}</th>
                                                 <th>{{ __("Date") }}</th>
                                                 <th>{{ __("Time") }}</th>
@@ -90,7 +90,7 @@
                                             @foreach($purchase->timelines as $track)
 
                                             <tr data-id="{{ $track->id }}">
-                                                <td width="30%" class="t-title">{{ $track->title }}</td>
+                                                <td width="30%" class="t-name">{{ $track->name }}</td>
                                                 <td width="30%" class="t-text">{{ $track->text }}</td>
                                                 <td>{{  date('Y-m-d',strtotime($track->created_at)) }}</td>
                                                 <td>{{  date('h:i:s:a',strtotime($track->created_at)) }}</td>

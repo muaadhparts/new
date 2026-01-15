@@ -11,8 +11,8 @@
                 </div>
                 <div class="content">
                 <a href="{{ route('front.publicationshow',$publication->id) }}">
-                    <h4 class="title">
-                        {{ mb_strlen($publication->title,'UTF-8') > 200 ? mb_substr($publication->title,0,200,'UTF-8')."...":$publication->title }}
+                    <h4 class="name">
+                        {{ mb_strlen($publication->name,'UTF-8') > 200 ? mb_substr($publication->name,0,200,'UTF-8')."...":$publication->name }}
                     </h4>
                 </a>
                 <ul class="top-meta">

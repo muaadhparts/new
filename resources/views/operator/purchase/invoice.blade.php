@@ -23,7 +23,7 @@
     </div>
     <div class="purchase-table-wrap">
         <div class="invoice-wrap">
-            <div class="invoice__title">
+            <div class="invoice__name">
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
@@ -217,7 +217,7 @@
                                         @endphp
                                             @if(DB::table('shippings')->where('price','=',$price)->count() > 0)
                                             <tr>
-                                                <td colspan="2">{{ DB::table('shippings')->where('price','=',$price)->first()->title }}({{$purchase->currency_sign}})</td>
+                                                <td colspan="2">{{ DB::table('shippings')->where('price','=',$price)->first()->name }}({{$purchase->currency_sign}})</td>
                                                 <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost,$purchase->currency_sign) }}</td>
                                             </tr>
                                             @endif
@@ -229,7 +229,7 @@
                                         @endphp
                                         @if(DB::table('packages')->where('price','=',$pprice)->count() > 0)
                                         <tr>
-                                            <td colspan="2">{{ DB::table('packages')->where('price','=',$pprice)->first()->title }}({{$purchase->currency_sign}})</td>
+                                            <td colspan="2">{{ DB::table('packages')->where('price','=',$pprice)->first()->name }}({{$purchase->currency_sign}})</td>
                                             <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost,$purchase->currency_sign) }}</td>
                                         </tr>
                                         @endif

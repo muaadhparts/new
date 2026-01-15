@@ -9,7 +9,7 @@
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                 <div class="gs-topup-section">
 
-                    <div class="gs-topup-title d-flex align-items-center gap-4 ms-0 mb-5">
+                    <div class="gs-topup-name d-flex align-items-center gap-4 ms-0 mb-5">
                         <a href="" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
@@ -19,14 +19,14 @@
                     <div class="row gy-4">
                         <div class="col-md-6">
                             <div class="gs-extra-basic-plan">
-                                <h4 class="title">Basic Plan</h4>
+                                <h4 class="name">Basic Plan</h4>
                                 <div class="circle-wrapper">
-                                    <h4 class="cr-title">$150
+                                    <h4 class="cr-name">$150
                                     </h4>
-                                    <span class="cr-sm-title">45 Days</span>
+                                    <span class="cr-sm-name">45 Days</span>
                                 </div>
 
-                                <h6 class="pricing-title">Your Benifits</h6>
+                                <h6 class="pricing-name">Your Benifits</h6>
 
                                 <div class="list-wrapper">
                                     <p class="list">250 Porducts</p>
@@ -39,14 +39,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="gs-extra-basic-plan">
-                                <h4 class="title">Basic Plan</h4>
+                                <h4 class="name">Basic Plan</h4>
                                 <div class="circle-wrapper">
-                                    <h4 class="cr-title">$150
+                                    <h4 class="cr-name">$150
                                     </h4>
-                                    <span class="cr-sm-title">45 Days</span>
+                                    <span class="cr-sm-name">45 Days</span>
                                 </div>
 
-                                <h6 class="pricing-title">Your Benifits</h6>
+                                <h6 class="pricing-name">Your Benifits</h6>
 
                                 <div class="list-wrapper">
                                     <p class="list">250 Porducts</p>
@@ -59,14 +59,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="gs-extra-basic-plan">
-                                <h4 class="title">Basic Plan</h4>
+                                <h4 class="name">Basic Plan</h4>
                                 <div class="circle-wrapper">
-                                    <h4 class="cr-title">$150
+                                    <h4 class="cr-name">$150
                                     </h4>
-                                    <span class="cr-sm-title">45 Days</span>
+                                    <span class="cr-sm-name">45 Days</span>
                                 </div>
 
-                                <h6 class="pricing-title">Your Benifits</h6>
+                                <h6 class="pricing-name">Your Benifits</h6>
 
                                 <div class="list-wrapper">
                                     <p class="list">250 Porducts</p>
@@ -79,14 +79,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="gs-extra-basic-plan">
-                                <h4 class="title">Basic Plan</h4>
+                                <h4 class="name">Basic Plan</h4>
                                 <div class="circle-wrapper">
-                                    <h4 class="cr-title">$150
+                                    <h4 class="cr-name">$150
                                     </h4>
-                                    <span class="cr-sm-title">45 Days</span>
+                                    <span class="cr-sm-name">45 Days</span>
                                 </div>
 
-                                <h6 class="pricing-title">Your Benifits</h6>
+                                <h6 class="pricing-name">Your Benifits</h6>
 
                                 <div class="list-wrapper">
                                     <p class="list">250 Porducts</p>
@@ -99,14 +99,14 @@
                         </div>
                         <div class="col-md-6">
                             <div class="gs-extra-basic-plan">
-                                <h4 class="title">Basic Plan</h4>
+                                <h4 class="name">Basic Plan</h4>
                                 <div class="circle-wrapper">
-                                    <h4 class="cr-title">$150
+                                    <h4 class="cr-name">$150
                                     </h4>
-                                    <span class="cr-sm-title">45 Days</span>
+                                    <span class="cr-sm-name">45 Days</span>
                                 </div>
 
-                                <h6 class="pricing-title">Your Benifits</h6>
+                                <h6 class="pricing-name">Your Benifits</h6>
 
                                 <div class="list-wrapper">
                                     <p class="list">250 Porducts</p>

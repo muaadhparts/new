@@ -31,7 +31,7 @@
 						@include('alerts.operator.form-both') 
 						<form id="muaadhform" action="{{route('operator-reward-info-update')}}" method="POST">
 							@csrf
-						<h4 class="title">
+						<h4 class="name">
 							{{ __('Rewards') }} :
 						</h4>
 						

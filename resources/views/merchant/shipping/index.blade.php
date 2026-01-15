@@ -47,7 +47,7 @@
                     <table class="gs-data-table w-100">
                         <thead>
                             <tr>
-                                <th>{{ __('Title') }}</th>
+                                <th>{{ __('Name') }}</th>
                                 <th>{{ __('Price') }}</th>
                                 <th class="text-center">{{ __('Action') }}</th>
                             </tr>
@@ -57,7 +57,7 @@
                                 <tr>
                                     <td>
                                         <span class="content">
-                                            {{ $data->title }}
+                                            {{ $data->name }}
                                         </span>
                                     </td>
 

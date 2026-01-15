@@ -34,11 +34,11 @@
                             {{-- Dashboard pages: Show TWO toggle buttons --}}
                             <div class="d-flex align-items-center gap-2 d-xl-none">
                                 {{-- Store Menu Toggle --}}
-                                <button type="button" class="muaadh-mobile-toggle" aria-label="@lang('Store Menu')" title="@lang('Store Menu')">
+                                <button type="button" class="muaadh-mobile-toggle" aria-label="@lang('Store Menu')" name="@lang('Store Menu')">
                                     <i class="fas fa-store"></i>
                                 </button>
                                 {{-- Dashboard Menu Toggle --}}
-                                <button type="button" class="mobile-menu-toggle" aria-label="@lang('Dashboard Menu')" title="@lang('Dashboard Menu')">
+                                <button type="button" class="mobile-menu-toggle" aria-label="@lang('Dashboard Menu')" name="@lang('Dashboard Menu')">
                                     <i class="fas fa-th-list"></i>
                                 </button>
                             </div>
@@ -174,7 +174,7 @@
                                         <div class="muaadh-subcategory-grid">
                                             @foreach ($brand->catalogs as $catalog)
                                                 <div class="muaadh-subcategory-group">
-                                                    <a href="{{ route('front.catalog', [$brand->slug, $catalog->slug]) }}" class="muaadh-subcategory-title">
+                                                    <a href="{{ route('front.catalog', [$brand->slug, $catalog->slug]) }}" class="muaadh-subcategory-name">
                                                         {{ app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name }}
                                                     </a>
                                                 </div>
@@ -211,7 +211,7 @@
                             <ul class="muaadh-nav-submenu">
                                 @foreach ($static_content->where('header', '=', 1) as $content)
                                     <li>
-                                        <a href="{{ route('front.merchant', $content->slug) }}">{{ $content->title }}</a>
+                                        <a href="{{ route('front.merchant', $content->slug) }}">{{ $content->name }}</a>
                                     </li>
                                 @endforeach
                             </ul>

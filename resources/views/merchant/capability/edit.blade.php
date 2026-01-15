@@ -18,13 +18,13 @@
               <div class="row">
                 <div class="col-lg-4">
                   <div class="left-area">
-                    <h4 class="heading">{{ __('Title') }} *</h4>
+                    <h4 class="heading">{{ __('Name') }} *</h4>
                     <p class="sub-heading">{{ __('(In Any Language)') }}</p>
                   </div>
                 </div>
                 <div class="col-lg-7">
-                  <input type="text" class="form-control" name="title" placeholder="{{ __('Title') }}"
-                    value="{{$data->title}}" required="">
+                  <input type="text" class="form-control" name="name" placeholder="{{ __('Name') }}"
+                    value="{{$data->name}}" required="">
                 </div>
               </div>
 

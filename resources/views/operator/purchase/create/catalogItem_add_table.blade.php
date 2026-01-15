@@ -13,7 +13,7 @@
            <tr>
            <tr>
               <th>{{ __('CatalogItem ID#') }}</th>
-              <th>{{ __('CatalogItem Title') }}</th>
+              <th>{{ __('CatalogItem Name') }}</th>
               <th>{{ __('Price') }}</th>
               <th>{{ __('Details') }}</th>
               <th>{{ __('Subtotal') }}</th>

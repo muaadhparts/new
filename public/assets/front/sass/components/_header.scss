@@ -701,24 +701,24 @@
         color: var(--light-red-color);
       }
 
-      .title {
+      .name {
         color: var(--dark-color);
         font-size: 32px;
         font-weight: 600;
       }
 
-      .badge-title {
+      .badge-name {
         display: block;
         color: var(--white-color);
       }
 
       .tag-line,
-      .badge-title {
+      .badge-name {
         font-weight: 500;
         font-size: 14px;
       }
 
-      .badge-title {
+      .badge-name {
         text-align: center;
         padding: 5px 8px;
         display: block;
@@ -807,24 +807,24 @@
           color: var(--dark-color);
         }
 
-        .title {
+        .name {
           color: var(--dark-color);
           font-size: 32px;
           font-weight: 600;
         }
 
-        .badge-title {
+        .badge-name {
           display: block;
           color: var(--white-color);
         }
 
         .tag-line,
-        .badge-title {
+        .badge-name {
           font-weight: 500;
           font-size: 14px;
         }
 
-        .badge-title {
+        .badge-name {
           text-align: center;
           padding: 5px 8px;
           display: block;

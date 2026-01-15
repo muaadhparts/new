@@ -149,7 +149,7 @@
                                     <ul class="dropdown-menu">
                                         @foreach($static_content->where('header','=',1) as $data)
                                         <li><a class="dropdown-item" href="{{ route('front.merchant',$data->slug) }}">{{
-                                                $data->title }}</a></li>
+                                                $data->name }}</a></li>
                                         @endforeach
                                     </ul>
                                 </li>
@@ -220,14 +220,14 @@
                         </div>
                         <div class="header-cart-1">
                             @if (Auth::guard('web')->check())
-                            <a href="{{ route('user-favorites') }}" class="cart " title="View Favorites">
+                            <a href="{{ route('user-favorites') }}" class="cart " name="View Favorites">
                                 <div class="cart-icon"><i class="flaticon-like flat-mini mx-auto text-dark"></i> <span
                                         class="header-cart-count " id="favorite-count">{{
                                         Auth::guard('web')->user()->favoriteCount()
                                         }}</span></div>
                             </a>
                             @else
-                            <a href="{{ route('user.login') }}" class="cart " title="View Favorites">
+                            <a href="{{ route('user.login') }}" class="cart " name="View Favorites">
                                 <div class="cart-icon"><i class="flaticon-like flat-mini mx-auto text-dark"></i> <span
                                         class="header-cart-count" id="favorite-count">{{ 0 }}</span></div>
                             </a>
@@ -235,7 +235,7 @@
                         </div>
 
                         <div class="header-cart-1">
-                            <a href="{{ route('catalog-item.compare') }}" class="cart " title="Compare">
+                            <a href="{{ route('catalog-item.compare') }}" class="cart " name="Compare">
                                 <div class="cart-icon"><i class="flaticon-shuffle flat-mini mx-auto text-dark"></i>
                                     <span class="header-cart-count " id="compare-count">{{ Session::has('compare') ?
                                         count(Session::get('compare')->items) : '0' }}</span>
@@ -244,7 +244,7 @@
                         </div>
 
                         <div class="header-cart-1">
-                            <a href="{{ route('front.cart') }}" class="cart has-cart-data" title="View Cart">
+                            <a href="{{ route('front.cart') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
                                         class="header-cart-count" id="cart-count1">{{ Session::has('cart') ?
                                         count(Session::get('cart')->items) : '0' }}</span></div>
@@ -316,7 +316,7 @@
                                                                 @foreach($static_content->where('header','=',1) as $data)
                                                                 <li><a class="dropdown-item"
                                                                         href="{{ route('front.merchant',$data->slug) }}">{{
-                                                                        $data->title }}</a></li>
+                                                                        $data->name }}</a></li>
                                                                 @endforeach
                                                             </ul>
                                                         </li>
@@ -362,7 +362,7 @@
                         <div class="sign-in position-relative font-general my-account-dropdown">
                             <a href="my-account.html"
                                 class="has-dropdown d-flex align-items-center text-dark text-decoration-none"
-                                title="My Account">
+                                name="My Account">
                                 <i class="flaticon-user-3 flat-mini me-1 mx-auto"></i>
                             </a>
                             <ul class="my-account-popup">
@@ -416,7 +416,7 @@
                             </a>
                         </div>
                         <div class="header-cart-1">
-                            <a href="{{ route('front.cart') }}" class="cart has-cart-data" title="View Cart">
+                            <a href="{{ route('front.cart') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
                                         class="header-cart-count" id="cart-count">{{ Session::has('cart') ?
                                         count(Session::get('cart')->items) : '0' }}</span></div>

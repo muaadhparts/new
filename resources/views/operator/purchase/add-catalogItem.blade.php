@@ -17,7 +17,7 @@
   @if(!empty($catalogItem->size))
 
   <div class="catalogItem-size">
-    <p class="title">{{ __('Size :') }}</p>
+    <p class="name">{{ __('Size :') }}</p>
     <ul class="siz-list">
       @foreach(array_unique($catalogItem->size) as $key => $data1)
       <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
@@ -38,7 +38,7 @@
   @if(!empty($catalogItem->color))
 
   <div class="catalogItem-color">
-    <div class="title">{{ __('Color :') }}</div>
+    <div class="name">{{ __('Color :') }}</div>
     <ul class="color-list">
 
       @foreach($catalogItem->color as $key => $data1)

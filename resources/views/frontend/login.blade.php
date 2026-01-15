@@ -6,7 +6,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('User Login')</h2>
+                    <h2 class="breadcrumb-name">@lang('User Login')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="javascript:;">@lang('User Login')</a></li>

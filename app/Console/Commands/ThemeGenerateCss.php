@@ -167,8 +167,8 @@ class ThemeGenerateCss extends Command
         // ==================================
         // ITEM CARDS
         // ==================================
-        $itemTitleSize = $gs->theme_item_title_size ?? '14px';
-        $itemTitleWeight = $gs->theme_item_title_weight ?? '500';
+        $itemNameSize = $gs->theme_item_name_size ?? '14px';
+        $itemNameWeight = $gs->theme_item_name_weight ?? '500';
         $itemPriceSize = $gs->theme_item_price_size ?? '16px';
         $itemHoverScale = $gs->theme_item_hover_scale ?? '1.02';
 
@@ -366,8 +366,8 @@ class ThemeGenerateCss extends Command
     --theme-input-placeholder: {$inputPlaceholder};
 
     /* ===== ITEM CARDS ===== */
-    --theme-catalogItem-title-size: {$itemTitleSize};
-    --theme-catalogItem-title-weight: {$itemTitleWeight};
+    --theme-catalogItem-name-size: {$itemNameSize};
+    --theme-catalogItem-name-weight: {$itemNameWeight};
     --theme-catalogItem-price-size: {$itemPriceSize};
     --theme-catalogItem-hover-scale: {$itemHoverScale};
 

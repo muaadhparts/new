@@ -26,7 +26,7 @@
     font-weight: 600;
 }
 
-.theme-builder-header .subtitle {
+.theme-builder-header .subname {
     opacity: 0.8;
     font-size: 14px;
     margin-top: 5px;
@@ -99,7 +99,7 @@
     border-bottom: none;
 }
 
-.theme-section-title {
+.theme-section-name {
     font-size: 16px;
     font-weight: 600;
     color: #334155;
@@ -109,7 +109,7 @@
     gap: 10px;
 }
 
-.theme-section-title i {
+.theme-section-name i {
     color: #2563eb;
 }
 
@@ -742,7 +742,7 @@
         <div class="theme-builder-header">
             <div>
                 <h2><i class="fas fa-palette"></i> {{ __('Theme Builder') }}</h2>
-                <p class="subtitle">{{ __('Customize every aspect of your theme - Full control over colors, typography, and components') }}</p>
+                <p class="subname">{{ __('Customize every aspect of your theme - Full control over colors, typography, and components') }}</p>
             </div>
             <div class="action-toolbar">
                 <button type="button" class="toolbar-btn" onclick="exportTheme()">
@@ -762,15 +762,15 @@
 
         <!-- Current Theme Palette Preview -->
         <div class="color-palette-display" id="currentPalette">
-            <div class="palette-color" style="background: var(--pv-primary, #c3002f)" title="Primary"></div>
-            <div class="palette-color" style="background: var(--pv-primary-hover, #a00025)" title="Primary Hover"></div>
-            <div class="palette-color" style="background: var(--pv-secondary, #1f2937)" title="Secondary"></div>
-            <div class="palette-color" style="background: var(--pv-success, #10b981)" title="Success"></div>
-            <div class="palette-color" style="background: var(--pv-warning, #f59e0b)" title="Warning"></div>
-            <div class="palette-color" style="background: var(--pv-danger, #ef4444)" title="Danger"></div>
-            <div class="palette-color" style="background: var(--pv-info, #3b82f6)" title="Info"></div>
-            <div class="palette-color" style="background: var(--pv-bg-body, #ffffff)" title="Background"></div>
-            <div class="palette-color" style="background: var(--pv-text-primary, #1f2937)" title="Text"></div>
+            <div class="palette-color" style="background: var(--pv-primary, #c3002f)" name="Primary"></div>
+            <div class="palette-color" style="background: var(--pv-primary-hover, #a00025)" name="Primary Hover"></div>
+            <div class="palette-color" style="background: var(--pv-secondary, #1f2937)" name="Secondary"></div>
+            <div class="palette-color" style="background: var(--pv-success, #10b981)" name="Success"></div>
+            <div class="palette-color" style="background: var(--pv-warning, #f59e0b)" name="Warning"></div>
+            <div class="palette-color" style="background: var(--pv-danger, #ef4444)" name="Danger"></div>
+            <div class="palette-color" style="background: var(--pv-info, #3b82f6)" name="Info"></div>
+            <div class="palette-color" style="background: var(--pv-bg-body, #ffffff)" name="Background"></div>
+            <div class="palette-color" style="background: var(--pv-text-primary, #1f2937)" name="Text"></div>
         </div>
 
         <form action="{{ route('operator-theme-colors-update') }}" method="POST" id="themeBuilderForm">
@@ -823,7 +823,7 @@
                     <div class="theme-tab-content active" id="tab-colors">
                         <!-- Quick Presets -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-magic"></i> {{ __('Quick Presets') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-magic"></i> {{ __('Quick Presets') }}</h4>
                             <p class="theme-section-desc">{{ __('Select a preset to quickly apply a complete color scheme') }}</p>
                             <div class="preset-grid">
                                 <button type="button" class="preset-btn" data-preset="saudi" style="background: linear-gradient(135deg, #006c35 0%, #d4af37 50%, #1a1510 100%); color: #fff; box-shadow: 0 4px 12px rgba(0,108,53,0.4);">{{ __('Saudi Heritage') }}</button>
@@ -832,7 +832,7 @@
 
                         <!-- Primary Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-star"></i> {{ __('Primary Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-star"></i> {{ __('Primary Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Main brand color used for buttons, links, and accents') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -876,7 +876,7 @@
 
                         <!-- Secondary Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-adjust"></i> {{ __('Secondary Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-adjust"></i> {{ __('Secondary Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Used for dark sections, secondary buttons, and text') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -911,7 +911,7 @@
 
                         <!-- Text Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-font"></i> {{ __('Text Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-font"></i> {{ __('Text Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Colors for headings, paragraphs, and labels') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -955,7 +955,7 @@
 
                         <!-- Background Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-fill-drip"></i> {{ __('Background Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-fill-drip"></i> {{ __('Background Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Colors for page backgrounds, cards, and sections') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -999,7 +999,7 @@
 
                         <!-- Status Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-check-circle"></i> {{ __('Status Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-check-circle"></i> {{ __('Status Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Colors for success, warning, danger, and info states') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1043,7 +1043,7 @@
 
                         <!-- Border Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-border-style"></i> {{ __('Border Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-border-style"></i> {{ __('Border Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Colors for borders and dividers') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1082,7 +1082,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-typography">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-font"></i> {{ __('Font Families') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-font"></i> {{ __('Font Families') }}</h4>
                             <p class="theme-section-desc">{{ __('Choose fonts for your theme') }}</p>
                             <div class="row">
                                 <div class="col-md-6">
@@ -1116,7 +1116,7 @@
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-text-height"></i> {{ __('Font Sizes') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-text-height"></i> {{ __('Font Sizes') }}</h4>
                             <p class="theme-section-desc">{{ __('Set base font sizes') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1141,7 +1141,7 @@
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-ruler-vertical"></i> {{ __('Border Radius') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-ruler-vertical"></i> {{ __('Border Radius') }}</h4>
                             <p class="theme-section-desc">{{ __('Control the roundness of corners') }}</p>
                             <div class="row">
                                 <div class="col-md-2">
@@ -1184,7 +1184,7 @@
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-layer-group"></i> {{ __('Shadows') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-layer-group"></i> {{ __('Shadows') }}</h4>
                             <p class="theme-section-desc">{{ __('Box shadow presets for depth effects') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1214,7 +1214,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-buttons">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-hand-pointer"></i> {{ __('Button Styles') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-hand-pointer"></i> {{ __('Button Styles') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize button appearance') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1269,7 +1269,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-cards">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-square"></i> {{ __('Card Styles') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-square"></i> {{ __('Card Styles') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize card appearance') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1321,22 +1321,22 @@
 
                         <!-- CatalogItem Cards -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-box-open"></i> {{ __('CatalogItem Cards') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-box-open"></i> {{ __('CatalogItem Cards') }}</h4>
                             <p class="theme-section-desc">{{ __('Specific styles for catalogItem cards') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Title Size') }}</label>
-                                        <input type="text" name="theme_item_title_size" value="{{ $gs->theme_item_title_size ?? '14px' }}">
+                                        <label>{{ __('Name Size') }}</label>
+                                        <input type="text" name="theme_item_name_size" value="{{ $gs->theme_item_name_size ?? '14px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Title Weight') }}</label>
-                                        <select name="theme_item_title_weight">
-                                            <option value="400" {{ ($gs->theme_item_title_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_item_title_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_item_title_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                        <label>{{ __('Name Weight') }}</label>
+                                        <select name="theme_item_name_weight">
+                                            <option value="400" {{ ($gs->theme_item_name_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
+                                            <option value="500" {{ ($gs->theme_item_name_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
+                                            <option value="600" {{ ($gs->theme_item_name_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1361,7 +1361,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-forms">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-edit"></i> {{ __('Input Fields') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-edit"></i> {{ __('Input Fields') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize form input appearance') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1429,7 +1429,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-header">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-window-maximize"></i> {{ __('Header Styles') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-window-maximize"></i> {{ __('Header Styles') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize header appearance') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1457,7 +1457,7 @@
                         </div>
 
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-bars"></i> {{ __('Navigation Links') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-bars"></i> {{ __('Navigation Links') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize navigation link styles') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1503,7 +1503,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-footer">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-window-minimize"></i> {{ __('Footer Styles') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-window-minimize"></i> {{ __('Footer Styles') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize footer appearance') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1578,7 +1578,7 @@
                     <div class="theme-tab-content" id="tab-components">
                         <!-- Badges -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-tag"></i> {{ __('Badges') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-tag"></i> {{ __('Badges') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize badge appearance') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1614,7 +1614,7 @@
 
                         <!-- Scrollbar -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-arrows-alt-v"></i> {{ __('Scrollbar') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-arrows-alt-v"></i> {{ __('Scrollbar') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize scrollbar colors') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1655,7 +1655,7 @@
 
                         <!-- Modals -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-window-restore"></i> {{ __('Modals') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-window-restore"></i> {{ __('Modals') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize modal dialogs') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1684,7 +1684,7 @@
 
                         <!-- Tables -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-table"></i> {{ __('Tables') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-table"></i> {{ __('Tables') }}</h4>
                             <p class="theme-section-desc">{{ __('Customize table styles') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1723,7 +1723,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-topbar">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-grip-horizontal"></i> {{ __('Topbar Settings') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-grip-horizontal"></i> {{ __('Topbar Settings') }}</h4>
                             <p class="theme-section-desc">{{ __('Configure the top bar with contact info and quick links') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1785,7 +1785,7 @@
                     <!-- ================================ -->
                     <div class="theme-tab-content" id="tab-breadcrumb">
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-chevron-right"></i> {{ __('Breadcrumb Settings') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-chevron-right"></i> {{ __('Breadcrumb Settings') }}</h4>
                             <p class="theme-section-desc">{{ __('Configure the breadcrumb navigation bar') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1799,9 +1799,9 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
-                                        <label>{{ __('Title Color') }} <span class="color-hint">--theme-breadcrumb-title</span></label>
+                                        <label>{{ __('Name Color') }} <span class="color-hint">--theme-breadcrumb-name</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_breadcrumb_title" id="theme_breadcrumb_title" class="color-field" value="{{ $gs->theme_breadcrumb_title ?? '#ffffff' }}">
+                                            <input type="text" name="theme_breadcrumb_name" id="theme_breadcrumb_name" class="color-field" value="{{ $gs->theme_breadcrumb_name ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1825,8 +1825,8 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
-                                        <label>{{ __('Title Size') }}</label>
-                                        <input type="text" name="theme_breadcrumb_title_size" value="{{ $gs->theme_breadcrumb_title_size ?? '32px' }}">
+                                        <label>{{ __('Name Size') }}</label>
+                                        <input type="text" name="theme_breadcrumb_name_size" value="{{ $gs->theme_breadcrumb_name_size ?? '32px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
@@ -1854,7 +1854,7 @@
                     <div class="theme-tab-content" id="tab-advanced">
                         <!-- Status Colors Dark Variants -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-adjust"></i> {{ __('Status Colors - Dark Variants') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-adjust"></i> {{ __('Status Colors - Dark Variants') }}</h4>
                             <p class="theme-section-desc">{{ __('Dark variants for status colors (used in hover states and borders)') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -1898,7 +1898,7 @@
 
                         <!-- Link Colors -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-link"></i> {{ __('Link Colors') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-link"></i> {{ __('Link Colors') }}</h4>
                             <p class="theme-section-desc">{{ __('Colors for hyperlinks across the site') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1933,7 +1933,7 @@
 
                         <!-- Focus & Selection -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-bullseye"></i> {{ __('Focus & Selection') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-bullseye"></i> {{ __('Focus & Selection') }}</h4>
                             <p class="theme-section-desc">{{ __('Colors for focus rings and text selection') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1968,7 +1968,7 @@
 
                         <!-- Transition & Animation -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-magic"></i> {{ __('Transitions & Animations') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-magic"></i> {{ __('Transitions & Animations') }}</h4>
                             <p class="theme-section-desc">{{ __('Control transition speeds and animation curves') }}</p>
                             <div class="row">
                                 <div class="col-md-4">
@@ -1994,7 +1994,7 @@
 
                         <!-- Z-Index Layers -->
                         <div class="theme-section">
-                            <h4 class="theme-section-title"><i class="fas fa-layer-group"></i> {{ __('Z-Index Layers') }}</h4>
+                            <h4 class="theme-section-name"><i class="fas fa-layer-group"></i> {{ __('Z-Index Layers') }}</h4>
                             <p class="theme-section-desc">{{ __('Control stacking purchase of UI elements') }}</p>
                             <div class="row">
                                 <div class="col-md-3">
@@ -2041,7 +2041,7 @@
 
                             <h6 class="preview-text-primary mb-3">{{ __('Card') }}</h6>
                             <div class="preview-card">
-                                <p class="preview-text-primary mb-1"><strong>{{ __('Card Title') }}</strong></p>
+                                <p class="preview-text-primary mb-1"><strong>{{ __('Card Name') }}</strong></p>
                                 <p class="preview-text-muted mb-0" style="font-size: 13px;">{{ __('Card description text goes here') }}</p>
                             </div>
 
@@ -2230,7 +2230,7 @@ $(document).ready(function() {
             // البطاقات - عصرية بلمسة تراثية
             theme_card_bg: '#ffffff', theme_card_border: '#e8dcc8', theme_card_radius: '8px',
             theme_card_shadow: '0 2px 6px rgba(26,21,16,0.06)', theme_card_hover_shadow: '0 6px 18px rgba(0,108,53,0.1)', theme_card_padding: '22px',
-            theme_item_title_size: '14px', theme_item_title_weight: '500', theme_item_price_size: '16px', theme_item_hover_scale: '1.01',
+            theme_item_name_size: '14px', theme_item_name_weight: '500', theme_item_price_size: '16px', theme_item_hover_scale: '1.01',
             // النماذج
             theme_input_height: '46px', theme_input_bg: '#ffffff', theme_input_border: '#d4c4a8',
             theme_input_radius: '4px', theme_input_focus_border: '#006c35', theme_input_focus_shadow: '0 0 0 3px rgba(0,108,53,0.12)', theme_input_placeholder: '#9c8d7a',

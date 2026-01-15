@@ -117,11 +117,11 @@ class SeoService
 
         // Set meta
         $this->setMeta([
-            'title' => $catalogItem->name . ' - ' . config('app.name'),
+            'name' => $catalogItem->name . ' - ' . config('app.name'),
             'description' => $catalogItem->meta_description ?? \Str::limit(strip_tags($catalogItem->description ?? ''), 160),
             'keywords' => $catalogItem->meta_tag ?? '',
             'og:type' => 'product',
-            'og:title' => $catalogItem->name,
+            'og:name' => $catalogItem->name,
             'og:description' => $catalogItem->meta_description ?? \Str::limit(strip_tags($catalogItem->description ?? ''), 200),
             'og:image' => $this->getProductImage($catalogItem),
             'product:price:amount' => $merchantItem->price,
@@ -145,10 +145,10 @@ class SeoService
         );
 
         $this->setMeta([
-            'title' => $category->name . ' - ' . config('app.name'),
+            'name' => $category->name . ' - ' . config('app.name'),
             'description' => $category->meta_description ?? "تصفح منتجات {$category->name}",
             'og:type' => 'website',
-            'og:title' => $category->name,
+            'og:name' => $category->name,
         ]);
 
         return $this;
@@ -210,8 +210,8 @@ class SeoService
                 $output .= '<meta property="' . e($key) . '" content="' . e($value) . '">' . "\n";
             } elseif (str_starts_with($key, 'twitter:')) {
                 $output .= '<meta name="' . e($key) . '" content="' . e($value) . '">' . "\n";
-            } elseif ($key === 'title') {
-                // Title is handled separately in <title> tag
+            } elseif ($key === 'name') {
+                // Name is handled separately in <name> tag
                 continue;
             } else {
                 $output .= '<meta name="' . e($key) . '" content="' . e($value) . '">' . "\n";
@@ -222,11 +222,11 @@ class SeoService
     }
 
     /**
-     * Get page title
+     * Get page name
      */
-    public function getTitle(): string
+    public function getName(): string
     {
-        return $this->meta['title'] ?? config('app.name');
+        return $this->meta['name'] ?? config('app.name');
     }
 
     /**

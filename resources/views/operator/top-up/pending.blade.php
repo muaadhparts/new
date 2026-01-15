@@ -57,7 +57,7 @@
       <div class="modal-content">
   
       <div class="modal-header d-block text-center">
-          <h4 class="modal-title d-inline-block">{{ __("Update Status") }}</h4>
+          <h4 class="modal-name d-inline-block">{{ __("Update Status") }}</h4>
               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                   
               </button>

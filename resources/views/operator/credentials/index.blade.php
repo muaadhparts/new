@@ -120,21 +120,21 @@
                                                 <td>
                                                     <div class="btn-group btn-group-sm">
                                                         <a href="{{ route('operator.credentials.edit', $credential->id) }}"
-                                                           class="btn btn-info" title="{{ __('Edit') }}">
+                                                           class="btn btn-info" name="{{ __('Edit') }}">
                                                             <i class="fas fa-edit"></i>
                                                         </a>
                                                         <form action="{{ route('operator.credentials.toggle', $credential->id) }}"
                                                               method="POST" style="display: inline;">
                                                             @csrf
                                                             <button type="submit" class="btn btn-{{ $credential->is_active ? 'warning' : 'success' }}"
-                                                                    title="{{ $credential->is_active ? __('Deactivate') : __('Activate') }}">
+                                                                    name="{{ $credential->is_active ? __('Deactivate') : __('Activate') }}">
                                                                 <i class="fas fa-{{ $credential->is_active ? 'pause' : 'play' }}"></i>
                                                             </button>
                                                         </form>
                                                         <form action="{{ route('operator.credentials.test', $credential->id) }}"
                                                               method="POST" style="display: inline;">
                                                             @csrf
-                                                            <button type="submit" class="btn btn-secondary" title="{{ __('Test') }}">
+                                                            <button type="submit" class="btn btn-secondary" name="{{ __('Test') }}">
                                                                 <i class="fas fa-check-circle"></i>
                                                             </button>
                                                         </form>
@@ -143,7 +143,7 @@
                                                               onsubmit="return confirm('{{ __('Are you sure you want to delete this credential?') }}')">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-danger" title="{{ __('Delete') }}">
+                                                            <button type="submit" class="btn btn-danger" name="{{ __('Delete') }}">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>

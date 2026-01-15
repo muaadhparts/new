@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * Rename 'title' column to 'name' across multiple tables
+ * Rename 'name' column to 'name' across multiple tables
  * Part of IP protection and naming standardization
  *
  * Tables affected:
@@ -21,14 +21,14 @@ use Illuminate\Support\Facades\Schema;
  * - shippings
  * - static_contents
  * - testimonials
- * - muaadhsettings (site_title → site_name)
+ * - muaadhsettings (site_name → site_name)
  *
- * SKIPPED: merchant_payments (already has both 'title' and 'name' columns)
+ * SKIPPED: merchant_payments (already has both 'name' and 'name' columns)
  */
 return new class extends Migration
 {
     /**
-     * Tables that have 'title' column to rename to 'name'
+     * Tables that have 'name' column to rename to 'name'
      */
     protected array $tablesToRename = [
         'abuse_flags',
@@ -47,30 +47,30 @@ return new class extends Migration
 
     public function up(): void
     {
-        // Rename 'title' to 'name' in standard tables
+        // Rename 'name' to 'name' in standard tables
         foreach ($this->tablesToRename as $table) {
-            if (Schema::hasTable($table) && Schema::hasColumn($table, 'title')) {
+            if (Schema::hasTable($table) && Schema::hasColumn($table, 'name')) {
                 Schema::table($table, function (Blueprint $table) {
-                    $table->renameColumn('title', 'name');
+                    $table->renameColumn('name', 'name');
                 });
             }
         }
 
-        // Special case: muaadhsettings - rename 'title' to 'site_name'
-        if (Schema::hasTable('muaadhsettings') && Schema::hasColumn('muaadhsettings', 'title')) {
+        // Special case: muaadhsettings - rename 'name' to 'site_name'
+        if (Schema::hasTable('muaadhsettings') && Schema::hasColumn('muaadhsettings', 'name')) {
             Schema::table('muaadhsettings', function (Blueprint $table) {
-                $table->renameColumn('title', 'site_name');
+                $table->renameColumn('name', 'site_name');
             });
         }
     }
 
     public function down(): void
     {
-        // Reverse: rename 'name' back to 'title'
+        // Reverse: rename 'name' back to 'name'
         foreach ($this->tablesToRename as $table) {
             if (Schema::hasTable($table) && Schema::hasColumn($table, 'name')) {
                 Schema::table($table, function (Blueprint $table) {
-                    $table->renameColumn('name', 'title');
+                    $table->renameColumn('name', 'name');
                 });
             }
         }
@@ -78,7 +78,7 @@ return new class extends Migration
         // Special case: muaadhsettings
         if (Schema::hasTable('muaadhsettings') && Schema::hasColumn('muaadhsettings', 'site_name')) {
             Schema::table('muaadhsettings', function (Blueprint $table) {
-                $table->renameColumn('site_name', 'title');
+                $table->renameColumn('site_name', 'name');
             });
         }
     }

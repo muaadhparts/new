@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فتح لوحة التحكم</title>
+    <name>فتح لوحة التحكم</name>
     <style>
         * {
             margin: 0;
@@ -43,7 +43,7 @@
             margin-bottom: 10px;
             font-size: 24px;
         }
-        .subtitle {
+        .subname {
             color: rgba(255, 255, 255, 0.6);
             text-align: center;
             margin-bottom: 30px;
@@ -122,7 +122,7 @@
         </div>
 
         <h1>لوحة التحكم مقفلة</h1>
-        <p class="subtitle">أدخل كلمة المرور الرئيسية للمتابعة</p>
+        <p class="subname">أدخل كلمة المرور الرئيسية للمتابعة</p>
 
         @if($errors->any())
             <div class="error-message">

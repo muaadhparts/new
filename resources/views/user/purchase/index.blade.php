@@ -10,10 +10,10 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <!-- page title -->
-                    <div class="ud-page-title-box">
+                    <!-- page name -->
+                    <div class="ud-page-name-box">
                         <!-- mobile sidebar trigger btn -->
-                        <h3 class="ud-page-title">@lang('Purchase Items')</h3>
+                        <h3 class="ud-page-name">@lang('Purchase Items')</h3>
                     </div>
 
                     <!--  purchase status steps -->

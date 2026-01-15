@@ -64,8 +64,8 @@ p {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.single-catalogItem .rating-title,
-.single-catalogItem-list-view .rating-title {
+.single-catalogItem .rating-name,
+.single-catalogItem-list-view .rating-name {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
@@ -73,7 +73,7 @@ p {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 
-.gs-cart-section .gs-cart-container .gs-cart-row .cart-summary .cart-summary-content .cart-summary-subtitle {
+.gs-cart-section .gs-cart-container .gs-cart-row .cart-summary .cart-summary-content .cart-summary-subname {
   font-family: "<?php echo $font_familly; ?>", sans-serif;
 }
 

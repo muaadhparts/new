@@ -13,7 +13,7 @@
     - merchant-user-id (required): The merchant's user ID
     - weight (optional): Catalog item weight in kg (default: 0.5)
     - merchant-item (optional): MerchantItem object (will extract user_id and weight)
-    - catalog-item-name (optional): Catalog item name for modal title
+    - catalog-item-name (optional): Catalog item name for modal name
     - class (optional): Additional CSS classes
 --}}
 

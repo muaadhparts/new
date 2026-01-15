@@ -18,7 +18,7 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg1">
                 <div class="left">
-                    <h5 class="title">{{ __('Purchases Pending!') }} </h5>
+                    <h5 class="name">{{ __('Purchases Pending!') }} </h5>
                     <span class="number">{{count($pending)}}</span>
                     <a href="{{ route('operator-purchases-all') }}?status=pending" class="link">{{ __('View All') }}</a>
                 </div>
@@ -32,7 +32,7 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg2">
                 <div class="left">
-                    <h5 class="title">{{ __('Purchases Processing!') }}</h5>
+                    <h5 class="name">{{ __('Purchases Processing!') }}</h5>
                     <span class="number">{{count($processing)}}</span>
                     <a href="{{ route('operator-purchases-all') }}?status=processing" class="link">{{ __('View All') }}</a>
                 </div>
@@ -46,7 +46,7 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg3">
                 <div class="left">
-                    <h5 class="title">{{ __('Purchases Completed!') }}</h5>
+                    <h5 class="name">{{ __('Purchases Completed!') }}</h5>
                     <span class="number">{{count($completed)}}</span>
                     <a href="{{ route('operator-purchases-all') }}?status=completed" class="link">{{ __('View All') }}</a>
                 </div>
@@ -60,7 +60,7 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg4">
                 <div class="left">
-                    <h5 class="title">{{ __('Total Catalog Items!') }}</h5>
+                    <h5 class="name">{{ __('Total Catalog Items!') }}</h5>
                     <span class="number">{{$catalogItems}}</span>
                     <a href="{{route('operator-catalog-item-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
@@ -74,7 +74,7 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg5">
                 <div class="left">
-                    <h5 class="title">{{ __('Total Customers!') }}</h5>
+                    <h5 class="name">{{ __('Total Customers!') }}</h5>
                     <span class="number">{{$users}}</span>
                     <a href="{{route('operator-user-index')}}" class="link">{{ __('View All') }}</a>
                 </div>
@@ -88,7 +88,7 @@
         <div class="col-md-12 col-lg-6 col-xl-4">
             <div class="mycard bg6">
                 <div class="left">
-                    <h5 class="title">{{ __('Total Posts!') }}</h5>
+                    <h5 class="name">{{ __('Total Posts!') }}</h5>
                     <span class="number">{{$publications}}</span>
                     <a href="{{ route('operator-publication-index') }}" class="link">{{ __('View All') }}</a>
                 </div>
@@ -109,7 +109,7 @@
                     <p>{{ App\Models\User::where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
                 </div>
                 <div class="c-info-box-content">
-                    <h6 class="title">{{ __('New Customers') }}</h6>
+                    <h6 class="name">{{ __('New Customers') }}</h6>
                     <p class="text">{{ __('Last 30 Days') }}</p>
                 </div>
             </div>
@@ -120,7 +120,7 @@
                     <p>{{ App\Models\User::count() }}</p>
                 </div>
                 <div class="c-info-box-content">
-                    <h6 class="title">{{ __('Total Customers') }}</h6>
+                    <h6 class="name">{{ __('Total Customers') }}</h6>
                     <p class="text">{{ __('All Time') }}</p>
                 </div>
             </div>
@@ -131,7 +131,7 @@
                     <p>{{ App\Models\Purchase::where('status','=','completed')->where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
                 </div>
                 <div class="c-info-box-content">
-                    <h6 class="title">{{ __('Total Sales') }}</h6>
+                    <h6 class="name">{{ __('Total Sales') }}</h6>
                     <p class="text">{{ __('Last 30 days') }}</p>
                 </div>
             </div>
@@ -142,7 +142,7 @@
                      <p>{{ App\Models\Purchase::where('status','=','completed')->get()->count() }}</p>
                 </div>
                 <div class="c-info-box-content">
-                    <h6 class="title">{{ __('Total Sales') }}</h6>
+                    <h6 class="name">{{ __('Total Sales') }}</h6>
                     <p class="text">{{ __('All Time') }}</p>
                 </div>
             </div>

@@ -17,7 +17,7 @@
     <tr id="favorite-row-{{ $favorite->id }}" data-row-id="{{ $favorite->id }}">
         <td class="catalogItem-remove">
             <div>
-                <a href="{{ route('user-favorite-remove', $favorite->id) }}" class="remove favorite-remove remove_from_favorite" title="Remove this catalogItem">×</a>
+                <a href="{{ route('user-favorite-remove', $favorite->id) }}" class="remove favorite-remove remove_from_favorite" name="Remove this catalogItem">×</a>
             </div>
         </td>
         <td class="catalogItem-thumbnail">

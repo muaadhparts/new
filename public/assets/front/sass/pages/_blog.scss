@@ -51,7 +51,7 @@
     .fea-img {
       margin-bottom: 16px;
     }
-    .fea-title {
+    .fea-name {
       margin-top: 24px;
     }
     .meta-info-wrapper {
@@ -69,12 +69,12 @@
         &:last-child {
           border-right: none;
         }
-        a.meta-title {
+        a.meta-name {
           &:hover {
             color: $primary-color-500;
           }
         }
-        .meta-title {
+        .meta-name {
           display: inline-block;
           color: $text-color-800;
           font-size: 16px;
@@ -88,7 +88,7 @@
         }
         @include screen-768 {
           border-right: none;
-          .meta-title {
+          .meta-name {
             padding-right: 0px;
           }
         }

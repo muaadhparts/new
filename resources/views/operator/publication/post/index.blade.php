@@ -31,7 +31,7 @@
 													<thead>
 														<tr>
 									                        <th>{{ __('Featured Image') }}</th>
-									                        <th width="40%">{{ __('Post Title') }}</th>
+									                        <th width="40%">{{ __('Post Name') }}</th>
 									                        <th>{{ __('Views') }}</th>
 									                        <th>{{ __('Options') }}</th>
 														</tr>
@@ -57,7 +57,7 @@
 														<img  src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
 												</div>
 											<div class="modal-header">
-											<h5 class="modal-title"></h5>
+											<h5 class="modal-name"></h5>
 											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 												
 											</button>
@@ -82,7 +82,7 @@
     <div class="modal-content">
 
 	<div class="modal-header d-block text-center">
-		<h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
+		<h4 class="modal-name d-inline-block">{{ __('Confirm Delete') }}</h4>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 				
 			</button>
@@ -131,7 +131,7 @@
                ajax: '{{ route('operator-publication-datatables') }}',
                columns: [
                         { data: 'photo', name: 'photo' , searchable: false, orderable: false},
-                        { data: 'title', name: 'title' },
+                        { data: 'name', name: 'name' },
                         { data: 'views', name: 'views' },
             			{ data: 'action', searchable: false, orderable: false }
 

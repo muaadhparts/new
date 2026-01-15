@@ -18,7 +18,7 @@ class AbuseFlagResource extends JsonResource
         'id' => $this->id,
         'user_id' => $this->user_id,
         'catalog_item_id' => $this->catalog_item_id,
-        'title' => $this->title,
+        'name' => $this->name,
         'note' => $this->note,
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at,

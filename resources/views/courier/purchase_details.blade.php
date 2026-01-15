@@ -10,11 +10,11 @@
                 @endphp
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="ud-page-title-box gap-4">
+                    <div class="ud-page-name-box gap-4">
                         <a href="{{ url()->previous() }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
-                        <h3 class="ud-page-title">@lang('Delivery Details')</h3>
+                        <h3 class="ud-page-name">@lang('Delivery Details')</h3>
                     </div>
 
                     {{-- ✅ Delivery Workflow Progress Indicator (NEW WORKFLOW) --}}

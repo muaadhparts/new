@@ -6,7 +6,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">{{ $catalogItem->localized_name }}</h2>
+                    <h2 class="breadcrumb-name">{{ $catalogItem->localized_name }}</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         @if ($catalogItem->brand)
@@ -170,7 +170,7 @@
                                     @if (array_key_exists('details_status', $attrVal) && $attrVal['details_status'] == 1)
                                         <div class="col-lg-6">
                                             <div class="attribute-wrapper">
-                                                <span class="attribute-title">{{ str_replace('_', ' ', $attrKey) }}
+                                                <span class="attribute-name">{{ str_replace('_', ' ', $attrKey) }}
                                                     :</span>
                                                 <ul>
                                                     @foreach ($attrVal['values'] as $optionKey => $optionVal)
@@ -223,7 +223,7 @@
                             @if (!empty($merchantSizes))
                                 <!-- catalogItem size (from merchant) -->
                                 <div class="variation-wrapper variation-sizes">
-                                    <span class="varition-title">@lang('Size :')</span>
+                                    <span class="varition-name">@lang('Size :')</span>
                                     <ul>
                                         @foreach ($merchantSizes as $key => $data1)
                                             @php
@@ -250,7 +250,7 @@
                             @if (!empty($catalogItem->color_all))
                                 <!-- catalogItem colors -->
                                 <div class="variation-wrapper variation-colors">
-                                    <span class="varition-title">@lang('Color :')</span>
+                                    <span class="varition-name">@lang('Color :')</span>
                                     <ul>
                                         @foreach ($catalogItem->color_all as $ckey => $color1)
                                             <li class="{{ $loop->first ? 'active' : '' }} cart_color">
@@ -289,7 +289,7 @@
 
                         <!-- add-qty-wrapper -->
                         <div class="add-qty-wrapper">
-                            <span class="varition-title">@lang('Quantity :')</span>
+                            <span class="varition-name">@lang('Quantity :')</span>
                             <div class="catalogItem-input-wrapper">
                                 <button class="action-btn qtminus" type="button">-</button>
 
@@ -361,7 +361,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <span class="title">@lang('Add to Favorites')</span>
+                                    <span class="name">@lang('Add to Favorites')</span>
                                 </a>
                             @else
                                 <a href="{{ route('user.login') }}" class="link">
@@ -372,7 +372,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <span class="title">@lang('Add to Favorites')</span>
+                                    <span class="name">@lang('Add to Favorites')</span>
                                 </a>
                             @endif
 
@@ -385,7 +385,7 @@
                                         stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                         stroke-linejoin="round" />
                                 </svg>
-                                <span class="title">@lang('Add to Compare')</span>
+                                <span class="name">@lang('Add to Compare')</span>
                             </a>
 
                             @if ($gs->is_report == 1)
@@ -399,7 +399,7 @@
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                 stroke-linejoin="round" />
                                         </svg>
-                                        <span class="title">@lang('Report This Item')</span>
+                                        <span class="name">@lang('Report This Item')</span>
                                     </a>
                                 @else
                                     <a href="{{ route('user.login') }}" class="link">
@@ -410,7 +410,7 @@
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                 stroke-linejoin="round" />
                                         </svg>
-                                        <span class="title">@lang('Report This Item')</span>
+                                        <span class="name">@lang('Report This Item')</span>
 
                                     </a>
                                 @endif
@@ -516,7 +516,7 @@
                             <span> <b>@lang('Sold By :')</b>
                                 {{ getLocalizedShopName($merchant->user) }}
                                 @if ($merchant->user->isTrustBadgeVerified())
-                                    <a class="verify-link" href="javascript:;" data-original-title="">
+                                    <a class="verify-link" href="javascript:;" data-original-name="">
                                         {{ __('Verified') }} <i class="fas fa-check-circle"></i>
                                     </a>
                                 @endif
@@ -626,7 +626,7 @@
                     <div class="row review-tab-content-wrapper">
                         <div class="col-xxl-8">
                             <div id="buyer_notes">
-                                <h5 class="woocommerce-Reviews-titleDDD my-3"> @lang('Ratings & Reviews')</h5>
+                                <h5 class="woocommerce-Reviews-nameDDD my-3"> @lang('Ratings & Reviews')</h5>
                                 <ul class="all-comments">
                                     @forelse($catalogItem->catalogReviews as $review)
                                         <li>
@@ -676,7 +676,7 @@
 
                                     <div class="review-area">
 
-                                        <h5 class="title">@lang('Reviews')</h5>
+                                        <h5 class="name">@lang('Reviews')</h5>
                                         <div class="star-area">
                                             <ul class="star-list">
                                                 <li class="stars" data-val="1">
@@ -760,7 +760,7 @@
                                 <div class="pro-summary ">
                                     <div class="price-summary">
                                         <div class="price-summary-content">
-                                            <p class="title text-center text-lg">@lang('Wholesell')</p>
+                                            <p class="name text-center text-lg">@lang('Wholesell')</p>
                                             <ul class="price-summary-list">
                                                 <li class="regular-price">
                                                     <p class="fw-medium">@lang('Quantity')</p>
@@ -799,7 +799,7 @@
     @if($relatedMerchantItems->count() > 0)
     <div class="gs-catalogItem-cards-slider-area wow-replaced" data-wow-delay=".1s">
         <div class="container">
-            <h2 class="title text-center">@lang('Related Items')</h2>
+            <h2 class="name text-center">@lang('Related Items')</h2>
             <div class="catalogItem-cards-slider">
                 @foreach ($relatedMerchantItems as $merchantItem)
                     @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
@@ -815,7 +815,7 @@
         <div class="gs-catalogItem-cards-slider-section more-catalogItems-by-seller  wow-replaced" data-wow-delay=".1s">
             <div class="gs-catalogItem-cards-slider-area more-catalogItems-by-seller">
                 <div class="container">
-                    <h2 class="title text-center">@lang('More Items By Seller')</h2>
+                    <h2 class="name text-center">@lang('More Items By Seller')</h2>
                     <div class="catalogItem-cards-slider">
                         @foreach ($merchantListings as $merchantItem)
                             @include('includes.frontend.home_catalog_item', ['class' => '', 'catalogItem' => $merchantItem->catalogItem, 'mp' => $merchantItem])
@@ -842,7 +842,7 @@
 
                 <div class="modal-content assign-courier-modal-content form-group">
                     <div class="modal-header w-100">
-                        <h4 class="title">{{ __('REPORT ITEM') }}</h4>
+                        <h4 class="name">{{ __('REPORT ITEM') }}</h4>
                         <button type="button" data-bs-dismiss="modal">
                             <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                         </button>
@@ -852,8 +852,8 @@
                     <!-- Select Courier -->
                     <div class="input-label-wrapper w-100">
                         <label>{{ __('Please give the following details') }}</label>
-                        <input type="text" name="title" class="form-control mb-3"
-                            placeholder="{{ __('Enter Report Title') }}" required="">
+                        <input type="text" name="name" class="form-control mb-3"
+                            placeholder="{{ __('Enter Report Name') }}" required="">
 
                         <textarea name="note" class="form-control border  p-3" placeholder="{{ __('Enter Report Note') }}"
                             required=""></textarea>
@@ -884,7 +884,7 @@
             {{ csrf_field() }}
             <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
-                    <h4 class="title">@lang('Send Message')</h4>
+                    <h4 class="name">@lang('Send Message')</h4>
                     <button type="button" data-bs-dismiss="modal">
                         <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                     </button>
@@ -924,7 +924,7 @@
             {{ csrf_field() }}
             <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
-                    <h4 class="title">@lang('Send Message')</h4>
+                    <h4 class="name">@lang('Send Message')</h4>
                     <button type="button" data-bs-dismiss="modal">
                         <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                     </button>

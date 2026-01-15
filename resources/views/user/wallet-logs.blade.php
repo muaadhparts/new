@@ -10,11 +10,11 @@
             @include('includes.user.sidebar')
             <!-- main content -->
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                <!-- page title -->
-                <div class="ud-page-title-box">
+                <!-- page name -->
+                <div class="ud-page-name-box">
                     <!-- mobile sidebar trigger btn -->
 
-                    <h3 class="ud-page-title">@lang('Wallet Logs')</h3>
+                    <h3 class="ud-page-name">@lang('Wallet Logs')</h3>
                 </div>
 
                 <!--  purchase status steps -->
@@ -89,7 +89,7 @@
     <div class="modal-dialog assign-courier-modal-dialog modal-dialog-centered max-w-480">
         <div class="modal-content assign-courier-modal-content form-group">
             <div class="modal-header w-100 border-0 pb-0 mb-0">
-                <h4 class="title">{{ __(('Transaction Details'))}}</h4>
+                <h4 class="name">{{ __(('Transaction Details'))}}</h4>
 
                 <button type="button" data-bs-dismiss="modal">
                     <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>

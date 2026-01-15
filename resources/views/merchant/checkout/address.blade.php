@@ -6,7 +6,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Checkout')</h2>
+                    <h2 class="breadcrumb-name">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
@@ -82,7 +82,7 @@
                     {{-- Order Summary --}}
                     <div class="col-lg-5 col-xl-4">
                         <div class="summary-box">
-                            <h4 class="form-title">@lang('Order Summary')</h4>
+                            <h4 class="form-name">@lang('Order Summary')</h4>
 
                             <div class="summary-inner-box">
                                 <ul class="summary-list">

@@ -102,7 +102,7 @@
         {{-- Details Column --}}
         <div class="col-12 col-md-7">
             {{-- Catalog Item Name --}}
-            <h4 class="catalog-quickview-title">
+            <h4 class="catalog-quickview-name">
                 <x-catalog-item-name :catalog-item="$catalogItem" :merchant-user-id="$merchantUserId" target="_blank" />
             </h4>
 

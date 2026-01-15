@@ -31,7 +31,7 @@
         margin-top: 0;
         margin-bottom: 0;
 
-        .title-box-and-brands-container {
+        .name-box-and-brands-container {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -42,7 +42,7 @@
             }
         }
 
-        .title-box-wrapper {
+        .name-box-wrapper {
             width: 424px;
             height: 312px;
             overflow: hidden;
@@ -134,7 +134,7 @@
                     }
                 }
 
-                .post-title {
+                .post-name {
                     color: $black-color;
                     transition: $transition;
 

@@ -27,7 +27,7 @@
                 <div class="col-xl-4 col-md-6">
                     <div class="special-box bg-gray">
                         <div class="heading-area">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Header Logo') }}
                             </h4>
                         </div>
@@ -52,7 +52,7 @@
                 <div class="col-xl-4 col-md-6">
                   <div class="special-box  bg-gray">
                       <div class="heading-area">
-                          <h4 class="title">
+                          <h4 class="name">
                             {{ __('Footer Logo') }}
                           </h4>
                       </div>
@@ -77,7 +77,7 @@
                 <div class="col-xl-4 col-md-6">
                     <div class="special-box  bg-gray">
                         <div class="heading-area">
-                            <h4 class="title">
+                            <h4 class="name">
                               {{ __('Invoice Logo') }}
                             </h4>
                         </div>

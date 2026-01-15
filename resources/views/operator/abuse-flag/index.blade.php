@@ -25,7 +25,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="heading-area">
-                        <h4 class="title">
+                        <h4 class="name">
                             {{ __('CatalogItem Report') }} :
                         </h4>
                         <div class="action-list">
@@ -49,7 +49,7 @@
                                         <th>{{ __('Quality Brand') }}</th>
                                         <th>{{ __('Merchant') }}</th>
                                         <th>{{ __('Reporter') }}</th>
-                                        <th>{{ __('Title') }}</th>
+                                        <th>{{ __('Name') }}</th>
                                         <th>{{ __('Date & Time') }}</th>
                                         <th>{{ __('Options') }}</th>
                                     </tr>
@@ -72,7 +72,7 @@
                     <img src="{{ asset('assets/images/' . $gs->admin_loader) }}" alt="">
                 </div>
                 <div class="modal-header">
-                    <h5 class="modal-title"></h5>
+                    <h5 class="modal-name"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                         
                     </button>
@@ -99,7 +99,7 @@
 
                 <!-- Modal Header -->
                 <div class="modal-header text-center">
-                    <h4 class="modal-title w-100">{{ __('Confirm Delete') }}</h4>
+                    <h4 class="modal-name w-100">{{ __('Confirm Delete') }}</h4>
                 </div>
 
                 <!-- Modal body -->
@@ -146,7 +146,7 @@
                     { data: 'quality_brand', name: 'quality_brand' },
                     { data: 'merchant', name: 'merchant' },
                     { data: 'reporter', name: 'reporter' },
-                    { data: 'title', name: 'title' },
+                    { data: 'name', name: 'name' },
                     { data: 'created_at', name: 'created_at' },
                     { data: 'action', searchable: false, orderable: false }
                 ],

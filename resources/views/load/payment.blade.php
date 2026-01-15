@@ -7,7 +7,7 @@ $pay_data = $gateway->convertAutoData();
 
 @if($payment == 'cod')
 
-<input type="hidden" name="method" value="{{ $gateway->title }}">
+<input type="hidden" name="method" value="{{ $gateway->name }}">
 
 @endif
 
@@ -309,7 +309,7 @@ $paydata = $gateway->convertAutoData();
 
 @if($payment == 'other')
 
-<input type="hidden" name="method" value="{{ $gateway->title }}">
+<input type="hidden" name="method" value="{{ $gateway->name }}">
 
 <div class="row">
 

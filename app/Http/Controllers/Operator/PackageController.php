@@ -49,7 +49,7 @@ class PackageController extends OperatorBaseController
         //--- Validation Section
         $rules = [
             'name' => 'required|unique:packages,name',
-            'subtitle' => 'required',
+            'subname' => 'required',
             'price' => 'required|numeric|min:0',
         ];
         $customs = ['name.unique' => __('This name has already been taken.')];
@@ -92,7 +92,7 @@ class PackageController extends OperatorBaseController
         //--- Validation Section
         $rules = [
             'name' => 'required|unique:packages,name,'.$id,
-            'subtitle' => 'required',
+            'subname' => 'required',
             'price' => 'required|numeric|min:0',
         ];
         $customs = ['name.unique' => __('This name has already been taken.')];

@@ -16,7 +16,7 @@ class PublicationResource extends JsonResource
     {
         return [
             'id'                => $this->id,
-            'title'             => $this->title,
+            'name'             => $this->name,
             'details'           => strip_tags($this->details),
             'photo'             => url('/') . '/assets/images/publications/'.$this->photo,
             'source'            => $this->source,

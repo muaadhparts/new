@@ -125,7 +125,7 @@ trait SavesCustomerShippingChoice
                     $choices[$vid] = [
                         'provider' => $shipping->provider ?? 'manual',
                         'shipping_id' => (int) $shippingValue,
-                        'title' => $shipping->title ?? '',
+                        'name' => $shipping->name ?? '',
                         'price' => (float) ($shipping->price ?? 0),
                         'selected_at' => now()->toIso8601String(),
                     ];

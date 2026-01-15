@@ -45,7 +45,7 @@
                             <label for="link">@lang('Network Link')</label>
                             <input type="text" id="link" class="form-control" placeholder="@lang('Link')"
                                 value="{{ $data->link }}" name="link">
-                            @error('title')
+                            @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

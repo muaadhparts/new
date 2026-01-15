@@ -59,7 +59,7 @@
 }
 
 .account-info-item {
-  .info-title {
+  .info-name {
     font-size: 16px;
     font-weight: 500;
   }
@@ -86,7 +86,7 @@
       background-color: $text-color-800;
       text-align: left;
       padding-left: 16px;
-      .title {
+      .name {
         color: $white-color;
         font-weight: 400;
         font-size: 18px;
@@ -97,7 +97,7 @@
       }
     }
   }
-  .catalogItem-title-width {
+  .catalogItem-name-width {
     max-width: 400px !important;
   }
   .tbody-catalogItem {
@@ -115,7 +115,7 @@
 }
 
 .custom-table-courier tr {
-  .title {
+  .name {
     color: $text-color-950;
     font-size: 18px;
     font-style: normal;

@@ -124,7 +124,7 @@
                             </td>
                             <td>
                                 <a href="{{ route('operator.accounts.party.statement', $data['company']->id) }}"
-                                   class="btn btn-sm btn-outline-primary" title="{{ __('View Statement') }}">
+                                   class="btn btn-sm btn-outline-primary" name="{{ __('View Statement') }}">
                                     <i class="fas fa-file-invoice"></i>
                                 </a>
                             </td>

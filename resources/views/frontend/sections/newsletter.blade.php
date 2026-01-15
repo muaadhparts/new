@@ -10,7 +10,7 @@ Simple newsletter subscription form
     <div class="row align-items-center">
         <div class="col-lg-6">
             <div class="muaadh-newsletter-content">
-                <h3 class="muaadh-newsletter-title">@lang('Subscribe to Our Newsletter')</h3>
+                <h3 class="muaadh-newsletter-name">@lang('Subscribe to Our Newsletter')</h3>
                 <p class="muaadh-newsletter-text">
                     @lang('Get the latest updates on new catalogItems and upcoming sales')
                 </p>

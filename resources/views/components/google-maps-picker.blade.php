@@ -24,7 +24,7 @@
         <div class="modal-dialog modal-xl modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header" style="background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-secondary) 100%); color: white;">
-                    <h5 class="modal-title" id="{{ $modalId }}Label">
+                    <h5 class="modal-name" id="{{ $modalId }}Label">
                         <i class="fas fa-map-marker-alt"></i> @lang('Select Location on Map')
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>

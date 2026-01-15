@@ -43,13 +43,13 @@
           {{-- FAVORITES SECTION --}}
           @if(Auth::check())
           <li>
-             <span class="wish add-to-wish" data-href="{{ route('user-favorite-add',$cartItem->id) }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Favorites') }}">
+             <span class="wish add-to-wish" data-href="{{ route('user-favorite-add',$cartItem->id) }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Favorites') }}">
              <i class="far fa-heart"></i>
              </span>
           </li>
           @else
           <li>
-             <span rel-toggle="tooltip" title="{{ __('Favorites') }}" data-placement="top" class="wish add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
+             <span rel-toggle="tooltip" name="{{ __('Favorites') }}" data-placement="top" class="wish add-to-wish" data-bs-toggle="modal" data-bs-target="#user-login">
              <i class="far fa-heart"></i>
              </span>
           </li>
@@ -59,25 +59,25 @@
           {{-- item_type and affiliate_link are now on merchant_items --}}
           @if($flashProdMerchant && $flashProdMerchant->item_type == "affiliate" && $flashProdMerchant->affiliate_link)
           <li>
-             <span class="cart-btn affilate-btn" data-href="{{ $flashProdMerchant->affiliate_link }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Buy Now') }}">
+             <span class="cart-btn affilate-btn" data-href="{{ $flashProdMerchant->affiliate_link }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Buy Now') }}">
              <i class="icofont-cart"></i>
              </span>
           </li>
           @else
           @if($cartItem->emptyStock())
           <li>
-             <span class="cart-btn cart-out-of-stock" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Out Of Stock') }}">
+             <span class="cart-btn cart-out-of-stock" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Out Of Stock') }}">
              <i class="icofont-close-circled"></i>
              </span>
           </li>
           @else
           <li>
-             <span  class="cart-btn add-to-cart add-to-cart-btn" data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}"  title="{{ __('Add To Cart') }}">
+             <span  class="cart-btn add-to-cart add-to-cart-btn" data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}"  name="{{ __('Add To Cart') }}">
              <i class="icofont-cart"></i>
              </span>
           </li>
           <li>
-             <span class="cart-btn quick-view" data-href="{{ route('catalogItem.quick',$cartItem->id) }}" rel-toggle="tooltip" data-placement="top" title="{{ __('Quick View') }}" data-bs-toggle="modal" data-bs-target="#quickview">
+             <span class="cart-btn quick-view" data-href="{{ route('catalogItem.quick',$cartItem->id) }}" rel-toggle="tooltip" data-placement="top" name="{{ __('Quick View') }}" data-bs-toggle="modal" data-bs-target="#quickview">
              <i class="fas fa-eye"></i>
              </span>
           </li>
@@ -86,7 +86,7 @@
           {{-- ADD TO CART SECTION ENDS --}}
           {{-- ADD TO COMPARE SECTION --}}
           <li>
-             <span class="compear add-to-compare" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" data-bs-toggle="tooltip" data-placement="top" title="{{ __('Compare') }}">
+             <span class="compear add-to-compare" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Compare') }}">
              <i class="fas fa-random"></i>
              </span>
           </li>

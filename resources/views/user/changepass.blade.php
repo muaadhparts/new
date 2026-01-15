@@ -13,7 +13,7 @@
                         <h3>@lang('Forgot Password')</h3>
 
                         <div class="topup-area">
-                            <div class="topup-area-title">
+                            <div class="topup-area-name">
                                 <h4>@lang('Change Password')</h4>
                             </div>
                             <form action="{{ route('user.change.password') }}" method="POST">

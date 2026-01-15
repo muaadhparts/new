@@ -16,7 +16,7 @@ class ServiceDetailsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'title' => $this->title,
+            'name' => $this->name,
             'details' => $this->details,
             'photo' => url('/') . '/assets/images/services/'.$this->photo,
         ];

@@ -11,7 +11,7 @@
                         <h3>@lang('Reset Password')</h3>
 
                         <div class="topup-area">
-                            <div class="topup-area-title">
+                            <div class="topup-area-name">
                                 <h4>@lang('Change Password')</h4>
                             </div>
                             <form action="{{ route('courier-reset-submit') }}" method="POST">

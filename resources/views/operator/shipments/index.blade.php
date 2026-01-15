@@ -211,18 +211,18 @@
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{{ route('operator.shipments.show', $shipment->tracking_number) }}"
-                                                   class="btn btn-outline-primary" title="{{ __('View') }}">
+                                                   class="btn btn-outline-primary" name="{{ __('View') }}">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
                                                 <a href="{{ route('operator.shipments.refresh', $shipment->tracking_number) }}"
-                                                   class="btn btn-outline-info" title="{{ __('Refresh') }}">
+                                                   class="btn btn-outline-info" name="{{ __('Refresh') }}">
                                                     <i class="fas fa-sync-alt"></i>
                                                 </a>
                                                 @if(!in_array($shipment->status, ['delivered', 'cancelled', 'returned']))
                                                     <button type="button" class="btn btn-outline-danger"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#cancelModal{{ $shipment->tracking_number }}"
-                                                            title="{{ __('Cancel') }}">
+                                                            name="{{ __('Cancel') }}">
                                                         <i class="fas fa-times"></i>
                                                     </button>
                                                 @endif
@@ -235,7 +235,7 @@
                                                         <form action="{{ route('operator.shipments.cancel', $shipment->tracking_number) }}" method="POST">
                                                             @csrf
                                                             <div class="modal-header">
-                                                                <h5 class="modal-title">{{ __('Cancel Shipment') }}</h5>
+                                                                <h5 class="modal-name">{{ __('Cancel Shipment') }}</h5>
                                                                 <button type="button" class="btn-close" data-bs-dismiss="modal">
                                                                     <span>&times;</span>
                                                                 </button>

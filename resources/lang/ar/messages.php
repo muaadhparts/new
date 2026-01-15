@@ -98,8 +98,8 @@ return [
     'Padding' => 'الحشو',
     'CatalogItem Cards' => 'بطاقات المنتجات',
     'Specific styles for catalogItem cards' => 'أنماط خاصة لبطاقات المنتجات',
-    'Title Size' => 'حجم العنوان',
-    'Title Weight' => 'ثقل العنوان',
+    'Name Size' => 'حجم العنوان',
+    'Name Weight' => 'ثقل العنوان',
     'Price Size' => 'حجم السعر',
     'Hover Scale' => 'التكبير عند التمرير',
 
@@ -146,7 +146,7 @@ return [
     // Preview Panel
     'Live Preview' => 'معاينة مباشرة',
     'Card' => 'بطاقة',
-    'Card Title' => 'عنوان البطاقة',
+    'Card Name' => 'عنوان البطاقة',
     'Card description text goes here' => 'نص وصف البطاقة يظهر هنا',
     'Input' => 'حقل إدخال',
     'Type something...' => 'اكتب شيئاً...',

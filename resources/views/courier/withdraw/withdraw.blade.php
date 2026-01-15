@@ -16,7 +16,7 @@
                         <h3>@lang('My Withdraws')</h3>
                     </div>
                     <div class="topup-area">
-                        <div class="topup-area-title">
+                        <div class="topup-area-name">
                             <h4>@lang('Withdraw Now')</h4>
                         </div>
                         <form action="{{route('courier-wwt-store')}}" method="POST">

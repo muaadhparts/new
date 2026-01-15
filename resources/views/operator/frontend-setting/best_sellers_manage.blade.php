@@ -132,7 +132,7 @@
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-danger btn-sm remove-best"
-                                                    data-id="{{ $mp->id }}" title="{{ __('Remove') }}">
+                                                    data-id="{{ $mp->id }}" name="{{ __('Remove') }}">
                                                 <i class="fas fa-trash-alt"></i>
                                             </button>
                                         </td>
@@ -158,7 +158,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Add CatalogItem to Best Sellers') }}</h5>
+                <h5 class="modal-name">{{ __('Add CatalogItem to Best Sellers') }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

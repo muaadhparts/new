@@ -460,8 +460,8 @@ class MuaadhSettingController extends OperatorBaseController
         // ==================================
         // ITEM CARDS
         // ==================================
-        $data->theme_item_title_size = $request->theme_item_title_size ?? '14px';
-        $data->theme_item_title_weight = $request->theme_item_title_weight ?? '500';
+        $data->theme_item_name_size = $request->theme_item_name_size ?? '14px';
+        $data->theme_item_name_weight = $request->theme_item_name_weight ?? '500';
         $data->theme_item_price_size = $request->theme_item_price_size ?? '16px';
         $data->theme_item_price_weight = $request->theme_item_price_weight ?? '700';
         $data->theme_item_card_radius = $request->theme_item_card_radius ?? '12px';
@@ -785,8 +785,8 @@ class MuaadhSettingController extends OperatorBaseController
         // ==================================
         // ITEM CARDS
         // ==================================
-        $itemTitleSize = $gs->theme_item_title_size ?? '14px';
-        $itemTitleWeight = $gs->theme_item_title_weight ?? '500';
+        $itemNameSize = $gs->theme_item_name_size ?? '14px';
+        $itemNameWeight = $gs->theme_item_name_weight ?? '500';
         $itemPriceSize = $gs->theme_item_price_size ?? '16px';
         $itemPriceWeight = $gs->theme_item_price_weight ?? '700';
         $itemCardRadius = $gs->theme_item_card_radius ?? '12px';
@@ -1107,8 +1107,8 @@ class MuaadhSettingController extends OperatorBaseController
     --theme-footer-border: {$footerBorder};
 
     /* ===== ITEM CARDS ===== */
-    --theme-catalogItem-title-size: {$itemTitleSize};
-    --theme-catalogItem-title-weight: {$itemTitleWeight};
+    --theme-catalogItem-name-size: {$itemNameSize};
+    --theme-catalogItem-name-weight: {$itemNameWeight};
     --theme-catalogItem-price-size: {$itemPriceSize};
     --theme-catalogItem-price-weight: {$itemPriceWeight};
     --theme-catalogItem-card-radius: {$itemCardRadius};

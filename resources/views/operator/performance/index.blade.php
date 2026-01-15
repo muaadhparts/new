@@ -59,7 +59,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="mycard bg1">
                 <div class="left">
-                    <h5 class="title">{{ __('Total Queries') }}</h5>
+                    <h5 class="name">{{ __('Total Queries') }}</h5>
                     <span class="number">{{ number_format($summary['total_queries']) }}</span>
                     <small>{{ __('Slow') }}: {{ $summary['slow_queries'] }} ({{ $summary['slow_queries_percentage'] }}%)</small>
                 </div>
@@ -73,7 +73,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="mycard bg2">
                 <div class="left">
-                    <h5 class="title">{{ __('Total Requests') }}</h5>
+                    <h5 class="name">{{ __('Total Requests') }}</h5>
                     <span class="number">{{ number_format($summary['total_requests']) }}</span>
                     <small>{{ __('Slow') }}: {{ $summary['slow_requests'] }} ({{ $summary['slow_requests_percentage'] }}%)</small>
                 </div>
@@ -87,7 +87,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="mycard bg3">
                 <div class="left">
-                    <h5 class="title">{{ __('Avg Query Time') }}</h5>
+                    <h5 class="name">{{ __('Avg Query Time') }}</h5>
                     <span class="number">{{ $summary['avg_query_time_ms'] }} ms</span>
                     <small>{{ __('Threshold') }}: {{ $summary['thresholds']['slow_query'] }}ms</small>
                 </div>
@@ -101,7 +101,7 @@
         <div class="col-md-6 col-lg-3">
             <div class="mycard {{ $summary['exceptions_count'] > 0 ? 'bg-danger' : 'bg4' }}">
                 <div class="left">
-                    <h5 class="title">{{ __('Exceptions') }}</h5>
+                    <h5 class="name">{{ __('Exceptions') }}</h5>
                     <span class="number">{{ number_format($summary['exceptions_count']) }}</span>
                     <small>{{ __('In last') }} {{ $days }} {{ __('days') }}</small>
                 </div>

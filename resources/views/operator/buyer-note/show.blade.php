@@ -60,7 +60,7 @@
                                                 </div>
                                                 <div class="row mt-3">
                                                     <div class="col-lg-12">
-                                                    <h5 class="buyer-note-title">
+                                                    <h5 class="buyer-note-name">
                                                         {{ __('Note') }}:
                                                         </h5>
                                                         <p class="buyer-note-text">

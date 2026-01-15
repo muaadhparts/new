@@ -52,7 +52,7 @@
 
 					<!-- Modal Header -->
 					<div class="modal-header text-center">
-					<h4 class="modal-title w-100">{{ __('Confirm Uninstall') }}</h4>
+					<h4 class="modal-name w-100">{{ __('Confirm Uninstall') }}</h4>
 					</div>
 
 					<!-- Modal body -->

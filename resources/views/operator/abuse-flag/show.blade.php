@@ -60,10 +60,10 @@
                             <div class="row mt-3">
                                 <div class="col-lg-6">
                                     <h5 class="comment">
-                                        {{ __('Title') }}:
+                                        {{ __('Name') }}:
                                     </h5>
                                     <p class="comment-text">
-                                        {{ $data->title }}
+                                        {{ $data->name }}
                                     </p>
                                 </div>
                                 <div class="col-lg-6">

@@ -8,9 +8,9 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <!-- page title -->
-                    <div class="gs-topup-title ms-0 mb-4">
-                        <h3 class="ud-page-title">@lang('Purchase Tracking')</h3>
+                    <!-- page name -->
+                    <div class="gs-topup-name ms-0 mb-4">
+                        <h3 class="ud-page-name">@lang('Purchase Tracking')</h3>
                     </div>
 
                     <!-- Search Box -->

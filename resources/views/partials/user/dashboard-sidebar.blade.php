@@ -4,7 +4,7 @@
     <i class="fas fa-times"></i>
   </div>
   <div class="widget border-0 py-0 widget_categories">
-    <h4 class="widget-title down-line">{{ __('Dashboard') }}</h4>
+    <h4 class="widget-name down-line">{{ __('Dashboard') }}</h4>
     <ul>
       <li class=""><a class="{{ Request::url() == route('user-dashboard') ? 'active' : '' }}"
           href="{{ route('user-dashboard') }}">@lang('Dashboard')</a></li>

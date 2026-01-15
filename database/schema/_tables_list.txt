@@ -100,7 +100,7 @@ token_logs
 tokens
 transactions
 treecategories
-untitled_table_1632
+unnamed_table_1632
 user_catalog_events
 user_subscriptions
 users

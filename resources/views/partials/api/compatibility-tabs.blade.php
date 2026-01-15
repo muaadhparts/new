@@ -66,7 +66,7 @@
                         @endif
                     </div>
                     <div class="catalog-card-body">
-                        <div class="catalog-card-title">{{ $row->label ?? '' }}</div>
+                        <div class="catalog-card-name">{{ $row->label ?? '' }}</div>
                         <div class="catalog-card-details">
                             <div class="catalog-card-detail">
                                 <span class="catalog-card-label">@lang('compatibility.catalog'):</span>

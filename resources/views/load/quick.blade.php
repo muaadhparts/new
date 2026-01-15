@@ -98,13 +98,13 @@
 
                       @if(Auth::check())
 
-                      <a class="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Favorites') }}">
+                      <a class="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Favorites') }}">
                         <i class="far fa-heart"></i>
                       </a>
 
                       @else
 
-                      <a rel-toggle="tooltip" href="javascript:;" title="{{ __('Favorites') }}" data-bs-placement="top" class="add-to-favorite" data-bs-toggle="modal" data-bs-target="#user-login">
+                      <a rel-toggle="tooltip" href="javascript:;" name="{{ __('Favorites') }}" data-bs-placement="top" class="add-to-favorite" data-bs-toggle="modal" data-bs-target="#user-login">
                         <i class="far fa-heart"></i>
                       </a>
 
@@ -118,7 +118,7 @@
 
                     <div class="compear">
 
-                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('catalog-item.compare.add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Compare') }}">
+                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('catalog-item.compare.add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Compare') }}">
                         <i class="fas fa-random"></i>
                       </a>
 
@@ -131,7 +131,7 @@
                     @if($catalogItem->youtube != null)
                       <div class="play-video">
                         <a href="{{ $catalogItem->youtube }}" class="video-play-btn mfp-iframe"
-                          data-bs-toggle="tooltip" data-bs-placement="top" title="{{ __('Play Video') }}">
+                          data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Play Video') }}">
                           <i class="fas fa-play"></i>
                         </a>
                       </div>
@@ -174,7 +174,7 @@
                   @endphp
                   @if(!empty($merchantSizes))
                   <div class="mproduct-size">
-                    <p class="title">{{ __('Size :') }}</p>
+                    <p class="name">{{ __('Size :') }}</p>
                     <ul class="siz-list">
                       @foreach($merchantSizes as $key => $data1)
                     <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
@@ -198,7 +198,7 @@
                   @if(!empty($catalogItem->getMerchantColors()))
 
                   <div class="mproduct-color">
-                    <div class="title">{{ __('Color :') }}</div>
+                    <div class="name">{{ __('Color :') }}</div>
                     <ul class="color-list">
 
                       @php
@@ -235,7 +235,7 @@
                 @endphp
                 @if(!empty($merchantSizeAll))
                   <div class="mproduct-size" data-key="false">
-                    <p class="title">{{ __('Size :') }}</p>
+                    <p class="name">{{ __('Size :') }}</p>
                     <ul class="siz-list">
                       @foreach(array_unique(explode(',', $merchantSizeAll)) as $key => $data1)
                     <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
@@ -255,7 +255,7 @@
                   @if(!empty($merchantColorAll))
 
                   <div class="mproduct-color" data-key="false">
-                    <div class="title">{{ __('Color :') }}</div>
+                    <div class="name">{{ __('Color :') }}</div>
                     <ul class="color-list">
 
                       @foreach(explode(',', $merchantColorAll) as $key => $color1)

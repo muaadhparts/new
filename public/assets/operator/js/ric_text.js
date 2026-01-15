@@ -16,7 +16,7 @@ $('.texteditor').richText({
   ol: true,
   ul: true,
 
-  // title
+  // name
   heading: false,
 
   // fonts
@@ -63,7 +63,7 @@ $('.texteditor').richText({
 
   // translations
   translations: {
-    'title': 'Title',
+    'name': 'Name',
     'white': 'White',
     'black': 'Black',
     'brown': 'Brown',
@@ -110,7 +110,7 @@ $('.texteditor').richText({
     'alignRight': 'Align right',
     'addOrderedList': 'Add ordered list',
     'addUnorderedList': 'Add unordered list',
-    'addHeading': 'Add Heading/title',
+    'addHeading': 'Add Heading/name',
     'addFont': 'Add font',
     'addFontColor': 'Add font color',
     'addFontSize' : 'Add font size',

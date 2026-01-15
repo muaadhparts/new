@@ -36,11 +36,11 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Title') }} *</h4>
+                                <h4 class="heading">{{ __('Name') }} *</h4>
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control" name="title" placeholder="{{ __('Title') }}" value="">
+                            <input type="text" class="form-control" name="name" placeholder="{{ __('Name') }}" value="">
                           </div>
                         </div>
 

@@ -4,7 +4,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Help Article')</h2>
+                    <h2 class="breadcrumb-name">@lang('Help Article')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.help-article') }}">@lang('Help Article')</a></li>
@@ -24,7 +24,7 @@
               <h2 class="accordion-header">
                 <button class="accordion-button {{$loop->first ? '' : 'collapsed'}}" type="button" data-bs-toggle="collapse" data-bs-target="#help-article-content-{{$key}}"
                   aria-expanded="true">
-                  {{ $helpArticle->title }}
+                  {{ $helpArticle->name }}
                 </button>
               </h2>
               <div id="help-article-content-{{$key}}" class="accordion-collapse collapse {{$loop->first ? 'show' : ''}}" data-bs-parent="#helpArticleList">

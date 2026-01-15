@@ -449,10 +449,10 @@ button[type="submit"]:hover {
     padding: var(--space-4) var(--space-5) !important;
 }
 
-/* Card Title */
-.card-title,
-.panel-title,
-.box-title {
+/* Card Name */
+.card-name,
+.panel-name,
+.box-name {
     font-size: var(--text-lg);
     font-weight: var(--font-semibold);
     color: var(--text-primary);
@@ -1117,7 +1117,7 @@ input[type="radio"]:focus,
     background-color: var(--bg-subtle) !important;
 }
 
-.modal-title {
+.modal-name {
     font-size: var(--text-lg) !important;
     font-weight: var(--font-semibold) !important;
     color: var(--text-primary) !important;

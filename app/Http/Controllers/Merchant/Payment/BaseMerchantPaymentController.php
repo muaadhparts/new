@@ -74,7 +74,7 @@ abstract class BaseMerchantPaymentController extends Controller
         return [
             'id' => $payment->id,
             'keyword' => $payment->keyword,
-            'title' => $payment->title ?? $payment->name,
+            'name' => $payment->name ?? $payment->name,
             'credentials' => $credentials,
         ];
     }

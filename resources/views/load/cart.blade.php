@@ -23,7 +23,7 @@
                     <div class="cart-remove remove"
                          data-class="cremove{{ $domKey }}"
                          data-href="{{ route('catalogItem.cart.remove', $row) }}"
-                         title="Remove this item">
+                         name="Remove this item">
                         <i class="fas fa-times"></i>
                     </div>
 
@@ -57,7 +57,7 @@
     </ul>
 
     <div class="total-cart">
-        <div class="title">@lang('Total:')</div>
+        <div class="name">@lang('Total:')</div>
         <div class="price">
             <span class="cart-total">
                 {{ Session::has('cart') ? App\Models\CatalogItem::convertPrice(Session::get('cart')->totalPrice) : '0.00' }}

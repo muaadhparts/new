@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="author" content="Muaadh">
-    <!-- Title -->
-    <title>{{$gs->site_name}}</title>
+    <!-- Name -->
+    <name>{{$gs->site_name}}</name>
     <!-- favicon -->
     <link rel="icon"  type="image/x-icon" href="{{asset('assets/images/'.$gs->favicon)}}"/>
     <!-- Bootstrap -->
@@ -43,7 +43,7 @@
           <div class="col-lg-5">
             <div class="login-area">
               <div class="header-area">
-                <h4 class="title">{{ __('Login Now') }}</h4>
+                <h4 class="name">{{ __('Login Now') }}</h4>
                 <p class="text">{{ __('Welcome back, please sign in below') }}</p>
               </div>
               <div class="login-form">

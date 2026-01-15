@@ -328,7 +328,7 @@
             <form action="{{ route('operator.shipments.cancel', $shipment->tracking_number) }}" method="POST">
                 @csrf
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Cancel Shipment') }}</h5>
+                    <h5 class="modal-name">{{ __('Cancel Shipment') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal">
                         <span>&times;</span>
                     </button>

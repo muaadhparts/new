@@ -457,8 +457,8 @@ class MerchantCheckoutService
             if (!$isApiProvider) {
                 $grouped[$provider]['methods'][] = [
                     'id' => $s->id,
-                    'title' => $s->title,
-                    'subtitle' => $s->subtitle,
+                    'name' => $s->name,
+                    'subname' => $s->subname,
                     'price' => round((float)$s->price, 2),
                     'original_price' => round((float)$s->price, 2), // For display
                     'chargeable_price' => $isFree ? 0 : round((float)$s->price, 2), // What customer pays
@@ -510,8 +510,8 @@ class MerchantCheckoutService
 
         return $packages->map(fn($p) => [
             'id' => $p->id,
-            'title' => $p->title,
-            'subtitle' => $p->subtitle,
+            'name' => $p->name,
+            'subname' => $p->subname,
             'price' => round((float)$p->price, 2),
         ])->toArray();
     }
@@ -667,8 +667,8 @@ class MerchantCheckoutService
         return $payments->map(fn($p) => [
             'id' => $p->id,
             'keyword' => $p->keyword,
-            'title' => $p->title ?? $p->name,
-            'subtitle' => $p->subtitle,
+            'name' => $p->name ?? $p->name,
+            'subname' => $p->subname,
             'type' => $p->type,
             'show_form' => $p->showForm(),
         ])->toArray();

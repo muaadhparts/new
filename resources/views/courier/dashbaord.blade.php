@@ -8,8 +8,8 @@
                 @include('includes.courier.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('Dashboard')</h3>
+                    <div class="ud-page-name-box">
+                        <h3 class="ud-page-name">@lang('Dashboard')</h3>
                     </div>
 
                     <!-- Financial Summary Cards -->
@@ -57,19 +57,19 @@
                                 <h5>@lang('Delivery Statistics')</h5>
                                 <div class="account-info">
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('COD Deliveries')</span>
+                                        <span class="info-name">@lang('COD Deliveries')</span>
                                         <span class="badge bg-warning">{{ $report['cod_deliveries'] ?? 0 }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('Online Payment Deliveries')</span>
+                                        <span class="info-name">@lang('Online Payment Deliveries')</span>
                                         <span class="badge bg-info">{{ $report['online_deliveries'] ?? 0 }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('Pending Deliveries')</span>
+                                        <span class="info-name">@lang('Pending Deliveries')</span>
                                         <span class="badge bg-secondary">{{ $report['deliveries_pending'] ?? 0 }}</span>
                                     </div>
                                     <div class="account-info-item d-flex justify-content-between">
-                                        <span class="info-title">@lang('Unsettled Deliveries')</span>
+                                        <span class="info-name">@lang('Unsettled Deliveries')</span>
                                         <span class="badge bg-danger">{{ $report['unsettled_deliveries'] ?? 0 }}</span>
                                     </div>
                                 </div>
@@ -80,19 +80,19 @@
                                 <h5>@lang('Account Information')</h5>
                                 <div class="account-info">
                                     <div class="account-info-item">
-                                        <span class="info-title">@lang('Name:') </span>
+                                        <span class="info-name">@lang('Name:') </span>
                                         <span class="info-content">{{ $user->name }}</span>
                                     </div>
                                     <div class="account-info-item">
-                                        <span class="info-title">@lang('Email:') </span>
+                                        <span class="info-name">@lang('Email:') </span>
                                         <span class="info-content">{{ $user->email }}</span>
                                     </div>
                                     <div class="account-info-item">
-                                        <span class="info-title">@lang('Phone:') </span>
+                                        <span class="info-name">@lang('Phone:') </span>
                                         <span class="info-content">{{ $user->phone }}</span>
                                     </div>
                                     <div class="account-info-item">
-                                        <span class="info-title">@lang('Address:') </span>
+                                        <span class="info-name">@lang('Address:') </span>
                                         <span class="info-content">{{ $user->address }}</span>
                                     </div>
                                 </div>
@@ -101,16 +101,16 @@
                     </div>
 
                     <!-- recent purchases -->
-                    <h4 class="table-title mt-4">@lang('Recent Purchases')</h4>
+                    <h4 class="table-name mt-4">@lang('Recent Purchases')</h4>
                     <div class="user-table recent-orders-table table-responsive wow-replaced" data-wow-delay=".1s">
                         <table class="table table-bordered">
                             <tr>
-                                <th><span class="header-title">{{ __('#Purchase') }}</span></th>
-                                <th><span class="header-title">{{ __('Service Area') }}</span></th>
-                                <th><span class="header-title">{{ __('Merchant Location') }}</span></th>
-                                <th><span class="header-title">{{ __('Purchase Total') }}</span></th>
-                                <th><span class="header-title">{{ __('Purchase Status') }}</span></th>
-                                <th><span class="header-title">{{ __('View') }}</span></th>
+                                <th><span class="header-name">{{ __('#Purchase') }}</span></th>
+                                <th><span class="header-name">{{ __('Service Area') }}</span></th>
+                                <th><span class="header-name">{{ __('Merchant Location') }}</span></th>
+                                <th><span class="header-name">{{ __('Purchase Total') }}</span></th>
+                                <th><span class="header-name">{{ __('Purchase Status') }}</span></th>
+                                <th><span class="header-name">{{ __('View') }}</span></th>
                             </tr>
                             @forelse ($purchases as $purchase)
                                 @if($purchase->purchase)

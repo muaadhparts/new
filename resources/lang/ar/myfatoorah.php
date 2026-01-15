@@ -19,7 +19,7 @@ return [
     'securityCodeLabel'    => 'الرمز السري',
     'saveCard'             => 'حفظ بيانات البطاقة للاستخدام المستقبلي',
     'addCard'              => 'إضافة رقم بطاقة',
-    'deleteAlert.title'    => 'حذف البطاقة',
+    'deleteAlert.name'    => 'حذف البطاقة',
     'deleteAlert.message'  => 'هل أنت متأكد من حذف البطاقة؟',
     'deleteAlert.confirm'  => 'موافق',
     'deleteAlert.cancel'   => 'غير موافق',

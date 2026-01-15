@@ -7350,7 +7350,7 @@ ${expression ? 'Expression: "' + expression + '"\n\n' : ""}`, el);
     state.alpine.snapshotIdx = key;
     state.alpine.url = url.toString();
     try {
-      history[method](state, JSON.stringify(document.title), url);
+      history[method](state, JSON.stringify(document.name), url);
       snapshotCache.currentKey = key;
       snapshotCache.currentUrl = url;
     } catch (error2) {

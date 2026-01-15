@@ -8,8 +8,8 @@
                 @include('includes.courier.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('Delivery History')</h3>
+                    <div class="ud-page-name-box">
+                        <h3 class="ud-page-name">@lang('Delivery History')</h3>
                     </div>
 
                     <!-- Summary Cards -->
@@ -61,13 +61,13 @@
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th><span class="header-title">{{ __('#') }}</span></th>
-                                    <th><span class="header-title">{{ __('Purchase') }}</span></th>
-                                    <th><span class="header-title">{{ __('Payment') }}</span></th>
-                                    <th><span class="header-title">{{ __('Amount') }}</span></th>
-                                    <th><span class="header-title">{{ __('Fee') }}</span></th>
-                                    <th><span class="header-title">{{ __('Status') }}</span></th>
-                                    <th><span class="header-title">{{ __('Date') }}</span></th>
+                                    <th><span class="header-name">{{ __('#') }}</span></th>
+                                    <th><span class="header-name">{{ __('Purchase') }}</span></th>
+                                    <th><span class="header-name">{{ __('Payment') }}</span></th>
+                                    <th><span class="header-name">{{ __('Amount') }}</span></th>
+                                    <th><span class="header-name">{{ __('Fee') }}</span></th>
+                                    <th><span class="header-name">{{ __('Status') }}</span></th>
+                                    <th><span class="header-name">{{ __('Date') }}</span></th>
                                 </tr>
                             </thead>
                             <tbody>

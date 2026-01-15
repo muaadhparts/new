@@ -30,8 +30,8 @@
         </div>
 
         <div class=" gs-merchant-bulk-catalogItem-upload">
-            <div class="title-downdload-btn-wrapper">
-                <h4 class="title">@lang('Update a group of CatalogItems Using the Provided Sample CSV')</h4>
+            <div class="name-downdload-btn-wrapper">
+                <h4 class="name">@lang('Update a group of CatalogItems Using the Provided Sample CSV')</h4>
                 <a href="{{ asset('assets/catalogItem-csv-format.csv') }}" class="template-btn black-btn" type="button">@lang('Downlod Sample CSV')</a>
             </div>
             <form class="dropzone upload-box" action="{{ route('merchant-catalog-item-importsubmit') }}" method="POST" enctype="multipart/form-data">
@@ -39,7 +39,7 @@
                 <img src="{{ asset('assets') }}/front/images/file1.png" alt="">
                 <div class="upload-box-texts-wrapper">
                     <input class="d-none" type="file" id="csvfile" name="csvfile" accept=".csv">
-                    <h6 class="upload-box-title"><label for="csvfile" class="link">@lang('Choose the file')</label></h6>
+                    <h6 class="upload-box-name"><label for="csvfile" class="link">@lang('Choose the file')</label></h6>
                     <p class="upload-box-des">@lang('Only CSV format allowed, no more than 500 rows')</p>
                 </div>
                 <button type="submit" class="template-btn cursor-pointer import-btn">@lang('Start Import')</button>

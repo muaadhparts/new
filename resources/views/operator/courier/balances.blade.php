@@ -129,11 +129,11 @@
                             </td>
                             <td>
                                 <a href="{{ route('operator-courier-details', $courier['courier_id']) }}"
-                                   class="btn btn-sm btn-info" title="{{ __('Details') }}">
+                                   class="btn btn-sm btn-info" name="{{ __('Details') }}">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 <a href="{{ route('operator-courier-create-settlement', $courier['courier_id']) }}"
-                                   class="btn btn-sm btn-success" title="{{ __('Settlement') }}">
+                                   class="btn btn-sm btn-success" name="{{ __('Settlement') }}">
                                     <i class="fas fa-dollar-sign"></i>
                                 </a>
                             </td>

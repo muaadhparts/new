@@ -73,7 +73,7 @@ class ShippingController extends OperatorBaseController
         //--- Validation Section
         $rules = [
             'name' => 'required|unique:shippings,name',
-            'subtitle' => 'required',
+            'subname' => 'required',
             'price' => 'required|numeric|min:0',
             'integration_type' => 'nullable|in:none,manual,api',
             'provider' => 'nullable|string|max:255',
@@ -124,7 +124,7 @@ class ShippingController extends OperatorBaseController
         //--- Validation Section
         $rules = [
             'name' => 'required|unique:shippings,name,'.$id,
-            'subtitle' => 'required',
+            'subname' => 'required',
             'price' => 'required|numeric|min:0',
             'integration_type' => 'nullable|in:none,manual,api',
             'provider' => 'nullable|string|max:255',

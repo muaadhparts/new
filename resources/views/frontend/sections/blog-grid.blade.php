@@ -13,7 +13,7 @@ Receives: $blogs (collection of Blog models)
             <div class="muaadh-blog-img">
                 <a href="{{ route('front.publicationshow', $publication->slug) }}">
                     <img src="{{ asset('assets/images/publications/' . $publication->photo) }}"
-                         alt="{{ $publication->title }}"
+                         alt="{{ $publication->name }}"
                          loading="lazy">
                 </a>
             </div>
@@ -24,8 +24,8 @@ Receives: $blogs (collection of Blog models)
                         {{ \Carbon\Carbon::parse($publication->created_at)->format('M d, Y') }}
                     </span>
                 </div>
-                <h5 class="muaadh-blog-title">
-                    <a href="{{ route('front.publicationshow', $publication->slug) }}">{{ $publication->title }}</a>
+                <h5 class="muaadh-blog-name">
+                    <a href="{{ route('front.publicationshow', $publication->slug) }}">{{ $publication->name }}</a>
                 </h5>
                 <p class="muaadh-blog-excerpt">
                     {{ \Illuminate\Support\Str::limit(strip_tags($publication->details), 100) }}

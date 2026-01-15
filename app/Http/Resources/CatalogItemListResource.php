@@ -33,7 +33,7 @@ class CatalogItemListResource extends JsonResource
 
         return [
             'id' => $this->id,
-            'title' => $this->name,
+            'name' => $this->name,
             'thumbnail' => \Illuminate\Support\Facades\Storage::url($this->thumbnail) ?? asset('assets/images/noimage.png'),
             'rating' =>  $this->catalogReviews()->avg('rating') > 0 ? (string) round($this->catalogReviews()->avg('rating'), 2) : (string) round(0.00, 2),
             'current_price' => $currentPrice,

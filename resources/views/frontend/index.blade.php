@@ -22,14 +22,14 @@ Sections are rendered based on theme settings and purchase
     <section class="muaadh-hero">
         <div class="container">
             <div class="muaadh-hero-content">
-                <h1 class="muaadh-hero-title">@lang('Search By Part Number Or Name')</h1>
+                <h1 class="muaadh-hero-name">@lang('Search By Part Number Or Name')</h1>
 
                 <!-- Search Box -->
                 <div class="muaadh-hero-search">
                     @include('includes.frontend.search-part-ajax', ['uniqueId' => 'home'])
                 </div>
 
-                <p class="muaadh-hero-subtitle">
+                <p class="muaadh-hero-subname">
                     @lang("If you don't know the correct part number for your vehicle, search below using your VIN, the category tree, or the catalogues.")
                 </p>
 
@@ -67,7 +67,7 @@ Sections are rendered based on theme settings and purchase
         <div class="container">
             <div class="muaadh-section-header">
                 <span class="muaadh-badge-primary">@lang('Genuine Parts Catalogues')</span>
-                <h2 class="muaadh-section-title">{{ $theme->title_brands ?? __('Explore genuine OEM parts catalogues') }}</h2>
+                <h2 class="muaadh-section-name">{{ $theme->name_brands ?? __('Explore genuine OEM parts catalogues') }}</h2>
             </div>
 
             <div class="muaadh-brands-grid">
@@ -94,7 +94,7 @@ Sections are rendered based on theme settings and purchase
         <div class="container">
             <div class="muaadh-section-header">
                 <span class="muaadh-badge-primary">@lang('Browse Categories')</span>
-                <h2 class="muaadh-section-title">{{ $theme->title_categories ?? __('Shop by Category') }}</h2>
+                <h2 class="muaadh-section-name">{{ $theme->name_categories ?? __('Shop by Category') }}</h2>
             </div>
 
             <div class="muaadh-categories-grid">
@@ -122,7 +122,7 @@ Sections are rendered based on theme settings and purchase
     @if(($theme->show_featured_items ?? false) && isset($featured_merchants) && count($featured_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_featured_items ?? __('Featured Items') }}</h2>
+            <h2 class="name text-center">{{ $theme->name_featured_items ?? __('Featured Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $featured_merchants])
         </div>
     </section>
@@ -134,7 +134,7 @@ Sections are rendered based on theme settings and purchase
     @if(($theme->show_deal_of_day ?? false) && isset($flash_merchant) && $flash_merchant)
     <section class="muaadh-section muaadh-deal-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_deal_of_day ?? __('Deal of the Day') }}</h2>
+            <h2 class="name text-center">{{ $theme->name_deal_of_day ?? __('Deal of the Day') }}</h2>
             @include('frontend.sections.deal-of-day', ['merchantItem' => $flash_merchant])
         </div>
     </section>
@@ -147,7 +147,7 @@ Sections are rendered based on theme settings and purchase
     @if(($theme->show_top_rated ?? false) && isset($top_merchants) && count($top_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_top_rated ?? __('Top Rated Items') }}</h2>
+            <h2 class="name text-center">{{ $theme->name_top_rated ?? __('Top Rated Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $top_merchants])
         </div>
     </section>
@@ -160,7 +160,7 @@ Sections are rendered based on theme settings and purchase
     @if(($theme->show_big_save ?? false) && isset($big_merchants) && count($big_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_big_save ?? __('Big Save Items') }}</h2>
+            <h2 class="name text-center">{{ $theme->name_big_save ?? __('Big Save Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $big_merchants])
         </div>
     </section>
@@ -173,7 +173,7 @@ Sections are rendered based on theme settings and purchase
     @if(($theme->show_trending ?? false) && isset($trending_merchants) && count($trending_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_trending ?? __('Trending Items') }}</h2>
+            <h2 class="name text-center">{{ $theme->name_trending ?? __('Trending Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $trending_merchants])
         </div>
     </section>
@@ -186,7 +186,7 @@ Sections are rendered based on theme settings and purchase
     @if(($theme->show_best_sellers ?? false) && isset($best_merchants) && count($best_merchants) > 0)
     <section class="muaadh-section">
         <div class="container">
-            <h2 class="title text-center">{{ $theme->title_best_sellers ?? __('Best Selling Items') }}</h2>
+            <h2 class="name text-center">{{ $theme->name_best_sellers ?? __('Best Selling Items') }}</h2>
             @include('frontend.sections.catalog-item-slider', ['merchantItems' => $best_merchants])
         </div>
     </section>
@@ -200,7 +200,7 @@ Sections are rendered based on theme settings and purchase
         <div class="container">
             <div class="muaadh-section-header">
                 <span class="muaadh-badge-primary">@lang('Latest News')</span>
-                <h2 class="muaadh-section-title">{{ $theme->title_blogs ?? __('From Our Blog') }}</h2>
+                <h2 class="muaadh-section-name">{{ $theme->name_blogs ?? __('From Our Blog') }}</h2>
             </div>
 
             @include('frontend.sections.blog-grid', ['blogs' => $blogs])
@@ -221,7 +221,7 @@ Sections are rendered based on theme settings and purchase
                             <img src="{{ asset('assets/images/services/' . $capability->photo) }}" alt="{{ $capability->name }}">
                         </div>
                         <div class="muaadh-service-info">
-                            <h6 class="muaadh-service-title">{{ $capability->name }}</h6>
+                            <h6 class="muaadh-service-name">{{ $capability->name }}</h6>
                             <p class="muaadh-service-desc">{{ $capability->details }}</p>
                         </div>
                     </div>
@@ -250,7 +250,7 @@ Sections are rendered based on theme settings and purchase
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content muaadh-modal">
             <div class="modal-header muaadh-modal-header">
-                <h5 class="modal-title">
+                <h5 class="modal-name">
                     <i class="fas fa-car me-2"></i>
                     @lang('Search by VIN')
                 </h5>

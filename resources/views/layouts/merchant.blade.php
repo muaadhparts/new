@@ -22,7 +22,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@lang('Merchant Dashboard')</title>
+    <name>@lang('Merchant Dashboard')</name>
     <!--Essential css files-->
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.rtl.min.css">
@@ -107,9 +107,9 @@
         <form id="delete_url" class="modal-dialog confirm-delete-modal-dialog modal-dialog-centered" method="POST">
             <div class="modal-content confirm-delete-modal-content form-group">
                 <div class="modal-header delete-modal-header w-100">
-                    <div class="title-des-wrapper">
-                        <h4 class="title">@lang('Confirm Delete ?')</h4>
-                        <h5 class="sub-title">
+                    <div class="name-des-wrapper">
+                        <h4 class="name">@lang('Confirm Delete ?')</h4>
+                        <h5 class="sub-name">
                         @lang('Are you sure you want to delete this item?')
                         </h5>
                     </div>

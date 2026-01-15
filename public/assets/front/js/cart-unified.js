@@ -66,7 +66,7 @@
                     toast: true,
                     position: 'top-end',
                     icon: type === 'error' ? 'error' : 'success',
-                    title: message,
+                    name: message,
                     showConfirmButton: false,
                     timer: 3000
                 });

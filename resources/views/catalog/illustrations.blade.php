@@ -2,7 +2,7 @@
 
 @php use Illuminate\Support\Str; @endphp
 
-@section('title', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations'))
+@section('name', ($category->localized_name ?? $category->full_code) . ' - ' . __('Illustrations'))
 
 @section('content')
 {{-- Breadcrumb --}}
@@ -10,7 +10,7 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title">{{ $category->Applicability ?? $category->full_code }}</h2>
+                <h2 class="breadcrumb-name">{{ $category->Applicability ?? $category->full_code }}</h2>
                 <ul class="bread-menu">
                     {{-- Home --}}
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
@@ -87,12 +87,12 @@
             <div class="card border-0 shadow-sm mb-4">
                 <div class="card-header bg-white border-0 py-3">
                     <div class="text-center text-md-start">
-                        <h5 class="mb-1 illustration-title">
+                        <h5 class="mb-1 illustration-name">
                             <i class="fas fa-image me-2 d-none d-md-inline"></i>
                             <span>{{ $category->full_code }}</span>
                         </h5>
                         @if(!empty($category->slug) || !empty($category->Applicability))
-                            <p class="text-muted mb-0 illustration-subtitle">
+                            <p class="text-muted mb-0 illustration-subname">
                                 {{ $category->Applicability ?? str_replace('-', ' ', $category->slug) }}
                             </p>
                         @endif

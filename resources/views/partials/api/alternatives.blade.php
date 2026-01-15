@@ -102,11 +102,11 @@
                                 </td>
                                 <td class="text-center">
                                     <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-primary quick-view" data-id="{{ $catalogItem->id }}" data-url="{{ route('modal.quickview', ['id' => $catalogItem->id]) }}?user={{ $mp->user_id }}" title="@lang('Quick View')">
+                                        <button type="button" class="btn btn-outline-primary quick-view" data-id="{{ $catalogItem->id }}" data-url="{{ route('modal.quickview', ['id' => $catalogItem->id]) }}?user={{ $mp->user_id }}" name="@lang('Quick View')">
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         @if($canBuy)
-                                            <button type="button" class="btn btn-success alt-add-to-cart" data-id="{{ $catalogItem->id }}" data-mp-id="{{ $mp->id }}" data-user="{{ $mp->user_id }}" data-qty-id="{{ $uniqueId }}" data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}" title="@lang('Add To Cart')">
+                                            <button type="button" class="btn btn-success alt-add-to-cart" data-id="{{ $catalogItem->id }}" data-mp-id="{{ $mp->id }}" data-user="{{ $mp->user_id }}" data-qty-id="{{ $uniqueId }}" data-addnum-url="{{ route('merchant.cart.add', $mp->id) }}" name="@lang('Add To Cart')">
                                                 <i class="fas fa-cart-plus"></i>
                                             </button>
                                         @endif
@@ -150,7 +150,7 @@
                     </div>
 
                     <div class="catalog-card-body">
-                        <div class="catalog-card-title">{{ getLocalizedCatalogItemName($catalogItem) }}</div>
+                        <div class="catalog-card-name">{{ getLocalizedCatalogItemName($catalogItem) }}</div>
 
                         <div class="catalog-card-details">
                             @if($catalogItem->brand)

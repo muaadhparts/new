@@ -122,12 +122,12 @@
                             </td>
                             <td>
                                 <a href="{{ route('operator.accounts.merchant-statement', $data['merchant']->reference_id) }}"
-                                   class="btn btn-sm btn-outline-primary" title="{{ __('View Statement') }}">
+                                   class="btn btn-sm btn-outline-primary" name="{{ __('View Statement') }}">
                                     <i class="fas fa-file-invoice"></i>
                                 </a>
                                 @if($data['balance_due'] > 0)
                                 <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $data['merchant']->id]) }}"
-                                   class="btn btn-sm btn-outline-success" title="{{ __('Create Settlement') }}">
+                                   class="btn btn-sm btn-outline-success" name="{{ __('Create Settlement') }}">
                                     <i class="fas fa-money-bill"></i>
                                 </a>
                                 @endif

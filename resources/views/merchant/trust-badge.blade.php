@@ -51,7 +51,7 @@
                                 <textarea id="description" class="form-control" name="text" placeholder="@lang('Enter Your Name')" rows="6"></textarea>
 
                                 <div class="attachment-box">
-                                    <p class="title">@lang('Attachment') <span class="description"> @lang('(Maximum Size is 10 MB)')</span></p>
+                                    <p class="name">@lang('Attachment') <span class="description"> @lang('(Maximum Size is 10 MB)')</span></p>
                                     <div id="add_file">
                                         <div class="single">
                                             <div class="position-relative d-inline-block">

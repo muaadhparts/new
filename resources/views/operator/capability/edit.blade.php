@@ -15,7 +15,7 @@
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Title') }} *</h4>
+                                <h4 class="heading">{{ __('Name') }} *</h4>
                                 <p class="sub-heading">{{ __('(In Any Language)') }}</p>
                             </div>
                           </div>

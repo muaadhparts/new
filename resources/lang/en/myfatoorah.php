@@ -19,7 +19,7 @@ return [
     'securityCodeLabel'    => 'Security Code',
     'saveCard'             => 'Save card number for future payments',
     'addCard'              => 'Use another card',
-    'deleteAlert.title'    => 'Delete Card',
+    'deleteAlert.name'    => 'Delete Card',
     'deleteAlert.message'  => 'Are you sure you want to remove this card?',
     'deleteAlert.confirm'  => 'Yes',
     'deleteAlert.cancel'   => 'No',

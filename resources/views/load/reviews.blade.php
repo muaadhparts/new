@@ -1,5 +1,5 @@
 <div class="heading-area">
-    <h4 class="title">
+    <h4 class="name">
       {{ __('Ratings & Reviews') }}
     </h4>
     <div class="reating-area">

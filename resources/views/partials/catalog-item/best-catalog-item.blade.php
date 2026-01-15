@@ -17,7 +17,7 @@
                 @endif
             </div>
             <div class="catalogItem-info">
-                <h3 class="catalogItem-title"><a href="{{ $bestProdUrl }}">{{ $cartItem->showName() }}</a></h3>
+                <h3 class="catalogItem-name"><a href="{{ $bestProdUrl }}">{{ $cartItem->showName() }}</a></h3>
                 <div class="catalogItem-price">
                     <div class="price">
                         <ins>{{ $cartItem->showPrice() }} </ins>

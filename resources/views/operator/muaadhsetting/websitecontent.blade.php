@@ -37,7 +37,7 @@
                         <div class="row justify-content-center">
                           <div class="col-lg-3">
                             <div class="left-area">
-                                <h4 class="heading">{{ __('Website Title') }} *
+                                <h4 class="heading">{{ __('Website Name') }} *
                                   </h4>
                             </div>
                           </div>

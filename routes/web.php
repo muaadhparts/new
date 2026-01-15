@@ -74,7 +74,7 @@ Route::prefix('api/vehicle')->group(function () {
 //     return <<<HTML
 //     <html>
 //       <head>
-//         <title>Stock Refresh Logs</title>
+//         <name>Stock Refresh Logs</name>
 //         <meta charset="utf-8">
 //         <style>
 //           body { background:#f8f9fa; font-family:Arial, sans-serif; padding:20px; }

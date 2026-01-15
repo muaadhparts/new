@@ -6,7 +6,7 @@
         <!-- breadcrumb start  -->
         <div class="gs-merchant-breadcrumb has-mb">
 
-                <div class="gs-topup-title d-flex align-items-center gap-4 ms-0">
+                <div class="gs-topup-name d-flex align-items-center gap-4 ms-0">
                     <a href="{{route("merchant-wt-index")}}" class="back-btn">
                         <i class="fa-solid fa-arrow-left-long"></i>
                     </a>
@@ -39,7 +39,7 @@
         </div>
 
         <div class="topup-area merchant-topup-area mx-auto">
-            <div class="topup-area-title">
+            <div class="topup-area-name">
                 <h4>@lang('Withdraw Now')</h4>
             </div>
             <form action="{{route('merchant-wt-store')}}" method="POST">

@@ -198,7 +198,7 @@ class CatalogItemController extends Controller
             //--- Validation Section
             $rules = [
                 'catalog_item_id' => 'required',
-                'title' => 'required',
+                'name' => 'required',
                 'note' => 'required|max:400',
             ];
 
@@ -211,7 +211,7 @@ class CatalogItemController extends Controller
             $abuseFlag = new AbuseFlag;
             $abuseFlag->user_id = auth()->user()->id;
             $abuseFlag->catalog_item_id = $request->catalog_item_id;
-            $abuseFlag->title = $request->title;
+            $abuseFlag->name = $request->name;
             $abuseFlag->note = $request->note;
             $abuseFlag->save();
             //--- Logic Section Ends

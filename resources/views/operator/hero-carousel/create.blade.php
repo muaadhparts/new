@@ -40,15 +40,15 @@
 
                                 <div class="panel panel-default slider-panel">
                                     <div class="panel-heading text-center">
-                                        <h3>{{ __('Sub Title') }}</h3>
+                                        <h3>{{ __('Sub Name') }}</h3>
                                     </div>
                                     <div class="panel-body">
                                         <div class="form-group">
                                             <div class="col-sm-12">
                                                 <label class="control-label"
-                                                    for="subtitle_text">{{ __('Text') }}*</label>
-                                                <textarea class="form-control" name="subtitle_text" id="subtitle_text" rows="5"
-                                                    placeholder="{{ __('Enter Title Text') }}"></textarea>
+                                                    for="subname_text">{{ __('Text') }}*</label>
+                                                <textarea class="form-control" name="subname_text" id="subname_text" rows="5"
+                                                    placeholder="{{ __('Enter Name Text') }}"></textarea>
                                             </div>
                                         </div>
 
@@ -59,9 +59,9 @@
 
                                                     <div class="col-sm-4">
                                                         <label class="control-label"
-                                                            for="subtitle_color">{{ __('Font Color') }} *</label>
+                                                            for="subname_color">{{ __('Font Color') }} *</label>
                                                         <div class="input-group colorpicker-component cp">
-                                                            <input type="text" name="subtitle_color" value="#000000"
+                                                            <input type="text" name="subname_color" value="#000000"
                                                                 class="form-control cp" />
                                                             <span class="input-group-module"><i></i></span>
                                                         </div>
@@ -75,22 +75,22 @@
                                     </div>
                                 </div>
 
-                                {{-- Sub Title Section Ends --}}
+                                {{-- Sub Name Section Ends --}}
 
 
-                                {{-- Title Section --}}
+                                {{-- Name Section --}}
 
                                 <div class="panel panel-default slider-panel">
                                     <div class="panel-heading text-center">
-                                        <h3>{{ __('Title') }}</h3>
+                                        <h3>{{ __('Name') }}</h3>
                                     </div>
                                     <div class="panel-body">
                                         <div class="form-group">
                                             <div class="col-sm-12">
-                                                <label class="control-label" for="title_text">{{ __('Text') }}*</label>
+                                                <label class="control-label" for="name_text">{{ __('Text') }}*</label>
 
-                                                <textarea class="form-control" name="title_text" id="title_text" rows="5"
-                                                    placeholder="{{ __('Enter Title Text') }}"></textarea>
+                                                <textarea class="form-control" name="name_text" id="name_text" rows="5"
+                                                    placeholder="{{ __('Enter Name Text') }}"></textarea>
                                             </div>
                                         </div>
 
@@ -101,9 +101,9 @@
 
                                                     <div class="col-sm-4">
                                                         <label class="control-label"
-                                                            for="title_color">{{ __('Font Color') }} *</label>
+                                                            for="name_color">{{ __('Font Color') }} *</label>
                                                         <div class="input-group colorpicker-component cp">
-                                                            <input type="text" name="title_color" value="#000000"
+                                                            <input type="text" name="name_color" value="#000000"
                                                                 class="form-control cp" />
                                                             <span class="input-group-module"><i></i></span>
                                                         </div>
@@ -117,7 +117,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Title Section Ends --}}
+                                {{-- Name Section Ends --}}
 
 
                                 {{-- Details Section --}}
@@ -133,7 +133,7 @@
                                                     for="details_text">{{ __('Text') }}*</label>
 
                                                 <textarea class="form-control" name="details_text" id="details_text" rows="5"
-                                                    placeholder="{{ __('Enter Title Text') }}"></textarea>
+                                                    placeholder="{{ __('Enter Name Text') }}"></textarea>
                                             </div>
                                         </div>
 
@@ -160,7 +160,7 @@
                                     </div>
                                 </div>
 
-                                {{-- Title Section Ends --}}
+                                {{-- Name Section Ends --}}
 
 
                                 <div class="row">

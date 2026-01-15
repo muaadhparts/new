@@ -1,9 +1,9 @@
 <div class="modal fade gs-modal" id="{{ $modalId }}" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    aria-labelledby="exampleModalCenterName" aria-hidden="true">
     <div class="modal-dialog xsend-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
             <div class="modal-header w-100">
-                <h4 class="title" id="exampleModalLongTitle">{{ $providerLabel }}</h4>
+                <h4 class="name" id="exampleModalLongName">{{ $providerLabel }}</h4>
                 <button type="button" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                 </button>
@@ -18,7 +18,7 @@
                                            data-price="{{ round($data->price * $curr->value, 2) }}"
                                            data-free-above="{{ round(($data->free_above ?? 0) * $curr->value, 2) }}"
                                            view="{{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}"
-                                           data-form="{{ $data->title }}"
+                                           data-form="{{ $data->name }}"
                                            id="{{ $provider }}-shipping-{{ $merchant_id }}-{{ $data->id }}"
                                            name="shipping[{{ $merchant_id }}]" value="{{ $data->id }}">
 
@@ -31,13 +31,13 @@
                                     </label>
 
                                     <label for="{{ $provider }}-shipping-{{ $merchant_id }}-{{ $data->id }}">
-                                        <span class="shipping-title">{{ $data->title }}</span>
+                                        <span class="shipping-name">{{ $data->name }}</span>
                                         <span class="shipping-price-display">
                                             @if($data->price != 0)
                                                 + {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
                                             @endif
                                         </span>
-                                        <small class="d-block">{{ $data->subtitle }}</small>
+                                        <small class="d-block">{{ $data->subname }}</small>
                                         @if(($data->free_above ?? 0) > 0)
                                             <small class="text-success d-block free-shipping-hint">
                                                 @lang('Free shipping if purchase above') {{ $curr->sign }}{{ round($data->free_above * $curr->value, 2) }}
@@ -87,7 +87,7 @@
 
                 const originalPrice = parseFloat(this.getAttribute('data-price')) || 0;
                 const freeAbove = parseFloat(this.getAttribute('data-free-above')) || 0;
-                const title = this.getAttribute('data-form');
+                const name = this.getAttribute('data-form');
 
                 // Check if free shipping applies
                 let finalPrice = originalPrice;
@@ -98,9 +98,9 @@
                 const shippingText = document.getElementById('shipping_text' + merchantId);
                 if (shippingText) {
                     if (isFreeShipping) {
-                        shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + title + ' (@lang("Free!"))</span>';
+                        shippingText.innerHTML = '<span class="text-success"><i class="fas fa-gift"></i> ' + name + ' (@lang("Free!"))</span>';
                     } else {
-                        shippingText.textContent = title + ': ' + currSign + originalPrice.toFixed(2);
+                        shippingText.textContent = name + ': ' + currSign + originalPrice.toFixed(2);
                     }
                 }
 

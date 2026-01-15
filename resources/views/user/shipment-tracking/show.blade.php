@@ -17,7 +17,7 @@
             <div class="col-md-6">
                 <div class="card bg-light">
                     <div class="card-body">
-                        <h6 class="card-title">@lang('Purchase Info')</h6>
+                        <h6 class="card-name">@lang('Purchase Info')</h6>
                         <table class="table table-sm mb-0">
                             <tr>
                                 <th>@lang('Purchase Number'):</th>

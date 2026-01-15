@@ -49,7 +49,7 @@
                         </div>
 
                    
-                      {{-- Sub Title Section Ends--}}
+                      {{-- Sub Name Section Ends--}}
                         <div class="row mt-5">
                           <div class="col-lg-4">
                             <div class="left-area">

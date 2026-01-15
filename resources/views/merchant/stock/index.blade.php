@@ -62,7 +62,7 @@
         <!-- Information Card -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-title">معلومات حول إدارة المخزون</h5>
+                <h5 class="card-name">معلومات حول إدارة المخزون</h5>
                 <div class="row">
                     <div class="col-md-6">
                         <h6>التحديث اليدوي:</h6>
@@ -114,7 +114,7 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="errorModalLabel">تفاصيل الأخطاء</h5>
+                    <h5 class="modal-name" id="errorModalLabel">تفاصيل الأخطاء</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -134,7 +134,7 @@
                 <form id="fullRefreshForm">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-title" id="fullRefreshModalLabel">تحديث كامل من المصدر البعيد</h5>
+                        <h5 class="modal-name" id="fullRefreshModalLabel">تحديث كامل من المصدر البعيد</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeModalBtn"></button>
                     </div>
                     <div class="modal-body">

@@ -89,7 +89,7 @@ Receives: $merchantItems (Collection of MerchantItem models)
 
             {{-- Content Section --}}
             <div class="catalogItem-card__content">
-                <h6 class="catalogItem-card__title">
+                <h6 class="catalogItem-card__name">
                     <a href="{{ $catalogItemUrl }}">{{ Str::limit($catalogItemName, 50) }}</a>
                 </h6>
 

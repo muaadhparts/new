@@ -10,10 +10,10 @@
                 @include('includes.user.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <!-- page title -->
-                    <div class="ud-page-title-box d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <!-- page name -->
+                    <div class="ud-page-name-box d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <!-- mobile sidebar trigger btn -->
-                        <h3 class="ud-page-title">@lang('Tickets')</h3>
+                        <h3 class="ud-page-name">@lang('Tickets')</h3>
                         <button data-bs-toggle="modal" data-bs-target="#merchantform"
                             class="template-btn md-btn black-btn data-table-btn">
                             <i class="fas fa-plus"></i>@lang('Add Ticket')</button>
@@ -102,7 +102,7 @@
             {{ csrf_field() }}
             <div class="modal-content assign-courier-modal-content form-group">
                 <div class="modal-header w-100">
-                    <h4 class="title">@lang('Add Ticket')</h4>
+                    <h4 class="name">@lang('Add Ticket')</h4>
                     <button type="button" data-bs-dismiss="modal">
                         <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                     </button>
@@ -135,9 +135,9 @@
         <div class="modal-dialog confirm-delete-modal-dialog modal-dialog-centered">
             <div class="modal-content confirm-delete-modal-content form-group">
                 <div class="modal-header delete-modal-header w-100">
-                    <div class="title-des-wrapper">
-                        <h4 class="title">@lang('Confirm Delete ?')</h4>
-                        <h5 class="sub-title">{{ __('Do you want to proceed?') }}</h5>
+                    <div class="name-des-wrapper">
+                        <h4 class="name">@lang('Confirm Delete ?')</h4>
+                        <h5 class="sub-name">{{ __('Do you want to proceed?') }}</h5>
                     </div>
                 </div>
                 <div class="row row-cols-2 w-100">

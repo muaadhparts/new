@@ -182,18 +182,18 @@ select:focus {
   -o-transition: all linear .3s;
   transition: all linear .3s; }
 
-.section-title {
+.section-name {
   text-align: center;
   margin-bottom: 46px; }
-  .section-title.extra-padding .title {
+  .section-name.extra-padding .name {
     margin-bottom: 23px; }
-  .section-title.white .subtitle {
+  .section-name.white .subname {
     color: #fff; }
-  .section-title.white .title {
+  .section-name.white .name {
     color: #fff; }
-  .section-title.white p {
+  .section-name.white p {
     color: rgba(255, 255, 255, 0.7); }
-  .section-title .sub-title {
+  .section-name .sub-name {
     font-size: 28px;
     line-height: 38px;
     font-weight: 300;
@@ -201,7 +201,7 @@ select:focus {
     
     margin-bottom: 1px;
     font-family: "Open Sans", sans-serif; }
-  .section-title .title {
+  .section-name .name {
     font-size: 50px;
     line-height: 60px;
     margin-bottom: 13px;
@@ -209,17 +209,17 @@ select:focus {
     font-weight: 700;
     text-transform: capitalize;
     margin-bottom: 8px; }
-  .section-title .text {
+  .section-name .text {
     max-width: 640px;
     font-size: 18px;
     line-height: 28px;
     margin: 0 auto;
     font-weight: 300; }
-  .section-title.darkbg .title {
+  .section-name.darkbg .name {
     color: #fff; }
-    .section-title.darkbg .title span {
+    .section-name.darkbg .name span {
       color: #fff; }
-  .section-title.darkbg p {
+  .section-name.darkbg p {
     color: rgba(255, 255, 255, 0.95); }
 
 
@@ -642,7 +642,7 @@ select:focus {
     .row-cards-one .mycard .left {
       position: inherit;
       z-index: 9; }
-      .row-cards-one .mycard .left .title {
+      .row-cards-one .mycard .left .name {
         font-size: 22px;
         color: #fff;
         line-height: 32px;
@@ -810,7 +810,7 @@ Mr table Area Start / Mamunur Rashid.
     vertical-align: middle; }
   .mr-table.allproduct .action-list a i {
     margin-right: 0px; }
-  .mr-table.allproduct table.dataTable tbody tr td:first-child .title {
+  .mr-table.allproduct table.dataTable tbody tr td:first-child .name {
     font-size: 14px;
     font-weight: 600;
     margin-bottom: 0px; }
@@ -856,7 +856,7 @@ General Settings Area Start
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex; }
-    .add-logo-area .currrent-logo .title {
+    .add-logo-area .currrent-logo .name {
       font-size: 18px;
       font-weight: 600;
       line-height: 28px;
@@ -871,7 +871,7 @@ General Settings Area Start
     display: -webkit-box;
     display: -ms-flexbox;
     display: flex; }
-    .add-logo-area .set-logo .title {
+    .add-logo-area .set-logo .name {
       font-size: 18px;
       font-weight: 600;
       line-height: 28px;
@@ -944,7 +944,7 @@ General Settings Area Start
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex; }
-  .loader-switcher .title {
+  .loader-switcher .name {
     font-size: 18px;
     font-weight: 600;
     line-height: 28px;
@@ -1046,7 +1046,7 @@ div.modal {
   padding-bottom: 20px;
   margin-bottom: 25px; 
   }
-  .heading-area .title {
+  .heading-area .name {
     display: inline-block;
     font-size: 20px;
     line-height: 30px;
@@ -1146,7 +1146,7 @@ div.modal {
   .add-catalogItem-content .catalogItem-description .heading-area {
     padding: 13px 20px 17px;
     border-bottom: 1px solid rgba(0, 0, 0, 0.15); }
-    .add-catalogItem-content .catalogItem-description .heading-area .title {
+    .add-catalogItem-content .catalogItem-description .heading-area .name {
       font-size: 20px;
       line-height: 30px;
       margin-bottom: 0px; }
@@ -1221,7 +1221,7 @@ div.modal {
     .add-catalogItem-content .catalogItem-description .body-area .featured-keyword-area .heading-area {
       text-align: center;
       border-bottom: 0px; }
-      .add-catalogItem-content .catalogItem-description .body-area .featured-keyword-area .heading-area .title {
+      .add-catalogItem-content .catalogItem-description .body-area .featured-keyword-area .heading-area .name {
         font-size: 20px;
         font-weight: 600;
         color: #0d3359; }
@@ -1325,7 +1325,7 @@ div.modal {
         -webkit-transition: all 0.3s ease-in;
         -o-transition: all 0.3s ease-in;
         transition: all 0.3s ease-in; }
-    .ap-catalogItem-categories .cat-box .title {
+    .ap-catalogItem-categories .cat-box .name {
       color: #fff;
       font-size: 20px;
       font-weight: 400;
@@ -1365,7 +1365,7 @@ div.modal {
     .login-signup .login-area .header-area {
       text-align: center;
       margin-bottom: 40px; }
-      .login-signup .login-area .header-area .title {
+      .login-signup .login-area .header-area .name {
         font-size: 30px;
         font-weight: 700;
         line-height: 40px;

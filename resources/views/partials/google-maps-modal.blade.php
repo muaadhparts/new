@@ -9,7 +9,7 @@
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header map-modal-header">
-                <h5 class="modal-title">{{ __('Select Location from Map') }}</h5>
+                <h5 class="modal-name">{{ __('Select Location from Map') }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-0">
@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="map-location-info" id="location-info-modal">
-                        <h6 class="map-location-title">{{ __('Selected Location Information') }}</h6>
+                        <h6 class="map-location-name">{{ __('Selected Location Information') }}</h6>
 
                         <div class="map-location-grid">
                             <div class="map-location-item">
@@ -322,7 +322,7 @@ window.showSyncProgressModal = function(countryName) {
         <div id="syncProgressOverlay" class="sync-progress-overlay">
             <div class="sync-progress-card">
                 <div class="sync-progress-spinner"></div>
-                <h4 class="sync-progress-title">{{ __('Importing Country Data') }}</h4>
+                <h4 class="sync-progress-name">{{ __('Importing Country Data') }}</h4>
                 <p class="sync-progress-country">${countryName}</p>
                 <div class="sync-progress-bar-bg">
                     <div id="syncProgressBar" class="sync-progress-bar"></div>

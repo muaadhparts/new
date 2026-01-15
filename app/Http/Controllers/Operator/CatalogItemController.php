@@ -78,7 +78,7 @@ class CatalogItemController extends OperatorBaseController
             ->addColumn('merchant', function (MerchantItem $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
-                return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
+                return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
             })
             ->addColumn('price', function (MerchantItem $mp) {
                 $price = (float) $mp->price;
@@ -191,7 +191,7 @@ class CatalogItemController extends OperatorBaseController
             ->addColumn('merchant', function (MerchantItem $mp) {
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
-                return '<span title="' . $mp->user->name . '">' . $shopName . '</span>';
+                return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
             })
             ->addColumn('price', function (MerchantItem $mp) {
                 $price = (float) $mp->price;

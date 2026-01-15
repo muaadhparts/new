@@ -3619,7 +3619,7 @@ var Swatches = function (_Palette) {
       swatchContainer.empty();
 
       _jquery2.default.each(this.colors, function (name, value) {
-        var $swatch = (0, _jquery2.default)(_this2.options.swatchTemplate).attr('data-name', name).attr('data-value', value).attr('title', isAliased ? name + ': ' + value : value).on('mousedown.colorpicker touchstart.colorpicker', function (e) {
+        var $swatch = (0, _jquery2.default)(_this2.options.swatchTemplate).attr('data-name', name).attr('data-value', value).attr('name', isAliased ? name + ': ' + value : value).on('mousedown.colorpicker touchstart.colorpicker', function (e) {
           var $sw = (0, _jquery2.default)(this);
 
           // e.preventDefault();

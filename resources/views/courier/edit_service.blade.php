@@ -9,11 +9,11 @@
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                 <div class="gs-edit-profile-section">
                     {{-- Page Header --}}
-                    <div class="ud-page-title-box gap-4">
+                    <div class="ud-page-name-box gap-4">
                         <a href="{{ route('courier-service-area') }}" class="back-btn">
                             <i class="fa-solid fa-arrow-left-long"></i>
                         </a>
-                        <h3 class="ud-page-title">@lang('Edit Service Area')</h3>
+                        <h3 class="ud-page-name">@lang('Edit Service Area')</h3>
                     </div>
 
                     {{-- Form --}}

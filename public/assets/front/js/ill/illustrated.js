@@ -96,15 +96,15 @@
 
   /* ========================= Modal Elements ========================= */
   const stack = []; // كل عنصر يمثل "شاشة حالية"؛ أعلى المكدس = الشاشة المعروضة الآن
-  function modalTitleEl() { return document.getElementById('ill-modal-title'); }
+  function modalNameEl() { return document.getElementById('ill-modal-name'); }
   function modalBodyEl()  { return document.getElementById('api-callout-body'); }
   function backBtnEl()    { return document.getElementById('ill-back-btn'); }
-  function getCurrentTitle() {
-    const el = modalTitleEl(); return el ? (el.textContent || '') : '';
+  function getCurrentName() {
+    const el = modalNameEl(); return el ? (el.textContent || '') : '';
   }
 
-  function setTitle(txt) {
-    const el = modalTitleEl(); if (el) el.textContent = txt;
+  function setName(txt) {
+    const el = modalNameEl(); if (el) el.textContent = txt;
   }
   function setBackVisible() {
     const btn = backBtnEl(); if (!btn) return;
@@ -119,7 +119,7 @@
   function pushView(state) {
     const body = modalBodyEl();
     const scroll = body ? body.scrollTop : 0;
-    stack.push({ title: state.title || '', html: state.html || '', __scroll: scroll });
+    stack.push({ name: state.name || '', html: state.html || '', __scroll: scroll });
     setBackVisible();
   }
   function currentView() {
@@ -132,7 +132,7 @@
     const st = currentView();
     if (st && st.html != null) {
       const body = modalBodyEl();
-      setTitle(st.title || t('catalog.modal.title'));
+      setName(st.name || t('catalog.modal.name'));
       if (body) {
         body.innerHTML = st.html;
         afterInject(body);
@@ -186,13 +186,13 @@
    * - عند نجاح التحميل: ندفع "الشاشة الجديدة" نفسها إلى المكدس (تصبح الحالية).
    * - عند الفشل: نعيد الحالة السابقة كما هي (لا تغيير في المكدس).
    */
-  function loadIntoModal(url, title) {
+  function loadIntoModal(url, name) {
     const body = modalBodyEl(); if (!body) return Promise.resolve();
-    const prevTitle = getCurrentTitle();
+    const prevName = getCurrentName();
     const prevHtml  = body.innerHTML;
 
     // أظهر سبينر موقتًا بعنوان الشاشة الجديدة
-    setTitle(title);
+    setName(name);
     body.innerHTML = renderSpinner();
 
     return fetch(url, { headers: { 'X-Requested-With':'XMLHttpRequest' } })
@@ -208,11 +208,11 @@
         body.scrollTop = 0;
 
         // ✅ سجل "الشاشة الجديدة" كأعلى المكدس (الحالية)
-        pushView({ title, html: newHtml });
+        pushView({ name, html: newHtml });
       })
       .catch(err => {
         // ⚠️ فشل التحميل: أعد الحالة السابقة كما هي + أظهر رسالة
-        setTitle(prevTitle);
+        setName(prevName);
         body.innerHTML = prevHtml;
         const msg = t('messages.load_failed');
         if (window.toastr) {
@@ -383,7 +383,7 @@
           const fitsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline fits-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>` : '';
 
           return `<div class="card shadow-sm mb-3"><div class="card-body text-center">
-              <h6 class="card-title">${partLink}</h6>
+              <h6 class="card-name">${partLink}</h6>
               <p><strong>${escapeHtml(t('labels.callout'))}:</strong> ${callout}</p>
               <p><strong>${escapeHtml(t('labels.qty'))}:</strong> ${qty}</p>
               <p><strong>${escapeHtml(t('labels.name'))}:</strong> ${escapeHtml(name)}</p>
@@ -690,8 +690,8 @@
 
     const container = modalBodyEl();
     try { bootstrap.Modal.getOrCreateInstance(document.getElementById('modal')).show(); } catch {}
-    const titleRoot = t('catalog.modal.title');
-    setTitle(titleRoot);
+    const nameRoot = t('catalog.modal.name');
+    setName(nameRoot);
 
     // بداية جديدة
     if (container) container.innerHTML = renderSpinner();
@@ -715,7 +715,7 @@
       afterInject(body);
       body.scrollTop = 0;
 
-      pushView({ title: titleRoot, html, calloutKey: key, pagination });
+      pushView({ name: nameRoot, html, calloutKey: key, pagination });
       setBackVisible(); // مخفي لأن length=1
     }).catch(err=>{
       const body = modalBodyEl(); if (!body) return;
@@ -743,7 +743,7 @@
   /* ========================= Inline Sub-Views (each pushes a new state) ========================= */
   function openQuickInline(id, url, part_number, user) {
     const base  = window.ILL_ROUTES?.quick || '/modal/quickview/';  // ✅ fallback محدّث
-    const title = t('catalog.quickview.title');
+    const name = t('catalog.quickview.name');
     let finalUrl = (url && typeof url === 'string') ? url : (id ? (base + id) : null);
 
     // ألحق user على أي من الحالتين (url موجود/غير موجود)
@@ -752,22 +752,22 @@
     }
 
     if (!finalUrl && part_number) { return openProductInline(part_number); }
-    return loadIntoModal(finalUrl, title);
+    return loadIntoModal(finalUrl, name);
   }
   function openProductInline(key) {
     const base  = window.ILL_ROUTES?.catalogItem || '/modal/catalogItem/';
-    const title = t('catalog.product_modal.title');
-    return loadIntoModal(base + encodeURIComponent(key), title);
+    const name = t('catalog.product_modal.name');
+    return loadIntoModal(base + encodeURIComponent(key), name);
   }
   function openAlternativeInline(part_number) {
     const base  = window.ILL_ROUTES?.alternative || '/modal/alternative/';
-    const title = t('catalog.alternative_modal.title');
-    return loadIntoModal(base + encodeURIComponent(part_number), title);
+    const name = t('catalog.alternative_modal.name');
+    return loadIntoModal(base + encodeURIComponent(part_number), name);
   }
   function openCompatibilityInline(part_number) {
     const base  = window.ILL_ROUTES?.compatibility || '/modal/compatibility/';
-    const title = t('catalog.compatibility_modal.title');
-    return loadIntoModal(base + encodeURIComponent(part_number), title);
+    const name = t('catalog.compatibility_modal.name');
+    return loadIntoModal(base + encodeURIComponent(part_number), name);
   }
 
   /* ========================= Dynamic Events ========================= */

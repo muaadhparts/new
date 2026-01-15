@@ -46,13 +46,13 @@
             <table class="gs-data-table w-100">
                 <thead>
                     <tr>
-                        <th><span class="header-title">@lang('Purchase Number')</span></th>
-                        <th><span class="header-title">@lang('Total Qty')</span></th>
-                        <th><span class="header-title">@lang('Total Cost')</span></th>
-                        <th><span class="header-title">@lang('Payment Method')</span></th>
-                        <th><span class="header-title">@lang('Status')</span></th>
+                        <th><span class="header-name">@lang('Purchase Number')</span></th>
+                        <th><span class="header-name">@lang('Total Qty')</span></th>
+                        <th><span class="header-name">@lang('Total Cost')</span></th>
+                        <th><span class="header-name">@lang('Payment Method')</span></th>
+                        <th><span class="header-name">@lang('Status')</span></th>
                         <th class="text-center">
-                            <span class="header-title">@lang('Actions')</span>
+                            <span class="header-name">@lang('Actions')</span>
                         </th>
                     </tr>
                 </thead>

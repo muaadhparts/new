@@ -4,7 +4,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Contact')</h2>
+                    <h2 class="breadcrumb-name">@lang('Contact')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.contact') }}">@lang('Contact')</a></li>

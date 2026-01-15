@@ -99,7 +99,7 @@
                         <div class="muaadh-accordion-content">
                             @foreach ($static_content->where('header', '=', 1) as $content)
                                 <a href="{{ route('front.merchant', $content->slug) }}" class="muaadh-mobile-nav-subitem">
-                                    {{ $content->title }}
+                                    {{ $content->name }}
                                 </a>
                             @endforeach
                         </div>
@@ -123,7 +123,7 @@
 
             {{-- Quick Links --}}
             <div class="muaadh-mobile-quick-links">
-                <h6 class="muaadh-mobile-section-title">@lang('Quick Access')</h6>
+                <h6 class="muaadh-mobile-section-name">@lang('Quick Access')</h6>
                 <div class="muaadh-mobile-quick-grid">
                     <a href="{{ route('front.cart') }}" class="muaadh-mobile-quick-item">
                         <i class="fas fa-shopping-cart"></i>
@@ -300,7 +300,7 @@
 
                 {{-- Other Login Options --}}
                 <div class="muaadh-mobile-other-logins">
-                    <h6 class="muaadh-mobile-section-title">@lang('Other Accounts')</h6>
+                    <h6 class="muaadh-mobile-section-name">@lang('Other Accounts')</h6>
                     <a href="{{ route('merchant.login') }}" class="muaadh-mobile-nav-item">
                         <i class="fas fa-store"></i>
                         <span>@lang('Merchant Login')</span>

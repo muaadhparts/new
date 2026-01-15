@@ -613,7 +613,7 @@ class UserController extends OperatorBaseController
             $userPlan = new UserMembershipPlan;
             $userPlan->user_id = $user->id;
             $userPlan->membership_plan_id = $membershipPlan->id;
-            $userPlan->title = $membershipPlan->title;
+            $userPlan->name = $membershipPlan->name;
             $userPlan->currency_sign = $this->curr->sign;
             $userPlan->currency_code = $this->curr->name;
             $userPlan->currency_value = $this->curr->value;

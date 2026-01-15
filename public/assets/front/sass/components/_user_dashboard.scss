@@ -165,8 +165,8 @@
 
 .gs-dashboard-user-content-wrapper,
 .gs-merchant-purchase-invoice {
-  // ud-page-title
-  .ud-page-title-box {
+  // ud-page-name
+  .ud-page-name-box {
     display: flex;
     align-items: center;
     margin-bottom: 28px;
@@ -276,8 +276,8 @@
     }
   }
 
-  // user-purchase-title-wrapper
-  .user-purchase-title-wrapper {
+  // user-purchase-name-wrapper
+  .user-purchase-name-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -368,7 +368,7 @@
       td {
         padding: 16px;
 
-        .td-title {
+        .td-name {
           font-weight: 500;
           line-height: 130%;
           font-size: 20px;
@@ -393,7 +393,7 @@
         }
         td {
           padding: 12px;
-          .td-title {
+          .td-name {
             font-size: 16px;
           }
           ul {
@@ -425,7 +425,7 @@
     color: $white-color;
   }
 }
-.gs-topup-title {
+.gs-topup-name {
   // margin-top: 50px
   margin-left: 40px;
 
@@ -444,7 +444,7 @@
   border-radius: 12px;
   padding: 40px;
 
-  .topup-area-title {
+  .topup-area-name {
     background-color: $text-color-50;
     margin-bottom: 8px;
 
@@ -597,7 +597,7 @@
 }
 
 @include screen-768 {
-  .gs-topup-title {
+  .gs-topup-name {
     margin-top: 20px;
   }
 
@@ -605,7 +605,7 @@
     padding: 20px;
     margin-top: 20px;
 
-    .topup-area-title {
+    .topup-area-name {
       h4 {
         padding: 15px 20px;
       }
@@ -635,7 +635,7 @@
 }
 
 .gs-purchase-track-section {
-  .gs-purchase-track-title {
+  .gs-purchase-track-name {
     p {
       margin-top: 12px;
       font-size: 18px;
@@ -650,7 +650,7 @@
     margin-right: auto;
     margin-top: 60px;
 
-    .purchase-track-title {
+    .purchase-track-name {
       background-color: $text-color-50;
       margin-bottom: 8px;
 
@@ -714,7 +714,7 @@
   }
 
   @include screen-768 {
-    .gs-purchase-track-title {
+    .gs-purchase-track-name {
       p {
         font-size: 14px;
       }
@@ -724,7 +724,7 @@
       padding: 20px;
       margin-top: 20px;
 
-      .purchase-track-title {
+      .purchase-track-name {
         h4 {
           padding: 29px 20px;
           font-size: 20px;
@@ -757,7 +757,7 @@
     margin-right: auto;
     margin-top: 10px;
 
-    .edit-profile-title {
+    .edit-profile-name {
       background-color: $text-color-50;
       margin-bottom: 8px;
 

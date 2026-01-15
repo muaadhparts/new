@@ -13,7 +13,7 @@
                         <h3>@lang('Affiliate Program')</h3>
                         <!-- copy box 1  -->
                         <div class="copy-box-wrapper w-100">
-                            <div class="title-des-wrapper">
+                            <div class="name-des-wrapper">
                                 <h5 class="fw-medium">@lang('Your Affiliate Link')</h5>
                                 <p class="text-xs">
                                     @lang('This is your affilate link just copy the link and paste anywhere you want.')
@@ -37,7 +37,7 @@
 
                         <!-- affiliate banner  -->
                         <div class="affiliate-banner-wrapper">
-                            <div class="title-des-wrapper">
+                            <div class="name-des-wrapper">
                                 <h5 class="fw-medium">@lang('Affiliate Banner')</h5>
                                 <p class="text-xs">@lang('This is your affilate banner Preview.')</p>
                             </div>
@@ -48,7 +48,7 @@
                         </div>
                         <!-- copy box 2  -->
                         <div class="copy-box-wrapper w-100">
-                            <div class="title-des-wrapper">
+                            <div class="name-des-wrapper">
                                 <h5 class="fw-medium">@lang('Affiliate Banner HTML Code')</h5>
                                 <p class="text-xs">
                                     @lang('This is your affiliate banner html code just copy the code and paste anywhere you want.')
@@ -73,19 +73,19 @@
                     <!-- Table  -->
                     <div>
                         <div class="user-table table-responsive">
-                            <h4 class="table-title">@lang('Your Affiliate History')</h4>
+                            <h4 class="table-name">@lang('Your Affiliate History')</h4>
                             <table class="table table-bordered">
                                 <tr>
 
                                     <th class="affiliate-bonus">
-                                        <span class="header-title">@lang('Customer Email')</span>
+                                        <span class="header-name">@lang('Customer Email')</span>
                                     </th>
                                     <th class="affiliate-bonus">
-                                        <span class="header-title">@lang('Affiliate Bonus')</span>
+                                        <span class="header-name">@lang('Affiliate Bonus')</span>
                                     </th>
 
                                     <th class="affiliate-bonus">
-                                        <span class="header-title">@lang('Created At')</span>
+                                        <span class="header-name">@lang('Created At')</span>
                                     </th>
                                 </tr>
 

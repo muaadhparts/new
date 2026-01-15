@@ -43,7 +43,7 @@
                             {{-- Basic Info --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('Basic Information') }}</h3>
+                                    <h3 class="panel-name">{{ __('Basic Information') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
@@ -87,7 +87,7 @@
                             {{-- Sections Toggle --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('Sections Visibility') }}</h3>
+                                    <h3 class="panel-name">{{ __('Sections Visibility') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
@@ -224,7 +224,7 @@
                             {{-- Section Purchase --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('Sections Purchase') }}</h3>
+                                    <h3 class="panel-name">{{ __('Sections Purchase') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
@@ -284,48 +284,48 @@
                                 </div>
                             </div>
 
-                            {{-- Section Titles --}}
+                            {{-- Section Names --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('Section Titles (Optional - leave empty for defaults)') }}</h3>
+                                    <h3 class="panel-name">{{ __('Section Names (Optional - leave empty for defaults)') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Brands Title') }}</label>
-                                            <input type="text" class="form-control" name="title_brands" value="{{ $theme->title_brands }}" placeholder="{{ __('Genuine Parts Catalogues') }}">
+                                            <label class="control-label">{{ __('Brands Name') }}</label>
+                                            <input type="text" class="form-control" name="name_brands" value="{{ $theme->name_brands }}" placeholder="{{ __('Genuine Parts Catalogues') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Categories Title') }}</label>
-                                            <input type="text" class="form-control" name="title_categories" value="{{ $theme->title_categories }}" placeholder="{{ __('Shop by Category') }}">
+                                            <label class="control-label">{{ __('Categories Name') }}</label>
+                                            <input type="text" class="form-control" name="name_categories" value="{{ $theme->name_categories }}" placeholder="{{ __('Shop by Category') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Featured CatalogItems Title') }}</label>
-                                            <input type="text" class="form-control" name="title_featured_items" value="{{ $theme->title_featured_items }}" placeholder="{{ __('Featured CatalogItems') }}">
+                                            <label class="control-label">{{ __('Featured CatalogItems Name') }}</label>
+                                            <input type="text" class="form-control" name="name_featured_items" value="{{ $theme->name_featured_items }}" placeholder="{{ __('Featured CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Deal of Day Title') }}</label>
-                                            <input type="text" class="form-control" name="title_deal_of_day" value="{{ $theme->title_deal_of_day }}" placeholder="{{ __('Deal of the Day') }}">
+                                            <label class="control-label">{{ __('Deal of Day Name') }}</label>
+                                            <input type="text" class="form-control" name="name_deal_of_day" value="{{ $theme->name_deal_of_day }}" placeholder="{{ __('Deal of the Day') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Top Rated Title') }}</label>
-                                            <input type="text" class="form-control" name="title_top_rated" value="{{ $theme->title_top_rated }}" placeholder="{{ __('Top Rated CatalogItems') }}">
+                                            <label class="control-label">{{ __('Top Rated Name') }}</label>
+                                            <input type="text" class="form-control" name="name_top_rated" value="{{ $theme->name_top_rated }}" placeholder="{{ __('Top Rated CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Big Save Title') }}</label>
-                                            <input type="text" class="form-control" name="title_big_save" value="{{ $theme->title_big_save }}" placeholder="{{ __('Big Save CatalogItems') }}">
+                                            <label class="control-label">{{ __('Big Save Name') }}</label>
+                                            <input type="text" class="form-control" name="name_big_save" value="{{ $theme->name_big_save }}" placeholder="{{ __('Big Save CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Trending Title') }}</label>
-                                            <input type="text" class="form-control" name="title_trending" value="{{ $theme->title_trending }}" placeholder="{{ __('Trending CatalogItems') }}">
+                                            <label class="control-label">{{ __('Trending Name') }}</label>
+                                            <input type="text" class="form-control" name="name_trending" value="{{ $theme->name_trending }}" placeholder="{{ __('Trending CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Best Sellers Title') }}</label>
-                                            <input type="text" class="form-control" name="title_best_sellers" value="{{ $theme->title_best_sellers }}" placeholder="{{ __('Best Selling CatalogItems') }}">
+                                            <label class="control-label">{{ __('Best Sellers Name') }}</label>
+                                            <input type="text" class="form-control" name="name_best_sellers" value="{{ $theme->name_best_sellers }}" placeholder="{{ __('Best Selling CatalogItems') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Blogs Title') }}</label>
-                                            <input type="text" class="form-control" name="title_blogs" value="{{ $theme->title_blogs }}" placeholder="{{ __('From Our Blog') }}">
+                                            <label class="control-label">{{ __('Blogs Name') }}</label>
+                                            <input type="text" class="form-control" name="name_blogs" value="{{ $theme->name_blogs }}" placeholder="{{ __('From Our Blog') }}">
                                         </div>
                                     </div>
                                 </div>
@@ -334,7 +334,7 @@
                             {{-- CatalogItem Counts --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-title">{{ __('CatalogItem Counts Per Section') }}</h3>
+                                    <h3 class="panel-name">{{ __('CatalogItem Counts Per Section') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">

@@ -264,7 +264,7 @@ class OrderStatusResolverService
 
         try {
             $purchase->tracks()->create([
-                'title' => $statusLabels[$newStatus] ?? $newStatus,
+                'name' => $statusLabels[$newStatus] ?? $newStatus,
                 'text' => sprintf(
                     'تم تحديث حالة الطلب من "%s" إلى "%s" بناءً على حالة الشحن',
                     $statusLabels[$oldStatus] ?? $oldStatus,

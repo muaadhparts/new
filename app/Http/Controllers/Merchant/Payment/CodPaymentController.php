@@ -32,7 +32,7 @@ class CodPaymentController extends BaseMerchantPaymentController
         return [
             'id' => $payment->id,
             'keyword' => $payment->keyword,
-            'title' => $payment->title ?? $payment->name ?? 'Cash On Delivery',
+            'name' => $payment->name ?? $payment->name ?? 'Cash On Delivery',
         ];
     }
 

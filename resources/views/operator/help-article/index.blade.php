@@ -30,7 +30,7 @@
                         <table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
-                                    <th width="30%">{{ __('Help Article Title') }}</th>
+                                    <th width="30%">{{ __('Help Article Name') }}</th>
                                     <th width="50%">{{ __('Help Article Details') }}</th>
                                     <th>{{ __('Options') }}</th>
                                 </tr>
@@ -60,7 +60,7 @@
         serverSide: true,
         ajax: '{{ route('operator-help-article-datatables') }}',
         columns: [
-            { data: 'title', name: 'title' },
+            { data: 'name', name: 'name' },
             { data: 'details', name: 'details' },
             { data: 'action', searchable: false, orderable: false }
         ],

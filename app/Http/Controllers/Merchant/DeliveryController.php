@@ -959,7 +959,7 @@ class DeliveryController extends MerchantBaseController
 
             // Add tracking entry
             $purchase->tracks()->create([
-                'title' => __('Ready for Courier Pickup'),
+                'name' => __('Ready for Courier Pickup'),
                 'text' => __('Merchant :merchant has prepared the order and is waiting for courier pickup', ['merchant' => $this->user->shop_name])
             ]);
 
@@ -1022,7 +1022,7 @@ class DeliveryController extends MerchantBaseController
 
             // Add tracking entry
             $purchase->tracks()->create([
-                'title' => __('Picked Up by Courier'),
+                'name' => __('Picked Up by Courier'),
                 'text' => __('Order has been handed over to courier :courier for delivery', ['courier' => $deliveryCourier->courier->name ?? 'Courier'])
             ]);
 
@@ -1188,8 +1188,8 @@ class DeliveryController extends MerchantBaseController
             $options = $shippings->map(function ($shipping) {
                 return [
                     'id' => $shipping->id,
-                    'title' => $shipping->title,
-                    'subtitle' => $shipping->subtitle,
+                    'name' => $shipping->name,
+                    'subname' => $shipping->subname,
                     'price' => (float) $shipping->price,
                     'display_price' => PriceHelper::showAdminCurrencyPrice($shipping->price),
                     'free_above' => $shipping->free_above,
@@ -1282,7 +1282,7 @@ class DeliveryController extends MerchantBaseController
             shippingId: $shipping->id,
             provider: $shipping->provider ?? 'manual',
             trackingNumber: $request->tracking_number,
-            companyName: $shipping->title,
+            companyName: $shipping->name,
             shippingCost: $shipping->price,
             merchantLocationId: $merchantLocationId // ✅ Pass merchant_location_id
         );
@@ -1297,9 +1297,9 @@ class DeliveryController extends MerchantBaseController
 
         // Add tracking entry to purchase
         $purchase->tracks()->create([
-            'title' => __('Shipping Assigned'),
+            'name' => __('Shipping Assigned'),
             'text' => __('Shipment assigned to :company (:provider). Tracking: :tracking', [
-                'company' => $shipping->title,
+                'company' => $shipping->name,
                 'provider' => $shipping->provider ?? 'manual',
                 'tracking' => $trackingNumber
             ])
@@ -1309,7 +1309,7 @@ class DeliveryController extends MerchantBaseController
             'purchase_id' => $purchase->id,
             'merchant_id' => $merchantId,
             'shipping_id' => $shipping->id,
-            'shipping_title' => $shipping->title,
+            'shipping_name' => $shipping->name,
             'provider' => $shipping->provider,
             'tracking_number' => $trackingNumber,
         ]);

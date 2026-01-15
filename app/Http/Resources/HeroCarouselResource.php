@@ -16,8 +16,8 @@ class HeroCarouselResource extends JsonResource
     {
       return [
         'id' => $this->id,
-        'subtitle' => $this->subtitle_text,
-        'title' => $this->title_text,
+        'subname' => $this->subname_text,
+        'name' => $this->name_text,
         'small_text' => $this->details_text,
         'image' => url('/') . '/assets/images/sliders/'.$this->photo,
         'redirect_url' => $this->link,

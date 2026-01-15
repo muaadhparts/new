@@ -284,7 +284,7 @@ p {
   margin-top: 0;
   margin-bottom: 1rem;
 }
-abbr[title] {
+abbr[name] {
   -webkit-text-decoration: underline dotted;
   text-decoration: underline dotted;
   cursor: help;
@@ -4258,9 +4258,9 @@ fieldset:disabled .btn {
 .card {
   --bs-card-spacer-y: 1rem;
   --bs-card-spacer-x: 1rem;
-  --bs-card-title-spacer-y: 0.5rem;
-  --bs-card-title-color: ;
-  --bs-card-subtitle-color: ;
+  --bs-card-name-spacer-y: 0.5rem;
+  --bs-card-name-color: ;
+  --bs-card-subname-color: ;
   --bs-card-border-width: var(--bs-border-width);
   --bs-card-border-color: var(--bs-border-color-translucent);
   --bs-card-border-radius: var(--bs-border-radius);
@@ -4316,14 +4316,14 @@ fieldset:disabled .btn {
   padding: var(--bs-card-spacer-y) var(--bs-card-spacer-x);
   color: var(--bs-card-color);
 }
-.card-title {
-  margin-bottom: var(--bs-card-title-spacer-y);
-  color: var(--bs-card-title-color);
+.card-name {
+  margin-bottom: var(--bs-card-name-spacer-y);
+  color: var(--bs-card-name-color);
 }
-.card-subtitle {
-  margin-top: calc(-0.5 * var(--bs-card-title-spacer-y));
+.card-subname {
+  margin-top: calc(-0.5 * var(--bs-card-name-spacer-y));
   margin-bottom: 0;
-  color: var(--bs-card-subtitle-color);
+  color: var(--bs-card-subname-color);
 }
 .card-text:last-child {
   margin-bottom: 0;
@@ -5332,7 +5332,7 @@ fieldset:disabled .btn {
   --bs-modal-header-padding: 1rem 1rem;
   --bs-modal-header-border-color: var(--bs-border-color);
   --bs-modal-header-border-width: var(--bs-border-width);
-  --bs-modal-title-line-height: 1.5;
+  --bs-modal-name-line-height: 1.5;
   --bs-modal-footer-gap: 0.5rem;
   --bs-modal-footer-bg: ;
   --bs-modal-footer-border-color: var(--bs-border-color);
@@ -5433,9 +5433,9 @@ fieldset:disabled .btn {
     calc(-0.5 * var(--bs-modal-header-padding-x))
     calc(-0.5 * var(--bs-modal-header-padding-y)) auto;
 }
-.modal-title {
+.modal-name {
   margin-bottom: 0;
-  line-height: var(--bs-modal-title-line-height);
+  line-height: var(--bs-modal-name-line-height);
 }
 .modal-body {
   position: relative;
@@ -6161,7 +6161,7 @@ fieldset:disabled .btn {
   --bs-offcanvas-border-color: var(--bs-border-color-translucent);
   --bs-offcanvas-box-shadow: var(--bs-box-shadow-sm);
   --bs-offcanvas-transition: transform 0.3s ease-in-out;
-  --bs-offcanvas-title-line-height: 1.5;
+  --bs-offcanvas-name-line-height: 1.5;
 }
 @media (max-width: 575.98px) {
   .offcanvas-sm {
@@ -6674,9 +6674,9 @@ fieldset:disabled .btn {
   margin-right: calc(-0.5 * var(--bs-offcanvas-padding-x));
   margin-bottom: calc(-0.5 * var(--bs-offcanvas-padding-y));
 }
-.offcanvas-title {
+.offcanvas-name {
   margin-bottom: 0;
-  line-height: var(--bs-offcanvas-title-line-height);
+  line-height: var(--bs-offcanvas-name-line-height);
 }
 .offcanvas-body {
   flex-grow: 1;

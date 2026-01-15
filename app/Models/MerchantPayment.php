@@ -9,7 +9,7 @@ class MerchantPayment extends Model
 {
     protected $table = 'merchant_payments';
 
-    protected $fillable = ['user_id', 'title', 'details', 'subtitle', 'name', 'type', 'information', 'currency_id', 'keyword', 'checkout', 'topup', 'subscription', 'status'];
+    protected $fillable = ['user_id', 'name', 'details', 'subname', 'name', 'type', 'information', 'currency_id', 'keyword', 'checkout', 'topup', 'subscription', 'status'];
 
     public $timestamps = false;
 

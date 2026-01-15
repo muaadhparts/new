@@ -7,7 +7,7 @@
                 <img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
             </div>
             <div class="modal-header">
-                <h5 class="modal-title">{{ __('Add CatalogItem') }} |  <code class="text-center show_merchant_message">
+                <h5 class="modal-name">{{ __('Add CatalogItem') }} |  <code class="text-center show_merchant_message">
                     
                 </code></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">

@@ -95,7 +95,7 @@
                         <div class="col-lg-4 col-md-6 mb-3">
                             <div class="card h-100">
                                 <div class="card-body">
-                                    <h6 class="card-title">{{ $summary['merchant_name'] }}</h6>
+                                    <h6 class="card-name">{{ $summary['merchant_name'] }}</h6>
                                     <div class="d-flex justify-content-between mb-2">
                                         <span class="text-muted">{{ __('Sales') }}:</span>
                                         <span>{{ $currency->sign }}{{ number_format($summary['total_sales'], 2) }}</span>

@@ -46,7 +46,7 @@
         <div class="modal-content location-picker-modal">
             {{-- Header --}}
             <div class="modal-header location-picker-header">
-                <h5 class="modal-title" id="locationPickerModalLabel">
+                <h5 class="modal-name" id="locationPickerModalLabel">
                     <i class="fas fa-map-marker-alt me-2"></i>
                     {{ __('Select Location') }}
                 </h5>
@@ -155,8 +155,8 @@
 <div id="lp-sync-overlay" class="location-picker-sync-overlay" style="display: none;">
     <div class="location-picker-sync-card">
         <div class="location-picker-sync-spinner"></div>
-        <h5 class="location-picker-sync-title">{{ __('Loading Location Data') }}</h5>
-        <p id="lp-sync-country" class="location-picker-sync-subtitle"></p>
+        <h5 class="location-picker-sync-name">{{ __('Loading Location Data') }}</h5>
+        <p id="lp-sync-country" class="location-picker-sync-subname"></p>
         <div class="location-picker-sync-progress">
             <div id="lp-sync-bar" class="location-picker-sync-bar"></div>
         </div>

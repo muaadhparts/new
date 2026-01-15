@@ -1,6 +1,6 @@
 @extends('layouts.front')
 
-@section('title', $brand->localized_name . ' - ' . __('Catalogs'))
+@section('name', $brand->localized_name . ' - ' . __('Catalogs'))
 
 @section('content')
 {{-- Breadcrumb --}}
@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title">{{ $brand->localized_name }}</h2>
+                <h2 class="breadcrumb-name">{{ $brand->localized_name }}</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                     <li><a href="javascript:;">@lang('Catalogs')</a></li>
@@ -92,7 +92,7 @@
                                      onerror="this.onerror=null; this.src='{{ asset('assets/images/no-image.png') }}';">
                             </div>
                             <div class="ccontent-wrapper p-3 text-center">
-                                <h6 class="catalogItem-title text-dark fw-bold text-center">
+                                <h6 class="catalogItem-name text-dark fw-bold text-center">
                                     {{ getLocalizedLabel($catalog) }}
                                 </h6>
                                 <p class="text-muted small">{{ $catalog->code }}</p>

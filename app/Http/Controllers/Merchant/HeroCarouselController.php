@@ -22,9 +22,9 @@ class HeroCarouselController extends MerchantBaseController
                                 $photo = $data->photo ? url('assets/images/sliders/'.$data->photo):url('assets/images/noimage.png');
                                 return '<img src="' . $photo . '" alt="Image">';
                             })
-                            ->editColumn('title', function(HeroCarousel $data) {
-                                $title = mb_strlen(strip_tags($data->title),'UTF-8') > 250 ? mb_substr(strip_tags($data->title),0,250,'UTF-8').'...' : strip_tags($data->title);
-                                return  $title;
+                            ->editColumn('name', function(HeroCarousel $data) {
+                                $name = mb_strlen(strip_tags($data->name),'UTF-8') > 250 ? mb_substr(strip_tags($data->name),0,250,'UTF-8').'...' : strip_tags($data->name);
+                                return  $name;
                             })
                             ->addColumn('action', function(HeroCarousel $data) {
                                 return '<div class="action-list"><a href="' . route('merchant-hero-carousel-edit',$data->id) . '"> <i class="fas fa-edit"></i>'.__('Edit').'</a><a href="javascript:;" data-href="' . route('merchant-hero-carousel-delete',$data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i></a></div>';

@@ -1,9 +1,9 @@
 <div class="modal fade gs-modal" id="merchant_shipping{{$merchant_id}}" tabindex="-1" role="dialog"
-    aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+    aria-labelledby="exampleModalCenterName" aria-hidden="true">
     <div class="modal-dialog send-message-modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content send-message-modal-content form-group">
             <div class="modal-header w-100">
-                <h4 class="title" id="exampleModalLongTitle">@lang('Shipping')</h4>
+                <h4 class="name" id="exampleModalLongName">@lang('Shipping')</h4>
                 <button type="button" data-bs-dismiss="modal" aria-label="Close">
                     <i class="fa-regular fa-circle-xmark gs-modal-close-btn"></i>
                 </button>
@@ -16,7 +16,7 @@
                             <input type="radio" class="shipping" ref="{{$merchant_id}}"
                                 data-price="{{ round($data->price * $curr->value,2) }}"
                                 view="{{ $curr->sign }}{{ round($data->price * $curr->value,2) }}"
-                                data-form="{{$data->title}}" id="free-shepping{{ $data->id }}"
+                                data-form="{{$data->name}}" id="free-shepping{{ $data->id }}"
                                 name="shipping[{{$merchant_id}}]" value="{{ $data->id }}" {{ ($loop->first) ?
                             'checked' :
                             ''
@@ -31,11 +31,11 @@
                             </label>
 
                             <label for="free-shepping{{ $data->id }}">
-                                {{ $data->title }}
+                                {{ $data->name }}
                                 @if($data->price != 0)
                                 + {{ $curr->sign }}{{ round($data->price * $curr->value,2) }}
                                 @endif
-                                <small>{{ $data->subtitle }}</small>
+                                <small>{{ $data->subname }}</small>
                             </label>
                         </div>
                         @empty

@@ -281,8 +281,8 @@ footer.footer {
     padding: var(--space-16) 0 var(--space-8);
 }
 
-.muaadh-footer-title,
-.footer-title,
+.muaadh-footer-name,
+.footer-name,
 .footer h4,
 .footer h5 {
     color: var(--footer-heading) !important;
@@ -803,8 +803,8 @@ footer.footer {
     padding: var(--space-4);
 }
 
-.catalogItem-card-title,
-.catalogItem-title {
+.catalogItem-card-name,
+.catalogItem-name {
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
     color: var(--text-primary) !important;
@@ -919,7 +919,7 @@ footer.footer {
     margin-bottom: var(--space-3);
 }
 
-.category-card-title {
+.category-card-name {
     font-size: var(--text-sm);
     font-weight: var(--font-medium);
     color: var(--text-primary);
@@ -1549,17 +1549,17 @@ table button.approve:hover,
     background-color: var(--bg-subtle) !important;
 }
 
-/* Admin Page Title */
-.content .page-title,
+/* Admin Page Name */
+.content .page-name,
 .content .content-header,
-.main-content .page-title {
+.main-content .page-name {
     margin-bottom: var(--space-5) !important;
     padding-bottom: var(--space-4) !important;
     border-bottom: 1px solid var(--border-default) !important;
 }
 
-.content .page-title h3,
-.content .page-title h4,
+.content .page-name h3,
+.content .page-name h4,
 .content-header h3,
 .content-header h4 {
     font-size: var(--text-xl) !important;
@@ -1605,8 +1605,8 @@ table button.approve:hover,
     border-radius: var(--radius-full) 0 0 var(--radius-full) !important;
 }
 
-[dir="rtl"] .muaadh-footer-title,
-[dir="rtl"] .footer-title {
+[dir="rtl"] .muaadh-footer-name,
+[dir="rtl"] .footer-name {
     text-align: right;
 }
 

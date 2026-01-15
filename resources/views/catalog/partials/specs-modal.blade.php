@@ -44,7 +44,7 @@
 
     {{-- Header --}}
     <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="specsOffcanvasLabel">
+        <h5 class="offcanvas-name" id="specsOffcanvasLabel">
             <i class="fas fa-cog me-2"></i>
             {{ __('Specifications') }}
             <small>{{ $catalogName }} {{ $catalogYears ? "($catalogYears)" : '' }}</small>

@@ -11,7 +11,7 @@
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                     <div class="gs-topup-section">
-                        <div class="gs-topup-title d-flex align-items-center">
+                        <div class="gs-topup-name d-flex align-items-center">
                             <a href="{{ route('user-top-up-index') }}" class="back-btn">
                                 <i class="fa-solid fa-arrow-left-long"></i>
                             </a>
@@ -19,7 +19,7 @@
                             <h3>@lang('Top Up')</h3>
                         </div>
                         <div class="topup-area">
-                            <div class="topup-area-title">
+                            <div class="topup-area-name">
                                 <h4>@lang('Top Up')</h4>
                             </div>
                             <form action="" class="pay-form" id="topup-form" method="POST">
@@ -45,12 +45,12 @@
                                             </option>
                                             @foreach ($gateway as $paydata)
                                                 @if ($paydata->type == 'manual')
-                                                    <option value="{{ $paydata->title }}"
+                                                    <option value="{{ $paydata->name }}"
                                                         data-form="{{ $paydata->showTopUpLink() }}"
                                                         data-show="{{ $paydata->showForm() }}"
                                                         data-href="{{ route('user.load.payment', ['slug1' => $paydata->showKeyword(), 'slug2' => $paydata->id]) }}"
                                                         data-val="{{ $paydata->keyword }}">
-                                                        {{ $paydata->title }}
+                                                        {{ $paydata->name }}
                                                     </option>
                                                 @else
                                                     <option value="{{ $paydata->name }}"

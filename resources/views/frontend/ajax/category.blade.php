@@ -48,12 +48,12 @@
         <div class="m-no-results-box__icon">
             <i class="fas fa-search"></i>
         </div>
-        <h4 class="m-no-results-box__title">@lang('No matching catalogItems')</h4>
-        <p class="m-no-results-box__subtitle">@lang('Try adjusting your filters to find what you are looking for.')</p>
+        <h4 class="m-no-results-box__name">@lang('No matching catalogItems')</h4>
+        <p class="m-no-results-box__subname">@lang('Try adjusting your filters to find what you are looking for.')</p>
 
         @if(isset($filterSummary) && $filterSummary['hasFilters'])
         <div class="m-no-results-box__filters">
-            <h6 class="m-no-results-box__filters-title">@lang('Applied Filters:')</h6>
+            <h6 class="m-no-results-box__filters-name">@lang('Applied Filters:')</h6>
             <ul class="m-no-results-box__filters-list">
                 {{-- Category Hierarchy --}}
                 @if($filterSummary['category'])

@@ -16,7 +16,7 @@ class BlogResource extends JsonResource
     {
         return [
             'id'                => $this->id,
-            'title'             => $this->title,
+            'name'             => $this->name,
             'details'           => strip_tags($this->details),
             'photo'             => url('/') . '/assets/images/blogs/'.$this->photo,
             'source'            => $this->source,

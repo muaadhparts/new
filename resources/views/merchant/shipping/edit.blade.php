@@ -45,20 +45,20 @@
                     <div class="row">
 
                         <div class="form-group">
-                            <label for="title">@lang('Title')</label>
-                            <input type="text" id="title" class="form-control" placeholder="@lang('Title')"
-                                value="{{ $data->title }}" name="title">
-                            @error('title')
+                            <label for="name">@lang('Name')</label>
+                            <input type="text" id="name" class="form-control" placeholder="@lang('Name')"
+                                value="{{ $data->name }}" name="name">
+                            @error('name')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>
 
 
                         <div class="form-group">
-                            <label for="subtitle">@lang('Duration')</label>
-                            <input type="text" id="subtitle" class="form-control" placeholder="@lang('Duration')"
-                                value="{{ $data->subtitle }}" name="subtitle">
-                            @error('subtitle')
+                            <label for="subname">@lang('Duration')</label>
+                            <input type="text" id="subname" class="form-control" placeholder="@lang('Duration')"
+                                value="{{ $data->subname }}" name="subname">
+                            @error('subname')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

@@ -1325,7 +1325,7 @@ var nicEditorAdvancedButton = nicEditorButton.extend({
 				F = D.value || ""
 			}
 			var A = C[itm].type;
-			if (A == "title") {
+			if (A == "name") {
 				new bkElement("div").setContent(D.txt).setStyle({
 					fontSize: "14px",
 					fontWeight: "bold",
@@ -1440,7 +1440,7 @@ var nicLinkButton = nicEditorAdvancedButton.extend({
 		this.ln = this.ne.selectedInstance.selElm().parentTag("A");
 		this.addForm({
 			"": {
-				type: "title",
+				type: "name",
 				txt: "Add/Edit Link"
 			},
 			href: {
@@ -1451,9 +1451,9 @@ var nicLinkButton = nicEditorAdvancedButton.extend({
 					width: "150px"
 				}
 			},
-			title: {
+			name: {
 				type: "text",
-				txt: "Title"
+				txt: "Name"
 			},
 			target: {
 				type: "select",
@@ -1483,7 +1483,7 @@ var nicLinkButton = nicEditorAdvancedButton.extend({
 		if (this.ln) {
 			this.ln.setAttributes({
 				href: this.inputs.href.value,
-				title: this.inputs.title.value,
+				name: this.inputs.name.value,
 				target: this.inputs.target.options[this.inputs.target.selectedIndex].value
 			})
 		}
@@ -1586,7 +1586,7 @@ var nicImageButton = nicEditorAdvancedButton.extend({
 		this.im = this.ne.selectedInstance.selElm().parentTag("IMG");
 		this.addForm({
 			"": {
-				type: "title",
+				type: "name",
 				txt: "Add/Edit Image"
 			},
 			src: {
@@ -1666,7 +1666,7 @@ nicEditors.registerPlugin(nicPlugin, nicSaveOptions);
 
 var nicXHTML = bkClass.extend({
 	stripAttributes: ["_moz_dirty", "_moz_resizing", "_extended"],
-	noShort: ["style", "title", "script", "textarea", "a"],
+	noShort: ["style", "name", "script", "textarea", "a"],
 	cssReplace: {
 		"font-weight:bold;": "strong",
 		"font-style:italic;": "em"
@@ -1807,7 +1807,7 @@ var nicCodeButton = nicEditorAdvancedButton.extend({
 	addPane: function () {
 		this.addForm({
 			"": {
-				type: "title",
+				type: "name",
 				txt: "Edit HTML"
 			},
 			code: {

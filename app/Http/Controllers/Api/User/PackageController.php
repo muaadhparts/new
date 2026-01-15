@@ -157,7 +157,7 @@ class PackageController extends Controller
             $userPlan = new UserMembershipPlan;
             $userPlan->user_id = $user->id;
             $userPlan->membership_plan_id = $plan->id;
-            $userPlan->title = $plan->title;
+            $userPlan->name = $plan->name;
             $userPlan->currency = $plan->currency;
             $userPlan->currency_code = $plan->currency_code;
             $userPlan->price = $plan->price;

@@ -8,7 +8,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Success')</h2>
+                    <h2 class="breadcrumb-name">@lang('Success')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="#">@lang('Success')</a></li>
@@ -196,14 +196,14 @@
 
                             @if ($gs->multiple_shipping == 0)
                                 @if ($purchase->shipping_cost != 0)
-                                    <p>{{ $purchase->shipping_title }}:
+                                    <p>{{ $purchase->shipping_name }}:
                                         {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost, $purchase->currency_sign) }}
                                     </p>
                                 @endif
 
 
                                 @if ($purchase->packing_cost != 0)
-                                    <p>{{ $purchase->packing_title }}:
+                                    <p>{{ $purchase->packing_name }}:
                                         {{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost, $purchase->currency_sign) }}
                                     </p>
                                 @endif
@@ -344,13 +344,13 @@
                                             <strong class="text-primary">@lang('Shipping Company Delivery')</strong>
                                         </div>
 
-                                        @if ($purchase->shipping_title && !empty($purchase->shipping_title))
+                                        @if ($purchase->shipping_name && !empty($purchase->shipping_name))
                                             <div class="shipping-details mt-3">
                                                 <div class="d-flex gap-12 mb-2">
                                                     <i class="fas fa-building text-muted"></i>
                                                     <div>
                                                         <small class="text-muted">@lang('Shipping Company')</small>
-                                                        <p class="mb-0 fw-semibold">{{ $purchase->shipping_title }}</p>
+                                                        <p class="mb-0 fw-semibold">{{ $purchase->shipping_name }}</p>
                                                     </div>
                                                 </div>
 

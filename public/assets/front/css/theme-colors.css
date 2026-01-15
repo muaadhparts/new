@@ -197,8 +197,8 @@
     --theme-footer-border: #45382a;
 
     /* ===== ITEM CARDS ===== */
-    --theme-catalogItem-title-size: 14px;
-    --theme-catalogItem-title-weight: 500;
+    --theme-catalogItem-name-size: 14px;
+    --theme-catalogItem-name-weight: 500;
     --theme-catalogItem-price-size: 16px;
     --theme-catalogItem-price-weight: 700;
     --theme-catalogItem-card-radius: 12px;

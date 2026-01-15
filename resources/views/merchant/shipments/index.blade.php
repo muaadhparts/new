@@ -4,7 +4,7 @@
 <div class="gs-merchant-outlet">
     <!-- Breadcrumb -->
     <div class="gs-merchant-breadcrumb has-mb">
-        <div class="gs-topup-title d-flex align-items-center gap-4">
+        <div class="gs-topup-name d-flex align-items-center gap-4">
             <h4 class="text-capitalize">@lang('Shipments Management')</h4>
         </div>
     </div>
@@ -174,18 +174,18 @@
                                 <td>
                                     <div class="btn-group btn-group-sm">
                                         <a href="{{ route('merchant.shipments.show', $shipment->tracking_number) }}"
-                                           class="btn btn-outline-primary" title="@lang('View')">
+                                           class="btn btn-outline-primary" name="@lang('View')">
                                             <i class="fas fa-eye"></i>
                                         </a>
                                         <a href="{{ route('merchant.shipments.refresh', $shipment->tracking_number) }}"
-                                           class="btn btn-outline-info" title="@lang('Refresh')">
+                                           class="btn btn-outline-info" name="@lang('Refresh')">
                                             <i class="fas fa-sync-alt"></i>
                                         </a>
                                         @if(!in_array($shipment->status, ['delivered', 'cancelled', 'returned']))
                                             <button type="button" class="btn btn-outline-danger"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#cancelModal{{ $shipment->tracking_number }}"
-                                                    title="@lang('Cancel')">
+                                                    name="@lang('Cancel')">
                                                 <i class="fas fa-times"></i>
                                             </button>
                                         @endif
@@ -198,7 +198,7 @@
                                                 <form action="{{ route('merchant.shipments.cancel', $shipment->tracking_number) }}" method="POST">
                                                     @csrf
                                                     <div class="modal-header">
-                                                        <h5 class="modal-title">@lang('Cancel Shipment')</h5>
+                                                        <h5 class="modal-name">@lang('Cancel Shipment')</h5>
                                                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                                     </div>
                                                     <div class="modal-body">

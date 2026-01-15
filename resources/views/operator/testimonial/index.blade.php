@@ -31,8 +31,8 @@
                             <thead>
                                 <tr>
                                     <th>{{ __('Featured Image') }}</th>
-                                    <th width="30%">{{ __('Title') }}</th>
-                                    <th width="30%">{{ __('Sub Title') }}</th>
+                                    <th width="30%">{{ __('Name') }}</th>
+                                    <th width="30%">{{ __('Sub Name') }}</th>
                                     <th>{{ __('Options') }}</th>
                                 </tr>
                             </thead>
@@ -62,8 +62,8 @@
         ajax: '{{ route('operator-testimonial-datatables') }}',
         columns: [
             { data: 'photo', name: 'photo', searchable: false, orderable: false },
-            { data: 'title', name: 'title' },
-            { data: 'subtitle', name: 'subtitle' },
+            { data: 'name', name: 'name' },
+            { data: 'subname', name: 'subname' },
             { data: 'action', searchable: false, orderable: false }
         ],
         language: {

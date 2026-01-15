@@ -11,7 +11,7 @@
     {{-- Shipment Tracking Timeline --}}
     @if(isset($shipmentLogs) && $shipmentLogs->isNotEmpty())
         <div class="shipment-tracking mb-5">
-            <h4 class="track-section-title mb-4">@lang('Shipment Tracking')</h4>
+            <h4 class="track-section-name mb-4">@lang('Shipment Tracking')</h4>
 
             @php
                 // Group logs by tracking number
@@ -44,7 +44,7 @@
                                 <li class="stepprogress-item {{ $index === 0 ? 'is-done' : '' }} mb-3 track-timeline-item">
                                     <div class="track-timeline-dot {{ $log->status === 'delivered' ? 'success' : 'primary' }}"></div>
 
-                                    <strong class="fs-5 mb-2 track-timeline-title">
+                                    <strong class="fs-5 mb-2 track-timeline-name">
                                         {{ $log->status_ar ?? ucwords(str_replace('_', ' ', $log->status)) }}
                                     </strong>
 
@@ -74,12 +74,12 @@
 
     {{-- Purchase Timeline --}}
     <div class="purchase-timeline">
-        <h4 class="track-section-title mb-4">@lang('Purchase Timeline')</h4>
+        <h4 class="track-section-name mb-4">@lang('Purchase Timeline')</h4>
         <div class="wrapper">
             <ul class="stepprogress">
                 @foreach ($purchase->timelines as $track)
                     <li class="stepprogress-item is-done mb-3">
-                        <strong class="fs-5 mb-2">{{ ucwords($track->title) }}</strong>
+                        <strong class="fs-5 mb-2">{{ ucwords($track->name) }}</strong>
                         <div class="track-date">{{ date('d M Y', strtotime($track->created_at)) }}</div>
                         {{ $track->text }}
                     </li>
@@ -91,7 +91,7 @@
 @else
     <div class="text-center py-5">
         <i class="fas fa-search track-empty-icon"></i>
-        <h3 class="track-empty-title">{{ __('No Purchase Found.') }}</h3>
+        <h3 class="track-empty-name">{{ __('No Purchase Found.') }}</h3>
         <p class="track-empty-text">{{ __('Please check your purchase number or tracking number and try again.') }}</p>
     </div>
 @endif

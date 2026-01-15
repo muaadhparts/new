@@ -115,11 +115,11 @@
                             </td>
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
-                                    <a href="{{ route('operator.accounts.party.statement', $party) }}" class="btn btn-outline-primary" title="{{ __('Statement') }}">
+                                    <a href="{{ route('operator.accounts.party.statement', $party) }}" class="btn btn-outline-primary" name="{{ __('Statement') }}">
                                         <i class="fas fa-file-invoice"></i>
                                     </a>
                                     @if($summary['total_payable'] > 0)
-                                    <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $party->id]) }}" class="btn btn-outline-success" title="{{ __('Settle') }}">
+                                    <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $party->id]) }}" class="btn btn-outline-success" name="{{ __('Settle') }}">
                                         <i class="fas fa-money-check"></i>
                                     </a>
                                     @endif

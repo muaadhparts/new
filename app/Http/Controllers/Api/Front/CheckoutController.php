@@ -110,9 +110,9 @@ class CheckoutController extends Controller
                 $merchant_packing_ids  = $purchaseCalculate['merchant_packing_ids'];
                 $merchant_ids          = $purchaseCalculate['merchant_ids'];
 
-                $input['shipping_title']     = @$shipping->title;
+                $input['shipping_name']     = @$shipping->name;
                 $input['merchant_shipping_id'] = @$shipping->id;
-                $input['packing_title']      = @$packeing->title;
+                $input['packing_name']      = @$packeing->name;
                 $input['merchant_packing_id']  = @$packeing->id;
                 $input['shipping_cost']      = @$shipping->price ?? 0;
                 $input['packing_cost']       = @$packeing->price ?? 0;
@@ -130,9 +130,9 @@ class CheckoutController extends Controller
                 $shipping_cost       = $purchaseCalculate['shipping_cost'];
                 $packing_cost        = $purchaseCalculate['packing_cost'];
 
-                $input['shipping_title']     = $merchant_shipping_ids;
+                $input['shipping_name']     = $merchant_shipping_ids;
                 $input['merchant_shipping_id'] = $merchant_shipping_ids;
-                $input['packing_title']      = $merchant_packing_ids;
+                $input['packing_name']      = $merchant_packing_ids;
                 $input['merchant_packing_id']  = $merchant_packing_ids;
                 $input['shipping_cost']      = $shipping_cost;
                 $input['packing_cost']       = $packing_cost;
@@ -215,7 +215,7 @@ class CheckoutController extends Controller
             // Create an OTO shipment (doesn't break the purchase on failure)
             $this->createOtoShipments($purchase, $input);
 
-            $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+            $purchase->tracks()->create(['name' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
             $purchase->notifications()->create();
 
             if (Auth::guard('api')->check()) {
@@ -261,7 +261,7 @@ class CheckoutController extends Controller
                 'oamount' => "",
                 'aname'   => "",
                 'aemail'  => "",
-                'wtitle'  => "",
+                'wname'  => "",
                 'onumber' => $purchase->purchase_number,
             ];
             $mailer = new MuaadhMailer();
@@ -699,7 +699,7 @@ class CheckoutController extends Controller
 
     /**
      * Create an OTO shipment(s) after the purchase is successfully created.
-     * Store the results in merchant_shipping_id as JSON, and update the shipping/shipping_title for the view.
+     * Store the results in merchant_shipping_id as JSON, and update the shipping/shipping_name for the view.
      *
      * يستخدم TryotoService الموحد لإدارة التوكن وإنشاء الشحنات
      */
@@ -755,7 +755,7 @@ class CheckoutController extends Controller
 
             // 2) Quick display and explanation
             $first = $otoPayloads[0];
-            $purchase->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
+            $purchase->shipping_name = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
 
             // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
             if (empty($purchase->shipping) || $purchase->shipping !== 'shipto') {

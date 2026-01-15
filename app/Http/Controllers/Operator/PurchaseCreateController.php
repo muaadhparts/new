@@ -338,7 +338,7 @@ class PurchaseCreateController extends OperatorBaseController
 
 
         $purchase->fill($input)->save();
-        $purchase->tracks()->create(['title' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
+        $purchase->tracks()->create(['name' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
         $purchase->notifications()->create();
 
 
@@ -362,7 +362,7 @@ class PurchaseCreateController extends OperatorBaseController
             'oamount' => "",
             'aname' => "",
             'aemail' => "",
-            'wtitle' => "",
+            'wname' => "",
             'onumber' => $purchase->purchase_number,
         ];
 

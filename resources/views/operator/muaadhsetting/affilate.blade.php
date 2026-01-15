@@ -59,7 +59,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="form-control" placeholder="{{ __('Write Your Site Title Here') }}" name="affilate_charge" value="{{ $gs->affilate_charge }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Write Your Site Name Here') }}" name="affilate_charge" value="{{ $gs->affilate_charge }}" required="">
                           </div>
                         </div>
 

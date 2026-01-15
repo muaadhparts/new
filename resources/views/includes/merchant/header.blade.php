@@ -15,12 +15,12 @@
             <a href="{{route("front.index")}}"><img class="merchant-res-header-logo d-xl-none" src="{{asset("assets/images/".$gs->logo)}}" alt="logo"></a>
 
             {{-- Store Menu Toggle (for shopping) --}}
-            <button class="muaadh-mobile-toggle d-xl-none" type="button" title="@lang('Store Menu')">
+            <button class="muaadh-mobile-toggle d-xl-none" type="button" name="@lang('Store Menu')">
                 <i class="fas fa-store"></i>
             </button>
 
             {{-- Dashboard Menu Toggle --}}
-            <button class="header-toggle mobile-menu-toggle d-xl-none" type="button" title="@lang('Dashboard Menu')">
+            <button class="header-toggle mobile-menu-toggle d-xl-none" type="button" name="@lang('Dashboard Menu')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" fill="none">
                     <path d="M6 24H42M6 12H42M6 36H30" stroke="#1F0300" stroke-width="4" stroke-linecap="round"
                         stroke-linejoin="round" />
@@ -140,7 +140,7 @@
     <!-- merchant catalog events -->
     <div class="gs-merchant-header-noti">
         <div class="d-flex align-items-center justify-content-between gap-4">
-            <span class="title">@lang('Your Events')</span>
+            <span class="name">@lang('Your Events')</span>
             <a class="clear-btn" href="{{ route('merchant-purchase-event-clear',Auth::user()->id) }}">Clear All</a>
         </div>
         <ul>

@@ -31,7 +31,7 @@
 							<thead>
 								<tr>
 									<th>{{ __('Featured Image') }}</th>
-									<th width="30%">{{ __('Title') }}</th>
+									<th width="30%">{{ __('Name') }}</th>
 									<th width="40%">{{ __('Details') }}</th>
 									<th>{{ __('Options') }}</th>
 								</tr>
@@ -55,7 +55,7 @@
 				<img src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
 			</div>
 			<div class="modal-header">
-				<h5 class="modal-title"></h5>
+				<h5 class="modal-name"></h5>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
 				</button>
@@ -80,7 +80,7 @@
 		<div class="modal-content">
 
 			<div class="modal-header d-block text-center">
-				<h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
+				<h4 class="modal-name d-inline-block">{{ __('Confirm Delete') }}</h4>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
 				</button>
@@ -126,7 +126,7 @@
                ajax: '{{ route('merchant-capability-datatables') }}',
                columns: [
                         { data: 'photo', name: 'photo' , searchable: false, orderable: false},
-                        { data: 'title', name: 'title' },
+                        { data: 'name', name: 'name' },
                         { data: 'details', name: 'details' },
             			{ data: 'action', searchable: false, orderable: false }
 

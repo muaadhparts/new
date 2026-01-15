@@ -50,7 +50,7 @@
 														<img  src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
 												</div>
 											<div class="modal-header">
-											<h5 class="modal-title"></h5>
+											<h5 class="modal-name"></h5>
 											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 												
 											</button>
@@ -78,7 +78,7 @@
 										<img  src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
 								</div>
 							<div class="modal-header">
-							<h5 class="modal-title"></h5>
+							<h5 class="modal-name"></h5>
 							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 								
 							</button>
@@ -105,7 +105,7 @@
     <div class="modal-content">
 
 	<div class="modal-header d-block text-center">
-		<h4 class="modal-title d-inline-block">{{ __("Confirm Delete") }}</h4>
+		<h4 class="modal-name d-inline-block">{{ __("Confirm Delete") }}</h4>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 				
 			</button>
@@ -139,7 +139,7 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
+					<h5 class="modal-name" id="merchantformLabel">{{ __("Send Message") }}</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 							
 						</button>
@@ -213,7 +213,7 @@
 		{
 		$('.submit-loader').show();
 		}
-		$('#modal1').find('.modal-title').html('Manage Top Up');
+		$('#modal1').find('.modal-name').html('Manage Top Up');
 		$('#modal1 .modal-content .modal-body').html('').load($(this).attr('data-href'),function(response, status, xhr){
 			if(status == "success")
 			{
@@ -236,7 +236,7 @@
 		{
 		$('.submit-loader').show();
 		}
-		$('#modal1').find('.modal-title').html('Make Merchant');
+		$('#modal1').find('.modal-name').html('Make Merchant');
 		$('#modal1 .modal-content .modal-body').html('').load($(this).attr('data-href'),function(response, status, xhr){
 			if(status == "success")
 			{

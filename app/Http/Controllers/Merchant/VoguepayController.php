@@ -70,7 +70,7 @@ class VoguepayController extends Controller
                     $sub = new UserMembershipPlan;
                     $sub->user_id = $user->id;
                     $sub->membership_plan_id = $subs->id;
-                    $sub->title = $subs->title;
+                    $sub->name = $subs->name;
                     $sub->currency = $subs->currency;
                     $sub->currency_code = $subs->currency_code;
                     $sub->price = $subs->price;

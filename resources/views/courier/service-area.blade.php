@@ -8,8 +8,8 @@
 
             <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
                 {{-- Page Header --}}
-                <div class="ud-page-title-box d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <h3 class="ud-page-title">@lang('Service Areas')</h3>
+                <div class="ud-page-name-box d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h3 class="ud-page-name">@lang('Service Areas')</h3>
                     <a class="template-btn md-btn black-btn" href="{{ route('courier-service-area-create') }}">
                         <i class="fas fa-plus me-1"></i> @lang('Add New')
                     </a>
@@ -72,7 +72,7 @@
                                     <td data-label="@lang('Status')">
                                         <a href="{{ route('courier-service-area-toggle-status', $area->id) }}"
                                            class="status-toggle"
-                                           title="{{ $area->status == 1 ? __('Click to deactivate') : __('Click to activate') }}">
+                                           name="{{ $area->status == 1 ? __('Click to deactivate') : __('Click to activate') }}">
                                             @if($area->status == 1)
                                                 <span class="badge bg-success">
                                                     <i class="fas fa-check-circle me-1"></i>@lang('Active')
@@ -90,14 +90,14 @@
                                         <div class="table-icon-btns-wrapper">
                                             {{-- Edit --}}
                                             <a href="{{ route('courier-service-area-edit', $area->id) }}"
-                                               class="view-btn edit-btn" title="@lang('Edit')">
+                                               class="view-btn edit-btn" name="@lang('Edit')">
                                                 <i class="fas fa-edit"></i>
                                             </a>
 
                                             {{-- Delete --}}
                                             <a href="{{ route('courier-service-area-delete', $area->id) }}"
                                                class="view-btn delete-btn"
-                                               title="@lang('Delete')"
+                                               name="@lang('Delete')"
                                                onclick="return confirm('@lang('Are you sure you want to delete this service area?')')">
                                                 <i class="fas fa-trash"></i>
                                             </a>

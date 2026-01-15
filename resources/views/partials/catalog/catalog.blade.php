@@ -1,6 +1,6 @@
 {{-- استخدام $brands من GlobalDataMiddleware --}}
 <div class="col-xl-3">
-    <div id="sidebar" class="widget-title-bordered-full">
+    <div id="sidebar" class="widget-name-bordered-full">
         <div class="dashbaord-sidebar-close d-xl-none">
             <i class="fas fa-times"></i>
         </div>
@@ -10,7 +10,7 @@
 
             <div id="woocommerce_product_categories-4"
                 class="widget woocommerce widget_product_categories widget-toggle">
-                <h2 class="widget-title">{{ __('Brands') }}</h2>
+                <h2 class="widget-name">{{ __('Brands') }}</h2>
                 <ul class="catalogItem-categories">
                     @foreach ($brands as $brand)
                         <li class="cat-item cat-parent">
@@ -48,7 +48,7 @@
 
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
                             class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
-                            <h2 class="widget-title">{{$attr->name}}</h2>
+                            <h2 class="widget-name">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->specValues))
                                     @foreach ($attr->specValues as $key => $option)
@@ -69,7 +69,7 @@
                     @foreach ($subcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
                             class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle">
-                            <h2 class="widget-title">{{$attr->name}}</h2>
+                            <h2 class="widget-name">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->specValues))
                                     @foreach ($attr->specValues as $key => $option)
@@ -90,7 +90,7 @@
                     @foreach ($childcat->attributes as $key => $attr)
                         <div id="bigbazar-attributes-filter-{{$attr->name}}"
                             class="widget woocommerce bigbazar-attributes-filter widget_layered_nav widget-toggle px-3">
-                            <h2 class="widget-title">{{$attr->name}}</h2>
+                            <h2 class="widget-name">{{$attr->name}}</h2>
                             <ul class="swatch-filter-pa_color">
                                 @if (!empty($attr->specValues))
                                     @foreach ($attr->specValues as $key => $option)
@@ -112,7 +112,7 @@
         <div class="row mx-0">
             <div class="col-12">
                 <div class="section-head border-bottom d-flex justify-content-between align-items-center">
-                    <div class="d-flex section-head-side-title">
+                    <div class="d-flex section-head-side-name">
                         <h5 class="font-700 text-dark mb-0">{{ __('Recent CatalogItem') }}</h5>
                     </div>
                 </div>
@@ -151,20 +151,20 @@
                                                         <div class="quickview-button">
                                                             <a class="quickview-btn"
                                                                 href="{{ $catalogProdUrl }}"
-                                                                data-bs-toggle="tooltip" data-bs-placement="top" title=""
-                                                                data-bs-original-title="Quick View"
+                                                                data-bs-toggle="tooltip" data-bs-placement="top" name=""
+                                                                data-bs-original-name="Quick View"
                                                                 aria-label="Quick View">{{ __('Quick View') }}</a>
                                                         </div>
                                                         <div class="favorite-button">
                                                             <a class="add_to_favorite" href="#" data-bs-toggle="tooltip"
-                                                                data-bs-placement="top" title="{{ __('Favorites') }}"
-                                                                data-bs-original-title="Add to Favorites"
+                                                                data-bs-placement="top" name="{{ __('Favorites') }}"
+                                                                data-bs-original-name="Add to Favorites"
                                                                 aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="catalogItem-info">
-                                                    <h3 class="catalogItem-title"><a
+                                                    <h3 class="catalogItem-name"><a
                                                             href="{{ $catalogProdUrl }}">{{ $cartItem['name']  }}</a>
                                                     </h3>
                                                     <div class="catalogItem-price">

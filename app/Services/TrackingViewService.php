@@ -90,9 +90,9 @@ class TrackingViewService
             'customerChoiceCompany' => $customerChoice['company_name'] ?? null,
             'customerChoicePrice' => isset($customerChoice['price']) ? (float)$customerChoice['price'] : null,
             'customerChoiceProvider' => $customerChoice['provider'] ?? null,
-            'customerChoiceTitle' => $customerChoice['title'] ?? null,
+            'customerChoiceName' => $customerChoice['name'] ?? null,
             'customerChoiceIsTryoto' => ($customerChoice['provider'] ?? '') === 'tryoto',
-            'customerChoiceTitleDisplay' => $customerChoice['title'] ?? $customerChoice['provider'] ?? 'Manual',
+            'customerChoiceNameDisplay' => $customerChoice['name'] ?? $customerChoice['provider'] ?? 'Manual',
             'customerChoicePriceFormatted' => isset($customerChoice['price']) ? number_format((float)$customerChoice['price'], 2) : null,
         ];
     }

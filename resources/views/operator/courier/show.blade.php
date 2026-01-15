@@ -89,7 +89,7 @@
                     <div class="purchase-table-wrap">
                         <div class="purchase-details-table">
                             <div class="mr-table">
-                                <h4 class="title">{{ __("Items Ordered") }}</h4>
+                                <h4 class="name">{{ __("Items Ordered") }}</h4>
                                 <div class="table-responsive">
                                     <table id="example2" class="table table-hover dt-responsive" cellspacing="0"
                                         width="100%">
@@ -140,7 +140,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
+                    <h5 class="modal-name" id="merchantformLabel">{{ __("Send Message") }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
                     </button>

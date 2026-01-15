@@ -1,6 +1,6 @@
 <div class="catalogItems-header d-flex justify-content-between align-items-center py-10 px-20 bg-light md-mt-30">
     <div class="catalogItems-header-left d-flex align-items-center">
-       <h6 class="woocommerce-catalogItems-header__title page-title"> <strong> {{ __('Items')  }}</strong>  </h6>
+       <h6 class="woocommerce-catalogItems-header__name page-name"> <strong> {{ __('Items')  }}</strong>  </h6>
        <div class="woocommerce-result-count"></div> 
     </div>
     <div class="catalogItems-header-right">

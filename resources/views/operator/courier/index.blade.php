@@ -48,7 +48,7 @@
 		<div class="modal-content">
 
 			<div class="modal-header d-block text-center">
-				<h4 class="modal-title d-inline-block">{{ __("Confirm Delete") }}</h4>
+				<h4 class="modal-name d-inline-block">{{ __("Confirm Delete") }}</h4>
 				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
 				</button>
@@ -80,7 +80,7 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="merchantformLabel">{{ __("Send Message") }}</h5>
+					<h5 class="modal-name" id="merchantformLabel">{{ __("Send Message") }}</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 
 						</button>

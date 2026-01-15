@@ -351,7 +351,7 @@ class MerchantController extends OperatorBaseController
         $userPlan = new UserMembershipPlan;
         $userPlan->user_id = $user->id;
         $userPlan->membership_plan_id = $plan->id;
-        $userPlan->title = $plan->title;
+        $userPlan->name = $plan->name;
         $userPlan->currency_sign = $this->curr->sign;
         $userPlan->currency_code = $this->curr->name;
         $userPlan->currency_value = $this->curr->value;

@@ -31,13 +31,13 @@
                   <form class="uplogo-form" id="muaadhform"  action="{{ route('operator-gs-update') }}" method="POST" enctype="multipart/form-data">
                     {{csrf_field()}}
                     <div class="currrent-logo">
-                      <h4 class="title">
+                      <h4 class="name">
                         {{ __('Current Favicon') }} :
                       </h4>
                       <img src="{{ $gs->favicon ? asset('assets/images/'.$gs->favicon):asset('assets/images/noimage.png')}}" alt="">
                     </div>
                     <div class="set-logo">
-                      <h4 class="title">
+                      <h4 class="name">
                         {{ __('Set New Favicon') }} :
                       </h4>
                       <input class="img-upload1" type="file" name="favicon">

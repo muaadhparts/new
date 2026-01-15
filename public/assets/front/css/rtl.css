@@ -136,8 +136,8 @@ body[dir="rtl"] {
     direction: rtl;
 }
 
-/* Related Products section titles */
-[dir="rtl"] .gs-catalogItem-cards-slider-area .title {
+/* Related Products section names */
+[dir="rtl"] .gs-catalogItem-cards-slider-area .name {
     direction: rtl;
     text-align: center;
 }

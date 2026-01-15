@@ -79,7 +79,7 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
         </div>
         <div class="col-md-7">
             <div class="muaadh-deal-content">
-                <h3 class="muaadh-deal-title">
+                <h3 class="muaadh-deal-name">
                     <a href="{{ $catalogItemUrl }}">{{ $actualProduct->showName() }}</a>
                 </h3>
 

@@ -5,10 +5,10 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Blog Details')</h2>
+                    <h2 class="breadcrumb-name">@lang('Blog Details')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('front.publicationshow', $publication->slug) }}">{{ $publication->title }}</a></li>
+                        <li><a href="{{ route('front.publicationshow', $publication->slug) }}">{{ $publication->name }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -38,7 +38,7 @@
                                             stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <span class="meta-title">@lang('By:') @lang('Admin')</span>
+                                    <span class="meta-name">@lang('By:') @lang('Admin')</span>
                                 </div>
 
                                 <div class="single-meta">
@@ -65,7 +65,7 @@
                                         </defs>
                                     </svg>
                                     <span
-                                        class="meta-title">{{ date('M d -Y', strtotime($publication->created_at),) }}</span>
+                                        class="meta-name">{{ date('M d -Y', strtotime($publication->created_at),) }}</span>
                                 </div>
 
                                 <div class="single-meta">
@@ -80,7 +80,7 @@
                                             stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                             stroke-linejoin="round" />
                                     </svg>
-                                    <a href="#" class="meta-title">{{ $publication->category->name }}</a>
+                                    <a href="#" class="meta-name">{{ $publication->category->name }}</a>
                                 </div>
 
                                 <div class="single-meta">
@@ -96,15 +96,15 @@
                                             stroke-linejoin="round" />
                                     </svg>
                                     @if ($publication->source)
-                                        <a href="{{ $publication->source }}" target="_blank" class="meta-title">@lang('Source :')
+                                        <a href="{{ $publication->source }}" target="_blank" class="meta-name">@lang('Source :')
                                             {{ $publication->source }}</a>
                                     @endif
 
                                 </div>
                             </div>
 
-                            <h4 class="fea-title mb-24">
-                                {{ $publication->title }}
+                            <h4 class="fea-name mb-24">
+                                {{ $publication->name }}
                             </h4>
                             <p class="mb-10">
                                 {!! clean($publication->details, ['Attr.EnableID' => true]) !!}
@@ -117,7 +117,7 @@
                     <div class="gs-blog-sidebar-wrapper right-side">
                         <!-- search wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Search')</h5>
+                            <h5 class="widget-name">@lang('Search')</h5>
                             <form class="search-form" action="{{ route('front.publicationsearch') }}" method="GET">
                                 <input class="input-box" type="text" name="search" placeholder="@lang('Find anything...')">
 
@@ -135,7 +135,7 @@
 
                         <!-- categories wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Categories')</h5>
+                            <h5 class="widget-name">@lang('Categories')</h5>
                             <ul class="cat-wrapper">
                                 @foreach ($bcats as $cat)
                                     <li><a class="{{ isset($bcat) ? ($bcat->id == $cat->id ? 'active' : '') : '' }}"
@@ -147,7 +147,7 @@
                         </div>
                         <!-- recent post wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Recent Posts')</h5>
+                            <h5 class="widget-name">@lang('Recent Posts')</h5>
                             <div class="gs-sm-recent-post-wrapper">
 
 
@@ -156,8 +156,8 @@
                                         <img src="{{ $recent->photo ? asset('assets/images/publications/' . $recent->photo) : asset('assets/images/noimage.png') }}"
                                             alt="recent post">
                                         <div class="recent-post-content">
-                                            <h6 class="post-title">
-                                                {{ mb_strlen($recent->title, 'UTF-8') > 45 ? mb_substr($recent->title, 0, 45, 'UTF-8') . '..' : $recent->title }}
+                                            <h6 class="post-name">
+                                                {{ mb_strlen($recent->name, 'UTF-8') > 45 ? mb_substr($recent->name, 0, 45, 'UTF-8') . '..' : $recent->name }}
                                             </h6>
                                             <span class="post-date">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
@@ -191,7 +191,7 @@
 
                         <!-- tags wrapper -->
                         <div class="single-blog-widget wow-replaced" data-wow-delay=".1s">
-                            <h5 class="widget-title">@lang('Popular Tags')</h5>
+                            <h5 class="widget-name">@lang('Popular Tags')</h5>
                             <ul class="tags-wrapper">
                                 @foreach ($tags as $tag)
                                     @if (!empty($tag))

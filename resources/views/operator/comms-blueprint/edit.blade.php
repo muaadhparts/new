@@ -39,8 +39,8 @@
                                                 <td>{admin_email}</td>
                                             </tr>
                                             <tr>
-                                                <td>{{ __('Website Title') }}</td>
-                                                <td>{website_title}</td>
+                                                <td>{{ __('Website Name') }}</td>
+                                                <td>{website_name}</td>
                                             </tr>
                                             <tr>
                                                 <td>{{ __('Purchase Number') }}</td>

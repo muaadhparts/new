@@ -12,7 +12,7 @@
  * - .catalogItem-card__wishlist : Wishlist button
  * - .catalogItem-card__actions  : Quick action buttons
  * - .catalogItem-card__content  : Content section
- * - .catalogItem-card__title    : CatalogItem name
+ * - .catalogItem-card__name    : CatalogItem name
  * - .catalogItem-card__info     : PART_NUMBER, vendor, brand info
  * - .catalogItem-card__price    : Price section
  * - .catalogItem-card__rating   : Rating section
@@ -244,8 +244,8 @@
     flex-grow: 1;
 }
 
-/* Title */
-.catalogItem-card__title {
+/* Name */
+.catalogItem-card__name {
     font-size: 14px;
     font-weight: 600;
     line-height: 1.4;
@@ -257,13 +257,13 @@
     overflow: hidden;
 }
 
-.catalogItem-card__title a {
+.catalogItem-card__name a {
     color: var(--pc-text);
     text-decoration: none;
     transition: color 0.2s;
 }
 
-.catalogItem-card__title a:hover {
+.catalogItem-card__name a:hover {
     color: var(--pc-primary);
 }
 
@@ -497,7 +497,7 @@
     gap: 12px;
 }
 
-.catalogItem-card--list .catalogItem-card__title {
+.catalogItem-card--list .catalogItem-card__name {
     font-size: 18px;
     min-height: auto;
     -webkit-line-clamp: unset;
@@ -545,7 +545,7 @@
         padding: 16px;
     }
 
-    .catalogItem-card--list .catalogItem-card__title {
+    .catalogItem-card--list .catalogItem-card__name {
         font-size: 16px;
     }
 }
@@ -556,7 +556,7 @@
         padding: 12px;
     }
 
-    .catalogItem-card__title {
+    .catalogItem-card__name {
         font-size: 13px;
         min-height: 36px;
     }
@@ -615,7 +615,7 @@
         max-width: 36px;
     }
 
-    .catalogItem-card--list .catalogItem-card__title {
+    .catalogItem-card--list .catalogItem-card__name {
         font-size: 14px;
     }
 

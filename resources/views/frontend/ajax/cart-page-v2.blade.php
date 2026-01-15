@@ -254,7 +254,7 @@
                                        data-row-key="{{ $rowKey }}"
                                        data-dom-key="{{ $domKey }}"
                                        data-merchant-user-id="{{ $merchantId }}"
-                                       title="@lang('Remove')">
+                                       name="@lang('Remove')">
                                         <i class="fas fa-trash-alt"></i>
                                     </button>
                                 </div>
@@ -277,7 +277,7 @@
                             $merchantSubtotal = $merchantTotal + $merchantDiscount;
                         @endphp
 
-                        <h5 class="m-cart__summary-title">@lang('Purchase Summary')</h5>
+                        <h5 class="m-cart__summary-name">@lang('Purchase Summary')</h5>
 
                         <div class="m-cart__summary-row">
                             <span>@lang('Subtotal') (<span class="m-cart__summary-count">{{ $merchantGroup['count'] ?? 0 }}</span>)</span>

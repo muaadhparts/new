@@ -17,7 +17,7 @@ class PurchaseTrackResource extends JsonResource
       return [
         'id' => $this->id,
         'purchase_id' => $this->user_id,
-        'title' => $this->title,
+        'name' => $this->name,
         'text' => $this->text,
         'created_at' => $this->created_at,
         'updated_at' => $this->updated_at,

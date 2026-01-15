@@ -6,7 +6,7 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Checkout')</h2>
+                    <h2 class="breadcrumb-name">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
@@ -156,7 +156,7 @@
                     {{-- Order Summary --}}
                     <div class="col-lg-5 col-xl-4">
                         <div class="summary-box">
-                            <h4 class="form-title">@lang('Order Summary')</h4>
+                            <h4 class="form-name">@lang('Order Summary')</h4>
 
                             <div class="summary-inner-box">
                                 <ul class="summary-list">
@@ -253,7 +253,7 @@
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">
+                                <h5 class="modal-name">
                                     <i class="{{ $providerData['icon'] }} me-2"></i>
                                     {{ $providerData['label'] }}
                                 </h5>
@@ -276,7 +276,7 @@
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">
+                                <h5 class="modal-name">
                                     <i class="{{ $providerData['icon'] }} me-2"></i>
                                     {{ $providerData['label'] }}
                                 </h5>
@@ -291,15 +291,15 @@
                                                    id="ship_{{ $method['id'] }}" value="{{ $method['id'] }}"
                                                    data-price="{{ $method['chargeable_price'] }}"
                                                    data-original-price="{{ $method['original_price'] }}"
-                                                   data-title="{{ $method['title'] }}"
+                                                   data-name="{{ $method['name'] }}"
                                                    data-provider="{{ $providerSlug }}"
                                                    data-free-above="{{ $method['free_above'] }}"
                                                    data-is-free="{{ $method['is_free'] ? '1' : '0' }}">
                                             <label class="form-check-label w-100 d-flex justify-content-between align-items-center" for="ship_{{ $method['id'] }}">
                                                 <div>
-                                                    <strong>{{ $method['title'] }}</strong>
-                                                    @if(!empty($method['subtitle']))
-                                                    <br><small class="text-muted">{{ $method['subtitle'] }}</small>
+                                                    <strong>{{ $method['name'] }}</strong>
+                                                    @if(!empty($method['subname']))
+                                                    <br><small class="text-muted">{{ $method['subname'] }}</small>
                                                     @endif
                                                     @if($method['free_above'] > 0 && !$method['is_free'])
                                                     <br><small class="text-info">
@@ -342,7 +342,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-name">
                         <i class="fas fa-box me-2"></i>
                         @lang('Select Packaging')
                     </h5>
@@ -355,12 +355,12 @@
                             <input class="form-check-input" type="radio" name="packaging_option"
                                    id="pack_{{ $pack['id'] }}" value="{{ $pack['id'] }}"
                                    data-price="{{ $pack['price'] }}"
-                                   data-title="{{ $pack['title'] }}">
+                                   data-name="{{ $pack['name'] }}">
                             <label class="form-check-label w-100 d-flex justify-content-between align-items-center" for="pack_{{ $pack['id'] }}">
                                 <div>
-                                    <strong>{{ $pack['title'] }}</strong>
-                                    @if(!empty($pack['subtitle']))
-                                    <br><small class="text-muted">{{ $pack['subtitle'] }}</small>
+                                    <strong>{{ $pack['name'] }}</strong>
+                                    @if(!empty($pack['subname']))
+                                    <br><small class="text-muted">{{ $pack['subname'] }}</small>
                                     @endif
                                 </div>
                                 <span class="text-success fw-bold">
@@ -386,7 +386,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-name">
                         <i class="fas fa-motorcycle me-2"></i>
                         @lang('Select Courier')
                     </h5>
@@ -629,7 +629,7 @@ function renderApiProviderOptions(provider, options, freeShippingInfo) {
                        id="${provider}_${optionId}" value="${optionId}"
                        data-price="${chargeablePrice}"
                        data-original-price="${originalPrice}"
-                       data-title="${companyDisplay}"
+                       data-name="${companyDisplay}"
                        data-provider="${provider}"
                        data-is-free="${isFree ? '1' : '0'}">
                 <label class="form-check-label w-100" for="${provider}_${optionId}">
@@ -667,7 +667,7 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
     const option = $(this);
     const chargeablePrice = parseFloat(option.data('price')) || 0; // What customer pays (0 if free)
     const originalPrice = parseFloat(option.data('original-price')) || chargeablePrice; // Actual shipping cost
-    const title = option.data('title');
+    const name = option.data('name');
     const provider = option.data('provider');
     const isFree = option.data('is-free') == '1';
 
@@ -676,7 +676,7 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
 
     // Update shipping hidden fields
     $('#selected_shipping_id').val(option.val());
-    $('#selected_shipping_name').val(title);
+    $('#selected_shipping_name').val(name);
     $('#selected_shipping_cost').val(chargeablePrice);
     $('#selected_shipping_original_cost').val(originalPrice);
     $('#selected_shipping_is_free').val(isFree ? '1' : '0');
@@ -697,7 +697,7 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
     resetProviderButtons(provider);
 
     // Update selected provider button - show original price with Free badge if applicable
-    let displayText = title + ': ' + formatPrice(originalPrice);
+    let displayText = name + ': ' + formatPrice(originalPrice);
     if (isFree) {
         displayText += ' (@lang("Free"))';
     }
@@ -721,15 +721,15 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
 $(document).on('change', 'input[name="packaging_option"]', function() {
     const option = $(this);
     const price = parseFloat(option.data('price')) || 0;
-    const title = option.data('title');
+    const name = option.data('name');
 
     // Update packing hidden fields
     $('#selected_packing_id').val(option.val());
-    $('#selected_packing_name').val(title); // Store packing name
+    $('#selected_packing_name').val(name); // Store packing name
     $('#selected_packing_cost').val(price);
 
     // Update button text
-    const displayText = price > 0 ? title + ': ' + formatPrice(price) : title + ': @lang("Free")';
+    const displayText = price > 0 ? name + ': ' + formatPrice(price) : name + ': @lang("Free")';
     $('#packaging-selected-text').text(displayText).removeClass('text-muted').addClass('text-success');
     $('#packaging-btn').removeClass('m-btn--outline').addClass('m-btn--success-outline');
 

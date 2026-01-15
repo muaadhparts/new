@@ -86,7 +86,7 @@
             </div>
             <div class="m-catalogItem-card__content">
                 <div class="m-catalogItem-card__header">
-                    <a href="{{ $itemUrl }}" class="m-catalogItem-card__title">{{ Str::limit($partLabel, 60) }}</a>
+                    <a href="{{ $itemUrl }}" class="m-catalogItem-card__name">{{ Str::limit($partLabel, 60) }}</a>
                     @if($part_number)
                         <span class="m-catalogItem-card__sku">{{ $part_number }}</span>
                     @endif
@@ -139,7 +139,7 @@
                 @endif
             </div>
             <div class="m-catalogItem-card__content">
-                <a href="{{ $itemUrl }}" class="m-catalogItem-card__title">{{ Str::limit($partLabel, 40) }}</a>
+                <a href="{{ $itemUrl }}" class="m-catalogItem-card__name">{{ Str::limit($partLabel, 40) }}</a>
                 @if($part_number)
                     <span class="m-catalogItem-card__sku">{{ $part_number }}</span>
                 @endif

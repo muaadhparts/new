@@ -267,7 +267,7 @@ class CheckoutPriceService
             'original_cost' => $originalCost,
             'is_free' => $isFree,
             'free_discount' => $isFree ? $originalCost : 0,
-            'company' => $shipping->title,
+            'company' => $shipping->name,
         ];
     }
 
@@ -293,7 +293,7 @@ class CheckoutPriceService
 
         return [
             'cost' => (float)$package->price,
-            'company' => $package->title,
+            'company' => $package->name,
         ];
     }
 

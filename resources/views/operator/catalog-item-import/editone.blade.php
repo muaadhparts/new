@@ -578,7 +578,7 @@
 									<div class="col-lg-12">
 										<div class="featured-keyword-area">
 											<div class="heading-area">
-												<h4 class="title">{{ __("Feature Tags") }}</h4>
+												<h4 class="name">{{ __("Feature Tags") }}</h4>
 											</div>
 
 											<div class="feature-tag-top-filds" id="feature-section">

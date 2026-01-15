@@ -169,7 +169,7 @@
                                 <td class="text-end text-danger fw-bold">{{ $currency->sign }}{{ number_format($balance->pending_amount, 2) }}</td>
                                 <td>
                                     <a href="{{ route('operator.accounts.settlements.create', ['party_id' => $balance->counterparty_id]) }}"
-                                       class="btn btn-sm btn-outline-success" title="{{ __('Pay') }}">
+                                       class="btn btn-sm btn-outline-success" name="{{ __('Pay') }}">
                                         <i class="fas fa-money-bill"></i>
                                     </a>
                                 </td>

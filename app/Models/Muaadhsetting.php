@@ -83,7 +83,7 @@ class Muaadhsetting extends Model
         // ==================================
         // THEME BUILDER - ITEM CARDS
         // ==================================
-        'theme_item_title_size', 'theme_item_title_weight',
+        'theme_item_name_size', 'theme_item_name_weight',
         'theme_item_price_size', 'theme_item_price_weight',
         'theme_item_card_radius', 'theme_item_img_radius',
         'theme_item_hover_scale',
@@ -173,7 +173,7 @@ class Muaadhsetting extends Model
         // Commission is now per-merchant in merchant_commissions table
         'multiple_shipping', 'merchant_ship_info', 'is_verification_email',
         'wholesell', 'is_capcha', 'error_banner_404', 'error_banner_500',
-        'popup_title', 'popup_text', 'popup_background',
+        'popup_name', 'popup_text', 'popup_background',
         'invoice_logo', 'user_image', 'merchant_color', 'is_secure',
         'paypal_business', 'footer_logo', 'paytm_merchant', 'maintain_text',
         'flash_count', 'hot_count', 'new_count', 'sale_count',
@@ -185,8 +185,8 @@ class Muaadhsetting extends Model
         'is_reward', 'reward_point', 'reward_dolar',
         'physical', 'affilite',
         'header_color', 'capcha_secret_key', 'capcha_site_key',
-        'brand_title', 'brand_text',
-        'deal_title', 'deal_details', 'deal_time', 'deal_background',
+        'brand_name', 'brand_text',
+        'deal_name', 'deal_details', 'deal_time', 'deal_background',
         'theme', 'vonage_key', 'is_otp', 'from_number', 'vonage_secret'
     ];
 

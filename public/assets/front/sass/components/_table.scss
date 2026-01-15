@@ -49,7 +49,7 @@
     text-align: center;
     padding: 20px 16px;
 
-    .header-title {
+    .header-name {
       color: $primary-color-500;
     }
 
@@ -128,7 +128,7 @@
       text-align: center;
       padding: 10px 8px;
 
-      .header-title {
+      .header-name {
         color: $primary-color-500;
       }
 
@@ -196,7 +196,7 @@
   }
 }
 
-.table-title {
+.table-name {
   margin-bottom: 28px;
   @include screen-992 {
     margin-bottom: 14px;
@@ -423,11 +423,11 @@ div.dt-container {
   border-radius: 12px;
   background: $white-color;
 
-  .title {
+  .name {
     color: $text-color-950;
   }
 
-  .user-table th .header-title {
+  .user-table th .header-name {
     color: $text-color-950;
   }
 
@@ -474,11 +474,11 @@ div.dt-container {
       max-width: 139px;
     }
 
-    .title {
+    .name {
       max-width: 328px;
     }
 
-    .catalogItem-title {
+    .catalogItem-name {
       max-width: 235px;
     }
 
@@ -626,7 +626,7 @@ div.dt-container {
     text-align: left;
     padding-left: 8px;
 
-    .title {
+    .name {
       color: $white-color;
       font-weight: 400;
       font-size: 18px;

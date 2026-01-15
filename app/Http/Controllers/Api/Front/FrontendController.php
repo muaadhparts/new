@@ -235,8 +235,8 @@ class FrontendController extends Controller
             } elseif ($request->type == 'Large') {
                 $ps = FrontendSetting::first();
                 $large_banner['image'] = asset('assets/images/' . $ps->big_save_banner1);
-                $large_banner['title'] = $ps->big_save_banner_text;
-                $large_banner['text'] = $ps->big_save_banner_subtitle;
+                $large_banner['name'] = $ps->big_save_banner_text;
+                $large_banner['text'] = $ps->big_save_banner_subname;
                 $large_banner['link'] = $ps->big_save_banner_link1;
 
                 return response()->json(['status' => true, 'data' => $large_banner, 'error' => []]);
@@ -498,7 +498,7 @@ class FrontendController extends Controller
     public function deal()
     {
         $gs = Muaadhsetting::findOrFail(1);
-        $data['title'] = $gs->deal_title;
+        $data['name'] = $gs->deal_name;
         $data['deal_details'] = $gs->deal_details;
         $data['time'] = $gs->deal_time;
         $data['image'] = url('/') . '/assets/images/' . $gs->deal_background;

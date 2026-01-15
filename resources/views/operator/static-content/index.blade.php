@@ -32,7 +32,7 @@
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
-									                        <th width="50%">{{ __('Page Title') }}</th>
+									                        <th width="50%">{{ __('Page Name') }}</th>
 									                        <th>{{ __('Header') }}</th>
 									                        <th>{{ __('Footer') }}</th>
 									                        <th>{{ __('Options') }}</th>
@@ -58,7 +58,7 @@
 														<img  src="{{asset('assets/images/'.$gs->admin_loader)}}" alt="">
 												</div>
 											<div class="modal-header">
-											<h5 class="modal-title"></h5>
+											<h5 class="modal-name"></h5>
 											<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 												
 											</button>
@@ -83,7 +83,7 @@
     <div class="modal-content">
 
 	<div class="modal-header d-block text-center">
-		<h4 class="modal-title d-inline-block">{{ __('Confirm Delete') }}</h4>
+		<h4 class="modal-name d-inline-block">{{ __('Confirm Delete') }}</h4>
 			<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
 				
 			</button>
@@ -129,7 +129,7 @@
                serverSide: true,
                ajax: '{{ route('operator-static-content-datatables') }}',
                columns: [
-                        { data: 'title', name: 'title' },
+                        { data: 'name', name: 'name' },
             			{ data: 'header', searchable: false, orderable: false },
             			{ data: 'footer', searchable: false, orderable: false },
             			{ data: 'action', searchable: false, orderable: false }

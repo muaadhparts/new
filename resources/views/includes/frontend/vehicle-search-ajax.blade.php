@@ -281,7 +281,7 @@
                         <span class="d-none d-md-inline">{{ __("ui.open") }}</span>
                     </a>` : ''}
                 </div>
-                <div class="result-title">${escapeHtml(getLocalizedLabel(result))}</div>
+                <div class="result-name">${escapeHtml(getLocalizedLabel(result))}</div>
                 ${result.applicability ? `<div class="result-applicability">${escapeHtml(result.applicability)}</div>` : ''}
             `;
 

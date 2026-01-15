@@ -321,7 +321,7 @@ strong, b {
 /* ========================================
    ABBREVIATION
    ======================================== */
-abbr[title] {
+abbr[name] {
     text-decoration: underline dotted;
     cursor: help;
 }

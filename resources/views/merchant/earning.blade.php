@@ -239,37 +239,37 @@
                                 <td class="text-end text-success">{{ $currencySign }}{{ number_format($purchase->net_amount, 2) }}</td>
                                 <td class="text-center">
                                     @if($purchase->payment_owner_id === 0)
-                                        <span class="badge bg-primary" title="@lang('Platform received payment')">
+                                        <span class="badge bg-primary" name="@lang('Platform received payment')">
                                             <i class="fas fa-building"></i>
                                         </span>
                                     @else
-                                        <span class="badge bg-success" title="@lang('You received payment')">
+                                        <span class="badge bg-success" name="@lang('You received payment')">
                                             <i class="fas fa-store"></i>
                                         </span>
                                     @endif
                                 </td>
                                 <td class="text-center">
                                     @if($purchase->shipping_type === 'courier')
-                                        <span class="badge bg-warning" title="@lang('Courier')">
+                                        <span class="badge bg-warning" name="@lang('Courier')">
                                             <i class="fas fa-motorcycle"></i>
                                         </span>
                                     @elseif($purchase->shipping_owner_id === 0)
-                                        <span class="badge bg-primary" title="@lang('Platform Shipping')">
+                                        <span class="badge bg-primary" name="@lang('Platform Shipping')">
                                             <i class="fas fa-truck"></i>
                                         </span>
                                     @else
-                                        <span class="badge bg-success" title="@lang('Your Shipping')">
+                                        <span class="badge bg-success" name="@lang('Your Shipping')">
                                             <i class="fas fa-store"></i>
                                         </span>
                                     @endif
                                 </td>
                                 <td class="text-end">
                                     @if($purchase->platform_owes_merchant > 0)
-                                        <span class="text-success" title="@lang('Platform owes you')">
+                                        <span class="text-success" name="@lang('Platform owes you')">
                                             +{{ $currencySign }}{{ number_format($purchase->platform_owes_merchant, 2) }}
                                         </span>
                                     @elseif($purchase->merchant_owes_platform > 0)
-                                        <span class="text-danger" title="@lang('You owe platform')">
+                                        <span class="text-danger" name="@lang('You owe platform')">
                                             -{{ $currencySign }}{{ number_format($purchase->merchant_owes_platform, 2) }}
                                         </span>
                                     @else

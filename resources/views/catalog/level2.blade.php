@@ -1,6 +1,6 @@
 @extends('layouts.front')
 
-@section('title', $key1 . ' - ' . __('Subcategories'))
+@section('name', $key1 . ' - ' . __('Subcategories'))
 
 @section('content')
 {{-- Breadcrumb --}}
@@ -8,7 +8,7 @@
     <div class="container">
         <div class="row justify-content-center content-wrapper">
             <div class="col-12">
-                <h2 class="breadcrumb-title text-uppercase">{{ $key1 }}</h2>
+                <h2 class="breadcrumb-name text-uppercase">{{ $key1 }}</h2>
                 <ul class="bread-menu">
                     <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                     <li><a href="{{ route('catlogs.index', $brand->name) }}">{{ $brand->localized_name }}</a></li>
@@ -70,7 +70,7 @@
 
                         {{-- Card Body --}}
                         <div class="card-body p-2 p-md-3 text-center">
-                            <h6 class="catalogItem-title text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
+                            <h6 class="catalogItem-name text-dark fw-bold text-uppercase mb-1 fs-6 fs-md-5">
                                 {{ $node->key2 }}
                             </h6>
                             @if(!empty($node->label))

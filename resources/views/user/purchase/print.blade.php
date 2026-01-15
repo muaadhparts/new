@@ -7,7 +7,7 @@
         <meta name="keywords" content="{{$seo->meta_keys}}">
         <meta name="author" content="Muaadh">
 
-        <title>{{$gs->site_name}}</title>
+        <name>{{$gs->site_name}}</name>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3.3.7 -->
@@ -62,7 +62,7 @@ html {
                <div class="product__header">
                   <div class="row reorder-xs">
                      <div class="col-lg-8 col-md-5 col-sm-5 col-xs-12">
-                        <div class="catalogItem-header-title">
+                        <div class="catalogItem-header-name">
                            <h2>{{ __('Purchase#') }} {{$purchase->purchase_number}} [{{$purchase->status}}]</h2>
                         </div>
                      </div>

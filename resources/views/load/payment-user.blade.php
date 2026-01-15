@@ -228,7 +228,7 @@
 
     <div class="row mt-3">
         <div class="col-lg-4">
-            <h5 class="title pt-1">
+            <h5 class="name pt-1">
                 {{ __('Transaction ID#') }} *
             </h5>
         </div>

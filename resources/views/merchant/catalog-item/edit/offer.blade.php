@@ -66,7 +66,7 @@
                                         <img src="{{ asset('assets/images/merchant-photos/' . $gallery->photo) }}"
                                              class="img-fluid rounded" style="height: 100px; width: 100%; object-fit: cover;">
                                         <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 remove-gallery-btn"
-                                                data-id="{{ $gallery->id }}" title="@lang('Remove')">
+                                                data-id="{{ $gallery->id }}" name="@lang('Remove')">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>

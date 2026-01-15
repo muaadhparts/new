@@ -18,7 +18,7 @@ trait CreatesTryotoShipments
 {
     /**
      * Create Tryoto shipment(s) after the purchase is successfully created.
-     * Store the results in merchant_shipping_id as JSON, and update the shipping/shipping_title for the view.
+     * Store the results in merchant_shipping_id as JSON, and update the shipping/shipping_name for the view.
      *
      * @param Purchase $purchase
      * @param array $input
@@ -124,8 +124,8 @@ trait CreatesTryotoShipments
             $first = $otoPayloads[0];
 
             // لا نُعيد تعيين $purchase->shipping لأنها تحتوي على طريقة التوصيل (shipto)
-            // بدلاً من ذلك، نحفظ معلومات Tryoto في shipping_title فقط
-            $purchase->shipping_title = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
+            // بدلاً من ذلك، نحفظ معلومات Tryoto في shipping_name فقط
+            $purchase->shipping_name = 'Tryoto - ' . ($first['company'] ?? 'N/A') . ' (Tracking: ' . ($first['trackingNumber'] ?? 'N/A') . ')';
 
             // إذا كانت shipping فارغة أو غير محددة، نضع 'shipto' كقيمة افتراضية
             if (empty($purchase->shipping) || $purchase->shipping !== 'shipto') {

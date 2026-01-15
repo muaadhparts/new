@@ -21,7 +21,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content" style="border: none; border-radius: var(--radius-lg, 12px); overflow: hidden;">
             <div class="modal-header" style="background: var(--action-primary); color: var(--text-on-primary, #fff); border: none;">
-                <h5 class="modal-title">
+                <h5 class="modal-name">
                     <i class="fas fa-map-marker-alt me-2"></i>
                     @lang('Select your location')
                 </h5>

@@ -104,13 +104,13 @@
                                     <td>
                                         <div class="table-icon-btns-wrapper">
                                             <a href="{{ route('merchant-credentials-edit', $credential->id) }}"
-                                                class="view-btn edit-btn" title="{{ __('Edit') }}">
+                                                class="view-btn edit-btn" name="{{ __('Edit') }}">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <a href="javascript:;"
                                                 data-href="{{ route('merchant-credentials-destroy', $credential->id) }}"
                                                 class="view-btn delete-btn delete_button" data-bs-toggle="modal"
-                                                data-bs-target="#confirm-delete-modal" title="{{ __('Delete') }}">
+                                                data-bs-target="#confirm-delete-modal" name="{{ __('Delete') }}">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
@@ -184,13 +184,13 @@
                                     <td>
                                         <div class="table-icon-btns-wrapper">
                                             <a href="{{ route('merchant-credentials-edit', $credential->id) }}"
-                                                class="view-btn edit-btn" title="{{ __('Edit') }}">
+                                                class="view-btn edit-btn" name="{{ __('Edit') }}">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <a href="javascript:;"
                                                 data-href="{{ route('merchant-credentials-destroy', $credential->id) }}"
                                                 class="view-btn delete-btn delete_button" data-bs-toggle="modal"
-                                                data-bs-target="#confirm-delete-modal" title="{{ __('Delete') }}">
+                                                data-bs-target="#confirm-delete-modal" name="{{ __('Delete') }}">
                                                 <i class="fas fa-trash"></i>
                                             </a>
                                         </div>
@@ -215,7 +215,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">{{ __('Confirm Delete') }}</h5>
+                    <h5 class="modal-name">{{ __('Confirm Delete') }}</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center">

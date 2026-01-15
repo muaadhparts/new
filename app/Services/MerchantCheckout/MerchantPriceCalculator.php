@@ -151,7 +151,7 @@ class MerchantPriceCalculator
 
         return [
             'shipping_id' => $shipping->id,
-            'shipping_name' => $shipping->title,
+            'shipping_name' => $shipping->name,
             'shipping_cost' => round($finalCost, 2),
             'original_cost' => round($originalCost, 2),
             'is_free' => $isFree,
@@ -176,7 +176,7 @@ class MerchantPriceCalculator
 
         return [
             'packing_id' => $package->id,
-            'packing_name' => $package->title,
+            'packing_name' => $package->name,
             'packing_cost' => round((float)$package->price, 2),
         ];
     }

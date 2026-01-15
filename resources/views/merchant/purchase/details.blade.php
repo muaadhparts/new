@@ -45,7 +45,7 @@
                 <div class="purchase-info-card purchase-details-card ">
                     <div class="d-flex justify-content-between gap-4">
 
-                        <h5 class="title">@lang('Purchase Details')
+                        <h5 class="name">@lang('Purchase Details')
                         </h5>
                         {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
                         @if ($purchaseStats['canMarkComplete'] ?? false)
@@ -110,7 +110,7 @@
             <!-- Billing Details Card  -->
             <div class="col">
                 <div class="purchase-info-card billing-details-card">
-                    <h5 class="title">@lang('Billing Details')</h5>
+                    <h5 class="name">@lang('Billing Details')</h5>
                     <ul class="info-list">
                         <li class="info-list-item">
                             <span class="info-type">@lang('Name')</span> <span class="info">{{ $purchase->customer_name }}</span>
@@ -145,7 +145,7 @@
                 <!-- Shipping Address Card  -->
                 <div class="col">
                     <div class="purchase-info-card shipping-address-card">
-                        <h5 class="title">@lang('Shipping Address')</h5>
+                        <h5 class="name">@lang('Shipping Address')</h5>
                         <ul class="info-list">
 
                                 <li class="info-list-item">
@@ -184,7 +184,7 @@
             @if ($trackingData['hasTracking'])
                 <div class="col">
                     <div class="purchase-info-card">
-                        <h5 class="title">
+                        <h5 class="name">
                             <i class="fas fa-truck"></i> @lang('Shipping Status')
                         </h5>
                         <ul class="info-list">
@@ -267,7 +267,7 @@
                                             <span class="badge bg-primary">{{ $trackingData['customerChoiceCompany'] ?? 'Tryoto' }}</span>
                                             - {{ $purchase->currency_sign }}{{ $trackingData['customerChoicePriceFormatted'] }}
                                         @else
-                                            {{ $trackingData['customerChoiceTitleDisplay'] }}
+                                            {{ $trackingData['customerChoiceNameDisplay'] }}
                                         @endif
                                     </span>
                                 </li>
@@ -286,17 +286,17 @@
 
         <!-- Table area start  -->
         <div class="merchant-table-wrapper purchase-details-table-wrapper">
-            <h4 class="table-title">@lang('Items Purchased')</h4>
+            <h4 class="table-name">@lang('Items Purchased')</h4>
             <div class="user-table table-responsive  position-relative">
                 <table  class="gs-data-table w-100">
                     <thead>
                         <tr>
-                            <th><span class="header-title">@lang('CatalogItem ID#')</span></th>
-                            <th><span class="header-title">@lang('Shop Name')</span></th>
-                            <th><span class="header-title">@lang('Status')</span></th>
-                            <th><span class="header-title">@lang('CatalogItem Title')</span></th>
-                            <th><span class="header-title">@lang('Details')</span></th>
-                            <th><span class="header-title">@lang('Total Price')</span></th>
+                            <th><span class="header-name">@lang('CatalogItem ID#')</span></th>
+                            <th><span class="header-name">@lang('Shop Name')</span></th>
+                            <th><span class="header-name">@lang('Status')</span></th>
+                            <th><span class="header-name">@lang('CatalogItem Name')</span></th>
+                            <th><span class="header-name">@lang('Details')</span></th>
+                            <th><span class="header-name">@lang('Total Price')</span></th>
                         </tr>
                     </thead>
                     <tbody>
@@ -316,7 +316,7 @@
                                                         $itemMerchant = $merchantsLookup[$catalogItem['item']['user_id']] ?? null;
                                                     @endphp
                                                     @if ($itemMerchant)
-                                                        <a class="title-hover-color content" target="_blank"
+                                                        <a class="name-hover-color content" target="_blank"
                                                             href="{{ route('operator-merchant-show', $itemMerchant['id']) }}">{{ $itemMerchant['shop_name'] }}</a>
                                                     @else
                                                         {{ __('Merchant Removed') }}
@@ -346,7 +346,7 @@
                                             @endif
                                         </td>
 
-                                        <!-- CatalogItem Title -->
+                                        <!-- CatalogItem Name -->
                                         <td>
                                             @if ($catalogItem['item']['user_id'] != 0)
                                             {{-- ✅ URL الرابط يُحسب بدون query - البيانات موجودة في الـ cart --}}
@@ -362,7 +362,7 @@
                                                     $merchantOrderProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                 }
                                             @endphp
-                                            <a class="title-hover-color content catalogItem-title d-inline-block" target="_blank"
+                                            <a class="name-hover-color content catalogItem-name d-inline-block" target="_blank"
                                                 href="{{ $merchantOrderProductUrl }}">
                                                 {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                             </a>

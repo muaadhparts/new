@@ -10,9 +10,9 @@
                 @include('includes.courier.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <!-- page title -->
-                    <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('My Deliveries')</h3>
+                    <!-- page name -->
+                    <div class="ud-page-name-box">
+                        <h3 class="ud-page-name">@lang('My Deliveries')</h3>
                     </div>
 
                     {{-- ✅ Order Status Tabs (NEW WORKFLOW) --}}

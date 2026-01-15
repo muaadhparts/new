@@ -6,7 +6,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="card-title mb-0">@lang('Shipment Tracking')</h4>
+                    <h4 class="card-name mb-0">@lang('Shipment Tracking')</h4>
                 </div>
                 <div class="card-body">
 

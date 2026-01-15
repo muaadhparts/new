@@ -25,7 +25,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="heading-area">
-                    <h4 class="title">{{ __('CatalogItem Buyer Note') }} :</h4>
+                    <h4 class="name">{{ __('CatalogItem Buyer Note') }} :</h4>
                     <div class="action-list">
                         <select class="process select droplinks {{ $gs->is_buyer_note == 1 ? 'drop-success' : 'drop-danger' }}">
                             <option data-val="1" value="{{ route('operator-gs-status', ['is_buyer_note', 1]) }}" {{ $gs->is_buyer_note == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>

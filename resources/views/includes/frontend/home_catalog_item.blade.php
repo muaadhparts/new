@@ -165,7 +165,7 @@
 
         {{-- Content Section --}}
         <div class="catalogItem-card__content">
-            <h6 class="catalogItem-card__title">
+            <h6 class="catalogItem-card__name">
                 <a href="{{ $catalogItemUrl }}">{{ $catalogItemName }}</a>
             </h6>
 
@@ -280,7 +280,7 @@
                     {{-- Delete button for favorites page --}}
                     <button type="button" class="catalogItem-card__delete removefavorite"
                         data-href="{{ route('user-favorite-remove', $favoriteId) }}"
-                        title="@lang('Remove from Favorites')">
+                        name="@lang('Remove from Favorites')">
                         <i class="fas fa-trash-alt"></i>
                     </button>
                 @else
@@ -301,10 +301,10 @@
 
             <div class="catalogItem-card__actions">
                 <button type="button" class="catalogItem-card__action compare_product"
-                    data-href="{{ $compareUrl }}" title="@lang('Compare')">
+                    data-href="{{ $compareUrl }}" name="@lang('Compare')">
                     <i class="fas fa-exchange-alt"></i>
                 </button>
-                <a href="{{ $catalogItemUrl }}" class="catalogItem-card__action" title="@lang('View')">
+                <a href="{{ $catalogItemUrl }}" class="catalogItem-card__action" name="@lang('View')">
                     <i class="far fa-eye"></i>
                 </a>
             </div>
@@ -312,7 +312,7 @@
 
         {{-- Content Section --}}
         <div class="catalogItem-card__content">
-            <h6 class="catalogItem-card__title">
+            <h6 class="catalogItem-card__name">
                 <a href="{{ $catalogItemUrl }}">{{ Str::limit($catalogItemName, 50) }}</a>
             </h6>
 

@@ -10,12 +10,12 @@
             <div class="m-no-results-box__icon">
                 <i class="fas fa-search"></i>
             </div>
-            <h4 class="m-no-results-box__title">@lang('No matching catalogItems')</h4>
-            <p class="m-no-results-box__subtitle">@lang('Try selecting a different category or browse all categories.')</p>
+            <h4 class="m-no-results-box__name">@lang('No matching catalogItems')</h4>
+            <p class="m-no-results-box__subname">@lang('Try selecting a different category or browse all categories.')</p>
 
             @if($selectedCategory)
             <div class="m-no-results-box__filters">
-                <h6 class="m-no-results-box__filters-title">@lang('Selected Category:')</h6>
+                <h6 class="m-no-results-box__filters-name">@lang('Selected Category:')</h6>
                 <ul class="m-no-results-box__filters-list">
                     <li>
                         <span class="m-no-results-box__filter-value">

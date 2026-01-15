@@ -43,7 +43,7 @@
 
                 {{-- Column 2: Brands --}}
                 <div class="muaadh-footer-col">
-                    <h5 class="muaadh-footer-title">@lang('Brands')</h5>
+                    <h5 class="muaadh-footer-name">@lang('Brands')</h5>
                     <ul class="muaadh-footer-links">
                         @foreach ($brands->take(6) as $brand)
                             <li>
@@ -55,7 +55,7 @@
 
                 {{-- Column 3: Quick Links --}}
                 <div class="muaadh-footer-col">
-                    <h5 class="muaadh-footer-title">@lang('Quick Links')</h5>
+                    <h5 class="muaadh-footer-name">@lang('Quick Links')</h5>
                     <ul class="muaadh-footer-links">
                         @if ($ps->home == 1)
                             <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
@@ -66,14 +66,14 @@
                         @endif
                         {{-- Using cached $footerPages from AppServiceProvider --}}
                         @foreach ($footerPages as $page)
-                            <li><a href="{{ route('front.merchant', $page->slug) }}">{{ $page->title }}</a></li>
+                            <li><a href="{{ route('front.merchant', $page->slug) }}">{{ $page->name }}</a></li>
                         @endforeach
                     </ul>
                 </div>
 
                 {{-- Column 4: Newsletter --}}
                 <div class="muaadh-footer-col">
-                    <h5 class="muaadh-footer-title">@lang('Newsletter')</h5>
+                    <h5 class="muaadh-footer-name">@lang('Newsletter')</h5>
                     <p class="muaadh-footer-newsletter-text">
                         @lang('Subscribe to get updates on new catalogItems and offers.')
                     </p>

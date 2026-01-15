@@ -8,8 +8,8 @@
                 @include('includes.courier.sidebar')
                 <!-- main content -->
                 <div class="gs-dashboard-user-content-wrapper gs-dashboard-outlet">
-                    <div class="ud-page-title-box">
-                        <h3 class="ud-page-title">@lang('Financial Report')</h3>
+                    <div class="ud-page-name-box">
+                        <h3 class="ud-page-name">@lang('Financial Report')</h3>
                     </div>
 
                     <!-- Date Filter -->

@@ -236,7 +236,7 @@ For ALL new CSS, use the Design System in `muaadh-system.css`:
 <span class="m-badge m-badge--pending">Pending</span>
 
 <div class="m-card">
-    <div class="m-card__header">Title</div>
+    <div class="m-card__header">Name</div>
     <div class="m-card__body">Content</div>
 </div>
 ```
@@ -365,7 +365,7 @@ When creating a NEW page or modifying an EXISTING page, follow this checklist:
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-title">@lang('Page Title')</h2>
+                    <h2 class="breadcrumb-name">@lang('Page Name')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         <li><a href="#">@lang('Current Page')</a></li>
