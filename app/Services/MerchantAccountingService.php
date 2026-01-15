@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\DeliveryCourier;
 use App\Models\MerchantCommission;
 use App\Models\MerchantPayment;

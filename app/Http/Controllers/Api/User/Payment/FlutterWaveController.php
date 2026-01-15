@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 
 use App\Models\TopUp;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -37,7 +37,7 @@ class FlutterWaveController extends Controller
 
         $topupNumber = $request->topup_number;
         $purchase = TopUp::where('topup_number',$topupNumber)->first();
-        $curr = Currency::where('name','=',$purchase->currency_code)->first();
+        $curr = MonetaryUnit::where('name','=',$purchase->currency_code)->first();
         $settings = Muaadhsetting::findOrFail(1);
         $item_amount = $purchase->amount * $purchase->currency_value;
 

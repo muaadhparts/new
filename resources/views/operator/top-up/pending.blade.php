@@ -15,7 +15,7 @@
 												<a href="javascript:;">{{ __('Customer Top Ups') }} </a>
 											</li>
 											<li>
-												<a href="{{ route('operator-sociallink-index') }}">{{ __('Pending Top Ups') }}</a>
+												<a href="{{ route('operator-wallet-log-index') }}">{{ __('Pending Top Ups') }}</a>
 											</li>
 										</ul>
 								</div>

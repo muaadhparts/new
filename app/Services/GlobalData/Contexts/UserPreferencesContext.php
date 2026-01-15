@@ -2,7 +2,7 @@
 
 namespace App\Services\GlobalData\Contexts;
 
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Language;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
@@ -16,26 +16,26 @@ use Illuminate\Support\Facades\Session;
  */
 class UserPreferencesContext implements ContextInterface
 {
-    private ?Currency $currency = null;
+    private ?MonetaryUnit $monetaryUnit = null;
     private ?Language $language = null;
 
     public function load(): void
     {
-        $this->currency = $this->resolveCurrency();
+        $this->monetaryUnit = $this->resolveMonetaryUnit();
         $this->language = $this->resolveLanguage();
     }
 
-    private function resolveCurrency(): ?Currency
+    private function resolveMonetaryUnit(): ?MonetaryUnit
     {
-        if (Session::has('currency')) {
-            $id = Session::get('currency');
-            return Cache::remember("currency_{$id}", 3600, fn() =>
-                Currency::find($id)
+        if (Session::has('monetary_unit')) {
+            $id = Session::get('monetary_unit');
+            return Cache::remember("monetary_unit_{$id}", 3600, fn() =>
+                MonetaryUnit::find($id)
             );
         }
 
-        return Cache::remember('default_currency', 3600, fn() =>
-            Currency::where('is_default', 1)->first()
+        return Cache::remember('default_monetary_unit', 3600, fn() =>
+            MonetaryUnit::where('is_default', 1)->first()
         );
     }
 
@@ -56,22 +56,22 @@ class UserPreferencesContext implements ContextInterface
     public function toArray(): array
     {
         return [
-            'curr' => $this->currency,
+            'curr' => $this->monetaryUnit,
             'langg' => $this->language,
         ];
     }
 
     public function reset(): void
     {
-        $this->currency = null;
+        $this->monetaryUnit = null;
         $this->language = null;
     }
 
     // === Getters ===
 
-    public function getCurrency(): ?Currency
+    public function getMonetaryUnit(): ?MonetaryUnit
     {
-        return $this->currency;
+        return $this->monetaryUnit;
     }
 
     public function getLanguage(): ?Language

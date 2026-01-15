@@ -57,7 +57,7 @@ class WebsiteSchema extends SchemaBuilder
     public static function fromSettings($gs): self
     {
         return self::create()
-            ->setName($gs->title ?? config('app.name'))
+            ->setName($gs->site_name ?? config('app.name'))
             ->setUrl(url('/'))
             ->setSearchUrl(url('/category?search={search_term_string}'))
             ->build();

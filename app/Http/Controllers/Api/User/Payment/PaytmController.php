@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\TopUp;
 use App\Models\Muaadhsetting;
 use App\Models\MerchantPayment;
@@ -22,7 +22,7 @@ class PaytmController extends Controller
 
         $topupNumber = $request->topup_number;
         $purchase = TopUp::where('topup_number', $topupNumber)->first();
-        $curr = Currency::where('name', '=', $purchase->currency_code)->first();
+        $curr = MonetaryUnit::where('name', '=', $purchase->currency_code)->first();
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Paytm.');
         }

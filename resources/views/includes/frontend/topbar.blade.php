@@ -7,7 +7,7 @@
     Data required (from AppServiceProvider):
     - $ps (PageSettings)
     - $languges (Languages collection)
-    - $currencies (Currencies collection)
+    - $monetaryUnits (MonetaryUnits collection)
     - $gs (MuaadhSettings)
     - $authUser, $courierUser (from HeaderComposer)
 
@@ -65,8 +65,8 @@
                     {{-- Currency Selector --}}
                     @php
                         $selectedCurrency = Session::has('currency')
-                            ? $currencies->where('id', '=', Session::get('currency'))->first()
-                            : $currencies->where('is_default', '=', 1)->first();
+                            ? $monetaryUnits->where('id', '=', Session::get('currency'))->first()
+                            : $monetaryUnits->where('is_default', '=', 1)->first();
                     @endphp
                     <div class="muaadh-dropdown">
                         <button class="muaadh-dropdown-toggle" type="button" data-bs-toggle="dropdown">
@@ -75,12 +75,12 @@
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <ul class="muaadh-dropdown-menu">
-                            @foreach ($currencies as $currency)
+                            @foreach ($monetaryUnits as $currency)
                                 <li>
                                     <a class="muaadh-dropdown-item {{ Session::has('currency')
                                         ? (Session::get('currency') == $currency->id ? 'active' : '')
-                                        : ($currencies->where('is_default', '=', 1)->first()->id == $currency->id ? 'active' : '') }}"
-                                        href="{{ route('front.currency', $currency->id) }}">
+                                        : ($monetaryUnits->where('is_default', '=', 1)->first()->id == $currency->id ? 'active' : '') }}"
+                                        href="{{ route('front.monetary-unit', $currency->id) }}">
                                         {{ $currency->name }}
                                     </a>
                                 </li>

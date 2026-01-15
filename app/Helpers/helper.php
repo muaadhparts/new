@@ -372,3 +372,105 @@ if (! function_exists('space_path')) {
         return "sync/{$year}/{$month}/{$day}/{$directory}";
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// MonetaryUnit Helpers - توحيد استدعاء العملة
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get current MonetaryUnit (from session or default)
+ *
+ * This is the SINGLE source of truth for resolving the current monetary unit.
+ * All code should use this helper instead of direct MonetaryUnit queries.
+ *
+ * @param bool $useCache Whether to use cache (default: true)
+ * @return \App\Models\MonetaryUnit|null
+ */
+if (! function_exists('getCurrentMonetaryUnit')) {
+    function getCurrentMonetaryUnit(bool $useCache = true): ?\App\Models\MonetaryUnit
+    {
+        $sessionKey = 'currency'; // Session key for user's selected monetary unit
+
+        // If user has selected a specific monetary unit
+        if (\Illuminate\Support\Facades\Session::has($sessionKey)) {
+            $id = \Illuminate\Support\Facades\Session::get($sessionKey);
+
+            if ($useCache) {
+                return \Illuminate\Support\Facades\Cache::remember(
+                    "monetary_unit_{$id}",
+                    3600,
+                    fn() => \App\Models\MonetaryUnit::find($id)
+                );
+            }
+
+            return \App\Models\MonetaryUnit::find($id);
+        }
+
+        // Return default monetary unit
+        return getDefaultMonetaryUnit($useCache);
+    }
+}
+
+/**
+ * Get default MonetaryUnit (is_default = 1)
+ *
+ * @param bool $useCache Whether to use cache (default: true)
+ * @return \App\Models\MonetaryUnit|null
+ */
+if (! function_exists('getDefaultMonetaryUnit')) {
+    function getDefaultMonetaryUnit(bool $useCache = true): ?\App\Models\MonetaryUnit
+    {
+        if ($useCache) {
+            return \Illuminate\Support\Facades\Cache::remember(
+                'default_monetary_unit',
+                3600,
+                fn() => \App\Models\MonetaryUnit::where('is_default', 1)->first()
+            );
+        }
+
+        return \App\Models\MonetaryUnit::where('is_default', 1)->first();
+    }
+}
+
+/**
+ * Get MonetaryUnit by code (e.g., 'SAR', 'USD')
+ *
+ * @param string $code
+ * @param bool $useCache
+ * @return \App\Models\MonetaryUnit|null
+ */
+if (! function_exists('getMonetaryUnitByCode')) {
+    function getMonetaryUnitByCode(string $code, bool $useCache = true): ?\App\Models\MonetaryUnit
+    {
+        if ($useCache) {
+            return \Illuminate\Support\Facades\Cache::remember(
+                "monetary_unit_code_{$code}",
+                3600,
+                fn() => \App\Models\MonetaryUnit::where('name', $code)->first()
+            );
+        }
+
+        return \App\Models\MonetaryUnit::where('name', $code)->first();
+    }
+}
+
+/**
+ * Get all active MonetaryUnits
+ *
+ * @param bool $useCache
+ * @return \Illuminate\Support\Collection
+ */
+if (! function_exists('getAllMonetaryUnits')) {
+    function getAllMonetaryUnits(bool $useCache = true): \Illuminate\Support\Collection
+    {
+        if ($useCache) {
+            return \Illuminate\Support\Facades\Cache::remember(
+                'all_monetary_units',
+                3600,
+                fn() => \App\Models\MonetaryUnit::all()
+            );
+        }
+
+        return \App\Models\MonetaryUnit::all();
+    }
+}

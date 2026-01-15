@@ -11,7 +11,7 @@ use App\Http\Resources\PurchaseDetailsResource;
 use App\Models\Cart;
 use App\Models\Country;
 use App\Models\DiscountCode;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
@@ -74,12 +74,12 @@ class CheckoutController extends Controller
 
             $currency_code = $input['currency_code'] ?? null;
             if (!empty($currency_code)) {
-                $curr = Currency::where('name', '=', $currency_code)->first();
+                $curr = MonetaryUnit::where('name', '=', $currency_code)->first();
                 if (empty($curr)) {
-                    $curr = Currency::where('is_default', '=', 1)->first();
+                    $curr = MonetaryUnit::where('is_default', '=', 1)->first();
                 }
             } else {
-                $curr = Currency::where('is_default', '=', 1)->first();
+                $curr = MonetaryUnit::where('is_default', '=', 1)->first();
             }
 
             // حفظ نسخة خفيفة من السلة داخل الطلب
@@ -375,17 +375,17 @@ class CheckoutController extends Controller
                 $purchase->update($input);
 
                 if ($request->track_text) {
-                    $title = ucwords($request->status);
-                    $ck = PurchaseTimeline::where('purchase_id', '=', $id)->where('title', '=', $title)->first();
+                    $name = ucwords($request->status);
+                    $ck = PurchaseTimeline::where('purchase_id', '=', $id)->where('name', '=', $name)->first();
                     if ($ck) {
                         $ck->purchase_id = $id;
-                        $ck->title    = $title;
+                        $ck->name    = $name;
                         $ck->text     = $request->track_text;
                         $ck->update();
                     } else {
                         $ot = new PurchaseTimeline;
                         $ot->purchase_id = $id;
-                        $ot->title    = $title;
+                        $ot->name    = $name;
                         $ot->text     = $request->track_text;
                         $ot->save();
                     }
@@ -460,12 +460,12 @@ class CheckoutController extends Controller
             $values = $values == "" ? '' : implode(',', $values);
 
             if (!empty($currency_code)) {
-                $curr = Currency::where('name', '=', $currency_code)->first();
+                $curr = MonetaryUnit::where('name', '=', $currency_code)->first();
                 if (empty($curr)) {
-                    $curr = Currency::where('is_default', '=', 1)->first();
+                    $curr = MonetaryUnit::where('is_default', '=', 1)->first();
                 }
             } else {
-                $curr = Currency::where('is_default', '=', 1)->first();
+                $curr = MonetaryUnit::where('is_default', '=', 1)->first();
             }
 
             $size_price = ($size_price / $curr->value);

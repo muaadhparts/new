@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 use App\Models\Muaadhsetting;
 use Illuminate\Http\Request;
 use App\Models\TopUp;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Http\Controllers\Controller;
 use App\Models\MerchantPayment;
 use Illuminate\Support\Facades\Session;
@@ -37,7 +37,7 @@ class PaymentController extends Controller
         $topupNumber = $request->topup_number;
 
         $topUp = TopUp::where('topup_number', $topupNumber)->first();
-        $curr = Currency::where('name', '=', $topUp->currency_code)->first();
+        $curr = MonetaryUnit::where('name', '=', $topUp->currency_code)->first();
 
         $support = ['USD', 'EUR'];
         if (!in_array($curr->name, $support)) {

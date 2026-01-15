@@ -3,7 +3,7 @@
 namespace App\Services\GlobalData\Contexts;
 
 use App\Models\Brand;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Language;
 use App\Models\StaticContent;
 use Illuminate\Support\Facades\Cache;
@@ -20,7 +20,7 @@ class NavigationContext implements ContextInterface
 {
     private $brands = null;
     private $staticContent = null;
-    private $currencies = null;
+    private $monetaryUnits = null;
     private $languages = null;
 
     public function load(): void
@@ -41,8 +41,8 @@ class NavigationContext implements ContextInterface
             StaticContent::all()
         );
 
-        $this->currencies = Cache::remember('all_currencies', 3600, fn() =>
-            Currency::all()
+        $this->monetaryUnits = Cache::remember('all_monetary_units', 3600, fn() =>
+            MonetaryUnit::all()
         );
 
         $this->languages = Cache::remember('all_languages', 3600, fn() =>
@@ -55,7 +55,7 @@ class NavigationContext implements ContextInterface
         return [
             'brands' => $this->brands,
             'static_content' => $this->staticContent,
-            'currencies' => $this->currencies,
+            'monetaryUnits' => $this->monetaryUnits,
             'languges' => $this->languages,
         ];
     }
@@ -64,7 +64,7 @@ class NavigationContext implements ContextInterface
     {
         $this->brands = null;
         $this->staticContent = null;
-        $this->currencies = null;
+        $this->monetaryUnits = null;
         $this->languages = null;
     }
 
@@ -80,9 +80,9 @@ class NavigationContext implements ContextInterface
         return $this->staticContent;
     }
 
-    public function getCurrencies()
+    public function getMonetaryUnits()
     {
-        return $this->currencies;
+        return $this->monetaryUnits;
     }
 
     public function getLanguages()

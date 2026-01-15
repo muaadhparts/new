@@ -6,7 +6,7 @@ use App\Classes\MuaadhMailer;
 use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
-use App\Http\Resources\ServiceResource;
+use App\Http\Resources\CapabilityResource;
 use App\Http\Resources\MerchantResource;
 use App\Models\ChatThread;
 use App\Models\Muaadhsetting;
@@ -33,8 +33,8 @@ class MerchantController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Shop name not found."]]);
             }
             $data['merchant'] = new MerchantResource($merchant);
-            $services = DB::table('services')->where('user_id', '=', $merchant->id)->get();
-            $data['services'] = ServiceResource::collection($services);
+            $capabilities = DB::table('capabilities')->where('user_id', '=', $merchant->id)->get();
+            $data['capabilities'] = CapabilityResource::collection($capabilities);
 
             // Get catalog items through merchant_items for this merchant
             $merchantItemsQuery = \App\Models\MerchantItem::where('user_id', $merchant->id)

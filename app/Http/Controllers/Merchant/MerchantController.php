@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use App\Models\Muaadhsetting;
 use App\Models\CatalogItem;
 use App\Models\MerchantPurchase;
-use App\Models\Verification;
+use App\Models\TrustBadge;
 use Illuminate\Http\Request;
 
 class MerchantController extends MerchantBaseController
@@ -196,25 +196,25 @@ class MerchantController extends MerchantBaseController
     // }
 
     //*** GET Request
-    public function verify()
+    public function trustBadge()
     {
         $data = $this->user;
-        if ($data->checkStatus()) {
+        if ($data->isTrustBadgeVerified()) {
             return redirect()->route('merchant-profile')->with('success', __('Your Account is already verified.'));
         }
-        return view('merchant.verify', compact('data'));
+        return view('merchant.trust-badge', compact('data'));
     }
 
     //*** GET Request
-    public function warningVerify($id)
+    public function warningTrustBadge($id)
     {
-        $verify = Verification::findOrFail($id);
+        $trustBadge = TrustBadge::findOrFail($id);
         $data = $this->user;
-        return view('merchant.verify', compact('data', 'verify'));
+        return view('merchant.trust-badge', compact('data', 'trustBadge'));
     }
 
     //*** POST Request
-    public function verifysubmit(Request $request)
+    public function trustBadgeSubmit(Request $request)
     {
         //--- Validation Section
         $rules = [
@@ -227,7 +227,7 @@ class MerchantController extends MerchantBaseController
 
         $request->validate($rules, $customs);
 
-        $data = new Verification();
+        $data = new TrustBadge();
         $input = $request->all();
 
         $input['attachments'] = '';
@@ -247,16 +247,16 @@ class MerchantController extends MerchantBaseController
         }
         $input['status'] = 'Pending';
         $input['user_id'] = $this->user->id;
-        if ($request->verify_id != '0') {
-            $verify = Verification::findOrFail($request->verify_id);
+        if ($request->trust_badge_id != '0') {
+            $trustBadge = TrustBadge::findOrFail($request->trust_badge_id);
             $input['admin_warning'] = 0;
-            $verify->update($input);
+            $trustBadge->update($input);
         } else {
 
             $data->fill($input)->save();
         }
 
-        return back()->with('success', __('Verification request sent successfully.'));
+        return back()->with('success', __('Trust badge request sent successfully.'));
         //--- Redirect Section Ends
     }
 

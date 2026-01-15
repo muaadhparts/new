@@ -11,5 +11,5 @@ class FeaturedPromo extends Model
 
     protected $table = 'featured_promos';
 
-    protected $fillable = ['title', 'header', 'photo', 'up_sale', 'url'];
+    protected $fillable = ['name', 'header', 'photo', 'up_sale', 'url'];
 }

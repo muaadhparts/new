@@ -8,7 +8,7 @@ class Announcement extends Model
 {
     protected $table = 'announcements';
 
-    protected $fillable = ['photo', 'link', 'type', 'title', 'text'];
+    protected $fillable = ['photo', 'link', 'type', 'name', 'text'];
 
     public $timestamps = false;
 }

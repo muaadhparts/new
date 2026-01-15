@@ -6,7 +6,7 @@ use App\{
   Models\WalletLog,
   Models\MerchantPayment
 };
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\TopUp;
 
 class TopUpController extends UserBaseController
@@ -55,7 +55,7 @@ class TopUpController extends UserBaseController
    function sendTopUp($number){
     $topUp = TopUp::where('topup_number',$number)->first();
 
-    $curr = Currency::where('name', '=', $topUp->currency_code)->firstOrFail();
+    $curr = MonetaryUnit::where('name', '=', $topUp->currency_code)->firstOrFail();
     $gateways = MerchantPayment::scopeHasGateway($curr->id);
     $paystack = MerchantPayment::whereKeyword('paystack')->first();
     $paystackData = $paystack->convertAutoData();

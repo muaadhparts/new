@@ -93,9 +93,9 @@
                                     <div class="row">
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Slider') }}</label>
+                                                <label class="control-label">{{ __('Hero Carousel') }}</label>
                                                 <label class="switch">
-                                                    <input type="checkbox" name="show_slider" value="1" {{ $theme->show_slider ? 'checked' : '' }}>
+                                                    <input type="checkbox" name="show_hero_carousel" value="1" {{ $theme->show_hero_carousel ? 'checked' : '' }}>
                                                     <span class="slider round"></span>
                                                 </label>
                                             </div>
@@ -201,9 +201,9 @@
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Services') }}</label>
+                                                <label class="control-label">{{ __('Capabilities') }}</label>
                                                 <label class="switch">
-                                                    <input type="checkbox" name="show_services" value="1" {{ $theme->show_services ? 'checked' : '' }}>
+                                                    <input type="checkbox" name="show_capabilities" value="1" {{ $theme->show_capabilities ? 'checked' : '' }}>
                                                     <span class="slider round"></span>
                                                 </label>
                                             </div>
@@ -230,7 +230,7 @@
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Slider Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_slider" value="{{ $theme->order_slider }}" min="1">
+                                            <input type="number" class="form-control" name="order_hero_carousel" value="{{ $theme->order_hero_carousel }}" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Brands Purchase') }}</label>
@@ -274,7 +274,7 @@
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Services Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_services" value="{{ $theme->order_services }}" min="1">
+                                            <input type="number" class="form-control" name="order_capabilities" value="{{ $theme->order_capabilities }}" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Newsletter Purchase') }}</label>

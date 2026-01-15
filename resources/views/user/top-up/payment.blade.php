@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $gs->title }} Top Up</title>
+    <title>{{ $gs->site_name }} Top Up</title>
     <!--Essential css files-->
     <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.min.css">
 

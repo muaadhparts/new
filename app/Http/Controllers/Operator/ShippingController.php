@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Operator;
 
 use App\{
-    Models\Currency,
+    Models\MonetaryUnit,
     Models\Shipping
 };
 use Illuminate\Http\Request;
@@ -72,7 +72,7 @@ class ShippingController extends OperatorBaseController
     {
         //--- Validation Section
         $rules = [
-            'title' => 'required|unique:shippings,title',
+            'name' => 'required|unique:shippings,name',
             'subtitle' => 'required',
             'price' => 'required|numeric|min:0',
             'integration_type' => 'nullable|in:none,manual,api',
@@ -80,7 +80,7 @@ class ShippingController extends OperatorBaseController
             'free_above' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:0,1',
         ];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -123,7 +123,7 @@ class ShippingController extends OperatorBaseController
     {
         //--- Validation Section
         $rules = [
-            'title' => 'required|unique:shippings,title,'.$id,
+            'name' => 'required|unique:shippings,name,'.$id,
             'subtitle' => 'required',
             'price' => 'required|numeric|min:0',
             'integration_type' => 'nullable|in:none,manual,api',
@@ -131,7 +131,7 @@ class ShippingController extends OperatorBaseController
             'free_above' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:0,1',
         ];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $validator = Validator::make($request->all(), $rules, $customs);
 
         if ($validator->fails()) {

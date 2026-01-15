@@ -4,7 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Models\CatalogEvent;
 use App\Models\OauthAccount;
-use App\Models\Socialsetting;
+use App\Models\ConnectConfig;
 use App\Models\User;
 use App\Http\Controllers\Controller;
 use Auth;
@@ -18,7 +18,7 @@ class SocialRegisterController extends Controller
 
     public function __construct()
     {
-      $link = Socialsetting::findOrFail(1);
+      $link = ConnectConfig::findOrFail(1);
       Config::set('services.google.client_id', $link->gclient_id);
       Config::set('services.google.client_secret', $link->gclient_secret);
       Config::set('services.google.redirect', url('/auth/google/callback'));

@@ -33,19 +33,19 @@ class PurchaseTimelineController extends OperatorBaseController
 
         //--- Logic Section
 
-        $title = $_GET['title'];
+        $name = $_GET['name'];
 
-        $ck = PurchaseTimeline::where('purchase_id','=',$_GET['id'])->where('title','=',$title)->first();
+        $ck = PurchaseTimeline::where('purchase_id','=',$_GET['id'])->where('name','=',$name)->first();
         if($ck){
             $ck->purchase_id = $_GET['id'];
-            $ck->title = $_GET['title'];
+            $ck->name = $_GET['name'];
             $ck->text = $_GET['text'];
             $ck->update();
         }
         else {
             $data = new PurchaseTimeline;
             $data->purchase_id = $_GET['id'];
-            $data->title = $_GET['title'];
+            $data->name = $_GET['name'];
             $data->text = $_GET['text'];
             $data->save();
         }
@@ -62,10 +62,10 @@ class PurchaseTimelineController extends OperatorBaseController
     {
 
         $rules = [
-               'title' => 'unique:purchase_timelines',
+               'name' => 'unique:purchase_timelines',
                 ];
         $customs = [
-               'title.unique' => 'This title has already been taken.',
+               'name.unique' => 'This name has already been taken.',
                    ];
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
@@ -74,11 +74,11 @@ class PurchaseTimelineController extends OperatorBaseController
 
         //--- Logic Section
 
-        $title = $request->title;
-        $ck = PurchaseTimeline::where('purchase_id','=',$request->purchase_id)->where('title','=',$title)->first();
+        $name = $request->name;
+        $ck = PurchaseTimeline::where('purchase_id','=',$request->purchase_id)->where('name','=',$name)->first();
         if($ck) {
             $ck->purchase_id = $request->purchase_id;
-            $ck->title = $request->title;
+            $ck->name = $request->name;
             $ck->text = $request->text;
             $ck->update();
 
@@ -108,10 +108,10 @@ class PurchaseTimelineController extends OperatorBaseController
     {
         //--- Validation Section
         $rules = [
-               'title' => 'unique:purchase_timelines,title,'.$id
+               'name' => 'unique:purchase_timelines,name,'.$id
                 ];
         $customs = [
-               'title.unique' => __('This title has already been taken.'),
+               'name.unique' => __('This name has already been taken.'),
                    ];
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {

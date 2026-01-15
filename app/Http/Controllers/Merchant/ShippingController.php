@@ -30,12 +30,12 @@ class ShippingController extends MerchantBaseController
     {
         //--- Validation Section
         $rules = [
-            'title' => 'unique:shippings',
+            'name' => 'unique:shippings',
             'provider' => 'required|in:manual,tryoto',
             'price' => 'required|numeric|min:0',
             'free_above' => 'nullable|numeric|min:0',
         ];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $request->validate($rules,$customs);
         //--- Validation Section Ends
 
@@ -66,12 +66,12 @@ class ShippingController extends MerchantBaseController
     {
         //--- Validation Section
         $rules = [
-            'title' => 'unique:shippings,title,'.$id,
+            'name' => 'unique:shippings,name,'.$id,
             'provider' => 'required|in:manual,tryoto',
             'price' => 'required|numeric|min:0',
             'free_above' => 'nullable|numeric|min:0',
         ];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $request->validate($rules,$customs);
         //--- Logic Section
         $sign = $this->curr;

@@ -95,10 +95,10 @@
                                                         </tr>
                                                         <tr>
                                                             <td>
-                                                                    @if($data->checkStatus())
+                                                                    @if($data->isTrustBadgeVerified())
                                                                     <a class="badge badge-success verify-link" href="javascript:;">Verified</a>
-                                                                    <a class="set-gallery1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="{{ $data->verifies()->where('status','=','Verified')->first()->id }}">(View)</a>
-                                                                    @else 
+                                                                    <a class="set-gallery1" href="javascript:;" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="{{ $data->trustBadges()->where('status','=','Verified')->first()->id }}">(View)</a>
+                                                                    @else
                                                                     <a class="badge badge-danger verify-link" href="javascript:;">Unverified</a>
                                                                     @endif
                                                             </td>
@@ -269,7 +269,7 @@
 			$('.selected-image .row').html('');
 				$.ajax({
 						type: "GET",
-						url:"{{ route('operator-vr-show') }}",
+						url:"{{ route('operator-trust-badge-show') }}",
 						data:{id:pid},
 						success:function(data){
 

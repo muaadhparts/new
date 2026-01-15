@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\TopUp;
 use App\Models\Muaadhsetting;
 use App\Models\WalletLog;
@@ -25,7 +25,7 @@ class MollyController extends Controller
 
         $topupNumber = $request->topup_number;
         $purchase = TopUp::where('topup_number', $topupNumber)->first();
-        $curr = Currency::where('name', '=', $purchase->currency_code)->first();
+        $curr = MonetaryUnit::where('name', '=', $purchase->currency_code)->first();
 
         $available_currency = array(
             'AED',
@@ -69,7 +69,7 @@ class MollyController extends Controller
 
         $item_amount = round($purchase->pay_amount / $curr->value, 2);
 
-        $purchase['item_name'] = $settings->title . " TopUp";
+        $purchase['item_name'] = $settings->site_name . " TopUp";
         $purchase['item_amount'] = $item_amount;
 
         $payment = Mollie::api()->payments()->create([
@@ -77,7 +77,7 @@ class MollyController extends Controller
                 'currency' => $curr->name,
                 'value' => '' . sprintf('%0.2f', $purchase['amount']) . '', // You must send the correct number of decimals, thus we enforce the use of strings
             ],
-            'description' => $settings->title . " TopUp",
+            'description' => $settings->site_name . " TopUp",
             'redirectUrl' => route('api.user.topup.molly.notify'),
         ]);
 

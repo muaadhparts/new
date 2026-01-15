@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\User;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\WalletLog;
 use Illuminate\Http\Request;
@@ -12,7 +12,7 @@ class RewardController extends UserBaseController
 {
     public function rewards()
     {
-        $curr = Currency::where('is_default','=',1)->first();
+        $curr = MonetaryUnit::where('is_default','=',1)->first();
         $user = Auth::user();
         $datas = WalletLog::where('reward_point',"!=",0)->where('user_id',$user->id)->orderby('id','desc')->paginate(12);
         return view('user.reward.index',compact('user','datas','curr'));
@@ -20,7 +20,7 @@ class RewardController extends UserBaseController
 
     public function convert()
     {
-        $curr = Currency::where('is_default','=',1)->first();
+        $curr = MonetaryUnit::where('is_default','=',1)->first();
         $user = Auth::user();
         return view('user.reward.convert',compact('user','curr'));
     }

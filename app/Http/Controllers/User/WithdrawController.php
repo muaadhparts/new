@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\User;
 use App\Models\Withdraw;
 use Illuminate\Http\Request;
@@ -13,13 +13,13 @@ class WithdrawController extends UserBaseController
     public function index()
     {
         $withdraws = Withdraw::where('user_id', '=', $this->user->id)->where('type', '=', 'user')->latest('id')->paginate(12);
-        $sign = Currency::where('is_default', '=', 1)->first();
+        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
         return view('user.withdraw.index', compact('withdraws', 'sign'));
     }
 
     public function create()
     {
-        $sign = Currency::where('is_default', '=', 1)->first();
+        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
         return view('user.withdraw.withdraw', compact('sign'));
     }
 

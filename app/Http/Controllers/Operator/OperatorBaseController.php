@@ -17,7 +17,7 @@ class OperatorBaseController extends Controller
         $this->middleware('auth:operator');
         $this->gs = DB::table('muaadhsettings')->find(1);
         $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
-        $this->curr = DB::table('currencies')->where('is_default', '=', 1)->first();
+        $this->curr = DB::table('monetary_units')->where('is_default', '=', 1)->first();
 
         // Share common variables with views
         view()->share('langg', $this->language);

@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\AccountParty;
 use App\Models\AccountingLedger;
 use App\Models\AccountBalance;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -606,8 +606,8 @@ class AccountingReportService
     /**
      * الحصول على العملة الافتراضية
      */
-    public function getDefaultCurrency(): Currency
+    public function getDefaultMonetaryUnit(): MonetaryUnit
     {
-        return Currency::where('is_default', 1)->first();
+        return MonetaryUnit::where('is_default', 1)->first();
     }
 }

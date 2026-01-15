@@ -8,20 +8,20 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 // use App\Http\Resources\BlogResource; // Removed - Blog replaced with Publication
 use App\Http\Resources\HelpArticleResource;
-use App\Http\Resources\FeaturedBannerResource;
-use App\Http\Resources\FeaturedLinkResource;
+use App\Http\Resources\AdDisplayResource;
+use App\Http\Resources\NavShortcutResource;
 use App\Http\Resources\PurchaseTrackResource;
 use App\Http\Resources\StaticContentResource;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\CatalogItemListResource;
-use App\Http\Resources\ServiceResource;
-use App\Http\Resources\SliderResource;use App\Models\FeaturedPromo;
+use App\Http\Resources\CapabilityResource;
+use App\Http\Resources\HeroCarouselResource;use App\Models\FeaturedPromo;
 use App\Models\Announcement;
 use App\Models\Publication;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\HelpArticle;
-use App\Models\FeaturedBanner;
-use App\Models\FeaturedLink;
+use App\Models\AdDisplay;
+use App\Models\NavShortcut;
 use App\Models\Muaadhsetting;
 use App\Models\Language;
 use App\Models\Purchase;
@@ -29,8 +29,8 @@ use App\Models\StaticContent;
 use App\Models\FrontendSetting;
 use App\Models\Brand;
 use App\Models\CatalogItem;
-use App\Models\Service;
-use App\Models\Slider;
+use App\Models\Capability;
+use App\Models\HeroCarousel;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -39,7 +39,7 @@ use Validator;
 
 class FrontendController extends Controller
 {
-    // Display Sliders, Featured Links, Featured Banners, Services, Banners & Brands
+    // Display Hero Carousels, Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands
 
     public function section_customization()
     {
@@ -131,77 +131,77 @@ class FrontendController extends Controller
         }
     }
 
-    public function defaultCurrency()
+    public function defaultMonetaryUnit()
     {
         try {
-            $currency = Currency::where('is_default', '=', 1)->first();
-            if (!$currency) {
-                return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'No Currency Found']]);
+            $monetaryUnit = MonetaryUnit::where('is_default', '=', 1)->first();
+            if (!$monetaryUnit) {
+                return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'No Monetary Unit Found']]);
             }
-            return response()->json(['status' => true, 'data' => $currency, 'error' => []]);
+            return response()->json(['status' => true, 'data' => $monetaryUnit, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function currency($id)
+    public function monetaryUnit($id)
     {
         try {
-            $currency = Currency::find($id);
-            if (!$currency) {
-                return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'No Currency Found']]);
+            $monetaryUnit = MonetaryUnit::find($id);
+            if (!$monetaryUnit) {
+                return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'No Monetary Unit Found']]);
             }
-            return response()->json(['status' => true, 'data' => $currency, 'error' => []]);
+            return response()->json(['status' => true, 'data' => $monetaryUnit, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function currencies()
+    public function monetaryUnits()
     {
         try {
-            $currencies = Currency::all();
-            return response()->json(['status' => true, 'data' => $currencies, 'error' => []]);
+            $monetaryUnits = MonetaryUnit::all();
+            return response()->json(['status' => true, 'data' => $monetaryUnits, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function sliders()
+    public function heroCarousels()
     {
         try {
-            $sliders = Slider::all();
-            return response()->json(['status' => true, 'data' => SliderResource::collection($sliders), 'error' => []]);
+            $heroCarousels = HeroCarousel::all();
+            return response()->json(['status' => true, 'data' => HeroCarouselResource::collection($heroCarousels), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function featuredLinks()
+    public function navShortcuts()
     {
         try {
-            $featuredLinks = FeaturedLink::all();
-            return response()->json(['status' => true, 'data' => FeaturedLinkResource::collection($featuredLinks), 'error' => []]);
+            $navShortcuts = NavShortcut::all();
+            return response()->json(['status' => true, 'data' => NavShortcutResource::collection($navShortcuts), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function featuredBanners()
+    public function adDisplays()
     {
         try {
-            $featuredBanners = FeaturedBanner::all();
-            return response()->json(['status' => true, 'data' => FeaturedBannerResource::collection($featuredBanners), 'error' => []]);
+            $adDisplays = AdDisplay::all();
+            return response()->json(['status' => true, 'data' => AdDisplayResource::collection($adDisplays), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    public function services()
+    public function capabilities()
     {
         try {
-            $services = Service::where('user_id', '=', 0)->get();
-            return response()->json(['status' => true, 'data' => ServiceResource::collection($services), 'error' => []]);
+            $capabilities = Capability::where('user_id', '=', 0)->get();
+            return response()->json(['status' => true, 'data' => CapabilityResource::collection($capabilities), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -257,7 +257,7 @@ class FrontendController extends Controller
         }
     }
 
-    // Display Sliders, Featured Links, Featured Banners, Services, Banners & Brands Ends
+    // Display Hero Carousels, Nav Shortcuts, Ad Displays, Capabilities, Banners & Brands Ends
 
     // Display All Type Of CatalogItems
 
@@ -395,7 +395,7 @@ class FrontendController extends Controller
             }
 
             $name = $request->name;
-            $checkSettings = in_array($name, ['muaadhsettings', 'frontend_settings', 'socialsettings']);
+            $checkSettings = in_array($name, ['muaadhsettings', 'frontend_settings', 'connect_configs']);
             if (!$checkSettings) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "This setting doesn't exists."]]);
             }

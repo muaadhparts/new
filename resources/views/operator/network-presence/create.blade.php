@@ -1,0 +1,118 @@
+@extends('layouts.operator')
+
+@section('styles')
+
+<link href="{{ asset('assets/operator/css/jquery-ui.css') }}" rel="stylesheet" type="text/css">
+
+@endsection
+
+@section('content')
+
+						<div class="content-area">
+
+							<div class="mr-breadcrumb">
+								<div class="row">
+								  <div class="col-lg-12">
+									  <h4 class="heading">{{ __('Add New Link') }} <a class="add-btn" href="{{route('operator-network-presence-index')}}"><i class="fas fa-arrow-left"></i> {{ __('Back') }}</a></h4>
+									  <ul class="links">
+										<li>
+										  <a href="{{ route('operator.dashboard') }}">{{ __('Dashboard') }} </a>
+										</li>
+										<li>
+										  <a href="javascript:;">{{ __('Settings') }}</a>
+										</li>
+										<li>
+										  <a href="{{ route('operator-network-presence-index') }}">{{ __('Network Presence') }}</a>
+										</li>
+										<li>
+										  <a href="{{ route('operator-network-presence-create') }}">{{ __('Add') }}</a>
+										</li>
+									  </ul>
+								  </div>
+								</div>
+							  </div>
+
+
+							<div class="add-catalogItem-content1 add-catalogItem-content2">
+								<div class="row">
+									<div class="col-lg-12">
+										<div class="catalogItem-description">
+											<div class="body-area">
+
+											<div class="gocover" style="background: url({{asset('assets/images/'.$gs->admin_loader)}}) no-repeat scroll center center rgba(45, 45, 45, 0.5);"></div>
+
+											@include('alerts.operator.form-both')
+
+											<form id="muaadhform" action="{{route('operator-network-presence-create')}}" method="POST" enctype="multipart/form-data">
+												{{csrf_field()}}
+
+												<div class="row">
+													<div class="col-lg-4">
+														<div class="left-area">
+															<h4 class="heading">{{ __('Network Link') }} *</h4>
+															<p class="sub-heading">{{ __('(In Any Language)') }}</p>
+														</div>
+													</div>
+													<div class="col-lg-7">
+														<input type="text" class="form-control" name="link" placeholder="{{ __('Network Link') }}" required="" value="">
+													</div>
+												</div>
+
+												<div class="row">
+                                                    <div class="col-lg-4">
+                                                        <div class="left-area">
+                                                            <h4 class="heading">{{ __('Icon') }} *</h4>
+                                                        </div>
+                                                    </div>
+
+													 <div class="col-lg-7 d-flex">
+														 <i class="" id="icn"></i>
+														 <input type="text" id="icons" class="form-control" name="icon" placeholder="{{ __('Social Icon') }}" required="" value="">
+
+													</div>
+
+                                                </div>
+
+												<div class="row">
+													<div class="col-lg-4">
+														<div class="left-area">
+
+														</div>
+													</div>
+													<div class="col-lg-7">
+														<button class="btn btn-primary" type="submit">{{ __('Create') }}</button>
+													</div>
+												</div>
+											</form>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+@endsection
+
+@section('scripts')
+
+<script src="{{ asset('assets/operator/js/iconpicker.js') }}"></script>
+
+<script>
+
+$( "#icons" ).autocomplete({
+	  source: icons,
+	  select: function (event, ui) {
+    var label = ui.item.label;
+    var value = ui.item.value;
+   	$('#icn').prop('class',value);
+}
+    })
+
+$('#icons').on('change',function(){
+	$('#icn').prop('class',$(this).val());
+})
+
+</script>
+
+
+@endsection

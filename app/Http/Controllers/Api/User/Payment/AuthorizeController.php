@@ -24,7 +24,7 @@ class AuthorizeController extends Controller
         }
 
         $settings = Muaadhsetting::findOrFail(1);
-        $item_name = $settings->title . " TopUp";
+        $item_name = $settings->site_name . " TopUp";
         $topupNumber = $request->topup_number;
         $purchase = TopUp::where('topup_number', $topupNumber)->first();
 

@@ -7,7 +7,7 @@ use App\Helpers\PurchaseHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\Country;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\MerchantCommission;
 use App\Models\Purchase;
 use App\Models\FrontendSetting;
@@ -302,7 +302,7 @@ class PurchaseCreateController extends OperatorBaseController
 
         $address = Session::get('purchase_address');
         $input = $address;
-        $curr = Currency::where('is_default', '=', 1)->first();
+        $curr = MonetaryUnit::where('is_default', '=', 1)->first();
 
         $oldCart = Session::get('admin_cart');
         $cart = new Cart($oldCart);

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\{
     Models\CatalogItem,
-    Models\Currency,
+    Models\MonetaryUnit,
     Models\MerchantCommission,
     Models\MerchantPhoto
 };

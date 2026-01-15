@@ -42,7 +42,7 @@
                             </div>
                           </div>
                           <div class="col-lg-6">
-                            <input type="text" class="form-control" placeholder="{{ __('Write Your Site Title Here') }}" name="title" value="{{ $gs->title }}" required="">
+                            <input type="text" class="form-control" placeholder="{{ __('Write Your Site Name Here') }}" name="site_name" value="{{ $gs->site_name }}" required="">
                           </div>
                         </div>
 

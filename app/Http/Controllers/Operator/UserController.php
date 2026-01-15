@@ -434,9 +434,9 @@ class UserController extends OperatorBaseController
                 $gal->delete();
             }
         }
-        if($user->sociallinks->count() > 0)
+        if($user->networkPresences->count() > 0)
         {
-            foreach ($user->sociallinks as $gal) {
+            foreach ($user->networkPresences as $gal) {
                 $gal->delete();
             }
         }

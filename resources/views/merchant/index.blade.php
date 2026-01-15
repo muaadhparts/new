@@ -11,7 +11,7 @@
         {{-- تنبيه التاجر تحت التحقق --}}
         @if(auth()->user()->is_merchant == 1)
             @php
-                $hasVerification = auth()->user()->checkVerification();
+                $hasVerification = auth()->user()->hasPendingTrustBadge();
             @endphp
             @if($hasVerification)
                 {{-- تم إرسال المستندات - في انتظار المراجعة --}}
@@ -37,7 +37,7 @@
                                 <p class="mb-0">@lang('Please submit your business documents to verify your merchant account and start selling.')</p>
                             </div>
                         </div>
-                        <a href="{{ route('merchant-verify') }}" class="m-btn m-btn--primary">
+                        <a href="{{ route('merchant-trust-badge') }}" class="m-btn m-btn--primary">
                             <i class="fas fa-file-upload me-2"></i>@lang('Submit Documents')
                         </a>
                     </div>

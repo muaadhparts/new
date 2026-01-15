@@ -17,14 +17,14 @@
 @if (isset($page->meta_tag) && isset($page->meta_description))
     <meta name="keywords" content="{{ $page->meta_tag }}">
     <meta name="description" content="{{ $page->meta_description }}">
-    <title>{{ $gs->title }}</title>
+    <title>{{ $gs->site_name }}</title>
 @elseif(isset($blog->meta_tag) && isset($blog->meta_description))
     <meta property="og:title" content="{{ $blog->title }}" />
     <meta property="og:description" content="{{ $blog->meta_description ?? strip_tags($blog->description ?? '') }}" />
     <meta property="og:image" content="{{ asset('assets/images/blogs/' . $blog->photo) }}" />
     <meta name="keywords" content="{{ $blog->meta_tag }}">
     <meta name="description" content="{{ $blog->meta_description }}">
-    <title>{{ $gs->title }}</title>
+    <title>{{ $gs->site_name }}</title>
 @elseif(isset($catalogItem) && is_object($catalogItem) && !empty($catalogItem->name))
     <meta name="keywords" content="{{ $catalogItem->meta_tag ?? '' }}">
     <meta name="description" content="{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}">
@@ -32,28 +32,28 @@
     <meta property="og:description" content="{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}" />
     <meta property="og:image" content="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}" />
     <meta name="author" content="Muaadh">
-    <title>{{ substr($catalogItem->name, 0, 11) . '-' }}{{ $gs->title }}</title>
+    <title>{{ substr($catalogItem->name, 0, 11) . '-' }}{{ $gs->site_name }}</title>
 @else
-    <meta property="og:title" content="{{ $gs->title }}" />
+    <meta property="og:title" content="{{ $gs->site_name }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
     @if(isset($seo) && $seo)
         <meta name="keywords" content="{{ $seo->meta_keys }}">
     @endif
     <meta name="author" content="Muaadh">
-    <title>{{ $gs->title }}</title>
+    <title>{{ $gs->site_name }}</title>
 @endif
 
-{{-- Font Loading --}}
-@if ($default_font->font_value ?? false)
-    <link href="https://fonts.googleapis.com/css?family={{ $default_font->font_value }}:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+{{-- Typeface Loading --}}
+@if ($default_typeface->font_value ?? false)
+    <link href="https://fonts.googleapis.com/css?family={{ $default_typeface->font_value }}:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
 @else
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 @endif
 
-{{-- Font styles --}}
-@if ($default_font->font_family ?? false)
+{{-- Typeface styles --}}
+@if ($default_typeface->font_family ?? false)
     <style>
-        body, * { font-family: '{{ $default_font->font_family }}', sans-serif; }
+        body, * { font-family: '{{ $default_typeface->font_family }}', sans-serif; }
     </style>
 @endif
 

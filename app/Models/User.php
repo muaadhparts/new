@@ -111,9 +111,14 @@ class User extends Authenticatable implements JWTSubject
         );
     }
 
-    public function services()
+    public function capabilities()
     {
-        return $this->hasMany('App\Models\Service');
+        return $this->hasMany('App\Models\Capability');
+    }
+
+    public function heroCarousels()
+    {
+        return $this->hasMany('App\Models\HeroCarousel');
     }
 
     public function senders()
@@ -168,14 +173,14 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\AbuseFlag', 'user_id');
     }
 
-    public function verifies()
+    public function trustBadges()
     {
-        return $this->hasMany('App\Models\Verification', 'user_id');
+        return $this->hasMany('App\Models\TrustBadge', 'user_id');
     }
 
-    public function sociallinks()
+    public function networkPresences()
     {
-        return $this->hasMany('App\Models\SocialLink', 'user_id');
+        return $this->hasMany('App\Models\NetworkPresence', 'user_id');
     }
 
     // ============================================================================
@@ -243,25 +248,25 @@ class User extends Authenticatable implements JWTSubject
         );
     }
 
-    public function checkVerification()
+    public function hasPendingTrustBadge()
     {
-        return count($this->verifies) > 0 ?
-            (empty($this->verifies()->where('admin_warning', '=', '0')->latest('id')->first()->status) ? false : ($this->verifies()->latest('id')->first()->status == 'Pending' ? true : false)) : false;
+        return count($this->trustBadges) > 0 ?
+            (empty($this->trustBadges()->where('admin_warning', '=', '0')->latest('id')->first()->status) ? false : ($this->trustBadges()->latest('id')->first()->status == 'Pending' ? true : false)) : false;
     }
 
-    public function checkStatus()
+    public function isTrustBadgeVerified()
     {
-        return count($this->verifies) > 0 ? ($this->verifies()->latest('id')->first()->status == 'Verified' ? true : false) : false;
+        return count($this->trustBadges) > 0 ? ($this->trustBadges()->latest('id')->first()->status == 'Verified' ? true : false) : false;
     }
 
-    public function checkWarning()
+    public function hasTrustBadgeWarning()
     {
-        return count($this->verifies) > 0 ? (empty($this->verifies()->where('admin_warning', '=', '1')->latest('id')->first()) ? false : (empty($this->verifies()->where('admin_warning', '=', '1')->latest('id')->first()->status) ? true : false)) : false;
+        return count($this->trustBadges) > 0 ? (empty($this->trustBadges()->where('admin_warning', '=', '1')->latest('id')->first()) ? false : (empty($this->trustBadges()->where('admin_warning', '=', '1')->latest('id')->first()->status) ? true : false)) : false;
     }
 
-    public function displayWarning()
+    public function getTrustBadgeWarningReason()
     {
-        return $this->verifies()->where('admin_warning', '=', '1')->latest('id')->first()->warning_reason;
+        return $this->trustBadges()->where('admin_warning', '=', '1')->latest('id')->first()->warning_reason;
     }
 
     public function getJWTIdentifier()

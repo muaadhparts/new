@@ -41,13 +41,13 @@ class UserBaseController extends Controller
             view()->share('langg', $this->language);
             App::setlocale($this->language->name);
     
-            // Set Global Currency
-    
+            // Set Global MonetaryUnit
+
             if (Session::has('currency')) {
-                $this->curr = DB::table('currencies')->find(Session::get('currency'));
+                $this->curr = DB::table('monetary_units')->find(Session::get('currency'));
             }
             else {
-                $this->curr = DB::table('currencies')->where('is_default','=',1)->first();
+                $this->curr = DB::table('monetary_units')->where('is_default','=',1)->first();
             }
 
             // Share common variables with views

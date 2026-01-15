@@ -20,7 +20,7 @@
         <meta property="og:title" content="{{ $catalogItem->name }}">
         <meta property="og:description" content="{{ Str::limit($description, 200) }}">
         <meta property="og:image" content="{{ $imageUrl }}">
-        <meta property="og:site_name" content="{{ $gs->title ?? config('app.name') }}">
+        <meta property="og:site_name" content="{{ $gs->site_name ?? config('app.name') }}">
         <meta property="product:price:amount" content="{{ $merchant->price }}">
         <meta property="product:price:currency" content="{{ $currency }}">
         @if($merchant->stock > 0 || is_null($merchant->stock))

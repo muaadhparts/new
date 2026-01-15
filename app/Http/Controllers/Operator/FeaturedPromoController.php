@@ -19,9 +19,9 @@ class FeaturedPromoController extends Controller
                 $photo = $data->photo ? url('assets/images/arrival/' . $data->photo) : url('assets/images/noimage.png');
                 return '<img src="' . $photo . '" alt="Image">';
             })
-            ->editColumn('title', function (FeaturedPromo $data) {
-                $title = mb_strlen(strip_tags($data->title), 'UTF-8') > 250 ? mb_substr(strip_tags($data->title), 0, 250, 'UTF-8') . '...' : strip_tags($data->title);
-                return  $title;
+            ->editColumn('name', function (FeaturedPromo $data) {
+                $name = mb_strlen(strip_tags($data->name), 'UTF-8') > 250 ? mb_substr(strip_tags($data->name), 0, 250, 'UTF-8') . '...' : strip_tags($data->name);
+                return  $name;
             })
             ->editColumn('up_sale', function (FeaturedPromo $data) {
                 $up_sale = mb_strlen(strip_tags($data->up_sale), 'UTF-8') > 250 ? mb_substr(strip_tags($data->up_sale), 0, 250, 'UTF-8') . '...' : strip_tags($data->up_sale);

@@ -12,7 +12,7 @@ class HomePageTheme extends Model
         'is_active',
         'layout',
         // Section Toggles
-        'show_slider',
+        'show_hero_carousel',
         'show_hero_search',
         'show_brands',
         'show_categories',
@@ -24,10 +24,10 @@ class HomePageTheme extends Model
         'show_trending',
         'show_best_sellers',
         'show_blogs',
-        'show_services',
+        'show_capabilities',
         'show_newsletter',
         // Section Purchase
-        'order_slider',
+        'order_hero_carousel',
         'order_brands',
         'order_categories',
         'order_arrival',
@@ -38,7 +38,7 @@ class HomePageTheme extends Model
         'order_trending',
         'order_best_sellers',
         'order_blogs',
-        'order_services',
+        'order_capabilities',
         'order_newsletter',
         // Section Titles
         'title_brands',
@@ -64,7 +64,7 @@ class HomePageTheme extends Model
 
     protected $casts = [
         'is_active' => 'boolean',
-        'show_slider' => 'boolean',
+        'show_hero_carousel' => 'boolean',
         'show_hero_search' => 'boolean',
         'show_brands' => 'boolean',
         'show_categories' => 'boolean',
@@ -76,7 +76,7 @@ class HomePageTheme extends Model
         'show_trending' => 'boolean',
         'show_best_sellers' => 'boolean',
         'show_blogs' => 'boolean',
-        'show_services' => 'boolean',
+        'show_capabilities' => 'boolean',
         'show_newsletter' => 'boolean',
         'settings' => 'array',
     ];
@@ -122,7 +122,7 @@ class HomePageTheme extends Model
     public function getOrderedSections()
     {
         $sections = [
-            'slider' => ['show' => $this->show_slider, 'purchase' => $this->order_slider],
+            'hero_carousel' => ['show' => $this->show_hero_carousel, 'purchase' => $this->order_hero_carousel],
             'brands' => ['show' => $this->show_brands, 'purchase' => $this->order_brands, 'title' => $this->title_brands],
             'categories' => ['show' => $this->show_categories, 'purchase' => $this->order_categories, 'title' => $this->title_categories],
             'arrival' => ['show' => $this->show_arrival, 'purchase' => $this->order_arrival, 'title' => $this->title_arrival],
@@ -133,7 +133,7 @@ class HomePageTheme extends Model
             'trending' => ['show' => $this->show_trending, 'purchase' => $this->order_trending, 'title' => $this->title_trending, 'count' => $this->count_trending],
             'best_sellers' => ['show' => $this->show_best_sellers, 'purchase' => $this->order_best_sellers, 'title' => $this->title_best_sellers, 'count' => $this->count_best_sellers],
             'blogs' => ['show' => $this->show_blogs, 'purchase' => $this->order_blogs, 'title' => $this->title_blogs, 'count' => $this->count_blogs],
-            'services' => ['show' => $this->show_services, 'purchase' => $this->order_services],
+            'capabilities' => ['show' => $this->show_capabilities, 'purchase' => $this->order_capabilities],
             'newsletter' => ['show' => $this->show_newsletter, 'purchase' => $this->order_newsletter],
         ];
 

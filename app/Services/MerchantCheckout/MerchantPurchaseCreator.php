@@ -5,7 +5,7 @@ namespace App\Services\MerchantCheckout;
 use App\Models\Purchase;
 use App\Models\MerchantPurchase;
 use App\Models\User;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\DeliveryCourier;
 use App\Classes\MuaadhMailer;
 use App\Traits\SavesCustomerShippingChoice;

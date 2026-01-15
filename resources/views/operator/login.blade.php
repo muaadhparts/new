@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="author" content="Muaadh">
     <!-- Title -->
-    <title>{{$gs->title}}</title>
+    <title>{{$gs->site_name}}</title>
     <!-- favicon -->
     <link rel="icon"  type="image/x-icon" href="{{asset('assets/images/'.$gs->favicon)}}"/>
     <!-- Bootstrap -->

@@ -302,17 +302,17 @@ class PurchaseController extends OperatorBaseController
                 $data->update($input);
 
                 if ($request->track_text) {
-                    $title = ucwords($request->status);
-                    $ck = PurchaseTimeline::where('purchase_id', '=', $id)->where('title', '=', $title)->first();
+                    $name = ucwords($request->status);
+                    $ck = PurchaseTimeline::where('purchase_id', '=', $id)->where('name', '=', $name)->first();
                     if ($ck) {
                         $ck->purchase_id = $id;
-                        $ck->title = $title;
+                        $ck->name = $name;
                         $ck->text = $request->track_text;
                         $ck->update();
                     } else {
                         $data = new PurchaseTimeline;
                         $data->purchase_id = $id;
-                        $data->title = $title;
+                        $data->name = $name;
                         $data->text = $request->track_text;
                         $data->save();
                     }

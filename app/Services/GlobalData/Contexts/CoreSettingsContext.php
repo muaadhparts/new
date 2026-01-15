@@ -2,7 +2,7 @@
 
 namespace App\Services\GlobalData\Contexts;
 
-use App\Models\Font;
+use App\Models\Typeface;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -13,16 +13,16 @@ use Illuminate\Support\Facades\DB;
  * - muaadhsettings
  * - frontend_settings
  * - seotools
- * - socialsettings
- * - default_font
+ * - connect_configs
+ * - default_typeface
  */
 class CoreSettingsContext implements ContextInterface
 {
     private ?object $settings = null;
     private ?object $frontendSettings = null;
     private ?object $seoSettings = null;
-    private ?object $socialSettings = null;
-    private ?Font $defaultFont = null;
+    private ?object $connectConfig = null;
+    private ?Typeface $defaultTypeface = null;
 
     public function load(): void
     {
@@ -38,12 +38,12 @@ class CoreSettingsContext implements ContextInterface
             DB::table('seotools')->first()
         );
 
-        $this->socialSettings = Cache::remember('socialsettings', 3600, fn() =>
-            DB::table('socialsettings')->first()
+        $this->connectConfig = Cache::remember('connect_configs', 3600, fn() =>
+            DB::table('connect_configs')->first()
         );
 
-        $this->defaultFont = Cache::remember('default_font', 3600, fn() =>
-            Font::where('is_default', 1)->first()
+        $this->defaultTypeface = Cache::remember('default_typeface', 3600, fn() =>
+            Typeface::where('is_default', 1)->first()
         );
     }
 
@@ -53,8 +53,8 @@ class CoreSettingsContext implements ContextInterface
             'gs' => $this->settings,
             'ps' => $this->frontendSettings,
             'seo' => $this->seoSettings,
-            'socialsetting' => $this->socialSettings,
-            'default_font' => $this->defaultFont,
+            'connectConfig' => $this->connectConfig,
+            'default_typeface' => $this->defaultTypeface,
         ];
     }
 
@@ -63,8 +63,8 @@ class CoreSettingsContext implements ContextInterface
         $this->settings = null;
         $this->frontendSettings = null;
         $this->seoSettings = null;
-        $this->socialSettings = null;
-        $this->defaultFont = null;
+        $this->connectConfig = null;
+        $this->defaultTypeface = null;
     }
 
     // === Getters ===
@@ -84,13 +84,13 @@ class CoreSettingsContext implements ContextInterface
         return $this->seoSettings;
     }
 
-    public function getSocialSettings(): ?object
+    public function getConnectConfig(): ?object
     {
-        return $this->socialSettings;
+        return $this->connectConfig;
     }
 
-    public function getDefaultFont(): ?Font
+    public function getDefaultTypeface(): ?Typeface
     {
-        return $this->defaultFont;
+        return $this->defaultTypeface;
     }
 }

@@ -15,7 +15,7 @@
     {{-- Menu Header --}}
     <div class="muaadh-mobile-menu-header">
         <a href="{{ route('front.index') }}" class="muaadh-mobile-logo">
-            <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="{{ $gs->title }}">
+            <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="{{ $gs->site_name }}">
         </a>
         <button type="button" class="muaadh-mobile-close">
             <i class="fas fa-times"></i>
@@ -334,8 +334,8 @@
                 <div class="muaadh-mobile-select">
                     <i class="fas fa-dollar-sign"></i>
                     <select onchange="window.location.href=this.value">
-                        @foreach ($currencies as $currency)
-                            <option value="{{ route('front.currency', $currency->id) }}"
+                        @foreach ($monetaryUnits as $currency)
+                            <option value="{{ route('front.monetary-unit', $currency->id) }}"
                                 {{ Session::has('currency') && Session::get('currency') == $currency->id ? 'selected' : '' }}
                                 {{ !Session::has('currency') && $currency->is_default == 1 ? 'selected' : '' }}>
                                 {{ $currency->name }}
@@ -354,17 +354,17 @@
             </a>
         </div>
 
-        {{-- Social Links - Using cached $socialsetting from AppServiceProvider --}}
-        @if($socialsetting && ($socialsetting->facebook || $socialsetting->twitter || $socialsetting->linkedin))
+        {{-- Social Links - Using cached $connectConfig from AppServiceProvider --}}
+        @if($connectConfig && ($connectConfig->facebook || $connectConfig->twitter || $connectConfig->linkedin))
             <div class="muaadh-mobile-social">
-                @if($socialsetting->facebook)
-                    <a href="{{ $socialsetting->facebook }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
+                @if($connectConfig->facebook)
+                    <a href="{{ $connectConfig->facebook }}" target="_blank"><i class="fab fa-facebook-f"></i></a>
                 @endif
-                @if($socialsetting->twitter)
-                    <a href="{{ $socialsetting->twitter }}" target="_blank"><i class="fab fa-twitter"></i></a>
+                @if($connectConfig->twitter)
+                    <a href="{{ $connectConfig->twitter }}" target="_blank"><i class="fab fa-twitter"></i></a>
                 @endif
-                @if($socialsetting->linkedin)
-                    <a href="{{ $socialsetting->linkedin }}" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                @if($connectConfig->linkedin)
+                    <a href="{{ $connectConfig->linkedin }}" target="_blank"><i class="fab fa-linkedin-in"></i></a>
                 @endif
             </div>
         @endif

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\TopUp;
 use App\Models\Muaadhsetting;
 use App\Models\MerchantPayment;
@@ -31,7 +31,7 @@ class StripeController extends Controller
 
         $topUp = TopUp::where('topup_number', $request->topup_number)->first();
         $item_amount = $topUp->amount * $topUp->currency_value;
-        $curr = Currency::where('name', '=', $topUp->currency_code)->first();
+        $curr = MonetaryUnit::where('name', '=', $topUp->currency_code)->first();
         $gs = Muaadhsetting::findOrFail(1);
 
         try {
@@ -50,7 +50,7 @@ class StripeController extends Controller
                             "currency" => $curr->name,
                             "unit_amount" => $item_amount * 100,
                             "product_data" => [
-                                "name" => $gs->title . ' TopUp'
+                                "name" => $gs->site_name . ' TopUp'
                             ]
                         ]
                     ],

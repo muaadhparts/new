@@ -9,7 +9,7 @@
 {
     "@context": "https://schema.org",
     "@type": "Organization",
-    "name": {{ json_encode($gs->title ?? config('app.name')) }},
+    "name": {{ json_encode($gs->site_name ?? config('app.name')) }},
     "url": {{ json_encode(url('/')) }},
     "logo": {{ json_encode(asset('assets/images/' . ($gs->logo ?? 'logo.png'))) }}
     @if(isset($seo) && !empty($seo->meta_description))
@@ -20,15 +20,15 @@
         "contactType": "customer service",
         "availableLanguage": ["Arabic", "English"]
     }
-    @if(isset($socialsetting))
+    @if(isset($connectConfig))
     ,"sameAs": [
         @php
             $socials = array_filter([
-                $socialsetting->facebook ?? null,
-                $socialsetting->twitter ?? null,
-                $socialsetting->instagram ?? null,
-                $socialsetting->youtube ?? null,
-                $socialsetting->linkedin ?? null
+                $connectConfig->facebook ?? null,
+                $connectConfig->twitter ?? null,
+                $connectConfig->instagram ?? null,
+                $connectConfig->youtube ?? null,
+                $connectConfig->linkedin ?? null
             ]);
         @endphp
         {!! implode(',', array_map(fn($s) => json_encode($s), $socials)) !!}
@@ -46,7 +46,7 @@
 {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    "name": {{ json_encode($gs->title ?? config('app.name')) }},
+    "name": {{ json_encode($gs->site_name ?? config('app.name')) }},
     "url": {{ json_encode(url('/')) }},
     "potentialAction": {
         "@type": "SearchAction",

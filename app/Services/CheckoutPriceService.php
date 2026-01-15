@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Cart;
 use App\Models\DiscountCode;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Shipping;
 use App\Models\Package;
 use App\Models\MerchantCommission;
@@ -48,7 +48,7 @@ use Illuminate\Support\Facades\Session;
  */
 class CheckoutPriceService
 {
-    protected $currency;
+    protected $monetaryUnit;
     protected $currencyValue;
     protected $currencySign;
     protected $currencyFormat;
@@ -57,25 +57,25 @@ class CheckoutPriceService
 
     public function __construct()
     {
-        $this->loadCurrency();
+        $this->loadMonetaryUnit();
         $this->loadSettings();
     }
 
     /**
      * Load currency from session or default
      */
-    protected function loadCurrency(): void
+    protected function loadMonetaryUnit(): void
     {
         if (Session::has('currency')) {
-            $this->currency = Currency::find(Session::get('currency'));
+            $this->monetaryUnit = MonetaryUnit::find(Session::get('currency'));
         }
 
-        if (!$this->currency) {
-            $this->currency = Currency::where('is_default', 1)->first();
+        if (!$this->monetaryUnit) {
+            $this->monetaryUnit = MonetaryUnit::where('is_default', 1)->first();
         }
 
-        $this->currencyValue = $this->currency->value ?? 1;
-        $this->currencySign = $this->currency->sign ?? 'SAR';
+        $this->currencyValue = $this->monetaryUnit->value ?? 1;
+        $this->currencySign = $this->monetaryUnit->sign ?? 'SAR';
     }
 
     /**
@@ -96,9 +96,9 @@ class CheckoutPriceService
     /**
      * Get current currency object
      */
-    public function getCurrency(): ?Currency
+    public function getMonetaryUnit(): ?MonetaryUnit
     {
-        return $this->currency;
+        return $this->monetaryUnit;
     }
 
     /**

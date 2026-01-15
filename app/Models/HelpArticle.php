@@ -8,7 +8,7 @@ class HelpArticle extends Model
 {
     protected $table = 'help_articles';
 
-    protected $fillable = ['title', 'details'];
+    protected $fillable = ['name', 'details'];
 
     public $timestamps = false;
 }

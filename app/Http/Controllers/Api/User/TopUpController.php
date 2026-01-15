@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\TopUp;
 use App\Models\WalletLog;
 use App\Models\User;
@@ -19,7 +19,7 @@ class TopUpController extends Controller
     public function sendTopUp($number)
     {
         $topup = TopUp::where('topup_number', $number)->first();
-        $curr = Currency::where('name', '=', $topup->currency_code)->firstOrFail();
+        $curr = MonetaryUnit::where('name', '=', $topup->currency_code)->firstOrFail();
         $gateways = MerchantPayment::scopeHasGateway($curr->id);
         $paystack = MerchantPayment::whereKeyword('paystack')->first();
         $paystackData = $paystack->convertAutoData();
@@ -123,7 +123,7 @@ class TopUpController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => 'Unauthenticated.']]);
             }
 
-            $curr = Currency::where('name', '=', $request->currency_code)->first();
+            $curr = MonetaryUnit::where('name', '=', $request->currency_code)->first();
             $user = Auth::guard('api')->user();
             $topup_number = Str::random(4) . time();
 

@@ -119,7 +119,7 @@
 
 
 
-                                @if ($socialsetting->g_check == 1)
+                                @if ($connectConfig->g_check == 1)
                                     <a href="{{ route('social-provider', 'google') }}"
                                         class="template-btn outline-btn login-outline">
 
@@ -150,7 +150,7 @@
                                         @lang('Login with Google')
                                     </a>
                                 @endif
-                                @if ($socialsetting->f_check == 1)
+                                @if ($connectConfig->f_check == 1)
                                     <a href="{{ route('social-provider', 'facebook') }}"
                                         class="template-btn outline-btn login-outline">
 

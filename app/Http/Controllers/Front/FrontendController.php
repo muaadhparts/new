@@ -34,9 +34,9 @@ class FrontendController extends FrontBaseController
 
     // LANGUAGE SECTION ENDS
 
-    // CURRENCY SECTION
+    // MONETARY UNIT SECTION
 
-    public function currency($id)
+    public function monetaryUnit($id)
     {
 
         if (Session::has('discount_code')) {
@@ -48,12 +48,12 @@ class FrontendController extends FrontBaseController
             Session::forget('already');
             Session::forget('discount_percentage');
         }
-        Session::put('currency', $id);
-        cache()->forget('session_currency');
+        Session::put('monetary_unit', $id);
+        cache()->forget('session_monetary_unit');
         return redirect()->back();
     }
 
-    // CURRENCY SECTION ENDS
+    // MONETARY UNIT SECTION ENDS
 
     // ================================================================================================
     // HOME PAGE SECTION
@@ -91,11 +91,11 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Slider (if enabled in theme)
+        // SECTION: Hero Carousel (if enabled in theme)
         // ============================================================================
-        if ($theme->show_slider) {
-            $data['sliders'] = Cache::remember('homepage_sliders', 3600, function () {
-                return DB::table('sliders')->get();
+        if ($theme->show_hero_carousel) {
+            $data['heroCarousels'] = Cache::remember('homepage_hero_carousels', 3600, function () {
+                return DB::table('hero_carousels')->get();
             });
         }
 
@@ -256,11 +256,11 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Services (if enabled in theme)
+        // SECTION: Capabilities (if enabled in theme)
         // ============================================================================
-        if ($theme->show_services) {
-            $data['services'] = Cache::remember('homepage_services', 3600, function () {
-                return DB::table('services')->get();
+        if ($theme->show_capabilities) {
+            $data['capabilities'] = Cache::remember('homepage_capabilities', 3600, function () {
+                return DB::table('capabilities')->get();
             });
         }
 
@@ -356,7 +356,7 @@ class FrontendController extends FrontBaseController
         $bcats = ArticleType::withCount('publications')->get();
         // PUBLICATIONS
         $search = $request->search;
-        $publications = Publication::where('title', 'like', '%' . $search . '%')->orWhere('details', 'like', '%' . $search . '%')->paginate($this->gs->post_count);
+        $publications = Publication::where('name', 'like', '%' . $search . '%')->orWhere('details', 'like', '%' . $search . '%')->paginate($this->gs->post_count);
         if ($request->ajax()) {
             return view('frontend.ajax.publication', compact('publications'));
         }

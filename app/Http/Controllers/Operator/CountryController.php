@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
 use App\Models\Country;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -80,7 +80,7 @@ class CountryController extends Controller
 
     public function setTax($id)
     {
-        $sign = Currency::where('is_default', '=', 1)->first();
+        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
         $country = Country::findOrFail($id);
         return view('operator.country.set_tax', compact('country', 'sign'));
     }

@@ -6,7 +6,7 @@ use App\Models\AccountParty;
 use App\Models\AccountingLedger;
 use App\Models\AccountBalance;
 use App\Models\SettlementBatch;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Services\AccountLedgerService;
 use App\Services\AccountingEntryService;
 use App\Services\AccountingReportService;
@@ -55,7 +55,7 @@ class AccountLedgerController extends OperatorBaseController
     public function index()
     {
         $dashboard = $this->ledgerService->getPlatformDashboard();
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         // ملخص سريع لكل نوع طرف
         $summary = [
@@ -173,7 +173,7 @@ class AccountLedgerController extends OperatorBaseController
             return $party;
         });
 
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view($view, [
             'parties' => $parties,
@@ -210,7 +210,7 @@ class AccountLedgerController extends OperatorBaseController
             ->orderBy('name')
             ->get();
 
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.statement', [
             'party' => $party,
@@ -230,7 +230,7 @@ class AccountLedgerController extends OperatorBaseController
     public function transactionDetails(AccountingLedger $transaction)
     {
         $transaction->load(['fromParty', 'toParty', 'purchase', 'merchantPurchase', 'settlementBatch']);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.transaction-details', [
             'transaction' => $transaction,
@@ -258,7 +258,7 @@ class AccountLedgerController extends OperatorBaseController
         }
 
         $settlements = $query->orderBy('created_at', 'desc')->paginate(20);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.settlements', [
             'settlements' => $settlements,
@@ -284,7 +284,7 @@ class AccountLedgerController extends OperatorBaseController
             ->groupBy('party_type');
 
         $platform = $this->ledgerService->getPlatformParty();
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         $pendingBalance = 0;
         if ($party) {
@@ -342,7 +342,7 @@ class AccountLedgerController extends OperatorBaseController
     public function settlementDetails(SettlementBatch $batch)
     {
         $batch->load(['fromParty', 'toParty', 'ledgerEntries', 'createdByUser', 'approvedByUser']);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.settlement-details', [
             'batch' => $batch,
@@ -390,7 +390,7 @@ class AccountLedgerController extends OperatorBaseController
             ->get();
 
         $total = $receivables->sum('pending_amount');
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.receivables', [
             'receivables' => $receivables,
@@ -414,7 +414,7 @@ class AccountLedgerController extends OperatorBaseController
             ->get();
 
         $total = $payables->sum('pending_amount');
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.payables', [
             'payables' => $payables,
@@ -441,7 +441,7 @@ class AccountLedgerController extends OperatorBaseController
             ];
         }
 
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.shipping', [
             'report' => $report,
@@ -467,7 +467,7 @@ class AccountLedgerController extends OperatorBaseController
             ];
         }
 
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.payment', [
             'report' => $report,
@@ -484,7 +484,7 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $report = $this->reportService->getTaxReport($startDate, $endDate);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.tax', [
             'report' => $report,
@@ -513,7 +513,7 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $report = $this->reportService->getPlatformReport($startDate, $endDate);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.platform', [
             'report' => $report,
@@ -532,7 +532,7 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $merchants = $this->reportService->getMerchantsSummaryReport($startDate, $endDate);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.merchants-summary', [
             'merchants' => $merchants,
@@ -552,7 +552,7 @@ class AccountLedgerController extends OperatorBaseController
 
         $statement = $this->statementService->generateStatement($merchantId, $startDate, $endDate);
         $pendingAmounts = $this->statementService->getPendingAmounts($merchantId);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.merchant-statement', [
             'statement' => $statement,
@@ -572,7 +572,7 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $couriers = $this->reportService->getCouriersReport($startDate, $endDate);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.couriers', [
             'couriers' => $couriers,
@@ -591,7 +591,7 @@ class AccountLedgerController extends OperatorBaseController
         $endDate = $request->end_date ? Carbon::parse($request->end_date) : null;
 
         $companies = $this->reportService->getShippingCompaniesReport($startDate, $endDate);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.shipping-companies', [
             'companies' => $companies,
@@ -607,7 +607,7 @@ class AccountLedgerController extends OperatorBaseController
     public function receivablesPayablesReport(Request $request)
     {
         $report = $this->reportService->getReceivablesPayablesReport();
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('operator.accounts.reports.receivables-payables', [
             'report' => $report,

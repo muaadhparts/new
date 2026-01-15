@@ -7,7 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\WithdrawDetailsResource;
 
 use App\Http\Resources\WithdrawResource;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\WalletLog;
 use App\Models\User;use App\Models\Withdraw;
@@ -144,7 +144,7 @@ class WithdrawController extends Controller
         try {
             $user = auth()->user();
             $from = User::findOrFail($user->id);
-            $curr = Currency::where('is_default', '=', 1)->first();
+            $curr = MonetaryUnit::where('is_default', '=', 1)->first();
             $withdrawcharge = Muaadhsetting::findOrFail(1);
             $charge = $withdrawcharge->withdraw_fee;
 
@@ -198,7 +198,7 @@ class WithdrawController extends Controller
     public function convertSubmit(Request $request)
     {
         try {
-        $curr = Currency::where('is_default','=',1)->first();
+        $curr = MonetaryUnit::where('is_default','=',1)->first();
         $user = Auth::user();
         $gs = Muaadhsetting::find(1);
 

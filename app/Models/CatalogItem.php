@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\MerchantItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -290,8 +290,8 @@ class CatalogItem extends Model
 
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
@@ -309,8 +309,8 @@ class CatalogItem extends Model
 
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
@@ -327,7 +327,7 @@ class CatalogItem extends Model
         }
 
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $curr = Currency::where('is_default', 1)->first();
+        $curr = MonetaryUnit::where('is_default', 1)->first();
 
         $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
@@ -374,8 +374,8 @@ class CatalogItem extends Model
         // Currency formatting
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $converted = \PriceHelper::showPrice($price * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
@@ -389,8 +389,8 @@ class CatalogItem extends Model
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
 
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $price = \PriceHelper::showPrice($price * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
@@ -401,8 +401,8 @@ class CatalogItem extends Model
         $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
 
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $price = \PriceHelper::showPrice($price * $curr->value);
         return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
@@ -411,8 +411,8 @@ class CatalogItem extends Model
     public static function merchantConvertWithoutCurrencyPrice($price)
     {
         $curr = Session::has('currency')
-            ? Currency::find(Session::get('currency'))
-            : Currency::where('is_default', 1)->first();
+            ? MonetaryUnit::find(Session::get('currency'))
+            : MonetaryUnit::where('is_default', 1)->first();
 
         $price = \PriceHelper::showPrice($price * $curr->value);
         return $price;
@@ -818,8 +818,8 @@ class CatalogItem extends Model
         }
 
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $converted = $rawPrice * $curr->value;
         return \PriceHelper::apishowPrice($converted);
@@ -833,8 +833,8 @@ class CatalogItem extends Model
         }
 
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $converted = $rawPrice * $curr->value;
         return \PriceHelper::apishowPrice($converted);
@@ -873,8 +873,8 @@ class CatalogItem extends Model
         }
 
         $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => Currency::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => Currency::where('is_default', 1)->first());
+            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
+            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
 
         $converted = $price * $curr->value;
         return \PriceHelper::apishowPrice($converted);

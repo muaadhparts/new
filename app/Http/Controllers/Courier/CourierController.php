@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Courier;
 
 use App\Models\City;
 use App\Models\Country;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\DeliveryCourier;
 use App\Models\CourierServiceArea;
 use App\Services\CourierAccountingService;
@@ -32,7 +32,7 @@ class CourierController extends CourierBaseController
 
         // Get accounting report
         $report = $this->accountingService->getCourierReport($this->courier->id);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('courier.dashbaord', compact('purchases', 'user', 'report', 'currency'));
     }
@@ -480,7 +480,7 @@ class CourierController extends CourierBaseController
         }
 
         $deliveries = $query->paginate(20);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
         return view('courier.transactions', compact('deliveries', 'currency', 'report'));
@@ -491,7 +491,7 @@ class CourierController extends CourierBaseController
      */
     public function settlements()
     {
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
         $settlementCalc = $this->accountingService->calculateSettlementAmount($this->courier->id);
         $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
         $report = $this->accountingService->getCourierReport($this->courier->id);
@@ -508,7 +508,7 @@ class CourierController extends CourierBaseController
         $endDate = $request->end_date;
 
         $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
 
         return view('courier.financial_report', compact('report', 'currency', 'startDate', 'endDate'));
     }

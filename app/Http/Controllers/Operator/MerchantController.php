@@ -76,18 +76,18 @@ class MerchantController extends OperatorBaseController
     }
 
     //*** GET Request
-    public function verify($id)
+    public function requestTrustBadge($id)
     {
         $data = User::findOrFail($id);
-        return view('operator.merchant.verification', compact('data'));
+        return view('operator.merchant.request-trust-badge', compact('data'));
     }
 
     //*** POST Request
-    public function verifySubmit(Request $request, $id)
+    public function requestTrustBadgeSubmit(Request $request, $id)
     {
         $settings = Muaadhsetting::find(1);
         $user = User::findOrFail($id);
-        $user->verifies()->create(['admin_warning' => 1, 'warning_reason' => $request->details]);
+        $user->trustBadges()->create(['admin_warning' => 1, 'warning_reason' => $request->details]);
 
         if ($settings->is_smtp == 1) {
             $data = [

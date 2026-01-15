@@ -122,7 +122,7 @@ class GlobalDataService
         return $this->coreSettings->getSettings();
     }
 
-    public function getCurrency(): ?\App\Models\Currency
+    public function getMonetaryUnit(): ?\App\Models\MonetaryUnit
     {
         return $this->userPreferences->getCurrency();
     }

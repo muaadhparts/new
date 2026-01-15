@@ -30,7 +30,7 @@
         <!-- Edit Profile area start  -->
         <div class="merchant-edit-profile-section-wrapper">
             <div class="gs-edit-profile-section">
-                <a href="{{ route('merchant-verify') }}" class="template-btn dark-btn ms-auto">@lang('Verify Your Account')</a>
+                <a href="{{ route('merchant-trust-badge') }}" class="template-btn dark-btn ms-auto">@lang('Get Trust Badge')</a>
                 <form class="edit-profile-area" action="{{ route('merchant-profile-update') }}" method="POST">
                     @csrf
                     <div class="row row-cols-1 row-cols-sm-2">

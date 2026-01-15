@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Models\DiscountCode;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Datatables;
@@ -17,7 +17,7 @@ class DiscountCodeController extends MerchantBaseController
     {
         // الحصول على المستخدم الحالي
         $user = Auth::user();
-        $curr = Currency::where('is_default', 1)->first();
+        $curr = MonetaryUnit::where('is_default', 1)->first();
 
         // عرض كوبونات التاجر الحالي فقط
         $datas = DiscountCode::where('user_id', $user->id)->latest('id')->get();

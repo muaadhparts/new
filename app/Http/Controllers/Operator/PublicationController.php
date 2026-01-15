@@ -69,7 +69,7 @@ class PublicationController extends OperatorBaseController
         $publication = new Publication();
         $input = $request->all();
 
-        $slug = Str::slug($request->title) . Str::random(4);
+        $slug = Str::slug($request->name) . Str::random(4);
 
         if ($file = $request->file('photo')) {
             $name = \PriceHelper::ImageCreateName($file);
@@ -148,7 +148,7 @@ class PublicationController extends OperatorBaseController
             $input['meta_tag'] = null;
             $input['meta_description'] = null;
         }
-        $input['slug'] = Str::slug($request->title) . Str::random(4);
+        $input['slug'] = Str::slug($request->name) . Str::random(4);
         $publication->update($input);
         //--- Logic Section Ends
         Session::forget('footer_publications');

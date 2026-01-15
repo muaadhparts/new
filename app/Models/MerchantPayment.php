@@ -13,9 +13,9 @@ class MerchantPayment extends Model
 
     public $timestamps = false;
 
-    public function currency()
+    public function monetaryUnit()
     {
-        return $this->belongsTo('App\Models\Currency')->withDefault();
+        return $this->belongsTo('App\Models\MonetaryUnit', 'currency_id')->withDefault();
     }
 
     /**

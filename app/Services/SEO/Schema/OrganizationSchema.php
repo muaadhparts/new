@@ -87,7 +87,7 @@ class OrganizationSchema extends SchemaBuilder
     public static function fromSettings($gs, $seo = null, $social = null): self
     {
         $schema = self::create()
-            ->setName($gs->title ?? config('app.name'))
+            ->setName($gs->site_name ?? config('app.name'))
             ->setUrl(url('/'))
             ->setLogo(asset('assets/images/' . ($gs->logo ?? 'logo.png')))
             ->setContactPoint();

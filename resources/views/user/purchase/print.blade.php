@@ -7,7 +7,7 @@
         <meta name="keywords" content="{{$seo->meta_keys}}">
         <meta name="author" content="Muaadh">
 
-        <title>{{$gs->title}}</title>
+        <title>{{$gs->site_name}}</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
   <!-- Bootstrap 3.3.7 -->

@@ -54,7 +54,7 @@
 
                     {{-- Logo --}}
                     <a href="{{ route('front.index') }}" class="muaadh-logo">
-                        <img src="{{ asset('assets/images/' . $gs->logo) }}" alt="{{ $gs->title }}">
+                        <img src="{{ asset('assets/images/' . $gs->logo) }}" alt="{{ $gs->site_name }}">
                     </a>
                 </div>
 

@@ -8,7 +8,7 @@ class Publication extends Model
 {
     protected $table = 'publications';
 
-    protected $fillable = ['title', 'slug', 'category_id', 'details', 'photo', 'source', 'views', 'updated_at', 'status', 'meta_tag', 'meta_description', 'tags'];
+    protected $fillable = ['name', 'slug', 'category_id', 'details', 'photo', 'source', 'views', 'updated_at', 'status', 'meta_tag', 'meta_description', 'tags'];
 
     protected $dates = ['created_at'];
 

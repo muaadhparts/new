@@ -49,12 +49,12 @@ Sections are rendered based on theme settings and purchase
     @endif
 
     {{-- ===================================================================
-         SECTION: Slider (if enabled: $theme->show_slider)
+         SECTION: Hero Carousel (if enabled: $theme->show_hero_carousel)
          =================================================================== --}}
-    @if(($theme->show_slider ?? false) && isset($sliders) && count($sliders) > 0)
+    @if(($theme->show_hero_carousel ?? false) && isset($heroCarousels) && count($heroCarousels) > 0)
     <section class="muaadh-section muaadh-slider-section">
         <div class="container">
-            @include('frontend.sections.slider', ['sliders' => $sliders])
+            @include('frontend.sections.hero-carousel', ['heroCarousels' => $heroCarousels])
         </div>
     </section>
     @endif
@@ -209,20 +209,20 @@ Sections are rendered based on theme settings and purchase
     @endif
 
     {{-- ===================================================================
-         SECTION: Services (if enabled: $theme->show_services)
+         SECTION: Capabilities (if enabled: $theme->show_capabilities)
          =================================================================== --}}
-    @if(($theme->show_services ?? false) && isset($services) && count($services) > 0)
+    @if(($theme->show_capabilities ?? false) && isset($capabilities) && count($capabilities) > 0)
     <section class="muaadh-section">
         <div class="container">
             <div class="muaadh-services-grid">
-                @foreach ($services as $service)
+                @foreach ($capabilities as $capability)
                     <div class="muaadh-service-card">
                         <div class="muaadh-service-icon">
-                            <img src="{{ asset('assets/images/services/' . $service->photo) }}" alt="{{ $service->title }}">
+                            <img src="{{ asset('assets/images/services/' . $capability->photo) }}" alt="{{ $capability->name }}">
                         </div>
                         <div class="muaadh-service-info">
-                            <h6 class="muaadh-service-title">{{ $service->title }}</h6>
-                            <p class="muaadh-service-desc">{{ $service->details }}</p>
+                            <h6 class="muaadh-service-title">{{ $capability->name }}</h6>
+                            <p class="muaadh-service-desc">{{ $capability->details }}</p>
                         </div>
                     </div>
                 @endforeach

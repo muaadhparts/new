@@ -10,7 +10,7 @@ class Muaadhsetting extends Model
 
     protected $fillable = [
         // Basic Settings
-        'logo', 'favicon', 'title', 'copyright', 'colors',
+        'logo', 'favicon', 'site_name', 'copyright', 'colors',
 
         // ==================================
         // THEME BUILDER - COLOR SYSTEM

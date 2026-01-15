@@ -449,7 +449,7 @@
 
                 @php
                 $gs = App\Models\Muaadhsetting::find(1);
-                $platformName = $gs->title ?? __('Platform');
+                $platformName = $gs->site_name ?? __('Platform');
 
                 if($key1 == 0){
                     // Platform items (user_id = 0)

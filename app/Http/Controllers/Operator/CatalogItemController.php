@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\Models\Spec;
 use App\Models\SpecValue;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\MerchantPhoto;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
@@ -534,7 +534,7 @@ class CatalogItemController extends OperatorBaseController
 
                     //--- Logic Section
                     $data = new CatalogItem;
-                    $sign = Currency::where('is_default', '=', 1)->first();
+                    $sign = MonetaryUnit::where('is_default', '=', 1)->first();
 
                     $input['part_number'] = $line[0];
 

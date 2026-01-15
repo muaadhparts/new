@@ -24,8 +24,8 @@ class FooterContext implements ContextInterface
             StaticContent::where('footer', 1)->get()
         );
 
-        $this->socialLinks = Cache::remember('footer_social_links', 3600, fn() =>
-            DB::table('social_links')
+        $this->socialLinks = Cache::remember('footer_network_presences', 3600, fn() =>
+            DB::table('network_presences')
                 ->where('user_id', 0)
                 ->where('status', 1)
                 ->get()

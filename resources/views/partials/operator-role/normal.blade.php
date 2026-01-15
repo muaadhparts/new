@@ -214,15 +214,15 @@
 @if(Auth::guard('operator')->user()->sectionCheck('merchant_verifications'))
 
 <li>
-    <a href="#merchantVerifications" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-verification-check"></i>{{ __('Merchant Verifications') }}
+    <a href="#merchantTrustBadges" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="icofont-verification-check"></i>{{ __('Merchant Trust Badges') }}
     </a>
-    <ul class="collapse list-unstyled" id="merchantVerifications" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="merchantTrustBadges" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-vr-index','all') }}"><span>{{ __('All Verifications') }}</span></a>
+            <a href="{{ route('operator-trust-badge-index','all') }}"><span>{{ __('All Trust Badges') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('operator-vr-index','pending') }}"><span>{{ __('Pending Verifications') }}</span></a>
+            <a href="{{ route('operator-trust-badge-index','pending') }}"><span>{{ __('Pending Trust Badges') }}</span></a>
         </li>
     </ul>
 </li>
@@ -327,7 +327,7 @@
     </a>
     <ul class="collapse list-unstyled" id="homepage" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-sl-index') }}"><span>{{ __('Sliders') }}</span></a>
+            <a href="{{ route('operator-hero-carousel-index') }}"><span>{{ __('Hero Carousels') }}</span></a>
         </li>
         <li>
             <a href="{{ route('operator-fs-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
@@ -349,7 +349,7 @@
         </li>
 
         <li>
-            <a href="{{ route('operator-service-index') }}"><span>{{ __('Services') }}</span></a>
+            <a href="{{ route('operator-capability-index') }}"><span>{{ __('Capabilities') }}</span></a>
         </li>
         <li>
             <a href="{{ route('operator-brand-index') }}"><span>{{ __('Brands') }}</span></a>
@@ -413,7 +413,7 @@
     </a>
     <ul class="collapse list-unstyled" id="payments" data-bs-parent="#accordion">
         <li><a href="{{ route('operator-gs-payments') }}"><span>{{__('Payment Information')}}</span></a></li>
-        <li><a href="{{ route('operator-currency-index') }}"><span>{{ __('Currencies') }}</span></a></li>
+        <li><a href="{{ route('operator-monetary-unit-index') }}"><span>{{ __('Currencies') }}</span></a></li>
         <li><a href="{{route('operator-reward-index')}}"><span>{{__('Reward Information')}}</span></a></li>
     </ul>
 </li>
@@ -427,9 +427,9 @@
         <i class="fas fa-paper-plane"></i>{{ __('Social Settings') }}
     </a>
     <ul class="collapse list-unstyled" id="socials" data-bs-parent="#accordion">
-        <li><a href="{{route('operator-sociallink-index')}}"><span>{{ __('Social Links') }}</span></a></li>
-        <li><a href="{{route('operator-social-facebook')}}"><span>{{ __('Facebook Login') }}</span></a></li>
-        <li><a href="{{route('operator-social-google')}}"><span>{{ __('Google Login') }}</span></a></li>
+        <li><a href="{{route('operator-network-presence-index')}}"><span>{{ __('Network Presence') }}</span></a></li>
+        <li><a href="{{route('operator-connect-config-facebook')}}"><span>{{ __('Facebook Login') }}</span></a></li>
+        <li><a href="{{route('operator-connect-config-google')}}"><span>{{ __('Google Login') }}</span></a></li>
     </ul>
 </li>
 

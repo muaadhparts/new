@@ -174,9 +174,9 @@
         </li>
 
         <li
-            class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}">
+            class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}">
             <a href="#merchant-collapsed-settings"
-                class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? '' : 'collapsed' }}"
+                class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapsed-settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
@@ -190,7 +190,7 @@
                 <span class="label">@lang('Settings')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/social-link') || request()->is('merchant/social-link/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'show' : '' }}"
                 id="merchant-collapsed-settings">
                 @if ($gs->merchant_ship_info == 1)
                     <li class=""><a
@@ -204,8 +204,8 @@
                             href="{{ route('merchant-location-index') }}">@lang('Warehouse Location')</a></li>
                 @endif
                 <li class=""><a
-                        class="sidebar-sub-menu-item {{ request()->is('merchant/social-link') || request()->is('merchant/social-link/*') ? 'active' : '' }}"
-                        href="{{ route('merchant-sociallink-index') }}">@lang('Social Links')</a>
+                        class="sidebar-sub-menu-item {{ request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'active' : '' }}"
+                        href="{{ route('merchant-network-presence-index') }}">@lang('Network Presence')</a>
                 </li>
                 <li class=""><a
                         class="sidebar-sub-menu-item {{ request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}"

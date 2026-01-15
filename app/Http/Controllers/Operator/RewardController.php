@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\Reward;
 use Illuminate\Http\Request;

@@ -515,7 +515,7 @@
                         <div class="store-seller-wrapper">
                             <span> <b>@lang('Sold By :')</b>
                                 {{ getLocalizedShopName($merchant->user) }}
-                                @if ($merchant->user->checkStatus())
+                                @if ($merchant->user->isTrustBadgeVerified())
                                     <a class="verify-link" href="javascript:;" data-original-title="">
                                         {{ __('Verified') }} <i class="fas fa-check-circle"></i>
                                     </a>

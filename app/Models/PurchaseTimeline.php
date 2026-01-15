@@ -8,7 +8,7 @@ class PurchaseTimeline extends Model
 {
     protected $table = 'purchase_timelines';
 
-    protected $fillable = ['purchase_id', 'title', 'text'];
+    protected $fillable = ['purchase_id', 'name', 'text'];
 
     public function purchase()
     {

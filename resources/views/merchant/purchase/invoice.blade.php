@@ -46,7 +46,7 @@
             <!-- purchase address info -->
             <div class="user-purchase-title-wrapper">
                 <div>
-                    <h4 class="purchase-number">{{ $gs->title ?? 'MUAADH EPC' }}</h4>
+                    <h4 class="purchase-number">{{ $gs->site_name ?? 'MUAADH EPC' }}</h4>
                 </div>
 
                 <a href="{{route('merchant-purchase-print',$purchase->purchase_number)}}" class="m-btn m-btn--secondary" type="button">

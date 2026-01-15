@@ -32,7 +32,7 @@
 	<meta name="author" content="Muaadh">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
 	<!-- Title -->
-	<title>{{$gs->title}}</title>
+	<title>{{$gs->site_name}}</title>
 	<!-- favicon -->
 	<link rel="icon" type="image/x-icon" href="{{asset('assets/images/' . $gs->favicon)}}" />
 	<!-- Bootstrap -->

@@ -72,7 +72,7 @@
                              $setCurrency = [];
                            }
                        @endphp
-                        @foreach(DB::table('currencies')->get() as $dcurr)
+                        @foreach(DB::table('monetary_units')->get() as $dcurr)
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">

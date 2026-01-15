@@ -54,8 +54,8 @@ class AbuseFlagController extends OperatorBaseController
 			->addColumn('reporter', function (AbuseFlag $data) {
 				return $data->user->name;
 			})
-			->addColumn('title', function (AbuseFlag $data) {
-				$text = mb_strlen(strip_tags($data->title), 'UTF-8') > 250 ? mb_substr(strip_tags($data->title), 0, 250, 'UTF-8') . '...' : strip_tags($data->title);
+			->addColumn('name', function (AbuseFlag $data) {
+				$text = mb_strlen(strip_tags($data->name), 'UTF-8') > 250 ? mb_substr(strip_tags($data->name), 0, 250, 'UTF-8') . '...' : strip_tags($data->name);
 				return $text;
 			})
 			->editColumn('created_at', function (AbuseFlag $data) {

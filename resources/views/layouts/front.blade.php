@@ -23,7 +23,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $gs->title }}</title>
+    <title>{{ $gs->site_name }}</title>
     <!--Essential css files-->
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front/css/bootstrap.rtl.min.css') }}">
@@ -76,7 +76,7 @@
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     @endif
 
-    {{-- Header data ($brands, $static_content, $currencies, $languges) provided by GlobalDataMiddleware with caching --}}
+    {{-- Header data ($brands, $static_content, $monetaryUnits, $languges) provided by GlobalDataMiddleware with caching --}}
     <!-- header area -->
     @include('includes.frontend.header')
 

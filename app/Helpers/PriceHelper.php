@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\Models\Country;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Package;
 use App\Models\Shipping;
 use DB;
@@ -48,9 +48,9 @@ class PriceHelper
             $new_price = number_format($price, 0, $gs->decimal_separator, $gs->thousand_separator);
         }
         if (Session::has('currency')) {
-            $curr = Currency::find(Session::get('currency'));
+            $curr = MonetaryUnit::find(Session::get('currency'));
         } else {
-            $curr = Currency::where('is_default', '=', 1)->first();
+            $curr = MonetaryUnit::where('is_default', '=', 1)->first();
         }
 
         if ($gs->currency_format == 0) {
@@ -72,7 +72,7 @@ class PriceHelper
             $new_price = number_format($price, 0, $gs->decimal_separator, $gs->thousand_separator);
         }
 
-        $curr = Currency::where('is_default', '=', 1)->first();
+        $curr = MonetaryUnit::where('is_default', '=', 1)->first();
 
         if ($gs->currency_format == 0) {
             return $curr->sign . $new_price;
@@ -400,11 +400,11 @@ class PriceHelper
 
     //     if (Session::has('currency')) {
     //         $curr = cache()->remember('session_currency', now()->addDay(), function () {
-    //             return Currency::find(Session::get('currency'));
+    //             return MonetaryUnit::find(Session::get('currency'));
     //         });
     //     } else {
     //         $curr = cache()->remember('default_currency', now()->addDay(), function () {
-    //             return Currency::where('is_default', '=', 1)->first();
+    //             return MonetaryUnit::where('is_default', '=', 1)->first();
     //         });
     //     }
 
@@ -484,11 +484,11 @@ class PriceHelper
         // العملة
         if (Session::has('currency')) {
             $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return Currency::find(Session::get('currency'));
+                return MonetaryUnit::find(Session::get('currency'));
             });
         } else {
             $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return Currency::where('is_default', '=', 1)->first();
+                return MonetaryUnit::where('is_default', '=', 1)->first();
             });
         }
 

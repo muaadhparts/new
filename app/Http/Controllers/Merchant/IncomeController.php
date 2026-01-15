@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Services\MerchantAccountingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -33,7 +33,7 @@ class IncomeController extends Controller
     public function index(Request $request)
     {
         $merchantId = Auth::user()->id;
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
         $currencySign = $currency->sign ?? 'SAR ';
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
@@ -102,7 +102,7 @@ class IncomeController extends Controller
     public function taxReport(Request $request)
     {
         $merchantId = Auth::user()->id;
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
         $currencySign = $currency->sign ?? 'SAR ';
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
@@ -130,7 +130,7 @@ class IncomeController extends Controller
     public function statement(Request $request)
     {
         $merchantId = Auth::user()->id;
-        $currency = Currency::where('is_default', 1)->first();
+        $currency = MonetaryUnit::where('is_default', 1)->first();
         $currencySign = $currency->sign ?? 'SAR ';
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;

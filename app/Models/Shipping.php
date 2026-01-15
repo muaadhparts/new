@@ -1,19 +1,5 @@
 <?php
 
-// namespace App\Models;
-
-// use Illuminate\Database\Eloquent\Model;
-
-// class Shipping extends Model
-// {
-//     protected $fillable = ['user_id', 'title', 'subtitle', 'price'];
-
-//     public $timestamps = false;
-
-
-// }
-
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +14,7 @@ class Shipping extends Model
         'user_id',
         'integration_type', // none, manual, api
         'provider',
-        'title',
+        'name',
         'subtitle',
         'price',
         'free_above',
@@ -48,11 +34,4 @@ class Shipping extends Model
             ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId]);
     }
 
-    /**
-     * سكوب للتعرّف على Tryoto مؤقتًا (يفضل لاحقًا عمود provider).
-     */
-    public function scopeIsTryoto(Builder $query): Builder
-    {
-        return $query->where('title', 'M');
-    }
 }

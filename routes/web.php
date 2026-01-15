@@ -585,8 +585,8 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchant/edit/{id}', 'Operator\MerchantController@edit')->name('operator-merchant-edit');
         Route::post('/merchant/edit/{id}', 'Operator\MerchantController@update')->name('operator-merchant-update');
 
-        Route::get('/merchant/verify/{id}', 'Operator\MerchantController@verify')->name('operator-merchant-verify');
-        Route::post('/merchant/verify/{id}', 'Operator\MerchantController@verifySubmit')->name('operator-merchant-verify-submit');
+        Route::get('/merchant/request-trust-badge/{id}', 'Operator\MerchantController@requestTrustBadge')->name('operator-merchant-request-trust-badge');
+        Route::post('/merchant/request-trust-badge/{id}', 'Operator\MerchantController@requestTrustBadgeSubmit')->name('operator-merchant-request-trust-badge-submit');
 
         Route::get('/merchant/color', 'Operator\MuaadhSettingController@merchant_color')->name('operator-merchant-color');
         Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
@@ -617,20 +617,20 @@ Route::prefix('operator')->group(function () {
 
     //------------ MERCHANT COMMISSION SECTION ENDS ------------
 
-    //------------ OPERATORVENDOR VERIFICATION SECTION ------------
+    //------------ MERCHANT TRUST BADGE SECTION ------------
 
     Route::group(['middleware' => 'permissions:vendor_verifications'], function () {
 
-        Route::get('/verificatons/datatables/{status}', 'Operator\VerificationController@datatables')->name('operator-vr-datatables');
-        Route::get('/verificatons/{slug}', 'Operator\VerificationController@verificatons')->name('operator-vr-index');
-        Route::get('/verificatons/show/attachment', 'Operator\VerificationController@show')->name('operator-vr-show');
-        Route::get('/verificatons/edit/{id}', 'Operator\VerificationController@edit')->name('operator-vr-edit');
-        Route::post('/verificatons/edit/{id}', 'Operator\VerificationController@update')->name('operator-vr-update');
-        Route::get('/verificatons/status/{id1}/{id2}', 'Operator\VerificationController@status')->name('operator-vr-st');
-        Route::delete('/verificatons/delete/{id}', 'Operator\VerificationController@destroy')->name('operator-vr-delete');
+        Route::get('/trust-badges/datatables/{status}', 'Operator\TrustBadgeController@datatables')->name('operator-trust-badge-datatables');
+        Route::get('/trust-badges/{slug}', 'Operator\TrustBadgeController@index')->name('operator-trust-badge-index');
+        Route::get('/trust-badges/show/attachment', 'Operator\TrustBadgeController@show')->name('operator-trust-badge-show');
+        Route::get('/trust-badges/edit/{id}', 'Operator\TrustBadgeController@edit')->name('operator-trust-badge-edit');
+        Route::post('/trust-badges/edit/{id}', 'Operator\TrustBadgeController@update')->name('operator-trust-badge-update');
+        Route::get('/trust-badges/status/{id1}/{id2}', 'Operator\TrustBadgeController@status')->name('operator-trust-badge-status');
+        Route::delete('/trust-badges/delete/{id}', 'Operator\TrustBadgeController@destroy')->name('operator-trust-badge-delete');
     });
 
-    //------------ OPERATORVENDOR VERIFICATION SECTION ENDS ------------
+    //------------ MERCHANT TRUST BADGE SECTION ENDS ------------
 
     //------------ OPERATORSUPPORT TICKET SECTION ------------
 
@@ -725,17 +725,17 @@ Route::prefix('operator')->group(function () {
 
         Route::get('/home-page-settings', 'Operator\MuaadhSettingController@homepage')->name('operator-home-page-index');
 
-        //------------ OPERATORSLIDER SECTION ------------
+        //------------ OPERATOR HERO CAROUSEL SECTION ------------
 
-        Route::get('/slider/datatables', 'Operator\SliderController@datatables')->name('operator-sl-datatables'); //JSON REQUEST
-        Route::get('/slider', 'Operator\SliderController@index')->name('operator-sl-index');
-        Route::get('/slider/create', 'Operator\SliderController@create')->name('operator-sl-create');
-        Route::post('/slider/create', 'Operator\SliderController@store')->name('operator-sl-store');
-        Route::get('/slider/edit/{id}', 'Operator\SliderController@edit')->name('operator-sl-edit');
-        Route::post('/slider/edit/{id}', 'Operator\SliderController@update')->name('operator-sl-update');
-        Route::delete('/slider/delete/{id}', 'Operator\SliderController@destroy')->name('operator-sl-delete');
+        Route::get('/hero-carousel/datatables', 'Operator\HeroCarouselController@datatables')->name('operator-hero-carousel-datatables'); //JSON REQUEST
+        Route::get('/hero-carousel', 'Operator\HeroCarouselController@index')->name('operator-hero-carousel-index');
+        Route::get('/hero-carousel/create', 'Operator\HeroCarouselController@create')->name('operator-hero-carousel-create');
+        Route::post('/hero-carousel/create', 'Operator\HeroCarouselController@store')->name('operator-hero-carousel-store');
+        Route::get('/hero-carousel/edit/{id}', 'Operator\HeroCarouselController@edit')->name('operator-hero-carousel-edit');
+        Route::post('/hero-carousel/edit/{id}', 'Operator\HeroCarouselController@update')->name('operator-hero-carousel-update');
+        Route::delete('/hero-carousel/delete/{id}', 'Operator\HeroCarouselController@destroy')->name('operator-hero-carousel-delete');
 
-        //------------ OPERATORSLIDER SECTION ENDS ------------
+        //------------ OPERATOR HERO CAROUSEL SECTION ENDS ------------
 
         //------------ OPERATORHOME PAGE THEMES SECTION ------------
 
@@ -759,17 +759,41 @@ Route::prefix('operator')->group(function () {
         Route::delete('/featured-promo/delete/{id}', 'Operator\FeaturedPromoController@destroy')->name('operator-featured-promo-delete');
         Route::get('/country/status/{id1}/{id2}', 'Operator\FeaturedPromoController@status')->name('operator-featured-promo-status');
 
-        //------------ OPERATORSERVICE SECTION ------------
+        //------------ OPERATOR AD DISPLAY SECTION ------------
 
-        Route::get('/service/datatables', 'Operator\ServiceController@datatables')->name('operator-service-datatables'); //JSON REQUEST
-        Route::get('/service', 'Operator\ServiceController@index')->name('operator-service-index');
-        Route::get('/service/create', 'Operator\ServiceController@create')->name('operator-service-create');
-        Route::post('/service/create', 'Operator\ServiceController@store')->name('operator-service-store');
-        Route::get('/service/edit/{id}', 'Operator\ServiceController@edit')->name('operator-service-edit');
-        Route::post('/service/edit/{id}', 'Operator\ServiceController@update')->name('operator-service-update');
-        Route::delete('/service/delete/{id}', 'Operator\ServiceController@destroy')->name('operator-service-delete');
+        Route::get('/ad-display/datatables', 'Operator\AdDisplayController@datatables')->name('operator-ad-display-datatables'); //JSON REQUEST
+        Route::get('/ad-display', 'Operator\AdDisplayController@index')->name('operator-ad-display-index');
+        Route::get('/ad-display/create', 'Operator\AdDisplayController@create')->name('operator-ad-display-create');
+        Route::post('/ad-display/create', 'Operator\AdDisplayController@store')->name('operator-ad-display-store');
+        Route::get('/ad-display/edit/{id}', 'Operator\AdDisplayController@edit')->name('operator-ad-display-edit');
+        Route::post('/ad-display/edit/{id}', 'Operator\AdDisplayController@update')->name('operator-ad-display-update');
+        Route::delete('/ad-display/delete/{id}', 'Operator\AdDisplayController@destroy')->name('operator-ad-display-delete');
 
-        //------------ OPERATORSERVICE SECTION ENDS ------------
+        //------------ OPERATOR AD DISPLAY SECTION ENDS ------------
+
+        //------------ OPERATOR NAV SHORTCUT SECTION ------------
+
+        Route::get('/nav-shortcut/datatables', 'Operator\NavShortcutController@datatables')->name('operator-nav-shortcut-datatables'); //JSON REQUEST
+        Route::get('/nav-shortcut', 'Operator\NavShortcutController@index')->name('operator-nav-shortcut-index');
+        Route::get('/nav-shortcut/create', 'Operator\NavShortcutController@create')->name('operator-nav-shortcut-create');
+        Route::post('/nav-shortcut/create', 'Operator\NavShortcutController@store')->name('operator-nav-shortcut-store');
+        Route::get('/nav-shortcut/edit/{id}', 'Operator\NavShortcutController@edit')->name('operator-nav-shortcut-edit');
+        Route::post('/nav-shortcut/edit/{id}', 'Operator\NavShortcutController@update')->name('operator-nav-shortcut-update');
+        Route::delete('/nav-shortcut/delete/{id}', 'Operator\NavShortcutController@destroy')->name('operator-nav-shortcut-delete');
+
+        //------------ OPERATOR NAV SHORTCUT SECTION ENDS ------------
+
+        //------------ OPERATOR CAPABILITY SECTION ------------
+
+        Route::get('/capability/datatables', 'Operator\CapabilityController@datatables')->name('operator-capability-datatables'); //JSON REQUEST
+        Route::get('/capability', 'Operator\CapabilityController@index')->name('operator-capability-index');
+        Route::get('/capability/create', 'Operator\CapabilityController@create')->name('operator-capability-create');
+        Route::post('/capability/create', 'Operator\CapabilityController@store')->name('operator-capability-store');
+        Route::get('/capability/edit/{id}', 'Operator\CapabilityController@edit')->name('operator-capability-edit');
+        Route::post('/capability/edit/{id}', 'Operator\CapabilityController@update')->name('operator-capability-update');
+        Route::delete('/capability/delete/{id}', 'Operator\CapabilityController@destroy')->name('operator-capability-delete');
+
+        //------------ OPERATOR CAPABILITY SECTION ENDS ------------
 
         //------------ OPERATORANNOUNCEMENT SECTION ------------
 
@@ -879,13 +903,13 @@ Route::prefix('operator')->group(function () {
 
     Route::group(['middleware' => 'permissions:email_settings'], function () {
 
-        Route::get('/email-templates/datatables', 'Operator\EmailController@datatables')->name('operator-mail-datatables');
-        Route::get('/email-templates', 'Operator\EmailController@index')->name('operator-mail-index');
-        Route::get('/email-templates/{id}', 'Operator\EmailController@edit')->name('operator-mail-edit');
-        Route::post('/email-templates/{id}', 'Operator\EmailController@update')->name('operator-mail-update');
-        Route::get('/email-config', 'Operator\EmailController@config')->name('operator-mail-config');
-        Route::get('/groupemail', 'Operator\EmailController@groupemail')->name('operator-group-show');
-        Route::post('/groupemailpost', 'Operator\EmailController@groupemailpost')->name('operator-group-submit');
+        Route::get('/comms-blueprints/datatables', 'Operator\CommsBlueprintController@datatables')->name('operator-mail-datatables');
+        Route::get('/comms-blueprints', 'Operator\CommsBlueprintController@index')->name('operator-mail-index');
+        Route::get('/comms-blueprints/{id}', 'Operator\CommsBlueprintController@edit')->name('operator-mail-edit');
+        Route::post('/comms-blueprints/{id}', 'Operator\CommsBlueprintController@update')->name('operator-mail-update');
+        Route::get('/email-config', 'Operator\CommsBlueprintController@config')->name('operator-mail-config');
+        Route::get('/groupemail', 'Operator\CommsBlueprintController@groupemail')->name('operator-group-show');
+        Route::post('/groupemailpost', 'Operator\CommsBlueprintController@groupemailpost')->name('operator-group-submit');
     });
 
     if(module("otp")){
@@ -917,18 +941,18 @@ Route::prefix('operator')->group(function () {
         Route::delete('/merchant-payment/delete/{id}', 'Operator\MerchantPaymentController@destroy')->name('operator-merchant-payment-delete');
         Route::get('/merchant-payment/status/{field}/{id1}/{id2}', 'Operator\MerchantPaymentController@status')->name('operator-merchant-payment-status');
 
-        // Currency Settings
+        // Monetary Unit Settings
 
-        // MULTIPLE CURRENCY
+        // MULTIPLE MONETARY UNITS
 
-        Route::get('/currency/datatables', 'Operator\CurrencyController@datatables')->name('operator-currency-datatables'); //JSON REQUEST
-        Route::get('/currency', 'Operator\CurrencyController@index')->name('operator-currency-index');
-        Route::get('/currency/create', 'Operator\CurrencyController@create')->name('operator-currency-create');
-        Route::post('/currency/create', 'Operator\CurrencyController@store')->name('operator-currency-store');
-        Route::get('/currency/edit/{id}', 'Operator\CurrencyController@edit')->name('operator-currency-edit');
-        Route::post('/currency/update/{id}', 'Operator\CurrencyController@update')->name('operator-currency-update');
-        Route::delete('/currency/delete/{id}', 'Operator\CurrencyController@destroy')->name('operator-currency-delete');
-        Route::get('/currency/status/{id1}/{id2}', 'Operator\CurrencyController@status')->name('operator-currency-status');
+        Route::get('/monetary-unit/datatables', 'Operator\MonetaryUnitController@datatables')->name('operator-monetary-unit-datatables'); //JSON REQUEST
+        Route::get('/monetary-unit', 'Operator\MonetaryUnitController@index')->name('operator-monetary-unit-index');
+        Route::get('/monetary-unit/create', 'Operator\MonetaryUnitController@create')->name('operator-monetary-unit-create');
+        Route::post('/monetary-unit/create', 'Operator\MonetaryUnitController@store')->name('operator-monetary-unit-store');
+        Route::get('/monetary-unit/edit/{id}', 'Operator\MonetaryUnitController@edit')->name('operator-monetary-unit-edit');
+        Route::post('/monetary-unit/update/{id}', 'Operator\MonetaryUnitController@update')->name('operator-monetary-unit-update');
+        Route::delete('/monetary-unit/delete/{id}', 'Operator\MonetaryUnitController@destroy')->name('operator-monetary-unit-delete');
+        Route::get('/monetary-unit/status/{id1}/{id2}', 'Operator\MonetaryUnitController@status')->name('operator-monetary-unit-status');
 
         // -------------------- Reward Section Route ---------------------//
         Route::get('rewards/datatables', 'Operator\RewardController@datatables')->name('operator-reward-datatables');
@@ -947,27 +971,30 @@ Route::prefix('operator')->group(function () {
 
     Route::group(['middleware' => 'permissions:social_settings'], function () {
 
-        //------------ OPERATORSOCIAL LINK ------------
+        //------------ OPERATOR NETWORK PRESENCE ------------
 
-        Route::get('/social-link/datatables', 'Operator\SocialLinkController@datatables')->name('operator-sociallink-datatables'); //JSON REQUEST
-        Route::get('/social-link', 'Operator\SocialLinkController@index')->name('operator-sociallink-index');
-        Route::get('/social-link/create', 'Operator\SocialLinkController@create')->name('operator-sociallink-create');
-        Route::post('/social-link/create', 'Operator\SocialLinkController@store')->name('operator-sociallink-store');
-        Route::get('/social-link/edit/{id}', 'Operator\SocialLinkController@edit')->name('operator-sociallink-edit');
-        Route::post('/social-link/edit/{id}', 'Operator\SocialLinkController@update')->name('operator-sociallink-update');
-        Route::delete('/social-link/delete/{id}', 'Operator\SocialLinkController@destroy')->name('operator-sociallink-delete');
-        Route::get('/social-link/status/{id1}/{id2}', 'Operator\SocialLinkController@status')->name('operator-sociallink-status');
+        Route::get('/network-presence/datatables', 'Operator\NetworkPresenceController@datatables')->name('operator-network-presence-datatables'); //JSON REQUEST
+        Route::get('/network-presence', 'Operator\NetworkPresenceController@index')->name('operator-network-presence-index');
+        Route::get('/network-presence/create', 'Operator\NetworkPresenceController@create')->name('operator-network-presence-create');
+        Route::post('/network-presence/create', 'Operator\NetworkPresenceController@store')->name('operator-network-presence-store');
+        Route::get('/network-presence/edit/{id}', 'Operator\NetworkPresenceController@edit')->name('operator-network-presence-edit');
+        Route::post('/network-presence/edit/{id}', 'Operator\NetworkPresenceController@update')->name('operator-network-presence-update');
+        Route::delete('/network-presence/delete/{id}', 'Operator\NetworkPresenceController@destroy')->name('operator-network-presence-delete');
+        Route::get('/network-presence/status/{id1}/{id2}', 'Operator\NetworkPresenceController@status')->name('operator-network-presence-status');
 
-        //------------ OPERATORSOCIAL LINK ENDS ------------
-        Route::get('/social', 'Operator\SocialSettingController@index')->name('operator-social-index');
-        Route::post('/social/update', 'Operator\SocialSettingController@socialupdate')->name('operator-social-update');
-        Route::post('/social/update/all', 'Operator\SocialSettingController@socialupdateall')->name('operator-social-update-all');
-        Route::get('/social/facebook', 'Operator\SocialSettingController@facebook')->name('operator-social-facebook');
-        Route::get('/social/google', 'Operator\SocialSettingController@google')->name('operator-social-google');
-        Route::get('/social/facebook/{status}', 'Operator\SocialSettingController@facebookup')->name('operator-social-facebookup');
-        Route::get('/social/google/{status}', 'Operator\SocialSettingController@googleup')->name('operator-social-googleup');
+        //------------ OPERATOR NETWORK PRESENCE ENDS ------------
+
+        //------------ OPERATOR CONNECT CONFIG (OAuth Settings) ------------
+        Route::get('/connect-config', 'Operator\ConnectConfigController@index')->name('operator-connect-config-index');
+        Route::post('/connect-config/update', 'Operator\ConnectConfigController@socialupdate')->name('operator-connect-config-update');
+        Route::post('/connect-config/update/all', 'Operator\ConnectConfigController@socialupdateall')->name('operator-connect-config-update-all');
+        Route::get('/connect-config/facebook', 'Operator\ConnectConfigController@facebook')->name('operator-connect-config-facebook');
+        Route::get('/connect-config/google', 'Operator\ConnectConfigController@google')->name('operator-connect-config-google');
+        Route::get('/connect-config/facebook/{status}', 'Operator\ConnectConfigController@facebookup')->name('operator-connect-config-facebookup');
+        Route::get('/connect-config/google/{status}', 'Operator\ConnectConfigController@googleup')->name('operator-connect-config-googleup');
+        //------------ OPERATOR CONNECT CONFIG ENDS ------------
     });
-    //------------ OPERATORSOCIAL SETTINGS SECTION ENDS------------
+    //------------ OPERATOR CONNECT CONFIG SECTION ENDS------------
 
     //------------ OPERATORLANGUAGE SETTINGS SECTION ------------
 
@@ -994,16 +1021,16 @@ Route::prefix('operator')->group(function () {
 
     });
 
-    //------------ADMIN FONT SECTION------------------
-    Route::get('/fonts/datatables', 'Operator\FontController@datatables')->name('operator.fonts.datatables');
-    Route::get('/fonts', 'Operator\FontController@index')->name('operator.fonts.index');
-    Route::get('/fonts/create', 'Operator\FontController@create')->name('operator.fonts.create');
-    Route::post('/fonts/create', 'Operator\FontController@store')->name('operator.fonts.store');
-    Route::get('/fonts/edit/{id}', 'Operator\FontController@edit')->name('operator.fonts.edit');
-    Route::post('/fonts/edit/{id}', 'Operator\FontController@update')->name('operator.fonts.update');
-    Route::delete('/fonts/delete/{id}', 'Operator\FontController@destroy')->name('operator.fonts.delete');
-    Route::get('/fonts/status/{id}', 'Operator\FontController@status')->name('operator.fonts.status');
-    //------------ADMIN FONT SECTION------------------
+    //------------ADMIN TYPEFACE SECTION------------------
+    Route::get('/typefaces/datatables', 'Operator\TypefaceController@datatables')->name('operator.typefaces.datatables');
+    Route::get('/typefaces', 'Operator\TypefaceController@index')->name('operator.typefaces.index');
+    Route::get('/typefaces/create', 'Operator\TypefaceController@create')->name('operator.typefaces.create');
+    Route::post('/typefaces/create', 'Operator\TypefaceController@store')->name('operator.typefaces.store');
+    Route::get('/typefaces/edit/{id}', 'Operator\TypefaceController@edit')->name('operator.typefaces.edit');
+    Route::post('/typefaces/edit/{id}', 'Operator\TypefaceController@update')->name('operator.typefaces.update');
+    Route::delete('/typefaces/delete/{id}', 'Operator\TypefaceController@destroy')->name('operator.typefaces.delete');
+    Route::get('/typefaces/status/{id}', 'Operator\TypefaceController@status')->name('operator.typefaces.status');
+    //------------ADMIN TYPEFACE SECTION------------------
 
     //------------ OPERATORSEOTOOL SETTINGS SECTION ------------
 
@@ -1282,17 +1309,17 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/withdraw/create', 'Merchant\WithdrawController@create')->name('merchant-wt-create');
             Route::post('/withdraw/create', 'Merchant\WithdrawController@store')->name('merchant-wt-store');
 
-            //------------ MERCHANT SERVICE ------------
+            //------------ MERCHANT CAPABILITY ------------
 
-            Route::get('/service/datatables', 'Merchant\ServiceController@datatables')->name('merchant-service-datatables');
-            Route::get('/service', 'Merchant\ServiceController@index')->name('merchant-service-index');
-            Route::get('/service/create', 'Merchant\ServiceController@create')->name('merchant-service-create');
-            Route::post('/service/create', 'Merchant\ServiceController@store')->name('merchant-service-store');
-            Route::get('/service/edit/{id}', 'Merchant\ServiceController@edit')->name('merchant-service-edit');
-            Route::post('/service/edit/{id}', 'Merchant\ServiceController@update')->name('merchant-service-update');
-            Route::delete('/service/delete/{id}', 'Merchant\ServiceController@destroy')->name('merchant-service-delete');
+            Route::get('/capability/datatables', 'Merchant\CapabilityController@datatables')->name('merchant-capability-datatables');
+            Route::get('/capability', 'Merchant\CapabilityController@index')->name('merchant-capability-index');
+            Route::get('/capability/create', 'Merchant\CapabilityController@create')->name('merchant-capability-create');
+            Route::post('/capability/create', 'Merchant\CapabilityController@store')->name('merchant-capability-store');
+            Route::get('/capability/edit/{id}', 'Merchant\CapabilityController@edit')->name('merchant-capability-edit');
+            Route::post('/capability/edit/{id}', 'Merchant\CapabilityController@update')->name('merchant-capability-update');
+            Route::delete('/capability/delete/{id}', 'Merchant\CapabilityController@destroy')->name('merchant-capability-delete');
 
-            //------------ MERCHANT SERVICE ENDS ------------
+            //------------ MERCHANT CAPABILITY ENDS ------------
 
             //------------ MERCHANT LOCATION (Warehouse/Origin) ------------
             Route::get('/location/datatables', 'Merchant\MerchantLocationController@datatables')->name('merchant-location-datatables');
@@ -1307,18 +1334,18 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT LOCATION END ------------
 
-            //------------ MERCHANT SOCIAL LINK ------------
+            //------------ MERCHANT NETWORK PRESENCE ------------
 
-            Route::get('/social-link/datatables', 'Merchant\SocialLinkController@datatables')->name('merchant-sociallink-datatables'); //JSON REQUEST
-            Route::get('/social-link', 'Merchant\SocialLinkController@index')->name('merchant-sociallink-index');
-            Route::get('/social-link/create', 'Merchant\SocialLinkController@create')->name('merchant-sociallink-create');
-            Route::post('/social-link/create', 'Merchant\SocialLinkController@store')->name('merchant-sociallink-store');
-            Route::get('/social-link/edit/{id}', 'Merchant\SocialLinkController@edit')->name('merchant-sociallink-edit');
-            Route::post('/social-link/edit/{id}', 'Merchant\SocialLinkController@update')->name('merchant-sociallink-update');
-            Route::delete('/social-link/delete/{id}', 'Merchant\SocialLinkController@destroy')->name('merchant-sociallink-delete');
-            Route::get('/social-link/status/{id1}/{id2}', 'Merchant\SocialLinkController@status')->name('merchant-sociallink-status');
+            Route::get('/network-presence/datatables', 'Merchant\NetworkPresenceController@datatables')->name('merchant-network-presence-datatables'); //JSON REQUEST
+            Route::get('/network-presence', 'Merchant\NetworkPresenceController@index')->name('merchant-network-presence-index');
+            Route::get('/network-presence/create', 'Merchant\NetworkPresenceController@create')->name('merchant-network-presence-create');
+            Route::post('/network-presence/create', 'Merchant\NetworkPresenceController@store')->name('merchant-network-presence-store');
+            Route::get('/network-presence/edit/{id}', 'Merchant\NetworkPresenceController@edit')->name('merchant-network-presence-edit');
+            Route::post('/network-presence/edit/{id}', 'Merchant\NetworkPresenceController@update')->name('merchant-network-presence-update');
+            Route::delete('/network-presence/delete/{id}', 'Merchant\NetworkPresenceController@destroy')->name('merchant-network-presence-delete');
+            Route::get('/network-presence/status/{id1}/{id2}', 'Merchant\NetworkPresenceController@status')->name('merchant-network-presence-status');
 
-            //------------ MERCHANT SOCIAL LINK ENDS ------------
+            //------------ MERCHANT NETWORK PRESENCE ENDS ------------
 
             //------------ MERCHANT SHIPMENT TRACKING (NEW SYSTEM) ------------
 
@@ -1362,9 +1389,9 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('tax-report', "Merchant\IncomeController@taxReport")->name('merchant.tax-report');
             Route::get('statement', "Merchant\IncomeController@statement")->name('merchant.statement');
 
-            Route::get('/verify', 'Merchant\MerchantController@verify')->name('merchant-verify');
-            Route::get('/warning/verify/{id}', 'Merchant\MerchantController@warningVerify')->name('merchant-warning');
-            Route::post('/verify', 'Merchant\MerchantController@verifysubmit')->name('merchant-verify-submit');
+            Route::get('/trust-badge', 'Merchant\MerchantController@trustBadge')->name('merchant-trust-badge');
+            Route::get('/warning/trust-badge/{id}', 'Merchant\MerchantController@warningTrustBadge')->name('merchant-warning');
+            Route::post('/trust-badge', 'Merchant\MerchantController@trustBadgeSubmit')->name('merchant-trust-badge-submit');
         });
     });
 
@@ -1672,7 +1699,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/view', 'Front\CartController@view_cart')->name('front.cart-view');
     // Route removed - extraIndex merged into index() with section-based rendering
 
-    Route::get('/currency/{id}', 'Front\FrontendController@currency')->name('front.currency');
+    Route::get('/monetary-unit/{id}', 'Front\FrontendController@monetaryUnit')->name('front.monetary-unit');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');
     Route::get('/purchase/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
 

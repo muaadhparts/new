@@ -184,18 +184,18 @@ Route::group(['prefix' => 'front'], function () {
 
     //------------ Frontend Controller ------------
     Route::get('/section-customization', 'Api\Front\FrontendController@section_customization');
-    Route::get('/sliders', 'Api\Front\FrontendController@sliders');
+    Route::get('/hero-carousels', 'Api\Front\FrontendController@heroCarousels');
     Route::get('/default/language', 'Api\Front\FrontendController@defaultLanguage');
     Route::get('/language/{id}', 'Api\Front\FrontendController@language');
     Route::get('/languages', 'Api\Front\FrontendController@languages');
-    Route::get('/default/currency', 'Api\Front\FrontendController@defaultCurrency');
-    Route::get('/currency/{id}', 'Api\Front\FrontendController@currency');
-    Route::get('/currencies', 'Api\Front\FrontendController@currencies');
+    Route::get('/default/monetary-unit', 'Api\Front\FrontendController@defaultMonetaryUnit');
+    Route::get('/monetary-unit/{id}', 'Api\Front\FrontendController@monetaryUnit');
+    Route::get('/monetary-units', 'Api\Front\FrontendController@monetaryUnits');
     Route::get('/deal-of-day', 'Api\Front\FrontendController@deal');
     Route::get('/arrival', 'Api\Front\FrontendController@arrival');
     Route::get('/arrival', 'Api\Front\FrontendController@arrival');
 
-    Route::get('/services', 'Api\Front\FrontendController@services');
+    Route::get('/capabilities', 'Api\Front\FrontendController@capabilities');
     Route::get('/banners', 'Api\Front\FrontendController@banners');
     Route::get('/brands', 'Api\Front\FrontendController@brands');
     Route::get('/catalog-items', 'Api\Front\FrontendController@catalogItems');

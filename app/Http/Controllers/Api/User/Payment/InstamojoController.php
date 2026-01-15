@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Api\User\Payment;
 
 use App\Classes\Instamojo;
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\TopUp;
 use App\Models\Muaadhsetting;
 use App\Models\MerchantPayment;
@@ -24,7 +24,7 @@ class InstamojoController extends Controller
 
         $topupNumber = $request->topup_number;
         $purchase = TopUp::where('topup_number', $topupNumber)->firstOrFail();
-        $curr = Currency::where('name', '=', $purchase->currency_code)->firstOrFail();
+        $curr = MonetaryUnit::where('name', '=', $purchase->currency_code)->firstOrFail();
 
         if ($curr->name != "INR") {
             return redirect()->back()->with('unsuccess', 'Please Select INR Currency For Instamojo.');
@@ -32,7 +32,7 @@ class InstamojoController extends Controller
 
     
         $settings = Muaadhsetting::findOrFail(1);
-        $item_name = $settings->title . " Purchase";
+        $item_name = $settings->site_name . " Purchase";
         $user_email = User::findOrFail($purchase->user_id)->email;
 
         $item_amount = round($purchase->amount * $purchase->currency_value,2);

@@ -2,7 +2,7 @@
 
 namespace App\Services\MerchantCheckout;
 
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Shipping;
 use App\Models\Package;
 use App\Models\Country;
@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Session;
  */
 class MerchantPriceCalculator
 {
-    protected ?Currency $currency = null;
+    protected ?MonetaryUnit $monetaryUnit = null;
 
     public function __construct()
     {
@@ -56,9 +56,9 @@ class MerchantPriceCalculator
             'courier_fee' => round($courierFee, 2),
             'grand_total' => round($grandTotal, 2),
             'currency' => [
-                'code' => $this->getCurrency()->name,
-                'sign' => $this->getCurrency()->sign,
-                'value' => $this->getCurrency()->value,
+                'code' => $this->getMonetaryUnit()->name,
+                'sign' => $this->getMonetaryUnit()->sign,
+                'value' => $this->getMonetaryUnit()->value,
             ],
             'formatted' => [
                 'items_total' => $this->formatPrice($itemsTotal),
@@ -212,7 +212,7 @@ class MerchantPriceCalculator
      */
     public function convertToCurrency(float $amount): float
     {
-        return round($amount * $this->getCurrency()->value, 2);
+        return round($amount * $this->getMonetaryUnit()->value, 2);
     }
 
     /**
@@ -220,7 +220,7 @@ class MerchantPriceCalculator
      */
     public function convertToBase(float $amount): float
     {
-        $currencyValue = $this->getCurrency()->value;
+        $currencyValue = $this->getMonetaryUnit()->value;
         if ($currencyValue == 0) {
             return $amount;
         }
@@ -234,7 +234,7 @@ class MerchantPriceCalculator
     {
         $converted = $this->convertToCurrency($amount);
         $gs = \DB::table('muaadhsettings')->first();
-        $currency = $this->getCurrency();
+        $currency = $this->getMonetaryUnit();
 
         if ($gs && $gs->currency_format == 0) {
             return $currency->sign . number_format($converted, 2);
@@ -245,18 +245,18 @@ class MerchantPriceCalculator
     /**
      * Get current session currency
      */
-    protected function getSessionCurrency(): Currency
+    protected function getSessionMonetaryUnit(): MonetaryUnit
     {
         $currencyCode = Session::get('currency');
 
         if ($currencyCode) {
-            $currency = Currency::where('name', $currencyCode)->first();
+            $currency = MonetaryUnit::where('name', $currencyCode)->first();
             if ($currency) {
                 return $currency;
             }
         }
 
-        return Currency::where('is_default', 1)->first() ?? new Currency([
+        return MonetaryUnit::where('is_default', 1)->first() ?? new MonetaryUnit([
             'name' => 'USD',
             'sign' => '$',
             'value' => 1,
@@ -266,20 +266,20 @@ class MerchantPriceCalculator
     /**
      * Set currency
      */
-    public function setCurrency(Currency $currency): self
+    public function setMonetaryUnit(MonetaryUnit $monetaryUnit): self
     {
-        $this->currency = $currency;
+        $this->monetaryUnit = $monetaryUnit;
         return $this;
     }
 
     /**
      * Get currency (lazy loaded)
      */
-    public function getCurrency(): Currency
+    public function getMonetaryUnit(): MonetaryUnit
     {
-        if ($this->currency === null) {
-            $this->currency = $this->getSessionCurrency();
+        if ($this->monetaryUnit === null) {
+            $this->monetaryUnit = $this->getSessionMonetaryUnit();
         }
-        return $this->currency;
+        return $this->monetaryUnit;
     }
 }

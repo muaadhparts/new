@@ -8,7 +8,7 @@ class AbuseFlag extends Model
 {
     protected $table = 'abuse_flags';
 
-    protected $fillable = ['catalog_item_id', 'merchant_item_id', 'user_id', 'title', 'note'];
+    protected $fillable = ['catalog_item_id', 'merchant_item_id', 'user_id', 'name', 'note'];
 
     public function user()
     {

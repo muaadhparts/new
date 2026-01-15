@@ -18,7 +18,7 @@
                 {{-- Column 1: Logo & Contact --}}
                 <div class="muaadh-footer-col">
                     <a href="{{ route('front.index') }}" class="muaadh-footer-logo">
-                        <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="{{ $gs->title }}">
+                        <img src="{{ asset('assets/images/' . $gs->footer_logo) }}" alt="{{ $gs->site_name }}">
                     </a>
                     <p class="muaadh-footer-desc">
                         @lang('Your trusted source for genuine auto parts and accessories.')

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Courier;
 use App\{
     Models\Courier,
     Models\Withdraw,
-    Models\Currency
+    Models\MonetaryUnit
 };
 use App\Http\Controllers\Courier\CourierBaseController;
 use Illuminate\Http\Request;
@@ -16,13 +16,13 @@ class WithdrawController extends CourierBaseController
     public function index()
     {
         $withdraws = Withdraw::where('user_id', '=', $this->courier->id)->where('type', '=', 'courier')->latest('id')->paginate(12);
-        $sign = Currency::where('is_default', '=', 1)->first();
+        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
         return view('courier.withdraw.index', compact('withdraws', 'sign'));
     }
 
     public function create()
     {
-        $sign = Currency::where('is_default', '=', 1)->first();
+        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
         return view('courier.withdraw.withdraw', compact('sign'));
     }
 

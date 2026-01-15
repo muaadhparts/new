@@ -8,7 +8,7 @@ class StaticContent extends Model
 {
     protected $table = 'static_content';
 
-    protected $fillable = ['title', 'slug', 'details', 'meta_tag', 'meta_description', 'photo'];
+    protected $fillable = ['name', 'slug', 'details', 'meta_tag', 'meta_description', 'photo'];
 
     public $timestamps = false;
 }

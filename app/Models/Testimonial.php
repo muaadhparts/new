@@ -8,7 +8,7 @@ class Testimonial extends Model
 {
     protected $table = 'testimonials';
 
-    protected $fillable = ['photo', 'title', 'subtitle', 'details'];
+    protected $fillable = ['photo', 'name', 'subtitle', 'details'];
 
     public $timestamps = false;
 }

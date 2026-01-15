@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Currency;
+use App\Models\MonetaryUnit;
 use App\Models\Language;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -39,9 +39,9 @@ class FrontBaseController extends Controller
             }
 
             if (Session::has('currency')) {
-                $this->curr = Currency::find(Session::get('currency'));
+                $this->curr = MonetaryUnit::find(Session::get('currency'));
             } else {
-                $this->curr = Currency::where('is_default', '=', 1)->first();
+                $this->curr = MonetaryUnit::where('is_default', '=', 1)->first();
             }
          
             view()->share('langg', $this->language);

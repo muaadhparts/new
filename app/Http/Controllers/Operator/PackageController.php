@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\{
     Models\Package,
-    Models\Currency
+    Models\MonetaryUnit
 };
 use Illuminate\Http\Request;
 use Validator;
@@ -48,11 +48,11 @@ class PackageController extends OperatorBaseController
     {
         //--- Validation Section
         $rules = [
-            'title' => 'required|unique:packages,title',
+            'name' => 'required|unique:packages,name',
             'subtitle' => 'required',
             'price' => 'required|numeric|min:0',
         ];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
           return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -91,11 +91,11 @@ class PackageController extends OperatorBaseController
     {
         //--- Validation Section
         $rules = [
-            'title' => 'required|unique:packages,title,'.$id,
+            'name' => 'required|unique:packages,name,'.$id,
             'subtitle' => 'required',
             'price' => 'required|numeric|min:0',
         ];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $validator = Validator::make($request->all(), $rules, $customs);
 
         if ($validator->fails()) {

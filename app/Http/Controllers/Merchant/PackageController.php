@@ -29,8 +29,8 @@ class PackageController extends MerchantBaseController
     public function store(Request $request)
     {
         //--- Validation Section
-        $rules = ['title' => 'unique:packages'];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $rules = ['name' => 'unique:packages'];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         
         $request->validate($rules,$customs);
         //--- Logic Section
@@ -57,8 +57,8 @@ class PackageController extends MerchantBaseController
     public function update(Request $request, $id)
     {
         //--- Validation Section
-        $rules = ['title' => 'unique:packages,title,'.$id];
-        $customs = ['title.unique' => __('This title has already been taken.')];
+        $rules = ['name' => 'unique:packages,name,'.$id];
+        $customs = ['name.unique' => __('This name has already been taken.')];
         $request->validate($rules,$customs);
         
         //--- Logic Section

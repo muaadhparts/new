@@ -532,7 +532,7 @@ class PurchaseHelper
         }
     }
 
-    public static function mollie_currencies()
+    public static function mollieAcceptedCodes()
     {
         return array(
             'AED',
@@ -568,7 +568,7 @@ class PurchaseHelper
         );
     }
 
-    public static function flutter_currencies()
+    public static function flutterwaveAcceptedCodes()
     {
         return array(
             'BIF',
@@ -598,7 +598,7 @@ class PurchaseHelper
         );
     }
 
-    public static function mercadopago_currencies()
+    public static function mercadopagoAcceptedCodes()
     {
         return array(
             'ARS',
