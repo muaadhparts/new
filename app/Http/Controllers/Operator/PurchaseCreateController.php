@@ -357,7 +357,7 @@ class PurchaseCreateController extends OperatorBaseController
         //Sending Email To Buyer
         $data = [
             'to' => $purchase->customer_email,
-            'type' => "new_order",
+            'type' => "purchase_confirmed",
             'cname' => $purchase->customer_name,
             'oamount' => "",
             'aname' => "",

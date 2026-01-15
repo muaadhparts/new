@@ -86,7 +86,7 @@ class VoguepayController extends Controller
                     {
                     $data = [
                         'to' => $user->email,
-                        'type' => "merchant_accept",
+                        'type' => "merchant_trusted",
                         'cname' => $user->name,
                         'oamount' => "",
                         'aname' => "",

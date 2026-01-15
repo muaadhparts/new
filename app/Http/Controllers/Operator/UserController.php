@@ -127,7 +127,7 @@ class UserController extends OperatorBaseController
 
 			$data = [
 				'to' => $data->email,
-				'type' => "new_registration",
+				'type' => "welcome_customer",
 				'cname' => $data->name,
 				'oamount' => "",
 				'aname' => "",
@@ -285,16 +285,6 @@ class UserController extends OperatorBaseController
         if($user->subscribes->count() > 0)
         {
             foreach ($user->subscribes as $gal) {
-                $gal->delete();
-            }
-        }
-
-        if($user->services->count() > 0)
-        {
-            foreach ($user->services as $gal) {
-                if (file_exists(public_path().'/assets/images/services/'.$gal->photo)) {
-                    unlink(public_path().'/assets/images/services/'.$gal->photo);
-                }
                 $gal->delete();
             }
         }

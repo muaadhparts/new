@@ -748,18 +748,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/featured-promo/delete/{id}', 'Operator\FeaturedPromoController@destroy')->name('operator-featured-promo-delete');
         Route::get('/country/status/{id1}/{id2}', 'Operator\FeaturedPromoController@status')->name('operator-featured-promo-status');
 
-        //------------ OPERATOR AD DISPLAY SECTION ------------
-
-        Route::get('/ad-display/datatables', 'Operator\AdDisplayController@datatables')->name('operator-ad-display-datatables'); //JSON REQUEST
-        Route::get('/ad-display', 'Operator\AdDisplayController@index')->name('operator-ad-display-index');
-        Route::get('/ad-display/create', 'Operator\AdDisplayController@create')->name('operator-ad-display-create');
-        Route::post('/ad-display/create', 'Operator\AdDisplayController@store')->name('operator-ad-display-store');
-        Route::get('/ad-display/edit/{id}', 'Operator\AdDisplayController@edit')->name('operator-ad-display-edit');
-        Route::post('/ad-display/edit/{id}', 'Operator\AdDisplayController@update')->name('operator-ad-display-update');
-        Route::delete('/ad-display/delete/{id}', 'Operator\AdDisplayController@destroy')->name('operator-ad-display-delete');
-
-        //------------ OPERATOR AD DISPLAY SECTION ENDS ------------
-
         //------------ OPERATOR NAV SHORTCUT SECTION ------------
 
         Route::get('/nav-shortcut/datatables', 'Operator\NavShortcutController@datatables')->name('operator-nav-shortcut-datatables'); //JSON REQUEST
@@ -771,18 +759,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/nav-shortcut/delete/{id}', 'Operator\NavShortcutController@destroy')->name('operator-nav-shortcut-delete');
 
         //------------ OPERATOR NAV SHORTCUT SECTION ENDS ------------
-
-        //------------ OPERATOR CAPABILITY SECTION ------------
-
-        Route::get('/capability/datatables', 'Operator\CapabilityController@datatables')->name('operator-capability-datatables'); //JSON REQUEST
-        Route::get('/capability', 'Operator\CapabilityController@index')->name('operator-capability-index');
-        Route::get('/capability/create', 'Operator\CapabilityController@create')->name('operator-capability-create');
-        Route::post('/capability/create', 'Operator\CapabilityController@store')->name('operator-capability-store');
-        Route::get('/capability/edit/{id}', 'Operator\CapabilityController@edit')->name('operator-capability-edit');
-        Route::post('/capability/edit/{id}', 'Operator\CapabilityController@update')->name('operator-capability-update');
-        Route::delete('/capability/delete/{id}', 'Operator\CapabilityController@destroy')->name('operator-capability-delete');
-
-        //------------ OPERATOR CAPABILITY SECTION ENDS ------------
 
         //------------ OPERATORANNOUNCEMENT SECTION ------------
 
@@ -1307,18 +1283,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/withdraw', 'Merchant\WithdrawController@index')->name('merchant-wt-index');
             Route::get('/withdraw/create', 'Merchant\WithdrawController@create')->name('merchant-wt-create');
             Route::post('/withdraw/create', 'Merchant\WithdrawController@store')->name('merchant-wt-store');
-
-            //------------ MERCHANT CAPABILITY ------------
-
-            Route::get('/capability/datatables', 'Merchant\CapabilityController@datatables')->name('merchant-capability-datatables');
-            Route::get('/capability', 'Merchant\CapabilityController@index')->name('merchant-capability-index');
-            Route::get('/capability/create', 'Merchant\CapabilityController@create')->name('merchant-capability-create');
-            Route::post('/capability/create', 'Merchant\CapabilityController@store')->name('merchant-capability-store');
-            Route::get('/capability/edit/{id}', 'Merchant\CapabilityController@edit')->name('merchant-capability-edit');
-            Route::post('/capability/edit/{id}', 'Merchant\CapabilityController@update')->name('merchant-capability-update');
-            Route::delete('/capability/delete/{id}', 'Merchant\CapabilityController@destroy')->name('merchant-capability-delete');
-
-            //------------ MERCHANT CAPABILITY ENDS ------------
 
             //------------ MERCHANT LOCATION (Warehouse/Origin) ------------
             Route::get('/location/datatables', 'Merchant\MerchantLocationController@datatables')->name('merchant-location-datatables');

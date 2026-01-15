@@ -10,9 +10,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * Tables affected:
  * - abuse_flags
- * - ad_displays
  * - announcements
- * - capabilities
  * - featured_promos
  * - help_articles
  * - packages

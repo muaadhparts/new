@@ -198,29 +198,6 @@ Sections are rendered based on theme settings and purchase
     @endif
 
     {{-- ===================================================================
-         SECTION: Capabilities (if enabled: $theme->show_capabilities)
-         =================================================================== --}}
-    @if(($theme->show_capabilities ?? false) && isset($capabilities) && count($capabilities) > 0)
-    <section class="muaadh-section">
-        <div class="container">
-            <div class="muaadh-services-grid">
-                @foreach ($capabilities as $capability)
-                    <div class="muaadh-service-card">
-                        <div class="muaadh-service-icon">
-                            <img src="{{ asset('assets/images/services/' . $capability->photo) }}" alt="{{ $capability->name }}">
-                        </div>
-                        <div class="muaadh-service-info">
-                            <h6 class="muaadh-service-name">{{ $capability->name }}</h6>
-                            <p class="muaadh-service-desc">{{ $capability->details }}</p>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-    </section>
-    @endif
-
-    {{-- ===================================================================
          SECTION: Newsletter (if enabled: $theme->show_newsletter)
          =================================================================== --}}
     @if($theme->show_newsletter ?? false)

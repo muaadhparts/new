@@ -8,19 +8,16 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 // use App\Http\Resources\BlogResource; // Removed - Blog replaced with Publication
 use App\Http\Resources\HelpArticleResource;
-use App\Http\Resources\AdDisplayResource;
 use App\Http\Resources\NavShortcutResource;
 use App\Http\Resources\PurchaseTrackResource;
 use App\Http\Resources\StaticContentResource;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\CatalogItemListResource;
-use App\Http\Resources\CapabilityResource;
 use App\Models\FeaturedPromo;
 use App\Models\Announcement;
 use App\Models\Publication;
 use App\Models\MonetaryUnit;
 use App\Models\HelpArticle;
-use App\Models\AdDisplay;
 use App\Models\NavShortcut;
 use App\Models\Muaadhsetting;
 use App\Models\Language;
@@ -29,7 +26,6 @@ use App\Models\StaticContent;
 use App\Models\FrontendSetting;
 use App\Models\Brand;
 use App\Models\CatalogItem;
-use App\Models\Capability;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
@@ -171,26 +167,6 @@ class FrontendController extends Controller
         try {
             $navShortcuts = NavShortcut::all();
             return response()->json(['status' => true, 'data' => NavShortcutResource::collection($navShortcuts), 'error' => []]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
-    }
-
-    public function adDisplays()
-    {
-        try {
-            $adDisplays = AdDisplay::all();
-            return response()->json(['status' => true, 'data' => AdDisplayResource::collection($adDisplays), 'error' => []]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
-    }
-
-    public function capabilities()
-    {
-        try {
-            $capabilities = Capability::where('user_id', '=', 0)->get();
-            return response()->json(['status' => true, 'data' => CapabilityResource::collection($capabilities), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }

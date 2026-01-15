@@ -73,7 +73,7 @@ class RegisterController extends Controller
 
 			$data = [
 				'to' => $courier->email,
-				'type' => "new_registration",
+				'type' => "welcome_customer",
 				'cname' => $courier->name,
 				'oamount' => "",
 				'aname' => "",
@@ -101,7 +101,7 @@ class RegisterController extends Controller
 
 				$data = [
 					'to' => $courier->email,
-					'type' => "new_registration",
+					'type' => "welcome_customer",
 					'cname' => $courier->name,
 					'oamount' => "",
 					'aname' => "",

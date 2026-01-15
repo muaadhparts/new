@@ -92,7 +92,7 @@ class MerchantController extends OperatorBaseController
         if ($settings->is_smtp == 1) {
             $data = [
                 'to' => $user->email,
-                'type' => "merchant_verification",
+                'type' => "trust_badge_request",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",
@@ -365,7 +365,7 @@ class MerchantController extends OperatorBaseController
         if ($settings->is_smtp == 1) {
             $data = [
                 'to' => $user->email,
-                'type' => "merchant_accept",
+                'type' => "merchant_trusted",
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",

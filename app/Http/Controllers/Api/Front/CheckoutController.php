@@ -256,7 +256,7 @@ class CheckoutController extends Controller
             // Email للمشتري
             $data = [
                 'to'      => $purchase->customer_email,
-                'type'    => "new_order",
+                'type'    => "purchase_confirmed",
                 'cname'   => $purchase->customer_name,
                 'oamount' => "",
                 'aname'   => "",

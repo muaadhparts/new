@@ -172,7 +172,7 @@ class PackageController extends Controller
             if ($settings->is_smtp == 1) {
                 $data = [
                     'to' => $user->email,
-                    'type' => "merchant_accept",
+                    'type' => "merchant_trusted",
                     'cname' => $user->name,
                     'oamount' => "",
                     'aname' => "",

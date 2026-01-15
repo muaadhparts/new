@@ -23,7 +23,6 @@ class HomePageTheme extends Model
         'show_trending',
         'show_best_sellers',
         'show_blogs',
-        'show_capabilities',
         'show_newsletter',
         // Section Purchase
         'order_brands',
@@ -36,7 +35,6 @@ class HomePageTheme extends Model
         'order_trending',
         'order_best_sellers',
         'order_blogs',
-        'order_capabilities',
         'order_newsletter',
         // Section Names
         'name_brands',
@@ -73,7 +71,6 @@ class HomePageTheme extends Model
         'show_trending' => 'boolean',
         'show_best_sellers' => 'boolean',
         'show_blogs' => 'boolean',
-        'show_capabilities' => 'boolean',
         'show_newsletter' => 'boolean',
         'settings' => 'array',
     ];
@@ -129,7 +126,6 @@ class HomePageTheme extends Model
             'trending' => ['show' => $this->show_trending, 'purchase' => $this->order_trending, 'name' => $this->name_trending, 'count' => $this->count_trending],
             'best_sellers' => ['show' => $this->show_best_sellers, 'purchase' => $this->order_best_sellers, 'name' => $this->name_best_sellers, 'count' => $this->count_best_sellers],
             'blogs' => ['show' => $this->show_blogs, 'purchase' => $this->order_blogs, 'name' => $this->name_blogs, 'count' => $this->count_blogs],
-            'capabilities' => ['show' => $this->show_capabilities, 'purchase' => $this->order_capabilities],
             'newsletter' => ['show' => $this->show_newsletter, 'purchase' => $this->order_newsletter],
         ];
 

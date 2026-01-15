@@ -94,9 +94,11 @@ class RegisterController extends Controller
 
             // Welcome Email For User
 
+            // إرسال البريد الإلكتروني الترحيبي
+            $emailType = ($user->is_merchant >= 1) ? 'welcome_merchant' : 'welcome_customer';
             $data = [
                 'to' => $user->email,
-                'type' => "new_registration",
+                'type' => $emailType,
                 'cname' => $user->name,
                 'oamount' => "",
                 'aname' => "",
@@ -131,9 +133,11 @@ class RegisterController extends Controller
                 $catalogEvent->user_id = $user->id;
                 $catalogEvent->save();
 
+                // إرسال البريد الإلكتروني الترحيبي
+                $emailType = ($user->is_merchant >= 1) ? 'welcome_merchant' : 'welcome_customer';
                 $data = [
                     'to' => $user->email,
-                    'type' => "new_registration",
+                    'type' => $emailType,
                     'cname' => $user->name,
                     'oamount' => "",
                     'aname' => "",

@@ -346,9 +346,6 @@
         </li>
 
         <li>
-            <a href="{{ route('operator-capability-index') }}"><span>{{ __('Capabilities') }}</span></a>
-        </li>
-        <li>
             <a href="{{ route('operator-brand-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>
         <li>
