@@ -6,6 +6,7 @@ use App\Classes\MuaadhMailer;
 use App\Models\ReferralCommission;
 use App\Models\Cart;
 use App\Models\DeliveryCourier;
+use App\Models\MerchantCommission;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
@@ -411,8 +412,8 @@ class PurchaseController extends OperatorBaseController
         ]);
 
         if ($cartItem->user_id != 0) {
-            $prc = $cartItem->price + $this->gs->fixed_commission + ($cartItem->price / 100) * $this->gs->percentage_commission;
-            $cartItem->price = round($prc, 2);
+            $commission = MerchantCommission::getOrCreateForMerchant($cartItem->user_id);
+            $cartItem->price = round($commission->getPriceWithCommission($cartItem->price), 2);
         }
         if (!empty($prices)) {
             if (!empty($prices[0])) {
@@ -578,8 +579,8 @@ class PurchaseController extends OperatorBaseController
         ]);
 
         if ($cartItem->user_id != 0) {
-            $prc = $cartItem->price + $this->gs->fixed_commission + ($cartItem->price / 100) * $this->gs->percentage_commission;
-            $cartItem->price = round($prc, 2);
+            $commission = MerchantCommission::getOrCreateForMerchant($cartItem->user_id);
+            $cartItem->price = round($commission->getPriceWithCommission($cartItem->price), 2);
         }
         if (!empty($prices)) {
             if (!empty($prices[0])) {
