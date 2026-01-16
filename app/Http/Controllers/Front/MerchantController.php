@@ -36,8 +36,7 @@ class MerchantController extends FrontBaseController
         }
 
         $data['merchant']     = $merchant;
-        // TODO: Removed - old category system
-        $data['categories'] = collect(); // Category::where('status', 1)->get();
+        $data['categories'] = collect();
 
         // Get Brand Qualities available for this merchant
         $merchantQualityIds = DB::table('merchant_items')

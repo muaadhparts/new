@@ -28,101 +28,32 @@ Route::prefix('api/vehicle')->group(function () {
     Route::get('/search', [VehicleSearchApiController::class, 'search'])->name('api.vehicle.search');
 });
 
+// Secure stock refresh endpoint - Token via Authorization header
+Route::post('/api/stock/refresh', function (\Illuminate\Http\Request $request) {
+    // Get token from Authorization header (Bearer token)
+    $token = $request->bearerToken();
 
-
-// Route::get('/refresh-stock/{token}', function ($token) {
-//     abort_unless($token === env('REFRESH_TOKEN'), 403);
-
-//     Artisan::call('stock:full-refresh');
-//     $refreshOutput = Artisan::output();
-
-//     Artisan::call('catalogItems:update-price');
-//     $priceOutput = Artisan::output();
-
-//     return response()->json([
-//         'status' => 'success',
-//         'refresh_output' => $refreshOutput,
-//         'price_output'   => $priceOutput,
-//     ]);
-// });
-
-
-// Route::get('/refresh-stock/{token}', function ($token) {
-//     abort_unless($token === env('REFRESH_TOKEN'), 403);
-
-//     $logs = [];
-
-//     // تشغيل full-refresh
-//     Artisan::call('stock:full-refresh');
-//     $logs[] = Artisan::output();
-
-//     // تشغيل تحديث الأسعار
-//     Artisan::call('catalogItems:update-price');
-//     $logs[] = Artisan::output();
-
-//     // دمج المخرجات
-//     $output = implode("\n\n", $logs);
-
-//     // تنسيقات بالألوان
-//     $styled = htmlspecialchars($output); // أمان ضد أي أكواد
-//     $styled = preg_replace('/✔ (.*)/', '<span style="color:green;font-weight:bold">✔ $1</span>', $styled);
-//     $styled = preg_replace('/❌ (.*)/', '<span style="color:red;font-weight:bold">❌ $1</span>', $styled);
-//     $styled = preg_replace('/⚠ (.*)/', '<span style="color:orange;font-weight:bold">⚠ $1</span>', $styled);
-//     $styled = preg_replace('/ℹ (.*)/', '<span style="color:gray">ℹ $1</span>', $styled);
-//     $styled = preg_replace('/🎉 (.*)/', '<span style="color:blue;font-weight:bold">🎉 $1</span>', $styled);
-
-//     return <<<HTML
-//     <html>
-//       <head>
-//         <name>Stock Refresh Logs</name>
-//         <meta charset="utf-8">
-//         <style>
-//           body { background:#f8f9fa; font-family:Arial, sans-serif; padding:20px; }
-//           pre { background:#fff; padding:20px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
-//         </style>
-//       </head>
-//       <body>
-//         <h2>📋 Stock Refresh & Price Update Logs</h2>
-//         <pre>{$styled}</pre>
-//       </body>
-//     </html>
-//     HTML;
-// });
-
-// Route::get('/refresh-stock/{token}', function ($token) {
-//     abort_unless($token === env('REFRESH_TOKEN'), 403);
-
-//     $output = [];
-
-//     // تنزيل + استيراد + تجميع
-//     Artisan::call('stock:full-refresh');
-//     $output[] = Artisan::output();
-
-//     // تحديث الأسعار
-//     Artisan::call('catalogItems:update-price');
-//     $output[] = Artisan::output();
-
-//     // نجمع كل المخرجات ونرجعها كـ نص
-//     return "<pre>" . implode("\n\n", $output) . "</pre>";
-// });
-
-Route::get('/refresh-stock/{token}', function ($token) {
-    abort_unless($token === env('REFRESH_TOKEN'), 403);
+    // Validate token
+    if (!$token || $token !== env('REFRESH_TOKEN')) {
+        return response()->json(['error' => 'Unauthorized'], 403);
+    }
 
     $output = [];
 
     // تنزيل + استيراد + تجميع + تحديث مخزون وأسعار لبائع واحد (59) على فرع ATWJRY
     Artisan::call('stock:manage', [
         'action'    => 'full-refresh',
-        '--user_id' => 59,
-        '--margin'  => 1.3,
-        '--branch'  => 'ATWJRY',
+        '--user_id' => $request->input('user_id', 59),
+        '--margin'  => $request->input('margin', 1.3),
+        '--branch'  => $request->input('branch', 'ATWJRY'),
     ]);
     $output[] = Artisan::output();
 
-    // عرض النتائج
-    return "<pre>" . implode("\n\n", $output) . "</pre>";
-});
+    return response()->json([
+        'status' => 'success',
+        'output' => $output
+    ]);
+})->middleware('throttle:5,1')->name('api.stock.refresh'); // Rate limit: 5 requests per minute
 
 // Legacy quick checkout - redirect to cart
 Route::get('/checkout/quick', function() {
@@ -1002,7 +933,7 @@ Route::prefix('operator')->group(function () {
 
     // ------------ GLOBAL ----------------------
     Route::post('/general-settings/update/all', 'Operator\MuaadhSettingController@generalupdate')->name('operator-gs-update');
-    Route::post('/general-settings/update/te=heme', 'Operator\MuaadhSettingController@updateTheme')->name('operator-gs-update-theme');
+    Route::post('/general-settings/update/theme', 'Operator\MuaadhSettingController@updateTheme')->name('operator-gs-update-theme');
     Route::post('/general-settings/update/payment', 'Operator\MuaadhSettingController@generalupdatepayment')->name('operator-gs-update-payment');
     Route::post('/general-settings/update/mail', 'Operator\MuaadhSettingController@generalMailUpdate')->name('operator-gs-update-mail');
     Route::get('/general-settings/status/{field}/{status}', 'Operator\MuaadhSettingController@status')->name('operator-gs-status');
@@ -1116,18 +1047,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::post('delivery/send-provider-shipping', 'Merchant\DeliveryController@sendProviderShipping')->name('merchant.send.provider.shipping');
             Route::get('delivery/couriers', 'Merchant\DeliveryController@findCourier')->name('merchant.delivery.couriers');
             Route::get('delivery/merchant-locations', 'Merchant\DeliveryController@getMerchantLocations')->name('merchant.delivery.locations');
-
-            //------------ SUBCATEGORY SECTION ------------
-
-            Route::get('/load/subcategories/{id}/', 'Merchant\MerchantController@subcatload')->name('merchant-subcat-load'); //JSON REQUEST
-
-            //------------ SUBCATEGORY SECTION ENDS------------
-
-            //------------ CHILDCATEGORY SECTION ------------
-
-            Route::get('/load/childcategories/{id}/', 'Merchant\MerchantController@childcatload')->name('merchant-childcat-load'); //JSON REQUEST
-
-            //------------ CHILDCATEGORY SECTION ENDS------------
 
             //------------ MERCHANT CATALOG ITEM SECTION ------------
 
@@ -1776,7 +1695,7 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     //  CRONJOB
 
-    Route::get('/vendor/subscription/check', 'Front\FrontendController@subcheck');
+    Route::get('/merchant/subscription/check', 'Front\FrontendController@subcheck');
 
     // CRONJOB ENDS
 

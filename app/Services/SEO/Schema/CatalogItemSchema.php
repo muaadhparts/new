@@ -5,18 +5,18 @@ namespace App\Services\SEO\Schema;
 use Carbon\Carbon;
 
 /**
- * Product Schema Builder
+ * CatalogItem Schema Builder
  * يبني Schema.org Product بشكل صحيح
  */
-class ProductSchema extends SchemaBuilder
+class CatalogItemSchema extends SchemaBuilder
 {
-    protected $product;
+    protected $catalogItem;
     protected $merchant;
     protected string $currency = 'SAR';
 
-    public function setProduct($product): self
+    public function setCatalogItem($catalogItem): self
     {
-        $this->product = $product;
+        $this->catalogItem = $catalogItem;
         return $this;
     }
 
@@ -34,38 +34,38 @@ class ProductSchema extends SchemaBuilder
 
     public function build(): self
     {
-        if (!$this->product || !$this->merchant) {
+        if (!$this->catalogItem || !$this->merchant) {
             return $this;
         }
 
         $this->setContext();
         $this->setType('Product');
 
-        // Basic product info
-        $this->data['name'] = $this->product->name;
+        // Basic catalog item info
+        $this->data['name'] = $this->catalogItem->name;
         $this->data['description'] = $this->getDescription();
         $this->data['image'] = $this->getImage();
-        $this->data['sku'] = $this->product->part_number ?? $this->product->sku ?? '';
-        $this->data['mpn'] = $this->product->part_number ?? '';
+        $this->data['sku'] = $this->catalogItem->part_number ?? $this->catalogItem->sku ?? '';
+        $this->data['mpn'] = $this->catalogItem->part_number ?? '';
 
         // Brand
-        if ($this->product->brand) {
+        if ($this->catalogItem->brand) {
             $this->data['brand'] = [
                 '@type' => 'Brand',
-                'name' => $this->product->brand->name
+                'name' => $this->catalogItem->brand->name
             ];
-            $this->data['category'] = $this->product->brand->name;
+            $this->data['category'] = $this->catalogItem->brand->name;
         }
 
         // Offers
         $this->data['offers'] = $this->buildOffers();
 
         // Aggregate Rating (if available)
-        if ($this->product->reviews_count ?? false) {
+        if ($this->catalogItem->reviews_count ?? false) {
             $this->data['aggregateRating'] = [
                 '@type' => 'AggregateRating',
-                'ratingValue' => $this->product->average_rating ?? 4,
-                'reviewCount' => $this->product->reviews_count,
+                'ratingValue' => $this->catalogItem->average_rating ?? 4,
+                'reviewCount' => $this->catalogItem->reviews_count,
                 'bestRating' => 5,
                 'worstRating' => 1
             ];
@@ -77,7 +77,7 @@ class ProductSchema extends SchemaBuilder
     protected function buildOffers(): array
     {
         $url = route('front.catalog-item', [
-            'slug' => $this->product->slug,
+            'slug' => $this->catalogItem->slug,
             'merchant_id' => $this->merchant->user_id,
             'merchant_item_id' => $this->merchant->id
         ]);
@@ -99,24 +99,24 @@ class ProductSchema extends SchemaBuilder
 
     protected function getDescription(): string
     {
-        $desc = $this->product->meta_description
-            ?? strip_tags($this->product->description ?? '')
-            ?? $this->product->name;
+        $desc = $this->catalogItem->meta_description
+            ?? strip_tags($this->catalogItem->description ?? '')
+            ?? $this->catalogItem->name;
 
         return \Str::limit($desc, 500);
     }
 
     protected function getImage(): string
     {
-        if (!$this->product->photo) {
+        if (!$this->catalogItem->photo) {
             return asset('assets/images/noimage.png');
         }
 
-        if (filter_var($this->product->photo, FILTER_VALIDATE_URL)) {
-            return $this->product->photo;
+        if (filter_var($this->catalogItem->photo, FILTER_VALIDATE_URL)) {
+            return $this->catalogItem->photo;
         }
 
-        return \Storage::url($this->product->photo);
+        return \Storage::url($this->catalogItem->photo);
     }
 
     protected function getAvailability(): string

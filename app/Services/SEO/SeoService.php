@@ -3,7 +3,7 @@
 namespace App\Services\SEO;
 
 use App\Services\SEO\Schema\SchemaBuilder;
-use App\Services\SEO\Schema\ProductSchema;
+use App\Services\SEO\Schema\CatalogItemSchema;
 use App\Services\SEO\Schema\OrganizationSchema;
 use App\Services\SEO\Schema\BreadcrumbSchema;
 use App\Services\SEO\Schema\WebsiteSchema;
@@ -101,10 +101,10 @@ class SeoService
         // Set smart canonical
         $this->setProductCanonical($catalogItem, $merchantItem, 'lowest_price');
 
-        // Add Product Schema
+        // Add CatalogItem Schema
         $this->addSchema(
-            ProductSchema::create()
-                ->setProduct($catalogItem)
+            CatalogItemSchema::create()
+                ->setCatalogItem($catalogItem)
                 ->setMerchant($merchantItem)
                 ->setCurrency($currency)
         );

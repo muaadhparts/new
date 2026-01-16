@@ -43,12 +43,16 @@ class CatalogItemDetailsResource extends JsonResource
     $shopCount = null;
     if ($mp && $mp->relationLoaded('user') || ($mp && $mp->user)) {
       $shopName  = $mp->user->shop_name;
-      // ملاحظة: يمكن لاحقًا تحسين الأداء بـ withCount على العلاقة بدل count() المباشر.
-      $shopCount = $mp->user->merchantItems()->count() . ' items';
+      // Use pre-loaded count from withCount('merchantItems')
+      $shopCount = ($mp->user->merchant_items_count ?? $mp->user->merchantItems()->count()) . ' items';
     } else {
+      static $defaultOperator = null;
+      if ($defaultOperator === null) {
+        $defaultOperator = Operator::first();
+      }
       $shopName = ($this->user_id != 0 && $this->relationLoaded('user'))
           ? $this->user->shop_name
-          : Operator::first()->shop_name;
+          : ($defaultOperator->shop_name ?? 'Store');
     }
 
     return [
@@ -66,9 +70,9 @@ class CatalogItemDetailsResource extends JsonResource
       'first_image'   => \Illuminate\Support\Facades\Storage::url($this->photo) ?? asset('assets/images/noimage.png'),
       'images'        => MerchantPhotoResource::collection($this->whenLoaded('merchantPhotos', $this->merchantPhotos)),
 
-      // تقييم
-      'rating'        => $this->catalogReviews()->avg('rating') > 0
-                          ? (string) round($this->catalogReviews()->avg('rating'), 2)
+      // تقييم - Use pre-loaded aggregate from withAvg('catalogReviews', 'rating')
+      'rating'        => $this->catalog_reviews_avg_rating > 0
+                          ? (string) round($this->catalog_reviews_avg_rating, 2)
                           : (string) '0.00',
 
       // أسعار مع دعم البائع

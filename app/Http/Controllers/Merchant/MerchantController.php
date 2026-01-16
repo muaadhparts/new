@@ -181,20 +181,6 @@ class MerchantController extends MerchantBaseController
         return view('merchant.social', compact('data'));
     }
 
-    // TODO: Removed - old category system
-    // public function subcatload($id)
-    // {
-    //     $cat = Category::findOrFail($id);
-    //     return view('load.subcategory', compact('cat'));
-    // }
-
-    // TODO: Removed - old category system
-    // public function childcatload($id)
-    // {
-    //     $subcat = Subcategory::findOrFail($id);
-    //     return view('load.childcategory', compact('subcat'));
-    // }
-
     //*** GET Request
     public function trustBadge()
     {

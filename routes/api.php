@@ -86,7 +86,7 @@ Route::group(['prefix' => 'user'], function () {
 
         // --------------------- USER FAVORITE ---------------------
 
-        Route::get('/favorite/vendors', 'Api\User\ProfileController@favorites');
+        Route::get('/favorite/merchants', 'Api\User\ProfileController@favorites');
         Route::post('/favorite/store', 'Api\User\ProfileController@favorite');
         Route::get('/favorite/delete/{id}', 'Api\User\ProfileController@favdelete');
 
@@ -181,7 +181,7 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/banners', 'Api\Front\FrontendController@banners');
     Route::get('/brands', 'Api\Front\FrontendController@brands');
     Route::get('/catalog-items', 'Api\Front\FrontendController@catalogItems');
-    Route::get('/vendor/catalog-items/{id}', 'Api\Front\FrontendController@vendor_catalog_items');
+    Route::get('/merchant/catalog-items/{id}', 'Api\Front\FrontendController@merchant_items');
     Route::get('/settings', 'Api\Front\FrontendController@settings');
     Route::get('/help-articles', 'Api\Front\FrontendController@helpArticles');
     Route::get('/blogs', 'Api\Front\FrontendController@blogs');

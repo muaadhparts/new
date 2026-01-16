@@ -16,7 +16,16 @@ class CatalogItemController extends Controller
     public function catalogItemDetails($id)
     {
         try {
-            $catalogItem = CatalogItem::find($id);
+            $catalogItem = CatalogItem::with([
+                'merchantPhotos',
+                'catalogReviews',
+                'buyerNotes',
+                'merchantItems' => fn($q) => $q->where('status', 1)->with(['user' => fn($u) => $u->withCount('merchantItems')]),
+            ])
+            ->withCount('catalogReviews')
+            ->withAvg('catalogReviews', 'rating')
+            ->find($id);
+
             if (!$catalogItem) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Item not found."]]);
             }
