@@ -94,39 +94,13 @@ body[dir="rtl"] {
 }
 
 /* Slick Carousel RTL Support */
-/* Slick handles RTL internally when rtl: true is set */
-/* Only override where needed for content display */
+/* RTL is now handled by JavaScript: rtl: isRTL in slick config */
+/* Only content styling below - slick handles all carousel mechanics */
 
-/* CRITICAL: Ensure slick slides are visible in RTL */
-[dir="rtl"] .slick-carousel {
-    direction: ltr; /* Carousel container should be LTR for proper slide positioning */
-}
-
-[dir="rtl"] .slick-track {
-    direction: ltr;
-}
-
-[dir="rtl"] .slick-slide {
-    float: left; /* Ensure slides are positioned correctly */
-    direction: rtl; /* Content inside should be RTL */
-}
-
-/* Ensure content inside slides displays RTL */
-[dir="rtl"] .slick-slide .m-catalogItem-card {
-    direction: rtl;
-    text-align: right;
-}
-
+/* Content inside slides should display RTL */
+[dir="rtl"] .slick-slide .m-catalogItem-card,
 [dir="rtl"] .slick-slide .m-catalogItem-card__content {
-    direction: rtl;
     text-align: right;
-}
-
-/* Ensure slick-initialized elements are visible */
-[dir="rtl"] .slick-initialized .slick-slide {
-    display: block;
-    visibility: visible;
-    opacity: 1;
 }
 
 /* CatalogItem info section RTL */
@@ -185,17 +159,7 @@ body[dir="rtl"] {
     text-align: right;
 }
 
-/* Carousels & Carousels */
-[dir="rtl"] .slick-prev {
-    right: auto;
-    left: 25px;
-}
-
-[dir="rtl"] .slick-next {
-    left: auto;
-    right: 25px;
-}
-
+/* Bootstrap Carousel controls (non-slick) */
 [dir="rtl"] .carousel-control-prev {
     left: auto;
     right: 0;
@@ -205,6 +169,8 @@ body[dir="rtl"] {
     right: auto;
     left: 0;
 }
+
+/* Note: Slick arrow positions are handled by rtl: true in JS config */
 
 /* Pagination */
 [dir="rtl"] .pagination {

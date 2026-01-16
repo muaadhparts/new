@@ -6,7 +6,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\MerchantPhotoResource;
 use App\Http\Resources\CatalogReviewResource;
 use App\Http\Resources\BuyerNoteResource;
-use App\Models\Operator;
 
 class CatalogItemDetailsResource extends JsonResource
 {
@@ -23,11 +22,13 @@ class CatalogItemDetailsResource extends JsonResource
     // 1) التعرّف على التاجر (merchantId) من كويري سترنج ?user= أو من حقل حقناه مسبقًا على المنتج (merchant_user_id)
     $merchantId = (int) ($request->get('user') ?? $this->getAttribute('merchant_user_id') ?? 0);
 
-    // 2) جلب عرض التاجر الفعّال عبر دالّة المنتج (مضافة لديك في الموديل)
-    //    إن لم يُمرَّر merchantId سنأخذ أول عرض فعّال.
-    $mp = method_exists($this, 'activeMerchant')
-        ? $this->activeMerchant($merchantId ?: null)
-        : null;
+    // 2) جلب عرض التاجر الفعّال من الـ eager-loaded collection (لتفادي N+1)
+    //    يجب عمل eager load للـ merchantItems قبل استخدام هذا الـ Resource
+    $mp = $this->merchantItems
+      ->filter(fn($mi) => $mi->status == 1)
+      ->when($merchantId, fn($col) => $col->where('user_id', $merchantId))
+      ->sortBy('price')
+      ->first();
 
     // 3) أسعار الـ API: تعتمد على دوال الـ CatalogItem الداعمة للبائع
     $currentPrice  = method_exists($this, 'ApishowDetailsPrice')
@@ -38,21 +39,12 @@ class CatalogItemDetailsResource extends JsonResource
         ? (string) $this->ApishowPreviousPrice($merchantId ?: null)
         : (string) 0;
 
-    // 4) اسم المتجر/عدد العناصر: إن وُجد MP + علاقته بالمستخدم
+    // 4) اسم المتجر/عدد العناصر: من الـ eager-loaded user مع merchant_items_count
     $shopName = null;
     $shopCount = null;
-    if ($mp && $mp->relationLoaded('user') || ($mp && $mp->user)) {
+    if ($mp && $mp->user) {
       $shopName  = $mp->user->shop_name;
-      // Use pre-loaded count from withCount('merchantItems')
-      $shopCount = ($mp->user->merchant_items_count ?? $mp->user->merchantItems()->count()) . ' items';
-    } else {
-      static $defaultOperator = null;
-      if ($defaultOperator === null) {
-        $defaultOperator = Operator::first();
-      }
-      $shopName = ($this->user_id != 0 && $this->relationLoaded('user'))
-          ? $this->user->shop_name
-          : ($defaultOperator->shop_name ?? 'Store');
+      $shopCount = $mp->user->merchant_items_count . ' items';
     }
 
     return [

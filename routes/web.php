@@ -2,7 +2,6 @@
 
 // ************************************ OPERATOR SECTION **********************************************
 
-use App\Livewire\Catlogs;
 use App\Models\Token;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
