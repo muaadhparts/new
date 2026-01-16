@@ -502,8 +502,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/user/{id}/show', 'Operator\UserController@show')->name('operator-user-show');
         Route::get('/users/ban/{id1}/{id2}', 'Operator\UserController@ban')->name('operator-user-ban');
         Route::get('/user/default/image', 'Operator\MuaadhSettingController@user_image')->name('operator-user-image');
-        Route::get('/users/top-up/{id}', 'Operator\UserController@topUp')->name('operator-user-top-up');
-        Route::post('/user/top-up/{id}', 'Operator\UserController@topUpUpdate')->name('operator-user-top-up-update');
         Route::get('/users/merchant/{id}', 'Operator\UserController@merchant')->name('operator-user-merchant');
         Route::post('/user/merchant/{id}', 'Operator\UserController@setMerchant')->name('operator-user-merchant-update');
 
@@ -557,20 +555,6 @@ Route::prefix('operator')->group(function () {
         // COURIER MANAGEMENT SECTION ENDS
 
     });
-
-    //------------ OPERATORUSER TOP UP & TRANSACTION SECTION ------------
-
-    Route::group(['middleware' => 'permissions:customer_top_ups'], function () {
-
-        Route::get('/users/top-up/datatables/{status}', 'Operator\UserTopUpController@datatables')->name('operator-user-top-up-datatables'); //JSON REQUEST
-        Route::get('/users/top-ups/{slug}', 'Operator\UserTopUpController@topUps')->name('operator-user-top-ups');
-        Route::get('/users/top-ups/status/{id1}/{id2}', 'Operator\UserTopUpController@status')->name('operator-user-top-up-status');
-        Route::get('/wallet-logs/datatables', 'Operator\WalletLogController@transdatatables')->name('operator-wallet-log-datatables'); //JSON REQUEST
-        Route::get('/wallet-logs', 'Operator\WalletLogController@index')->name('operator-wallet-log-index');
-        Route::get('/wallet-logs/{id}/show', 'Operator\WalletLogController@transhow')->name('operator-wallet-log-show');
-    });
-
-    //------------ OPERATORUSER TOP-UP & TRANSACTION SECTION ------------
 
     //------------ OPERATORMERCHANT SECTION ------------
 
@@ -1339,6 +1323,10 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('total/earning', "Merchant\IncomeController@index")->name('merchant.income');
             Route::get('tax-report', "Merchant\IncomeController@taxReport")->name('merchant.tax-report');
             Route::get('statement', "Merchant\IncomeController@statement")->name('merchant.statement');
+
+            // -------------------------- Merchant Rewards ------------------------------------//
+            Route::get('rewards', "Merchant\RewardController@index")->name('merchant-reward-index');
+            Route::post('rewards/update', "Merchant\RewardController@update")->name('merchant-reward-update');
         });
     });
 
@@ -1383,8 +1371,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         //  --------------------- Reward Point Route ------------------------------//
         Route::get('reward/points', 'User\RewardController@rewards')->name('user-reward-index');
-        Route::get('reward/convert', 'User\RewardController@convert')->name('user-reward-convernt');
-        Route::post('reward/convert/submit', 'User\RewardController@convertSubmit')->name('user-reward-convert-submit');
 
         Route::get('/logout', 'User\LoginController@logout')->name('user-logout');
         Route::get('/dashboard', 'User\UserController@index')->name('user-dashboard');
@@ -1435,65 +1421,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
         // User Purchases Ends
 
-        // USER TOP-UP & WALLET LOGS
-
-        Route::get('/top-up/wallet-logs', 'User\TopUpController@walletLogs')->name('user-wallet-logs-index');
-        Route::get('/top-up/wallet-logs/{id}/show', 'User\TopUpController@transhow')->name('user-wallet-log-show');
-        Route::get('/top-up/index', 'User\TopUpController@index')->name('user-top-up-index');
-        Route::get('/top-up/create', 'User\TopUpController@create')->name('user-top-up-create');
-
-        // Top Up Payment Redirect
-        Route::get('/top-up/payment/cancle', 'User\TopUpController@paycancle')->name('top-up.payment.cancle');
-        Route::get('/top-up/payment/return', 'User\TopUpController@payreturn')->name('top-up.payment.return');
-
-        // Paypal
-        Route::post('/topup/paypal-submit', 'Payment\TopUp\PaypalController@store')->name('topup.paypal.submit');
-        Route::get('/topup/paypal-notify', 'Payment\TopUp\PaypalController@notify')->name('topup.paypal.notify');
-
-        // Stripe
-        Route::post('/topup/stripe-submit', 'Payment\TopUp\StripeController@store')->name('topup.stripe.submit');
-        Route::get('/topup/stripe/notify', 'Payment\TopUp\StripeController@notify')->name('topup.stripe.notify');
-
-        // Instamojo
-        Route::post('/topup/instamojo-submit', 'Payment\TopUp\InstamojoController@store')->name('topup.instamojo.submit');
-        Route::get('/topup/instamojo-notify', 'Payment\TopUp\InstamojoController@notify')->name('topup.instamojo.notify');
-
-        // Paystack
-        Route::post('/topup/paystack-submit', 'Payment\TopUp\PaystackController@store')->name('topup.paystack.submit');
-
-        // PayTM
-        Route::post('/topup/paytm-submit', 'Payment\TopUp\PaytmController@store')->name('topup.paytm.submit');;
-        Route::post('/topup/paytm-notify', 'Payment\TopUp\PaytmController@notify')->name('topup.paytm.notify');
-
-        // Molly
-        Route::post('/topup/molly-submit', 'Payment\TopUp\MollieController@store')->name('topup.molly.submit');
-        Route::get('/topup/molly-notify', 'Payment\TopUp\MollieController@notify')->name('topup.molly.notify');
-
-        // RazorPay
-        Route::post('/topup/razorpay-submit', 'Payment\TopUp\RazorpayController@store')->name('topup.razorpay.submit');
-        Route::post('/topup/razorpay-notify', 'Payment\TopUp\RazorpayController@notify')->name('topup.razorpay.notify');
-
-        // Authorize.Net
-        Route::post('/topup/authorize-submit', 'Payment\TopUp\AuthorizeController@store')->name('topup.authorize.submit');
-
-        // Mercadopago
-        Route::post('/topup/mercadopago-submit', 'Payment\TopUp\MercadopagoController@store')->name('topup.mercadopago.submit');
-
-        // Flutter Wave
-        Route::post('/topup/flutter-submit', 'Payment\TopUp\FlutterwaveController@store')->name('topup.flutter.submit');
-
-        // SSLCommerz
-        Route::post('/topup/ssl-submit', 'Payment\TopUp\SslController@store')->name('topup.ssl.submit');
-        Route::post('/topup/ssl-notify', 'Payment\TopUp\SslController@notify')->name('topup.ssl.notify');
-
-        // Voguepay
-        Route::post('/topup/voguepay-submit', 'Payment\TopUp\VoguepayController@store')->name('topup.voguepay.submit');
-
-        // Manual
-        Route::post('/topup/manual-submit', 'Payment\TopUp\ManualPaymentController@store')->name('topup.manual.submit');
-
-        // USER TOP UP ENDS
-
         // User Merchant Chat
 
         Route::post('/user/contact', 'User\ChatController@usercontact')->name('user-contact');
@@ -1531,48 +1458,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/favorite/seller', 'User\UserController@favorites')->name('user-favorites');
         Route::get('/favorite/{id1}/{id2}', 'User\UserController@favorite')->name('user-favorite');
         Route::get('/favorite/seller/{id}/delete', 'User\UserController@favdelete')->name('user-favorite-delete');
-
-        // Mobile TopUp Route section
-
-        Route::get('/api/checkout/instamojo/notify', 'Api\User\Payment\InstamojoController@notify')->name('api.user.topup.instamojo.notify');
-
-        Route::post('/api/paystack/submit', 'Api\User\Payment\PaystackController@store')->name('api.user.topup.paystack.submit');
-        // Route::post('/api/voguepay/submit', 'Api\User\Payment\VoguepayController@store')->name('api.user.topup.voguepay.submit'); // Controller file missing
-
-        Route::post('/api/instamojo/submit', 'Api\User\Payment\InstamojoController@store')->name('api.user.topup.instamojo.submit');
-        Route::post('/api/paypal-submit', 'Api\User\Payment\PaymentController@store')->name('api.user.topup.paypal.submit');
-        Route::get('/api/paypal/notify', 'Api\User\Payment\PaymentController@notify')->name('api.user.topup.payment.notify');
-        Route::post('/api/authorize-submit', 'Api\User\Payment\AuthorizeController@store')->name('api.user.topup.authorize.submit');
-
-        Route::post('/api/payment/stripe-submit', 'Api\User\Payment\StripeController@store')->name('api.user.topup.stripe.submit');
-        Route::get('/api/payment/stripe/notify', 'Api\User\Payment\StripeController@notify')->name('api.user.topup.stripe.notify');
-
-        // ssl Routes
-        Route::post('/api/ssl/submit', 'Api\User\Payment\SslController@store')->name('api.user.topup.ssl.submit');
-        Route::post('/api/ssl/notify', 'Api\User\Payment\SslController@notify')->name('api.user.topup.ssl.notify');
-        Route::post('/api/ssl/cancle', 'Api\User\Payment\SslController@cancle')->name('api.user.topup.ssl.cancle');
-
-        // Molly Routes
-        Route::post('/api/molly/submit', 'Api\User\Payment\MollyController@store')->name('api.user.topup.molly.submit');
-        Route::get('/api/molly/notify', 'Api\User\Payment\MollyController@notify')->name('api.user.topup.molly.notify');
-
-        //PayTM Routes
-        Route::post('/api/paytm-submit', 'Api\User\Payment\PaytmController@store')->name('api.user.topup.paytm.submit');;
-        Route::post('/api/paytm-callback', 'Api\User\Payment\PaytmController@paytmCallback')->name('api.user.topup.paytm.notify');
-
-        //RazorPay Routes
-        Route::post('/api/razorpay-submit', 'Api\User\Payment\RazorpayController@store')->name('api.user.topup.razorpay.submit');;
-        Route::post('/api/razorpay-callback', 'Api\User\Payment\RazorpayController@razorCallback')->name('api.user.topup.razorpay.notify');
-
-        // Mercadopago Routes
-        Route::get('/api/checkout/mercadopago/return', 'Api\User\Payment\MercadopagoController@payreturn')->name('api.user.topup.mercadopago.return');
-        Route::post('/api/checkout/mercadopago/notify', 'Api\User\Payment\MercadopagoController@notify')->name('api.user.topup.mercadopago.notify');
-        Route::post('/api/checkout/mercadopago/submit', 'Api\User\Payment\MercadopagoController@store')->name('api.user.topup.mercadopago.submit');
-        // Flutterwave Routes
-        Route::post('/api/flutter/submit', 'Api\User\Payment\FlutterWaveController@store')->name('api.user.topup.flutter.submit');
-        Route::post('/api/flutter/notify', 'Api\User\Payment\FlutterWaveController@notify')->name('api.user.topup.flutter.notify');
-
-        // Mobile TopUp Route section
 
     });
 
@@ -1868,9 +1753,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // Flutterwave Notify Routes
 
-    // TopUp
-    Route::post('/dflutter/notify', 'Payment\TopUp\FlutterwaveController@notify')->name('topup.flutter.notify');
-
     // Membership Plan
     Route::post('/uflutter/notify', 'Payment\MembershipPlan\FlutterwaveController@notify')->name('user.flutter.notify');
 
@@ -1889,7 +1771,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     })->name('front.load.payment');
 
     Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');
-    Route::get('/topup/payment/{number}', 'Api\User\TopUpController@sendTopUp')->name('user.topup.send');
 
     // MERCHANT SECTION
 

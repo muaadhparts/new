@@ -7,9 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\WithdrawDetailsResource;
 
 use App\Http\Resources\WithdrawResource;
-use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
-use App\Models\WalletLog;
 use App\Models\User;use App\Models\Withdraw;
 use Auth;
 
@@ -193,62 +191,17 @@ class WithdrawController extends Controller
 
 
     }
-    
-    
+
+
     public function convertSubmit(Request $request)
     {
-        try {
-        $curr = monetaryUnit()->getDefault();
-        $user = Auth::user();
-        $gs = Muaadhsetting::find(1);
-
-        $rules =
-        [
-            'reward_point' => 'required|integer|max:'.$user->reward.'|min:'.$gs->reward_point
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $validator->getMessageBag()->toArray()['reward_point']]]);
-          //return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-        }
-
-        $dolar = ($request->reward_point / $gs->reward_point)  * $gs->reward_dolar;
-
-        $user->reward = $user->reward - $request->reward_point;
-        $user->balance = $user->balance + $dolar;
-        $user->update();
-        $trans =  new WalletLog();
-        $trans->user_id = $user->id;
-        $trans->reward_point = $request->reward_point;
-        $trans->reward_dolar = $dolar;
-        $trans->type = 'reward';
-        $trans->save();
-
-        $mgs = __('Your Wallet Balance Added ' . ' : $'. $dolar);
-        return response()->json(['status' => true, 'data' => $mgs, 'error' => []]);
-        }
-        catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
-
-
+        // Feature disabled - wallet system removed
+        return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Reward conversion is currently unavailable.']]);
     }
-    
-    
+
+
     public function getReword(){
-        $user = Auth::user();
-        $datas = WalletLog::where('type','reward')->where('user_id',$user->id)->orderby('id','desc')->get();
-        $datas->toArray();
-        return response()->json(['status' => true, 'data' => $datas, 'error' => []]);
+        // Feature disabled - wallet system removed
+        return response()->json(['status' => true, 'data' => [], 'error' => []]);
     }
-    
-    
-    
-    
-    
-    
-    
-    
 }

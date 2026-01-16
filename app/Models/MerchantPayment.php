@@ -109,7 +109,6 @@ class MerchantPayment extends Model
                 'sslcommerz'    => 'merchant.payment.sslcommerz.process',
                 'voguepay'      => 'merchant.payment.voguepay.process',
                 'cod'           => 'merchant.payment.cod.process',
-                'wallet'        => 'merchant.payment.wallet.process',
             ];
 
             $routeName = $routeMap[$data] ?? 'merchant.payment.manual.process';
@@ -194,43 +193,6 @@ class MerchantPayment extends Model
         return $link;
     }
 
-    public function showTopUpLink()
-    {
-        $link = '';
-        $data = $this->keyword;
-        if ($data == 'paypal') {
-            $link = route('topup.paypal.submit');
-        } else if ($data == 'stripe') {
-            $link = route('topup.stripe.submit');
-        } else if ($data == 'instamojo') {
-            $link = route('topup.instamojo.submit');
-        } else if ($data == 'paystack') {
-            $link = route('topup.paystack.submit');
-        } else if ($data == 'paytm') {
-            $link = route('topup.paytm.submit');
-        } else if ($data == 'mollie') {
-            $link = route('topup.molly.submit');
-        } else if ($data == 'razorpay') {
-            $link = route('topup.razorpay.submit');
-        } else if ($data == 'authorize.net') {
-            $link = route('topup.authorize.submit');
-        } else if ($data == 'mercadopago') {
-            $link = route('topup.mercadopago.submit');
-        } else if ($data == 'flutterwave') {
-            $link = route('topup.flutter.submit');
-        } else if ($data == '2checkout') {
-            $link = route('topup.twocheckout.submit');
-        } else if ($data == 'sslcommerz') {
-            $link = route('topup.ssl.submit');
-        } else if ($data == 'voguepay') {
-            $link = route('topup.voguepay.submit');
-        } else if ($data == null) {
-            $link = route('topup.manual.submit');
-        }
-        return $link;
-    }
-
-
     public function showForm()
     {
         $show = '';
@@ -280,43 +242,6 @@ class MerchantPayment extends Model
             $link = route('api.cod.submit');
         } else {
             $link = route('api.manual.submit');
-        }
-        return $link;
-    }
-
-
-    public function ApiShowTopUpLink()
-    {
-        $link = '';
-        $data = $this->keyword;
-        if ($data == 'paypal') {
-            $link = route('api.user.topup.paypal.submit');
-        } else if ($data == 'stripe') {
-            $link = route('api.user.topup.stripe.submit');
-        } else if ($data == 'instamojo') {
-            $link = route('api.user.topup.instamojo.submit');
-        } else if ($data == 'paystack') {
-            $link = route('api.user.topup.paystack.submit');
-        } else if ($data == 'paytm') {
-            $link = route('api.user.topup.paytm.submit');
-        } else if ($data == 'mollie') {
-            $link = route('api.user.topup.molly.submit');
-        } else if ($data == 'razorpay') {
-            $link = route('api.user.topup.razorpay.submit');
-        } else if ($data == 'authorize.net') {
-            $link = route('api.user.topup.authorize.submit');
-        } else if ($data == 'mercadopago') {
-            $link = route('api.user.topup.mercadopago.submit');
-        } else if ($data == 'flutterwave') {
-            $link = route('api.user.topup.flutter.submit');
-        } else if ($data == '2checkout') {
-            $link = route('api.user.topup.twocheckout.submit');
-        } else if ($data == 'sslcommerz') {
-            $link = route('api.user.topup.ssl.submit');
-        } else if ($data == 'voguepay') {
-            $link = route('api.user.topup.voguepay.submit');
-        } else if ($data == null) {
-            $link = route('api.user.topup.manual.submit');
         }
         return $link;
     }

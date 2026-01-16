@@ -20,7 +20,6 @@ class ProfileController extends Controller
             $user = Auth::guard('api')->user();
             $data['user'] = $user;
             $data['affilate_income'] = CatalogItem::merchantConvertPrice($user->affilate_income);
-            $data['current_balance'] = CatalogItem::merchantConvertPrice($user->current_balance);
             $data['completed_purchases'] = (string) Auth::user()->purchases()->where('status', 'completed')->count();
             $data['pending_purchases'] = (string) Auth::user()->purchases()->where('status', 'pending')->count();
             $data['recent_purchases'] = (string) Auth::user()->purchases()->latest()->take(5)->get();
@@ -94,10 +93,6 @@ class ProfileController extends Controller
 
             if ($request->date) {
                 unset($input['date']);
-            }
-
-            if ($request->current_balance) {
-                unset($input['current_balance']);
             }
 
             $data->update($input);

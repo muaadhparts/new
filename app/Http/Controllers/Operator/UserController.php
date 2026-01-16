@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Operator;
 use App\{
     Models\User,
     Models\Withdraw,
-    Models\WalletLog,
     Models\MembershipPlan,
     Classes\MuaadhMailer,
     Models\UserMembershipPlan
@@ -524,41 +523,6 @@ class UserController extends OperatorBaseController
             //--- Redirect Section Ends   
         }
 
-
-
-        //*** GET Request
-        public function topUp($id)
-        {
-            $sign = $this->curr;
-            $data = User::findOrFail($id);
-            return view('operator.user.top-up',compact('data','sign'));
-        }
-
-        public function topUpUpdate(Request $request, $id)
-        {
-            $sign = $this->curr;
-            $user = User::findOrFail($id);
-            if($request->type == 'plus') {
-                $user->balance += (double)$request->amount;
-            }else{
-                $user->balance -= (double)$request->amount;
-            }
-            $user->update();
-            $walletLog = new WalletLog;
-            $walletLog->txn_number = Str::random(3).substr(time(), 6,8).Str::random(3);
-            $walletLog->amount = $request->amount;
-            $walletLog->user_id = $id;
-            $walletLog->currency_sign = $sign->sign;
-            $walletLog->currency_code = $sign->name;
-            $walletLog->currency_value = $sign->value;
-            $walletLog->method = null;
-            $walletLog->txnid = null;
-            $walletLog->details = $request->details;
-            $walletLog->type = $request->type;
-            $walletLog->save();
-            $msg = __('Data Updated Successfully.');
-            return response()->json($msg);   
-        }
 
 
         //*** GET Request - Set user as merchant

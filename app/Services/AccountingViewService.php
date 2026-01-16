@@ -207,7 +207,6 @@ class AccountingViewService
             'stripe' => __('Stripe'),
             'paypal' => __('PayPal'),
             'myfatoorah' => __('MyFatoorah'),
-            'wallet' => __('المحفظة'),
             default => $method ?? __('غير محدد'),
         };
     }

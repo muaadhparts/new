@@ -45,10 +45,9 @@
             <form action="{{route('merchant-wt-store')}}" method="POST">
                 @csrf
                 <div class="form-group">
-                    <label for="c_balance">@lang('Current Balance')</label>
-                    <input type="text" class="form-control" id="c_balance"
-                        placeholder="{{ App\Models\CatalogItem::merchantConvertPrice(Auth::user()->current_balance) }}"
-                        disabled />
+                    <div class="alert alert-info">
+                        @lang('Withdraw feature is currently unavailable.')
+                    </div>
 
                     <label for="withmethod">@lang('Withdraw Method')</label>
                     <div class="dropdown-container">

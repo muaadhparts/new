@@ -153,7 +153,6 @@ class CheckoutController extends Controller
             $input['currency_value'] = $curr->value;
             $input['pay_amount']     = $purchaseTotal / $curr->value;
             $input['purchase_number']   = Str::random(4) . time();
-            $input['wallet_price']   = ($request->wallet_price ?? 0) / $curr->value;
 
             // Tax location is now just city or country name (from frontend)
             if (!empty($input['tax_location'])) {
@@ -218,27 +217,9 @@ class CheckoutController extends Controller
             $purchase->tracks()->create(['name' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
             $purchase->notifications()->create();
 
-            if (Auth::guard('api')->check()) {
-                if ($gs->is_reward == 1) {
-                    $num = $purchase->pay_amount;
-                    $rewards = Reward::get();
-                    foreach ($rewards as $i) {
-                        $smallest[$i->purchase_amount] = abs($i->purchase_amount - $num);
-                    }
-                    asort($smallest);
-                    $final_reword = Reward::where('purchase_amount', key($smallest))->first();
-                    if ($final_reword) {
-                        Auth::guard('api')->user()->update([
-                            'reward' => (Auth::guard('api')->user()->reward + $final_reword->reward)
-                        ]);
-                    }
-                }
-            }
-
-            if (Auth::guard('api')->check()) {
-                Auth::guard('api')->user()->update([
-                    'balance' => (Auth::guard('api')->user()->balance - $purchase->wallet_price)
-                ]);
+            // Award reward points (per-merchant, based on subtotal before tax/shipping)
+            if (Auth::guard('api')->check() && $gs->is_reward == 1) {
+                $this->awardRewardPoints($cart, Auth::guard('api')->user());
             }
 
             // بدّل منطق الخصم: خصم من merchant_items بدل PurchaseHelper على catalogItems
@@ -248,10 +229,6 @@ class CheckoutController extends Controller
             // // dd('mp-stock decremented'); // اختباري
 
             PurchaseHelper::merchant_purchase_check($cart, $purchase);
-
-            if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-                PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
-            }
 
             // Email للمشتري
             $data = [
@@ -308,12 +285,6 @@ class CheckoutController extends Controller
             } else {
                 if ($input['status'] == "completed") {
 
-                    foreach ($purchase->merchantPurchases as $vorder) {
-                        $uprice = User::find($vorder->user_id);
-                        $uprice->current_balance = $uprice->current_balance + $vorder->price;
-                        $uprice->update();
-                    }
-
                     if (User::where('id', $purchase->affilate_user)->exists()) {
                         $auser = User::where('id', $purchase->affilate_user)->first();
                         $auser->affilate_income += $purchase->affilate_charge;
@@ -339,16 +310,6 @@ class CheckoutController extends Controller
                 }
 
                 if ($input['status'] == "declined") {
-
-                    if ($purchase->user_id != 0) {
-                        if ($purchase->wallet_price != 0) {
-                            $user = User::find($purchase->user_id);
-                            if ($user) {
-                                $user->balance = $user->balance + $purchase->wallet_price;
-                                $user->save();
-                            }
-                        }
-                    }
 
                     // استرجاع مخزون/مقاسات MerchantItem بدل catalogItems
                     $this->restoreMerchantStockAndSizesFromPurchase($purchase);
@@ -763,6 +724,51 @@ class CheckoutController extends Controller
             }
 
             $purchase->save();
+        }
+    }
+
+    /**
+     * Award reward points to user based on per-merchant subtotals
+     * Points are calculated from subtotal BEFORE tax/shipping
+     *
+     * @param \App\Models\Cart $cart
+     * @param \App\Models\User $user
+     * @return void
+     */
+    protected function awardRewardPoints(\App\Models\Cart $cart, \App\Models\User $user): void
+    {
+        if (empty($cart->items)) {
+            return;
+        }
+
+        // Group cart items by merchant and calculate subtotals
+        $merchantSubtotals = [];
+        foreach ($cart->items as $cartItem) {
+            $merchantId = (int) ($cartItem['item']['user_id'] ?? 0);
+            $itemPrice = (float) ($cartItem['price'] ?? 0);
+
+            if ($merchantId > 0) {
+                if (!isset($merchantSubtotals[$merchantId])) {
+                    $merchantSubtotals[$merchantId] = 0;
+                }
+                $merchantSubtotals[$merchantId] += $itemPrice;
+            }
+        }
+
+        // Calculate and award points for each merchant
+        $totalPoints = 0;
+        foreach ($merchantSubtotals as $merchantId => $subtotal) {
+            $result = Reward::calculatePointsEarned($subtotal, $merchantId);
+            if ($result['points'] > 0) {
+                $totalPoints += $result['points'];
+            }
+        }
+
+        // Update user's reward points
+        if ($totalPoints > 0) {
+            $user->update([
+                'reward' => ($user->reward + $totalPoints)
+            ]);
         }
     }
 }

@@ -305,9 +305,6 @@ class MerchantController extends OperatorBaseController
     public function reject($id)
     {
         $withdraw = Withdraw::findOrFail($id);
-        $account = User::findOrFail($withdraw->user->id);
-        $account->current_balance = $account->current_balance + $withdraw->amount + $withdraw->fee;
-        $account->update();
         $data['status'] = "rejected";
         $withdraw->update($data);
         //--- Redirect Section

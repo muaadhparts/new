@@ -9,7 +9,6 @@
 
 use App\Http\Controllers\Merchant\CheckoutMerchantController;
 use App\Http\Controllers\Merchant\Payment\CodPaymentController;
-use App\Http\Controllers\Merchant\Payment\WalletPaymentController;
 use App\Http\Controllers\Merchant\Payment\StripePaymentController;
 use App\Http\Controllers\Merchant\Payment\PaypalPaymentController;
 use App\Http\Controllers\Merchant\Payment\ManualPaymentController;
@@ -92,10 +91,6 @@ Route::prefix('merchant/{merchantId}/checkout')
         Route::post('/discount/remove', [CheckoutMerchantController::class, 'removeDiscountCode'])
             ->name('merchant.checkout.discount.remove');
 
-        // Wallet balance check
-        Route::get('/wallet/check', [CheckoutMerchantController::class, 'checkWalletBalance'])
-            ->name('merchant.checkout.wallet.check');
-
         // ====================================================================
         // PAYMENT GATEWAY ROUTES - Process Payment
         // ====================================================================
@@ -103,10 +98,6 @@ Route::prefix('merchant/{merchantId}/checkout')
         // Cash on Delivery
         Route::post('/payment/cod', [CodPaymentController::class, 'processPayment'])
             ->name('merchant.payment.cod.process');
-
-        // Wallet Payment
-        Route::post('/payment/wallet', [WalletPaymentController::class, 'processPayment'])
-            ->name('merchant.payment.wallet.process');
 
         // Manual/Bank Transfer
         Route::post('/payment/manual', [ManualPaymentController::class, 'processPayment'])

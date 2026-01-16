@@ -28,7 +28,6 @@ class MerchantResource extends JsonResource
           'city' => $this->city,
           'country' => $this->country,
           'address' => $this->address,
-          'balance' => $this->current_balance,
           'email_verified' => $this->email_verified,
           'affilate_code' => $this->affilate_code,
           'affilate_income' => $this->affilate_income,

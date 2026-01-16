@@ -295,10 +295,6 @@ class CheckoutMerchantController extends Controller
         $priceCalculator = $this->checkoutService->getPriceCalculator();
         $curr = $priceCalculator->getMonetaryUnit();
 
-        // Get wallet balance and format it
-        $walletBalance = auth()->check() ? auth()->user()->balance : 0;
-        $formattedWalletBalance = $curr->sign . number_format($walletBalance / ($curr->value ?? 1), 2);
-
         return view('merchant.checkout.payment', [
             'merchant_id' => $merchantId,
             'cart' => $result['data']['cart'] ?? [],
@@ -306,8 +302,6 @@ class CheckoutMerchantController extends Controller
             'shipping' => $result['data']['shipping'] ?? [],
             'address' => $result['data']['address'] ?? [],
             'payment_methods' => $result['data']['payment_methods'] ?? [],
-            'wallet_balance' => $walletBalance,
-            'formatted_wallet_balance' => $formattedWalletBalance,
             'curr' => $curr,
             'gs' => \DB::table('muaadhsettings')->first(),
         ]);

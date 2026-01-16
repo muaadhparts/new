@@ -106,7 +106,6 @@ class MerchantPurchaseCreator
                 'discount_amount' => $discountData['amount'] ?? 0,
                 'discount_code' => $discountData['code'] ?? '',
                 'discount_code_id' => $discountData['code_id'] ?? null,
-                'wallet_price' => $paymentData['wallet_price'] ?? 0,
 
                 // Currency
                 'currency_name' => $currency->name,

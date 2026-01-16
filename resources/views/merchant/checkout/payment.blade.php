@@ -232,19 +232,6 @@
                             </div>
                         </div>
 
-                        {{-- Wallet Balance --}}
-                        @if(auth()->check() && ($wallet_balance ?? 0) > 0)
-                        <div class="summary-inner-box">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="use_wallet" name="use_wallet" value="1">
-                                <label class="form-check-label" for="use_wallet">
-                                    @lang('Use Wallet Balance')
-                                    <span class="text-success">({{ $formatted_wallet_balance }})</span>
-                                </label>
-                            </div>
-                        </div>
-                        @endif
-
                         <div class="summary-inner-box">
                             <div class="btn-wrappers">
                                 <button type="button" class="template-btn w-100" id="place-order-btn" disabled>
@@ -374,7 +361,6 @@ $('#place-order-btn').on('click', function() {
 
     const formData = new FormData();
     formData.append('_token', $('meta[name="csrf-token"]').attr('content'));
-    formData.append('use_wallet', $('#use_wallet').is(':checked') ? 1 : 0);
 
     // Add card details if needed
     if (selectedPaymentMethod === 'authorize.net') {

@@ -175,21 +175,6 @@
 
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('customer_topups'))
-
-<li>
-    <a href="#customerTopUp" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-money"></i>{{ __('Customer Top Ups') }}
-    </a>
-    <ul class="collapse list-unstyled" id="customerTopUp" data-bs-parent="#accordion">
-        <li>
-            <a href="{{ route('operator-wallet-log-index') }}"><span>{{ __('Wallet Logs') }}</span></a>
-        </li>
-    </ul>
-</li>
-
-@endif
-
 @if(Auth::guard('operator')->user()->sectionCheck('merchants'))
 
 <li>

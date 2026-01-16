@@ -46,7 +46,6 @@ class SettlementBatch extends Model
     // === Payment Method Constants ===
     const PAYMENT_BANK_TRANSFER = 'bank_transfer';
     const PAYMENT_CASH = 'cash';
-    const PAYMENT_WALLET = 'wallet';
     const PAYMENT_CHEQUE = 'cheque';
 
     // ═══════════════════════════════════════════════════════════════

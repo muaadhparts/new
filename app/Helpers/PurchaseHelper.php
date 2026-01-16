@@ -7,7 +7,6 @@ use App\{
     Models\User,
     Models\DiscountCode,
     Models\CatalogItem,
-    Models\WalletLog,
     Models\MerchantPurchase,
     Models\MerchantCommission,
     Models\CatalogEvent,
@@ -509,27 +508,6 @@ class PurchaseHelper
         }
 
         return $result;
-    }
-
-    public static function add_to_wallet_log($data, $price)
-    {
-        try {
-            $walletLog = new WalletLog;
-            $walletLog->txn_number = Str::random(3) . substr(time(), 6, 8) . Str::random(3);
-            $walletLog->user_id = $data->user_id;
-            $walletLog->amount = $price;
-            $walletLog->currency_sign = $data->currency_sign;
-            $walletLog->currency_code = $data->currency_name;
-            $walletLog->currency_value = $data->currency_value;
-            $walletLog->details = 'Payment Via Wallet';
-            $walletLog->type = 'minus';
-            $walletLog->save();
-            $balance = $price;
-            $user = $walletLog->user;
-            $user->balance = $user->balance - $balance;
-            $user->update();
-        } catch (\Exception $e) {
-        }
     }
 
     public static function mollieAcceptedCodes()

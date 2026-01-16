@@ -349,11 +349,6 @@ class PurchaseCreateController extends OperatorBaseController
         Session::forget('admin_cart');
         Session::forget('purchase_address');
 
-
-        if ($purchase->user_id != 0 && $purchase->wallet_price != 0) {
-            PurchaseHelper::add_to_wallet_log($purchase, $purchase->wallet_price); // Store To Wallet Log
-        }
-
         //Sending Email To Buyer
         $data = [
             'to' => $purchase->customer_email,

@@ -165,16 +165,6 @@ Route::group(['prefix' => 'user'], function () {
 
         // ---------------------PACKAGE CONTROLLER ENDS ---------------------
 
-          // ---------------------TOPUP CONTROLLER ---------------------
-
-          Route::get('/topups', 'Api\User\TopUpController@topups');
-          Route::post('/topup/store', 'Api\User\TopUpController@store');
-          Route::get('/wallet-logs', 'Api\User\TopUpController@walletLogs');
-          Route::get('/wallet-log/show', 'Api\User\TopUpController@walletLogShow');
-
-          // ---------------------TOPUP CONTROLLER ENDS ---------------------
-  
-
     });
 
 });

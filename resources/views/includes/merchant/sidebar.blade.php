@@ -211,6 +211,12 @@
                         class="sidebar-sub-menu-item {{ request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}"
                         href="{{ route('merchant-credentials-index') }}">@lang('API Credentials')</a>
                 </li>
+                @if($gs->is_reward == 1)
+                <li class=""><a
+                        class="sidebar-sub-menu-item {{ request()->is('merchant/rewards') ? 'active' : '' }}"
+                        href="{{ route('merchant-reward-index') }}">@lang('Reward Points')</a>
+                </li>
+                @endif
             </ul>
         </li>
 

@@ -79,7 +79,7 @@ class PurchaseController extends OperatorBaseController
                 return $id;
             })
             ->editColumn('pay_amount', function (Purchase $data) {
-                return \PriceHelper::showOrderCurrencyPrice((($data->pay_amount + $data->wallet_price) * $data->currency_value), $data->currency_sign);
+                return \PriceHelper::showOrderCurrencyPrice(($data->pay_amount * $data->currency_value), $data->currency_sign);
             })
             ->addColumn('merchants', function (Purchase $data) {
                 // Show merchants involved in this purchase
@@ -190,13 +190,8 @@ class PurchaseController extends OperatorBaseController
                     }
 
                     foreach ($data->merchantPurchases as $merchantPurchase) {
-                        $uprice = User::find($merchantPurchase->user_id);
-                        $uprice->current_balance = $uprice->current_balance + $merchantPurchase->price;
                         $merchantPurchase->status = 'completed';
                         $merchantPurchase->update();
-
-                        $uprice->update();
-                        $uprice->update();
                     }
 
                     if (User::where('id', $data->affilate_user)->exists()) {
@@ -235,17 +230,6 @@ class PurchaseController extends OperatorBaseController
                     $mailer->sendCustomMail($maildata);
                 }
                 if ($input['status'] == "declined") {
-
-                    // Refund User Wallet If Any
-                    if ($data->user_id != 0) {
-                        if ($data->wallet_price != 0) {
-                            $user = User::find($data->user_id);
-                            if ($user) {
-                                $user->balance = $user->balance + $data->wallet_price;
-                                $user->save();
-                            }
-                        }
-                    }
 
                     $cart = $data->cart; // Model cast handles decoding
 

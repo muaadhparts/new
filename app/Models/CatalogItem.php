@@ -368,19 +368,19 @@ class CatalogItem extends Model
     public static function convertPrice($price)
     {
         // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
-        return monetaryUnit()->convertAndFormat($price);
+        return monetaryUnit()->convertAndFormat((float) ($price ?? 0));
     }
 
     public static function merchantConvertPrice($price)
     {
         // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
-        return monetaryUnit()->convertAndFormat($price);
+        return monetaryUnit()->convertAndFormat((float) ($price ?? 0));
     }
 
     public static function merchantConvertWithoutCurrencyPrice($price)
     {
         // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
-        return monetaryUnit()->convert($price);
+        return monetaryUnit()->convert((float) ($price ?? 0));
     }
 
     /**
