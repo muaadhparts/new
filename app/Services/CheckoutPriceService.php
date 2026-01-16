@@ -11,6 +11,7 @@ use App\Models\MerchantCommission;
 use App\Models\MerchantTaxSetting;
 use App\Models\CourierServiceArea;
 use App\Models\MerchantLocation;
+use App\Services\MonetaryUnitService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -62,20 +63,16 @@ class CheckoutPriceService
     }
 
     /**
-     * Load currency from session or default
+     * Load currency from MonetaryUnitService (SINGLE SOURCE OF TRUTH)
      */
     protected function loadMonetaryUnit(): void
     {
-        if (Session::has('currency')) {
-            $this->monetaryUnit = MonetaryUnit::find(Session::get('currency'));
-        }
+        // Use centralized MonetaryUnitService
+        $service = app(MonetaryUnitService::class);
 
-        if (!$this->monetaryUnit) {
-            $this->monetaryUnit = MonetaryUnit::where('is_default', 1)->first();
-        }
-
-        $this->currencyValue = $this->monetaryUnit->value ?? 1;
-        $this->currencySign = $this->monetaryUnit->sign ?? 'SAR';
+        $this->monetaryUnit = $service->getCurrent();
+        $this->currencyValue = $service->getValue();
+        $this->currencySign = $service->getSign();
     }
 
     /**

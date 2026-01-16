@@ -38,7 +38,7 @@ class StripePaymentController extends BaseMerchantPaymentController
 
         // Get checkout data
         $checkoutData = $this->getCheckoutData($merchantId);
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
 
         // Store checkout data for callback
         $this->storeInputForCallback($merchantId, [

@@ -124,7 +124,7 @@ class GlobalDataService
 
     public function getMonetaryUnit(): ?\App\Models\MonetaryUnit
     {
-        return $this->userPreferences->getCurrency();
+        return $this->userPreferences->getMonetaryUnit();
     }
 
     public function getLanguage(): ?\App\Models\Language

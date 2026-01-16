@@ -76,10 +76,10 @@ class CheckoutController extends Controller
             if (!empty($currency_code)) {
                 $curr = MonetaryUnit::where('name', '=', $currency_code)->first();
                 if (empty($curr)) {
-                    $curr = MonetaryUnit::where('is_default', '=', 1)->first();
+                    $curr = monetaryUnit()->getDefault();
                 }
             } else {
-                $curr = MonetaryUnit::where('is_default', '=', 1)->first();
+                $curr = monetaryUnit()->getDefault();
             }
 
             // حفظ نسخة خفيفة من السلة داخل الطلب
@@ -462,10 +462,10 @@ class CheckoutController extends Controller
             if (!empty($currency_code)) {
                 $curr = MonetaryUnit::where('name', '=', $currency_code)->first();
                 if (empty($curr)) {
-                    $curr = MonetaryUnit::where('is_default', '=', 1)->first();
+                    $curr = monetaryUnit()->getDefault();
                 }
             } else {
-                $curr = MonetaryUnit::where('is_default', '=', 1)->first();
+                $curr = monetaryUnit()->getDefault();
             }
 
             $size_price = ($size_price / $curr->value);

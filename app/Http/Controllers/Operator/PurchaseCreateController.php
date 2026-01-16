@@ -302,7 +302,7 @@ class PurchaseCreateController extends OperatorBaseController
 
         $address = Session::get('purchase_address');
         $input = $address;
-        $curr = MonetaryUnit::where('is_default', '=', 1)->first();
+        $curr = monetaryUnit()->getDefault();
 
         $oldCart = Session::get('admin_cart');
         $cart = new Cart($oldCart);

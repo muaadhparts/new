@@ -67,7 +67,7 @@ class CheckoutMerchantController extends Controller
         $googleMapsApiKey = \App\Models\ApiCredential::getCredential('google_maps', 'api_key');
 
         // Get currency
-        $curr = $this->checkoutService->getPriceCalculator()->getCurrency();
+        $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
         return view('merchant.checkout.address', [
             'merchant_id' => $merchantId,
@@ -139,7 +139,7 @@ class CheckoutMerchantController extends Controller
         }
 
         // Get currency
-        $curr = $this->checkoutService->getPriceCalculator()->getCurrency();
+        $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
         return view('merchant.checkout.shipping', [
             'merchant_id' => $merchantId,
@@ -293,7 +293,7 @@ class CheckoutMerchantController extends Controller
 
         // Get currency and price calculator
         $priceCalculator = $this->checkoutService->getPriceCalculator();
-        $curr = $priceCalculator->getCurrency();
+        $curr = $priceCalculator->getMonetaryUnit();
 
         // Get wallet balance and format it
         $walletBalance = auth()->check() ? auth()->user()->balance : 0;
@@ -554,7 +554,7 @@ class CheckoutMerchantController extends Controller
             'courier_fee' => $deliveryType === 'local_courier' ? $courierFee : 0,
         ]);
 
-        $curr = $priceCalculator->getCurrency();
+        $curr = $priceCalculator->getMonetaryUnit();
 
         return response()->json([
             'success' => true,
@@ -595,7 +595,7 @@ class CheckoutMerchantController extends Controller
         // Calculate total
         $total = $subtotal + $taxAmount;
 
-        $curr = $priceCalculator->getCurrency();
+        $curr = $priceCalculator->getMonetaryUnit();
 
         return response()->json([
             'success' => true,

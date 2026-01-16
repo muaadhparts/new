@@ -378,99 +378,92 @@ if (! function_exists('space_path')) {
 // ═══════════════════════════════════════════════════════════════════════════
 
 /**
+ * Get MonetaryUnitService instance (SINGLE SOURCE OF TRUTH)
+ *
+ * This is the main entry point for all currency operations.
+ * Use this helper instead of direct MonetaryUnit queries.
+ *
+ * Usage:
+ *   monetaryUnit()->getCurrent()       // Get current monetary unit
+ *   monetaryUnit()->format(100)        // Format with sign: "ر.س100.00"
+ *   monetaryUnit()->convert(100)       // Convert from SAR to current
+ *   monetaryUnit()->convertAndFormat() // Convert + format in one call
+ *
+ * @return \App\Services\MonetaryUnitService
+ */
+if (! function_exists('monetaryUnit')) {
+    function monetaryUnit(): \App\Services\MonetaryUnitService
+    {
+        return app(\App\Services\MonetaryUnitService::class);
+    }
+}
+
+/**
  * Get current MonetaryUnit (from session or default)
  *
- * This is the SINGLE source of truth for resolving the current monetary unit.
- * All code should use this helper instead of direct MonetaryUnit queries.
- *
- * @param bool $useCache Whether to use cache (default: true)
+ * @deprecated Use monetaryUnit()->getCurrent() instead
  * @return \App\Models\MonetaryUnit|null
  */
 if (! function_exists('getCurrentMonetaryUnit')) {
-    function getCurrentMonetaryUnit(bool $useCache = true): ?\App\Models\MonetaryUnit
+    function getCurrentMonetaryUnit(): ?\App\Models\MonetaryUnit
     {
-        $sessionKey = 'currency'; // Session key for user's selected monetary unit
-
-        // If user has selected a specific monetary unit
-        if (\Illuminate\Support\Facades\Session::has($sessionKey)) {
-            $id = \Illuminate\Support\Facades\Session::get($sessionKey);
-
-            if ($useCache) {
-                return \Illuminate\Support\Facades\Cache::remember(
-                    "monetary_unit_{$id}",
-                    3600,
-                    fn() => \App\Models\MonetaryUnit::find($id)
-                );
-            }
-
-            return \App\Models\MonetaryUnit::find($id);
-        }
-
-        // Return default monetary unit
-        return getDefaultMonetaryUnit($useCache);
+        return monetaryUnit()->getCurrent();
     }
 }
 
 /**
  * Get default MonetaryUnit (is_default = 1)
  *
- * @param bool $useCache Whether to use cache (default: true)
+ * @deprecated Use monetaryUnit()->getDefault() instead
  * @return \App\Models\MonetaryUnit|null
  */
 if (! function_exists('getDefaultMonetaryUnit')) {
-    function getDefaultMonetaryUnit(bool $useCache = true): ?\App\Models\MonetaryUnit
+    function getDefaultMonetaryUnit(): ?\App\Models\MonetaryUnit
     {
-        if ($useCache) {
-            return \Illuminate\Support\Facades\Cache::remember(
-                'default_monetary_unit',
-                3600,
-                fn() => \App\Models\MonetaryUnit::where('is_default', 1)->first()
-            );
-        }
-
-        return \App\Models\MonetaryUnit::where('is_default', 1)->first();
+        return monetaryUnit()->getDefault();
     }
 }
 
 /**
  * Get MonetaryUnit by code (e.g., 'SAR', 'USD')
  *
+ * @deprecated Use monetaryUnit()->getByCode($code) instead
  * @param string $code
- * @param bool $useCache
  * @return \App\Models\MonetaryUnit|null
  */
 if (! function_exists('getMonetaryUnitByCode')) {
-    function getMonetaryUnitByCode(string $code, bool $useCache = true): ?\App\Models\MonetaryUnit
+    function getMonetaryUnitByCode(string $code): ?\App\Models\MonetaryUnit
     {
-        if ($useCache) {
-            return \Illuminate\Support\Facades\Cache::remember(
-                "monetary_unit_code_{$code}",
-                3600,
-                fn() => \App\Models\MonetaryUnit::where('name', $code)->first()
-            );
-        }
-
-        return \App\Models\MonetaryUnit::where('name', $code)->first();
+        return monetaryUnit()->getByCode($code);
     }
 }
 
 /**
  * Get all active MonetaryUnits
  *
- * @param bool $useCache
+ * @deprecated Use monetaryUnit()->getAll() instead
  * @return \Illuminate\Support\Collection
  */
 if (! function_exists('getAllMonetaryUnits')) {
-    function getAllMonetaryUnits(bool $useCache = true): \Illuminate\Support\Collection
+    function getAllMonetaryUnits(): \Illuminate\Support\Collection
     {
-        if ($useCache) {
-            return \Illuminate\Support\Facades\Cache::remember(
-                'all_monetary_units',
-                3600,
-                fn() => \App\Models\MonetaryUnit::all()
-            );
-        }
+        return monetaryUnit()->getAll();
+    }
+}
 
-        return \App\Models\MonetaryUnit::all();
+/**
+ * Format price with currency (convenience helper)
+ *
+ * @param float $amount Amount to format
+ * @param bool $convert Whether to convert from base currency first
+ * @return string Formatted price with currency sign
+ */
+if (! function_exists('formatPrice')) {
+    function formatPrice(float $amount, bool $convert = false): string
+    {
+        if ($convert) {
+            return monetaryUnit()->convertAndFormat($amount);
+        }
+        return monetaryUnit()->format($amount);
     }
 }

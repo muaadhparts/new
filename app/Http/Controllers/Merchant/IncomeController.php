@@ -33,7 +33,7 @@ class IncomeController extends Controller
     public function index(Request $request)
     {
         $merchantId = Auth::user()->id;
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currencySign = $currency->sign ?? 'SAR ';
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
@@ -102,7 +102,7 @@ class IncomeController extends Controller
     public function taxReport(Request $request)
     {
         $merchantId = Auth::user()->id;
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currencySign = $currency->sign ?? 'SAR ';
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
@@ -130,7 +130,7 @@ class IncomeController extends Controller
     public function statement(Request $request)
     {
         $merchantId = Auth::user()->id;
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currencySign = $currency->sign ?? 'SAR ';
 
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;

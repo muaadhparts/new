@@ -243,24 +243,15 @@ class MerchantPriceCalculator
     }
 
     /**
-     * Get current session currency
+     * Get current session currency (via MonetaryUnitService - SINGLE SOURCE OF TRUTH)
      */
     protected function getSessionMonetaryUnit(): MonetaryUnit
     {
-        $currencyCode = Session::get('currency');
-
-        if ($currencyCode) {
-            $currency = MonetaryUnit::where('name', $currencyCode)->first();
-            if ($currency) {
-                return $currency;
-            }
+        $curr = monetaryUnit()->getCurrent();
+        if (!$curr) {
+            throw new \RuntimeException('No monetary unit configured. Please set a default monetary unit in the database.');
         }
-
-        return MonetaryUnit::where('is_default', 1)->first() ?? new MonetaryUnit([
-            'name' => 'USD',
-            'sign' => '$',
-            'value' => 1,
-        ]);
+        return $curr;
     }
 
     /**

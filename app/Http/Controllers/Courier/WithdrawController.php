@@ -16,13 +16,13 @@ class WithdrawController extends CourierBaseController
     public function index()
     {
         $withdraws = Withdraw::where('user_id', '=', $this->courier->id)->where('type', '=', 'courier')->latest('id')->paginate(12);
-        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
+        $sign = monetaryUnit()->getDefault();
         return view('courier.withdraw.index', compact('withdraws', 'sign'));
     }
 
     public function create()
     {
-        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
+        $sign = monetaryUnit()->getDefault();
         return view('courier.withdraw.withdraw', compact('sign'));
     }
 

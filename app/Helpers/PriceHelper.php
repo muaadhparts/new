@@ -38,66 +38,20 @@ class PriceHelper
 
     public static function showCurrencyPrice($price)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-            return DB::table('muaadhsettings')->first();
-        });
-        $new_price = 0;
-        if (is_numeric($price) && floor($price) != $price) {
-            $new_price = number_format($price, 2, $gs->decimal_separator, $gs->thousand_separator);
-        } else {
-            $new_price = number_format($price, 0, $gs->decimal_separator, $gs->thousand_separator);
-        }
-        if (Session::has('currency')) {
-            $curr = MonetaryUnit::find(Session::get('currency'));
-        } else {
-            $curr = MonetaryUnit::where('is_default', '=', 1)->first();
-        }
-
-        if ($gs->currency_format == 0) {
-            return $curr->sign . $new_price;
-        } else {
-            return $new_price . $curr->sign;
-        }
+        // Use centralized MonetaryUnitService
+        return monetaryUnit()->format((float) $price);
     }
 
     public static function showAdminCurrencyPrice($price)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-            return DB::table('muaadhsettings')->first();
-        });
-        $new_price = 0;
-        if (is_numeric($price) && floor($price) != $price) {
-            $new_price = number_format($price, 2, $gs->decimal_separator, $gs->thousand_separator);
-        } else {
-            $new_price = number_format($price, 0, $gs->decimal_separator, $gs->thousand_separator);
-        }
-
-        $curr = MonetaryUnit::where('is_default', '=', 1)->first();
-
-        if ($gs->currency_format == 0) {
-            return $curr->sign . $new_price;
-        } else {
-            return $new_price . $curr->sign;
-        }
+        // Use centralized MonetaryUnitService with base/default currency
+        return monetaryUnit()->formatBase((float) $price);
     }
 
     public static function showOrderCurrencyPrice($price, $currency)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-            return DB::table('muaadhsettings')->first();
-        });
-        $new_price = 0;
-        if (is_numeric($price) && floor($price) != $price) {
-            $new_price = number_format($price, 2, $gs->decimal_separator, $gs->thousand_separator);
-        } else {
-            $new_price = number_format($price, 0, $gs->decimal_separator, $gs->thousand_separator);
-        }
-
-        if ($gs->currency_format == 0) {
-            return $currency . $new_price;
-        } else {
-            return $new_price . $currency;
-        }
+        // Use centralized MonetaryUnitService with custom sign
+        return monetaryUnit()->formatWith((float) $price, $currency);
     }
 
     public static function ImageCreateName($image)
@@ -106,140 +60,6 @@ class PriceHelper
         return $name;
     }
 
-//     public static function getPurchaseTotal($input, $cart)
-//     {
-//         try {
-//             $merchant_ids = [];
-//             foreach ($cart->items as $item) {
-//                 if (!in_array($item['item']['user_id'], $merchant_ids)) {
-//                     $merchant_ids[] = $item['item']['user_id'];
-//                 }
-//             }
-
-//             $gs = DB::table('muaadhsettings')->first();
-
-//             $totalAmount = $cart->totalPrice;
-//             $tax_amount = 0;
-//             if ($input['tax'] && @$input['tax_type']) {
-//                 if (@$input['tax_type'] == 'state_tax') {
-//                     $tax = State::findOrFail($input['tax'])->tax;
-//                 } else {
-//                     $tax = Country::findOrFail($input['tax'])->tax;
-//                 }
-//                 $tax_amount = ($totalAmount / 100) * $tax;
-//                 $totalAmount = $totalAmount + $tax_amount;
-
-//             }
-
-//             if ($gs->multiple_shipping == 0) {
-//                 $merchant_shipping_ids = [];
-//                 $merchant_packing_ids = [];
-//                 foreach ($merchant_ids as $merchant_id) {
-//                     $merchant_shipping_ids[$merchant_id] = isset($input['shipping_id']) && $input['shipping_id'] != 0 ? $input['shipping_id'] : null;
-//                     $merchant_packing_ids[$merchant_id] = isset($input['packaging_id']) && $input['packaging_id'] != 0 ? $input['packaging_id'] : null;
-//                 }
-
-
-//                 $shipping = isset($input['shipping_id']) && $input['shipping_id'] != 0 ? Shipping::findOrFail($input['shipping_id']) : null;
-
-
-//                 $packeing = isset($input['packaging_id']) && $input['packaging_id'] != 0 ? Package::findOrFail($input['packaging_id']) : null;
-
-//                 $totalAmount = $totalAmount+@$shipping->price+@$packeing->price;
-
-//                 if (isset($input['discount_code_id']) && !empty($input['discount_code_id'])) {
-//                     $totalAmount = $totalAmount - $input['discount_amount'];
-//                 }
-
-
-//                 return [
-//                     'total_amount' => $totalAmount,
-//                     'shipping' => $shipping,
-//                     'packeing' => $packeing,
-//                     'is_shipping' => 0,
-//                     'tax'            => $tax_amount, // ✅ أُضيفت قيمة الضريبة
-//                     'merchant_shipping_ids' => @json_encode($merchant_shipping_ids),
-//                     'merchant_packing_ids' => @json_encode($merchant_packing_ids),
-//                     'merchant_ids' => @json_encode($merchant_ids),
-//                     'success' => true,
-//                 ];
-
-//             } else {
-
-//                 if (isset($input['shipping']) && gettype($input['shipping']) == 'string') {
-//                     $shippingData = json_decode($input['shipping'], true);
-// //                    dd($shippingData);
-//                 } else {
-//                     $shippingData = isset($input['shipping']) ? $input['shipping'] : null;
-// //                    dd($shippingData);
-//                 }
-// //                dd($input);
-//                 $shipping_cost = 0;
-//                 $packaging_cost = 0;
-//                 $merchant_ids = [];
-//                 if (isset($input['shipping']) && $input['shipping'] != 0 && is_array($shippingData)) {
-// //                    dd($shippingData);
-//                     foreach ($shippingData as $key => $shipping_id) {
-// //                        dd($input['shipping'] ,$shipping_id);
-//                         $shipping = Shipping::findOrFail($shipping_id);
-
-//                             if($shipping->id===16){
-//                                 $shipping_cost += $input['shipping_cost'];
-// //                                dd($shipping ,$input['shipping_cost']);
-//                             }else{
-//                                 $shipping_cost += $shipping->price;
-//                             }
-
-
-//                         if (!in_array($shipping->user_id, $merchant_ids)) {
-//                             $merchant_ids[] = $shipping->user_id;
-//                         }
-//                     }
-//                 }
-
-//                 if (isset($input['packeging']) && gettype($input['packeging']) == 'string') {
-//                     $packegingData = json_decode($input['packeging'], true);
-//                 } else {
-//                     $packegingData = isset($input['packeging']) ? $input['packeging'] : null;
-//                 }
-
-//                 if (isset($input['packeging']) && $input['packeging'] != 0 && is_array($packegingData)) {
-//                     foreach ($packegingData as $key => $packaging_id) {
-//                         $packeing = Package::findOrFail($packaging_id);
-//                         $packaging_cost += $packeing->price;
-//                         if (!in_array($packeing->user_id, $merchant_ids)) {
-//                             $merchant_ids[] = $packeing->user_id;
-//                         }
-//                     }
-//                 }
-
-//                 $totalAmount = $totalAmount + $shipping_cost + $packaging_cost;
-//                 if (isset($input['discount_code_id']) && !empty($input['discount_code_id'])) {
-//                     $totalAmount = $totalAmount - $input['discount_amount'];
-//                 }
-
-//                 return [
-//                     'total_amount' => $totalAmount,
-//                     'shipping' => isset($shipping) ? $shipping : null,
-//                     'packeing' => isset($packeing) ? $packeing : null,
-//                     'is_shipping' => 1,
-//                     'tax' => $tax_amount,
-//                     'merchant_shipping_ids' => @json_encode($input['shipping']),
-//                     'merchant_packing_ids' => @json_encode($input['packeging']),
-//                     'merchant_ids' => @json_encode($merchant_ids),
-//                     'shipping_cost' => $shipping_cost,
-//                     'packing_cost' => $packaging_cost,
-//                     'success' => true,
-//                 ];
-//             }
-//         } catch (\Exception $e) {
-//             dd($e->getMessage());
-//             return [
-//                 'success' => false,
-//                 'message' => $e->getMessage(),
-//             ];
-//         }
-//     }
     public static function getPurchaseTotal($input, $cart)
     {
         try {
@@ -395,102 +215,11 @@ class PriceHelper
         }
     }
 
-    // public static function getPurchaseTotalAmount($input, $cart)
-    // {
-
-    //     if (Session::has('currency')) {
-    //         $curr = cache()->remember('session_currency', now()->addDay(), function () {
-    //             return MonetaryUnit::find(Session::get('currency'));
-    //         });
-    //     } else {
-    //         $curr = cache()->remember('default_currency', now()->addDay(), function () {
-    //             return MonetaryUnit::where('is_default', '=', 1)->first();
-    //         });
-    //     }
-
-    //     try {
-    //         $merchant_ids = [];
-    //         foreach ($cart->items as $item) {
-    //             if (!in_array($item['item']['user_id'], $merchant_ids)) {
-    //                 $merchant_ids[] = $item['item']['user_id'];
-    //             }
-    //         }
-
-    //         $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-    //             return DB::table('muaadhsettings')->first();
-    //         });
-    //         $totalAmount = $input['total'];
-
-    //         if ($input['tax'] && @$input['tax_type']) {
-    //             if (@$input['tax_type'] == 'state_tax') {
-    //                 $tax = State::findOrFail($input['tax'])->tax;
-    //             } else {
-    //                 $tax = Country::findOrFail($input['tax'])->tax;
-    //             }
-    //             $tax_amount = ($totalAmount / 100) * $tax;
-    //             $totalAmount = $totalAmount + $tax_amount;
-    //         }
-
-    //         if ($gs->multiple_shipping == 0) {
-    //             $merchant_shipping_ids = [];
-    //             $merchant_packing_ids = [];
-    //             foreach ($merchant_ids as $merchant_id) {
-    //                 $merchant_shipping_ids[$merchant_id] = $input['shipping_id'];
-    //                 $merchant_packing_ids[$merchant_id] = $input['packaging_id'];
-    //             }
-
-    //             $shipping = Shipping::findOrFail($input['shipping_id']);
-    //             $packeing = Package::findOrFail($input['packaging_id']);
-    //             $totalAmount = $totalAmount + $shipping->price + $packeing->price;
-    //             return round($totalAmount / $curr->value, 2);
-    //         } else {
-
-    //             $shipping_cost = 0;
-    //             $packaging_cost = 0;
-    //             $merchant_ids = [];
-    //             if ($input['shipping']) {
-    //                 foreach ($input['shipping'] as $key => $shipping_id) {
-    //                     $shipping = Shipping::findOrFail($shipping_id);
-    //                     $shipping_cost += $shipping->price;
-    //                     if (!in_array($shipping->user_id, $merchant_ids)) {
-    //                         $merchant_ids[] = $shipping->user_id;
-    //                     }
-    //                 }
-    //             }
-    //             if ($input['packeging']) {
-    //                 foreach ($input['packeging'] as $key => $packaging_id) {
-    //                     $packeing = Package::findOrFail($packaging_id);
-    //                     $packaging_cost += $packeing->price;
-    //                     if (!in_array($packeing->user_id, $merchant_ids)) {
-    //                         $merchant_ids[] = $packeing->user_id;
-    //                     }
-    //                 }
-    //             }
-
-    //             $totalAmount = $totalAmount + $shipping_cost + $packaging_cost;
-
-    //             return round($totalAmount * $curr->value, 2);
-    //         }
-    //     } catch (\Exception $e) {
-    //         dd($e->getMessage());
-    //         return [
-    //             'success' => false,
-    //             'message' => $e->getMessage(),
-    //         ];
-    //     }
-    // }
     public static function getPurchaseTotalAmount($input, $cart)
     {
-        // العملة
-        if (Session::has('currency')) {
-            $curr = cache()->remember('session_currency', now()->addDay(), function () {
-                return MonetaryUnit::find(Session::get('currency'));
-            });
-        } else {
-            $curr = cache()->remember('default_currency', now()->addDay(), function () {
-                return MonetaryUnit::where('is_default', '=', 1)->first();
-            });
-        }
+        // Use centralized MonetaryUnitService
+        $curr = monetaryUnit()->getCurrent();
+        $currValue = monetaryUnit()->getValue();
 
         try {
             // merchant_ids من السلة
@@ -521,7 +250,7 @@ class PriceHelper
                 $totalAmount += (float)$shipping->price + (float)$packeing->price;
 
                 // ملاحظة: نحافظ على نفس سلوكك السابق (قسمة) لعدم كسر بقية المنطق
-                return round($totalAmount / (float)$curr->value, 2);
+                return round($totalAmount / $currValue, 2);
             }
 
             // شحن متعدد
@@ -576,8 +305,8 @@ class PriceHelper
 
             $totalAmount += $shipping_cost + $packaging_cost;
 
-            // ملاحظة: نن保持 سلوكك القديم هنا (الضرب) لتفادي كسر أجزاء أخرى تعتمد عليه
-            return round($totalAmount * (float)$curr->value, 2);
+            // ملاحظة: نحافظ على سلوكك القديم هنا (الضرب) لتفادي كسر أجزاء أخرى تعتمد عليه
+            return round($totalAmount * $currValue, 2);
 
         } catch (\Exception $e) {
             return [

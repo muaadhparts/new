@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\MerchantPurchase;
 use App\Models\Purchase;
 use App\Models\DeliveryCourier;
+use App\Services\MonetaryUnitService;
 use Illuminate\Support\Collection;
 
 /**
@@ -33,7 +34,7 @@ class AccountingViewService
      */
     public function forMerchantPurchase(MerchantPurchase $mp): array
     {
-        $currencySign = $mp->purchase->currency_sign ?? 'SAR';
+        $currencySign = $mp->purchase->currency_sign ?? monetaryUnit()->getBaseSign();
 
         return [
             // === Payment Method Info ===
@@ -118,7 +119,7 @@ class AccountingViewService
     public function forMerchantDashboard(int $merchantId): array
     {
         $summary = $this->accountingService->getMerchantDebtSummary($merchantId);
-        $currencySign = 'SAR'; // TODO: Get from settings
+        $currencySign = monetaryUnit()->getBaseSign(); // TODO: Get from settings
 
         return [
             // === Who Owes You ===
@@ -154,7 +155,7 @@ class AccountingViewService
     public function forPlatformDashboard(): array
     {
         $summary = $this->accountingService->getPlatformDebtSummary();
-        $currencySign = 'SAR';
+        $currencySign = monetaryUnit()->getBaseSign();
 
         return [
             // === What Platform Owes ===
@@ -184,7 +185,7 @@ class AccountingViewService
     public function forCourierDashboard(int $courierId): array
     {
         $summary = $this->accountingService->getCourierDebtSummary($courierId);
-        $currencySign = 'SAR';
+        $currencySign = monetaryUnit()->getBaseSign();
 
         return [
             'codCollected' => $summary['cod_collected'],

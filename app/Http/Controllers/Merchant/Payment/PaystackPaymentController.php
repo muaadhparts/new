@@ -93,7 +93,7 @@ class PaystackPaymentController extends BaseMerchantPaymentController
         }
 
         $checkoutData = $this->getCheckoutData($merchantId);
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
 
         // Generate unique reference
         $reference = 'M' . $merchantId . '_' . time() . '_' . uniqid();

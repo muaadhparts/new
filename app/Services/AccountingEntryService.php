@@ -8,6 +8,7 @@ use App\Models\AccountBalance;
 use App\Models\MerchantPurchase;
 use App\Models\Purchase;
 use App\Models\SettlementBatch;
+use App\Services\MonetaryUnitService;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -183,7 +184,7 @@ class AccountingEntryService
             'from_party_id' => $platform->id, // ضمنياً العميل عبر المنصة
             'to_party_id' => $merchant->id,
             'amount' => $mp->price,
-            'currency' => 'SAR',
+            'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
             'transaction_type' => AccountingLedger::TYPE_DEBT,
             'entry_type' => AccountingLedger::ENTRY_SALE_REVENUE,
             'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -214,7 +215,7 @@ class AccountingEntryService
             'from_party_id' => $merchant->id,
             'to_party_id' => $platform->id,
             'amount' => $mp->commission_amount,
-            'currency' => 'SAR',
+            'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
             'transaction_type' => AccountingLedger::TYPE_FEE,
             'entry_type' => AccountingLedger::ENTRY_COMMISSION_EARNED,
             'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -244,7 +245,7 @@ class AccountingEntryService
             'from_party_id' => $merchant->id, // الضريبة محصلة من العميل عبر التاجر
             'to_party_id' => $taxAuthority->id,
             'amount' => $mp->tax_amount,
-            'currency' => 'SAR',
+            'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
             'transaction_type' => AccountingLedger::TYPE_FEE,
             'entry_type' => AccountingLedger::ENTRY_TAX_COLLECTED,
             'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -280,7 +281,7 @@ class AccountingEntryService
                 'from_party_id' => $platform->id,
                 'to_party_id' => $shippingProvider->id,
                 'amount' => $mp->platform_shipping_fee,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_type' => AccountingLedger::TYPE_FEE,
                 'entry_type' => AccountingLedger::ENTRY_SHIPPING_FEE_PLATFORM,
                 'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -303,7 +304,7 @@ class AccountingEntryService
                 'from_party_id' => $platform->id, // العميل عبر المنصة
                 'to_party_id' => $merchant->id,
                 'amount' => $mp->shipping_cost,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_type' => AccountingLedger::TYPE_FEE,
                 'entry_type' => AccountingLedger::ENTRY_SHIPPING_FEE_MERCHANT,
                 'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -334,7 +335,7 @@ class AccountingEntryService
             'from_party_id' => $platform->id, // العميل عبر المنصة
             'to_party_id' => $courier->id,
             'amount' => $mp->courier_fee,
-            'currency' => 'SAR',
+            'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
             'transaction_type' => AccountingLedger::TYPE_FEE,
             'entry_type' => AccountingLedger::ENTRY_COURIER_FEE,
             'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -368,7 +369,7 @@ class AccountingEntryService
             'from_party_id' => $collectorParty->id, // المندوب أو شركة الشحن
             'to_party_id' => $recipientParty->id, // المنصة أو التاجر
             'amount' => $mp->cod_amount,
-            'currency' => 'SAR',
+            'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
             'transaction_type' => AccountingLedger::TYPE_COLLECTION,
             'entry_type' => AccountingLedger::ENTRY_COD_PENDING,
             'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -441,7 +442,7 @@ class AccountingEntryService
                 'from_party_id' => $fromParty->id,
                 'to_party_id' => $toParty->id,
                 'amount' => $mp->cod_amount,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_type' => AccountingLedger::TYPE_COLLECTION,
                 'entry_type' => AccountingLedger::ENTRY_COD_COLLECTED,
                 'direction' => AccountingLedger::DIRECTION_CREDIT,
@@ -495,7 +496,7 @@ class AccountingEntryService
                 'from_party_id' => $platform->id,
                 'to_party_id' => $merchant->id,
                 'total_amount' => $amount,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'payment_method' => $paymentMethod,
                 'payment_reference' => $paymentReference,
                 'status' => 'completed',
@@ -511,7 +512,7 @@ class AccountingEntryService
                 'from_party_id' => $platform->id,
                 'to_party_id' => $merchant->id,
                 'amount' => $amount,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_type' => AccountingLedger::TYPE_SETTLEMENT,
                 'entry_type' => AccountingLedger::ENTRY_SETTLEMENT_PAYMENT,
                 'direction' => AccountingLedger::DIRECTION_DEBIT,
@@ -567,7 +568,7 @@ class AccountingEntryService
                 'from_party_id' => $courier->id,
                 'to_party_id' => $platform->id,
                 'total_amount' => $amount,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'payment_method' => $paymentMethod,
                 'status' => 'completed',
                 'settlement_date' => now()->toDateString(),
@@ -578,7 +579,7 @@ class AccountingEntryService
                 'from_party_id' => $courier->id,
                 'to_party_id' => $platform->id,
                 'amount' => $amount,
-                'currency' => 'SAR',
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_type' => AccountingLedger::TYPE_SETTLEMENT,
                 'entry_type' => AccountingLedger::ENTRY_SETTLEMENT_PAYMENT,
                 'direction' => AccountingLedger::DIRECTION_DEBIT,

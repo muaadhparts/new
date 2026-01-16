@@ -608,6 +608,6 @@ class AccountingReportService
      */
     public function getDefaultMonetaryUnit(): MonetaryUnit
     {
-        return MonetaryUnit::where('is_default', 1)->first();
+        return monetaryUnit()->getDefault();
     }
 }

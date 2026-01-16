@@ -534,7 +534,7 @@ class CatalogItemController extends OperatorBaseController
 
                     //--- Logic Section
                     $data = new CatalogItem;
-                    $sign = MonetaryUnit::where('is_default', '=', 1)->first();
+                    $sign = monetaryUnit()->getDefault();
 
                     $input['part_number'] = $line[0];
 

@@ -32,7 +32,7 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
         }
 
         $checkoutData = $this->getCheckoutData($merchantId);
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
 
         // Validate amount
         $totalAmount = $checkoutData['totals']['grand_total'];

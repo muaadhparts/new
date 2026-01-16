@@ -11,6 +11,7 @@ use App\Helpers\PriceHelper;
 use App\Services\ShippingCalculatorService;
 use App\Services\MerchantCartService;
 use App\Services\MerchantCredentialService;
+use App\Services\MonetaryUnitService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -770,7 +771,7 @@ class TryotoService
             'amount_due' => $isCOD ? (float)$purchase->pay_amount : 0,
             'shippingAmount' => $price,
             'subtotal' => (float)$purchase->pay_amount,
-            'currency' => 'SAR',
+            'currency' => MonetaryUnitService::BASE_MONETARY_UNIT,
             'shippingNotes' => 'Purchase #' . $purchase->purchase_number,
             'packageSize' => 'medium',
             'packageCount' => max(1, $itemCount),

@@ -45,12 +45,8 @@ class MerchantBaseController extends Controller
                 App::setlocale($this->language->name);
             }
 
-            // Set Global MonetaryUnit (respect session preference)
-            if (Session::has('currency')) {
-                $this->curr = DB::table('monetary_units')->find(Session::get('currency'));
-            } else {
-                $this->curr = DB::table('monetary_units')->where('is_default', '=', 1)->first();
-            }
+            // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+            $this->curr = monetaryUnit()->getCurrent();
 
             // Share common variables with views
             view()->share('curr', $this->curr);

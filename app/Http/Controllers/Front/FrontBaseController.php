@@ -38,11 +38,8 @@ class FrontBaseController extends Controller
                 $this->language = Language::where('is_default', '=', 1)->first();
             }
 
-            if (Session::has('currency')) {
-                $this->curr = MonetaryUnit::find(Session::get('currency'));
-            } else {
-                $this->curr = MonetaryUnit::where('is_default', '=', 1)->first();
-            }
+            // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+            $this->curr = monetaryUnit()->getCurrent();
          
             view()->share('langg', $this->language);
             view()->share('gs', $this->gs);

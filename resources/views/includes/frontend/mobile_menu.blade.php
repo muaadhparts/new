@@ -331,13 +331,13 @@
                 </select>
             </div>
             @if ($gs->is_currency == 1)
+                {{-- Currency Selector (uses $curr from MonetaryUnitService - SINGLE SOURCE OF TRUTH) --}}
                 <div class="muaadh-mobile-select">
                     <i class="fas fa-dollar-sign"></i>
                     <select onchange="window.location.href=this.value">
                         @foreach ($monetaryUnits as $currency)
                             <option value="{{ route('front.monetary-unit', $currency->id) }}"
-                                {{ Session::has('currency') && Session::get('currency') == $currency->id ? 'selected' : '' }}
-                                {{ !Session::has('currency') && $currency->is_default == 1 ? 'selected' : '' }}>
+                                {{ ($curr->id ?? 0) == $currency->id ? 'selected' : '' }}>
                                 {{ $currency->name }}
                             </option>
                         @endforeach

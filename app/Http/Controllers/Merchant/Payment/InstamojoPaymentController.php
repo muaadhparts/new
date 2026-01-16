@@ -31,7 +31,7 @@ class InstamojoPaymentController extends BaseMerchantPaymentController
         }
 
         // Instamojo requires INR
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
         if ($currency->name !== 'INR') {
             return $this->handlePaymentError($merchantId, __('Instamojo only supports INR currency'));
         }

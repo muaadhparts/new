@@ -748,18 +748,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/featured-promo/delete/{id}', 'Operator\FeaturedPromoController@destroy')->name('operator-featured-promo-delete');
         Route::get('/country/status/{id1}/{id2}', 'Operator\FeaturedPromoController@status')->name('operator-featured-promo-status');
 
-        //------------ OPERATOR NAV SHORTCUT SECTION ------------
-
-        Route::get('/nav-shortcut/datatables', 'Operator\NavShortcutController@datatables')->name('operator-nav-shortcut-datatables'); //JSON REQUEST
-        Route::get('/nav-shortcut', 'Operator\NavShortcutController@index')->name('operator-nav-shortcut-index');
-        Route::get('/nav-shortcut/create', 'Operator\NavShortcutController@create')->name('operator-nav-shortcut-create');
-        Route::post('/nav-shortcut/create', 'Operator\NavShortcutController@store')->name('operator-nav-shortcut-store');
-        Route::get('/nav-shortcut/edit/{id}', 'Operator\NavShortcutController@edit')->name('operator-nav-shortcut-edit');
-        Route::post('/nav-shortcut/edit/{id}', 'Operator\NavShortcutController@update')->name('operator-nav-shortcut-update');
-        Route::delete('/nav-shortcut/delete/{id}', 'Operator\NavShortcutController@destroy')->name('operator-nav-shortcut-delete');
-
-        //------------ OPERATOR NAV SHORTCUT SECTION ENDS ------------
-
         //------------ OPERATORANNOUNCEMENT SECTION ------------
 
         Route::get('/announcement/datatables/{type}', 'Operator\AnnouncementController@datatables')->name('operator-announcement-datatables'); //JSON REQUEST

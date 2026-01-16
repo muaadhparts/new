@@ -34,9 +34,7 @@ class UserPreferencesContext implements ContextInterface
             );
         }
 
-        return Cache::remember('default_monetary_unit', 3600, fn() =>
-            MonetaryUnit::where('is_default', 1)->first()
-        );
+        return monetaryUnit()->getDefault();
     }
 
     private function resolveLanguage(): ?Language

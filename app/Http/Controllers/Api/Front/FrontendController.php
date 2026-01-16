@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
 // use App\Http\Resources\BlogResource; // Removed - Blog replaced with Publication
 use App\Http\Resources\HelpArticleResource;
-use App\Http\Resources\NavShortcutResource;
 use App\Http\Resources\PurchaseTrackResource;
 use App\Http\Resources\StaticContentResource;
 use App\Http\Resources\BrandResource;
@@ -18,7 +17,6 @@ use App\Models\Announcement;
 use App\Models\Publication;
 use App\Models\MonetaryUnit;
 use App\Models\HelpArticle;
-use App\Models\NavShortcut;
 use App\Models\Muaadhsetting;
 use App\Models\Language;
 use App\Models\Purchase;
@@ -34,7 +32,7 @@ use Validator;
 
 class FrontendController extends Controller
 {
-    // Display Nav Shortcuts, Banners & Brands
+    // Display Banners & Brands
 
     public function section_customization()
     {
@@ -129,7 +127,7 @@ class FrontendController extends Controller
     public function defaultMonetaryUnit()
     {
         try {
-            $monetaryUnit = MonetaryUnit::where('is_default', '=', 1)->first();
+            $monetaryUnit = monetaryUnit()->getDefault();
             if (!$monetaryUnit) {
                 return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'No Monetary Unit Found']]);
             }
@@ -157,16 +155,6 @@ class FrontendController extends Controller
         try {
             $monetaryUnits = MonetaryUnit::all();
             return response()->json(['status' => true, 'data' => $monetaryUnits, 'error' => []]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
-    }
-
-    public function navShortcuts()
-    {
-        try {
-            $navShortcuts = NavShortcut::all();
-            return response()->json(['status' => true, 'data' => NavShortcutResource::collection($navShortcuts), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -222,7 +210,7 @@ class FrontendController extends Controller
         }
     }
 
-    // Display Nav Shortcuts, Banners & Brands Ends
+    // Display Banners & Brands Ends
 
     // Display All Type Of CatalogItems
 

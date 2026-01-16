@@ -204,7 +204,7 @@ class ShippingApiController extends Controller
         $merchantId = $request->input('merchant_id');
 
         // Get currency from CheckoutPriceService (single source of truth)
-        $curr = $this->priceService->getCurrency();
+        $curr = $this->priceService->getMonetaryUnit();
 
         // Get free shipping threshold from merchant's Tryoto config
         $merchantTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
@@ -301,7 +301,7 @@ class ShippingApiController extends Controller
     protected function convertDeliveryOptionsPrices(array $options, array $freeShippingInfo): array
     {
         $qualifiesFree = $freeShippingInfo['qualifies'] ?? false;
-        $curr = $this->priceService->getCurrency();
+        $curr = $this->priceService->getMonetaryUnit();
         $currSign = $curr->sign ?? 'SAR';
 
         return array_map(function ($option) use ($qualifiesFree, $currSign) {

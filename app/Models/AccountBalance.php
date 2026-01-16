@@ -22,7 +22,7 @@ class AccountBalance extends Model
         'total_amount',
         'pending_amount',
         'settled_amount',
-        'currency',
+        'monetary_unit_code',
         'transaction_count',
         'last_transaction_at',
         'last_calculated_at',
@@ -103,7 +103,7 @@ class AccountBalance extends Model
                 'total_amount' => 0,
                 'pending_amount' => 0,
                 'settled_amount' => 0,
-                'currency' => 'SAR',
+                'monetary_unit_code' => \App\Services\MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_count' => 0,
             ]
         );

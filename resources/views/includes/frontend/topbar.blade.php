@@ -62,24 +62,17 @@
 
                 @if ($gs->is_currency == 1)
                     <span class="muaadh-topbar-divider"></span>
-                    {{-- Currency Selector --}}
-                    @php
-                        $selectedCurrency = Session::has('currency')
-                            ? $monetaryUnits->where('id', '=', Session::get('currency'))->first()
-                            : $monetaryUnits->where('is_default', '=', 1)->first();
-                    @endphp
+                    {{-- Currency Selector (uses $curr from MonetaryUnitService - SINGLE SOURCE OF TRUTH) --}}
                     <div class="muaadh-dropdown">
                         <button class="muaadh-dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            <span class="currency-sign">{{ $selectedCurrency->sign ?? '$' }}</span>
-                            <span>{{ $selectedCurrency->name ?? 'USD' }}</span>
+                            <span class="currency-sign">{{ $curr->sign ?? 'ر.س' }}</span>
+                            <span>{{ $curr->name ?? 'SAR' }}</span>
                             <i class="fas fa-chevron-down"></i>
                         </button>
                         <ul class="muaadh-dropdown-menu">
                             @foreach ($monetaryUnits as $currency)
                                 <li>
-                                    <a class="muaadh-dropdown-item {{ Session::has('currency')
-                                        ? (Session::get('currency') == $currency->id ? 'active' : '')
-                                        : ($monetaryUnits->where('is_default', '=', 1)->first()->id == $currency->id ? 'active' : '') }}"
+                                    <a class="muaadh-dropdown-item {{ ($curr->id ?? 0) == $currency->id ? 'active' : '' }}"
                                         href="{{ route('front.monetary-unit', $currency->id) }}">
                                         {{ $currency->name }}
                                     </a>

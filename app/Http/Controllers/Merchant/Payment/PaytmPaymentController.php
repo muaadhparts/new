@@ -34,7 +34,7 @@ class PaytmPaymentController extends BaseMerchantPaymentController
         }
 
         // Paytm requires INR
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
         if ($currency->name !== 'INR') {
             return $this->handlePaymentError($merchantId, __('Paytm only supports INR currency'));
         }

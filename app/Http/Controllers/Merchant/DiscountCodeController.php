@@ -17,7 +17,7 @@ class DiscountCodeController extends MerchantBaseController
     {
         // الحصول على المستخدم الحالي
         $user = Auth::user();
-        $curr = MonetaryUnit::where('is_default', 1)->first();
+        $curr = monetaryUnit()->getDefault();
 
         // عرض كوبونات التاجر الحالي فقط
         $datas = DiscountCode::where('user_id', $user->id)->latest('id')->get();

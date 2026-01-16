@@ -35,7 +35,7 @@ class IncomeController extends Controller
      */
     public function taxCalculate(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', '=', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currentDate = Carbon::now();
         $firstDayOfMonth = Carbon::now()->startOfMonth();
         $last30Days = Carbon::now()->subDays(30);
@@ -81,7 +81,7 @@ class IncomeController extends Controller
      */
     public function membershipPlanIncome(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', '=', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currentDate = Carbon::now();
         $firstDayOfMonth = Carbon::now()->startOfMonth();
         $last30Days = Carbon::now()->subDays(30);
@@ -122,7 +122,7 @@ class IncomeController extends Controller
      */
     public function withdrawIncome(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', '=', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currentDate = Carbon::now();
         $firstDayOfMonth = Carbon::now()->startOfMonth();
         $last30Days = Carbon::now()->subDays(30);
@@ -165,7 +165,7 @@ class IncomeController extends Controller
      */
     public function commissionIncome(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', '=', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $currentDate = Carbon::now();
         $firstDayOfMonth = Carbon::now()->startOfMonth();
         $last30Days = Carbon::now()->subDays(30);
@@ -211,7 +211,7 @@ class IncomeController extends Controller
      */
     public function merchantReport(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', '=', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->format('Y-m-d') : null;
 
@@ -245,7 +245,7 @@ class IncomeController extends Controller
      */
     public function commissionIncomeDetailed(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', '=', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
         $endDate = $request->end_date ? Carbon::parse($request->end_date)->format('Y-m-d') : null;
 

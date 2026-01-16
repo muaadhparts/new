@@ -28,7 +28,7 @@ class AccountingLedger extends Model
         'from_party_id',
         'to_party_id',
         'amount',
-        'currency',
+        'monetary_unit_code',
         'transaction_type',
         'entry_type',
         'direction',
@@ -358,7 +358,7 @@ class AccountingLedger extends Model
      */
     public function getFormattedAmount(): string
     {
-        return $this->currency . ' ' . number_format($this->amount, 2);
+        return $this->monetary_unit_code . ' ' . number_format($this->amount, 2);
     }
 
     /**

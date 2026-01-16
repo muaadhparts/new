@@ -30,7 +30,7 @@ class SslCommerzPaymentController extends BaseMerchantPaymentController
         }
 
         $checkoutData = $this->getCheckoutData($merchantId);
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
         $credentials = $config['credentials'];
 
         // Generate unique transaction ID

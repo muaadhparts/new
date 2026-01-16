@@ -32,7 +32,7 @@ class CourierController extends CourierBaseController
 
         // Get accounting report
         $report = $this->accountingService->getCourierReport($this->courier->id);
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
 
         return view('courier.dashbaord', compact('purchases', 'user', 'report', 'currency'));
     }
@@ -480,7 +480,7 @@ class CourierController extends CourierBaseController
         }
 
         $deliveries = $query->paginate(20);
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $report = $this->accountingService->getCourierReport($this->courier->id);
 
         return view('courier.transactions', compact('deliveries', 'currency', 'report'));
@@ -491,7 +491,7 @@ class CourierController extends CourierBaseController
      */
     public function settlements()
     {
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $settlementCalc = $this->accountingService->calculateSettlementAmount($this->courier->id);
         $unsettledDeliveries = $this->accountingService->getUnsettledDeliveriesForCourier($this->courier->id);
         $report = $this->accountingService->getCourierReport($this->courier->id);
@@ -508,7 +508,7 @@ class CourierController extends CourierBaseController
         $endDate = $request->end_date;
 
         $report = $this->accountingService->getCourierReport($this->courier->id, $startDate, $endDate);
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
 
         return view('courier.financial_report', compact('report', 'currency', 'startDate', 'endDate'));
     }

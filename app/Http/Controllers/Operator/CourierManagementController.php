@@ -23,7 +23,7 @@ class CourierManagementController extends Controller
      */
     public function index(Request $request)
     {
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $startDate = $request->start_date;
         $endDate = $request->end_date;
 
@@ -43,7 +43,7 @@ class CourierManagementController extends Controller
     public function show($id)
     {
         $courier = Courier::findOrFail($id);
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $report = $this->accountingService->getCourierReport($id);
         $settlementCalc = $this->accountingService->calculateSettlementAmount($id);
 
@@ -68,7 +68,7 @@ class CourierManagementController extends Controller
     public function unsettledDeliveries($courierId)
     {
         $courier = Courier::findOrFail($courierId);
-        $currency = MonetaryUnit::where('is_default', 1)->first();
+        $currency = monetaryUnit()->getDefault();
         $unsettled = $this->accountingService->getUnsettledDeliveriesForCourier($courierId);
 
         // حساب الملخص في الـ Controller بدلاً من الـ View

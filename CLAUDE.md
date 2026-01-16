@@ -48,6 +48,90 @@ border: 1px solid var(--border-default);
 
 ---
 
+## CRITICAL: MonetaryUnit Architecture Lock
+
+**SINGLE SOURCE OF TRUTH: `MonetaryUnitService`**
+
+All monetary unit operations MUST go through the centralized service. NO exceptions.
+
+### FORBIDDEN - Architecture Violations:
+
+```php
+// ❌ NEVER do this anywhere in the codebase:
+
+// Direct model queries
+MonetaryUnit::where('is_default', 1)->first();
+MonetaryUnit::find($id);
+MonetaryUnit::all();
+
+// Direct session access for monetary unit
+Session::get('monetary_unit');  // Use service instead
+Session::has('monetary_unit');
+Session::put('monetary_unit', $id);
+
+// Hardcoded monetary unit values
+$sign = '$';
+$value = 1;
+
+// Manual price formatting in Controllers/Views
+number_format($price, 2) . $curr->sign;
+$curr->sign . number_format($price, 2);
+```
+
+### REQUIRED - Always use MonetaryUnitService:
+
+```php
+// ✅ CORRECT - Use the helper or service:
+
+// Get service instance
+$service = monetaryUnit();  // Global helper
+// OR
+$service = app(MonetaryUnitService::class);
+
+// Get current/default monetary unit
+$curr = monetaryUnit()->getCurrent();
+$default = monetaryUnit()->getDefault();
+$byCode = monetaryUnit()->getByCode('SAR');
+
+// Format prices
+monetaryUnit()->format($amount);           // Format with sign
+monetaryUnit()->convert($amount);          // Convert from base
+monetaryUnit()->convertAndFormat($amount); // Convert + format
+monetaryUnit()->formatBase($amount);       // Format in base monetary unit
+
+// Get monetary unit info
+monetaryUnit()->getSign();    // Current monetary unit sign
+monetaryUnit()->getValue();   // Current exchange rate
+monetaryUnit()->getCode();    // Current monetary unit code (SAR, USD, etc.)
+
+// For constants (in Services/Models only)
+MonetaryUnitService::BASE_MONETARY_UNIT;  // 'SAR'
+MonetaryUnitService::SESSION_KEY;         // 'monetary_unit'
+```
+
+### Who Can Access MonetaryUnit Model Directly?
+
+| Layer | Direct Access | Must Use Service |
+|-------|--------------|------------------|
+| `MonetaryUnitService` | ✅ Yes | - |
+| Other Services | ❌ No | ✅ `monetaryUnit()` |
+| Controllers | ❌ No | ✅ `monetaryUnit()` |
+| Views (Blade) | ❌ No | ✅ `$curr` (shared by BaseController) |
+| Helpers | ❌ No | ✅ `monetaryUnit()` |
+| Models | ❌ No | ✅ `monetaryUnit()` |
+
+### Base Controllers Share `$curr`
+
+All base controllers (Front, Merchant, User, Courier, TopUp) now share:
+```php
+$this->curr = monetaryUnit()->getCurrent();
+view()->share('curr', $this->curr);
+```
+
+Blade views should use `$curr` directly, NOT Session.
+
+---
+
 ## Project Overview
 
 MUAADH EPC is an AI-assisted OEM/Aftermarket auto parts catalog with callout-first search. Built with Laravel 10, Livewire 3, and Filament 3 admin panel.

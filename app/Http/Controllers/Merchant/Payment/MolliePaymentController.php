@@ -32,7 +32,7 @@ class MolliePaymentController extends BaseMerchantPaymentController
         }
 
         // Validate currency
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
         $availableCurrencies = PurchaseHelper::mollieAcceptedCodes();
         if (!in_array($currency->name, $availableCurrencies)) {
             return $this->handlePaymentError($merchantId, __('Invalid currency for Mollie payment'));

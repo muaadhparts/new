@@ -37,17 +37,16 @@
                             </div>
                         </li>
                         {{-- Using cached $monetaryUnits and $curr from AppServiceProvider --}}
+                        {{-- Currency Selector (uses $curr from MonetaryUnitService - SINGLE SOURCE OF TRUTH) --}}
                         <li class="my-account-dropdown">
                             <div class="currency-selector nice-select">
                                 <span class="text-dark">
-                                    {{ $curr->sign ?? '$' }}
+                                    {{ $curr->sign ?? 'ر.س' }}
                                 </span>
                                 <select name="currency" class="currency selectors nice select2-js-init">
                                     @foreach($monetaryUnits as $currency)
-                                    <option value="{{route('front.monetary-unit',$currency->id)}}" {{
-                                        Session::has('currency') ? ( Session::get('currency')==$currency->id ?
-                                        'selected' : '' ) : ($monetaryUnits->where('is_default','=',1)->first()->id ==
-                                        $currency->id ? 'selected' : '') }}>
+                                    <option value="{{route('front.monetary-unit',$currency->id)}}"
+                                        {{ ($curr->id ?? 0) == $currency->id ? 'selected' : '' }}>
                                         {{$currency->name}}
                                     </option>
                                     @endforeach

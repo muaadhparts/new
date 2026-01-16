@@ -288,13 +288,8 @@ class CatalogItem extends Model
             return 0;
         }
 
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
-        return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->convertAndFormat($rawPrice);
     }
 
     /**
@@ -307,13 +302,8 @@ class CatalogItem extends Model
             return 0;
         }
 
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
-        return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->convertAndFormat($rawPrice);
     }
 
     /**
@@ -326,11 +316,8 @@ class CatalogItem extends Model
             return 0;
         }
 
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $curr = MonetaryUnit::where('is_default', 1)->first();
-
-        $converted = \PriceHelper::showPrice($rawPrice * $curr->value);
-        return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->formatBase($rawPrice);
     }
 
     /**
@@ -371,14 +358,8 @@ class CatalogItem extends Model
             $price = $price + (float) ($commission->fixed_commission ?? 0) + ($price * (float) ($commission->percentage_commission ?? 0) / 100);
         }
 
-        // Currency formatting
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $converted = \PriceHelper::showPrice($price * $curr->value);
-        return $gs->currency_format == 0 ? $curr->sign . ' ' . $converted : $converted . ' ' . $curr->sign;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->convertAndFormat($price);
     }
 
     /**
@@ -386,36 +367,20 @@ class CatalogItem extends Model
      */
     public static function convertPrice($price)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $price = \PriceHelper::showPrice($price * $curr->value);
-        return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->convertAndFormat($price);
     }
 
     public static function merchantConvertPrice($price)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), fn () => DB::table('muaadhsettings')->first());
-
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $price = \PriceHelper::showPrice($price * $curr->value);
-        return $gs->currency_format == 0 ? $curr->sign . ' ' . $price : $price . ' ' . $curr->sign;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->convertAndFormat($price);
     }
 
     public static function merchantConvertWithoutCurrencyPrice($price)
     {
-        $curr = Session::has('currency')
-            ? MonetaryUnit::find(Session::get('currency'))
-            : MonetaryUnit::where('is_default', 1)->first();
-
-        $price = \PriceHelper::showPrice($price * $curr->value);
-        return $price;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        return monetaryUnit()->convert($price);
     }
 
     /**
@@ -817,11 +782,8 @@ class CatalogItem extends Model
             return 0;
         }
 
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $converted = $rawPrice * $curr->value;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        $converted = monetaryUnit()->convert($rawPrice);
         return \PriceHelper::apishowPrice($converted);
     }
 
@@ -832,11 +794,8 @@ class CatalogItem extends Model
             return 0;
         }
 
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $converted = $rawPrice * $curr->value;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        $converted = monetaryUnit()->convert($rawPrice);
         return \PriceHelper::apishowPrice($converted);
     }
 
@@ -872,11 +831,8 @@ class CatalogItem extends Model
             $price = $price + (float) ($commission->fixed_commission ?? 0) + ($price * (float) ($commission->percentage_commission ?? 0) / 100);
         }
 
-        $curr = Session::has('currency')
-            ? cache()->remember('session_currency', now()->addDay(), fn () => MonetaryUnit::find(Session::get('currency')))
-            : cache()->remember('default_currency', now()->addDay(), fn () => MonetaryUnit::where('is_default', 1)->first());
-
-        $converted = $price * $curr->value;
+        // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        $converted = monetaryUnit()->convert($price);
         return \PriceHelper::apishowPrice($converted);
     }
 

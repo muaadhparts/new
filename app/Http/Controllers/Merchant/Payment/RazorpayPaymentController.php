@@ -33,7 +33,7 @@ class RazorpayPaymentController extends BaseMerchantPaymentController
         }
 
         // Check currency (Razorpay requires INR)
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
         if ($currency->name !== 'INR') {
             return $this->handlePaymentError($merchantId, __('Razorpay only supports INR currency'));
         }

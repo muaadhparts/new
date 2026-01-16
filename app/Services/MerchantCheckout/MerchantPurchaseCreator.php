@@ -63,7 +63,7 @@ class MerchantPurchaseCreator
 
         $user = Auth::user();
         $merchant = User::find($merchantId);
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
 
         // Calculate final totals
         $totals = $this->priceCalculator->calculateTotals($cartPayload['items'], [

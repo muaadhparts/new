@@ -27,7 +27,7 @@ comments
 conversations
 counters
 countries
-currencies
+monetary_units
 delivery_riders
 deposits
 discount_codes

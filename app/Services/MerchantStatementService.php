@@ -373,7 +373,7 @@ class MerchantStatement
      */
     public function getMonetaryUnit(): MonetaryUnit
     {
-        return MonetaryUnit::where('is_default', 1)->first();
+        return monetaryUnit()->getDefault();
     }
 
     /**

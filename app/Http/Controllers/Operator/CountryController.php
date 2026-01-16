@@ -80,7 +80,7 @@ class CountryController extends Controller
 
     public function setTax($id)
     {
-        $sign = MonetaryUnit::where('is_default', '=', 1)->first();
+        $sign = monetaryUnit()->getDefault();
         $country = Country::findOrFail($id);
         return view('operator.country.set_tax', compact('country', 'sign'));
     }

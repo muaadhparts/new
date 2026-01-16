@@ -144,7 +144,7 @@ class WithdrawController extends Controller
         try {
             $user = auth()->user();
             $from = User::findOrFail($user->id);
-            $curr = MonetaryUnit::where('is_default', '=', 1)->first();
+            $curr = monetaryUnit()->getDefault();
             $withdrawcharge = Muaadhsetting::findOrFail(1);
             $charge = $withdrawcharge->withdraw_fee;
 
@@ -198,7 +198,7 @@ class WithdrawController extends Controller
     public function convertSubmit(Request $request)
     {
         try {
-        $curr = MonetaryUnit::where('is_default','=',1)->first();
+        $curr = monetaryUnit()->getDefault();
         $user = Auth::user();
         $gs = Muaadhsetting::find(1);
 

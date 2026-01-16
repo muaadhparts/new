@@ -80,7 +80,7 @@ class VoguepayPaymentController extends BaseMerchantPaymentController
         }
 
         $checkoutData = $this->getCheckoutData($merchantId);
-        $currency = $this->priceCalculator->getCurrency();
+        $currency = $this->priceCalculator->getMonetaryUnit();
 
         return response()->json([
             'success' => true,
