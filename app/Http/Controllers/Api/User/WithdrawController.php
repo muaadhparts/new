@@ -188,20 +188,5 @@ class WithdrawController extends Controller
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
-
-
-    }
-
-
-    public function convertSubmit(Request $request)
-    {
-        // Feature disabled - wallet system removed
-        return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Reward conversion is currently unavailable.']]);
-    }
-
-
-    public function getReword(){
-        // Feature disabled - wallet system removed
-        return response()->json(['status' => true, 'data' => [], 'error' => []]);
     }
 }

@@ -891,15 +891,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/monetary-unit/delete/{id}', 'Operator\MonetaryUnitController@destroy')->name('operator-monetary-unit-delete');
         Route::get('/monetary-unit/status/{id1}/{id2}', 'Operator\MonetaryUnitController@status')->name('operator-monetary-unit-status');
 
-        // -------------------- Reward Section Route ---------------------//
-        Route::get('rewards/datatables', 'Operator\RewardController@datatables')->name('operator-reward-datatables');
-        Route::get('rewards', 'Operator\RewardController@index')->name('operator-reward-index');
-        Route::get('/general-settings/reward/{status}', 'Operator\MuaadhSettingController@isreward')->name('operator-gs-is_reward');
-        Route::post('reward/update/', 'Operator\RewardController@update')->name('operator-reward-update');
-        Route::post('reward/information/update', 'Operator\RewardController@infoUpdate')->name('operator-reward-info-update');
-
-        // -------------------- Reward Section Route ---------------------//
-
     });
 
     //------------ OPERATORPAYMENT SETTINGS SECTION ENDS------------
@@ -1324,9 +1315,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('tax-report', "Merchant\IncomeController@taxReport")->name('merchant.tax-report');
             Route::get('statement', "Merchant\IncomeController@statement")->name('merchant.statement');
 
-            // -------------------------- Merchant Rewards ------------------------------------//
-            Route::get('rewards', "Merchant\RewardController@index")->name('merchant-reward-index');
-            Route::post('rewards/update', "Merchant\RewardController@update")->name('merchant-reward-update');
         });
     });
 
@@ -1368,9 +1356,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::post('/change-password', 'Auth\User\ForgotController@changepass')->name('user.change.password');
 
         //------------ USER FORGOT SECTION ENDS ------------
-
-        //  --------------------- Reward Point Route ------------------------------//
-        Route::get('reward/points', 'User\RewardController@rewards')->name('user-reward-index');
 
         Route::get('/logout', 'User\LoginController@logout')->name('user-logout');
         Route::get('/dashboard', 'User\UserController@index')->name('user-dashboard');

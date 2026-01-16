@@ -149,14 +149,8 @@ Route::group(['prefix' => 'user'], function () {
         Route::post('/favorite/add','Api\User\FavoriteController@add');
         Route::get('/favorite/remove/{id}','Api\User\FavoriteController@remove');
 
-        // ---------------------FAVORITE CONTROLLER ENDS ---------------------        
-        
-        
-         // ---------------------REWORD CONTROLLER ---------------------  
-       Route::get('/reword/get', 'Api\User\WithdrawController@getReword');
-       Route::post('/reword/store', 'Api\User\WithdrawController@convertSubmit');
-          
-     // ---------------------REWORD CONTROLLER ---------------------  
+        // ---------------------FAVORITE CONTROLLER ENDS ---------------------
+
         // ---------------------PACKAGE CONTROLLER ---------------------
 
         Route::get('/packages', 'Api\User\PackageController@packages');

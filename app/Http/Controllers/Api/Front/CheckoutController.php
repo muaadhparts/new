@@ -18,7 +18,6 @@ use App\Models\PurchaseTimeline;
 use App\Models\Package;
 use App\Models\FrontendSetting;
 use App\Models\CatalogItem;
-use App\Models\Reward;
 use App\Models\Shipping;
 use App\Models\User;
 use App\Models\MerchantCommission;
@@ -216,11 +215,6 @@ class CheckoutController extends Controller
 
             $purchase->tracks()->create(['name' => 'Pending', 'text' => 'You have successfully placed your purchase.']);
             $purchase->notifications()->create();
-
-            // Award reward points (per-merchant, based on subtotal before tax/shipping)
-            if (Auth::guard('api')->check() && $gs->is_reward == 1) {
-                $this->awardRewardPoints($cart, Auth::guard('api')->user());
-            }
 
             // بدّل منطق الخصم: خصم من merchant_items بدل PurchaseHelper على catalogItems
             // PurchaseHelper::size_qty_check($cart);
@@ -724,51 +718,6 @@ class CheckoutController extends Controller
             }
 
             $purchase->save();
-        }
-    }
-
-    /**
-     * Award reward points to user based on per-merchant subtotals
-     * Points are calculated from subtotal BEFORE tax/shipping
-     *
-     * @param \App\Models\Cart $cart
-     * @param \App\Models\User $user
-     * @return void
-     */
-    protected function awardRewardPoints(\App\Models\Cart $cart, \App\Models\User $user): void
-    {
-        if (empty($cart->items)) {
-            return;
-        }
-
-        // Group cart items by merchant and calculate subtotals
-        $merchantSubtotals = [];
-        foreach ($cart->items as $cartItem) {
-            $merchantId = (int) ($cartItem['item']['user_id'] ?? 0);
-            $itemPrice = (float) ($cartItem['price'] ?? 0);
-
-            if ($merchantId > 0) {
-                if (!isset($merchantSubtotals[$merchantId])) {
-                    $merchantSubtotals[$merchantId] = 0;
-                }
-                $merchantSubtotals[$merchantId] += $itemPrice;
-            }
-        }
-
-        // Calculate and award points for each merchant
-        $totalPoints = 0;
-        foreach ($merchantSubtotals as $merchantId => $subtotal) {
-            $result = Reward::calculatePointsEarned($subtotal, $merchantId);
-            if ($result['points'] > 0) {
-                $totalPoints += $result['points'];
-            }
-        }
-
-        // Update user's reward points
-        if ($totalPoints > 0) {
-            $user->update([
-                'reward' => ($user->reward + $totalPoints)
-            ]);
         }
     }
 }

@@ -182,7 +182,6 @@ class Muaadhsetting extends Model
         'seller_item_count', 'favorite_count', 'merchant_page_count',
         'item_page', 'post_count', 'favorite_page',
         'decimal_separator', 'thousand_separator', 'version',
-        'is_reward', 'reward_point', 'reward_dolar',
         'physical', 'affilite',
         'header_color', 'capcha_secret_key', 'capcha_site_key',
         'brand_name', 'brand_text',

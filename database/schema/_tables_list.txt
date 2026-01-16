@@ -68,7 +68,6 @@ purchases_clone
 replies
 reports
 reviews
-rewards
 rider_service_areas
 riders
 section_parts_r50gl

@@ -13,8 +13,6 @@
     @endif
       <li class=""><a class="{{ Request::url() == route('user-purchases') ? 'active' : '' }}"
           href="{{ route('user-purchases') }}">{{ __('Purchased Items') }}</a></li>
-      <li class=""><a class="{{ Request::url() == route('user-reward-index') ? 'active' : '' }}"
-          href="{{route('user-reward-index')}}">{{ __('Rewards') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-affilate-program') ? 'active' : '' }}"
           href="{{ route('user-affilate-program') }}">{{ __('Affiliate Program') }}</a></li>
       <li class=""><a class="{{ Request::url() == route('user-wwt-index') ? 'active' : '' }}"

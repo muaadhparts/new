@@ -29,7 +29,6 @@ class UserResource extends JsonResource
         'country' => $this->country,
         'address' => $this->address,
         'balance' => $this->balance,
-        'reword' => $this->reward,
         'email_verified' => $this->email_verified,
         'affilate_code' => $this->affilate_code,
         'affilate_income' => $this->affilate_income,

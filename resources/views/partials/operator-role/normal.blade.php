@@ -393,7 +393,6 @@
     <ul class="collapse list-unstyled" id="payments" data-bs-parent="#accordion">
         <li><a href="{{ route('operator-gs-payments') }}"><span>{{__('Payment Information')}}</span></a></li>
         <li><a href="{{ route('operator-monetary-unit-index') }}"><span>{{ __('Currencies') }}</span></a></li>
-        <li><a href="{{route('operator-reward-index')}}"><span>{{__('Reward Information')}}</span></a></li>
     </ul>
 </li>
 

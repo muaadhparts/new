@@ -271,14 +271,6 @@ class MuaadhSettingController extends OperatorBaseController
         //--- Redirect Section Ends
     }
 
-    public function isreward($status)
-    {
-        $data = Muaadhsetting::findOrFail(1);
-        $data->is_reward = $status;
-        $data->update();
-        cache()->forget('muaadhsettings');
-    }
-
     // Status Change Method -> GET Request
     public function status($field, $value)
     {
