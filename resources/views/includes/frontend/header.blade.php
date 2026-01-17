@@ -130,20 +130,10 @@
                         </span>
                     </a>
 
-                    {{-- Cart (New System v4) --}}
+                    {{-- Cart --}}
                     @php
-                        // Get cart count from new system, fallback to old systems
-                        $cartCount = 0;
-                        if (Session::has('merchant_cart')) {
-                            $merchantCart = Session::get('merchant_cart');
-                            $cartCount = $merchantCart['totals']['qty'] ?? count($merchantCart['items'] ?? []);
-                        } elseif (Session::has('cart_v2')) {
-                            $cartV2 = Session::get('cart_v2');
-                            $cartCount = $cartV2['totalQty'] ?? count($cartV2['items'] ?? []);
-                        } elseif (Session::has('cart')) {
-                            $oldCart = Session::get('cart');
-                            $cartCount = is_object($oldCart) ? count($oldCart->items ?? []) : 0;
-                        }
+                        $cart = Session::get('merchant_cart', ['items' => [], 'totals' => ['qty' => 0]]);
+                        $cartCount = (int) ($cart['totals']['qty'] ?? 0);
                     @endphp
                     <a href="{{ route('merchant-cart.index') }}" class="muaadh-action-btn muaadh-cart-btn">
                         <i class="fas fa-shopping-cart"></i>

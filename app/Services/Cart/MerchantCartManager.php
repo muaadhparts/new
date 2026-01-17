@@ -21,9 +21,6 @@ class MerchantCartManager
     {
         $this->storage = $storage;
         $this->reservation = $reservation;
-
-        // Auto-migrate old cart on first access
-        $this->storage->migrateFromOldCart();
     }
 
     // ===================== ADD ITEM =====================

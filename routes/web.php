@@ -1431,7 +1431,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::post('/item/report', 'Front\CatalogController@report')->name('catalog-item.report');
 
     Route::get('/', 'Front\FrontendController@index')->name('front.index');
-    Route::get('/view', 'Front\CartMerchantController@view_cart')->name('front.cart-view');
     // Route removed - extraIndex merged into index() with section-based rendering
 
     Route::get('/monetary-unit/{id}', 'Front\FrontendController@monetaryUnit')->name('front.monetary-unit');
@@ -1549,94 +1548,8 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/reply/delete/{id}', 'Front\CatalogItemDetailsController@replydelete')->name('catalog-item.reply.delete');
     // REPLY SECTION ENDS
 
-    // ============ OLD CART ROUTES (REDIRECTS TO v4) ============
-    // These routes are kept for backwards compatibility
-    // All redirect to the new merchant-cart system
-
-    // Old cart page redirects to new
-    Route::get('/carts', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('front.cart');
-    Route::get('/carts/view', function() {
-        return redirect()->route('merchant-cart.index');
-    });
-
-    // Old cart summary redirects to new
-    Route::get('/cart/summary', function() {
-        return redirect()->route('merchant-cart.summary');
-    })->name('cart.summary');
-
-    // Old quantity routes redirect to new (POST only in new system)
-    Route::match(['get', 'post'], '/cart/increase', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('cart.increase');
-    Route::match(['get', 'post'], '/cart/decrease', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('cart.decrease');
-    Route::get('/cart/increase', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('cart.increase.get');
-    Route::get('/cart/decrease', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('cart.decrease.get');
-
-    // Old remove redirects to cart page
-    Route::get('/removecart/{id}', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('cart.remove');
-
-    // Old add routes redirect to cart page (users need to use new add method)
-    Route::get('/cart/add/merchant/{merchantItemId}', function() {
-        return redirect()->route('merchant-cart.index')
-            ->with('info', __('Please use the product page to add items to cart'));
-    })->name('merchant.cart.add');
-
-    Route::get('/addcart/{id}', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('catalog-item.cart.add');
-
-    Route::get('/addtocart/{id}', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('catalog-item.cart.quickadd');
-
-    Route::get('/addnumcart', function() {
-        return redirect()->route('merchant-cart.index');
-    })->name('details.cart');
-
-    Route::get('/addtonumcart', function() {
-        return redirect()->route('merchant-cart.index');
-    });
-
-    Route::get('/addbyone', function() {
-        return redirect()->route('merchant-cart.index');
-    });
-
-    Route::get('/reducebyone', function() {
-        return redirect()->route('merchant-cart.index');
-    });
-
-    Route::get('/upcolor', function() {
-        return redirect()->route('merchant-cart.index');
-    });
-
-    // Old unified add - redirect to new add endpoint info
-    Route::match(['get', 'post'], '/cart/unified', function() {
-        return response()->json([
-            'success' => false,
-            'message' => 'This endpoint is deprecated. Use POST /merchant-cart/add instead.',
-            'new_endpoint' => route('merchant-cart.add'),
-        ], 410);
-    })->name('cart.unified.add');
-    Route::get('/cart/unified', function() {
-        return response()->json([
-            'success' => false,
-            'message' => 'This endpoint is deprecated. Use POST /merchant-cart/add instead.',
-        ], 410);
-    })->name('cart.unified.add.get');
-
-    // Discount code - keep working
+    // Discount code validation
     Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');
-    // ============ END OLD CART ROUTES ============
 
     // ============ NEW MERCHANT CART SYSTEM (v4) ============
     // Clean, unified cart API - replaces all old cart routes
@@ -1790,7 +1703,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('update-finalize', 'Front\FrontendController@updateFinalize');
 
     // MERCHANT AND PAGE SECTION
-    Route::get('/country/tax/check', 'Front\CartMerchantController@country_tax');
     Route::get('/{slug}', 'Front\MerchantController@index')->name('front.merchant');
 
     // MERCHANT AND PAGE SECTION ENDS

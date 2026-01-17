@@ -244,18 +244,8 @@
 
                         <div class="header-cart-1">
                             @php
-                                // Get cart count from new system, fallback to old systems
-                                $headerCartCount = 0;
-                                if (Session::has('merchant_cart')) {
-                                    $merchantCart = Session::get('merchant_cart');
-                                    $headerCartCount = $merchantCart['totals']['qty'] ?? count($merchantCart['items'] ?? []);
-                                } elseif (Session::has('cart_v2')) {
-                                    $cartV2 = Session::get('cart_v2');
-                                    $headerCartCount = $cartV2['totalQty'] ?? count($cartV2['items'] ?? []);
-                                } elseif (Session::has('cart')) {
-                                    $oldCart = Session::get('cart');
-                                    $headerCartCount = is_object($oldCart) ? count($oldCart->items ?? []) : 0;
-                                }
+                                $cart = Session::get('merchant_cart', ['items' => [], 'totals' => ['qty' => 0]]);
+                                $headerCartCount = (int) ($cart['totals']['qty'] ?? 0);
                             @endphp
                             <a href="{{ route('merchant-cart.index') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
@@ -427,22 +417,6 @@
                             </a>
                         </div>
                         <div class="header-cart-1">
-                            @php
-                                // Reuse $headerCartCount from earlier if available, otherwise recalculate
-                                if (!isset($headerCartCount)) {
-                                    $headerCartCount = 0;
-                                    if (Session::has('merchant_cart')) {
-                                        $merchantCart = Session::get('merchant_cart');
-                                        $headerCartCount = $merchantCart['totals']['qty'] ?? count($merchantCart['items'] ?? []);
-                                    } elseif (Session::has('cart_v2')) {
-                                        $cartV2 = Session::get('cart_v2');
-                                        $headerCartCount = $cartV2['totalQty'] ?? count($cartV2['items'] ?? []);
-                                    } elseif (Session::has('cart')) {
-                                        $oldCart = Session::get('cart');
-                                        $headerCartCount = is_object($oldCart) ? count($oldCart->items ?? []) : 0;
-                                    }
-                                }
-                            @endphp
                             <a href="{{ route('merchant-cart.index') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
                                         class="header-cart-count" id="cart-count">{{ $headerCartCount }}</span></div>
