@@ -406,12 +406,97 @@ class MerchantCartManager
     }
 
     /**
+     * Check if merchant has items in cart
+     */
+    public function hasMerchantItems(int $merchantId): bool
+    {
+        return !empty($this->getMerchantItems($merchantId));
+    }
+
+    /**
      * Get totals for a specific merchant
      */
     public function getMerchantTotals(int $merchantId): array
     {
         $items = $this->getMerchantItems($merchantId);
         return $this->calculateTotals($items);
+    }
+
+    /**
+     * Get merchant cart summary (for checkout pages)
+     *
+     * @return array{items_count: int, total_qty: int, total_price: float, items: array}
+     */
+    public function getMerchantCartSummary(int $merchantId): array
+    {
+        $this->validateMerchantId($merchantId);
+
+        $items = $this->getMerchantItems($merchantId);
+        $totals = $this->calculateTotals($items);
+
+        return [
+            'items_count' => count($items),
+            'total_qty' => $totals['qty'],
+            'total_price' => $totals['total'],
+            'subtotal' => $totals['subtotal'],
+            'discount' => $totals['discount'],
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * Build cart payload for purchase creation
+     *
+     * @return array{totalQty: int, totalPrice: float, items: array}
+     */
+    public function buildCartPayload(int $merchantId): array
+    {
+        $this->validateMerchantId($merchantId);
+
+        $items = $this->getMerchantItems($merchantId);
+        $totals = $this->calculateTotals($items);
+
+        // Transform items to purchase format
+        $purchaseItems = [];
+        foreach ($items as $key => $item) {
+            $purchaseItems[$key] = [
+                'item' => [
+                    'id' => $item['catalog_item_id'],
+                    'user_id' => $item['merchant_id'],
+                    'name' => $item['name'],
+                    'name_ar' => $item['name_ar'] ?? $item['name'],
+                    'photo' => $item['photo'],
+                    'slug' => $item['slug'],
+                    'part_number' => $item['part_number'] ?? '',
+                ],
+                'merchant_item_id' => $item['merchant_item_id'],
+                'user_id' => $item['merchant_id'],
+                'qty' => $item['qty'],
+                'price' => $item['total_price'],
+                'size' => $item['size'],
+                'color' => $item['color'],
+                'stock' => $item['stock'],
+                'size_qty' => null,
+                'size_key' => null,
+                'size_price' => $item['size_price'] ?? 0,
+                'keys' => null,
+                'values' => null,
+            ];
+        }
+
+        return [
+            'totalQty' => $totals['qty'],
+            'totalPrice' => $totals['total'],
+            'items' => $purchaseItems,
+        ];
+    }
+
+    /**
+     * Remove all items for a merchant (alias for clearMerchant)
+     */
+    public function removeMerchantItems(int $merchantId): void
+    {
+        $this->clearMerchant($merchantId);
     }
 
     // ══════════════════════════════════════════════════════════════
