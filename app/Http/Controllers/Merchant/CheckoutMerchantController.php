@@ -69,9 +69,30 @@ class CheckoutMerchantController extends Controller
         // Get currency
         $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
+        // Build address data for view (from customer defaults + saved address)
+        $customer = $result['data']['customer'] ?? [];
+        $savedAddress = $result['data']['saved_address'] ?? [];
+
+        // Merge customer defaults with saved address, mapping field names for view
+        $address = array_merge($customer, [
+            'customer_name' => $customer['name'] ?? '',
+            'customer_email' => $customer['email'] ?? '',
+            'customer_phone' => $customer['phone'] ?? '',
+            'customer_address' => $customer['address'] ?? '',
+            'customer_city' => $customer['city'] ?? '',
+            'customer_state' => $customer['state'] ?? '',
+            'customer_zip' => $customer['zip'] ?? '',
+            'customer_country' => $savedAddress['customer_country'] ?? '',
+            'country_id' => $customer['country_id'] ?? 0,
+            'state_id' => $savedAddress['state_id'] ?? 0,
+            'city_id' => $savedAddress['city_id'] ?? 0,
+            'latitude' => $customer['latitude'] ?? '',
+            'longitude' => $customer['longitude'] ?? '',
+        ]);
+
         return view('merchant.checkout.address', [
             'merchant_id' => $merchantId,
-            'address' => $result['data']['address'] ?? [],
+            'address' => $address,
             'cart' => $result['data']['cart'] ?? [],
             'googleMapsApiKey' => $googleMapsApiKey,
             'curr' => $curr,
