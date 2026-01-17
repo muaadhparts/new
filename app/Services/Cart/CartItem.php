@@ -204,15 +204,69 @@ class CartItem implements JsonSerializable
     }
 
     /**
-     * Generate unique cart key
-     * Format: mp_{merchant_item_id}_{size_hash}_{color_hash}
+     * Generate unique cart key (SINGLE SOURCE OF TRUTH)
+     *
+     * Format: s{session_hash}_m{merchant_item_id}_{size}_{color}
+     *
+     * Components:
+     * - s{hash}: First 8 chars of session ID hash (ties to session)
+     * - m{id}: Merchant item ID
+     * - size: Size value or underscore
+     * - color: Color hex or underscore
+     *
+     * Example: s8a3f2b1c_m1234_M_FF0000
+     *
+     * This is the ONLY method that generates cart keys.
+     * No fallbacks. No alternative formats.
      */
     public static function generateKey(int $merchantItemId, ?string $size = null, ?string $color = null): string
     {
-        $sizeHash = $size ? md5($size) : '_';
-        $colorHash = $color ? ltrim($color, '#') : '_';
+        $sessionHash = self::getSessionHash();
+        $sizeKey = $size ? preg_replace('/[^a-zA-Z0-9]/', '', $size) : '_';
+        $colorKey = $color ? ltrim($color, '#') : '_';
 
-        return "mp_{$merchantItemId}_{$sizeHash}_{$colorHash}";
+        return "s{$sessionHash}_m{$merchantItemId}_{$sizeKey}_{$colorKey}";
+    }
+
+    /**
+     * Get session hash for cart key
+     * Uses first 8 characters of MD5 hash of session ID
+     *
+     * @throws \RuntimeException if no active session
+     */
+    private static function getSessionHash(): string
+    {
+        $sessionId = session()->getId();
+
+        if (empty($sessionId)) {
+            throw new \RuntimeException(
+                'Cart operations require an active session. ' .
+                'Ensure web middleware is applied or session is started.'
+            );
+        }
+
+        return substr(md5($sessionId), 0, 8);
+    }
+
+    /**
+     * Validate that a key belongs to current session
+     */
+    public static function isValidKeyForSession(string $key): bool
+    {
+        $sessionHash = self::getSessionHash();
+        return str_starts_with($key, "s{$sessionHash}_");
+    }
+
+    /**
+     * Extract merchant_item_id from cart key
+     */
+    public static function getMerchantItemIdFromKey(string $key): ?int
+    {
+        // Format: s{hash}_m{id}_{size}_{color}
+        if (preg_match('/^s[a-f0-9]{8}_m(\d+)_/', $key, $matches)) {
+            return (int) $matches[1];
+        }
+        return null;
     }
 
     /**
@@ -348,6 +402,57 @@ class CartItem implements JsonSerializable
     public function jsonSerialize(): array
     {
         return $this->toArray();
+    }
+
+    // ===================== Static Calculation Methods =====================
+
+    /**
+     * Calculate totals from an array of cart item arrays
+     *
+     * SINGLE SOURCE OF TRUTH for totals calculation.
+     * Uses CartItem instances to ensure consistent pricing logic.
+     *
+     * @param array<string, array> $items Array of item arrays (from storage)
+     * @return array{qty: int, subtotal: float, discount: float, total: float}
+     */
+    public static function calculateTotals(array $items): array
+    {
+        $totals = [
+            'qty' => 0,
+            'subtotal' => 0.0,
+            'discount' => 0.0,
+            'total' => 0.0,
+        ];
+
+        foreach ($items as $itemArray) {
+            // Reconstruct CartItem to use its calculation methods
+            $cartItem = self::fromArray($itemArray);
+
+            $totals['qty'] += $cartItem->qty;
+            $totals['subtotal'] += $cartItem->getEffectiveUnitPrice() * $cartItem->qty;
+            $totals['total'] += $cartItem->getTotalPrice();
+        }
+
+        // Discount is the difference between subtotal and total
+        $totals['discount'] = $totals['subtotal'] - $totals['total'];
+
+        return $totals;
+    }
+
+    /**
+     * Calculate totals for items belonging to a specific merchant
+     *
+     * @param array<string, array> $items All cart items
+     * @param int $merchantId Merchant to filter by
+     * @return array{qty: int, subtotal: float, discount: float, total: float}
+     */
+    public static function calculateMerchantTotals(array $items, int $merchantId): array
+    {
+        $merchantItems = array_filter($items, function ($item) use ($merchantId) {
+            return (int) ($item['merchant_id'] ?? 0) === $merchantId;
+        });
+
+        return self::calculateTotals($merchantItems);
     }
 
     // ===================== Helper Methods =====================

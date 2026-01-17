@@ -954,38 +954,54 @@
       $input.val(current - 1);
     });
 
-    /* إضافة للسلة من Alternatives */
+    /* إضافة للسلة من Alternatives - يستخدم النظام الجديد */
     $(document).off('click.alt_addcart').on('click.alt_addcart', '.alt-add-to-cart', function (e) {
       e.preventDefault();
       e.stopPropagation();
 
       const btn = this;
       const $btn = $(btn);
+      const mpId = $btn.data('merchant-item-id') || $btn.data('merchantItemId') || $btn.data('mp-id');
+
+      if (!mpId) {
+        console.warn('alt-add-to-cart: missing data-merchant-item-id');
+        return;
+      }
+
       const $row = $btn.closest('tr').length ? $btn.closest('tr') : $btn.closest('.modal-card');
       const $input = $row.find('.qty-input');
       const qty = $input.length ? (parseInt($input.val()) || 1) : 1;
 
-      const addUrl = $btn.data('addnum-url') || $btn.data('addnumUrl');
-      const user = $btn.data('user');
-
-      if (!addUrl) {
-        console.warn('alt-add-to-cart: missing addnum-url');
-        return;
-      }
-
-      let url = addUrl + '?qty=' + qty;
-      if (user) url += '&user=' + encodeURIComponent(user);
-
       btn.disabled = true;
 
-      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      fetch('/merchant-cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          merchant_item_id: parseInt(mpId, 10),
+          qty: qty
+        })
+      })
         .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
         .then(data => {
-          if (typeof window.applyCartState === 'function') {
-            window.applyCartState(data);
+          // تحديث عداد السلة
+          if (data.cart?.totals?.qty !== undefined) {
+            document.querySelectorAll('#cart-count').forEach(el => {
+              el.textContent = data.cart.totals.qty;
+            });
           }
-          const msg = data.success || t('messages.added_to_cart');
-          if (window.toastr) toastr.success(msg);
+
+          const msg = data.message || t('messages.added_to_cart');
+          if (data.success) {
+            if (window.toastr) toastr.success(msg);
+          } else {
+            if (window.toastr) toastr.error(msg);
+          }
         })
         .catch(err => {
           const msg = t('messages.api_error');
@@ -1032,19 +1048,17 @@
       });
     });
 
-    /* ============== أزرار السلة ============== */
+    /* ============== أزرار السلة (NEW CART SYSTEM) ============== */
 
-    // إضافة إلى السلة (يبقى داخل المودال)
+    // إضافة إلى السلة - يستخدم النظام الجديد /merchant-cart/add
     $(document).off('click.ill_addnum').on('click.ill_addnum', '.ill-add-to-cart', function (e) {
       e.preventDefault();
 
       const btn = this;
-      const id  = $(btn).data('id');
-      // Support both merchant_item_id (new) and mp-id/mpId (legacy) for backward compatibility
       const mpId = $(btn).data('merchant-item-id') || $(btn).data('merchantItemId') || $(btn).data('mp-id') || $(btn).data('mpId');
-      if (!id && !mpId) { console.warn('ill-add-to-cart: missing data-id or data-merchant-item-id'); return; }
+      if (!mpId) { console.warn('ill-add-to-cart: missing data-merchant-item-id'); return; }
 
-      // كمية إن وُجدت داخل بطاقة المنتج، وإلا = 1 (جدول البدائل)
+      // كمية من الحقل إن وُجد
       const $root = $(btn).closest('.ill-catalogItem');
       let qty = 1;
       const $qty = $root.find('.ill-qty');
@@ -1053,37 +1067,37 @@
         if (!isNaN(q) && q > 0) qty = q;
       }
 
-      const addUrl = $(btn).data('addnumUrl') || $(btn).data('addnum-url') || '/addnumcart';
-      const user   = $(btn).data('user');
-
-      // بناء الـ URL بناءً على نوع الـ route
-      let url;
-      if (mpId && (addUrl.includes('/cart/add/merchant/') || addUrl.includes('/cart/merchant/add/'))) {
-        // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
-        url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
-      } else {
-        // استخدام route القديم
-        url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`
-                  + (user ? `&user=${encodeURIComponent(user)}` : '');
-      }
-
       btn.disabled = true;
-      fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+
+      // استخدام النظام الجديد فقط
+      fetch('/merchant-cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          merchant_item_id: parseInt(mpId, 10),
+          qty: qty
+        })
+      })
         .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
         .then(data => {
-          // Use global cart state updater
-          if (typeof window.applyCartState === 'function') {
-            window.applyCartState(data);
-          } else {
-            // Fallback: fetch cart summary if global updater not available
-            fetch('/cart/summary', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-              .then(r => r.ok ? r.json() : null)
-              .then(s => s && window.applyCartState && window.applyCartState(s))
-              .catch(() => {});
+          // تحديث عداد السلة
+          if (data.cart?.totals?.qty !== undefined) {
+            document.querySelectorAll('#cart-count').forEach(el => {
+              el.textContent = data.cart.totals.qty;
+            });
           }
 
-          const ok = data.success ?? t('messages.added_to_cart');
-          if (window.toastr) toastr.success(ok); else alert(ok);
+          const msg = data.message || t('messages.added_to_cart');
+          if (data.success) {
+            if (window.toastr) toastr.success(msg); else alert(msg);
+          } else {
+            if (window.toastr) toastr.error(msg); else alert(msg);
+          }
         })
         .catch(err => {
           const msg = t('messages.api_error');
@@ -1092,17 +1106,15 @@
         .finally(() => { btn.disabled = false; });
     });
 
-    // شراء الآن: GET إلى /addtonumcart ثم المتصفح يذهب تلقائيًا للسلة
+    // شراء الآن - يستخدم النظام الجديد /merchant-cart/add ثم يذهب للسلة
     $(document).off('click.ill_buynow').on('click.ill_buynow', '.ill-buy-now', function (e) {
       e.preventDefault();
 
       const btn = this;
-      const id  = $(btn).data('id');
-      // Support both merchant_item_id (new) and mp-id/mpId (legacy) for backward compatibility
       const mpId = $(btn).data('merchant-item-id') || $(btn).data('merchantItemId') || $(btn).data('mp-id') || $(btn).data('mpId');
-      if (!id && !mpId) { console.warn('ill-buy-now: missing data-id or data-merchant-item-id'); return; }
+      if (!mpId) { console.warn('ill-buy-now: missing data-merchant-item-id'); return; }
 
-      // كمية من الحقل إن وُجد، وإلا = 1
+      // كمية من الحقل إن وُجد
       const $root = $(btn).closest('.ill-catalogItem');
       let qty = 1;
       const $qty = $root.find('.ill-qty');
@@ -1111,34 +1123,37 @@
         if (!isNaN(q) && q > 0) qty = q;
       }
 
-      const addUrl = $(btn).data('addtonumUrl') || $(btn).data('addtonum-url') || '/addtonumcart';
-      const user   = $(btn).data('user');
-      const cartsUrl = $(btn).data('carts-url') || $(btn).data('cartsUrl') || '/carts';
+      btn.disabled = true;
 
-      // بناء الـ URL بناءً على نوع الـ route
-      let url;
-      if (mpId && (addUrl.includes('/cart/add/merchant/') || addUrl.includes('/cart/merchant/add/'))) {
-        // استخدام route الجديد (merchant.cart.add) - الـ ID موجود في الـ path
-        // نضيف للسلة عبر AJAX ثم نذهب للـ carts
-        url = `${addUrl}?qty=${encodeURIComponent(qty)}` + (user ? `&user=${encodeURIComponent(user)}` : '');
-        btn.disabled = true;
-        fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-          .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-          .then(data => {
-            window.location.href = cartsUrl;
-          })
-          .catch(err => {
-            const msg = t('messages.api_error');
-            if (window.toastr) toastr.error(`${msg} ${err.message || err}`); else alert(`${msg}\n${err.message || err}`);
+      // استخدام النظام الجديد ثم الانتقال للسلة
+      fetch('/merchant-cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          merchant_item_id: parseInt(mpId, 10),
+          qty: qty
+        })
+      })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+        .then(data => {
+          if (data.success) {
+            window.location.href = '/merchant-cart';
+          } else {
+            const msg = data.message || t('messages.api_error');
+            if (window.toastr) toastr.error(msg); else alert(msg);
             btn.disabled = false;
-          });
-        return;
-      } else {
-        // استخدام route القديم
-        url = `${addUrl}?id=${encodeURIComponent(id)}&qty=${encodeURIComponent(qty)}`;
-        if (user) url += `&user=${encodeURIComponent(user)}`;
-        window.location.href = url;
-      }
+          }
+        })
+        .catch(err => {
+          const msg = t('messages.api_error');
+          if (window.toastr) toastr.error(`${msg} ${err.message || err}`); else alert(`${msg}\n${err.message || err}`);
+          btn.disabled = false;
+        });
     });
 
   }

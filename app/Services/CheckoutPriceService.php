@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\MerchantCart;
 use App\Models\DiscountCode;
 use App\Models\MonetaryUnit;
 use App\Models\Shipping;
@@ -12,6 +11,7 @@ use App\Models\MerchantTaxSetting;
 use App\Models\CourierServiceArea;
 use App\Models\MerchantLocation;
 use App\Services\MonetaryUnitService;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -162,24 +162,23 @@ class CheckoutPriceService
     /**
      * Calculate catalogItems total for a merchant
      * This is the RAW total without any discounts
+     * Uses new MerchantCartManager
      */
     public function calculateCatalogItemsTotal($merchantId = null)
     {
-        $cart = Session::get('cart');
-        if (!$cart || empty($cart->items)) {
+        $cartManager = app(MerchantCartManager::class);
+        $cartItems = $merchantId
+            ? $cartManager->getItemsForMerchant($merchantId)
+            : $cartManager->getItems();
+
+        if (empty($cartItems)) {
             return 0;
         }
 
         $total = 0;
-        foreach ($cart->items as $item) {
-            $itemMerchantId = $this->getItemMerchantId($item);
-
-            // If merchant specified, only count that merchant's catalogItems
-            if ($merchantId !== null && $itemMerchantId != $merchantId) {
-                continue;
-            }
-
-            $total += (float)($item['price'] ?? 0);
+        foreach ($cartItems as $item) {
+            // New cart format uses total_price for item total (unit_price * qty)
+            $total += (float)($item['total_price'] ?? 0);
         }
 
         return round($total, 2);
@@ -456,26 +455,6 @@ class CheckoutPriceService
             'free_discount' => round($freeDiscount, 2),
             'company' => implode(' + ', array_filter($companies)),
         ];
-    }
-
-    /**
-     * Extract merchant ID from cart item
-     */
-    protected function getItemMerchantId($item)
-    {
-        if (isset($item['user_id'])) {
-            return (int)$item['user_id'];
-        }
-        if (isset($item['item'])) {
-            $itemData = $item['item'];
-            if (is_object($itemData)) {
-                return (int)($itemData->user_id ?? $itemData->merchant_user_id ?? 0);
-            }
-            if (is_array($itemData)) {
-                return (int)($itemData['user_id'] ?? $itemData['merchant_user_id'] ?? 0);
-            }
-        }
-        return 0;
     }
 
     /**
@@ -828,15 +807,17 @@ class CheckoutPriceService
     /**
      * Calculate complete merchant purchase details
      * This is used to populate the merchant_purchases table
+     * Uses new cart item format from MerchantCartManager
      */
     public function calculateMerchantPurchaseDetails(int $merchantId, array $cartItems, array $options = []): array
     {
         // 1. Calculate items total for this merchant
+        // New cart format: merchant_id is directly available, total_price is item total
         $itemsTotal = 0;
         foreach ($cartItems as $item) {
-            $itemMerchantId = $this->getItemMerchantId($item);
-            if ((int)$itemMerchantId === $merchantId) {
-                $itemsTotal += (float)($item['price'] ?? 0);
+            $itemMerchantId = (int)($item['merchant_id'] ?? 0);
+            if ($itemMerchantId === $merchantId) {
+                $itemsTotal += (float)($item['total_price'] ?? 0);
             }
         }
         $itemsTotal = round($itemsTotal, 2);

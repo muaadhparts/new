@@ -6,9 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Services\TryotoService;
 use App\Services\TryotoLocationService;
-use App\Services\MerchantCartService;
+// MerchantCartService replaced by MerchantCartManager
 use App\Services\ShippingCalculatorService;
 use App\Services\CheckoutPriceService;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -17,11 +18,13 @@ class ShippingApiController extends Controller
 {
     protected TryotoService $tryotoService;
     protected CheckoutPriceService $priceService;
+    protected MerchantCartManager $cartManager;
 
-    public function __construct(TryotoService $tryotoService, CheckoutPriceService $priceService)
+    public function __construct(TryotoService $tryotoService, CheckoutPriceService $priceService, MerchantCartManager $cartManager)
     {
         $this->tryotoService = $tryotoService;
         $this->priceService = $priceService;
+        $this->cartManager = $cartManager;
     }
 
     /**
@@ -39,17 +42,17 @@ class ShippingApiController extends Controller
                 ], 400);
             }
 
-            // 1. Get cart items from session (NOT from request)
-            $cart = Session::get('cart');
-            if (!$cart || empty($cart->items)) {
+            // 1. Get cart items from MerchantCartManager (NOT from session directly)
+            $cartItems = $this->cartManager->getItemsForMerchant($merchantId);
+            if (empty($cartItems)) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Cart is empty',
+                    'error' => 'Cart is empty for this merchant',
                 ], 400);
             }
 
             // 2. Calculate shipping data using cart items
-            $shippingData = MerchantCartService::calculateMerchantShipping($merchantId, $cart->items);
+            $shippingData = $this->calculateMerchantShippingFromCart($merchantId, $cartItems);
 
             Log::debug('ShippingApiController: Shipping data calculated', [
                 'merchant_id' => $merchantId,
@@ -213,16 +216,12 @@ class ShippingApiController extends Controller
         $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
         $freeAboveConverted = $this->priceService->convert($freeAbove);
 
-        // Calculate merchant's catalogItems total from cart (converted)
-        $cart = Session::get('cart');
+        // Calculate merchant's catalogItems total from cart (using new MerchantCartManager)
+        $cartItems = $this->cartManager->getItemsForMerchant($merchantId);
         $merchantCatalogitemsTotal = 0;
-        if ($cart && !empty($cart->items)) {
-            foreach ($cart->items as $item) {
-                $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? 0;
-                if ($itemMerchantId == $merchantId) {
-                    $merchantCatalogitemsTotal += (float)($item['price'] ?? 0);
-                }
-            }
+        foreach ($cartItems as $item) {
+            // New cart format: total_price is the item total
+            $merchantCatalogitemsTotal += (float)($item['total_price'] ?? 0);
         }
         $merchantCatalogitemsTotalConverted = $this->priceService->convert($merchantCatalogitemsTotal);
 
@@ -577,5 +576,41 @@ class ShippingApiController extends Controller
                 'shipping_city' => $resolvedCity,
             ]);
         }
+    }
+
+    /**
+     * Calculate shipping data from cart items (new cart format)
+     * Replaces MerchantCartService::calculateMerchantShipping
+     */
+    protected function calculateMerchantShippingFromCart(int $merchantId, array $cartItems): array
+    {
+        $totalQty = 0;
+        $totalWeight = 0;
+        $totalPrice = 0;
+
+        foreach ($cartItems as $item) {
+            // New cart format
+            $qty = (int)($item['qty'] ?? 1);
+            $weight = (float)($item['weight'] ?? 0.5); // Default 0.5kg per item
+            $price = (float)($item['total_price'] ?? 0);
+
+            $totalQty += $qty;
+            $totalWeight += ($weight * $qty);
+            $totalPrice += $price;
+        }
+
+        // Default weight if not specified (1kg per item)
+        if ($totalWeight <= 0) {
+            $totalWeight = $totalQty * 0.5;
+        }
+
+        return [
+            'has_complete_data' => $totalQty > 0,
+            'missing_data' => $totalQty <= 0 ? ['items'] : [],
+            'total_qty' => $totalQty,
+            'total_weight' => round($totalWeight, 2),
+            'total_price' => round($totalPrice, 2),
+            'merchant_id' => $merchantId,
+        ];
     }
 }

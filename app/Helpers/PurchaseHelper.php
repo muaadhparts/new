@@ -52,20 +52,40 @@ class PurchaseHelper
         }
     }
 
-    public static function item_affilate_check($cart)
+    /**
+     * Check affiliate users for cart items
+     * Updated for new MerchantCartManager format
+     *
+     * @param array $cartItems Cart items from MerchantCartManager->getItems()
+     * @return array|null
+     */
+    public static function item_affilate_check($cartItems)
     {
+        // Handle both old Cart object and new array format
+        if (is_object($cartItems) && isset($cartItems->items)) {
+            $items = $cartItems->items;
+        } elseif (is_array($cartItems)) {
+            $items = $cartItems;
+        } else {
+            return null;
+        }
+
         $affilate_users = null;
         $i = 0;
         $gs = \App\Models\Muaadhsetting::find(1);
         $percentage = $gs->affilate_charge / 100;
-        foreach ($cart->items as $cartItem) {
 
-            if ($cartItem['affilate_user'] != 0) {
-                if (Auth::user()->id != $cartItem['affilate_user']) {
-                    $affilate_users[$i]['user_id'] = $cartItem['affilate_user'];
-                    $affilate_users[$i]['catalog_item_id'] = $cartItem['item']['id'];
-                    $price = $cartItem['price'] * $percentage;
-                    $affilate_users[$i]['charge'] = $price;
+        foreach ($items as $cartItem) {
+            // Support both old and new cart item formats
+            $affiliateUser = $cartItem['affilate_user'] ?? $cartItem['affiliate_user_id'] ?? 0;
+            $catalogItemId = $cartItem['catalog_item_id'] ?? ($cartItem['item']['id'] ?? 0);
+            $price = $cartItem['total_price'] ?? $cartItem['price'] ?? 0;
+
+            if ($affiliateUser != 0) {
+                if (Auth::check() && Auth::user()->id != $affiliateUser) {
+                    $affilate_users[$i]['user_id'] = $affiliateUser;
+                    $affilate_users[$i]['catalog_item_id'] = $catalogItemId;
+                    $affilate_users[$i]['charge'] = $price * $percentage;
                     $i++;
                 }
             }
@@ -73,22 +93,15 @@ class PurchaseHelper
         return $affilate_users;
     }
 
-
+    /**
+     * @deprecated No longer needed - new cart stores in base currency
+     * Prices are converted at display time via MonetaryUnitService
+     */
     public static function set_currency($new_value)
     {
-
-        try {
-            $oldCart = Session::get('cart');
-            $cart = new MerchantCart($oldCart);
-
-            foreach ($cart->items as $key => $cartItem) {
-
-                $cart->items[$key]['price'] = $cart->items[$key]['price'] * $new_value;
-                $cart->items[$key]['item']['price'] = $cart->items[$key]['item']['price'] * $new_value;
-            }
-            Session::put('cart', $cart);
-        } catch (\Exception $e) {
-        }
+        // DEPRECATED: New cart system stores prices in base currency (SAR)
+        // Conversion happens at display time via monetaryUnit()->convert()
+        // This method is kept for backward compatibility but does nothing
     }
 
 

@@ -64,7 +64,7 @@
              </span>
           </li>
           @else
-          @if($cartItem->emptyStock())
+          @if(!$flashProdMerchant || $cartItem->emptyStock())
           <li>
              <span class="cart-btn cart-out-of-stock" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Out Of Stock') }}">
              <i class="icofont-close-circled"></i>
@@ -72,12 +72,22 @@
           </li>
           @else
           <li>
-             <span  class="cart-btn add-to-cart add-to-cart-btn" data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}"  name="{{ __('Add To Cart') }}">
+             <span class="cart-btn m-cart-add"
+                   data-merchant-item-id="{{ $flashProdMerchant->id }}"
+                   data-catalog-item-id="{{ $cartItem->id }}"
+                   name="{{ __('Add To Cart') }}">
              <i class="icofont-cart"></i>
              </span>
           </li>
           <li>
-             <span class="cart-btn quick-view" data-href="{{ route('catalogItem.quick',$cartItem->id) }}" rel-toggle="tooltip" data-placement="top" name="{{ __('Quick View') }}" data-bs-toggle="modal" data-bs-target="#quickview">
+             <span class="cart-btn quick-view"
+                   data-url="{{ route('modal.quickview', ['id' => $cartItem->id]) }}?user={{ $flashProdMerchant->user_id }}"
+                   data-id="{{ $cartItem->id }}"
+                   rel-toggle="tooltip"
+                   data-placement="top"
+                   name="{{ __('Quick View') }}"
+                   data-bs-toggle="modal"
+                   data-bs-target="#quickview">
              <i class="fas fa-eye"></i>
              </span>
           </li>

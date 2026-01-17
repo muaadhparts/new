@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Models\MerchantCart;
 use App\Models\DiscountCode;
 use App\Models\CatalogItem;
 use App\Services\CheckoutPriceService;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Http\Request;
 use Session;
 
@@ -31,11 +31,13 @@ use Session;
 class DiscountCodeController extends FrontBaseController
 {
     protected CheckoutPriceService $priceService;
+    protected MerchantCartManager $cartManager;
 
     public function __construct()
     {
         parent::__construct();
         $this->priceService = app(CheckoutPriceService::class);
+        $this->cartManager = app(MerchantCartManager::class);
     }
 
     /**
@@ -64,9 +66,9 @@ class DiscountCodeController extends FrontBaseController
             return response()->json(0);
         }
 
-        // Get cart
-        $cart = Session::get('cart');
-        if (!$cart || empty($cart->items)) {
+        // Get cart items using new MerchantCartManager
+        $cartItems = $this->cartManager->getItems();
+        if (empty($cartItems)) {
             return response()->json(0);
         }
 
@@ -94,7 +96,7 @@ class DiscountCodeController extends FrontBaseController
         }
 
         // Calculate eligible amount
-        $eligible = $this->calculateEligibleTotal($cart, $discountCode, $checkoutMerchantId);
+        $eligible = $this->calculateEligibleTotal($cartItems, $discountCode, $checkoutMerchantId);
         if ($eligible['total'] <= 0) {
             return response()->json(0);
         }
@@ -228,23 +230,25 @@ class DiscountCodeController extends FrontBaseController
 
     /**
      * Calculate eligible total (items matching merchant & category).
+     * Uses new cart format from MerchantCartManager
      */
-    private function calculateEligibleTotal($cart, $discountCode, $checkoutMerchantId = null)
+    private function calculateEligibleTotal(array $cartItems, $discountCode, $checkoutMerchantId = null)
     {
         $eligibleTotal = 0;
         $eligibleItems = [];
 
-        foreach ($cart->items as $key => $item) {
-            $itemMerchantUserId = $this->getItemMerchantId($item);
-            $catalogItemId = $this->getItemCatalogItemId($item);
+        foreach ($cartItems as $key => $item) {
+            // New cart format: merchant_id is directly available
+            $itemMerchantId = (int)($item['merchant_id'] ?? 0);
+            $catalogItemId = (int)($item['catalog_item_id'] ?? 0);
 
             // Skip if merchant checkout and item doesn't belong to checkout merchant
-            if ($checkoutMerchantId && $itemMerchantUserId != (int)$checkoutMerchantId) {
+            if ($checkoutMerchantId && $itemMerchantId != (int)$checkoutMerchantId) {
                 continue;
             }
 
             // Skip if discount code is merchant-specific and item doesn't belong to discount code merchant
-            if ($discountCode->user_id && $itemMerchantUserId != (int)$discountCode->user_id) {
+            if ($discountCode->user_id && $itemMerchantId != (int)$discountCode->user_id) {
                 continue;
             }
 
@@ -259,8 +263,8 @@ class DiscountCodeController extends FrontBaseController
                 continue;
             }
 
-            // Add to eligible
-            $eligibleTotal += (float)($item['price'] ?? 0);
+            // Add to eligible - new format uses total_price for item total
+            $eligibleTotal += (float)($item['total_price'] ?? 0);
             $eligibleItems[] = $key;
         }
 
@@ -315,45 +319,6 @@ class DiscountCodeController extends FrontBaseController
             Session::put('discount_code_id', $discountCode->id);
             Session::put('discount_percentage', $percentage);
         }
-    }
-
-    /**
-     * Extract merchant_id from cart item
-     */
-    private function getItemMerchantId($item)
-    {
-        if (isset($item['user_id']) && $item['user_id']) {
-            return (int)$item['user_id'];
-        }
-
-        if (isset($item['item'])) {
-            $itemData = $item['item'];
-            if (is_object($itemData)) {
-                return (int)($itemData->merchant_user_id ?? $itemData->user_id ?? 0);
-            }
-            if (is_array($itemData)) {
-                return (int)($itemData['merchant_user_id'] ?? $itemData['user_id'] ?? 0);
-            }
-        }
-
-        return 0;
-    }
-
-    /**
-     * Extract catalog_item_id from cart item
-     */
-    private function getItemCatalogItemId($item)
-    {
-        if (isset($item['item'])) {
-            $itemData = $item['item'];
-            if (is_object($itemData)) {
-                return (int)($itemData->id ?? 0);
-            }
-            if (is_array($itemData)) {
-                return (int)($itemData['id'] ?? 0);
-            }
-        }
-        return 0;
     }
 
     /**

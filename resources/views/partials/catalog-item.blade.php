@@ -241,7 +241,7 @@
                             data-stock="{{ $stock }}"
                             data-preordered="{{ $preordered }}"
                             data-qty-input=".ill-qty"
-                            data-redirect="/cart">
+                            data-redirect="/merchant-cart">
                         <i class="fas fa-bolt"></i> @lang('Buy Now')
                     </button>
                 @else

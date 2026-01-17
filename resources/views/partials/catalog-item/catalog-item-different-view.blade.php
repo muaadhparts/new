@@ -28,7 +28,7 @@
                  aria-label="{{ __('Buy Now') }}"></a>
                </div>
             @else
-               @if($catalogItem->emptyStock())
+               @if(!$bestMerchantItem || $catalogItem->emptyStock())
                <div class="closed">
                <a class="cart-out-of-stock button add_to_cart_button" href="#" name="{{ __('Out Of Stock') }}"><i
                  class="flaticon-cancel flat-mini mx-auto"></i></a>
@@ -36,8 +36,9 @@
             @else
                <div class="cart-button">
                <a href="javascript:;" data-bs-toggle="modal"
-               data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}" {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}} data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
-               class="add-cart button add_to_cart_button {{$catalogItem->cross_items ? 'view_cross_product' : ''}}"
+               class="m-cart-add button add_to_cart_button"
+               data-merchant-item-id="{{ $bestMerchantItem->id }}"
+               data-catalog-item-id="{{ $catalogItem->id }}"
                data-bs-toggle="tooltip" data-bs-placement="right" name=""
                data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
@@ -119,7 +120,7 @@
                  aria-label="{{ __('Buy Now') }}"></a>
                </div>
             @else
-               @if($catalogItem->emptyStock())
+               @if(!$bestMerchantItem || $catalogItem->emptyStock())
                <div class="closed">
                <a class="cart-out-of-stock button add_to_cart_button" href="#" name="{{ __('Out Of Stock') }}"><i
                  class="flaticon-cancel flat-mini mx-auto"></i></a>
@@ -127,8 +128,9 @@
             @else
                <div class="cart-button">
                <a href="javascript:;" data-bs-toggle="modal"
-               data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}" {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}} data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
-               class="add-cart button add_to_cart_button {{$catalogItem->cross_items ? 'view_cross_product' : ''}}"
+               class="m-cart-add button add_to_cart_button"
+               data-merchant-item-id="{{ $bestMerchantItem->id }}"
+               data-catalog-item-id="{{ $catalogItem->id }}"
                data-bs-toggle="tooltip" data-bs-placement="right" name=""
                data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
                </div>
@@ -213,18 +215,20 @@
                   aria-label="{{ __('Add To Cart') }}"></a>
                </div>
             @else
-            @if($catalogItem->emptyStock())
+            @if(!$bestMerchantItem || $catalogItem->emptyStock())
             <div class="cart-button">
               <a class="cart-out-of-stock button add_to_cart_button" href="#" name="{{ __('Out Of Stock') }}"><i
                class="flaticon-cancel flat-mini mx-auto"></i></a>
             </div>
          @else
           <div class="cart-button">
-            <a href="javascript:;" data-bs-toggle="modal"
-            data-cross-href="{{route('front.show.cross.catalogItem', $catalogItem->id)}}" {{$catalogItem->cross_items ? 'data-bs-target=#exampleModal' : ''}} data-href="{{ route('catalogItem.cart.add', $catalogItem->id) }}"
-            class="add-cart button add_to_cart_button {{$catalogItem->cross_items ? 'view_cross_product' : ''}}"
-            data-bs-toggle="tooltip" data-bs-placement="right" name=""
-            data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
+            <a href="javascript:;"
+               class="m-cart-add button add_to_cart_button"
+               data-merchant-item-id="{{ $bestMerchantItem->id }}"
+               data-catalog-item-id="{{ $catalogItem->id }}"
+               data-bs-placement="right"
+               data-bs-original-name="{{ __('Add To Cart') }}"
+               aria-label="{{ __('Add To Cart') }}"></a>
           </div>
       @endif
          @endif

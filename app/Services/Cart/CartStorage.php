@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\Session;
  *
  * SINGLE SOURCE OF TRUTH for cart data.
  * No fallbacks, no legacy support.
+ *
+ * All cart keys MUST match current session.
+ * Invalid keys are automatically removed.
  */
 class CartStorage
 {
@@ -16,7 +19,47 @@ class CartStorage
 
     public function get(): array
     {
-        return Session::get(self::SESSION_KEY, $this->getEmptyCart());
+        $cart = Session::get(self::SESSION_KEY, $this->getEmptyCart());
+
+        // Clean invalid keys (from different sessions)
+        $cleaned = $this->cleanInvalidKeys($cart);
+        if ($cleaned !== $cart) {
+            $this->save($cleaned);
+            return $cleaned;
+        }
+
+        return $cart;
+    }
+
+    /**
+     * Remove items with keys that don't match current session
+     * No fallbacks - invalid keys are simply removed
+     */
+    private function cleanInvalidKeys(array $cart): array
+    {
+        if (empty($cart['items'])) {
+            return $cart;
+        }
+
+        $validItems = [];
+        $needsRecalc = false;
+
+        foreach ($cart['items'] as $key => $item) {
+            if (CartItem::isValidKeyForSession($key)) {
+                $validItems[$key] = $item;
+            } else {
+                // Invalid key - remove silently, no fallback
+                $needsRecalc = true;
+            }
+        }
+
+        if ($needsRecalc) {
+            $cart['items'] = $validItems;
+            // Use CartItem as SINGLE SOURCE OF TRUTH for totals
+            $cart['totals'] = CartItem::calculateTotals($validItems);
+        }
+
+        return $cart;
     }
 
     public function save(array $cart): void

@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Services\GoogleMapsService;
 use App\Services\TryotoLocationService;
 use App\Services\CountrySyncService;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -21,13 +22,16 @@ class GeocodingController extends Controller
     protected $googleMapsService;
     protected $tryotoService;
     protected $countrySyncService;
+    protected $cartManager;
 
     public function __construct(
         GoogleMapsService $googleMapsService,
         TryotoLocationService $tryotoService,
-        CountrySyncService $countrySyncService
+        CountrySyncService $countrySyncService,
+        MerchantCartManager $cartManager
     ) {
         $this->googleMapsService = $googleMapsService;
+        $this->cartManager = $cartManager;
         $this->tryotoService = $tryotoService;
         $this->countrySyncService = $countrySyncService;
     }
@@ -699,14 +703,8 @@ class GeocodingController extends Controller
             $taxLocation = $country->country_name;
         }
 
-        // 4. حساب مبلغ الضريبة من السلة
-        $cart = \Session::get('cart');
-        $cartTotal = 0;
-        if ($cart) {
-            $cartObj = new \App\Models\Cart($cart);
-            $cartTotal = $cartObj->totalPrice;
-        }
-
+        // 4. حساب مبلغ الضريبة من السلة (using new MerchantCartManager)
+        $cartTotal = $this->cartManager->getTotalPrice();
         $taxAmount = ($cartTotal * $taxRate) / 100;
 
         // Store location data in location_draft session (not step1)

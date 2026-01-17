@@ -334,7 +334,7 @@
                                     data-merchant-user-id="{{ $merchant->user_id }}"
                                     data-min-qty="{{ $mpMinQty }}"
                                     data-qty-input="#purchase-qty"
-                                    data-redirect="/cart">
+                                    data-redirect="/merchant-cart">
                                     @lang('buy now')
                                 </button>
                             </div>

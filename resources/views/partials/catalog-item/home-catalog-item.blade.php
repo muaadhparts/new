@@ -31,15 +31,20 @@
                <a href="javascript:;" data-href="{{ $homeProdMerchant->affiliate_link }}" class="button add_to_cart_button affilate-btn" data-bs-toggle="tooltip" data-bs-placement="right" name="" data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
             </div>
             @else
-            @if($cartItem->emptyStock())
+            @if(!$homeProdMerchant || $cartItem->emptyStock())
             <div class="closed">
-               <a class="cart-out-of-stock button add_to_cart_button"  href="#" name="{{ __('Out Of Stock') }}" ><i class="flaticon-cancel flat-mini mx-auto"></i></a>
+               <a class="cart-out-of-stock button add_to_cart_button" href="#" name="{{ __('Out Of Stock') }}"><i class="flaticon-cancel flat-mini mx-auto"></i></a>
             </div>
             @else
                <div class="cart-button">
-
                   <a href="javascript:;"
-                  data-bs-toggle="modal"  {{$cartItem->cross_items ? 'data-bs-target=#exampleModal' : ''}}  data-href="{{ route('catalogItem.cart.add',$cartItem->id) }}" data-cross-href="{{route('front.show.cross.catalogItem',$cartItem->id)}}" class="add-cart button add_to_cart_button {{$cartItem->cross_items ? 'view_cross_product' : ''}}"  data-bs-placement="right"  name="Add To Cart" data-bs-original-name="{{ __('Add To Cart') }}" aria-label="{{ __('Add To Cart') }}"></a>
+                     class="m-cart-add button add_to_cart_button"
+                     data-merchant-item-id="{{ $homeProdMerchant->id }}"
+                     data-catalog-item-id="{{ $cartItem->id }}"
+                     data-bs-placement="right"
+                     name="Add To Cart"
+                     data-bs-original-name="{{ __('Add To Cart') }}"
+                     aria-label="{{ __('Add To Cart') }}"></a>
                </div>
             @endif
             @endif

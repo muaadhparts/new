@@ -418,7 +418,7 @@
                                 data-merchant-user-id="{{ $quickMerchantUserId }}"
                                 data-min-qty="{{ $quickMinQty }}"
                                 data-qty-input=".modal-total"
-                                data-redirect="/cart">
+                                data-redirect="/merchant-cart">
                           <i class="icofont-cart"></i>
                           {{ __('Purchase Now') }}
                         </button>

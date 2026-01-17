@@ -493,6 +493,7 @@ class MerchantCartManager
 
     /**
      * Prepare cart data for checkout
+     * Uses CartItem as SINGLE SOURCE OF TRUTH for totals
      */
     public function prepareForCheckout(int $merchantId = null): array
     {
@@ -500,25 +501,15 @@ class MerchantCartManager
             ? $this->storage->getItemsForMerchant($merchantId)
             : $this->storage->getItems();
 
-        $checkout = [
-            'items' => [],
-            'totals' => [
-                'qty' => 0,
-                'subtotal' => 0.0,
-                'discount' => 0.0,
-                'total' => 0.0,
-            ],
+        // Use CartItem for totals calculation
+        $totals = $merchantId
+            ? CartItem::calculateMerchantTotals($this->storage->getItems(), $merchantId)
+            : CartItem::calculateTotals($items);
+
+        return [
+            'items' => $items,
+            'totals' => $totals,
         ];
-
-        foreach ($items as $key => $item) {
-            $checkout['items'][$key] = $item;
-            $checkout['totals']['qty'] += (int) ($item['qty'] ?? 0);
-            $checkout['totals']['subtotal'] += (float) ($item['effective_unit_price'] ?? 0) * (int) ($item['qty'] ?? 0);
-            $checkout['totals']['discount'] += $this->calculateItemDiscount($item);
-            $checkout['totals']['total'] += (float) ($item['total_price'] ?? 0);
-        }
-
-        return $checkout;
     }
 
     /**
@@ -561,43 +552,13 @@ class MerchantCartManager
 
     /**
      * Recalculate cart totals
+     * Uses CartItem as SINGLE SOURCE OF TRUTH for calculation
      */
     private function recalculateTotals(): void
     {
         $items = $this->storage->getItems();
-
-        $totals = [
-            'qty' => 0,
-            'subtotal' => 0.0,
-            'discount' => 0.0,
-            'total' => 0.0,
-        ];
-
-        foreach ($items as $item) {
-            $qty = (int) ($item['qty'] ?? 0);
-            $effectivePrice = (float) ($item['effective_unit_price'] ?? 0);
-            $totalPrice = (float) ($item['total_price'] ?? 0);
-
-            $totals['qty'] += $qty;
-            $totals['subtotal'] += $effectivePrice * $qty;
-            $totals['total'] += $totalPrice;
-        }
-
-        $totals['discount'] = $totals['subtotal'] - $totals['total'];
-
+        $totals = CartItem::calculateTotals($items);
         $this->storage->updateTotals($totals);
-    }
-
-    /**
-     * Calculate discount amount for an item
-     */
-    private function calculateItemDiscount(array $item): float
-    {
-        $qty = (int) ($item['qty'] ?? 0);
-        $effectivePrice = (float) ($item['effective_unit_price'] ?? 0);
-        $totalPrice = (float) ($item['total_price'] ?? 0);
-
-        return ($effectivePrice * $qty) - $totalPrice;
     }
 
     /**

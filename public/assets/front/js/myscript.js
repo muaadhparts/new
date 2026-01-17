@@ -14,62 +14,40 @@
     }
   });
 
-  // ✅ Global cart state updater function
+  // ✅ Global cart state updater function (NEW CART SYSTEM)
   window.applyCartState = function(data) {
     if (!data) return;
 
-    const cartCount = data.cart_count || data[0] || 0;
-    const cartTotal = data.cart_total || data[1];
+    // Support both old format and new format
+    // New format: { cart: { totals: { qty, total } } }
+    // Old format: { cart_count, cart_total } or [count, total]
+    let cartCount = 0;
+    let cartTotal = null;
+
+    if (data.cart && data.cart.totals) {
+      // New cart system format
+      cartCount = data.cart.totals.qty || 0;
+      cartTotal = data.cart.totals.total || null;
+    } else {
+      // Legacy format (for backwards compatibility during transition)
+      cartCount = data.cart_count || data[0] || 0;
+      cartTotal = data.cart_total || data[1] || null;
+    }
 
     // Update all cart count elements
-    const $cartCount = $("#cart-count");
-    const $cartCount1 = $("#cart-count1");
-    const $headerCartCount = $(".header-cart-count");
-
-    if ($cartCount.length) {
-      $cartCount.html(cartCount);
-      $cartCount.text(cartCount);
-    }
-
-    if ($cartCount1.length) {
-      $cartCount1.html(cartCount);
-      $cartCount1.text(cartCount);
-    }
-
-    if ($headerCartCount.length) {
-      $headerCartCount.html(cartCount);
-      $headerCartCount.text(cartCount);
-    }
-
-    // Fallback: Try vanilla JavaScript
-    const cartCountEl = document.getElementById('cart-count');
-    const cartCount1El = document.getElementById('cart-count1');
-
-    if (cartCountEl) {
-      cartCountEl.textContent = cartCount;
-      cartCountEl.innerHTML = cartCount;
-    }
-
-    if (cartCount1El) {
-      cartCount1El.textContent = cartCount;
-      cartCount1El.innerHTML = cartCount;
-    }
-
-    // Also update by class
-    document.querySelectorAll('.header-cart-count').forEach(el => {
-      el.textContent = cartCount;
-      el.innerHTML = cartCount;
+    document.querySelectorAll('#cart-count, #cart-count1, .header-cart-count, .muaadh-badge').forEach(el => {
+      if (el.id === 'cart-count' || el.id === 'cart-count1' || el.classList.contains('header-cart-count')) {
+        el.textContent = cartCount;
+      }
     });
 
     // Update total if provided
-    if (cartTotal) {
-      $("#total-cost").html(cartTotal);
+    if (cartTotal !== null) {
+      const totalEl = document.getElementById('total-cost');
+      if (totalEl) totalEl.textContent = cartTotal;
     }
 
-    // Reload cart popup
-    if (typeof mainurl !== 'undefined') {
-      $(".cart-popup").load(mainurl + "/carts/view");
-    }
+    // Note: Cart popup now handled by cart-global.js
   };
 
 
@@ -229,10 +207,11 @@
   });
 
   // ============================================
-  // CART SYSTEM: All cart functionality uses m-cart-add class
-  // Handled exclusively by cart-unified.js via POST /cart/unified
-  // Required: data-merchant-catalogItem-id, data-qty-input
-  // Optional: data-redirect="/cart" for Buy Now
+  // CART SYSTEM: All cart functionality handled by cart-global.js
+  // Uses: POST /merchant-cart/add
+  // Buttons: .m-cart-add or [data-action="add-to-cart"]
+  // Required: data-merchant-item-id
+  // Optional: data-qty-input, data-redirect, data-size, data-color
   // ============================================
 
   // حذف عنصر من المقارنة (Compare)
