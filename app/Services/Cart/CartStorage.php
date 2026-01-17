@@ -8,10 +8,11 @@ use Illuminate\Support\Facades\Session;
  * CartStorage - Session-based cart persistence
  *
  * SINGLE SOURCE OF TRUTH for cart data.
- * No fallbacks, no legacy support.
+ * FAIL-FAST: No fallbacks, no legacy support, no silent defaults.
  *
  * All cart keys MUST match current session.
  * Invalid keys are automatically removed.
+ * Missing required fields = Exception.
  */
 class CartStorage
 {
@@ -99,6 +100,9 @@ class CartStorage
 
     public function setItem(string $key, array $item): void
     {
+        // FAIL-FAST: Validate item before storing
+        $this->validateCartItem($item, $key);
+
         $cart = $this->get();
         $cart['items'][$key] = $item;
         $this->save($cart);
@@ -145,22 +149,32 @@ class CartStorage
     public function getTotalQty(): int
     {
         $totals = $this->getTotals();
-        return (int) ($totals['qty'] ?? 0);
+        return (int) $totals['qty'];
     }
 
     public function getTotalPrice(): float
     {
         $totals = $this->getTotals();
-        return (float) ($totals['total'] ?? 0);
+        return (float) $totals['total'];
     }
 
+    /**
+     * Get items grouped by merchant
+     *
+     * FAIL-FAST: Each item must have valid merchant_id, qty, total_price
+     *
+     * @throws \RuntimeException if items have missing required fields
+     */
     public function getItemsByMerchant(): array
     {
         $items = $this->getItems();
         $grouped = [];
 
         foreach ($items as $key => $item) {
-            $merchantId = (int) ($item['merchant_id'] ?? 0);
+            // FAIL-FAST: Validate each item
+            $this->validateCartItem($item, $key);
+
+            $merchantId = (int) $item['merchant_id'];
 
             if (!isset($grouped[$merchantId])) {
                 $grouped[$merchantId] = [
@@ -174,20 +188,48 @@ class CartStorage
             }
 
             $grouped[$merchantId]['items'][$key] = $item;
-            $grouped[$merchantId]['subtotal'] += (float) ($item['total_price'] ?? 0);
-            $grouped[$merchantId]['qty'] += (int) ($item['qty'] ?? 0);
+            $grouped[$merchantId]['subtotal'] += (float) $item['total_price'];
+            $grouped[$merchantId]['qty'] += (int) $item['qty'];
         }
 
         return $grouped;
     }
 
+    /**
+     * Get items for a specific merchant
+     *
+     * FAIL-FAST: Each item must have valid merchant_id
+     *
+     * @throws \RuntimeException if items have missing merchant_id
+     */
     public function getItemsForMerchant(int $merchantId): array
     {
+        if ($merchantId <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid merchantId: {$merchantId}. Must be > 0."
+            );
+        }
+
         $items = $this->getItems();
         $merchantItems = [];
 
         foreach ($items as $key => $item) {
-            if ((int) ($item['merchant_id'] ?? 0) === $merchantId) {
+            // FAIL-FAST: merchant_id must exist
+            if (!isset($item['merchant_id'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: merchant_id. " .
+                    "Data is corrupted. Keys present: " . implode(', ', array_keys($item))
+                );
+            }
+
+            $itemMerchantId = (int) $item['merchant_id'];
+            if ($itemMerchantId <= 0) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' has invalid merchant_id: {$itemMerchantId}. Must be > 0."
+                );
+            }
+
+            if ($itemMerchantId === $merchantId) {
                 $merchantItems[$key] = $item;
             }
         }
@@ -195,18 +237,91 @@ class CartStorage
         return $merchantItems;
     }
 
+    /**
+     * Get unique merchant IDs from cart
+     *
+     * FAIL-FAST: Each item must have valid merchant_id
+     *
+     * @throws \RuntimeException if items have missing merchant_id
+     */
     public function getMerchantIds(): array
     {
         $items = $this->getItems();
         $ids = [];
 
-        foreach ($items as $item) {
-            $merchantId = (int) ($item['merchant_id'] ?? 0);
-            if ($merchantId > 0 && !in_array($merchantId, $ids)) {
+        foreach ($items as $key => $item) {
+            // FAIL-FAST: merchant_id must exist
+            if (!isset($item['merchant_id'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: merchant_id. " .
+                    "Data is corrupted."
+                );
+            }
+
+            $merchantId = (int) $item['merchant_id'];
+            if ($merchantId <= 0) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' has invalid merchant_id: {$merchantId}. Must be > 0."
+                );
+            }
+
+            if (!in_array($merchantId, $ids)) {
                 $ids[] = $merchantId;
             }
         }
 
         return $ids;
+    }
+
+    /**
+     * Validate cart item has all required fields
+     *
+     * FAIL-FAST: Missing or invalid fields = Exception
+     *
+     * @throws \RuntimeException if validation fails
+     */
+    private function validateCartItem(array $item, string $key): void
+    {
+        $requiredFields = [
+            'merchant_item_id',
+            'merchant_id',
+            'catalog_item_id',
+            'qty',
+            'total_price',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (!isset($item[$field])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: {$field}. " .
+                    "Keys present: " . implode(', ', array_keys($item))
+                );
+            }
+        }
+
+        // Validate critical values
+        if ((int) $item['merchant_id'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid merchant_id: {$item['merchant_id']}. Must be > 0."
+            );
+        }
+
+        if ((int) $item['merchant_item_id'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid merchant_item_id: {$item['merchant_item_id']}. Must be > 0."
+            );
+        }
+
+        if ((int) $item['qty'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid qty: {$item['qty']}. Must be > 0."
+            );
+        }
+
+        if ((float) $item['total_price'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid total_price: {$item['total_price']}. Must be > 0."
+            );
+        }
     }
 }

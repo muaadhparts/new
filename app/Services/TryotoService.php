@@ -9,7 +9,7 @@ use App\Models\City;
 use App\Models\UserCatalogEvent;
 use App\Helpers\PriceHelper;
 use App\Services\ShippingCalculatorService;
-use App\Services\MerchantCartService;
+use App\Services\Cart\CartItem;
 use App\Services\MerchantCredentialService;
 use App\Services\MonetaryUnitService;
 use Illuminate\Support\Facades\Cache;
@@ -556,7 +556,7 @@ class TryotoService
      * @param string $company
      * @param float $price
      * @param string $serviceType
-     * @param array|null $merchantShippingData بيانات الشحن المحسوبة مسبقاً (من MerchantCartService)
+     * @param array|null $merchantShippingData بيانات الشحن المحسوبة مسبقاً (من MerchantCartManager)
      * @param int|null $merchantLocationId معرف موقع الاستلام المحدد (من merchant_locations)
      * @return array
      */
@@ -1443,7 +1443,7 @@ class TryotoService
     // ========================
 
     /**
-     * Calculate shipping dimensions from purchase cart using MerchantCartService
+     * Calculate shipping dimensions from purchase cart using MerchantCartManager
      * بدون قيم ثابتة - يرجع null للقيم الناقصة
      *
      * @param Purchase $purchase
@@ -1456,49 +1456,76 @@ class TryotoService
         $items = $purchase->getCartItems();
         $itemsForCalculation = [];
 
-        foreach ($items as $ci) {
+        foreach ($items as $key => $ci) {
             $item = $ci['item'] ?? $ci;
 
             // Filter by merchant if specified
             if ($merchantId !== null) {
-                $itemMerchantId = (int)($ci['user_id'] ?? $item['user_id'] ?? $item['merchant_user_id'] ?? 0);
+                // FAIL-FAST: merchant_id must exist
+                if (!isset($ci['merchant_id']) && !isset($ci['user_id']) && !isset($item['merchant_id'])) {
+                    throw new \RuntimeException(
+                        "Cart item '{$key}' missing required field: merchant_id. " .
+                        "Purchase ID: {$purchase->id}"
+                    );
+                }
+                $itemMerchantId = (int)($ci['merchant_id'] ?? $ci['user_id'] ?? $item['merchant_id']);
+                if ($itemMerchantId <= 0) {
+                    throw new \RuntimeException(
+                        "Cart item '{$key}' has invalid merchant_id: {$itemMerchantId}. " .
+                        "Purchase ID: {$purchase->id}"
+                    );
+                }
                 if ($itemMerchantId !== $merchantId) {
                     continue;
                 }
             }
 
-            $qty = (int)($ci['qty'] ?? $ci['quantity'] ?? 1);
-            $mpId = (int)($ci['merchant_item_id'] ?? $item['merchant_item_id'] ?? 0);
-
-            if ($mpId > 0) {
-                // استخدام MerchantCartService للحصول على الأبعاد الحقيقية
-                $dimensions = MerchantCartService::getCatalogItemDimensions($mpId);
-                $itemsForCalculation[] = [
-                    'qty' => max(1, $qty),
-                    'weight' => $dimensions['weight'],
-                    'length' => $dimensions['length'],
-                    'width' => $dimensions['width'],
-                    'height' => $dimensions['height'],
-                ];
-            } else {
-                // fallback للبيانات المخزنة في السلة
-                $itemsForCalculation[] = [
-                    'qty' => max(1, $qty),
-                    'weight' => $item['weight'] ?? null,
-                    'length' => $item['length'] ?? null,
-                    'width' => $item['width'] ?? null,
-                    'height' => $item['height'] ?? null,
-                ];
+            // FAIL-FAST: Required fields must exist
+            if (!isset($ci['qty']) && !isset($ci['quantity'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: qty. " .
+                    "Purchase ID: {$purchase->id}"
+                );
             }
+            if (!isset($ci['merchant_item_id']) && !isset($item['merchant_item_id'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: merchant_item_id. " .
+                    "Purchase ID: {$purchase->id}"
+                );
+            }
+
+            $qty = (int)($ci['qty'] ?? $ci['quantity']);
+            if ($qty <= 0) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' has invalid qty: {$qty}. " .
+                    "Purchase ID: {$purchase->id}"
+                );
+            }
+
+            $mpId = (int)($ci['merchant_item_id'] ?? $item['merchant_item_id']);
+            if ($mpId <= 0) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' has invalid merchant_item_id: {$mpId}. " .
+                    "Purchase ID: {$purchase->id}"
+                );
+            }
+
+            // استخدام CartItem للحصول على الأبعاد الحقيقية
+            $dimensions = CartItem::getCatalogItemDimensions($mpId);
+            $itemsForCalculation[] = [
+                'qty' => $qty,
+                'weight' => $dimensions['weight'],
+                'length' => $dimensions['length'],
+                'width' => $dimensions['width'],
+                'height' => $dimensions['height'],
+            ];
         }
 
         if (empty($itemsForCalculation)) {
-            return [
-                'weight' => null,
-                'length' => null,
-                'width' => null,
-                'height' => null
-            ];
+            throw new \RuntimeException(
+                "No valid items found for shipping calculation. " .
+                "Purchase ID: {$purchase->id}, Merchant ID: " . ($merchantId ?? 'all')
+            );
         }
 
         // استخدام ShippingCalculatorService لحساب الأبعاد النهائية
@@ -1513,23 +1540,12 @@ class TryotoService
     }
 
     /**
-     * Calculate shipping dimensions from purchase cart (legacy support)
-     * @deprecated Use calculateDimensionsFromPurchase instead
+     * Calculate shipping dimensions from purchase cart
+     * FAIL-FAST: No legacy fallbacks
      */
     private function calculateDimensions(Purchase $purchase): array
     {
-        $result = $this->calculateDimensionsFromPurchase($purchase);
-
-        // للتوافق مع الكود القديم، نرجع قيم افتراضية فقط إذا كانت كل القيم null
-        // هذا سيتم إزالته لاحقاً
-        if ($result['weight'] === null && $result['length'] === null) {
-            Log::warning('Tryoto: calculateDimensions - all values null, using legacy fallback', [
-                'purchase_id' => $purchase->id
-            ]);
-            return PriceHelper::calculateShippingDimensions([]);
-        }
-
-        return $result;
+        return $this->calculateDimensionsFromPurchase($purchase);
     }
 
     /**

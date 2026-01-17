@@ -176,9 +176,12 @@ class CheckoutPriceService
         }
 
         $total = 0;
-        foreach ($cartItems as $item) {
-            // New cart format uses total_price for item total (unit_price * qty)
-            $total += (float)($item['total_price'] ?? 0);
+        foreach ($cartItems as $key => $item) {
+            // NEW CART FORMAT ONLY - No fallbacks
+            if (!isset($item['total_price'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: total_price");
+            }
+            $total += (float)$item['total_price'];
         }
 
         return round($total, 2);
@@ -812,12 +815,19 @@ class CheckoutPriceService
     public function calculateMerchantPurchaseDetails(int $merchantId, array $cartItems, array $options = []): array
     {
         // 1. Calculate items total for this merchant
-        // New cart format: merchant_id is directly available, total_price is item total
+        // NEW CART FORMAT ONLY - No fallbacks
         $itemsTotal = 0;
-        foreach ($cartItems as $item) {
-            $itemMerchantId = (int)($item['merchant_id'] ?? 0);
+        foreach ($cartItems as $key => $item) {
+            if (!isset($item['merchant_id'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: merchant_id");
+            }
+            if (!isset($item['total_price'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: total_price");
+            }
+
+            $itemMerchantId = (int)$item['merchant_id'];
             if ($itemMerchantId === $merchantId) {
-                $itemsTotal += (float)($item['total_price'] ?? 0);
+                $itemsTotal += (float)$item['total_price'];
             }
         }
         $itemsTotal = round($itemsTotal, 2);

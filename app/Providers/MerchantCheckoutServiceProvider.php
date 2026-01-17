@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Services\MerchantCheckout\MerchantCartService;
+use App\Services\Cart\MerchantCartManager;
+use App\Services\Cart\CartStorage;
+use App\Services\Cart\StockReservation;
 use App\Services\MerchantCheckout\MerchantSessionManager;
 use App\Services\MerchantCheckout\MerchantPriceCalculator;
 use App\Services\MerchantCheckout\MerchantCheckoutService;
@@ -17,14 +19,24 @@ class MerchantCheckoutServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Register as singletons for consistency within a request
-        $this->app->singleton(MerchantCartService::class);
+        // Cart Storage and Stock Reservation
+        $this->app->singleton(CartStorage::class);
+        $this->app->singleton(StockReservation::class);
+
+        // MerchantCartManager is the NEW cart service (replaces old MerchantCartService)
+        $this->app->singleton(MerchantCartManager::class, function ($app) {
+            return new MerchantCartManager(
+                $app->make(CartStorage::class),
+                $app->make(StockReservation::class)
+            );
+        });
+
         $this->app->singleton(MerchantSessionManager::class);
         $this->app->singleton(MerchantPriceCalculator::class);
 
         $this->app->singleton(MerchantCheckoutService::class, function ($app) {
             return new MerchantCheckoutService(
-                $app->make(MerchantCartService::class),
+                $app->make(MerchantCartManager::class),
                 $app->make(MerchantSessionManager::class),
                 $app->make(MerchantPriceCalculator::class)
             );
@@ -32,7 +44,7 @@ class MerchantCheckoutServiceProvider extends ServiceProvider
 
         $this->app->singleton(MerchantPurchaseCreator::class, function ($app) {
             return new MerchantPurchaseCreator(
-                $app->make(MerchantCartService::class),
+                $app->make(MerchantCartManager::class),
                 $app->make(MerchantSessionManager::class),
                 $app->make(MerchantPriceCalculator::class),
                 $app->make(PaymentAccountingService::class)

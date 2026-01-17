@@ -10,6 +10,7 @@ use App\Models\Package;
 use App\Models\MerchantPayment;
 use App\Models\CourierServiceArea;
 use App\Models\MerchantLocation;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -19,12 +20,12 @@ use Illuminate\Support\Facades\Auth;
  */
 class MerchantCheckoutService
 {
-    protected MerchantCartService $cartService;
+    protected MerchantCartManager $cartService;
     protected MerchantSessionManager $sessionManager;
     protected MerchantPriceCalculator $priceCalculator;
 
     public function __construct(
-        MerchantCartService $cartService,
+        MerchantCartManager $cartService,
         MerchantSessionManager $sessionManager,
         MerchantPriceCalculator $priceCalculator
     ) {
@@ -696,7 +697,7 @@ class MerchantCheckoutService
     /**
      * Get services (for dependency injection)
      */
-    public function getCartService(): MerchantCartService
+    public function getCartService(): MerchantCartManager
     {
         return $this->cartService;
     }

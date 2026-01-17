@@ -238,9 +238,19 @@ class DiscountCodeController extends FrontBaseController
         $eligibleItems = [];
 
         foreach ($cartItems as $key => $item) {
-            // New cart format: merchant_id is directly available
-            $itemMerchantId = (int)($item['merchant_id'] ?? 0);
-            $catalogItemId = (int)($item['catalog_item_id'] ?? 0);
+            // NEW CART FORMAT ONLY - No fallbacks, throw on missing fields
+            if (!isset($item['merchant_id'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: merchant_id");
+            }
+            if (!isset($item['catalog_item_id'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: catalog_item_id");
+            }
+            if (!isset($item['total_price'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: total_price");
+            }
+
+            $itemMerchantId = (int)$item['merchant_id'];
+            $catalogItemId = (int)$item['catalog_item_id'];
 
             // Skip if merchant checkout and item doesn't belong to checkout merchant
             if ($checkoutMerchantId && $itemMerchantId != (int)$checkoutMerchantId) {
@@ -263,8 +273,8 @@ class DiscountCodeController extends FrontBaseController
                 continue;
             }
 
-            // Add to eligible - new format uses total_price for item total
-            $eligibleTotal += (float)($item['total_price'] ?? 0);
+            // Add to eligible
+            $eligibleTotal += (float)$item['total_price'];
             $eligibleItems[] = $key;
         }
 

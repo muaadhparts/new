@@ -54,20 +54,16 @@ class PurchaseHelper
 
     /**
      * Check affiliate users for cart items
-     * Updated for new MerchantCartManager format
+     * NEW CART SYSTEM ONLY - No fallbacks
      *
      * @param array $cartItems Cart items from MerchantCartManager->getItems()
      * @return array|null
+     * @throws \InvalidArgumentException If cart items format is invalid
      */
-    public static function item_affilate_check($cartItems)
+    public static function item_affilate_check(array $cartItems): ?array
     {
-        // Handle both old Cart object and new array format
-        if (is_object($cartItems) && isset($cartItems->items)) {
-            $items = $cartItems->items;
-        } elseif (is_array($cartItems)) {
-            $items = $cartItems;
-        } else {
-            return null;
+        if (!is_array($cartItems)) {
+            throw new \InvalidArgumentException('Cart items must be array from MerchantCartManager->getItems()');
         }
 
         $affilate_users = null;
@@ -75,11 +71,18 @@ class PurchaseHelper
         $gs = \App\Models\Muaadhsetting::find(1);
         $percentage = $gs->affilate_charge / 100;
 
-        foreach ($items as $cartItem) {
-            // Support both old and new cart item formats
-            $affiliateUser = $cartItem['affilate_user'] ?? $cartItem['affiliate_user_id'] ?? 0;
-            $catalogItemId = $cartItem['catalog_item_id'] ?? ($cartItem['item']['id'] ?? 0);
-            $price = $cartItem['total_price'] ?? $cartItem['price'] ?? 0;
+        foreach ($cartItems as $key => $cartItem) {
+            // NEW FORMAT ONLY - No fallbacks
+            if (!isset($cartItem['catalog_item_id'])) {
+                throw new \InvalidArgumentException("Cart item '{$key}' missing required field: catalog_item_id");
+            }
+            if (!isset($cartItem['total_price'])) {
+                throw new \InvalidArgumentException("Cart item '{$key}' missing required field: total_price");
+            }
+
+            $affiliateUser = $cartItem['affiliate_user_id'] ?? 0;
+            $catalogItemId = $cartItem['catalog_item_id'];
+            $price = $cartItem['total_price'];
 
             if ($affiliateUser != 0) {
                 if (Auth::check() && Auth::user()->id != $affiliateUser) {
@@ -91,17 +94,6 @@ class PurchaseHelper
             }
         }
         return $affilate_users;
-    }
-
-    /**
-     * @deprecated No longer needed - new cart stores in base currency
-     * Prices are converted at display time via MonetaryUnitService
-     */
-    public static function set_currency($new_value)
-    {
-        // DEPRECATED: New cart system stores prices in base currency (SAR)
-        // Conversion happens at display time via monetaryUnit()->convert()
-        // This method is kept for backward compatibility but does nothing
     }
 
 
@@ -215,21 +207,50 @@ class PurchaseHelper
             $gs = \App\Models\Muaadhsetting::find(1);
 
             // Group cart items by merchant
+            // FAIL-FAST: Required fields must exist
             $merchantGroups = [];
             foreach ($cart->items as $key => $cartItem) {
-                $merchantId = $cartItem['item']['user_id'] ?? $cartItem['user_id'] ?? 0;
-                if ($merchantId != 0) {
-                    if (!isset($merchantGroups[$merchantId])) {
-                        $merchantGroups[$merchantId] = [
-                            'items' => [],
-                            'totalQty' => 0,
-                            'totalPrice' => 0,
-                        ];
-                    }
-                    $merchantGroups[$merchantId]['items'][$key] = $cartItem;
-                    $merchantGroups[$merchantId]['totalQty'] += (int)($cartItem['qty'] ?? 1);
-                    $merchantGroups[$merchantId]['totalPrice'] += (float)($cartItem['price'] ?? 0);
+                // FAIL-FAST: merchant_id must exist
+                if (!isset($cartItem['merchant_id']) && !isset($cartItem['user_id']) && !isset($cartItem['item']['user_id'])) {
+                    throw new \RuntimeException(
+                        "Cart item '{$key}' missing required field: merchant_id. " .
+                        "Purchase ID: {$purchase->id}"
+                    );
                 }
+                $merchantId = (int)($cartItem['merchant_id'] ?? $cartItem['user_id'] ?? $cartItem['item']['user_id']);
+                if ($merchantId <= 0) {
+                    throw new \RuntimeException(
+                        "Cart item '{$key}' has invalid merchant_id: {$merchantId}. " .
+                        "Purchase ID: {$purchase->id}"
+                    );
+                }
+
+                // FAIL-FAST: qty must exist
+                if (!isset($cartItem['qty'])) {
+                    throw new \RuntimeException(
+                        "Cart item '{$key}' missing required field: qty. " .
+                        "Purchase ID: {$purchase->id}"
+                    );
+                }
+
+                // FAIL-FAST: price must exist (total_price or price)
+                if (!isset($cartItem['total_price']) && !isset($cartItem['price'])) {
+                    throw new \RuntimeException(
+                        "Cart item '{$key}' missing required field: total_price. " .
+                        "Purchase ID: {$purchase->id}"
+                    );
+                }
+
+                if (!isset($merchantGroups[$merchantId])) {
+                    $merchantGroups[$merchantId] = [
+                        'items' => [],
+                        'totalQty' => 0,
+                        'totalPrice' => 0,
+                    ];
+                }
+                $merchantGroups[$merchantId]['items'][$key] = $cartItem;
+                $merchantGroups[$merchantId]['totalQty'] += (int)$cartItem['qty'];
+                $merchantGroups[$merchantId]['totalPrice'] += (float)($cartItem['total_price'] ?? $cartItem['price']);
             }
 
             // Get shipping choice data from purchase
@@ -254,8 +275,15 @@ class PurchaseHelper
                 // Calculate tax (proportional to merchant's share)
                 $purchaseTax = (float)$purchase->tax;
                 $cartTotalPrice = 0;
-                foreach ($cart->items as $item) {
-                    $cartTotalPrice += (float)($item['price'] ?? 0);
+                foreach ($cart->items as $itemKey => $item) {
+                    // Already validated above - use total_price or price
+                    if (!isset($item['total_price']) && !isset($item['price'])) {
+                        throw new \RuntimeException(
+                            "Cart item '{$itemKey}' missing required field: total_price. " .
+                            "Purchase ID: {$purchase->id}"
+                        );
+                    }
+                    $cartTotalPrice += (float)($item['total_price'] ?? $item['price']);
                 }
                 $taxAmount = $cartTotalPrice > 0 ? ($itemsTotal / $cartTotalPrice) * $purchaseTax : 0;
 

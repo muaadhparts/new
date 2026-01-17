@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\MerchantCheckout\MerchantCheckoutService;
 use App\Services\MerchantCheckout\MerchantPurchaseCreator;
 use App\Services\MerchantCheckout\MerchantSessionManager;
-use App\Services\MerchantCheckout\MerchantCartService;
+use App\Services\Cart\MerchantCartManager;
 use App\Models\Muaadhsetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -23,13 +23,13 @@ class CheckoutMerchantController extends Controller
     protected MerchantCheckoutService $checkoutService;
     protected MerchantPurchaseCreator $purchaseCreator;
     protected MerchantSessionManager $sessionManager;
-    protected MerchantCartService $cartService;
+    protected MerchantCartManager $cartService;
 
     public function __construct(
         MerchantCheckoutService $checkoutService,
         MerchantPurchaseCreator $purchaseCreator,
         MerchantSessionManager $sessionManager,
-        MerchantCartService $cartService
+        MerchantCartManager $cartService
     ) {
         $this->checkoutService = $checkoutService;
         $this->purchaseCreator = $purchaseCreator;

@@ -59,6 +59,10 @@ class CartItem implements JsonSerializable
 
     /**
      * Create a new CartItem from MerchantItem
+     *
+     * FAIL-FAST: All required data must exist. No fallbacks.
+     *
+     * @throws \InvalidArgumentException if required data is missing
      */
     public static function fromMerchantItem(
         MerchantItem $merchantItem,
@@ -68,7 +72,65 @@ class CartItem implements JsonSerializable
         ?string $keys = null,
         ?string $values = null
     ): self {
+        // ============ VALIDATE MERCHANT ITEM ============
+        if (!$merchantItem->id || $merchantItem->id <= 0) {
+            throw new \InvalidArgumentException(
+                "MerchantItem has invalid id: {$merchantItem->id}"
+            );
+        }
+
+        if (!$merchantItem->user_id || $merchantItem->user_id <= 0) {
+            throw new \InvalidArgumentException(
+                "MerchantItem {$merchantItem->id} has invalid user_id (merchant_id): {$merchantItem->user_id}"
+            );
+        }
+
+        if (!$merchantItem->catalog_item_id || $merchantItem->catalog_item_id <= 0) {
+            throw new \InvalidArgumentException(
+                "MerchantItem {$merchantItem->id} has invalid catalog_item_id: {$merchantItem->catalog_item_id}"
+            );
+        }
+
+        // ============ VALIDATE CATALOG ITEM ============
         $catalogItem = $merchantItem->catalogItem;
+        if (!$catalogItem) {
+            throw new \InvalidArgumentException(
+                "MerchantItem {$merchantItem->id} has no associated CatalogItem. " .
+                "catalog_item_id={$merchantItem->catalog_item_id}"
+            );
+        }
+
+        if (empty(trim($catalogItem->name ?? ''))) {
+            throw new \InvalidArgumentException(
+                "CatalogItem {$catalogItem->id} has empty name. " .
+                "merchant_item_id={$merchantItem->id}"
+            );
+        }
+
+        // ============ VALIDATE MERCHANT ============
+        $merchant = $merchantItem->user;
+        if (!$merchant) {
+            throw new \InvalidArgumentException(
+                "MerchantItem {$merchantItem->id} has no associated Merchant (User). " .
+                "user_id={$merchantItem->user_id}"
+            );
+        }
+
+        // ============ VALIDATE PRICE ============
+        $unitPrice = $merchantItem->merchantSizePrice();
+        if ($unitPrice <= 0) {
+            throw new \InvalidArgumentException(
+                "MerchantItem {$merchantItem->id} has invalid price: {$unitPrice}. " .
+                "Price must be > 0."
+            );
+        }
+
+        // ============ VALIDATE QTY ============
+        if ($qty <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid qty: {$qty}. Must be > 0. merchant_item_id={$merchantItem->id}"
+            );
+        }
 
         // Calculate size price
         $sizePrice = self::calculateSizePrice($merchantItem, $size);
@@ -76,70 +138,139 @@ class CartItem implements JsonSerializable
         // Calculate color price
         $colorPrice = self::calculateColorPrice($merchantItem, $color);
 
-        // Get unit price (base + commission)
-        $unitPrice = $merchantItem->merchantSizePrice();
-
         return new self(
             merchantItemId: $merchantItem->id,
             merchantId: $merchantItem->user_id,
             catalogItemId: $merchantItem->catalog_item_id,
-            brandQualityId: $merchantItem->brand_quality_id,
-            name: $catalogItem->name ?? '',
-            nameAr: $catalogItem->label_ar ?? $catalogItem->name ?? '',
-            photo: $catalogItem->photo ?? '',
-            slug: $catalogItem->slug ?? '',
-            partNumber: $catalogItem->part_number ?? '',
-            merchantName: getLocalizedShopName($merchantItem->user),
-            merchantNameAr: $merchantItem->user->shop_name_ar ?? '',
+            brandQualityId: $merchantItem->brand_quality_id ?: null,
+            name: $catalogItem->name,
+            nameAr: $catalogItem->label_ar ?: $catalogItem->name,
+            photo: $catalogItem->photo ?: '',
+            slug: $catalogItem->slug ?: '',
+            partNumber: $catalogItem->part_number ?: '',
+            merchantName: getLocalizedShopName($merchant),
+            merchantNameAr: $merchant->shop_name_ar ?: '',
             unitPrice: $unitPrice,
             sizePrice: $sizePrice,
             colorPrice: $colorPrice,
-            previousPrice: (float) ($merchantItem->previous_price ?? 0),
+            previousPrice: (float) ($merchantItem->previous_price ?: 0),
             qty: $qty,
-            minQty: max(1, (int) ($merchantItem->minimum_qty ?? 1)),
+            minQty: max(1, (int) ($merchantItem->minimum_qty ?: 1)),
             stock: self::getEffectiveStock($merchantItem, $size),
             preordered: (bool) ($merchantItem->preordered ?? false),
             size: $size,
             color: $color ? ltrim($color, '#') : null,
             keys: $keys,
             values: $values,
-            wholeSellQty: self::toArray($merchantItem->whole_sell_qty),
-            wholeSellDiscount: self::toArray($merchantItem->whole_sell_discount),
+            wholeSellQty: self::parseToArray($merchantItem->whole_sell_qty),
+            wholeSellDiscount: self::parseToArray($merchantItem->whole_sell_discount),
             addedAt: now()->toDateTimeString()
         );
     }
 
     /**
      * Create CartItem from array (session restore)
+     *
+     * FAIL-FAST: All required fields must exist. No fallbacks. No defaults.
+     * Missing data = Exception immediately.
+     *
+     * @throws \InvalidArgumentException if required fields are missing
      */
     public static function fromArray(array $data): self
     {
+        // ============ REQUIRED FIELDS - MUST EXIST ============
+        $requiredFields = [
+            'merchant_item_id',
+            'merchant_id',
+            'catalog_item_id',
+            'name',
+            'unit_price',
+            'qty',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (!array_key_exists($field, $data)) {
+                throw new \InvalidArgumentException(
+                    "CartItem missing required field: '{$field}'. " .
+                    "Data source is corrupted or using old format. Keys present: " . implode(', ', array_keys($data))
+                );
+            }
+        }
+
+        // ============ VALIDATE CRITICAL VALUES ============
+        $merchantItemId = (int) $data['merchant_item_id'];
+        if ($merchantItemId <= 0) {
+            throw new \InvalidArgumentException(
+                "CartItem has invalid merchant_item_id: {$merchantItemId}. Must be > 0."
+            );
+        }
+
+        $merchantId = (int) $data['merchant_id'];
+        if ($merchantId <= 0) {
+            throw new \InvalidArgumentException(
+                "CartItem has invalid merchant_id: {$merchantId}. Must be > 0."
+            );
+        }
+
+        $catalogItemId = (int) $data['catalog_item_id'];
+        if ($catalogItemId <= 0) {
+            throw new \InvalidArgumentException(
+                "CartItem has invalid catalog_item_id: {$catalogItemId}. Must be > 0."
+            );
+        }
+
+        $unitPrice = (float) $data['unit_price'];
+        if ($unitPrice <= 0) {
+            throw new \InvalidArgumentException(
+                "CartItem has invalid unit_price: {$unitPrice}. Must be > 0. " .
+                "merchant_item_id={$merchantItemId}"
+            );
+        }
+
+        $qty = (int) $data['qty'];
+        if ($qty <= 0) {
+            throw new \InvalidArgumentException(
+                "CartItem has invalid qty: {$qty}. Must be > 0. " .
+                "merchant_item_id={$merchantItemId}"
+            );
+        }
+
+        $name = (string) $data['name'];
+        if (empty(trim($name))) {
+            throw new \InvalidArgumentException(
+                "CartItem has empty name. merchant_item_id={$merchantItemId}"
+            );
+        }
+
+        // ============ OPTIONAL FIELDS - Use null, not fallback values ============
         return new self(
-            merchantItemId: (int) $data['merchant_item_id'],
-            merchantId: (int) $data['merchant_id'],
-            catalogItemId: (int) $data['catalog_item_id'],
-            brandQualityId: isset($data['brand_quality_id']) ? (int) $data['brand_quality_id'] : null,
-            name: $data['name'] ?? '',
-            nameAr: $data['name_ar'] ?? '',
-            photo: $data['photo'] ?? '',
-            slug: $data['slug'] ?? '',
-            partNumber: $data['part_number'] ?? '',
-            merchantName: $data['merchant_name'] ?? '',
-            merchantNameAr: $data['merchant_name_ar'] ?? '',
-            unitPrice: (float) ($data['unit_price'] ?? 0),
-            sizePrice: (float) ($data['size_price'] ?? 0),
-            colorPrice: (float) ($data['color_price'] ?? 0),
-            previousPrice: (float) ($data['previous_price'] ?? 0),
-            qty: (int) ($data['qty'] ?? 1),
-            minQty: (int) ($data['min_qty'] ?? 1),
-            stock: (int) ($data['stock'] ?? 0),
+            merchantItemId: $merchantItemId,
+            merchantId: $merchantId,
+            catalogItemId: $catalogItemId,
+            brandQualityId: isset($data['brand_quality_id']) && $data['brand_quality_id'] > 0
+                ? (int) $data['brand_quality_id']
+                : null,
+            name: $name,
+            nameAr: $data['name_ar'] ?? $name, // Fallback to name is OK for display
+            photo: $data['photo'] ?? '', // Empty photo is valid
+            slug: $data['slug'] ?? '', // Empty slug is valid
+            partNumber: $data['part_number'] ?? '', // Empty part_number is valid
+            merchantName: $data['merchant_name'] ?? '', // Empty is valid
+            merchantNameAr: $data['merchant_name_ar'] ?? '', // Empty is valid
+            unitPrice: $unitPrice,
+            sizePrice: (float) ($data['size_price'] ?? 0), // 0 is valid (no size price)
+            colorPrice: (float) ($data['color_price'] ?? 0), // 0 is valid (no color price)
+            previousPrice: (float) ($data['previous_price'] ?? 0), // 0 is valid (no previous price)
+            qty: $qty,
+            minQty: max(1, (int) ($data['min_qty'] ?? 1)), // min 1 is logical default
+            stock: (int) ($data['stock'] ?? 0), // 0 stock is valid (preorder)
             preordered: (bool) ($data['preordered'] ?? false),
-            size: $data['size'] ?? null,
-            color: $data['color'] ?? null,
-            keys: $data['keys'] ?? null,
-            values: $data['values'] ?? null,
-            wholeSellQty: $data['whole_sell_qty'] ?? [],
-            wholeSellDiscount: $data['whole_sell_discount'] ?? [],
+            size: $data['size'] ?? null, // null is valid (no size)
+            color: $data['color'] ?? null, // null is valid (no color)
+            keys: $data['keys'] ?? null, // null is valid
+            values: $data['values'] ?? null, // null is valid
+            wholeSellQty: $data['whole_sell_qty'] ?? [], // Empty is valid
+            wholeSellDiscount: $data['whole_sell_discount'] ?? [], // Empty is valid
             addedAt: $data['added_at'] ?? now()->toDateTimeString()
         );
     }
@@ -442,22 +573,48 @@ class CartItem implements JsonSerializable
     /**
      * Calculate totals for items belonging to a specific merchant
      *
+     * FAIL-FAST: merchant_id must exist in each item. No fallbacks.
+     *
      * @param array<string, array> $items All cart items
      * @param int $merchantId Merchant to filter by
      * @return array{qty: int, subtotal: float, discount: float, total: float}
+     * @throws \InvalidArgumentException if merchantId is invalid or items have missing merchant_id
      */
     public static function calculateMerchantTotals(array $items, int $merchantId): array
     {
-        $merchantItems = array_filter($items, function ($item) use ($merchantId) {
-            return (int) ($item['merchant_id'] ?? 0) === $merchantId;
-        });
+        if ($merchantId <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid merchantId: {$merchantId}. Must be > 0."
+            );
+        }
+
+        $merchantItems = [];
+        foreach ($items as $key => $item) {
+            if (!isset($item['merchant_id'])) {
+                throw new \InvalidArgumentException(
+                    "Cart item '{$key}' missing required field: merchant_id. " .
+                    "Keys present: " . implode(', ', array_keys($item))
+                );
+            }
+
+            $itemMerchantId = (int) $item['merchant_id'];
+            if ($itemMerchantId <= 0) {
+                throw new \InvalidArgumentException(
+                    "Cart item '{$key}' has invalid merchant_id: {$itemMerchantId}. Must be > 0."
+                );
+            }
+
+            if ($itemMerchantId === $merchantId) {
+                $merchantItems[$key] = $item;
+            }
+        }
 
         return self::calculateTotals($merchantItems);
     }
 
     // ===================== Helper Methods =====================
 
-    private static function toArray($value): array
+    private static function parseToArray($value): array
     {
         if (is_array($value)) return $value;
         if (is_string($value) && $value !== '') return array_map('trim', explode(',', $value));
@@ -470,8 +627,8 @@ class CartItem implements JsonSerializable
             return 0.0;
         }
 
-        $sizes = self::toArray($mp->size);
-        $prices = self::toArray($mp->size_price);
+        $sizes = self::parseToArray($mp->size);
+        $prices = self::parseToArray($mp->size_price);
         $idx = array_search(trim($size), array_map('trim', $sizes), true);
 
         if ($idx !== false && isset($prices[$idx])) {
@@ -487,8 +644,8 @@ class CartItem implements JsonSerializable
             return 0.0;
         }
 
-        $colors = self::toArray($mp->color_all);
-        $prices = self::toArray($mp->color_price);
+        $colors = self::parseToArray($mp->color_all);
+        $prices = self::parseToArray($mp->color_price);
         $color = ltrim($color, '#');
 
         foreach ($colors as $i => $c) {
@@ -503,8 +660,8 @@ class CartItem implements JsonSerializable
     public static function getEffectiveStock(MerchantItem $mp, ?string $size = null): int
     {
         if ($size && !empty($mp->size) && !empty($mp->size_qty)) {
-            $sizes = self::toArray($mp->size);
-            $qtys = self::toArray($mp->size_qty);
+            $sizes = self::parseToArray($mp->size);
+            $qtys = self::parseToArray($mp->size_qty);
             $idx = array_search(trim($size), array_map('trim', $sizes), true);
 
             if ($idx !== false && isset($qtys[$idx])) {
@@ -513,5 +670,46 @@ class CartItem implements JsonSerializable
         }
 
         return (int) ($mp->stock ?? 0);
+    }
+
+    /**
+     * Get product dimensions for shipping calculations
+     * NO FALLBACKS - throws if MerchantItem not found
+     *
+     * @param int $merchantItemId
+     * @return array{weight: float|null, length: float|null, width: float|null, height: float|null, has_weight: bool, has_dimensions: bool}
+     * @throws \InvalidArgumentException if MerchantItem not found
+     */
+    public static function getCatalogItemDimensions(int $merchantItemId): array
+    {
+        $mp = MerchantItem::with('catalogItem')->find($merchantItemId);
+
+        if (!$mp) {
+            throw new \InvalidArgumentException("MerchantItem {$merchantItemId} not found");
+        }
+
+        if (!$mp->catalogItem) {
+            throw new \InvalidArgumentException("MerchantItem {$merchantItemId} has no associated CatalogItem");
+        }
+
+        $catalogItem = $mp->catalogItem;
+
+        // Priority: merchant_items -> catalog_items (NO fallbacks to hardcoded values)
+        $weight = $mp->weight ?? $catalogItem->weight ?? null;
+        $length = $mp->length ?? $catalogItem->length ?? null;
+        $width = $mp->width ?? $catalogItem->width ?? null;
+        $height = $mp->height ?? $catalogItem->height ?? null;
+
+        $hasWeight = $weight !== null && $weight > 0;
+        $hasDimensions = $length !== null && $width !== null && $height !== null;
+
+        return [
+            'weight' => $hasWeight ? (float) $weight : null,
+            'length' => $length !== null ? (float) $length : null,
+            'width' => $width !== null ? (float) $width : null,
+            'height' => $height !== null ? (float) $height : null,
+            'has_weight' => $hasWeight,
+            'has_dimensions' => $hasDimensions,
+        ];
     }
 }

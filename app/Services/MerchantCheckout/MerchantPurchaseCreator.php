@@ -11,6 +11,7 @@ use App\Classes\MuaadhMailer;
 use App\Traits\SavesCustomerShippingChoice;
 use App\Services\PaymentAccountingService;
 use App\Services\AccountLedgerService;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -23,14 +24,14 @@ use Illuminate\Support\Facades\DB;
 class MerchantPurchaseCreator
 {
     use SavesCustomerShippingChoice;
-    protected MerchantCartService $cartService;
+    protected MerchantCartManager $cartService;
     protected MerchantSessionManager $sessionManager;
     protected MerchantPriceCalculator $priceCalculator;
     protected PaymentAccountingService $accountingService;
     protected AccountLedgerService $ledgerService;
 
     public function __construct(
-        MerchantCartService $cartService,
+        MerchantCartManager $cartService,
         MerchantSessionManager $sessionManager,
         MerchantPriceCalculator $priceCalculator,
         PaymentAccountingService $accountingService,

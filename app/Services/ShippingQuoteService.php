@@ -28,13 +28,30 @@ class ShippingQuoteService
     /**
      * Get shipping quote for a catalogItem
      *
+     * FAIL-FAST: weight is REQUIRED, no default values.
+     * The caller must provide the actual weight from the product.
+     *
      * @param int $merchantId Merchant user_id
-     * @param float $weight CatalogItem weight in kg
+     * @param float $weight CatalogItem weight in kg (REQUIRED)
      * @param int|null $cityId Destination city (uses session if null)
      * @return array Quote result
+     * @throws \InvalidArgumentException if weight is invalid
      */
-    public function getCatalogItemQuote(int $merchantId, float $weight = 0.5, ?int $cityId = null): array
+    public function getCatalogItemQuote(int $merchantId, float $weight, ?int $cityId = null): array
     {
+        // FAIL-FAST: Validate inputs
+        if ($merchantId <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid merchantId: {$merchantId}. Must be > 0."
+            );
+        }
+
+        if ($weight <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid weight: {$weight}. Must be > 0. " .
+                "The caller must provide the actual product weight."
+            );
+        }
         // 1. Get destination city
         $destinationCityId = $cityId ?? $this->locationService->getCityId();
 

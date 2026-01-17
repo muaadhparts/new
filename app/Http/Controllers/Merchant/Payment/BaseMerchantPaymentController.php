@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\MerchantCheckout\MerchantCheckoutService;
 use App\Services\MerchantCheckout\MerchantPurchaseCreator;
 use App\Services\MerchantCheckout\MerchantSessionManager;
-use App\Services\MerchantCheckout\MerchantCartService;
+use App\Services\Cart\MerchantCartManager;
 use App\Services\MerchantCheckout\MerchantPriceCalculator;
 use App\Models\MerchantPayment;
 use App\Models\MerchantCredential;
@@ -25,7 +25,7 @@ abstract class BaseMerchantPaymentController extends Controller
     protected MerchantCheckoutService $checkoutService;
     protected MerchantPurchaseCreator $purchaseCreator;
     protected MerchantSessionManager $sessionManager;
-    protected MerchantCartService $cartService;
+    protected MerchantCartManager $cartService;
     protected MerchantPriceCalculator $priceCalculator;
 
     protected string $paymentKeyword = '';
@@ -35,7 +35,7 @@ abstract class BaseMerchantPaymentController extends Controller
         MerchantCheckoutService $checkoutService,
         MerchantPurchaseCreator $purchaseCreator,
         MerchantSessionManager $sessionManager,
-        MerchantCartService $cartService,
+        MerchantCartManager $cartService,
         MerchantPriceCalculator $priceCalculator
     ) {
         $this->checkoutService = $checkoutService;

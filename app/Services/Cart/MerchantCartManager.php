@@ -147,7 +147,10 @@ class MerchantCartManager
             return $this->error(__('Item not found in cart'));
         }
 
-        $minQty = (int) ($item['min_qty'] ?? 1);
+        // FAIL-FAST: Required fields must exist
+        $this->validateRequiredItemFields($item, $cartKey);
+
+        $minQty = (int) $item['min_qty'];
         if ($qty < $minQty) {
             return $this->error(__('Minimum quantity is') . ' ' . $minQty);
         }
@@ -160,8 +163,8 @@ class MerchantCartManager
             return $this->error(__('Item no longer available'));
         }
 
-        $stock = CartItem::getEffectiveStock($merchantItem, $item['size'] ?? null);
-        $isPreorder = (bool) ($item['preordered'] ?? false);
+        $stock = CartItem::getEffectiveStock($merchantItem, $item['size'] ?? null); // size is optional
+        $isPreorder = (bool) $item['preordered'];
 
         if (!$isPreorder && $stock > 0 && $qty > $stock) {
             return $this->error(__('Only') . ' ' . $stock . ' ' . __('available'));
@@ -194,7 +197,14 @@ class MerchantCartManager
             return $this->error(__('Item not found in cart'));
         }
 
-        $currentQty = (int) ($item['qty'] ?? 1);
+        // FAIL-FAST: qty must exist
+        if (!isset($item['qty'])) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' missing required field: qty"
+            );
+        }
+
+        $currentQty = (int) $item['qty'];
         return $this->updateQty($cartKey, $currentQty + 1);
     }
 
@@ -209,8 +219,20 @@ class MerchantCartManager
             return $this->error(__('Item not found in cart'));
         }
 
-        $currentQty = (int) ($item['qty'] ?? 1);
-        $minQty = (int) ($item['min_qty'] ?? 1);
+        // FAIL-FAST: Required fields must exist
+        if (!isset($item['qty'])) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' missing required field: qty"
+            );
+        }
+        if (!isset($item['min_qty'])) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' missing required field: min_qty"
+            );
+        }
+
+        $currentQty = (int) $item['qty'];
+        $minQty = (int) $item['min_qty'];
 
         if ($currentQty <= $minQty) {
             return $this->error(__('Minimum quantity is') . ' ' . $minQty);
@@ -373,6 +395,9 @@ class MerchantCartManager
         $items = $this->storage->getItems();
 
         foreach ($items as $key => $item) {
+            // FAIL-FAST: Validate required fields first
+            $this->validateRequiredItemFields($item, $key);
+
             $merchantItem = MerchantItem::with('user')->find($item['merchant_item_id']);
 
             // Check if item exists
@@ -403,10 +428,10 @@ class MerchantCartManager
             }
 
             // Check stock
-            $isPreorder = (bool) ($item['preordered'] ?? false);
+            $isPreorder = (bool) $item['preordered'];
             if (!$isPreorder) {
-                $stock = CartItem::getEffectiveStock($merchantItem, $item['size'] ?? null);
-                $qty = (int) ($item['qty'] ?? 1);
+                $stock = CartItem::getEffectiveStock($merchantItem, $item['size'] ?? null); // size is optional
+                $qty = (int) $item['qty'];
 
                 if ($stock <= 0) {
                     $issues[$key] = [
@@ -424,7 +449,7 @@ class MerchantCartManager
 
             // Check price changes
             $currentPrice = $merchantItem->merchantSizePrice();
-            $storedPrice = (float) ($item['unit_price'] ?? 0);
+            $storedPrice = (float) $item['unit_price'];
 
             if (abs($currentPrice - $storedPrice) > 0.01) {
                 $issues[$key] = [
@@ -449,6 +474,18 @@ class MerchantCartManager
         $removed = [];
 
         foreach ($items as $key => $item) {
+            // FAIL-FAST: Validate required fields
+            if (!isset($item['merchant_item_id'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: merchant_item_id"
+                );
+            }
+            if (!isset($item['qty'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: qty"
+                );
+            }
+
             $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->find($item['merchant_item_id']);
 
             // Remove invalid items
@@ -465,7 +502,7 @@ class MerchantCartManager
                 continue;
             }
 
-            // Update item with fresh data
+            // Update item with fresh data (size, color, keys, values are optional)
             $freshItem = CartItem::fromMerchantItem(
                 $merchantItem,
                 (int) $item['qty'],
@@ -612,5 +649,179 @@ class MerchantCartManager
             'message' => $message,
             'cart' => null,
         ];
+    }
+
+    // ===================== CHECKOUT FLOW HELPERS =====================
+
+    /**
+     * Check if cart has items for a specific merchant
+     */
+    public function hasMerchantItems(int $merchantId): bool
+    {
+        $items = $this->storage->getItemsForMerchant($merchantId);
+        return !empty($items);
+    }
+
+    /**
+     * Check if cart has items for other merchants (besides the specified one)
+     */
+    public function hasOtherMerchants(int $merchantId): bool
+    {
+        $merchantIds = $this->storage->getMerchantIds();
+        foreach ($merchantIds as $id) {
+            if ((int) $id !== (int) $merchantId) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get cart summary for a specific merchant
+     *
+     * @param int $merchantId
+     * @return array
+     */
+    public function getMerchantCartSummary(int $merchantId): array
+    {
+        $items = $this->storage->getItemsForMerchant($merchantId);
+
+        if (empty($items)) {
+            return [
+                'merchant_id' => $merchantId,
+                'items' => [],
+                'items_count' => 0,
+                'total_qty' => 0,
+                'total_price' => 0.0,
+            ];
+        }
+
+        $totals = CartItem::calculateMerchantTotals($this->storage->getItems(), $merchantId);
+        $merchant = User::find($merchantId);
+
+        return [
+            'merchant_id' => $merchantId,
+            'merchant_name' => $merchant->shop_name ?? $merchant->name ?? null,
+            'items' => $items,
+            'items_count' => count($items),
+            'total_qty' => $totals['qty'],
+            'total_price' => $totals['total'],
+        ];
+    }
+
+    /**
+     * Build cart payload for purchase creation
+     *
+     * @param int $merchantId
+     * @return array
+     */
+    public function buildCartPayload(int $merchantId): array
+    {
+        $items = $this->storage->getItemsForMerchant($merchantId);
+        $totals = CartItem::calculateMerchantTotals($this->storage->getItems(), $merchantId);
+
+        return [
+            'totalQty' => $totals['qty'],
+            'totalPrice' => $totals['total'],
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * Remove all items for a specific merchant from cart
+     *
+     * @param int $merchantId
+     * @return array
+     */
+    public function removeMerchantItems(int $merchantId): array
+    {
+        if ($merchantId <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid merchantId: {$merchantId}. Must be > 0."
+            );
+        }
+
+        $items = $this->storage->getItemsForMerchant($merchantId);
+
+        foreach ($items as $key => $item) {
+            // FAIL-FAST: merchant_item_id must exist
+            if (!isset($item['merchant_item_id'])) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: merchant_item_id"
+                );
+            }
+
+            // Release stock reservation (size is optional)
+            $this->reservation->release(
+                (int) $item['merchant_item_id'],
+                $item['size'] ?? null
+            );
+
+            // Remove from storage
+            $this->storage->removeItem($key);
+        }
+
+        // Recalculate totals
+        $this->recalculateTotals();
+
+        return $this->success(__('Merchant items removed'), $this->getCart());
+    }
+
+    // ===================== FAIL-FAST VALIDATION =====================
+
+    /**
+     * Validate required fields exist in cart item
+     *
+     * FAIL-FAST: Missing required fields = Exception
+     *
+     * @param array $item The cart item
+     * @param string $key The cart key
+     * @throws \RuntimeException if required fields are missing
+     */
+    private function validateRequiredItemFields(array $item, string $key): void
+    {
+        $requiredFields = [
+            'merchant_item_id',
+            'merchant_id',
+            'catalog_item_id',
+            'qty',
+            'min_qty',
+            'unit_price',
+            'preordered',
+        ];
+
+        foreach ($requiredFields as $field) {
+            if (!array_key_exists($field, $item)) {
+                throw new \RuntimeException(
+                    "Cart item '{$key}' missing required field: {$field}. " .
+                    "Data is corrupted or using old format. Keys present: " . implode(', ', array_keys($item))
+                );
+            }
+        }
+
+        // Validate critical values
+        if ((int) $item['merchant_id'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid merchant_id: {$item['merchant_id']}. Must be > 0."
+            );
+        }
+
+        if ((int) $item['merchant_item_id'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid merchant_item_id: {$item['merchant_item_id']}. Must be > 0."
+            );
+        }
+
+        if ((int) $item['qty'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid qty: {$item['qty']}. Must be > 0."
+            );
+        }
+
+        if ((float) $item['unit_price'] <= 0) {
+            throw new \RuntimeException(
+                "Cart item '{$key}' has invalid unit_price: {$item['unit_price']}. Must be > 0."
+            );
+        }
     }
 }

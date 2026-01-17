@@ -217,11 +217,14 @@ class ShippingApiController extends Controller
         $freeAboveConverted = $this->priceService->convert($freeAbove);
 
         // Calculate merchant's catalogItems total from cart (using new MerchantCartManager)
+        // NEW CART FORMAT ONLY - No fallbacks
         $cartItems = $this->cartManager->getItemsForMerchant($merchantId);
         $merchantCatalogitemsTotal = 0;
-        foreach ($cartItems as $item) {
-            // New cart format: total_price is the item total
-            $merchantCatalogitemsTotal += (float)($item['total_price'] ?? 0);
+        foreach ($cartItems as $key => $item) {
+            if (!isset($item['total_price'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: total_price");
+            }
+            $merchantCatalogitemsTotal += (float)$item['total_price'];
         }
         $merchantCatalogitemsTotalConverted = $this->priceService->convert($merchantCatalogitemsTotal);
 
@@ -579,7 +582,8 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Calculate shipping data from cart items (new cart format)
+     * Calculate shipping data from cart items
+     * NEW CART FORMAT ONLY - No fallbacks
      * Replaces MerchantCartService::calculateMerchantShipping
      */
     protected function calculateMerchantShippingFromCart(int $merchantId, array $cartItems): array
@@ -588,25 +592,37 @@ class ShippingApiController extends Controller
         $totalWeight = 0;
         $totalPrice = 0;
 
-        foreach ($cartItems as $item) {
-            // New cart format
-            $qty = (int)($item['qty'] ?? 1);
-            $weight = (float)($item['weight'] ?? 0.5); // Default 0.5kg per item
-            $price = (float)($item['total_price'] ?? 0);
+        foreach ($cartItems as $key => $item) {
+            // NEW FORMAT ONLY - Required fields
+            if (!isset($item['qty'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: qty");
+            }
+            if (!isset($item['total_price'])) {
+                throw new \RuntimeException("Cart item '{$key}' missing required field: total_price");
+            }
+
+            $qty = (int)$item['qty'];
+            $weight = (float)($item['weight'] ?? 0); // weight is optional
+            $price = (float)$item['total_price'];
 
             $totalQty += $qty;
             $totalWeight += ($weight * $qty);
             $totalPrice += $price;
         }
 
-        // Default weight if not specified (1kg per item)
-        if ($totalWeight <= 0) {
+        // Weight fallback: if no weight specified, use 0.5kg per item
+        // This is a business rule, not a data fallback
+        if ($totalWeight <= 0 && $totalQty > 0) {
             $totalWeight = $totalQty * 0.5;
         }
 
+        if ($totalQty <= 0) {
+            throw new \RuntimeException("Cart has no items for merchant {$merchantId}");
+        }
+
         return [
-            'has_complete_data' => $totalQty > 0,
-            'missing_data' => $totalQty <= 0 ? ['items'] : [],
+            'has_complete_data' => true,
+            'missing_data' => [],
             'total_qty' => $totalQty,
             'total_weight' => round($totalWeight, 2),
             'total_price' => round($totalPrice, 2),
