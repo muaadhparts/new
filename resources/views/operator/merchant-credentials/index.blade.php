@@ -52,12 +52,17 @@
                                 <form action="{{ route('operator.merchant-credentials.index') }}" method="GET" class="row g-3">
                                     <div class="col-md-4">
                                         <select name="merchant_id" class="form-control">
-                                            <option value="">{{ __('All Merchants') }}</option>
-                                            @foreach($merchants as $merchant)
-                                                <option value="{{ $merchant->id }}" {{ request('merchant_id') == $merchant->id ? 'selected' : '' }}>
-                                                    {{ $merchant->shop_name ?: $merchant->name }}
-                                                </option>
-                                            @endforeach
+                                            <option value="">{{ __('All') }}</option>
+                                            <option value="0" {{ request('merchant_id') === '0' ? 'selected' : '' }}>
+                                                🏢 {{ __('Platform (Operator)') }}
+                                            </option>
+                                            <optgroup label="{{ __('Merchants') }}">
+                                                @foreach($merchants as $merchant)
+                                                    <option value="{{ $merchant->id }}" {{ request('merchant_id') == $merchant->id ? 'selected' : '' }}>
+                                                        {{ $merchant->shop_name ?: $merchant->name }}
+                                                    </option>
+                                                @endforeach
+                                            </optgroup>
                                         </select>
                                     </div>
                                     <div class="col-md-3">
@@ -109,17 +114,28 @@
                                     </thead>
                                     <tbody>
                                         @foreach($credentials as $credential)
-                                            <tr>
+                                            <tr class="{{ $credential->user_id == 0 ? 'table-info' : '' }}">
                                                 <td>{{ $credential->id }}</td>
                                                 <td>
-                                                    <div class="d-flex align-items-center">
-                                                        <i class="fas fa-store me-2 text-muted"></i>
-                                                        <div>
-                                                            <strong>{{ $credential->user->shop_name ?: $credential->user->name }}</strong>
-                                                            <br>
-                                                            <small class="text-muted">ID: {{ $credential->user_id }}</small>
+                                                    @if($credential->user_id == 0)
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-building me-2 text-primary"></i>
+                                                            <div>
+                                                                <strong class="text-primary">{{ __('Platform (Operator)') }}</strong>
+                                                                <br>
+                                                                <small class="text-muted">{{ __('Shared API') }}</small>
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    @else
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="fas fa-store me-2 text-muted"></i>
+                                                            <div>
+                                                                <strong>{{ $credential->user?->shop_name ?: $credential->user?->name ?: 'N/A' }}</strong>
+                                                                <br>
+                                                                <small class="text-muted">ID: {{ $credential->user_id }}</small>
+                                                            </div>
+                                                        </div>
+                                                    @endif
                                                 </td>
                                                 <td>
                                                     <span class="badge bg-primary">

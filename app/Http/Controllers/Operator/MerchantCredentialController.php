@@ -60,6 +60,8 @@ class MerchantCredentialController extends OperatorBaseController
 
     /**
      * Display all merchant credentials
+     *
+     * user_id = 0 means platform-level credentials
      */
     public function index(Request $request)
     {
@@ -67,9 +69,9 @@ class MerchantCredentialController extends OperatorBaseController
             ->orderBy('user_id')
             ->orderBy('service_name');
 
-        // Filter by merchant
-        if ($request->filled('merchant_id')) {
-            $query->where('user_id', $request->merchant_id);
+        // Filter by owner (merchant or platform)
+        if ($request->has('merchant_id') && $request->merchant_id !== '') {
+            $query->where('user_id', (int) $request->merchant_id);
         }
 
         // Filter by service
@@ -127,17 +129,28 @@ class MerchantCredentialController extends OperatorBaseController
 
     /**
      * Store new credential
+     *
+     * user_id = 0 means platform-level credential
+     * user_id > 0 means merchant-specific credential
      */
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
+            'user_id' => 'required|integer|min:0',
             'service_name' => 'required|string|max:255',
             'key_name' => 'required|string|max:255',
             'credential_value' => 'required|string',
             'environment' => 'required|in:live,sandbox',
             'description' => 'nullable|string|max:500',
         ]);
+
+        // Validate user_id if not platform (0)
+        if ((int) $request->user_id > 0) {
+            $exists = User::where('id', $request->user_id)->where('is_merchant', 2)->exists();
+            if (!$exists) {
+                return back()->withErrors(['error' => __('Invalid merchant selected')]);
+            }
+        }
 
         $serviceName = $request->service_name === 'other'
             ? $request->custom_service_name

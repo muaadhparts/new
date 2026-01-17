@@ -33,23 +33,32 @@
                         <form action="{{ route('operator.merchant-credentials.store') }}" method="POST" id="credentialForm">
                             @csrf
 
-                            {{-- Merchant Selection --}}
+                            {{-- Owner Selection --}}
                             <div class="row justify-content-center">
                                 <div class="col-lg-4">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Merchant') }} *</h4>
-                                        <p class="sub-heading">{{ __('Select the merchant') }}</p>
+                                        <h4 class="heading">{{ __('Owner') }} *</h4>
+                                        <p class="sub-heading">{{ __('Platform or Merchant') }}</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
                                     <select name="user_id" id="user_id" class="form-control" required>
-                                        <option value="">{{ __('Select Merchant') }}</option>
-                                        @foreach($merchants as $merchant)
-                                            <option value="{{ $merchant->id }}" {{ old('user_id') == $merchant->id ? 'selected' : '' }}>
-                                                {{ $merchant->shop_name ?: $merchant->name }} (ID: {{ $merchant->id }})
-                                            </option>
-                                        @endforeach
+                                        <option value="">{{ __('Select Owner') }}</option>
+                                        <option value="0" {{ old('user_id') === '0' ? 'selected' : '' }}>
+                                            🏢 {{ __('Platform (Operator)') }}
+                                        </option>
+                                        <optgroup label="{{ __('Merchants') }}">
+                                            @foreach($merchants as $merchant)
+                                                <option value="{{ $merchant->id }}" {{ old('user_id') == $merchant->id ? 'selected' : '' }}>
+                                                    {{ $merchant->shop_name ?: $merchant->name }} (ID: {{ $merchant->id }})
+                                                </option>
+                                            @endforeach
+                                        </optgroup>
                                     </select>
+                                    <small class="text-muted mt-1 d-block" id="ownerHint">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        {{ __('Platform credentials can be shared with merchants via shipping/payment settings') }}
+                                    </small>
                                 </div>
                             </div>
 

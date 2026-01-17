@@ -410,35 +410,28 @@ class TryotoService
         $height = $dimensions['height'] ?? null;
         $width = $dimensions['width'] ?? null;
 
-        // إذا المقاسات غير متوفرة، نحسب أبعاد تقريبية من الوزن
-        // المعادلة: حجم الصندوق = الوزن × 5000 (عكس معادلة الوزن الحجمي)
-        // ثم نوزع الحجم بالتساوي على الأبعاد الثلاثة
-        if ($length === null || $height === null || $width === null || $length <= 0 || $height <= 0 || $width <= 0) {
-            // حساب حجم تقريبي من الوزن
-            // افتراض: كثافة المنتج = 200 كجم/متر مكعب (متوسط للمنتجات العادية)
-            $volumeCm3 = ($weight / 0.0002); // الوزن / الكثافة = الحجم
-            $sideCm = pow($volumeCm3, 1/3); // الجذر التكعيبي للحصول على طول الضلع
-            $sideCm = max(10, min(100, round($sideCm))); // حد أدنى 10سم، أقصى 100سم
-
-            $length = $length ?? $sideCm;
-            $height = $height ?? $sideCm;
-            $width = $width ?? $sideCm;
-
-            Log::debug('Tryoto: Using calculated dimensions from weight', [
-                'weight' => $weight,
-                'calculated_side' => $sideCm,
-                'dimensions' => ['length' => $length, 'height' => $height, 'width' => $width]
-            ]);
-        }
-
+        // Build request - dimensions are optional for Tryoto API
         $requestData = [
             'originCity' => $originCity,
             'destinationCity' => $destinationCity,
             'weight' => $weight,
-            'xlength' => $length,
-            'xheight' => $height,
-            'xwidth' => $width,
         ];
+
+        // Only add dimensions if explicitly provided (no auto-calculation)
+        if ($length !== null && $length > 0) {
+            $requestData['xlength'] = $length;
+        }
+        if ($height !== null && $height > 0) {
+            $requestData['xheight'] = $height;
+        }
+        if ($width !== null && $width > 0) {
+            $requestData['xwidth'] = $width;
+        }
+
+        Log::debug('Tryoto: Request data', [
+            'has_dimensions' => isset($requestData['xlength']),
+            'request' => $requestData,
+        ]);
 
         Log::debug('Tryoto: Requesting delivery options', $requestData);
 

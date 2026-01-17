@@ -35,19 +35,39 @@ class ShippingApiController extends Controller
         try {
             $merchantId = $request->input('merchant_id');
 
+            // ========== LOGGING START ==========
+            Log::info('═══════════════════════════════════════════════════════════');
+            Log::info('TRYOTO API REQUEST START', [
+                'merchant_id' => $merchantId,
+                'request_url' => $request->fullUrl(),
+                'session_id' => Session::getId(),
+            ]);
+            // ========== LOGGING END ==========
+
             if (!$merchantId) {
+                Log::warning('TRYOTO: Missing merchant_id');
                 return response()->json([
                     'success' => false,
-                    'error' => 'Merchant ID is required',
+                    'error' => 'معرّف التاجر مطلوب',
+                    'error_code' => 'MERCHANT_ID_REQUIRED',
                 ], 400);
             }
 
             // 1. Get cart items from MerchantCartManager (NOT from session directly)
-            $cartItems = $this->cartManager->getItemsForMerchant($merchantId);
+            $cartItems = $this->cartManager->getMerchantItems($merchantId);
+
+            Log::info('TRYOTO STEP 1: Cart Items', [
+                'merchant_id' => $merchantId,
+                'cart_items_count' => count($cartItems),
+                'cart_keys' => array_keys($cartItems),
+            ]);
+
             if (empty($cartItems)) {
+                Log::warning('TRYOTO: Cart is empty', ['merchant_id' => $merchantId]);
                 return response()->json([
                     'success' => false,
-                    'error' => 'Cart is empty for this merchant',
+                    'error' => 'السلة فارغة لهذا التاجر',
+                    'error_code' => 'CART_EMPTY',
                 ], 400);
             }
 
@@ -64,43 +84,75 @@ class ShippingApiController extends Controller
                 $missingFields = $shippingData['missing_data'] ?? [];
                 return response()->json([
                     'success' => false,
-                    'error' => 'Incomplete shipping data: ' . implode(', ', $missingFields),
+                    'error' => 'بيانات الشحن غير مكتملة: ' . implode(', ', $missingFields),
                     'missing_data' => $missingFields,
+                    'error_code' => 'INCOMPLETE_SHIPPING_DATA',
                 ]);
             }
 
             // 3. Get merchant city
             $merchantCityData = ShippingCalculatorService::getMerchantCity($merchantId);
 
+            Log::info('TRYOTO STEP 2: Merchant City (Origin)', [
+                'merchant_id' => $merchantId,
+                'merchant_city_data' => $merchantCityData,
+            ]);
+
             if (!$merchantCityData || empty($merchantCityData['city_name'])) {
+                Log::warning('TRYOTO: Merchant city not configured', ['merchant_id' => $merchantId]);
                 return response()->json([
                     'success' => false,
-                    'error' => 'Merchant city not configured',
+                    'error' => 'لم يتم إعداد موقع التاجر. يرجى التواصل مع التاجر.',
+                    'error_code' => 'MERCHANT_CITY_NOT_CONFIGURED',
                 ]);
             }
 
             $originCity = $this->normalizeCityName($merchantCityData['city_name']);
 
             // 4. Get destination city from session
+            // Log session data BEFORE calling getDestinationCity
+            $addressKey = 'checkout.merchant.' . $merchantId . '.address';
+            $sessionAddress = Session::get($addressKey);
+            Log::info('TRYOTO STEP 3: Session Address Data', [
+                'merchant_id' => $merchantId,
+                'session_key' => $addressKey,
+                'session_exists' => !empty($sessionAddress),
+                'session_data' => $sessionAddress ? [
+                    'latitude' => $sessionAddress['latitude'] ?? 'N/A',
+                    'longitude' => $sessionAddress['longitude'] ?? 'N/A',
+                    'customer_city' => $sessionAddress['customer_city'] ?? 'N/A',
+                ] : null,
+            ]);
+
             $destinationCity = $this->getDestinationCity($merchantId);
 
+            Log::info('TRYOTO STEP 4: Destination City (Customer)', [
+                'merchant_id' => $merchantId,
+                'destination_city' => $destinationCity,
+            ]);
+
             if (!$destinationCity) {
+                Log::warning('TRYOTO: Destination city missing', [
+                    'merchant_id' => $merchantId,
+                    'session_address' => $sessionAddress,
+                ]);
                 return response()->json([
                     'success' => false,
-                    'error' => 'Customer destination city is required',
+                    'error' => 'عذراً، لم يتم تحديد موقع التوصيل. يرجى العودة لصفحة العنوان وتحديد موقعك على الخريطة.',
+                    'error_code' => 'DESTINATION_CITY_MISSING',
                 ]);
             }
 
             // 5. Get chargeable weight
-            $weight = $shippingData['chargeable_weight'] ?? $shippingData['actual_weight'] ?? 0;
+            $weight = $shippingData['total_weight'] ?? $shippingData['chargeable_weight'] ?? $shippingData['actual_weight'] ?? 0;
             $dimensions = $shippingData['dimensions'] ?? [];
 
-            Log::debug('ShippingApiController: Calling Tryoto API', [
+            Log::info('TRYOTO STEP 5: Calling Tryoto API', [
                 'merchant_id' => $merchantId,
-                'origin' => $originCity,
-                'destination' => $destinationCity,
+                'origin_city' => $originCity,
+                'destination_city' => $destinationCity,
                 'weight' => $weight,
-                'dimensions' => $dimensions
+                'dimensions' => $dimensions,
             ]);
 
             // 6. Call Tryoto API with merchant-specific credentials
@@ -115,9 +167,11 @@ class ShippingApiController extends Controller
                 );
 
             if (!$result['success']) {
-                Log::error('ShippingApiController: Failed to get delivery options', [
-                    'error' => $result['error'],
+                Log::error('TRYOTO STEP 6: API FAILED', [
                     'merchant_id' => $merchantId,
+                    'error' => $result['error'] ?? 'Unknown',
+                    'origin_city' => $originCity,
+                    'destination_city' => $destinationCity,
                 ]);
 
                 return response()->json([
@@ -128,12 +182,12 @@ class ShippingApiController extends Controller
 
             $deliveryCompany = $result['raw']['deliveryCompany'] ?? [];
 
-            Log::debug('ShippingApiController: Got delivery options', [
+            Log::info('TRYOTO STEP 6: API SUCCESS', [
                 'merchant_id' => $merchantId,
                 'options_count' => count($deliveryCompany),
-                'origin' => $originCity,
-                'destination' => $destinationCity,
-                'weight' => $weight
+                'origin_city' => $originCity,
+                'destination_city' => $destinationCity,
+                'weight' => $weight,
             ]);
 
             if (empty($deliveryCompany)) {
@@ -157,7 +211,7 @@ class ShippingApiController extends Controller
             }
 
             // Get free shipping threshold from merchant's Tryoto config
-            $freeShippingInfo = $this->getFreeShippingInfo($merchantId, $cart);
+            $freeShippingInfo = $this->getFreeShippingInfoFromItems($merchantId, $cartItems);
 
             // Convert prices and apply free shipping logic
             $convertedOptions = $this->convertDeliveryOptionsPrices($deliveryCompany, $freeShippingInfo);
@@ -172,23 +226,39 @@ class ShippingApiController extends Controller
                 'count' => count($convertedOptions),
                 'weight' => $weight,
                 'free_shipping' => $freeShippingInfo,
-                'resolved_city' => $destinationCity, // ✅ المدينة المدعومة للشحن
+                'resolved_city' => $destinationCity,
+                // ✅ للحسابات المالية
+                'is_platform_provided' => $freeShippingInfo['is_platform_provided'],
+                'owner_user_id' => $freeShippingInfo['owner_user_id'],
+                'shipping_id' => $freeShippingInfo['shipping_id'],
             ]);
 
         } catch (\Exception $e) {
-            Log::error('ShippingApiController: Exception', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+            Log::error('═══════════════════════════════════════════════════════════');
+            Log::error('TRYOTO EXCEPTION', [
                 'merchant_id' => $merchantId ?? null,
+                'error_message' => $e->getMessage(),
+                'error_file' => $e->getFile() . ':' . $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
+            Log::error('═══════════════════════════════════════════════════════════');
 
-            // Check if this is a credentials missing error
             $errorMessage = $e->getMessage();
+
+            // Check specific error types
             if (str_contains($errorMessage, 'credentials not configured')) {
                 return response()->json([
                     'success' => false,
                     'error' => 'عذراً، لم يتم إعداد خدمة الشحن لهذا التاجر بعد. يرجى التواصل مع التاجر.',
                     'error_code' => 'MERCHANT_SHIPPING_NOT_CONFIGURED',
+                ]);
+            }
+
+            if (str_contains($errorMessage, 'no weight')) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'بيانات السلة قديمة. يرجى حذف المنتجات وإعادة إضافتها للسلة.',
+                    'error_code' => 'CART_ITEMS_MISSING_WEIGHT',
                 ]);
             }
 
@@ -204,29 +274,19 @@ class ShippingApiController extends Controller
      */
     public function getTryotoHtml(Request $request)
     {
-        $merchantId = $request->input('merchant_id');
+        $merchantId = (int) $request->input('merchant_id');
 
         // Get currency from CheckoutPriceService (single source of truth)
         $curr = $this->priceService->getMonetaryUnit();
 
-        // Get free shipping threshold from merchant's Tryoto config
-        $merchantTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
-            ->where('provider', 'tryoto')
-            ->first();
-        $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
-        $freeAboveConverted = $this->priceService->convert($freeAbove);
+        // Get free shipping info (includes operator check)
+        $cartItems = $this->cartManager->getMerchantItems($merchantId);
+        $freeShippingInfo = $this->getFreeShippingInfoFromItems($merchantId, $cartItems);
 
-        // Calculate merchant's catalogItems total from cart (using new MerchantCartManager)
-        // NEW CART FORMAT ONLY - No fallbacks
-        $cartItems = $this->cartManager->getItemsForMerchant($merchantId);
-        $merchantCatalogitemsTotal = 0;
-        foreach ($cartItems as $key => $item) {
-            if (!isset($item['total_price'])) {
-                throw new \RuntimeException("Cart item '{$key}' missing required field: total_price");
-            }
-            $merchantCatalogitemsTotal += (float)$item['total_price'];
-        }
-        $merchantCatalogitemsTotalConverted = $this->priceService->convert($merchantCatalogitemsTotal);
+        $freeAbove = $freeShippingInfo['free_above'];
+        $freeAboveConverted = $this->priceService->convert($freeAbove);
+        $merchantItemsTotal = $freeShippingInfo['items_total'];
+        $merchantItemsTotalConverted = $this->priceService->convert($merchantItemsTotal);
 
         // Get the API response (already has converted prices)
         $apiResponse = $this->getTryotoOptions($request);
@@ -251,7 +311,7 @@ class ShippingApiController extends Controller
             'weight' => $data['weight'],
             'curr' => $curr,
             'freeAbove' => $freeAboveConverted,
-            'merchantItemsTotal' => $merchantCatalogitemsTotalConverted,
+            'merchantItemsTotal' => $merchantItemsTotalConverted,
         ])->render();
 
         return response()->json([
@@ -261,29 +321,36 @@ class ShippingApiController extends Controller
     }
 
     /**
-     * Get free shipping info for merchant
+     * Get free shipping info for merchant from cart items (NEW FORMAT)
+     *
+     * Note: Tryoto shipping record can be:
+     * - user_id = merchantId (merchant's own Tryoto)
+     * - user_id = 0, operator = merchantId (platform-provided Tryoto)
      */
-    protected function getFreeShippingInfo(int $merchantId, $cart): array
+    protected function getFreeShippingInfoFromItems(int $merchantId, array $cartItems): array
     {
         // Get free_above from shippings table for tryoto provider
-        $merchantTryotoShipping = \App\Models\Shipping::where('user_id', $merchantId)
-            ->where('provider', 'tryoto')
+        // Check both merchant's own AND platform-provided
+        $tryotoShipping = \App\Models\Shipping::where('provider', 'tryoto')
+            ->where('status', 1)
+            ->where(function ($q) use ($merchantId) {
+                $q->where('user_id', $merchantId)
+                  ->orWhere(function ($q2) use ($merchantId) {
+                      $q2->where('user_id', 0)
+                         ->where('operator', $merchantId);
+                  });
+            })
             ->first();
 
-        $freeAbove = $merchantTryotoShipping ? (float)$merchantTryotoShipping->free_above : 0;
+        $freeAbove = $tryotoShipping ? (float)$tryotoShipping->free_above : 0;
 
-        // Calculate merchant's items total from cart
-        // NOTE: $item['price'] in cart is ALREADY (unit_price * qty), don't multiply again!
+        // ✅ تحديد ملكية Tryoto (للحسابات المالية)
+        $isPlatformProvided = $tryotoShipping && (int)$tryotoShipping->user_id === 0;
+
+        // Calculate items total from cart
         $itemsTotal = 0;
-        if ($cart && !empty($cart->items)) {
-            foreach ($cart->items as $item) {
-                $itemMerchantId = data_get($item, 'item.user_id') ?? data_get($item, 'item.merchant_user_id') ?? data_get($item, 'user_id') ?? 0;
-                if ($itemMerchantId == $merchantId) {
-                    // price in cart is already (unit_price * qty) - just add it directly
-                    $price = (float)($item['price'] ?? 0);
-                    $itemsTotal += $price;
-                }
-            }
+        foreach ($cartItems as $item) {
+            $itemsTotal += (float)($item['total_price'] ?? 0);
         }
 
         // Free shipping if subtotal MEETS OR EXCEEDS free_above threshold
@@ -293,6 +360,10 @@ class ShippingApiController extends Controller
             'free_above' => round($freeAbove, 2),
             'items_total' => round($itemsTotal, 2),
             'qualifies' => $qualifiesFree,
+            // ✅ للحسابات المالية
+            'is_platform_provided' => $isPlatformProvided,
+            'owner_user_id' => $isPlatformProvided ? 0 : $merchantId,
+            'shipping_id' => $tryotoShipping?->id,
         ];
     }
 
@@ -591,6 +662,9 @@ class ShippingApiController extends Controller
         $totalQty = 0;
         $totalWeight = 0;
         $totalPrice = 0;
+        $maxLength = 0;
+        $maxHeight = 0;
+        $maxWidth = 0;
 
         foreach ($cartItems as $key => $item) {
             // NEW FORMAT ONLY - Required fields
@@ -602,22 +676,43 @@ class ShippingApiController extends Controller
             }
 
             $qty = (int)$item['qty'];
-            $weight = (float)($item['weight'] ?? 0); // weight is optional
+            $weight = (float)($item['weight'] ?? 0);
             $price = (float)$item['total_price'];
+
+            // Track dimensions (use max of all items)
+            $length = (float)($item['length'] ?? 0);
+            $height = (float)($item['height'] ?? 0);
+            $width = (float)($item['width'] ?? 0);
 
             $totalQty += $qty;
             $totalWeight += ($weight * $qty);
             $totalPrice += $price;
-        }
 
-        // Weight fallback: if no weight specified, use 0.5kg per item
-        // This is a business rule, not a data fallback
-        if ($totalWeight <= 0 && $totalQty > 0) {
-            $totalWeight = $totalQty * 0.5;
+            // Keep max dimensions
+            $maxLength = max($maxLength, $length);
+            $maxHeight = max($maxHeight, $height);
+            $maxWidth = max($maxWidth, $width);
         }
 
         if ($totalQty <= 0) {
             throw new \RuntimeException("Cart has no items for merchant {$merchantId}");
+        }
+
+        // NO FALLBACK - Weight must come from cart explicitly
+        if ($totalWeight <= 0) {
+            throw new \RuntimeException(
+                "Cart items have no weight. Please re-add items to cart. Merchant: {$merchantId}"
+            );
+        }
+
+        // Build dimensions array only if we have real dimensions
+        $dimensions = [];
+        if ($maxLength > 0 && $maxHeight > 0 && $maxWidth > 0) {
+            $dimensions = [
+                'length' => round($maxLength, 2),
+                'height' => round($maxHeight, 2),
+                'width' => round($maxWidth, 2),
+            ];
         }
 
         return [
@@ -626,6 +721,7 @@ class ShippingApiController extends Controller
             'total_qty' => $totalQty,
             'total_weight' => round($totalWeight, 2),
             'total_price' => round($totalPrice, 2),
+            'dimensions' => $dimensions,
             'merchant_id' => $merchantId,
         ];
     }

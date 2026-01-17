@@ -188,6 +188,12 @@ class MerchantCartManager
             'whole_sell_qty' => $this->parseToArray($merchantItem->whole_sell_qty),
             'whole_sell_discount' => $this->parseToArray($merchantItem->whole_sell_discount),
 
+            // Shipping (from CatalogItem)
+            'weight' => (float) ($catalogItem->weight ?? 0),
+            'length' => (float) ($catalogItem->length ?? 0),
+            'height' => (float) ($catalogItem->height ?? 0),
+            'width' => (float) ($catalogItem->width ?? 0),
+
             // Timestamp
             'added_at' => now()->toDateTimeString(),
         ];

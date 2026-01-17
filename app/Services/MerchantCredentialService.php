@@ -160,18 +160,76 @@ class MerchantCredentialService
     }
 
     /**
-     * Get merchant's Tryoto refresh token - NO FALLBACK
+     * Get Tryoto refresh token for merchant
      *
      * MARKETPLACE POLICY:
-     * - Merchant MUST have their own shipping credentials
-     * - NO FALLBACK to system credentials for shipping operations
+     * 1. First check if merchant has their own Tryoto credentials
+     * 2. If not, check if merchant uses platform-provided Tryoto shipping
+     *    (shippings table: user_id = 0, operator = merchantId)
+     * 3. If platform-provided, use platform credentials (user_id = 0)
      *
      * @param int $userId Merchant user ID
      * @return string|null Refresh token or null if not configured
      */
     public function getTryotoRefreshToken(int $userId): ?string
     {
-        return $this->getMerchantOnly($userId, 'tryoto', 'refresh_token');
+        // 1. Check merchant's own credentials first
+        $merchantToken = $this->getMerchantOnly($userId, 'tryoto', 'refresh_token');
+        if (!empty($merchantToken)) {
+            return $merchantToken;
+        }
+
+        // 2. Check if merchant uses platform-provided Tryoto shipping
+        $platformShipping = \DB::table('shippings')
+            ->where('provider', 'tryoto')
+            ->where('user_id', 0)
+            ->where('operator', $userId)
+            ->where('status', 1)
+            ->exists();
+
+        if ($platformShipping) {
+            // 3. Use platform credentials (user_id = 0)
+            return $this->getMerchantOnly(0, 'tryoto', 'refresh_token');
+        }
+
+        return null;
+    }
+
+    /**
+     * Get credential owner for Tryoto (for financial tracking)
+     *
+     * @param int $merchantId Merchant user ID
+     * @return array ['owner_user_id' => 0|merchantId, 'is_platform_provided' => bool]
+     */
+    public function getTryotoCredentialOwner(int $merchantId): array
+    {
+        // Check merchant's own credentials
+        if ($this->hasOwnCredential($merchantId, 'tryoto', 'refresh_token')) {
+            return [
+                'owner_user_id' => $merchantId,
+                'is_platform_provided' => false,
+            ];
+        }
+
+        // Check if using platform credentials
+        $platformShipping = \DB::table('shippings')
+            ->where('provider', 'tryoto')
+            ->where('user_id', 0)
+            ->where('operator', $merchantId)
+            ->where('status', 1)
+            ->exists();
+
+        if ($platformShipping && $this->hasOwnCredential(0, 'tryoto', 'refresh_token')) {
+            return [
+                'owner_user_id' => 0,
+                'is_platform_provided' => true,
+            ];
+        }
+
+        return [
+            'owner_user_id' => null,
+            'is_platform_provided' => false,
+        ];
     }
 
     /**

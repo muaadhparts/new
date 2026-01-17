@@ -34,20 +34,29 @@
                             @csrf
                             @method('PUT')
 
-                            {{-- Merchant Info (Read Only) --}}
+                            {{-- Owner Info (Read Only) --}}
                             <div class="row justify-content-center">
                                 <div class="col-lg-4">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Merchant') }}</h4>
+                                        <h4 class="heading">{{ __('Owner') }}</h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    <div class="alert alert-light border">
-                                        <i class="fas fa-store me-2"></i>
-                                        <strong>{{ $credential->user->shop_name ?: $credential->user->name }}</strong>
-                                        <br>
-                                        <small class="text-muted">ID: {{ $credential->user_id }}</small>
-                                    </div>
+                                    @if($credential->user_id == 0)
+                                        <div class="alert alert-info border">
+                                            <i class="fas fa-building me-2"></i>
+                                            <strong>{{ __('Platform (Operator)') }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ __('Shared API - Can be used by merchants via shipping/payment settings') }}</small>
+                                        </div>
+                                    @else
+                                        <div class="alert alert-light border">
+                                            <i class="fas fa-store me-2"></i>
+                                            <strong>{{ $credential->user?->shop_name ?: $credential->user?->name ?: 'N/A' }}</strong>
+                                            <br>
+                                            <small class="text-muted">ID: {{ $credential->user_id }}</small>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 

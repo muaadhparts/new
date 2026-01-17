@@ -257,6 +257,9 @@ class MerchantCheckoutService
                 'shipping_cost' => 0,
                 'original_shipping_cost' => 0,
                 'is_free_shipping' => false,
+                // ✅ المندوب يتبع المنصة دائماً → المبلغ للمنصة
+                'is_platform_provided' => true,
+                'owner_user_id' => 0,
             ]);
         } else {
             // Regular shipping
@@ -270,8 +273,21 @@ class MerchantCheckoutService
                 $isFree = ($input['shipping_is_free'] ?? '0') === '1';
                 $shippingName = $input['shipping_name'] ?? ucfirst($shippingProvider);
 
+                // ✅ API shipping ownership - lookup from database using shipping_id
+                $shippingId = $input['shipping_id'] ?? '';
+                $isPlatformProvided = false;
+                $ownerUserId = $merchantId;
+
+                if (is_numeric($shippingId) && (int)$shippingId > 0) {
+                    $shippingRecord = Shipping::find((int)$shippingId);
+                    if ($shippingRecord) {
+                        $isPlatformProvided = (int)$shippingRecord->user_id === 0;
+                        $ownerUserId = $isPlatformProvided ? 0 : (int)$shippingRecord->user_id;
+                    }
+                }
+
                 $shippingData = array_merge($shippingData, [
-                    'shipping_id' => $input['shipping_id'] ?? '',
+                    'shipping_id' => $shippingId,
                     'shipping_provider' => $shippingProvider,
                     'shipping_name' => $shippingName,
                     'shipping_cost' => $isFree ? 0 : $shippingCost,
@@ -280,15 +296,31 @@ class MerchantCheckoutService
                     'courier_id' => 0,
                     'courier_name' => null,
                     'courier_fee' => 0,
+                    // ✅ للحسابات المالية
+                    'is_platform_provided' => $isPlatformProvided,
+                    'owner_user_id' => $ownerUserId,
                 ]);
             } else {
                 // For database shipping methods
+                $shippingId = (int)($input['shipping_id'] ?? 0);
                 $shippingInfo = $this->priceCalculator->calculateShippingCost(
-                    (int)($input['shipping_id'] ?? 0),
+                    $shippingId,
                     $cartSummary['total_price']
                 );
                 // Use name from form if provided, otherwise from database
                 $shippingName = !empty($input['shipping_name']) ? $input['shipping_name'] : $shippingInfo['shipping_name'];
+
+                // ✅ Database shipping ownership
+                $isPlatformProvided = false;
+                $ownerUserId = $merchantId;
+
+                if ($shippingId > 0) {
+                    $shippingRecord = Shipping::find($shippingId);
+                    if ($shippingRecord) {
+                        $isPlatformProvided = (int)$shippingRecord->user_id === 0;
+                        $ownerUserId = $isPlatformProvided ? 0 : (int)$shippingRecord->user_id;
+                    }
+                }
 
                 $shippingData = array_merge($shippingData, [
                     'shipping_id' => $shippingInfo['shipping_id'],
@@ -300,25 +332,39 @@ class MerchantCheckoutService
                     'courier_id' => 0,
                     'courier_name' => null,
                     'courier_fee' => 0,
+                    // ✅ للحسابات المالية
+                    'is_platform_provided' => $isPlatformProvided,
+                    'owner_user_id' => $ownerUserId,
                 ]);
             }
         }
 
         // Packaging - use name from form if provided, otherwise lookup from database
+        // Note: packages table has no 'operator' column - packaging always belongs to merchant
         $packingId = (int)($input['packing_id'] ?? 0);
         $packingName = $input['packing_name'] ?? null;
         $packingCost = 0;
+        $packingOwnerUserId = $merchantId;
 
         if ($packingId > 0) {
             $packingInfo = $this->priceCalculator->calculatePackingCost($packingId);
             $packingName = !empty($packingName) ? $packingName : $packingInfo['packing_name'];
             $packingCost = $packingInfo['packing_cost'];
+
+            // Get owner from database
+            $packingRecord = Package::find($packingId);
+            if ($packingRecord) {
+                $packingOwnerUserId = (int)$packingRecord->user_id;
+            }
         }
 
         $shippingData = array_merge($shippingData, [
             'packing_id' => $packingId,
             'packing_name' => $packingName,
             'packing_cost' => $packingCost,
+            // ✅ التغليف دائماً يتبع التاجر (لا يوجد عمود operator)
+            'packing_is_platform_provided' => false,
+            'packing_owner_user_id' => $packingOwnerUserId,
         ]);
 
         // Get discount if any
@@ -421,10 +467,23 @@ class MerchantCheckoutService
 
     /**
      * Get merchant shipping options grouped by provider
+     *
+     * Includes:
+     * 1. Merchant's own shipping (user_id = merchantId)
+     * 2. Platform-provided shipping for this merchant (user_id = 0, operator = merchantId)
      */
     protected function getMerchantShippingOptions(int $merchantId, float $itemsTotal): array
     {
-        $shipping = Shipping::where('user_id', $merchantId)
+        $shipping = Shipping::where(function ($q) use ($merchantId) {
+                // التاجر يملك هذا الشحن
+                $q->where('user_id', $merchantId)
+                  // أو المنصة وفرت هذا الشحن للتاجر
+                  ->orWhere(function ($q2) use ($merchantId) {
+                      $q2->where('user_id', 0)
+                         ->where('operator', $merchantId);
+                  });
+            })
+            ->where('status', 1)
             ->orderBy('provider')
             ->orderBy('price')
             ->get();
@@ -442,6 +501,12 @@ class MerchantCheckoutService
 
             // ✅ Use integration_type to determine if API provider
             $isApiProvider = $integrationType === 'api';
+
+            // ✅ تحديد ملكية الشحن (للحسابات المالية)
+            // user_id > 0 → التاجر يملك الشحن → المبلغ للتاجر
+            // user_id = 0 → المنصة وفرت الشحن → المبلغ للمنصة
+            $isPlatformProvided = (int)$s->user_id === 0;
+            $ownerUserId = $isPlatformProvided ? 0 : (int)$s->user_id;
 
             if (!isset($grouped[$provider])) {
                 $grouped[$provider] = [
@@ -461,10 +526,13 @@ class MerchantCheckoutService
                     'name' => $s->name,
                     'subname' => $s->subname,
                     'price' => round((float)$s->price, 2),
-                    'original_price' => round((float)$s->price, 2), // For display
-                    'chargeable_price' => $isFree ? 0 : round((float)$s->price, 2), // What customer pays
+                    'original_price' => round((float)$s->price, 2),
+                    'chargeable_price' => $isFree ? 0 : round((float)$s->price, 2),
                     'free_above' => $freeAbove,
                     'is_free' => $isFree,
+                    // ✅ للحسابات المالية
+                    'is_platform_provided' => $isPlatformProvided,
+                    'owner_user_id' => $ownerUserId,
                 ];
             }
         }
@@ -502,6 +570,9 @@ class MerchantCheckoutService
 
     /**
      * Get merchant packaging options
+     *
+     * Note: packages table has no 'operator' column
+     * Only merchant's own packaging is available (user_id = merchantId)
      */
     protected function getMerchantPackagingOptions(int $merchantId): array
     {
@@ -509,12 +580,17 @@ class MerchantCheckoutService
             ->orderBy('price')
             ->get();
 
-        return $packages->map(fn($p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'subname' => $p->subname,
-            'price' => round((float)$p->price, 2),
-        ])->toArray();
+        return $packages->map(function ($p) {
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'subname' => $p->subname,
+                'price' => round((float)$p->price, 2),
+                // ✅ التغليف دائماً يتبع التاجر
+                'is_platform_provided' => false,
+                'owner_user_id' => (int)$p->user_id,
+            ];
+        })->toArray();
     }
 
     /**
@@ -613,6 +689,9 @@ class MerchantCheckoutService
                 'city_name' => $sa->city->name ?? '',
                 'merchant_location_id' => $nearestMerchantLocation->id,
                 'distance_to_customer' => round($distanceToCustomer, 1),
+                // ✅ المندوب يتبع المنصة دائماً → المبلغ للمنصة
+                'is_platform_provided' => true,
+                'owner_user_id' => 0,
             ];
 
             \Log::debug('getCourierOptions: Courier available', [
@@ -658,21 +737,47 @@ class MerchantCheckoutService
 
     /**
      * Get merchant payment methods
+     *
+     * Includes:
+     * 1. Merchant's own payment methods (user_id = merchantId)
+     * 2. Platform-provided payment methods for this merchant (user_id = 0, operator = merchantId)
+     *
+     * Financial flow:
+     * - Merchant's payment → money goes to merchant
+     * - Platform's payment → money goes to platform (settled later)
      */
     protected function getMerchantPaymentMethods(int $merchantId): array
     {
-        $payments = MerchantPayment::where('user_id', $merchantId)
+        $payments = MerchantPayment::where(function ($q) use ($merchantId) {
+                // التاجر يملك هذه البوابة
+                $q->where('user_id', $merchantId)
+                  // أو المنصة وفرت هذه البوابة للتاجر
+                  ->orWhere(function ($q2) use ($merchantId) {
+                      $q2->where('user_id', 0)
+                         ->where('operator', $merchantId);
+                  });
+            })
             ->where('checkout', 1)
+            ->where('status', 1)
             ->get();
 
-        return $payments->map(fn($p) => [
-            'id' => $p->id,
-            'keyword' => $p->keyword,
-            'name' => $p->name ?? $p->name,
-            'subname' => $p->subname,
-            'type' => $p->type,
-            'show_form' => $p->showForm(),
-        ])->toArray();
+        return $payments->map(function ($p) {
+            // ✅ تحديد ملكية بوابة الدفع (للحسابات المالية)
+            $isPlatformProvided = (int)$p->user_id === 0;
+            $ownerUserId = $isPlatformProvided ? 0 : (int)$p->user_id;
+
+            return [
+                'id' => $p->id,
+                'keyword' => $p->keyword,
+                'name' => $p->name,
+                'subname' => $p->subname,
+                'type' => $p->type,
+                'show_form' => $p->showForm(),
+                // ✅ للحسابات المالية
+                'is_platform_provided' => $isPlatformProvided,
+                'owner_user_id' => $ownerUserId,
+            ];
+        })->toArray();
     }
 
     /**
