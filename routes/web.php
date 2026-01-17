@@ -1549,46 +1549,133 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/reply/delete/{id}', 'Front\CatalogItemDetailsController@replydelete')->name('catalog-item.reply.delete');
     // REPLY SECTION ENDS
 
-    // ============ UNIFIED CART SYSTEM (v3) ============
-    // Single endpoint for ALL cart add operations
-    // Uses merchant_item_id EXCLUSIVELY - NO fallbacks
-    Route::post('/cart/unified', 'Front\CartMerchantController@unifiedAdd')->name('cart.unified.add');
-    Route::get('/cart/unified', 'Front\CartMerchantController@unifiedAdd')->name('cart.unified.add.get'); // For legacy GET requests
+    // ============ OLD CART ROUTES (REDIRECTS TO v4) ============
+    // These routes are kept for backwards compatibility
+    // All redirect to the new merchant-cart system
 
-    // CART SECTION
-    Route::get('/carts/view', 'Front\CartMerchantController@cartview');
-    Route::get('/carts', 'Front\CartMerchantController@cart')->name('front.cart');
+    // Old cart page redirects to new
+    Route::get('/carts', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('front.cart');
+    Route::get('/carts/view', function() {
+        return redirect()->route('merchant-cart.index');
+    });
 
-    // Cart summary endpoint (AJAX only)
-    Route::get('/cart/summary', 'Front\CartMerchantController@cartSummary')->name('cart.summary');
+    // Old cart summary redirects to new
+    Route::get('/cart/summary', function() {
+        return redirect()->route('merchant-cart.summary');
+    })->name('cart.summary');
 
-    // Increase/Decrease item quantity
-    Route::post('/cart/increase', 'Front\CartMerchantController@increaseItem')->name('cart.increase');
-    Route::post('/cart/decrease', 'Front\CartMerchantController@decreaseItem')->name('cart.decrease');
-    Route::get('/cart/increase', 'Front\CartMerchantController@increaseItem')->name('cart.increase.get');
-    Route::get('/cart/decrease', 'Front\CartMerchantController@decreaseItem')->name('cart.decrease.get');
+    // Old quantity routes redirect to new (POST only in new system)
+    Route::match(['get', 'post'], '/cart/increase', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('cart.increase');
+    Route::match(['get', 'post'], '/cart/decrease', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('cart.decrease');
+    Route::get('/cart/increase', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('cart.increase.get');
+    Route::get('/cart/decrease', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('cart.decrease.get');
 
-    // Remove item
-    Route::get('/removecart/{id}', 'Front\CartMerchantController@removecart')->name('cart.remove');
+    // Old remove redirects to cart page
+    Route::get('/removecart/{id}', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('cart.remove');
 
-    // ============ CART ADD ROUTES ============
-    // PRIMARY: Use POST /cart/unified with merchant_item_id for all cart additions
-    Route::get('/cart/add/merchant/{merchantItemId}', 'Front\CartMerchantController@addMerchantCart')->name('merchant.cart.add');
+    // Old add routes redirect to cart page (users need to use new add method)
+    Route::get('/cart/add/merchant/{merchantItemId}', function() {
+        return redirect()->route('merchant-cart.index')
+            ->with('info', __('Please use the product page to add items to cart'));
+    })->name('merchant.cart.add');
 
-    // DEPRECATED (return 410 Gone): These routes should NOT be used
-    // All cart add functionality should use POST /cart/unified with merchant_item_id
-    Route::get('/addcart/{id}', 'Front\CartMerchantController@addcart')->name('catalog-item.cart.add');          // DEPRECATED
-    Route::get('/addtocart/{id}', 'Front\CartMerchantController@addtocart')->name('catalog-item.cart.quickadd'); // DEPRECATED
-    Route::get('/addnumcart', 'Front\CartMerchantController@addnumcart')->name('details.cart');             // DEPRECATED
-    Route::get('/addtonumcart', 'Front\CartMerchantController@addtonumcart');                               // DEPRECATED
+    Route::get('/addcart/{id}', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('catalog-item.cart.add');
 
-    // ACTIVE: Cart quantity management routes
-    Route::get('/addbyone', 'Front\CartMerchantController@addbyone');
-    Route::get('/reducebyone', 'Front\CartMerchantController@reducebyone');
-    // ============ END CART ROUTES ============
-    Route::get('/upcolor', 'Front\CartMerchantController@upcolor');
+    Route::get('/addtocart/{id}', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('catalog-item.cart.quickadd');
+
+    Route::get('/addnumcart', function() {
+        return redirect()->route('merchant-cart.index');
+    })->name('details.cart');
+
+    Route::get('/addtonumcart', function() {
+        return redirect()->route('merchant-cart.index');
+    });
+
+    Route::get('/addbyone', function() {
+        return redirect()->route('merchant-cart.index');
+    });
+
+    Route::get('/reducebyone', function() {
+        return redirect()->route('merchant-cart.index');
+    });
+
+    Route::get('/upcolor', function() {
+        return redirect()->route('merchant-cart.index');
+    });
+
+    // Old unified add - redirect to new add endpoint info
+    Route::match(['get', 'post'], '/cart/unified', function() {
+        return response()->json([
+            'success' => false,
+            'message' => 'This endpoint is deprecated. Use POST /merchant-cart/add instead.',
+            'new_endpoint' => route('merchant-cart.add'),
+        ], 410);
+    })->name('cart.unified.add');
+    Route::get('/cart/unified', function() {
+        return response()->json([
+            'success' => false,
+            'message' => 'This endpoint is deprecated. Use POST /merchant-cart/add instead.',
+        ], 410);
+    })->name('cart.unified.add.get');
+
+    // Discount code - keep working
     Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');
-    // CART SECTION ENDS
+    // ============ END OLD CART ROUTES ============
+
+    // ============ NEW MERCHANT CART SYSTEM (v4) ============
+    // Clean, unified cart API - replaces all old cart routes
+    // Uses: App\Http\Controllers\Front\MerchantCartController
+    // Service: App\Services\Cart\MerchantCartManager
+    Route::prefix('merchant-cart')->name('merchant-cart.')->group(function () {
+        // Cart page view
+        Route::get('/', 'Front\MerchantCartController@index')->name('index');
+
+        // Cart summary (AJAX)
+        Route::get('/summary', 'Front\MerchantCartController@summary')->name('summary');
+
+        // Cart count (for header badge)
+        Route::get('/count', 'Front\MerchantCartController@count')->name('count');
+
+        // Add item to cart
+        Route::post('/add', 'Front\MerchantCartController@add')->name('add');
+
+        // Update item quantity
+        Route::post('/update', 'Front\MerchantCartController@update')->name('update');
+
+        // Increase/Decrease quantity
+        Route::post('/increase', 'Front\MerchantCartController@increase')->name('increase');
+        Route::post('/decrease', 'Front\MerchantCartController@decrease')->name('decrease');
+
+        // Remove item
+        Route::delete('/remove/{key}', 'Front\MerchantCartController@remove')->name('remove');
+        Route::post('/remove', 'Front\MerchantCartController@remove')->name('remove.post'); // For JS without DELETE support
+
+        // Clear cart
+        Route::post('/clear', 'Front\MerchantCartController@clear')->name('clear');
+
+        // Validate cart (check stock, prices)
+        Route::get('/validate', 'Front\MerchantCartController@validateCart')->name('validate');
+
+        // Refresh cart (update prices, remove invalid items)
+        Route::post('/refresh', 'Front\MerchantCartController@refresh')->name('refresh');
+    });
+    // ============ END NEW MERCHANT CART SYSTEM ============
 
     // FAVORITE SECTION
     Route::middleware('auth')->group(function () {

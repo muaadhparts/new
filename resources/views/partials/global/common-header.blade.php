@@ -243,14 +243,26 @@
                         </div>
 
                         <div class="header-cart-1">
-                            <a href="{{ route('front.cart') }}" class="cart has-cart-data" name="View Cart">
+                            @php
+                                // Get cart count from new system, fallback to old systems
+                                $headerCartCount = 0;
+                                if (Session::has('merchant_cart')) {
+                                    $merchantCart = Session::get('merchant_cart');
+                                    $headerCartCount = $merchantCart['totals']['qty'] ?? count($merchantCart['items'] ?? []);
+                                } elseif (Session::has('cart_v2')) {
+                                    $cartV2 = Session::get('cart_v2');
+                                    $headerCartCount = $cartV2['totalQty'] ?? count($cartV2['items'] ?? []);
+                                } elseif (Session::has('cart')) {
+                                    $oldCart = Session::get('cart');
+                                    $headerCartCount = is_object($oldCart) ? count($oldCart->items ?? []) : 0;
+                                }
+                            @endphp
+                            <a href="{{ route('merchant-cart.index') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
-                                        class="header-cart-count" id="cart-count1">{{ Session::has('cart') ?
-                                        count(Session::get('cart')->items) : '0' }}</span></div>
+                                        class="header-cart-count" id="cart-count1">{{ $headerCartCount }}</span></div>
                                 <div class="cart-wrap">
                                     <div class="cart-text">@lang('Cart')</div>
-                                    <span class="header-cart-count">{{ Session::has('cart') ?
-                                        count(Session::get('cart')->items) : '0' }}</span>
+                                    <span class="header-cart-count">{{ $headerCartCount }}</span>
                                 </div>
                             </a>
                             @include('load.merchant-cart')
@@ -415,14 +427,28 @@
                             </a>
                         </div>
                         <div class="header-cart-1">
-                            <a href="{{ route('front.cart') }}" class="cart has-cart-data" name="View Cart">
+                            @php
+                                // Reuse $headerCartCount from earlier if available, otherwise recalculate
+                                if (!isset($headerCartCount)) {
+                                    $headerCartCount = 0;
+                                    if (Session::has('merchant_cart')) {
+                                        $merchantCart = Session::get('merchant_cart');
+                                        $headerCartCount = $merchantCart['totals']['qty'] ?? count($merchantCart['items'] ?? []);
+                                    } elseif (Session::has('cart_v2')) {
+                                        $cartV2 = Session::get('cart_v2');
+                                        $headerCartCount = $cartV2['totalQty'] ?? count($cartV2['items'] ?? []);
+                                    } elseif (Session::has('cart')) {
+                                        $oldCart = Session::get('cart');
+                                        $headerCartCount = is_object($oldCart) ? count($oldCart->items ?? []) : 0;
+                                    }
+                                }
+                            @endphp
+                            <a href="{{ route('merchant-cart.index') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
-                                        class="header-cart-count" id="cart-count">{{ Session::has('cart') ?
-                                        count(Session::get('cart')->items) : '0' }}</span></div>
+                                        class="header-cart-count" id="cart-count">{{ $headerCartCount }}</span></div>
                                 <div class="cart-wrap">
-                                    <div class="cart-text">Cart</div>
-                                    <span class="header-cart-count">{{ Session::has('cart') ?
-                                        count(Session::get('cart')->items) : '0' }}</span>
+                                    <div class="cart-text">@lang('Cart')</div>
+                                    <span class="header-cart-count">{{ $headerCartCount }}</span>
                                 </div>
                             </a>
                             @include('load.merchant-cart')
