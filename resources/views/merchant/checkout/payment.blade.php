@@ -9,7 +9,7 @@
                     <h2 class="breadcrumb-name">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
+                        <li><a href="{{ route('merchant-cart.index') }}">@lang('Merchant Cart')</a></li>
                         <li>@lang('Payment')</li>
                     </ul>
                 </div>

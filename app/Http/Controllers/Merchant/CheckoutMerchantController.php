@@ -55,7 +55,7 @@ class CheckoutMerchantController extends Controller
             if (request()->wantsJson()) {
                 return response()->json($result, 400);
             }
-            return redirect()->route('front.cart')
+            return redirect()->route('merchant-cart.index')
                 ->with('unsuccess', $result['message'] ?? __('Unable to proceed to checkout'));
         }
 
@@ -283,7 +283,7 @@ class CheckoutMerchantController extends Controller
                     ->with('unsuccess', $result['message'] ?? __('Please complete previous steps'));
             }
 
-            return redirect()->route('front.cart')
+            return redirect()->route('merchant-cart.index')
                 ->with('unsuccess', $result['message'] ?? __('Unable to proceed'));
         }
 
@@ -371,7 +371,7 @@ class CheckoutMerchantController extends Controller
                     'message' => __('No purchase found'),
                 ], 404);
             }
-            return redirect()->route('front.cart');
+            return redirect()->route('merchant-cart.index');
         }
 
         // Get error message from session if exists
@@ -492,7 +492,7 @@ class CheckoutMerchantController extends Controller
         return response()->json([
             'success' => true,
             'message' => __('Checkout cancelled'),
-            'redirect' => route('front.cart'),
+            'redirect' => route('merchant-cart.index'),
         ]);
     }
 

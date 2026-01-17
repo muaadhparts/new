@@ -9,7 +9,7 @@
                     <h2 class="breadcrumb-name">@lang('Checkout')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('front.cart') }}">@lang('Cart')</a></li>
+                        <li><a href="{{ route('merchant-cart.index') }}">@lang('Merchant Cart')</a></li>
                         <li>@lang('Address')</li>
                     </ul>
                 </div>
@@ -107,7 +107,7 @@
                                         @lang('Continue to Shipping')
                                         <i class="fas fa-arrow-right ms-2"></i>
                                     </button>
-                                    <a href="{{ route('front.cart') }}" class="template-btn dark-outline w-100 mt-2">
+                                    <a href="{{ route('merchant-cart.index') }}" class="template-btn dark-outline w-100 mt-2">
                                         <i class="fas fa-arrow-left me-2"></i>
                                         @lang('Back to Cart')
                                     </a>

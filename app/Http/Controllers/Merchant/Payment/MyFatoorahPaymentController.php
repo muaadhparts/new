@@ -109,12 +109,12 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
 
         // Validate required parameters
         if (!$merchantId || !$paymentId) {
-            return redirect(route('front.cart'))->with('unsuccess', __('Invalid payment response'));
+            return redirect(route('merchant-cart.index'))->with('unsuccess', __('Invalid payment response'));
         }
 
         // Validate paymentId format (alphanumeric with dashes)
         if (!preg_match('/^[a-zA-Z0-9\-]+$/', $paymentId)) {
-            return redirect(route('front.cart'))->with('unsuccess', __('Invalid payment response'));
+            return redirect(route('merchant-cart.index'))->with('unsuccess', __('Invalid payment response'));
         }
 
         $storedInput = $this->getStoredInput($merchantId);

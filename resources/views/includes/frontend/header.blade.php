@@ -130,15 +130,11 @@
                         </span>
                     </a>
 
-                    {{-- Cart --}}
-                    @php
-                        $cart = Session::get('merchant_cart', ['items' => [], 'totals' => ['qty' => 0]]);
-                        $cartCount = (int) ($cart['totals']['qty'] ?? 0);
-                    @endphp
+                    {{-- Merchant Cart --}}
                     <a href="{{ route('merchant-cart.index') }}" class="muaadh-action-btn muaadh-cart-btn">
                         <i class="fas fa-shopping-cart"></i>
-                        <span class="muaadh-badge" id="cart-count">{{ $cartCount }}</span>
-                        <span class="muaadh-action-label d-none d-md-block">@lang('Cart')</span>
+                        <span class="muaadh-badge" id="cart-count">{{ $merchantCartCount }}</span>
+                        <span class="muaadh-action-label d-none d-md-block">@lang('Merchant Cart')</span>
                     </a>
                 </div>
             </div>

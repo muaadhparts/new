@@ -1,15 +1,18 @@
 {{--
     =====================================================================
-    MERCHANT CART PAGE - v4 (Clean Implementation)
+    MERCHANT CART PAGE - v4.1 (Per-Merchant Summary)
     =====================================================================
     Controller: App\Http\Controllers\Front\MerchantCartController@index
     Service: App\Services\Cart\MerchantCartManager
 
     Variables passed:
-    - $cart: Full cart data
-    - $byMerchant: Items grouped by merchant
-    - $issues: Validation issues (stock, price changes, etc.)
+    - $byMerchant: Items grouped by merchant (each with items + totals)
     - $isEmpty: Whether cart is empty
+
+    Architecture: Each merchant has their own complete section with:
+    - Items list
+    - Per-merchant summary
+    - Per-merchant checkout button
     =====================================================================
 --}}
 @extends('layouts.front')
@@ -21,10 +24,10 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-name">@lang('Cart')</h2>
+                    <h2 class="breadcrumb-name">@lang('Merchant Cart')</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="{{ route('merchant-cart.index') }}">@lang('Cart')</a></li>
+                        <li><a href="{{ route('merchant-cart.index') }}">@lang('Merchant Cart')</a></li>
                     </ul>
                 </div>
             </div>
@@ -38,89 +41,133 @@
                 {{-- Empty Cart --}}
                 @include('merchant.cart.partials.empty')
             @else
-                {{-- Cart has issues notification --}}
-                @if (!empty($issues))
-                    <div class="m-alert m-alert--warning mb-4" id="cart-issues-alert">
-                        <i class="fas fa-exclamation-triangle"></i>
-                        <span>@lang('Some items in your cart have issues. Please review before checkout.')</span>
-                        <button type="button" class="m-alert__close" onclick="this.parentElement.remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                @endif
-
-                <div class="row">
-                    {{-- Cart Items --}}
-                    <div class="col-lg-8">
-                        @foreach ($byMerchant as $merchantId => $merchantGroup)
-                            <div class="m-cart__merchant" data-merchant-id="{{ $merchantId }}">
-                                {{-- Merchant Header --}}
-                                <div class="m-cart__merchant-header">
-                                    <div class="m-cart__merchant-info">
-                                        <i class="fas fa-store"></i>
-                                        @php
-                                            $merchantName = app()->getLocale() === 'ar' && !empty($merchantGroup['merchant_name_ar'])
-                                                ? $merchantGroup['merchant_name_ar']
-                                                : ($merchantGroup['merchant_name'] ?? __('Merchant'));
-                                        @endphp
-                                        <span class="m-cart__merchant-name">{{ $merchantName }}</span>
-                                        <span class="m-cart__merchant-count">
-                                            <span class="count-value">{{ $merchantGroup['qty'] ?? 0 }}</span> @lang('Items')
-                                        </span>
-                                    </div>
-                                    <div class="m-cart__merchant-actions">
-                                        <a href="{{ route('merchant.checkout.index', ['merchantId' => $merchantId]) }}"
-                                           class="m-btn m-btn--primary m-btn--sm">
-                                            <i class="fas fa-shopping-bag me-1"></i>
-                                            @lang('Checkout')
-                                        </a>
-                                    </div>
-                                </div>
-
-                                {{-- Items Table --}}
-                                <div class="m-cart__body">
-                                    {{-- Table Header (Desktop) --}}
-                                    <div class="m-cart__table-header d-none d-lg-flex">
-                                        <div class="m-cart__col m-cart__col--product">@lang('Item')</div>
-                                        <div class="m-cart__col m-cart__col--price">@lang('Price')</div>
-                                        <div class="m-cart__col m-cart__col--qty">@lang('Quantity')</div>
-                                        <div class="m-cart__col m-cart__col--total">@lang('Total')</div>
-                                        <div class="m-cart__col m-cart__col--actions"></div>
+                {{-- Each Merchant = Complete Section with Items + Summary + Checkout --}}
+                @foreach ($byMerchant as $merchantId => $merchantGroup)
+                    <div class="m-cart__merchant-section" data-merchant-id="{{ $merchantId }}">
+                        <div class="row">
+                            {{-- Items Column --}}
+                            <div class="col-lg-8">
+                                <div class="m-cart__merchant">
+                                    {{-- Merchant Header --}}
+                                    <div class="m-cart__merchant-header">
+                                        <div class="m-cart__merchant-info">
+                                            <i class="fas fa-store"></i>
+                                            <span class="m-cart__merchant-name">{{ $merchantGroup['merchant_name'] ?? __('Merchant') }}</span>
+                                            <span class="m-cart__merchant-count">
+                                                <span class="count-value">{{ $merchantGroup['totals']['qty'] ?? 0 }}</span> @lang('Items')
+                                            </span>
+                                        </div>
                                     </div>
 
-                                    {{-- Items --}}
-                                    <div class="m-cart__items" id="merchant-items-{{ $merchantId }}">
-                                        @foreach ($merchantGroup['items'] as $key => $item)
-                                            @include('merchant.cart.partials.item', [
-                                                'item' => $item,
-                                                'issue' => $issues[$key] ?? null
-                                            ])
-                                        @endforeach
-                                    </div>
+                                    {{-- Items Table --}}
+                                    <div class="m-cart__body">
+                                        {{-- Table Header (Desktop) --}}
+                                        <div class="m-cart__table-header d-none d-lg-flex">
+                                            <div class="m-cart__col m-cart__col--product">@lang('Item')</div>
+                                            <div class="m-cart__col m-cart__col--price">@lang('Price')</div>
+                                            <div class="m-cart__col m-cart__col--qty">@lang('Quantity')</div>
+                                            <div class="m-cart__col m-cart__col--total">@lang('Total')</div>
+                                            <div class="m-cart__col m-cart__col--actions"></div>
+                                        </div>
 
-                                    {{-- Merchant Subtotal --}}
-                                    <div class="m-cart__merchant-footer">
-                                        <div class="m-cart__merchant-subtotal">
-                                            <span>@lang('Subtotal'):</span>
-                                            <strong class="merchant-subtotal-value">
-                                                {{ monetaryUnit()->convertAndFormat($merchantGroup['subtotal'] ?? 0) }}
-                                            </strong>
+                                        {{-- Items --}}
+                                        <div class="m-cart__items" id="merchant-items-{{ $merchantId }}">
+                                            @foreach ($merchantGroup['items'] as $key => $item)
+                                                @include('merchant.cart.partials.item', [
+                                                    'item' => $item,
+                                                    'issue' => null
+                                                ])
+                                            @endforeach
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
 
-                    {{-- Cart Summary Sidebar --}}
-                    <div class="col-lg-4">
-                        <div class="m-cart__sidebar">
-                            @include('merchant.cart.partials.summary', [
-                                'totals' => $cart['totals'] ?? [],
-                                'merchantId' => count($byMerchant) === 1 ? array_key_first($byMerchant) : null
-                            ])
+                            {{-- Per-Merchant Summary Column --}}
+                            <div class="col-lg-4">
+                                <div class="m-cart__summary" data-merchant-id="{{ $merchantId }}">
+                                    <h4 class="m-cart__summary-title">
+                                        <i class="fas fa-receipt me-2"></i>
+                                        @lang('Summary') - {{ $merchantGroup['merchant_name'] ?? __('Merchant') }}
+                                    </h4>
+
+                                    <div class="m-cart__summary-rows">
+                                        {{-- Subtotal --}}
+                                        <div class="m-cart__summary-row">
+                                            <span class="m-cart__summary-label">
+                                                @lang('Subtotal') <small>({{ $merchantGroup['totals']['qty'] ?? 0 }} @lang('items'))</small>
+                                            </span>
+                                            <span class="m-cart__summary-value">
+                                                {{ monetaryUnit()->convertAndFormat($merchantGroup['totals']['subtotal'] ?? 0) }}
+                                            </span>
+                                        </div>
+
+                                        {{-- Wholesale Discount (if any) --}}
+                                        @if (($merchantGroup['totals']['discount'] ?? 0) > 0)
+                                            <div class="m-cart__summary-row m-cart__summary-row--discount">
+                                                <span class="m-cart__summary-label">
+                                                    <i class="fas fa-tag"></i> @lang('Wholesale Discount')
+                                                </span>
+                                                <span class="m-cart__summary-value">
+                                                    -{{ monetaryUnit()->convertAndFormat($merchantGroup['totals']['discount']) }}
+                                                </span>
+                                            </div>
+                                        @endif
+
+                                        {{-- Shipping note --}}
+                                        <div class="m-cart__summary-row m-cart__summary-row--info">
+                                            <span class="m-cart__summary-label">
+                                                <i class="fas fa-truck"></i> @lang('Shipping')
+                                            </span>
+                                            <span class="m-cart__summary-value m-cart__summary-value--info">
+                                                @lang('Calculated at checkout')
+                                            </span>
+                                        </div>
+
+                                        {{-- Divider --}}
+                                        <hr class="m-cart__summary-divider">
+
+                                        {{-- Total --}}
+                                        <div class="m-cart__summary-row m-cart__summary-row--total">
+                                            <span class="m-cart__summary-label">@lang('Total')</span>
+                                            <span class="m-cart__summary-value m-cart__summary-value--total">
+                                                {{ monetaryUnit()->convertAndFormat($merchantGroup['totals']['total'] ?? 0) }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {{-- Checkout Button --}}
+                                    <a href="{{ $merchantGroup['checkout_url'] ?? route('merchant.checkout.address', ['merchantId' => $merchantId]) }}"
+                                       class="m-btn m-btn--primary m-btn--lg m-btn--block m-cart__checkout-btn">
+                                        <i class="fas fa-lock me-2"></i>
+                                        @lang('Checkout') - {{ $merchantGroup['merchant_name'] ?? __('Merchant') }}
+                                    </a>
+
+                                    {{-- Clear Merchant Items --}}
+                                    <button type="button"
+                                            class="m-btn m-btn--text m-btn--block m-cart__clear-merchant-btn"
+                                            data-action="clear-merchant"
+                                            data-merchant-id="{{ $merchantId }}">
+                                        <i class="fas fa-trash me-2"></i>
+                                        @lang('Remove all items')
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    {{-- Separator between merchants --}}
+                    @if (!$loop->last)
+                        <hr class="m-cart__merchant-separator">
+                    @endif
+                @endforeach
+
+                {{-- Continue Shopping --}}
+                <div class="text-center mt-4">
+                    <a href="{{ route('front.index') }}" class="m-btn m-btn--outline">
+                        <i class="fas fa-arrow-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }} me-2"></i>
+                        @lang('Continue Shopping')
+                    </a>
                 </div>
             @endif
         </div>
@@ -307,6 +354,46 @@
     background: var(--surface-secondary);
     border-radius: var(--radius-sm);
     font-size: 0.75rem;
+}
+
+/* Brand & Quality Brand Badges */
+.m-cart__item-brands {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.25rem;
+    flex-wrap: wrap;
+}
+
+.m-cart__item-brand,
+.m-cart__item-quality {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.m-cart__item-brand {
+    background: var(--info-light, #e7f1ff);
+    color: var(--info-dark, #004085);
+    border: 1px solid var(--info-dark, #b8daff);
+}
+
+.m-cart__item-quality {
+    background: var(--success-light, #d4edda);
+    color: var(--success-dark, #155724);
+    border: 1px solid var(--success-dark, #c3e6cb);
+}
+
+.m-cart__brand-logo,
+.m-cart__quality-logo {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    border-radius: 2px;
 }
 
 .m-cart__item-preorder {
@@ -630,6 +717,26 @@
         position: static;
         margin-top: 1rem;
     }
+}
+
+/* Merchant Section (Per-Merchant Layout) */
+.m-cart__merchant-section {
+    margin-bottom: 2rem;
+}
+
+.m-cart__merchant-separator {
+    border: none;
+    border-top: 2px dashed var(--border-default, #dee2e6);
+    margin: 2rem 0;
+}
+
+.m-cart__clear-merchant-btn {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.m-cart__clear-merchant-btn:hover {
+    color: var(--action-danger);
 }
 
 /* RTL Support */

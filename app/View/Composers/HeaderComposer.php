@@ -3,6 +3,7 @@
 namespace App\View\Composers;
 
 use App\Models\FavoriteSeller;
+use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;
@@ -19,6 +20,10 @@ use Illuminate\View\View;
  */
 class HeaderComposer
 {
+    public function __construct(
+        private MerchantCartManager $cartManager
+    ) {}
+
     public function compose(View $view): void
     {
         $authUser = Auth::guard('web')->check() ? Auth::guard('web')->user() : null;
@@ -33,10 +38,14 @@ class HeaderComposer
             );
         }
 
+        // Cart count from MerchantCartManager (Single Source of Truth)
+        $merchantCartCount = $this->cartManager->getHeaderCount();
+
         $view->with([
             'authUser' => $authUser,
             'courierUser' => $courierUser,
             'favoriteCount' => $favoriteCount,
+            'merchantCartCount' => $merchantCartCount,
         ]);
     }
 

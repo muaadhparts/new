@@ -15,6 +15,18 @@
     $slug = $item['slug'] ?? '';
     $partNumber = $item['part_number'] ?? '';
 
+    // Brand (OEM - نيسان، تويوتا...)
+    $brandName = app()->getLocale() === 'ar' && !empty($item['brand_name_ar'])
+        ? $item['brand_name_ar']
+        : ($item['brand_name'] ?? '');
+    $brandLogo = !empty($item['brand_logo']) ? Storage::url($item['brand_logo']) : null;
+
+    // Quality Brand (أصلي، بديل...)
+    $qualityBrandName = app()->getLocale() === 'ar' && !empty($item['quality_brand_name_ar'])
+        ? $item['quality_brand_name_ar']
+        : ($item['quality_brand_name'] ?? '');
+    $qualityBrandLogo = !empty($item['quality_brand_logo']) ? Storage::url($item['quality_brand_logo']) : null;
+
     // Merchant info
     $merchantId = (int) ($item['merchant_id'] ?? 0);
     $merchantItemId = (int) ($item['merchant_item_id'] ?? 0);
@@ -23,9 +35,18 @@
         : ($item['merchant_name'] ?? '');
 
     // Pricing
-    $unitPrice = (float) ($item['effective_unit_price'] ?? 0);
+    $unitPrice = (float) ($item['effective_price'] ?? $item['unit_price'] ?? 0);
     $totalPrice = (float) ($item['total_price'] ?? 0);
-    $discountPercent = (float) ($item['discount_percent'] ?? 0);
+    $discountPercent = 0.0;
+    // Calculate discount from wholesale if any
+    if (!empty($item['whole_sell_qty']) && !empty($item['whole_sell_discount'])) {
+        $qty = (int) ($item['qty'] ?? 1);
+        foreach ($item['whole_sell_qty'] as $i => $threshold) {
+            if ($qty >= (int) $threshold && isset($item['whole_sell_discount'][$i])) {
+                $discountPercent = (float) $item['whole_sell_discount'][$i];
+            }
+        }
+    }
 
     // Quantity & Stock
     $qty = (int) ($item['qty'] ?? 1);
@@ -77,9 +98,30 @@
             {{ Str::limit($name, 60) }}
         </a>
 
+        {{-- Part Number --}}
         <div class="m-cart__item-meta">
             @if($partNumber)
                 <span class="m-cart__item-part_number">{{ $partNumber }}</span>
+            @endif
+        </div>
+
+        {{-- Brand & Quality Brand Badges --}}
+        <div class="m-cart__item-brands">
+            @if($brandName)
+                <span class="m-cart__item-brand" title="@lang('Brand')">
+                    @if($brandLogo)
+                        <img src="{{ $brandLogo }}" alt="{{ $brandName }}" class="m-cart__brand-logo">
+                    @endif
+                    <span>{{ $brandName }}</span>
+                </span>
+            @endif
+            @if($qualityBrandName)
+                <span class="m-cart__item-quality" title="@lang('Quality')">
+                    @if($qualityBrandLogo)
+                        <img src="{{ $qualityBrandLogo }}" alt="{{ $qualityBrandName }}" class="m-cart__quality-logo">
+                    @endif
+                    <span>{{ $qualityBrandName }}</span>
+                </span>
             @endif
         </div>
 

@@ -30,16 +30,19 @@ class MerchantCartController extends Controller
     /**
      * Cart page - shows all merchants grouped
      * GET /merchant-cart
+     *
+     * Each merchant has their own section with:
+     * - Items list
+     * - Per-merchant totals
+     * - Per-merchant checkout button
      */
     public function index(): View
     {
-        $merchantsCart = $this->cart->getAllMerchantsCart();
-        $isEmpty = !$this->cart->hasItems();
+        $byMerchant = $this->cart->getAllMerchantsCart();
 
         return view('merchant.cart.index', [
-            'merchantsCart' => $merchantsCart,
-            'isEmpty' => $isEmpty,
-            'headerCount' => $this->cart->getHeaderCount(),
+            'byMerchant' => $byMerchant,
+            'isEmpty' => !$this->cart->hasItems(),
         ]);
     }
 

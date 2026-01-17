@@ -60,7 +60,7 @@
     {{-- Checkout Button --}}
     @if(isset($merchantId) && $merchantId > 0)
         {{-- Single Merchant Checkout --}}
-        <a href="{{ route('merchant.checkout.index', ['merchantId' => $merchantId]) }}"
+        <a href="{{ route('merchant.checkout.address', ['merchantId' => $merchantId]) }}"
            class="m-btn m-btn--primary m-btn--lg m-btn--block m-cart__checkout-btn">
             <i class="fas fa-lock me-2"></i>
             @lang('Proceed to Checkout')
@@ -82,7 +82,7 @@
     {{-- Clear Cart --}}
     <button type="button"
             class="m-btn m-btn--text m-btn--block m-cart__clear-btn"
-            id="clear-cart-btn">
+            data-action="clear-all">
         <i class="fas fa-trash me-2"></i>
         @lang('Clear Cart')
     </button>

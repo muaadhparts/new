@@ -125,12 +125,11 @@
             <div class="muaadh-mobile-quick-links">
                 <h6 class="muaadh-mobile-section-name">@lang('Quick Access')</h6>
                 <div class="muaadh-mobile-quick-grid">
-                    <a href="{{ route('front.cart') }}" class="muaadh-mobile-quick-item">
+                    <a href="{{ route('merchant-cart.index') }}" class="muaadh-mobile-quick-item">
                         <i class="fas fa-shopping-cart"></i>
-                        <span>@lang('Cart')</span>
-                        @php $cart = Session::has('cart') ? Session::get('cart')->items : []; @endphp
-                        @if(count($cart) > 0)
-                            <span class="muaadh-mobile-quick-badge">{{ count($cart) }}</span>
+                        <span>@lang('Merchant Cart')</span>
+                        @if($merchantCartCount > 0)
+                            <span class="muaadh-mobile-quick-badge">{{ $merchantCartCount }}</span>
                         @endif
                     </a>
                     <a href="{{ auth()->check() ? route('user-favorites') : route('user.login') }}" class="muaadh-mobile-quick-item">

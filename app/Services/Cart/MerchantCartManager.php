@@ -46,7 +46,7 @@ class MerchantCartManager
         ?string $color = null
     ): array {
         // ═══ التحقق من MerchantItem ═══
-        $merchantItem = MerchantItem::with(['catalogItem', 'user'])->find($merchantItemId);
+        $merchantItem = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])->find($merchantItemId);
 
         if (!$merchantItem) {
             return $this->error(__('الصنف غير موجود'));
@@ -134,6 +134,10 @@ class MerchantCartManager
         $colorPrice = $this->calculateColorPrice($merchantItem, $color);
         $effectivePrice = $unitPrice + $sizePrice + $colorPrice;
 
+        // ═══ استخراج Brand و QualityBrand ═══
+        $brand = $catalogItem->brand;
+        $qualityBrand = $merchantItem->qualityBrand;
+
         $itemData = [
             // Identifiers
             'key' => $cartKey,
@@ -147,6 +151,18 @@ class MerchantCartManager
             'photo' => $catalogItem->photo ?: '',
             'slug' => $catalogItem->slug ?: '',
             'part_number' => $catalogItem->part_number ?: '',
+
+            // Brand (OEM brand - نيسان، تويوتا...)
+            'brand_id' => $brand?->id,
+            'brand_name' => $brand?->name ?: '',
+            'brand_name_ar' => $brand?->name_ar ?: '',
+            'brand_logo' => $brand?->photo ?: '',
+
+            // Quality Brand (أصلي، بديل...)
+            'quality_brand_id' => $qualityBrand?->id,
+            'quality_brand_name' => $qualityBrand?->name_en ?: '',
+            'quality_brand_name_ar' => $qualityBrand?->name_ar ?: '',
+            'quality_brand_logo' => $qualityBrand?->logo ?: '',
 
             // Merchant info
             'merchant_name' => getLocalizedShopName($merchant),
@@ -445,7 +461,7 @@ class MerchantCartManager
 
         foreach ($merchantIds as $merchantId) {
             $merchantCart = $this->getMerchantCart($merchantId);
-            $merchantCart['checkout_url'] = route('front.checkout.merchant', ['merchant' => $merchantId]);
+            $merchantCart['checkout_url'] = route('merchant.checkout.address', ['merchantId' => $merchantId]);
             $result[$merchantId] = $merchantCart;
         }
 

@@ -118,7 +118,7 @@ class SslCommerzPaymentController extends BaseMerchantPaymentController
         $status = $request->input('status');
 
         if (!$merchantId) {
-            return redirect(route('front.cart'))->with('unsuccess', __('Invalid payment response'));
+            return redirect(route('merchant-cart.index'))->with('unsuccess', __('Invalid payment response'));
         }
 
         $storedInput = $this->getStoredInput($merchantId);

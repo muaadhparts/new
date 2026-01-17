@@ -54,12 +54,9 @@ Route::post('/api/stock/refresh', function (\Illuminate\Http\Request $request) {
     ]);
 })->middleware('throttle:5,1')->name('api.stock.refresh'); // Rate limit: 5 requests per minute
 
-// Alias for legacy route name (front.cart -> merchant-cart.index)
-Route::get('/cart', 'Front\MerchantCartController@index')->name('front.cart');
-
-// Legacy quick checkout - redirect to cart
+// Quick checkout - redirect to cart
 Route::get('/checkout/quick', function() {
-    return redirect()->route('front.cart');
+    return redirect()->route('merchant-cart.index');
 })->name('front.checkout.quick');
 
 Route::prefix('modal')->name('modal.')->group(function () {
@@ -180,9 +177,8 @@ Route::prefix('operator')->group(function () {
         Route::get('/send-message', 'Operator\PurchaseController@emailsub')->name('operator-send-message'); // Alias for email modal in user/courier lists
         Route::post('/purchase/catalogItem-submit', 'Operator\PurchaseController@catalogItem_submit')->name('operator-purchase-catalogItem-submit');
         Route::get('/purchase/catalogItem-show/{id}', 'Operator\PurchaseController@catalogItem_show');
-        Route::get('/purchase/addcart/{id}', 'Operator\PurchaseController@addcart');
+        // REMOVED: addcart, updatecart - MerchantCart class deleted
         Route::get('/purchasecart/catalogItem-edit/{id}/{itemid}/{purchaseid}', 'Operator\PurchaseController@catalogItem_edit')->name('operator-purchase-catalogItem-edit');
-        Route::get('/purchase/updatecart/{id}', 'Operator\PurchaseController@updatecart');
         Route::get('/purchasecart/catalogItem-delete/{id}/{purchaseid}', 'Operator\PurchaseController@catalogItem_delete')->name('operator-purchase-catalogItem-delete');
         // Purchase Tracking
 
@@ -194,12 +190,10 @@ Route::prefix('operator')->group(function () {
         Route::get('/purchase/catalog-item/add', 'Operator\PurchaseCreateController@purchaseStore')->name('operator.purchase.store.new');
         Route::get('/purchase/catalog-item/remove/{catalog_item_id}', 'Operator\PurchaseCreateController@removePurchaseCatalogItem')->name('operator.purchase.catalog-item.remove');
         Route::get('/purchase/create/catalog-item-show/{id}', 'Operator\PurchaseCreateController@catalog_item_show');
-        Route::get('/purchase/create/addcart/{id}', 'Operator\PurchaseCreateController@addcart');
-        Route::get('/purchase/remove/addcart/{id}', 'Operator\PurchaseCreateController@removeCart')->name('operator.purchase.remove.cart');
+        // REMOVED: addcart, removecart, CreatePurchaseSubmit - MerchantCart class deleted
         Route::get('/purchase/create/user-address', 'Operator\PurchaseCreateController@userAddress');
         Route::post('/purchase/create/user-address', 'Operator\PurchaseCreateController@userAddressSubmit')->name('operator.purchase.create.user.address');
         Route::post('/purchase/create/purchase/view', 'Operator\PurchaseCreateController@viewCreatePurchase')->name('operator.purchase.create.view');
-        Route::get('/purchase/create/purchase/submit', 'Operator\PurchaseCreateController@CreatePurchaseSubmit')->name('operator-purchase-create-submit');
 
         Route::get('/purchase/{id}/timeline', 'Operator\PurchaseTimelineController@index')->name('operator-purchase-timeline');
         Route::get('/purchase/{id}/timelineload', 'Operator\PurchaseTimelineController@load')->name('operator-purchase-timeline-load');
@@ -1671,13 +1665,13 @@ Route::group(['middleware' => 'maintenance'], function () {
 
     // CHECKOUT SECTION ENDS
 
-    // Legacy routes - redirect to new merchant checkout
+    // Legacy routes - redirect to merchant cart
     Route::get('/payment/checkout', function() {
-        return redirect()->route('front.cart')->with('info', __('Please proceed with checkout from the cart page'));
+        return redirect()->route('merchant-cart.index')->with('info', __('Please proceed with checkout from the cart page'));
     })->name('payment.checkout');
 
     Route::get('/checkout/payment/{slug1}/{slug2}', function() {
-        return redirect()->route('front.cart')->with('info', __('Please proceed with checkout from the cart page'));
+        return redirect()->route('merchant-cart.index')->with('info', __('Please proceed with checkout from the cart page'));
     })->name('front.load.payment');
 
     Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');

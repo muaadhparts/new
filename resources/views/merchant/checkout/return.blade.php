@@ -80,7 +80,7 @@
                                             <i class="fas fa-info-circle me-2"></i>
                                             @lang('You still have items from other merchants in your cart')
                                         </div>
-                                        <a href="{{ route('front.cart') }}" class="m-btn m-btn--warning w-100">
+                                        <a href="{{ route('merchant-cart.index') }}" class="m-btn m-btn--warning w-100">
                                             <i class="fas fa-shopping-cart me-2"></i>@lang('Complete Other Merchants Orders')
                                         </a>
                                     </div>
@@ -106,7 +106,7 @@
                                     <a href="{{ route('merchant.checkout.payment', $merchant_id) }}" class="m-btn m-btn--primary">
                                         <i class="fas fa-redo me-2"></i>@lang('Try Again')
                                     </a>
-                                    <a href="{{ route('front.cart') }}" class="m-btn m-btn--outline">
+                                    <a href="{{ route('merchant-cart.index') }}" class="m-btn m-btn--outline">
                                         <i class="fas fa-shopping-cart me-2"></i>@lang('Back to Cart')
                                     </a>
                                 </div>
@@ -128,7 +128,7 @@
                                     <a href="{{ route('merchant.checkout.payment', $merchant_id) }}" class="m-btn m-btn--primary">
                                         <i class="fas fa-credit-card me-2"></i>@lang('Complete Payment')
                                     </a>
-                                    <a href="{{ route('front.cart') }}" class="m-btn m-btn--outline">
+                                    <a href="{{ route('merchant-cart.index') }}" class="m-btn m-btn--outline">
                                         <i class="fas fa-shopping-cart me-2"></i>@lang('Back to Cart')
                                     </a>
                                 </div>

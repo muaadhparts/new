@@ -102,7 +102,7 @@ class FlutterwavePaymentController extends BaseMerchantPaymentController
         $txRef = $request->query('txref');
 
         if (!$merchantId) {
-            return redirect(route('front.cart'))->with('unsuccess', __('Invalid payment response'));
+            return redirect(route('merchant-cart.index'))->with('unsuccess', __('Invalid payment response'));
         }
 
         if ($request->query('cancelled') === 'true') {

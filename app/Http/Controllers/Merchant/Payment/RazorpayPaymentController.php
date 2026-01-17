@@ -96,7 +96,7 @@ class RazorpayPaymentController extends BaseMerchantPaymentController
         $merchantId = $this->findMerchantByRazorpayOrder($razorpayOrderId);
 
         if (!$merchantId) {
-            return redirect(route('front.cart'))
+            return redirect(route('merchant-cart.index'))
                 ->with('unsuccess', __('Invalid payment response'));
         }
 

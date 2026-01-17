@@ -251,7 +251,7 @@
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
                                         class="header-cart-count" id="cart-count1">{{ $headerCartCount }}</span></div>
                                 <div class="cart-wrap">
-                                    <div class="cart-text">@lang('Cart')</div>
+                                    <div class="cart-text">@lang('Merchant Cart')</div>
                                     <span class="header-cart-count">{{ $headerCartCount }}</span>
                                 </div>
                             </a>
@@ -421,7 +421,7 @@
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
                                         class="header-cart-count" id="cart-count">{{ $headerCartCount }}</span></div>
                                 <div class="cart-wrap">
-                                    <div class="cart-text">@lang('Cart')</div>
+                                    <div class="cart-text">@lang('Merchant Cart')</div>
                                     <span class="header-cart-count">{{ $headerCartCount }}</span>
                                 </div>
                             </a>

@@ -139,7 +139,7 @@ abstract class BaseMerchantPaymentController extends Controller
                 'valid' => false,
                 'error' => 'empty_cart',
                 'message' => __('No items in cart for this merchant'),
-                'redirect' => route('front.cart'),
+                'redirect' => route('merchant-cart.index'),
             ];
         }
 

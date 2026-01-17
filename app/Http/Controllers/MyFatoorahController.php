@@ -17,7 +17,7 @@ class MyFatoorahController extends Controller
      */
     public function index(Request $request)
     {
-        return redirect()->route('front.cart')
+        return redirect()->route('merchant-cart.index')
             ->with('unsuccess', __('Please use the merchant checkout'));
     }
 
@@ -35,7 +35,7 @@ class MyFatoorahController extends Controller
      */
     public function checkout(Request $request)
     {
-        return redirect()->route('front.cart')
+        return redirect()->route('merchant-cart.index')
             ->with('unsuccess', __('Please use the merchant checkout'));
     }
 
