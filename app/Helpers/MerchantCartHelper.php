@@ -7,7 +7,7 @@ use App\Models\CatalogItem;
 use Illuminate\Support\Facades\Session;
 
 /**
- * CartHelper - نظام سلة موحد جديد
+ * MerchantCartHelper - نظام سلة موحد جديد
  *
  * هذا الـ Helper يحل جميع مشاكل السلة القديمة:
  * 1. توحيد cartKey في كل مكان
@@ -16,15 +16,15 @@ use Illuminate\Support\Facades\Session;
  * 4. دعم تعدد التجار
  *
  * الاستخدام:
- * - CartHelper::generateKey($mpId, $size, $color, $values) - توليد مفتاح موحد
- * - CartHelper::addItem($mpId, $qty, $size, $color, $values) - إضافة عنصر
- * - CartHelper::increaseQty($cartKey) - زيادة كمية
- * - CartHelper::decreaseQty($cartKey) - إنقاص كمية
- * - CartHelper::removeItem($cartKey) - حذف عنصر
- * - CartHelper::getCart() - جلب السلة
- * - CartHelper::getItem($cartKey) - جلب عنصر محدد
+ * - MerchantCartHelper::generateKey($mpId, $size, $color, $values) - توليد مفتاح موحد
+ * - MerchantCartHelper::addItem($mpId, $qty, $size, $color, $values) - إضافة عنصر
+ * - MerchantCartHelper::increaseQty($cartKey) - زيادة كمية
+ * - MerchantCartHelper::decreaseQty($cartKey) - إنقاص كمية
+ * - MerchantCartHelper::removeItem($cartKey) - حذف عنصر
+ * - MerchantCartHelper::getCart() - جلب السلة
+ * - MerchantMerchantCartHelper::getItem($cartKey) - جلب عنصر محدد
  */
-class CartHelper
+class MerchantCartHelper
 {
     /**
      * توليد مفتاح السلة الموحد

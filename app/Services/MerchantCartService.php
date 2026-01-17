@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Cart;
+use App\Models\MerchantCart;
 use App\Models\DiscountCode;
 use App\Models\MerchantItem;
 use App\Models\CatalogItem;

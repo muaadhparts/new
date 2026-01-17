@@ -23,8 +23,8 @@
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\CatalogItemContextHelper;
-use App\Helpers\CartHelper;
-use App\Models\Cart;
+use App\Helpers\MerchantCartHelper;
+use App\Models\MerchantCart;
 use App\Models\Country;
 use App\Models\Muaadhsetting;
 use App\Models\MerchantItem;
@@ -37,7 +37,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
 
-class CartController extends FrontBaseController
+class CartMerchantController extends FrontBaseController
 {
     /* =====================================================================
      * UNIFIED CART ENDPOINT (v3.1)
@@ -365,7 +365,7 @@ class CartController extends FrontBaseController
         $values = (string) $request->input('values', '');
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
 
         if ($qty == 1) {
             $cart->add($catalogItem, $mpId, $size, $color, $keys, $values);
@@ -418,7 +418,7 @@ class CartController extends FrontBaseController
         }
 
         $oldCart = Session::get('cart');
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
 
         return response()->json([
             'ok' => true,
@@ -608,7 +608,7 @@ class CartController extends FrontBaseController
         $values = (string) request('values','');
 
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
 
         // إضافة الكمية للسلة (المخزون محجوز مسبقاً)
         if ($qty == 1) {
@@ -653,7 +653,7 @@ class CartController extends FrontBaseController
         $this->clearCheckoutSessions();
 
         if (!Session::has('cart')) {
-            return view('frontend.cart');
+            return view('frontend.merchant-cart');
         }
 
         foreach (['already','discount_code','discount_total','discount_total1','discount_percentage'] as $k) {
@@ -661,7 +661,7 @@ class CartController extends FrontBaseController
         }
 
         $oldCart    = Session::get('cart');
-        $cart       = new Cart($oldCart);
+        $cart       = new MerchantCart($oldCart);
         $items      = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
@@ -670,11 +670,11 @@ class CartController extends FrontBaseController
         $itemsByMerchant = $this->groupItemsByMerchant($items);
 
         if ($request->ajax()) {
-            // استخدام cart-page-v2 المحسّن (N+1 FIX)
+            // استخدام cart-merchant المحسّن (N+1 FIX)
             // Note: 'catalogItems' kept for backward compatibility in views
-            return view('frontend.ajax.cart-page-v2', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
+            return view('frontend.ajax.cart-merchant', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
         }
-        return view('frontend.cart', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
+        return view('frontend.merchant-cart', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
     }
 
     /**
@@ -780,12 +780,12 @@ class CartController extends FrontBaseController
 
     public function view_cart()
     {
-        if (!Session::has('cart')) { return view('frontend.cart'); }
+        if (!Session::has('cart')) { return view('frontend.merchant-cart'); }
         foreach (['already','discount_code','discount_code_value','discount_total','discount_total1','discount_percentage'] as $k) {
             if (Session::has($k)) Session::forget($k);
         }
         $oldCart    = Session::get('cart');
-        $cart       = new Cart($oldCart);
+        $cart       = new MerchantCart($oldCart);
         $items      = $cart->items;
         $totalPrice = $cart->totalPrice;
         $mainTotal  = $totalPrice;
@@ -793,9 +793,9 @@ class CartController extends FrontBaseController
         // تجميع العناصر حسب التاجر (Group items by merchant)
         $itemsByMerchant = $this->groupItemsByMerchant($items);
 
-        // استخدام cart-page-v2 المحسّن (N+1 FIX)
+        // استخدام cart-merchant المحسّن (N+1 FIX)
         // Note: 'catalogItems' kept for backward compatibility in views
-        return view('frontend.ajax.cart-page-v2', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
+        return view('frontend.ajax.cart-merchant', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
     }
 
     /* ===================== Utilities ===================== */
@@ -1048,7 +1048,7 @@ class CartController extends FrontBaseController
 
         $row = (string)$request->input('row', '');
         $oldCart = Session::get('cart');
-        $cart    = new Cart($oldCart);
+        $cart    = new MerchantCart($oldCart);
 
         if (!isset($cart->items[$row])) {
             return response()->json(['status'=>'error','msg'=>'Row not found'], 404);
@@ -1097,7 +1097,7 @@ class CartController extends FrontBaseController
 
         $row = (string)$request->input('row', '');
         $oldCart = Session::get('cart');
-        $cart    = new Cart($oldCart);
+        $cart    = new MerchantCart($oldCart);
 
         if (!isset($cart->items[$row])) {
             return response()->json(['status'=>'error','msg'=>'Row not found'], 404);
@@ -1256,7 +1256,7 @@ class CartController extends FrontBaseController
         }
 
         // الزيادة بمقدار الخطوة (minQty للأطقم)
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
         $cart->adding($catalogItem, $itemid, $size_qty, $size_price, $minQty);
 
         // تطبيق خصم الجملة المحسوب
@@ -1426,7 +1426,7 @@ class CartController extends FrontBaseController
             }
         }
 
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
         $cart->reducing($catalogItem, $itemid, $size_qty, $size_price, $minQty);
 
         // تطبيق خصم الجملة المحسوب
@@ -1517,7 +1517,7 @@ class CartController extends FrontBaseController
         }
 
         $oldCart = Session::get('cart');
-        $cart    = new Cart($oldCart);
+        $cart    = new MerchantCart($oldCart);
 
         $rowKey = $request->input('row', $id);
         if (!is_array($cart->items) || !array_key_exists($rowKey, $cart->items)) {
@@ -1721,7 +1721,7 @@ class CartController extends FrontBaseController
             $keys = (is_string($keys) && $keys !== '') ? explode(',', $keys) : [];
         }
 
-        $result = CartHelper::addItem((int)$mpId, $qty, $size, $color, $values, $keys);
+        $result = MerchantCartHelper::addItem((int)$mpId, $qty, $size, $color, $values, $keys);
 
         if (!$result['success']) {
             return response()->json([
@@ -1738,7 +1738,7 @@ class CartController extends FrontBaseController
             'ok' => true,
             'status' => 'success',
             'success' => $result['message'],
-            'cart_count' => CartHelper::getItemCount(),
+            'cart_count' => MerchantCartHelper::getItemCount(),
             'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
             'totalQty' => $cart['totalQty'],
             'totalPrice' => $cart['totalPrice']
@@ -1760,7 +1760,7 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
-        $result = CartHelper::increaseQty($cartKey);
+        $result = MerchantCartHelper::increaseQty($cartKey);
 
         if (!$result['success']) {
             return response()->json([
@@ -1809,7 +1809,7 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
-        $result = CartHelper::decreaseQty($cartKey);
+        $result = MerchantCartHelper::decreaseQty($cartKey);
 
         if (!$result['success']) {
             return response()->json([
@@ -1857,7 +1857,7 @@ class CartController extends FrontBaseController
             ], 400);
         }
 
-        $result = CartHelper::removeItem($cartKey);
+        $result = MerchantCartHelper::removeItem($cartKey);
 
         if (!$result['success']) {
             if ($request->ajax()) {
@@ -1877,7 +1877,7 @@ class CartController extends FrontBaseController
                 'ok' => true,
                 'status' => 'success',
                 'success' => $result['message'],
-                'cart_count' => CartHelper::getItemCount(),
+                'cart_count' => MerchantCartHelper::getItemCount(),
                 'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
                 'totalQty' => $cart['totalQty'],
                 'totalPrice' => $cart['totalPrice']
@@ -1892,11 +1892,11 @@ class CartController extends FrontBaseController
      */
     public function v2Summary()
     {
-        $cart = CartHelper::getCart();
+        $cart = MerchantCartHelper::getCart();
 
         return response()->json([
             'ok' => true,
-            'cart_count' => CartHelper::getItemCount(),
+            'cart_count' => MerchantCartHelper::getItemCount(),
             'cart_total' => \PriceHelper::showCurrencyPrice($cart['totalPrice'] * $this->curr->value),
             'totalQty' => $cart['totalQty'],
             'totalPrice' => $cart['totalPrice'],
@@ -1909,8 +1909,8 @@ class CartController extends FrontBaseController
      */
     public function v2CartPage(Request $request)
     {
-        if (!CartHelper::hasCart()) {
-            return view('frontend.cart');
+        if (!MerchantCartHelper::hasCart()) {
+            return view('frontend.merchant-cart');
         }
 
         // مسح بيانات كود الخصم القديمة (Clear old discount code data)
@@ -1918,16 +1918,16 @@ class CartController extends FrontBaseController
             if (Session::has($k)) Session::forget($k);
         }
 
-        $cart = CartHelper::getCart();
+        $cart = MerchantCartHelper::getCart();
         $items = $cart['items'];
         $totalPrice = $cart['totalPrice'];
         $mainTotal = $totalPrice;
-        $itemsByMerchant = CartHelper::groupByMerchant();
+        $itemsByMerchant = MerchantCartHelper::groupByMerchant();
 
         if ($request->ajax()) {
-            return view('frontend.ajax.cart-page-v2', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
+            return view('frontend.ajax.cart-merchant', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
         }
 
-        return view('frontend.cart', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
+        return view('frontend.merchant-cart', ['catalogItems' => $items, 'totalPrice' => $totalPrice, 'mainTotal' => $mainTotal, 'catalogItemsByMerchant' => $itemsByMerchant]);
     }
 }

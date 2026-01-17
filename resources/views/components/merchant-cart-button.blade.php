@@ -6,9 +6,9 @@
     REQUIRED: merchant_item_id (everything else derived from MerchantItem)
 
     Usage:
-    <x-cart-button :mp="$merchantItem" />
-    <x-cart-button :mp="$merchantItem" mode="compact" />
-    <x-cart-button :mp="$merchantItem" mode="full" :show-qty="true" />
+    <x-merchant-cart-button :mp="$merchantItem" />
+    <x-merchant-cart-button :mp="$merchantItem" mode="compact" />
+    <x-merchant-cart-button :mp="$merchantItem" mode="full" :show-qty="true" />
 --}}
 
 @props([

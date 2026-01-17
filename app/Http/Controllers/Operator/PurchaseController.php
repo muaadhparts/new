@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
 use App\Models\ReferralCommission;
-use App\Models\Cart;
+use App\Models\MerchantCart;
 use App\Models\DeliveryCourier;
 use App\Models\MerchantCommission;
 use App\Models\Muaadhsetting;
@@ -424,7 +424,7 @@ class PurchaseController extends OperatorBaseController
 
         $color = str_replace('#', '', $color);
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
 
         if (!empty($cart->items)) {
             if (!empty($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {
@@ -590,7 +590,7 @@ class PurchaseController extends OperatorBaseController
         }
         $color = str_replace('#', '', $color);
         $oldCart = Session::has('cart') ? Session::get('cart') : null;
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
 
         if (!empty($cart->items)) {
             if (!empty($cart->items[$id . $size . $color . str_replace(str_split(' ,'), '', $values)])) {

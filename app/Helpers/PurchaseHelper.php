@@ -3,7 +3,7 @@
 namespace App\Helpers;
 
 use App\{
-    Models\Cart,
+    Models\MerchantCart,
     Models\User,
     Models\DiscountCode,
     Models\CatalogItem,
@@ -79,7 +79,7 @@ class PurchaseHelper
 
         try {
             $oldCart = Session::get('cart');
-            $cart = new Cart($oldCart);
+            $cart = new MerchantCart($oldCart);
 
             foreach ($cart->items as $key => $cartItem) {
 

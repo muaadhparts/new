@@ -8,7 +8,7 @@ use App\Helpers\PurchaseHelper;
 use App\Helpers\PriceHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PurchaseDetailsResource;
-use App\Models\Cart;
+use App\Models\MerchantCart;
 use App\Models\Country;
 use App\Models\DiscountCode;
 use App\Models\MonetaryUnit;
@@ -43,7 +43,7 @@ class CheckoutController extends Controller
                 $items = json_decode($items, true);
             }
 
-            $new_cart = new Cart(null);
+            $new_cart = new MerchantCart(null);
 
             foreach ($items as $key => $item) {
                 if (isset($item['id'], $item['qty'])) {
@@ -67,7 +67,7 @@ class CheckoutController extends Controller
                 }
             }
 
-            $cart = new Cart($new_cart);
+            $cart = new MerchantCart($new_cart);
 
             $gs = Muaadhsetting::find(1);
 
@@ -82,7 +82,7 @@ class CheckoutController extends Controller
             }
 
             // حفظ نسخة خفيفة من السلة داخل الطلب
-            $t_cart = new Cart($cart);
+            $t_cart = new MerchantCart($cart);
             $cart_payload = [
                 'totalQty'   => $t_cart->totalQty,
                 'totalPrice' => $t_cart->totalPrice,
@@ -94,7 +94,7 @@ class CheckoutController extends Controller
             $temp_affilate_users = PurchaseHelper::item_affilate_check($cart);
             $affilate_users = $temp_affilate_users == null ? null : json_encode($temp_affilate_users);
 
-            $t_cart = new Cart($cart);
+            $t_cart = new MerchantCart($cart);
             $purchaseCalculate = PriceHelper::getPurchaseTotal($input, $t_cart);
 
             if (isset($purchaseCalculate['success']) && $purchaseCalculate['success'] == false) {

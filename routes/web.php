@@ -1431,7 +1431,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::post('/item/report', 'Front\CatalogController@report')->name('catalog-item.report');
 
     Route::get('/', 'Front\FrontendController@index')->name('front.index');
-    Route::get('/view', 'Front\CartController@view_cart')->name('front.cart-view');
+    Route::get('/view', 'Front\CartMerchantController@view_cart')->name('front.cart-view');
     // Route removed - extraIndex merged into index() with section-based rendering
 
     Route::get('/monetary-unit/{id}', 'Front\FrontendController@monetaryUnit')->name('front.monetary-unit');
@@ -1552,41 +1552,41 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ============ UNIFIED CART SYSTEM (v3) ============
     // Single endpoint for ALL cart add operations
     // Uses merchant_item_id EXCLUSIVELY - NO fallbacks
-    Route::post('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add');
-    Route::get('/cart/unified', 'Front\CartController@unifiedAdd')->name('cart.unified.add.get'); // For legacy GET requests
+    Route::post('/cart/unified', 'Front\CartMerchantController@unifiedAdd')->name('cart.unified.add');
+    Route::get('/cart/unified', 'Front\CartMerchantController@unifiedAdd')->name('cart.unified.add.get'); // For legacy GET requests
 
     // CART SECTION
-    Route::get('/carts/view', 'Front\CartController@cartview');
-    Route::get('/carts', 'Front\CartController@cart')->name('front.cart');
+    Route::get('/carts/view', 'Front\CartMerchantController@cartview');
+    Route::get('/carts', 'Front\CartMerchantController@cart')->name('front.cart');
 
     // Cart summary endpoint (AJAX only)
-    Route::get('/cart/summary', 'Front\CartController@cartSummary')->name('cart.summary');
+    Route::get('/cart/summary', 'Front\CartMerchantController@cartSummary')->name('cart.summary');
 
     // Increase/Decrease item quantity
-    Route::post('/cart/increase', 'Front\CartController@increaseItem')->name('cart.increase');
-    Route::post('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease');
-    Route::get('/cart/increase', 'Front\CartController@increaseItem')->name('cart.increase.get');
-    Route::get('/cart/decrease', 'Front\CartController@decreaseItem')->name('cart.decrease.get');
+    Route::post('/cart/increase', 'Front\CartMerchantController@increaseItem')->name('cart.increase');
+    Route::post('/cart/decrease', 'Front\CartMerchantController@decreaseItem')->name('cart.decrease');
+    Route::get('/cart/increase', 'Front\CartMerchantController@increaseItem')->name('cart.increase.get');
+    Route::get('/cart/decrease', 'Front\CartMerchantController@decreaseItem')->name('cart.decrease.get');
 
     // Remove item
-    Route::get('/removecart/{id}', 'Front\CartController@removecart')->name('cart.remove');
+    Route::get('/removecart/{id}', 'Front\CartMerchantController@removecart')->name('cart.remove');
 
     // ============ CART ADD ROUTES ============
     // PRIMARY: Use POST /cart/unified with merchant_item_id for all cart additions
-    Route::get('/cart/add/merchant/{merchantItemId}', 'Front\CartController@addMerchantCart')->name('merchant.cart.add');
+    Route::get('/cart/add/merchant/{merchantItemId}', 'Front\CartMerchantController@addMerchantCart')->name('merchant.cart.add');
 
     // DEPRECATED (return 410 Gone): These routes should NOT be used
     // All cart add functionality should use POST /cart/unified with merchant_item_id
-    Route::get('/addcart/{id}', 'Front\CartController@addcart')->name('catalog-item.cart.add');          // DEPRECATED
-    Route::get('/addtocart/{id}', 'Front\CartController@addtocart')->name('catalog-item.cart.quickadd'); // DEPRECATED
-    Route::get('/addnumcart', 'Front\CartController@addnumcart')->name('details.cart');             // DEPRECATED
-    Route::get('/addtonumcart', 'Front\CartController@addtonumcart');                               // DEPRECATED
+    Route::get('/addcart/{id}', 'Front\CartMerchantController@addcart')->name('catalog-item.cart.add');          // DEPRECATED
+    Route::get('/addtocart/{id}', 'Front\CartMerchantController@addtocart')->name('catalog-item.cart.quickadd'); // DEPRECATED
+    Route::get('/addnumcart', 'Front\CartMerchantController@addnumcart')->name('details.cart');             // DEPRECATED
+    Route::get('/addtonumcart', 'Front\CartMerchantController@addtonumcart');                               // DEPRECATED
 
     // ACTIVE: Cart quantity management routes
-    Route::get('/addbyone', 'Front\CartController@addbyone');
-    Route::get('/reducebyone', 'Front\CartController@reducebyone');
+    Route::get('/addbyone', 'Front\CartMerchantController@addbyone');
+    Route::get('/reducebyone', 'Front\CartMerchantController@reducebyone');
     // ============ END CART ROUTES ============
-    Route::get('/upcolor', 'Front\CartController@upcolor');
+    Route::get('/upcolor', 'Front\CartMerchantController@upcolor');
     Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');
     // CART SECTION ENDS
 
@@ -1703,7 +1703,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('update-finalize', 'Front\FrontendController@updateFinalize');
 
     // MERCHANT AND PAGE SECTION
-    Route::get('/country/tax/check', 'Front\CartController@country_tax');
+    Route::get('/country/tax/check', 'Front\CartMerchantController@country_tax');
     Route::get('/{slug}', 'Front\MerchantController@index')->name('front.merchant');
 
     // MERCHANT AND PAGE SECTION ENDS

@@ -1,8 +1,8 @@
 {{--
     =====================================================================
-    CART PAGE V2 - Modern Design
+    CART PAGE - Modern Design
     =====================================================================
-    Uses $catalogItemsByMerchant passed from CartController.
+    Uses $catalogItemsByMerchant passed from CartMerchantController.
     - Responsive card-based layout
     - RTL support
     =====================================================================
@@ -12,7 +12,7 @@
     use Illuminate\Support\Facades\Storage;
     use App\Models\CatalogItem;
 
-    // Use variables passed from CartController::cart()
+    // Use variables passed from CartMerchantController::cart()
     // $catalogItemsByMerchant, $catalogItems, $totalPrice are already available
 
     $currValue = $curr->value ?? 1;

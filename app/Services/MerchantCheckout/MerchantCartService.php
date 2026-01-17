@@ -2,7 +2,7 @@
 
 namespace App\Services\MerchantCheckout;
 
-use App\Models\Cart;
+use App\Models\MerchantCart;
 use App\Models\User;
 use Illuminate\Support\Facades\Session;
 

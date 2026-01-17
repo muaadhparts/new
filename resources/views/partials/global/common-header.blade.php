@@ -253,7 +253,7 @@
                                         count(Session::get('cart')->items) : '0' }}</span>
                                 </div>
                             </a>
-                            @include('load.cart')
+                            @include('load.merchant-cart')
                         </div>
                     </div>
                 </div>
@@ -425,7 +425,7 @@
                                         count(Session::get('cart')->items) : '0' }}</span>
                                 </div>
                             </a>
-                            @include('load.cart')
+                            @include('load.merchant-cart')
                         </div>
                     </div>
                 </div>

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Models\Cart;
+use App\Models\MerchantCart;
 use App\Models\DiscountCode;
 use App\Models\CatalogItem;
 use App\Services\CheckoutPriceService;

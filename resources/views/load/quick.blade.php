@@ -400,7 +400,7 @@
 
                       @else
 
-                      {{-- UNIFIED: Use data attributes for cart-unified.js --}}
+                      {{-- UNIFIED: Use data attributes for merchant-cart-unified.js --}}
                       <li>
                         <button type="button" class="m-cart-add"
                                 data-merchant-item-id="{{ $quickMerchantItem->id }}"
@@ -706,7 +706,7 @@
 
         // ============================================
         // DEPRECATED: #maddcrt and #mqaddcrt handlers
-        // Now handled by cart-unified.js via .m-cart-add class
+        // Now handled by merchant-cart-unified.js via .m-cart-add class
         // Buttons use: class="m-cart-add" with data-merchant-item-id, data-qty-input, data-redirect
         // ============================================
 

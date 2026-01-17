@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Operator;
 use App\Classes\MuaadhMailer;
 use App\Helpers\PurchaseHelper;
 use App\Http\Controllers\Controller;
-use App\Models\Cart;
+use App\Models\MerchantCart;
 use App\Models\Country;
 use App\Models\MonetaryUnit;
 use App\Models\MerchantCommission;
@@ -215,7 +215,7 @@ class PurchaseCreateController extends OperatorBaseController
 
         $color = str_replace('#', '', $color);
         $oldCart = Session::has('admin_cart') ? Session::get('admin_cart') : null;
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
 
 
 
@@ -251,7 +251,7 @@ class PurchaseCreateController extends OperatorBaseController
     {
 
         $oldCart = Session::has('admin_cart') ? Session::get('admin_cart') : null;
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
         $cart->removeItem($id);
         Session::forget('admin_cart');
         if (count($cart->items) > 0) {
@@ -305,9 +305,9 @@ class PurchaseCreateController extends OperatorBaseController
         $curr = monetaryUnit()->getDefault();
 
         $oldCart = Session::get('admin_cart');
-        $cart = new Cart($oldCart);
+        $cart = new MerchantCart($oldCart);
         $t_oldCart = Session::get('admin_cart');
-        $t_cart = new Cart($t_oldCart);
+        $t_cart = new MerchantCart($t_oldCart);
         $new_cart = [];
         $new_cart['totalQty'] = $t_cart->totalQty;
         $new_cart['totalPrice'] = $t_cart->totalPrice;

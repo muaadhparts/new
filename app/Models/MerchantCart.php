@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Session;
 
-class Cart extends Model
+class MerchantCart extends Model
 {
     public $items = [];
     public $totalQty = 0;

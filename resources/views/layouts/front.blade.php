@@ -140,7 +140,7 @@
     {{-- Centralized Quantity Control --}}
     <script src="{{ asset('assets/front/js/qty-control.js') }}?v={{ time() }}"></script>
     {{-- Unified Cart System --}}
-    <script src="{{ asset('assets/front/js/cart-unified.js') }}?v={{ time() }}"></script>
+    <script src="{{ asset('assets/front/js/merchant-cart-unified.js') }}?v={{ time() }}"></script>
     {{-- Customer Location & Shipping Quote --}}
     <script src="{{ asset('assets/front/js/customer-location.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('assets/front/js/shipping-quote.js') }}?v={{ time() }}"></script>
