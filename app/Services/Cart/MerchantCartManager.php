@@ -156,13 +156,13 @@ class MerchantCartManager
             'brand_id' => $brand?->id,
             'brand_name' => $brand?->name ?: '',
             'brand_name_ar' => $brand?->name_ar ?: '',
-            'brand_logo' => $brand?->photo ?: '',
+            'brand_logo' => $brand?->photo_url ?: '',
 
             // Quality Brand (أصلي، بديل...)
             'quality_brand_id' => $qualityBrand?->id,
             'quality_brand_name' => $qualityBrand?->name_en ?: '',
             'quality_brand_name_ar' => $qualityBrand?->name_ar ?: '',
-            'quality_brand_logo' => $qualityBrand?->logo ?: '',
+            'quality_brand_logo' => $qualityBrand?->logo_url ?: '',
 
             // Merchant info
             'merchant_name' => getLocalizedShopName($merchant),

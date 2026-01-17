@@ -19,13 +19,13 @@
     $brandName = app()->getLocale() === 'ar' && !empty($item['brand_name_ar'])
         ? $item['brand_name_ar']
         : ($item['brand_name'] ?? '');
-    $brandLogo = !empty($item['brand_logo']) ? Storage::url($item['brand_logo']) : null;
+    $brandLogo = $item['brand_logo'] ?? null; // Already full URL from photo_url accessor
 
     // Quality Brand (أصلي، بديل...)
     $qualityBrandName = app()->getLocale() === 'ar' && !empty($item['quality_brand_name_ar'])
         ? $item['quality_brand_name_ar']
         : ($item['quality_brand_name'] ?? '');
-    $qualityBrandLogo = !empty($item['quality_brand_logo']) ? Storage::url($item['quality_brand_logo']) : null;
+    $qualityBrandLogo = $item['quality_brand_logo'] ?? null; // Already full URL from logo_url accessor
 
     // Merchant info
     $merchantId = (int) ($item['merchant_id'] ?? 0);

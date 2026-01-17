@@ -377,15 +377,15 @@
 }
 
 .m-cart__item-brand {
-    background: var(--info-light, #e7f1ff);
-    color: var(--info-dark, #004085);
-    border: 1px solid var(--info-dark, #b8daff);
+    background: #e8f4fd;
+    color: #1a5276;
+    border: 1px solid #aed6f1;
 }
 
 .m-cart__item-quality {
-    background: var(--success-light, #d4edda);
-    color: var(--success-dark, #155724);
-    border: 1px solid var(--success-dark, #c3e6cb);
+    background: #eafaf1;
+    color: #1e8449;
+    border: 1px solid #a9dfbf;
 }
 
 .m-cart__brand-logo,

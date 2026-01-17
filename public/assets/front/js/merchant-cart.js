@@ -86,35 +86,33 @@ const MerchantCart = (function() {
                 }
             }
 
-            // Remove button
+            // Remove button (silent - no confirmation)
             if (e.target.closest('[data-action="remove"]')) {
                 e.preventDefault();
                 const btn = e.target.closest('[data-action="remove"]');
                 const key = btn.dataset.cartKey;
                 const merchantId = getMerchantIdFromElement(btn);
 
-                if (key && merchantId && confirm(getTranslation('confirmRemove', 'Remove this item from cart?'))) {
-                    remove(merchantId, key);
+                if (key && merchantId) {
+                    remove(merchantId, key, true); // silent = true
                 }
             }
 
-            // Clear merchant button
+            // Clear merchant button (silent - no confirmation)
             if (e.target.closest('[data-action="clear-merchant"]')) {
                 e.preventDefault();
                 const btn = e.target.closest('[data-action="clear-merchant"]');
                 const merchantId = parseInt(btn.dataset.merchantId, 10);
 
-                if (merchantId && confirm(getTranslation('confirmClearMerchant', 'Remove all items from this merchant?'))) {
-                    clearMerchant(merchantId);
+                if (merchantId) {
+                    clearMerchant(merchantId, true); // silent = true
                 }
             }
 
-            // Clear all button
+            // Clear all button (silent - no confirmation)
             if (e.target.closest('[data-action="clear-all"]')) {
                 e.preventDefault();
-                if (confirm(getTranslation('confirmClearAll', 'Remove all items from cart?'))) {
-                    clearAll();
-                }
+                clearAll(true); // silent = true
             }
         });
 
@@ -253,8 +251,9 @@ const MerchantCart = (function() {
 
     /**
      * Remove item from cart
+     * @param {boolean} silent - Skip notifications and reload
      */
-    async function remove(merchantId, cartKey) {
+    async function remove(merchantId, cartKey, silent = false) {
         if (state.loading) return;
 
         const response = await request('remove', {
@@ -266,14 +265,13 @@ const MerchantCart = (function() {
             // Remove item row from DOM
             removeItemFromDOM(cartKey, merchantId);
             updateHeaderCount(response.header_count);
-            showNotification('success', response.message);
             dispatchEvent('cart:removed', response);
 
-            // Check if cart is empty
+            // Show empty state if cart is empty (no reload)
             if (response.header_count === 0) {
-                setTimeout(() => location.reload(), 500);
+                showEmptyState();
             }
-        } else {
+        } else if (!silent) {
             showNotification('error', response?.message || getTranslation('error', 'An error occurred'));
         }
 
@@ -282,8 +280,9 @@ const MerchantCart = (function() {
 
     /**
      * Clear merchant items
+     * @param {boolean} silent - Skip notifications and reload
      */
-    async function clearMerchant(merchantId) {
+    async function clearMerchant(merchantId, silent = false) {
         if (state.loading) return;
 
         const response = await request('clearMerchant', {
@@ -291,23 +290,27 @@ const MerchantCart = (function() {
         });
 
         if (response && response.success) {
-            // Remove merchant group from DOM
-            const group = document.querySelector(`.m-cart__merchant-group[data-merchant-id="${merchantId}"]`);
-            if (group) {
-                group.style.transition = 'all 0.3s ease';
-                group.style.opacity = '0';
-                setTimeout(() => group.remove(), 300);
+            // Remove merchant section from DOM
+            const section = document.querySelector(`.m-cart__merchant-section[data-merchant-id="${merchantId}"]`);
+            if (section) {
+                section.style.transition = 'all 0.3s ease';
+                section.style.opacity = '0';
+                setTimeout(() => {
+                    section.remove();
+                    // Remove separator if exists
+                    const separator = document.querySelector('.m-cart__merchant-separator');
+                    if (separator) separator.remove();
+                }, 300);
             }
 
             updateHeaderCount(response.header_count);
-            showNotification('success', response.message);
             dispatchEvent('cart:merchantCleared', response);
 
-            // Check if cart is empty
+            // Show empty state if cart is empty (no reload)
             if (response.header_count === 0) {
-                setTimeout(() => location.reload(), 500);
+                showEmptyState();
             }
-        } else {
+        } else if (!silent) {
             showNotification('error', response?.message || getTranslation('error', 'An error occurred'));
         }
 
@@ -316,17 +319,18 @@ const MerchantCart = (function() {
 
     /**
      * Clear all cart
+     * @param {boolean} silent - Skip notifications and reload
      */
-    async function clearAll() {
+    async function clearAll(silent = false) {
         if (state.loading) return;
 
         const response = await request('clear', {});
 
         if (response && response.success) {
-            showNotification('success', response.message);
+            updateHeaderCount(0);
             dispatchEvent('cart:cleared', response);
-            setTimeout(() => location.reload(), 500);
-        } else {
+            showEmptyState();
+        } else if (!silent) {
             showNotification('error', response?.message || getTranslation('error', 'An error occurred'));
         }
 
@@ -476,15 +480,50 @@ const MerchantCart = (function() {
         setTimeout(() => {
             row.remove();
 
-            // Check if merchant group is empty
-            const group = document.querySelector(`.m-cart__merchant-group[data-merchant-id="${merchantId}"]`);
-            if (group) {
-                const remainingItems = group.querySelectorAll('.m-cart__item');
+            // Check if merchant section is empty
+            const section = document.querySelector(`.m-cart__merchant-section[data-merchant-id="${merchantId}"]`);
+            if (section) {
+                const remainingItems = section.querySelectorAll('.m-cart__item');
                 if (remainingItems.length === 0) {
-                    group.remove();
+                    section.style.transition = 'all 0.3s ease';
+                    section.style.opacity = '0';
+                    setTimeout(() => {
+                        section.remove();
+                        // Remove separator if exists
+                        const separator = document.querySelector('.m-cart__merchant-separator');
+                        if (separator) separator.remove();
+                    }, 300);
                 }
             }
         }, 300);
+    }
+
+    /**
+     * Show empty cart state (no reload)
+     */
+    function showEmptyState() {
+        const container = document.querySelector('.gs-cart-section .container');
+        if (!container) return;
+
+        // Remove all merchant sections
+        container.querySelectorAll('.m-cart__merchant-section').forEach(el => el.remove());
+        container.querySelectorAll('.m-cart__merchant-separator').forEach(el => el.remove());
+        container.querySelectorAll('.text-center.mt-4').forEach(el => el.remove());
+
+        // Insert empty state HTML
+        container.innerHTML = `
+            <div class="m-cart__empty">
+                <div class="m-cart__empty-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <h3>${getTranslation('emptyCartTitle', 'Your cart is empty')}</h3>
+                <p>${getTranslation('emptyCartText', 'Looks like you haven\'t added anything to your cart yet.')}</p>
+                <a href="/" class="m-btn m-btn--primary">
+                    <i class="fas fa-arrow-left me-2"></i>
+                    ${getTranslation('continueShopping', 'Continue Shopping')}
+                </a>
+            </div>
+        `;
     }
 
     /**
