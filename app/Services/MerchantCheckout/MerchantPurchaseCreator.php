@@ -11,6 +11,7 @@ use App\Classes\MuaadhMailer;
 use App\Traits\SavesCustomerShippingChoice;
 use App\Services\PaymentAccountingService;
 use App\Services\AccountLedgerService;
+use App\Services\AccountingEntryService;
 use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
@@ -29,19 +30,22 @@ class MerchantPurchaseCreator
     protected MerchantPriceCalculator $priceCalculator;
     protected PaymentAccountingService $accountingService;
     protected AccountLedgerService $ledgerService;
+    protected AccountingEntryService $entryService;
 
     public function __construct(
         MerchantCartManager $cartService,
         MerchantSessionManager $sessionManager,
         MerchantPriceCalculator $priceCalculator,
         PaymentAccountingService $accountingService,
-        ?AccountLedgerService $ledgerService = null
+        ?AccountLedgerService $ledgerService = null,
+        ?AccountingEntryService $entryService = null
     ) {
         $this->cartService = $cartService;
         $this->sessionManager = $sessionManager;
         $this->priceCalculator = $priceCalculator;
         $this->accountingService = $accountingService;
         $this->ledgerService = $ledgerService ?? app(AccountLedgerService::class);
+        $this->entryService = $entryService ?? app(AccountingEntryService::class);
     }
 
     /**
@@ -231,10 +235,26 @@ class MerchantPurchaseCreator
             default => $shippingData['shipping_provider'] ?? null,
         };
 
+        // ═══════════════════════════════════════════════════════════════════
+        // OWNERSHIP: Determine who owns each service (merchant or platform)
+        // is_platform_provided=true + owner_user_id=0 → Platform owns the service
+        // is_platform_provided=false + owner_user_id=merchantId → Merchant owns
+        // ═══════════════════════════════════════════════════════════════════
+        $shippingOwnerId = $shippingData['owner_user_id'] ?? $merchantId;
+        $packingOwnerId = $shippingData['packing_owner_user_id'] ?? $merchantId;
+        $isPlatformShipping = $shippingData['is_platform_provided'] ?? false;
+
+        // Payment owner: depends on who owns the payment gateway
+        // For COD via courier/shipping company → platform owns collection
+        // For online payment → depends on whose gateway is used
+        $paymentOwnerId = $isCod ? 0 : $this->determinePaymentOwnerId($merchantId, $paymentData);
+
         // === Calculate Debt Ledger via Accounting Service ===
         $accountingData = $this->accountingService->calculateDebtLedger([
             'payment_method' => $isCod ? 'cod' : 'online',
-            'payment_owner_id' => $merchantId, // Merchant receives payment directly in this checkout
+            'payment_owner_id' => $paymentOwnerId,
+            'shipping_owner_id' => $shippingOwnerId,
+            'is_platform_shipping' => $isPlatformShipping,
             'delivery_method' => $deliveryMethod,
             'delivery_provider' => $deliveryProvider,
             'price' => $grossPrice,
@@ -261,13 +281,16 @@ class MerchantPurchaseCreator
             'packing_cost' => $shippingData['packing_cost'],
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
 
-            // Ownership tracking
-            'payment_owner_id' => $merchantId,
-            'shipping_owner_id' => $merchantId,
-            'packing_owner_id' => $merchantId,
+            // ═══════════════════════════════════════════════════════════════════
+            // OWNERSHIP: Who owns each service (0=platform, >0=merchant/user)
+            // This determines who receives the money and who pays fees
+            // ═══════════════════════════════════════════════════════════════════
+            'payment_owner_id' => $paymentOwnerId,
+            'shipping_owner_id' => $shippingOwnerId,
+            'packing_owner_id' => $packingOwnerId,
 
-            // Payment type (who owns the payment gateway: merchant or platform)
-            // For COD, platform handles collection through courier
+            // Payment method and type
+            'payment_method' => $isCod ? 'cod' : 'online',
             'payment_type' => $isCod ? 'platform' : ($this->determinePaymentType($merchantId, $paymentData)),
             'payment_gateway_id' => $paymentData['pay_id'] ?? null,
 
@@ -296,13 +319,28 @@ class MerchantPurchaseCreator
         ]);
         $merchantPurchase->save();
 
-        // === Record Ledger Entries ===
-        // تسجيل الديون في سجل الحركات المالية
+        // === Record Full Accounting Entries ===
+        // تسجيل جميع القيود المحاسبية التفصيلية
         try {
-            $this->ledgerService->recordDebtsForMerchantPurchase($merchantPurchase);
+            // Use the comprehensive AccountingEntryService for all entry types:
+            // - SALE_REVENUE
+            // - COMMISSION_EARNED
+            // - TAX_COLLECTED
+            // - SHIPPING_FEE_PLATFORM / SHIPPING_FEE_MERCHANT
+            // - PACKING_FEE_PLATFORM / PACKING_FEE_MERCHANT
+            // - COURIER_FEE
+            // - COD_PENDING
+            $this->entryService->createOrderEntries($merchantPurchase);
         } catch (\Exception $e) {
             // Log but don't fail - accounting entries can be reconciled later
-            \Log::warning('Failed to record ledger entries for purchase #' . $merchantPurchase->purchase_number . ': ' . $e->getMessage());
+            \Log::warning('Failed to record accounting entries for purchase #' . $merchantPurchase->purchase_number . ': ' . $e->getMessage());
+
+            // Fallback to legacy ledger service for basic debt tracking
+            try {
+                $this->ledgerService->recordDebtsForMerchantPurchase($merchantPurchase);
+            } catch (\Exception $fallbackEx) {
+                \Log::error('Fallback ledger also failed: ' . $fallbackEx->getMessage());
+            }
         }
 
         return $merchantPurchase;
@@ -487,21 +525,54 @@ class MerchantPurchaseCreator
     }
 
     /**
-     * Determine payment type (who owns the payment gateway)
+     * Determine who owns the payment gateway
+     *
+     * OWNERSHIP RULES:
+     * - If payment data explicitly specifies owner → use that
+     * - If merchant has credentials for SELECTED gateway → merchant owns
+     * - If merchant has ANY payment credentials → merchant owns
+     * - Otherwise → platform owns (returns 0)
      *
      * @param int $merchantId
      * @param array $paymentData
-     * @return string 'merchant' or 'platform'
+     * @return int 0 for platform, merchantId for merchant
+     */
+    protected function determinePaymentOwnerId(int $merchantId, array $paymentData): int
+    {
+        // Priority 1: Check if payment data explicitly specifies owner
+        if (isset($paymentData['payment_owner_id'])) {
+            return (int) $paymentData['payment_owner_id'];
+        }
+
+        $credentialService = app(\App\Services\MerchantCredentialService::class);
+
+        // Priority 2: Check if merchant has credentials for the SELECTED gateway
+        $paymentKeyword = $paymentData['keyword'] ?? $paymentData['method'] ?? null;
+        if ($paymentKeyword) {
+            // Normalize keyword (some methods like 'Cash On Delivery' aren't gateways)
+            $normalizedKeyword = strtolower(str_replace(' ', '', $paymentKeyword));
+            if (in_array($normalizedKeyword, ['myfatoorah', 'stripe', 'paypal', 'razorpay', 'tap'])) {
+                if ($credentialService->hasPaymentCredentialsFor($merchantId, $normalizedKeyword)) {
+                    return $merchantId;
+                }
+            }
+        }
+
+        // Priority 3: Check if merchant has ANY payment credentials
+        if ($credentialService->hasPaymentCredentials($merchantId)) {
+            return $merchantId;
+        }
+
+        // Default: Platform handles payment (owner_id = 0)
+        return 0;
+    }
+
+    /**
+     * @deprecated Use determinePaymentOwnerId() for owner ID
      */
     protected function determinePaymentType(int $merchantId, array $paymentData): string
     {
-        // Check if merchant has their own payment credentials
-        $merchantHasGateway = \App\Models\MerchantCredential::where('user_id', $merchantId)
-            ->where('is_active', true)
-            ->exists();
-
-        // If merchant has active gateway credentials, use 'merchant'
-        // Otherwise, platform handles payment
-        return $merchantHasGateway ? 'merchant' : 'platform';
+        $ownerId = $this->determinePaymentOwnerId($merchantId, $paymentData);
+        return $ownerId > 0 ? 'merchant' : 'platform';
     }
 }

@@ -141,6 +141,7 @@ class AccountLedgerService
      *
      * @param MerchantPurchase $mp
      * @param array $debtData Contains: from_party, to_party, amount, description
+     * @param string|null $entryType Optional entry type (SALE_REVENUE, COD_PENDING, etc.)
      * @return AccountingLedger
      */
     public function recordDebt(
@@ -150,9 +151,13 @@ class AccountLedgerService
         float $amount,
         string $description = '',
         ?string $descriptionAr = null,
-        array $metadata = []
+        array $metadata = [],
+        ?string $entryType = null
     ): AccountingLedger {
-        return DB::transaction(function () use ($mp, $fromParty, $toParty, $amount, $description, $descriptionAr, $metadata) {
+        return DB::transaction(function () use ($mp, $fromParty, $toParty, $amount, $description, $descriptionAr, $metadata, $entryType) {
+            // Determine entry_type from metadata if not provided
+            $resolvedEntryType = $entryType ?? $this->resolveEntryType($metadata);
+
             // إنشاء سجل في الـ Ledger
             $ledger = AccountingLedger::create([
                 'purchase_id' => $mp->purchase_id,
@@ -161,6 +166,9 @@ class AccountLedgerService
                 'to_party_id' => $toParty->id,
                 'amount' => $amount,
                 'transaction_type' => AccountingLedger::TYPE_DEBT,
+                'entry_type' => $resolvedEntryType,
+                'direction' => AccountingLedger::DIRECTION_CREDIT,
+                'debt_status' => AccountingLedger::DEBT_PENDING,
                 'description' => $description,
                 'description_ar' => $descriptionAr ?? $description,
                 'metadata' => $metadata,
@@ -202,6 +210,16 @@ class AccountLedgerService
     ): AccountingLedger {
         $metadata['fee_type'] = $feeType;
 
+        // Map fee_type to entry_type
+        $entryType = match ($feeType) {
+            'tax_collected' => AccountingLedger::ENTRY_TAX_COLLECTED,
+            'commission' => AccountingLedger::ENTRY_COMMISSION_EARNED,
+            'platform_fee' => AccountingLedger::ENTRY_PLATFORM_FEE,
+            'packing_fee' => AccountingLedger::ENTRY_PACKING_FEE_PLATFORM,
+            'shipping_fee' => AccountingLedger::ENTRY_SHIPPING_FEE_PLATFORM,
+            default => AccountingLedger::ENTRY_PLATFORM_FEE,
+        };
+
         return AccountingLedger::create([
             'purchase_id' => $mp->purchase_id,
             'merchant_purchase_id' => $mp->id,
@@ -209,11 +227,30 @@ class AccountLedgerService
             'to_party_id' => $platform->id,   // Internal record
             'amount' => $amount,
             'transaction_type' => AccountingLedger::TYPE_FEE,
+            'entry_type' => $entryType,
+            'direction' => AccountingLedger::DIRECTION_CREDIT,
+            'debt_status' => AccountingLedger::DEBT_PENDING,
             'description' => $description,
             'description_ar' => $descriptionAr ?? $description,
             'metadata' => $metadata,
             'status' => AccountingLedger::STATUS_COMPLETED, // Fees are completed immediately
         ]);
+    }
+
+    /**
+     * Resolve entry_type from metadata
+     */
+    protected function resolveEntryType(array $metadata): ?string
+    {
+        $type = $metadata['type'] ?? null;
+
+        return match ($type) {
+            'platform_to_merchant' => AccountingLedger::ENTRY_SALE_REVENUE,
+            'merchant_to_platform' => AccountingLedger::ENTRY_COMMISSION_EARNED,
+            'courier_to_platform', 'courier_to_merchant' => AccountingLedger::ENTRY_COD_PENDING,
+            'shipping_to_platform', 'shipping_to_merchant' => AccountingLedger::ENTRY_COD_PENDING,
+            default => null,
+        };
     }
 
     /**

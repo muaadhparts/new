@@ -350,6 +350,130 @@ class AccountLedgerController extends OperatorBaseController
         ]);
     }
 
+    /**
+     * تسوية المندوب - استلام COD
+     */
+    public function courierSettlement(Request $request)
+    {
+        $request->validate([
+            'courier_id' => 'required|exists:delivery_couriers,id',
+            'purchase_ids' => 'required|array',
+            'purchase_ids.*' => 'exists:merchant_purchases,id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string',
+        ]);
+
+        try {
+            $batch = $this->entryService->recordCourierSettlement(
+                $request->courier_id,
+                $request->purchase_ids,
+                $request->amount,
+                $request->payment_method,
+                auth('operator')->id()
+            );
+
+            return redirect()
+                ->route('operator.accounts.settlements.show', $batch)
+                ->with('success', __('Courier settlement recorded. Reference: :ref', ['ref' => $batch->batch_ref]));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * تسوية شركة الشحن - استلام COD
+     */
+    public function shippingCompanySettlement(Request $request)
+    {
+        $request->validate([
+            'provider_code' => 'required|string',
+            'purchase_ids' => 'required|array',
+            'purchase_ids.*' => 'exists:merchant_purchases,id',
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string',
+            'payment_reference' => 'nullable|string',
+            'settlement_type' => 'required|in:to_platform,to_merchant',
+            'merchant_id' => 'required_if:settlement_type,to_merchant|exists:users,id',
+        ]);
+
+        try {
+            if ($request->settlement_type === 'to_platform') {
+                $batch = $this->entryService->recordShippingCompanySettlement(
+                    $request->provider_code,
+                    $request->purchase_ids,
+                    $request->amount,
+                    $request->payment_method,
+                    $request->payment_reference,
+                    auth('operator')->id()
+                );
+            } else {
+                $batch = $this->entryService->recordShippingCompanySettlementToMerchant(
+                    $request->provider_code,
+                    $request->merchant_id,
+                    $request->purchase_ids,
+                    $request->amount,
+                    $request->payment_method,
+                    $request->payment_reference,
+                    auth('operator')->id()
+                );
+            }
+
+            return redirect()
+                ->route('operator.accounts.settlements.show', $batch)
+                ->with('success', __('Shipping company settlement recorded. Reference: :ref', ['ref' => $batch->batch_ref]));
+        } catch (\Exception $e) {
+            return back()->with('error', $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * قائمة الطلبات المعلقة للتسوية حسب شركة الشحن
+     */
+    public function pendingSettlementsByProvider(Request $request, string $providerCode)
+    {
+        $purchases = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)
+            ->where(function ($q) {
+                $q->where('shipping_company_owes_platform', '>', 0)
+                    ->orWhere('shipping_company_owes_merchant', '>', 0);
+            })
+            ->with(['purchase', 'merchant'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        $totalOwed = $purchases->sum('shipping_company_owes_platform') + $purchases->sum('shipping_company_owes_merchant');
+        $currency = monetaryUnit()->getDefault();
+
+        return view('operator.accounts.pending-settlements', [
+            'purchases' => $purchases,
+            'providerCode' => $providerCode,
+            'totalOwed' => $totalOwed,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * قائمة الطلبات المعلقة للتسوية حسب المندوب
+     */
+    public function pendingSettlementsByCourier(Request $request, int $courierId)
+    {
+        $purchases = \App\Models\MerchantPurchase::where('courier_id', $courierId)
+            ->where('courier_owes_platform', '>', 0)
+            ->with(['purchase', 'merchant'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(50);
+
+        $totalOwed = $purchases->sum('courier_owes_platform');
+        $courier = \App\Models\DeliveryCourier::find($courierId);
+        $currency = monetaryUnit()->getDefault();
+
+        return view('operator.accounts.pending-courier-settlements', [
+            'purchases' => $purchases,
+            'courier' => $courier,
+            'totalOwed' => $totalOwed,
+            'currency' => $currency,
+        ]);
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // SYNC - مزامنة الأطراف
     // ═══════════════════════════════════════════════════════════════

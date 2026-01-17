@@ -47,18 +47,32 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6">
-                            <div class="text-center p-4 bg-light rounded">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
                                 <h6 class="text-muted">{{ __('Commission Earned') }}</h6>
-                                <h2 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['commission_earned'], 2) }}</h2>
+                                <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['commission_earned'], 2) }}</h3>
                                 <small class="text-muted">{{ __('From merchant sales') }}</small>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="text-center p-4 bg-success text-white rounded">
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h6 class="text-muted">{{ __('Packing Fee Earned') }}</h6>
+                                <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['packing_fee_earned'] ?? 0, 2) }}</h3>
+                                <small class="text-muted">{{ __('From platform packaging') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <h6 class="text-muted">{{ __('Shipping Fee Earned') }}</h6>
+                                <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['shipping_fee_earned'] ?? 0, 2) }}</h3>
+                                <small class="text-muted">{{ __('From platform shipping') }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="text-center p-3 bg-success text-white rounded">
                                 <h6>{{ __('Total Platform Revenue') }}</h6>
-                                <h2 class="mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['total'], 2) }}</h2>
-                                <small>{{ __('Commission is the only platform income') }}</small>
+                                <h3 class="mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['total'], 2) }}</h3>
+                                <small>{{ __('Commission + Services') }}</small>
                             </div>
                         </div>
                     </div>
@@ -102,9 +116,18 @@
                             </div>
                         </div>
                     </div>
-                    @if($report['collections']['cod_collected'] > 0)
+                    @if($report['collections']['cod_collected'] > 0 || ($report['collections']['cod_pending'] ?? 0) > 0)
                     <div class="mt-3 p-3 bg-light rounded">
-                        <strong>{{ __('COD Collected') }}:</strong> {{ $currency->sign }}{{ number_format($report['collections']['cod_collected'], 2) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>{{ __('COD Collected') }}:</strong>
+                                <span class="text-success">{{ $currency->sign }}{{ number_format($report['collections']['cod_collected'], 2) }}</span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>{{ __('COD Pending') }}:</strong>
+                                <span class="text-warning">{{ $currency->sign }}{{ number_format($report['collections']['cod_pending'] ?? 0, 2) }}</span>
+                            </div>
+                        </div>
                     </div>
                     @endif
                 </div>

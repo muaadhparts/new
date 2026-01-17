@@ -57,9 +57,22 @@ class AccountingReportService
 
         $entries = $query->get();
 
-        // ═══ الإيرادات (العمولة فقط) ═══
+        // ═══ الإيرادات ═══
+        // 1. العمولات المكتسبة
         $commissionEarned = $entries
             ->where('entry_type', AccountingLedger::ENTRY_COMMISSION_EARNED)
+            ->where('to_party_id', $platform->id)
+            ->sum('amount');
+
+        // 2. رسوم التغليف من المنصة (إيراد للمنصة)
+        $packingFeeEarned = $entries
+            ->where('entry_type', AccountingLedger::ENTRY_PACKING_FEE_PLATFORM)
+            ->where('to_party_id', $platform->id)
+            ->sum('amount');
+
+        // 3. رسوم الشحن المنصة (إيراد عند استخدام شحن المنصة)
+        $shippingFeeEarned = $entries
+            ->where('entry_type', AccountingLedger::ENTRY_SHIPPING_FEE_PLATFORM)
             ->where('to_party_id', $platform->id)
             ->sum('amount');
 
@@ -133,6 +146,12 @@ class AccountingReportService
             })
             ->sum('pending_amount');
 
+        // COD المعلق (ينتظر التحصيل)
+        $codPending = $entries
+            ->where('entry_type', AccountingLedger::ENTRY_COD_PENDING)
+            ->where('debt_status', AccountingLedger::DEBT_PENDING)
+            ->sum('amount');
+
         return [
             'period' => [
                 'start' => $startDate?->format('Y-m-d'),
@@ -142,7 +161,9 @@ class AccountingReportService
             // الدخل الحقيقي للمنصة
             'revenue' => [
                 'commission_earned' => $commissionEarned,
-                'total' => $commissionEarned, // العمولة هي الدخل الوحيد
+                'packing_fee_earned' => $packingFeeEarned,
+                'shipping_fee_earned' => $shippingFeeEarned,
+                'total' => $commissionEarned + $packingFeeEarned + $shippingFeeEarned,
             ],
 
             // المبالغ المحصلة (أموال عابرة)
@@ -152,6 +173,7 @@ class AccountingReportService
                 'for_tax_authority' => $taxCollected,
                 'for_shipping_companies' => $shippingCollected,
                 'cod_collected' => $codCollected,
+                'cod_pending' => $codPending,
             ],
 
             // الالتزامات
@@ -176,6 +198,8 @@ class AccountingReportService
 
             // الصافي
             'net_position' => $commissionEarned
+                + $packingFeeEarned
+                + $shippingFeeEarned
                 + $receivableFromCouriers
                 + $receivableFromShipping
                 - $merchantsPayable

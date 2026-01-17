@@ -51,32 +51,82 @@ abstract class BaseMerchantPaymentController extends Controller
      * Get payment gateway configuration
      * Uses merchant_credentials table for API keys (secure storage)
      * Uses merchant_payments table only to check if method is enabled
+     *
+     * OPERATOR PATTERN:
+     * - user_id = $merchantId → Merchant's own payment method
+     * - user_id = 0 AND operator = $merchantId → Platform-provided for this merchant
      */
     protected function getPaymentConfig(int $merchantId): ?array
     {
         // Check if payment method is enabled for this merchant
+        // Priority: 1. Merchant's own method, 2. Platform-provided method
         $payment = MerchantPayment::where('keyword', $this->paymentKeyword)
-            ->where('user_id', $merchantId)
             ->where('checkout', 1)
+            ->where(function ($query) use ($merchantId) {
+                // Merchant's own payment method
+                $query->where('user_id', $merchantId)
+                    // OR Platform-provided method for this merchant
+                    ->orWhere(function ($q) use ($merchantId) {
+                        $q->where('user_id', 0)
+                          ->where('operator', $merchantId);
+                    });
+            })
+            // Prefer merchant's own method over platform-provided
+            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId])
             ->first();
 
         if (!$payment) {
             return null;
         }
 
+        // Determine whose credentials to use
+        $isPlatformProvided = (int)$payment->user_id === 0;
+        $credentialOwnerId = $isPlatformProvided ? 0 : $merchantId;
+
         // Get credentials from merchant_credentials table (secure storage)
-        $credentials = $this->getMerchantCredentials($merchantId, $this->paymentKeyword);
+        $credentials = $this->getMerchantCredentials($credentialOwnerId, $this->paymentKeyword);
 
         if (empty($credentials) || empty($credentials['api_key'])) {
-            return null; // No valid credentials configured
+            // Fallback: Check legacy information field for platform-provided methods
+            if ($isPlatformProvided && !empty($payment->information)) {
+                $credentials = $this->extractLegacyCredentials($payment->information);
+            }
+
+            if (empty($credentials) || empty($credentials['api_key'])) {
+                return null; // No valid credentials configured
+            }
         }
 
         return [
             'id' => $payment->id,
             'keyword' => $payment->keyword,
-            'name' => $payment->name ?? $payment->name,
+            'name' => $payment->name ?? $this->paymentMethod,
             'credentials' => $credentials,
+            'is_platform_provided' => $isPlatformProvided,
+            'payment_owner_id' => $credentialOwnerId,
         ];
+    }
+
+    /**
+     * Extract credentials from legacy information JSON field
+     */
+    protected function extractLegacyCredentials(?string $information): array
+    {
+        if (empty($information)) {
+            return [];
+        }
+
+        $data = json_decode($information, true);
+        if (!is_array($data)) {
+            return [];
+        }
+
+        // Skip placeholder values
+        if (isset($data['api_key']) && in_array($data['api_key'], ['<YOUR_API_KEY>', 'YOUR_API_KEY', ''])) {
+            $data['api_key'] = null;
+        }
+
+        return $data;
     }
 
     /**

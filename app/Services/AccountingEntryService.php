@@ -262,7 +262,13 @@ class AccountingEntryService
     }
 
     /**
-     * قيود الشحن
+     * قيود الشحن والتغليف
+     *
+     * OWNER_ID PATTERN:
+     * - shipping_owner_id = 0 → Platform-provided shipping
+     * - shipping_owner_id > 0 → Merchant-provided shipping
+     * - packing_owner_id = 0  → Platform-provided packaging
+     * - packing_owner_id > 0  → Merchant-provided packaging
      */
     protected function createShippingEntries(
         MerchantPurchase $mp,
@@ -271,7 +277,9 @@ class AccountingEntryService
     ): Collection {
         $entries = collect();
 
-        // شحن المنصة
+        // ═══ SHIPPING ENTRIES ═══
+
+        // شحن المنصة (platform_shipping_fee when shipping_owner_id = 0)
         if (($mp->platform_shipping_fee ?? 0) > 0) {
             $shippingProvider = $this->getOrCreateShippingParty($mp->delivery_provider ?? 'Unknown');
 
@@ -290,14 +298,16 @@ class AccountingEntryService
                 'description_ar' => "رسم شحن (منصة) - طلب #{$mp->purchase_number}",
                 'metadata' => [
                     'shipping_provider' => $mp->delivery_provider,
-                    'shipping_type' => 'platform',
+                    'shipping_owner_id' => $mp->shipping_owner_id ?? 0,
+                    'is_platform_provided' => true,
                 ],
                 'status' => AccountingLedger::STATUS_COMPLETED,
             ]));
         }
 
-        // شحن التاجر
-        if (($mp->shipping_cost ?? 0) > 0 && $mp->shipping_type === 'merchant') {
+        // شحن التاجر (shipping_cost when shipping_owner_id > 0)
+        $shippingOwnerId = $mp->shipping_owner_id ?? 0;
+        if (($mp->shipping_cost ?? 0) > 0 && $shippingOwnerId > 0) {
             $entries->push(AccountingLedger::create([
                 'purchase_id' => $mp->purchase_id,
                 'merchant_purchase_id' => $mp->id,
@@ -312,7 +322,57 @@ class AccountingEntryService
                 'description' => "Merchant shipping fee for order #{$mp->purchase_number}",
                 'description_ar' => "رسم شحن (تاجر) - طلب #{$mp->purchase_number}",
                 'metadata' => [
-                    'shipping_type' => 'merchant',
+                    'shipping_owner_id' => $shippingOwnerId,
+                    'is_platform_provided' => false,
+                ],
+                'status' => AccountingLedger::STATUS_COMPLETED,
+            ]));
+        }
+
+        // ═══ PACKING ENTRIES ═══
+
+        // تغليف المنصة (platform_packing_fee when packing_owner_id = 0)
+        if (($mp->platform_packing_fee ?? 0) > 0) {
+            $entries->push(AccountingLedger::create([
+                'purchase_id' => $mp->purchase_id,
+                'merchant_purchase_id' => $mp->id,
+                'from_party_id' => $merchant->id, // خصم من التاجر
+                'to_party_id' => $platform->id,   // إيراد للمنصة
+                'amount' => $mp->platform_packing_fee,
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
+                'transaction_type' => AccountingLedger::TYPE_FEE,
+                'entry_type' => AccountingLedger::ENTRY_PACKING_FEE_PLATFORM,
+                'direction' => AccountingLedger::DIRECTION_CREDIT,
+                'debt_status' => AccountingLedger::DEBT_PENDING,
+                'description' => "Platform packing fee for order #{$mp->purchase_number}",
+                'description_ar' => "رسم تغليف (منصة) - طلب #{$mp->purchase_number}",
+                'metadata' => [
+                    'packing_owner_id' => $mp->packing_owner_id ?? 0,
+                    'is_platform_provided' => true,
+                ],
+                'status' => AccountingLedger::STATUS_COMPLETED,
+            ]));
+        }
+
+        // تغليف التاجر (packing_cost when packing_owner_id > 0)
+        $packingOwnerId = $mp->packing_owner_id ?? 0;
+        if (($mp->packing_cost ?? 0) > 0 && $packingOwnerId > 0) {
+            $entries->push(AccountingLedger::create([
+                'purchase_id' => $mp->purchase_id,
+                'merchant_purchase_id' => $mp->id,
+                'from_party_id' => $platform->id, // العميل عبر المنصة
+                'to_party_id' => $merchant->id,   // إيراد للتاجر
+                'amount' => $mp->packing_cost,
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
+                'transaction_type' => AccountingLedger::TYPE_FEE,
+                'entry_type' => AccountingLedger::ENTRY_PACKING_FEE_MERCHANT,
+                'direction' => AccountingLedger::DIRECTION_CREDIT,
+                'debt_status' => AccountingLedger::DEBT_PENDING,
+                'description' => "Merchant packing fee for order #{$mp->purchase_number}",
+                'description_ar' => "رسم تغليف (تاجر) - طلب #{$mp->purchase_number}",
+                'metadata' => [
+                    'packing_owner_id' => $packingOwnerId,
+                    'is_platform_provided' => false,
                 ],
                 'status' => AccountingLedger::STATUS_COMPLETED,
             ]));
@@ -607,6 +667,143 @@ class AccountingEntryService
         });
     }
 
+    /**
+     * تسجيل تسوية من شركة الشحن للمنصة
+     *
+     * عندما تسلم شركة الشحن مبالغ COD المحصلة للمنصة
+     */
+    public function recordShippingCompanySettlement(
+        string $providerCode,
+        array $merchantPurchaseIds,
+        float $amount,
+        string $paymentMethod,
+        ?string $paymentReference = null,
+        ?int $userId = null
+    ): SettlementBatch {
+        return DB::transaction(function () use ($providerCode, $merchantPurchaseIds, $amount, $paymentMethod, $paymentReference, $userId) {
+            $shippingCompany = $this->getOrCreateShippingParty($providerCode);
+            $platform = $this->getPlatformParty();
+
+            $batch = SettlementBatch::create([
+                'batch_ref' => 'SSET-' . date('Ymd') . '-' . strtoupper(\Str::random(6)),
+                'from_party_id' => $shippingCompany->id,
+                'to_party_id' => $platform->id,
+                'total_amount' => $amount,
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
+                'payment_method' => $paymentMethod,
+                'payment_reference' => $paymentReference,
+                'status' => 'completed',
+                'settlement_date' => now()->toDateString(),
+                'created_by' => $userId,
+            ]);
+
+            $entry = AccountingLedger::create([
+                'from_party_id' => $shippingCompany->id,
+                'to_party_id' => $platform->id,
+                'amount' => $amount,
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
+                'transaction_type' => AccountingLedger::TYPE_SETTLEMENT,
+                'entry_type' => AccountingLedger::ENTRY_SETTLEMENT_PAYMENT,
+                'direction' => AccountingLedger::DIRECTION_DEBIT,
+                'debt_status' => AccountingLedger::DEBT_SETTLED,
+                'description' => "Shipping company settlement to platform - Batch #{$batch->batch_ref}",
+                'description_ar' => "تسوية شركة الشحن للمنصة - الدفعة #{$batch->batch_ref}",
+                'metadata' => [
+                    'shipping_provider' => $providerCode,
+                    'purchase_ids' => $merchantPurchaseIds,
+                    'payment_reference' => $paymentReference,
+                ],
+                'status' => AccountingLedger::STATUS_COMPLETED,
+                'settlement_batch_id' => $batch->id,
+                'settled_at' => now(),
+                'settled_by' => $userId,
+            ]);
+
+            // تحديث حالة الطلبات - شركة الشحن سددت
+            MerchantPurchase::whereIn('id', $merchantPurchaseIds)->update([
+                'shipping_company_owes_platform' => 0,
+            ]);
+
+            // تحديث قيود COD المعلقة إلى مسددة
+            AccountingLedger::whereIn('merchant_purchase_id', $merchantPurchaseIds)
+                ->where('entry_type', AccountingLedger::ENTRY_COD_PENDING)
+                ->update([
+                    'debt_status' => AccountingLedger::DEBT_SETTLED,
+                    'settled_at' => now(),
+                    'settled_by' => $userId,
+                ]);
+
+            $this->updateBalances(collect([$entry]));
+
+            return $batch;
+        });
+    }
+
+    /**
+     * تسجيل تسوية من شركة الشحن للتاجر مباشرة
+     *
+     * عندما يكون التاجر هو مالك بوابة الدفع وشركة الشحن تسلم له مباشرة
+     */
+    public function recordShippingCompanySettlementToMerchant(
+        string $providerCode,
+        int $merchantId,
+        array $merchantPurchaseIds,
+        float $amount,
+        string $paymentMethod,
+        ?string $paymentReference = null,
+        ?int $userId = null
+    ): SettlementBatch {
+        return DB::transaction(function () use ($providerCode, $merchantId, $merchantPurchaseIds, $amount, $paymentMethod, $paymentReference, $userId) {
+            $shippingCompany = $this->getOrCreateShippingParty($providerCode);
+            $merchant = $this->getOrCreateMerchantParty($merchantId);
+
+            $batch = SettlementBatch::create([
+                'batch_ref' => 'SMSET-' . date('Ymd') . '-' . strtoupper(\Str::random(6)),
+                'from_party_id' => $shippingCompany->id,
+                'to_party_id' => $merchant->id,
+                'total_amount' => $amount,
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
+                'payment_method' => $paymentMethod,
+                'payment_reference' => $paymentReference,
+                'status' => 'completed',
+                'settlement_date' => now()->toDateString(),
+                'created_by' => $userId,
+            ]);
+
+            $entry = AccountingLedger::create([
+                'from_party_id' => $shippingCompany->id,
+                'to_party_id' => $merchant->id,
+                'amount' => $amount,
+                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
+                'transaction_type' => AccountingLedger::TYPE_SETTLEMENT,
+                'entry_type' => AccountingLedger::ENTRY_SETTLEMENT_PAYMENT,
+                'direction' => AccountingLedger::DIRECTION_DEBIT,
+                'debt_status' => AccountingLedger::DEBT_SETTLED,
+                'description' => "Shipping company settlement to merchant - Batch #{$batch->batch_ref}",
+                'description_ar' => "تسوية شركة الشحن للتاجر - الدفعة #{$batch->batch_ref}",
+                'metadata' => [
+                    'shipping_provider' => $providerCode,
+                    'merchant_id' => $merchantId,
+                    'purchase_ids' => $merchantPurchaseIds,
+                    'payment_reference' => $paymentReference,
+                ],
+                'status' => AccountingLedger::STATUS_COMPLETED,
+                'settlement_batch_id' => $batch->id,
+                'settled_at' => now(),
+                'settled_by' => $userId,
+            ]);
+
+            // تحديث حالة الطلبات - شركة الشحن سددت للتاجر
+            MerchantPurchase::whereIn('id', $merchantPurchaseIds)->update([
+                'shipping_company_owes_merchant' => 0,
+            ]);
+
+            $this->updateBalances(collect([$entry]));
+
+            return $batch;
+        });
+    }
+
     // ═══════════════════════════════════════════════════════════════
     // CANCELLATION ENTRIES - قيود الإلغاء
     // ═══════════════════════════════════════════════════════════════
@@ -701,6 +898,9 @@ class AccountingEntryService
 
     /**
      * إعادة حساب رصيد طرف
+     *
+     * يحسب الأرصدة المعلقة ويحدث جدول الأرصدة
+     * إذا أصبح الرصيد صفر يتم تصفيره (لا حذف السجل)
      */
     protected function recalculateBalance(int $partyId, int $counterpartyId): void
     {
@@ -716,36 +916,33 @@ class AccountingEntryService
             ->where('debt_status', AccountingLedger::DEBT_PENDING)
             ->sum('amount');
 
-        // تحديث الأرصدة
-        if ($receivable > 0) {
-            AccountBalance::updateOrCreate(
-                [
-                    'party_id' => $partyId,
-                    'counterparty_id' => $counterpartyId,
-                    'balance_type' => 'receivable',
-                ],
-                [
-                    'pending_amount' => $receivable,
-                    'last_transaction_at' => now(),
-                    'last_calculated_at' => now(),
-                ]
-            );
-        }
+        // تحديث رصيد المستحقات (receivable)
+        AccountBalance::updateOrCreate(
+            [
+                'party_id' => $partyId,
+                'counterparty_id' => $counterpartyId,
+                'balance_type' => AccountBalance::TYPE_RECEIVABLE,
+            ],
+            [
+                'pending_amount' => $receivable,
+                'last_transaction_at' => now(),
+                'last_calculated_at' => now(),
+            ]
+        );
 
-        if ($payable > 0) {
-            AccountBalance::updateOrCreate(
-                [
-                    'party_id' => $partyId,
-                    'counterparty_id' => $counterpartyId,
-                    'balance_type' => 'payable',
-                ],
-                [
-                    'pending_amount' => $payable,
-                    'last_transaction_at' => now(),
-                    'last_calculated_at' => now(),
-                ]
-            );
-        }
+        // تحديث رصيد المديونيات (payable)
+        AccountBalance::updateOrCreate(
+            [
+                'party_id' => $partyId,
+                'counterparty_id' => $counterpartyId,
+                'balance_type' => AccountBalance::TYPE_PAYABLE,
+            ],
+            [
+                'pending_amount' => $payable,
+                'last_transaction_at' => now(),
+                'last_calculated_at' => now(),
+            ]
+        );
     }
 
     // ═══════════════════════════════════════════════════════════════

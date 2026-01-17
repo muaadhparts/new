@@ -14,6 +14,42 @@ class ManualPaymentController extends BaseMerchantPaymentController
     protected string $paymentMethod = 'Manual Payment';
 
     /**
+     * Override: Manual payment doesn't need API credentials
+     *
+     * OPERATOR PATTERN:
+     * - user_id = $merchantId → Merchant's own manual payment
+     * - user_id = 0 AND operator = $merchantId → Platform-provided for this merchant
+     */
+    protected function getPaymentConfig(int $merchantId): ?array
+    {
+        $payment = \App\Models\MerchantPayment::where('keyword', $this->paymentKeyword)
+            ->where('checkout', 1)
+            ->where(function ($query) use ($merchantId) {
+                $query->where('user_id', $merchantId)
+                    ->orWhere(function ($q) use ($merchantId) {
+                        $q->where('user_id', 0)
+                          ->where('operator', $merchantId);
+                    });
+            })
+            ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId])
+            ->first();
+
+        if (!$payment) {
+            return null;
+        }
+
+        $isPlatformProvided = (int)$payment->user_id === 0;
+
+        return [
+            'id' => $payment->id,
+            'keyword' => $payment->keyword,
+            'name' => $payment->name ?? 'Manual Payment',
+            'is_platform_provided' => $isPlatformProvided,
+            'payment_owner_id' => $isPlatformProvided ? 0 : $merchantId,
+        ];
+    }
+
+    /**
      * POST /merchant/{merchantId}/checkout/payment/manual
      */
     public function processPayment(Request $request, int $merchantId): JsonResponse

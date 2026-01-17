@@ -12,6 +12,7 @@ class Package extends Model
 
     protected $fillable = [
         'user_id',
+        'operator',     // Merchant ID for platform-provided packaging (user_id=0, operator=merchantId)
         'name',
         'subname',
         'price',

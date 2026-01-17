@@ -529,6 +529,29 @@
                                         <span class="badge badge-danger">{{ucwords($merchantPurchase->status)}}</span>
                                         @endif
 
+                                        {{-- Ownership Badges --}}
+                                        <div class="mt-1">
+                                            @if($merchantPurchase->payment_owner_id === 0)
+                                                <span class="badge badge-primary" title="{{ __('Platform Payment') }}"><i class="fas fa-building"></i> {{ __('Pay') }}</span>
+                                            @else
+                                                <span class="badge badge-success" title="{{ __('Merchant Payment') }}"><i class="fas fa-store"></i> {{ __('Pay') }}</span>
+                                            @endif
+
+                                            @if($merchantPurchase->shipping_owner_id === 0)
+                                                <span class="badge badge-primary" title="{{ __('Platform Shipping') }}"><i class="fas fa-truck"></i></span>
+                                            @elseif($merchantPurchase->shipping_type === 'courier')
+                                                <span class="badge badge-warning" title="{{ __('Courier') }}"><i class="fas fa-motorcycle"></i></span>
+                                            @else
+                                                <span class="badge badge-success" title="{{ __('Merchant Shipping') }}"><i class="fas fa-truck"></i></span>
+                                            @endif
+
+                                            @if(($merchantPurchase->packing_owner_id ?? null) === 0)
+                                                <span class="badge badge-primary" title="{{ __('Platform Packing') }}"><i class="fas fa-box"></i></span>
+                                            @elseif(($merchantPurchase->packing_cost ?? 0) > 0)
+                                                <span class="badge badge-success" title="{{ __('Merchant Packing') }}"><i class="fas fa-box"></i></span>
+                                            @endif
+                                        </div>
+
                                         @endif
                                     </td>
 

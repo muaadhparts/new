@@ -9,7 +9,23 @@ class MerchantPayment extends Model
 {
     protected $table = 'merchant_payments';
 
-    protected $fillable = ['user_id', 'name', 'details', 'subname', 'name', 'type', 'information', 'currency_id', 'keyword', 'checkout', 'topup', 'subscription', 'status'];
+    protected $fillable = [
+        'user_id',
+        'operator',      // Merchant ID for platform-provided gateways (user_id=0, operator=merchantId)
+        'name',
+        'title',
+        'subtitle',
+        'subname',
+        'type',
+        'information',
+        'keyword',
+        'monetary_unit_id',
+        'checkout',
+        'topup',
+        'deposit',
+        'subscription',
+        'status',
+    ];
 
     public $timestamps = false;
 

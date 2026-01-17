@@ -7,6 +7,7 @@ use App\Models\ShipmentTracking;
 use App\Models\User;
 use App\Models\City;
 use App\Models\UserCatalogEvent;
+use App\Models\MerchantItem;
 use App\Helpers\PriceHelper;
 use App\Services\ShippingCalculatorService;
 use App\Services\MerchantCredentialService;

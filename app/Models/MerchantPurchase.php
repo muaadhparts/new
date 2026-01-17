@@ -76,6 +76,7 @@ class MerchantPurchase extends Model
         'collected_at',
         'collected_by',
         // === Ownership & Gateway ===
+        'payment_method',
         'payment_type',
         'shipping_type',
         'money_received_by',

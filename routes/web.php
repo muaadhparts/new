@@ -281,6 +281,14 @@ Route::prefix('operator')->group(function () {
         Route::post('/settlements', 'Operator\AccountLedgerController@storeSettlement')->name('operator.accounts.settlements.store');
         Route::get('/settlements/{batch}', 'Operator\AccountLedgerController@settlementDetails')->name('operator.accounts.settlements.show');
 
+        // Courier Settlements - تسويات المناديب
+        Route::post('/settlements/courier', 'Operator\AccountLedgerController@courierSettlement')->name('operator.accounts.settlements.courier');
+        Route::get('/settlements/courier/{courierId}/pending', 'Operator\AccountLedgerController@pendingSettlementsByCourier')->name('operator.accounts.settlements.courier.pending');
+
+        // Shipping Company Settlements - تسويات شركات الشحن
+        Route::post('/settlements/shipping', 'Operator\AccountLedgerController@shippingCompanySettlement')->name('operator.accounts.settlements.shipping');
+        Route::get('/settlements/shipping/{providerCode}/pending', 'Operator\AccountLedgerController@pendingSettlementsByProvider')->name('operator.accounts.settlements.shipping.pending');
+
         // Sync Parties
         Route::post('/sync-parties', 'Operator\AccountLedgerController@syncParties')->name('operator.accounts.sync');
 

@@ -339,11 +339,15 @@ class MerchantCheckoutService
             }
         }
 
-        // Packaging - use name from form if provided, otherwise lookup from database
-        // Note: packages table has no 'operator' column - packaging always belongs to merchant
+        // ═══════════════════════════════════════════════════════════════════
+        // PACKAGING: Supports operator pattern (user_id=0, operator=merchantId)
+        // - user_id = 0 + operator = merchantId → Platform provides for merchant
+        // - user_id = merchantId → Merchant's own packaging
+        // ═══════════════════════════════════════════════════════════════════
         $packingId = (int)($input['packing_id'] ?? 0);
         $packingName = $input['packing_name'] ?? null;
         $packingCost = 0;
+        $packingIsPlatformProvided = false;
         $packingOwnerUserId = $merchantId;
 
         if ($packingId > 0) {
@@ -351,10 +355,12 @@ class MerchantCheckoutService
             $packingName = !empty($packingName) ? $packingName : $packingInfo['packing_name'];
             $packingCost = $packingInfo['packing_cost'];
 
-            // Get owner from database
+            // Get owner from database - check for operator pattern
             $packingRecord = Package::find($packingId);
             if ($packingRecord) {
-                $packingOwnerUserId = (int)$packingRecord->user_id;
+                // Platform-provided = user_id is 0
+                $packingIsPlatformProvided = (int)$packingRecord->user_id === 0;
+                $packingOwnerUserId = $packingIsPlatformProvided ? 0 : (int)$packingRecord->user_id;
             }
         }
 
@@ -362,8 +368,8 @@ class MerchantCheckoutService
             'packing_id' => $packingId,
             'packing_name' => $packingName,
             'packing_cost' => $packingCost,
-            // ✅ التغليف دائماً يتبع التاجر (لا يوجد عمود operator)
-            'packing_is_platform_provided' => false,
+            // ✅ للحسابات المالية
+            'packing_is_platform_provided' => $packingIsPlatformProvided,
             'packing_owner_user_id' => $packingOwnerUserId,
         ]);
 
@@ -571,24 +577,37 @@ class MerchantCheckoutService
     /**
      * Get merchant packaging options
      *
-     * Note: packages table has no 'operator' column
-     * Only merchant's own packaging is available (user_id = merchantId)
+     * OPERATOR PATTERN:
+     * - user_id = merchantId → Merchant's own packaging
+     * - user_id = 0, operator = merchantId → Platform provides for merchant
      */
     protected function getMerchantPackagingOptions(int $merchantId): array
     {
-        $packages = Package::where('user_id', $merchantId)
+        $packages = Package::where(function ($q) use ($merchantId) {
+                // Merchant's own packaging
+                $q->where('user_id', $merchantId)
+                  // OR Platform-provided packaging for this merchant
+                  ->orWhere(function ($q2) use ($merchantId) {
+                      $q2->where('user_id', 0)
+                         ->where('operator', $merchantId);
+                  });
+            })
             ->orderBy('price')
             ->get();
 
         return $packages->map(function ($p) {
+            // Platform-provided = user_id is 0
+            $isPlatformProvided = (int)$p->user_id === 0;
+            $ownerUserId = $isPlatformProvided ? 0 : (int)$p->user_id;
+
             return [
                 'id' => $p->id,
                 'name' => $p->name,
                 'subname' => $p->subname,
                 'price' => round((float)$p->price, 2),
-                // ✅ التغليف دائماً يتبع التاجر
-                'is_platform_provided' => false,
-                'owner_user_id' => (int)$p->user_id,
+                // ✅ للحسابات المالية
+                'is_platform_provided' => $isPlatformProvided,
+                'owner_user_id' => $ownerUserId,
             ];
         })->toArray();
     }

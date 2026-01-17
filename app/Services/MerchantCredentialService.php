@@ -250,13 +250,42 @@ class MerchantCredentialService
      */
     public function hasPaymentCredentials(int $userId): bool
     {
+        // Check for ANY payment gateway credentials in merchant_credentials table
+        $paymentGateways = ['myfatoorah', 'stripe', 'paypal', 'razorpay', 'tap'];
+
+        foreach ($paymentGateways as $gateway) {
+            if ($this->hasOwnCredential($userId, $gateway, 'api_key')) {
+                return true;
+            }
+        }
+
+        // Check legacy merchant_payments table for any configured gateway
+        foreach ($paymentGateways as $gateway) {
+            $key = $this->getFromMerchantPayment($userId, $gateway, 'api_key');
+            if (!empty($key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if merchant has credentials for a SPECIFIC payment gateway
+     *
+     * @param int $userId Merchant user ID
+     * @param string $gateway Gateway keyword (myfatoorah, stripe, etc.)
+     * @return bool
+     */
+    public function hasPaymentCredentialsFor(int $userId, string $gateway): bool
+    {
         // Check new merchant_credentials table
-        if ($this->hasOwnCredential($userId, 'myfatoorah', 'api_key')) {
+        if ($this->hasOwnCredential($userId, $gateway, 'api_key')) {
             return true;
         }
 
         // Check legacy merchant_payments table
-        $key = $this->getFromMerchantPayment($userId, 'myfatoorah', 'api_key');
+        $key = $this->getFromMerchantPayment($userId, $gateway, 'api_key');
         return !empty($key);
     }
 
