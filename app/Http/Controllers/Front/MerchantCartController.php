@@ -4,109 +4,52 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Services\Cart\MerchantCartManager;
-use App\Services\Cart\CartStorage;
-use App\Services\Cart\StockReservation;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 /**
- * MerchantCartController - Clean cart API
+ * MerchantCartController - Cart API
  *
- * Only 6 endpoints:
- * POST   /merchant-cart/add         → add()
- * POST   /merchant-cart/update      → update()
- * DELETE /merchant-cart/remove/{key} → remove()
- * GET    /merchant-cart             → index()
- * GET    /merchant-cart/summary     → summary()
- * POST   /merchant-cart/clear       → clear()
+ * كل العمليات Merchant-Scoped
+ * لا يوجد عمليات عامة على السلة بالكامل
  */
 class MerchantCartController extends Controller
 {
     private MerchantCartManager $cart;
 
-    public function __construct()
+    public function __construct(MerchantCartManager $cart)
     {
-        $this->cart = new MerchantCartManager(
-            new CartStorage(),
-            new StockReservation()
-        );
+        $this->cart = $cart;
     }
 
+    // ══════════════════════════════════════════════════════════════
+    // صفحة السلة
+    // ══════════════════════════════════════════════════════════════
+
     /**
-     * Cart page view
+     * Cart page - shows all merchants grouped
      * GET /merchant-cart
      */
     public function index(): View
     {
-        $cart = $this->cart->getCart();
-        $byMerchant = $this->cart->getItemsByMerchant();
-        $issues = $this->cart->validate();
+        $merchantsCart = $this->cart->getAllMerchantsCart();
+        $isEmpty = !$this->cart->hasItems();
 
         return view('merchant.cart.index', [
-            'cart' => $cart,
-            'byMerchant' => $byMerchant,
-            'issues' => $issues,
-            'isEmpty' => !$this->cart->hasItems(),
+            'merchantsCart' => $merchantsCart,
+            'isEmpty' => $isEmpty,
+            'headerCount' => $this->cart->getHeaderCount(),
         ]);
     }
 
-    /**
-     * Get cart summary (AJAX)
-     * GET /merchant-cart/summary
-     */
-    public function summary(Request $request): JsonResponse
-    {
-        $cart = $this->cart->getCart();
-
-        // If requested for specific merchant
-        if ($request->has('merchant_id')) {
-            $merchantId = (int) $request->merchant_id;
-            $items = $this->cart->getItemsForMerchant($merchantId);
-
-            $total = 0;
-            $qty = 0;
-            foreach ($items as $item) {
-                $total += (float) ($item['total_price'] ?? 0);
-                $qty += (int) ($item['qty'] ?? 0);
-            }
-
-            return response()->json([
-                'success' => true,
-                'merchant_id' => $merchantId,
-                'items' => array_values($items),
-                'totals' => [
-                    'qty' => $qty,
-                    'total' => $total,
-                    'formatted' => monetaryUnit()->convertAndFormat($total),
-                ],
-            ]);
-        }
-
-        // Full cart summary
-        $totals = $cart['totals'] ?? [];
-
-        return response()->json([
-            'success' => true,
-            'items' => array_values($cart['items'] ?? []),
-            'by_merchant' => $cart['by_merchant'] ?? [],
-            'totals' => [
-                'qty' => (int) ($totals['qty'] ?? 0),
-                'subtotal' => (float) ($totals['subtotal'] ?? 0),
-                'discount' => (float) ($totals['discount'] ?? 0),
-                'total' => (float) ($totals['total'] ?? 0),
-                'formatted' => monetaryUnit()->convertAndFormat($totals['total'] ?? 0),
-            ],
-            'item_count' => $this->cart->getItemCount(),
-        ]);
-    }
+    // ══════════════════════════════════════════════════════════════
+    // إضافة صنف
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Add item to cart
      * POST /merchant-cart/add
-     *
-     * Required: merchant_item_id
-     * Optional: qty, size, color, keys, values
      */
     public function add(Request $request): JsonResponse
     {
@@ -115,42 +58,41 @@ class MerchantCartController extends Controller
             'qty' => 'nullable|integer|min:1',
             'size' => 'nullable|string|max:100',
             'color' => 'nullable|string|max:50',
-            'keys' => 'nullable|string|max:500',
-            'values' => 'nullable|string|max:500',
         ]);
 
-        $result = $this->cart->add(
+        $result = $this->cart->addItem(
             merchantItemId: (int) $request->merchant_item_id,
             qty: (int) ($request->qty ?? 1),
             size: $request->size,
-            color: $request->color,
-            keys: $request->keys,
-            values: $request->values
+            color: $request->color
         );
 
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals($result['cart']['totals'] ?? []),
-            'item_count' => $this->cart->getItemCount(),
+            'data' => $result['data'] ?? null,
+            'header_count' => $this->cart->getHeaderCount(),
         ], $result['success'] ? 200 : 422);
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // تعديل الكمية
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Update item quantity
      * POST /merchant-cart/update
-     *
-     * Required: key, qty
      */
     public function update(Request $request): JsonResponse
     {
         $request->validate([
+            'merchant_id' => 'required|integer|min:1',
             'key' => 'required|string',
             'qty' => 'required|integer|min:1',
         ]);
 
         $result = $this->cart->updateQty(
+            merchantId: (int) $request->merchant_id,
             cartKey: $request->key,
             qty: (int) $request->qty
         );
@@ -158,9 +100,8 @@ class MerchantCartController extends Controller
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals($result['cart']['totals'] ?? []),
-            'item_count' => $this->cart->getItemCount(),
+            'data' => $result['data'] ?? null,
+            'header_count' => $this->cart->getHeaderCount(),
         ], $result['success'] ? 200 : 422);
     }
 
@@ -171,17 +112,20 @@ class MerchantCartController extends Controller
     public function increase(Request $request): JsonResponse
     {
         $request->validate([
+            'merchant_id' => 'required|integer|min:1',
             'key' => 'required|string',
         ]);
 
-        $result = $this->cart->increase($request->key);
+        $result = $this->cart->increaseQty(
+            merchantId: (int) $request->merchant_id,
+            cartKey: $request->key
+        );
 
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals($result['cart']['totals'] ?? []),
-            'item_count' => $this->cart->getItemCount(),
+            'data' => $result['data'] ?? null,
+            'header_count' => $this->cart->getHeaderCount(),
         ], $result['success'] ? 200 : 422);
     }
 
@@ -192,98 +136,133 @@ class MerchantCartController extends Controller
     public function decrease(Request $request): JsonResponse
     {
         $request->validate([
+            'merchant_id' => 'required|integer|min:1',
             'key' => 'required|string',
         ]);
 
-        $result = $this->cart->decrease($request->key);
+        $result = $this->cart->decreaseQty(
+            merchantId: (int) $request->merchant_id,
+            cartKey: $request->key
+        );
 
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals($result['cart']['totals'] ?? []),
-            'item_count' => $this->cart->getItemCount(),
+            'data' => $result['data'] ?? null,
+            'header_count' => $this->cart->getHeaderCount(),
         ], $result['success'] ? 200 : 422);
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // حذف
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Remove item from cart
      * DELETE /merchant-cart/remove/{key}
-     * POST /merchant-cart/remove (with key in body)
+     * POST /merchant-cart/remove
      */
     public function remove(Request $request, ?string $key = null): JsonResponse
     {
-        // Get key from route param or request body
+        $request->validate([
+            'merchant_id' => 'required|integer|min:1',
+        ]);
+
         $cartKey = $key ?? $request->input('key');
 
         if (!$cartKey) {
             return response()->json([
                 'success' => false,
-                'message' => __('Cart key is required'),
+                'message' => __('مفتاح الصنف مطلوب'),
             ], 422);
         }
 
-        // URL decode the key (it may contain special characters)
-        $cartKey = urldecode($cartKey);
-
-        $result = $this->cart->remove($cartKey);
+        $result = $this->cart->removeItem(
+            merchantId: (int) $request->merchant_id,
+            cartKey: urldecode($cartKey)
+        );
 
         return response()->json([
             'success' => $result['success'],
             'message' => $result['message'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals($result['cart']['totals'] ?? []),
-            'item_count' => $this->cart->getItemCount(),
+            'data' => $result['data'] ?? null,
+            'header_count' => $this->cart->getHeaderCount(),
         ], $result['success'] ? 200 : 422);
     }
 
     /**
-     * Clear cart
+     * Clear merchant items
+     * POST /merchant-cart/clear-merchant
+     */
+    public function clearMerchant(Request $request): JsonResponse
+    {
+        $request->validate([
+            'merchant_id' => 'required|integer|min:1',
+        ]);
+
+        $this->cart->clearMerchant((int) $request->merchant_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => __('تم مسح أصناف التاجر'),
+            'header_count' => $this->cart->getHeaderCount(),
+        ]);
+    }
+
+    /**
+     * Clear all cart
      * POST /merchant-cart/clear
      */
     public function clear(): JsonResponse
     {
-        $result = $this->cart->clear();
-
-        return response()->json([
-            'success' => $result['success'],
-            'message' => $result['message'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals([]),
-            'item_count' => 0,
-        ]);
-    }
-
-    /**
-     * Validate cart items (AJAX)
-     * GET /merchant-cart/validate
-     */
-    public function validateCart(): JsonResponse
-    {
-        $issues = $this->cart->validate();
-
-        return response()->json([
-            'success' => empty($issues),
-            'issues' => $issues,
-            'has_issues' => !empty($issues),
-        ]);
-    }
-
-    /**
-     * Refresh cart (update prices, remove invalid items)
-     * POST /merchant-cart/refresh
-     */
-    public function refresh(): JsonResponse
-    {
-        $result = $this->cart->refresh();
+        $this->cart->clearAll();
 
         return response()->json([
             'success' => true,
-            'updated' => $result['updated'],
-            'removed' => $result['removed'],
-            'cart' => $result['cart'],
-            'totals' => $this->formatTotals($result['cart']['totals'] ?? []),
-            'item_count' => $this->cart->getItemCount(),
+            'message' => __('تم مسح السلة'),
+            'header_count' => 0,
+        ]);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // قراءة البيانات
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * Get merchant cart summary (AJAX)
+     * GET /merchant-cart/summary?merchant_id=X
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        $request->validate([
+            'merchant_id' => 'required|integer|min:1',
+        ]);
+
+        $merchantId = (int) $request->merchant_id;
+        $merchantCart = $this->cart->getMerchantCart($merchantId);
+
+        return response()->json([
+            'success' => true,
+            'merchant_id' => $merchantId,
+            'merchant_name' => $merchantCart['merchant_name'],
+            'items' => array_values($merchantCart['items']),
+            'totals' => $this->formatTotals($merchantCart['totals']),
+            'has_other_merchants' => $merchantCart['has_other_merchants'],
+        ]);
+    }
+
+    /**
+     * Get all merchants cart (for full page)
+     * GET /merchant-cart/all
+     */
+    public function all(): JsonResponse
+    {
+        $merchantsCart = $this->cart->getAllMerchantsCart();
+
+        return response()->json([
+            'success' => true,
+            'merchants' => $merchantsCart,
+            'header_count' => $this->cart->getHeaderCount(),
         ]);
     }
 
@@ -294,28 +273,38 @@ class MerchantCartController extends Controller
     public function count(): JsonResponse
     {
         return response()->json([
-            'count' => $this->cart->getTotalQty(),
-            'item_count' => $this->cart->getItemCount(),
+            'count' => $this->cart->getHeaderCount(),
+            'has_items' => $this->cart->hasItems(),
         ]);
     }
 
     /**
-     * Format totals with currency conversion
+     * Get merchant IDs in cart
+     * GET /merchant-cart/merchants
+     */
+    public function merchants(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'merchant_ids' => $this->cart->getMerchantIds(),
+        ]);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // مساعدات
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * Format totals for JSON response
      */
     private function formatTotals(array $totals): array
     {
-        $subtotal = (float) ($totals['subtotal'] ?? 0);
-        $discount = (float) ($totals['discount'] ?? 0);
-        $total = (float) ($totals['total'] ?? 0);
-
         return [
             'qty' => (int) ($totals['qty'] ?? 0),
-            'subtotal' => $subtotal,
-            'subtotal_formatted' => monetaryUnit()->convertAndFormat($subtotal),
-            'discount' => $discount,
-            'discount_formatted' => monetaryUnit()->convertAndFormat($discount),
-            'total' => $total,
-            'total_formatted' => monetaryUnit()->convertAndFormat($total),
+            'subtotal' => (float) ($totals['subtotal'] ?? 0),
+            'discount' => (float) ($totals['discount'] ?? 0),
+            'total' => (float) ($totals['total'] ?? 0),
+            'formatted' => monetaryUnit()->convertAndFormat($totals['total'] ?? 0),
         ];
     }
 }

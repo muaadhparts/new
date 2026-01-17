@@ -4,7 +4,6 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Services\Cart\MerchantCartManager;
-use App\Services\Cart\CartStorage;
 use App\Services\Cart\StockReservation;
 use App\Services\MerchantCheckout\MerchantSessionManager;
 use App\Services\MerchantCheckout\MerchantPriceCalculator;
@@ -19,14 +18,12 @@ class MerchantCheckoutServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Cart Storage and Stock Reservation
-        $this->app->singleton(CartStorage::class);
+        // Stock Reservation
         $this->app->singleton(StockReservation::class);
 
-        // MerchantCartManager is the NEW cart service (replaces old MerchantCartService)
+        // MerchantCartManager - Single Source of Truth for cart
         $this->app->singleton(MerchantCartManager::class, function ($app) {
             return new MerchantCartManager(
-                $app->make(CartStorage::class),
                 $app->make(StockReservation::class)
             );
         });

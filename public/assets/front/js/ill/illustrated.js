@@ -954,61 +954,11 @@
       $input.val(current - 1);
     });
 
-    /* إضافة للسلة من Alternatives - يستخدم النظام الجديد */
-    $(document).off('click.alt_addcart').on('click.alt_addcart', '.alt-add-to-cart', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const btn = this;
-      const $btn = $(btn);
-      const mpId = $btn.data('merchant-item-id') || $btn.data('merchantItemId') || $btn.data('mp-id');
-
-      if (!mpId) {
-        console.warn('alt-add-to-cart: missing data-merchant-item-id');
-        return;
-      }
-
-      const $row = $btn.closest('tr').length ? $btn.closest('tr') : $btn.closest('.modal-card');
-      const $input = $row.find('.qty-input');
-      const qty = $input.length ? (parseInt($input.val()) || 1) : 1;
-
-      btn.disabled = true;
-
-      fetch('/merchant-cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-          merchant_item_id: parseInt(mpId, 10),
-          qty: qty
-        })
-      })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
-        .then(data => {
-          // تحديث عداد السلة
-          if (data.cart?.totals?.qty !== undefined) {
-            document.querySelectorAll('#cart-count').forEach(el => {
-              el.textContent = data.cart.totals.qty;
-            });
-          }
-
-          const msg = data.message || t('messages.added_to_cart');
-          if (data.success) {
-            if (window.toastr) toastr.success(msg);
-          } else {
-            if (window.toastr) toastr.error(msg);
-          }
-        })
-        .catch(err => {
-          const msg = t('messages.api_error');
-          if (window.toastr) toastr.error(msg + ': ' + (err.message || err));
-        })
-        .finally(() => { btn.disabled = false; });
-    });
+    /* ============================================
+       CART: Handled by m-cart-add.js
+       Class: .m-cart-add (SINGLE SOURCE OF TRUTH)
+       DO NOT add duplicate handlers here
+       ============================================ */
 
     /* ✅ Pagination Links */
     $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
@@ -1048,63 +998,8 @@
       });
     });
 
-    /* ============== أزرار السلة (NEW CART SYSTEM) ============== */
-
-    // إضافة إلى السلة - يستخدم النظام الجديد /merchant-cart/add
-    $(document).off('click.ill_addnum').on('click.ill_addnum', '.ill-add-to-cart', function (e) {
-      e.preventDefault();
-
-      const btn = this;
-      const mpId = $(btn).data('merchant-item-id') || $(btn).data('merchantItemId') || $(btn).data('mp-id') || $(btn).data('mpId');
-      if (!mpId) { console.warn('ill-add-to-cart: missing data-merchant-item-id'); return; }
-
-      // كمية من الحقل إن وُجد
-      const $root = $(btn).closest('.ill-catalogItem');
-      let qty = 1;
-      const $qty = $root.find('.ill-qty');
-      if ($qty.length) {
-        const q = parseInt($qty.val(), 10);
-        if (!isNaN(q) && q > 0) qty = q;
-      }
-
-      btn.disabled = true;
-
-      // استخدام النظام الجديد فقط
-      fetch('/merchant-cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({
-          merchant_item_id: parseInt(mpId, 10),
-          qty: qty
-        })
-      })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-        .then(data => {
-          // تحديث عداد السلة
-          if (data.cart?.totals?.qty !== undefined) {
-            document.querySelectorAll('#cart-count').forEach(el => {
-              el.textContent = data.cart.totals.qty;
-            });
-          }
-
-          const msg = data.message || t('messages.added_to_cart');
-          if (data.success) {
-            if (window.toastr) toastr.success(msg); else alert(msg);
-          } else {
-            if (window.toastr) toastr.error(msg); else alert(msg);
-          }
-        })
-        .catch(err => {
-          const msg = t('messages.api_error');
-          if (window.toastr) toastr.error(`${msg} ${err.message || err}`); else alert(`${msg}\n${err.message || err}`);
-        })
-        .finally(() => { btn.disabled = false; });
-    });
+    /* ============== أزرار السلة ============== */
+    /* .m-cart-add handled by m-cart-add.js */
 
     // شراء الآن - يستخدم النظام الجديد /merchant-cart/add ثم يذهب للسلة
     $(document).off('click.ill_buynow').on('click.ill_buynow', '.ill-buy-now', function (e) {

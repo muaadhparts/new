@@ -113,7 +113,7 @@
                             <i class="fas fa-eye"></i> @lang('View')
                         </a>
                         @if($inStock)
-                            <button type="button" class="m-btn m-btn--outline m-btn--sm add-to-cart"
+                            <button type="button" class="m-btn m-btn--outline m-btn--sm m-cart-add"
                                     data-merchant-item-id="{{ $merchantItem->id }}">
                                 <i class="fas fa-cart-plus"></i> @lang('Add')
                             </button>

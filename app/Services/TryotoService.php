@@ -9,7 +9,6 @@ use App\Models\City;
 use App\Models\UserCatalogEvent;
 use App\Helpers\PriceHelper;
 use App\Services\ShippingCalculatorService;
-use App\Services\Cart\CartItem;
 use App\Services\MerchantCredentialService;
 use App\Services\MonetaryUnitService;
 use Illuminate\Support\Facades\Cache;
@@ -1510,8 +1509,8 @@ class TryotoService
                 );
             }
 
-            // استخدام CartItem للحصول على الأبعاد الحقيقية
-            $dimensions = CartItem::getCatalogItemDimensions($mpId);
+            // الحصول على الأبعاد من MerchantItem/CatalogItem
+            $dimensions = $this->getMerchantItemDimensions($mpId);
             $itemsForCalculation[] = [
                 'qty' => $qty,
                 'weight' => $dimensions['weight'],
@@ -1546,6 +1545,38 @@ class TryotoService
     private function calculateDimensions(Purchase $purchase): array
     {
         return $this->calculateDimensionsFromPurchase($purchase);
+    }
+
+    /**
+     * Get dimensions for a merchant item
+     * FAIL-FAST: No fallbacks
+     */
+    private function getMerchantItemDimensions(int $merchantItemId): array
+    {
+        $mp = MerchantItem::with('catalogItem')->find($merchantItemId);
+
+        if (!$mp) {
+            throw new \InvalidArgumentException("MerchantItem {$merchantItemId} not found");
+        }
+
+        if (!$mp->catalogItem) {
+            throw new \InvalidArgumentException("MerchantItem {$merchantItemId} has no associated CatalogItem");
+        }
+
+        $catalogItem = $mp->catalogItem;
+
+        // Priority: merchant_items -> catalog_items (NO fallbacks to hardcoded values)
+        $weight = $mp->weight ?? $catalogItem->weight ?? null;
+        $length = $mp->length ?? $catalogItem->length ?? null;
+        $width = $mp->width ?? $catalogItem->width ?? null;
+        $height = $mp->height ?? $catalogItem->height ?? null;
+
+        return [
+            'weight' => $weight !== null ? (float) $weight : null,
+            'length' => $length !== null ? (float) $length : null,
+            'width' => $width !== null ? (float) $width : null,
+            'height' => $height !== null ? (float) $height : null,
+        ];
     }
 
     /**

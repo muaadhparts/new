@@ -39,12 +39,14 @@
             @endif
         </td>
         <td class="catalogItem-add-to-cart">
-            <button type="submit" id="addcrt" class="single_add_to_cart_button button alt single_add_to_cart_ajax_button">{{ __('Add to cart') }}</button>
+            @if($favoriteMerchant)
+                <button type="button" class="m-cart-add button" data-merchant-item-id="{{ $favoriteMerchant->id }}">
+                    <i class="fas fa-cart-plus"></i> {{ __('Add to cart') }}
+                </button>
+            @else
+                <span class="text-muted">{{ __('Not available') }}</span>
+            @endif
         </td>
-    <input type="hidden" id="catalog_item_price" value="{{ round($favoriteCatalogItem->merchantPrice() * $curr->value,2) }}">
-    <input type="hidden" id="catalog_item_id" value="{{ $favoriteCatalogItem->id }}">
-    <input type="hidden" id="curr_pos" value="{{ $gs->currency_format }}">
-    <input type="hidden" id="curr_sign" value="{{ $curr->sign }}">
     </tr>
     @endif
     @endforeach

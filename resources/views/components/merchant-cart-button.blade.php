@@ -200,7 +200,7 @@
         @endif
 
         {{-- Add to Cart Button --}}
-        <button type="button" class="m-cart-button__btn m-cart-button__add" data-action="add-to-cart">
+        <button type="button" class="m-cart-button__btn m-cart-button__add m-cart-add">
             @if ($mode === 'icon-only')
                 <i class="fas fa-shopping-cart"></i>
             @elseif ($mode === 'compact')

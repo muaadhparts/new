@@ -106,7 +106,7 @@
                                             <i class="fas fa-eye"></i>
                                         </button>
                                         @if($canBuy)
-                                            <button type="button" class="btn btn-success alt-add-to-cart" data-merchant-item-id="{{ $mp->id }}" name="@lang('Add To Cart')">
+                                            <button type="button" class="btn btn-success m-cart-add" data-merchant-item-id="{{ $mp->id }}" name="@lang('Add To Cart')">
                                                 <i class="fas fa-cart-plus"></i>
                                             </button>
                                         @endif
@@ -206,7 +206,7 @@
                                 <i class="fas fa-eye"></i>
                             </button>
                             @if($canBuy)
-                                <button type="button" class="catalog-btn catalog-btn-success alt-add-to-cart" data-merchant-item-id="{{ $mp->id }}">
+                                <button type="button" class="catalog-btn catalog-btn-success m-cart-add" data-merchant-item-id="{{ $mp->id }}">
                                     <i class="fas fa-cart-plus"></i> @lang('Add')
                                 </button>
                             @endif

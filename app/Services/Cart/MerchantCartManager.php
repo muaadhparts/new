@@ -4,561 +4,539 @@ namespace App\Services\Cart;
 
 use App\Models\MerchantItem;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Session;
 
 /**
- * MerchantCartManager - Core cart operations
+ * MerchantCartManager - المصدر الوحيد للحقيقة
  *
- * SINGLE SERVICE for all cart operations.
- * Replaces: MerchantCartHelper, MerchantCart model, CartMerchantController logic
+ * ❌ لا يوجد Cart عام
+ * ❌ لا Items بدون merchant
+ * ❌ لا منطق مشترك بين التجار
+ * ✅ كل عملية تتطلب merchantId
+ * ✅ Fail-Fast فقط
  */
 class MerchantCartManager
 {
-    private CartStorage $storage;
+    private const SESSION_KEY = 'merchant_cart';
+
     private StockReservation $reservation;
 
-    public function __construct(CartStorage $storage, StockReservation $reservation)
+    public function __construct(StockReservation $reservation)
     {
-        $this->storage = $storage;
         $this->reservation = $reservation;
     }
 
-    // ===================== ADD ITEM =====================
+    // ══════════════════════════════════════════════════════════════
+    // إضافة صنف
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Add item to cart
      *
-     * @param int $merchantItemId The merchant_item_id (REQUIRED)
-     * @param int $qty Quantity to add
-     * @param string|null $size Size variant
-     * @param string|null $color Color variant
-     * @param string|null $keys Custom keys
-     * @param string|null $values Custom values
-     * @return array ['success' => bool, 'message' => string, 'cart' => array]
+     * @param int $merchantItemId
+     * @param int $qty
+     * @param string|null $size
+     * @param string|null $color
+     * @return array{success: bool, message: string, data?: array}
      */
-    public function add(
+    public function addItem(
         int $merchantItemId,
         int $qty = 1,
         ?string $size = null,
-        ?string $color = null,
-        ?string $keys = null,
-        ?string $values = null
+        ?string $color = null
     ): array {
-        // Validate merchant item exists and is active
-        $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->find($merchantItemId);
+        // ═══ التحقق من MerchantItem ═══
+        $merchantItem = MerchantItem::with(['catalogItem', 'user'])->find($merchantItemId);
 
         if (!$merchantItem) {
-            return $this->error(__('Item not found'));
+            return $this->error(__('الصنف غير موجود'));
+        }
+
+        if (!$merchantItem->user_id || $merchantItem->user_id <= 0) {
+            throw new \RuntimeException(
+                "MerchantItem {$merchantItemId} has invalid user_id: {$merchantItem->user_id}"
+            );
         }
 
         if ($merchantItem->status !== 1) {
-            return $this->error(__('Item is not available'));
+            return $this->error(__('الصنف غير متاح'));
         }
 
-        // Validate merchant is active
+        // ═══ التحقق من التاجر ═══
         $merchant = $merchantItem->user;
         if (!$merchant || $merchant->is_merchant !== 2) {
-            return $this->error(__('Merchant is not active'));
+            return $this->error(__('التاجر غير نشط'));
         }
 
-        // Validate minimum quantity
+        // ═══ التحقق من CatalogItem ═══
+        if (!$merchantItem->catalogItem) {
+            throw new \RuntimeException(
+                "MerchantItem {$merchantItemId} has no CatalogItem"
+            );
+        }
+
+        // ═══ التحقق من الكمية ═══
         $minQty = max(1, (int) ($merchantItem->minimum_qty ?? 1));
         if ($qty < $minQty) {
-            return $this->error(__('Minimum quantity is') . ' ' . $minQty);
+            return $this->error(__('الحد الأدنى للكمية') . ' ' . $minQty);
         }
 
-        // Auto-select size if not provided
+        // ═══ تحديد المقاس واللون ═══
         if ($size === null && !empty($merchantItem->size)) {
             $size = $this->getFirstAvailableSize($merchantItem);
         }
 
-        // Auto-select color if not provided
         if ($color === null && !empty($merchantItem->color_all)) {
-            $colors = $this->toArray($merchantItem->color_all);
+            $colors = $this->parseToArray($merchantItem->color_all);
             $color = !empty($colors) ? ltrim($colors[0], '#') : null;
         }
 
-        // Validate stock (unless preorder)
-        $stock = CartItem::getEffectiveStock($merchantItem, $size);
-        $isPreorder = (bool) ($merchantItem->preordered ?? false);
+        // ═══ التحقق من المخزون ═══
+        $stock = $this->getStock($merchantItem, $size);
+        $isPreorder = (bool) $merchantItem->preordered;
 
         if (!$isPreorder && $stock <= 0) {
-            return $this->error(__('Out of stock'));
+            return $this->error(__('نفذت الكمية'));
         }
 
-        // Generate cart key
-        $cartKey = CartItem::generateKey($merchantItemId, $size, $color);
+        // ═══ إنشاء مفتاح السلة ═══
+        $cartKey = $this->generateKey($merchantItemId, $size, $color);
 
-        // Check existing item in cart
-        $existingItem = $this->storage->getItem($cartKey);
-        $existingQty = $existingItem ? (int) $existingItem['qty'] : 0;
+        // ═══ التحقق من الكمية الموجودة ═══
+        $cart = $this->getStorage();
+        $existingQty = isset($cart['items'][$cartKey]) ? (int) $cart['items'][$cartKey]['qty'] : 0;
         $newTotalQty = $existingQty + $qty;
 
-        // Validate total quantity against stock
         if (!$isPreorder && $stock > 0 && $newTotalQty > $stock) {
             $available = $stock - $existingQty;
             if ($available <= 0) {
-                return $this->error(__('Stock limit reached'));
+                return $this->error(__('وصلت للحد الأقصى'));
             }
-            return $this->error(__('Only') . ' ' . $available . ' ' . __('more available'));
+            return $this->error(__('المتاح فقط') . ' ' . $available);
         }
 
-        // Reserve stock
+        // ═══ حجز المخزون ═══
         if (!$isPreorder && $stock > 0) {
-            if (!$this->reservation->update($merchantItemId, $newTotalQty, $size)) {
-                return $this->error(__('Could not reserve stock'));
-            }
+            $this->reservation->update($merchantItemId, $newTotalQty, $size);
         }
 
-        // Create or update cart item
-        if ($existingItem) {
-            // Update existing
-            $existingItem['qty'] = $newTotalQty;
-            $cartItem = CartItem::fromArray($existingItem);
-            $cartItem = $cartItem->withQty($newTotalQty);
-        } else {
-            // Create new
-            $cartItem = CartItem::fromMerchantItem($merchantItem, $qty, $size, $color, $keys, $values);
+        // ═══ بناء بيانات الصنف ═══
+        $catalogItem = $merchantItem->catalogItem;
+        $unitPrice = (float) $merchantItem->merchantSizePrice();
+
+        if ($unitPrice <= 0) {
+            throw new \RuntimeException(
+                "MerchantItem {$merchantItemId} has invalid price: {$unitPrice}"
+            );
         }
 
-        // Save to storage
-        $this->storage->setItem($cartKey, $cartItem->toArray());
+        $sizePrice = $this->calculateSizePrice($merchantItem, $size);
+        $colorPrice = $this->calculateColorPrice($merchantItem, $color);
+        $effectivePrice = $unitPrice + $sizePrice + $colorPrice;
 
-        // Recalculate totals
-        $this->recalculateTotals();
+        $itemData = [
+            // Identifiers
+            'key' => $cartKey,
+            'merchant_item_id' => $merchantItemId,
+            'merchant_id' => $merchantItem->user_id,
+            'catalog_item_id' => $merchantItem->catalog_item_id,
 
-        return $this->success(__('Item added to cart'), $this->getCart());
+            // Product snapshot
+            'name' => $catalogItem->name,
+            'name_ar' => $catalogItem->label_ar ?: $catalogItem->name,
+            'photo' => $catalogItem->photo ?: '',
+            'slug' => $catalogItem->slug ?: '',
+            'part_number' => $catalogItem->part_number ?: '',
+
+            // Merchant info
+            'merchant_name' => getLocalizedShopName($merchant),
+            'merchant_name_ar' => $merchant->shop_name_ar ?: '',
+
+            // Pricing
+            'unit_price' => $unitPrice,
+            'size_price' => $sizePrice,
+            'color_price' => $colorPrice,
+            'effective_price' => $effectivePrice,
+
+            // Quantity
+            'qty' => $newTotalQty,
+            'min_qty' => $minQty,
+            'stock' => $stock,
+            'preordered' => $isPreorder,
+
+            // Variants
+            'size' => $size,
+            'color' => $color ? ltrim($color, '#') : null,
+
+            // Wholesale
+            'whole_sell_qty' => $this->parseToArray($merchantItem->whole_sell_qty),
+            'whole_sell_discount' => $this->parseToArray($merchantItem->whole_sell_discount),
+
+            // Timestamp
+            'added_at' => now()->toDateTimeString(),
+        ];
+
+        // ═══ حساب السعر الإجمالي ═══
+        $itemData['total_price'] = $this->calculateItemTotal($itemData);
+
+        // ═══ حفظ في السلة ═══
+        $cart['items'][$cartKey] = $itemData;
+        $this->saveStorage($cart);
+
+        return $this->success(
+            __('تمت الإضافة للسلة'),
+            $this->getMerchantCart($merchantItem->user_id)
+        );
     }
 
-    // ===================== UPDATE QUANTITY =====================
+    // ══════════════════════════════════════════════════════════════
+    // تعديل الكمية
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Update item quantity
-     *
-     * @param string $cartKey The cart item key
-     * @param int $qty New quantity
-     * @return array
      */
-    public function updateQty(string $cartKey, int $qty): array
+    public function updateQty(int $merchantId, string $cartKey, int $qty): array
     {
-        $item = $this->storage->getItem($cartKey);
+        $this->validateMerchantId($merchantId);
+
+        $cart = $this->getStorage();
+        $item = $cart['items'][$cartKey] ?? null;
 
         if (!$item) {
-            return $this->error(__('Item not found in cart'));
+            return $this->error(__('الصنف غير موجود في السلة'));
         }
 
-        // FAIL-FAST: Required fields must exist
-        $this->validateRequiredItemFields($item, $cartKey);
+        // ═══ التحقق من ملكية التاجر ═══
+        if ((int) $item['merchant_id'] !== $merchantId) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' belongs to merchant {$item['merchant_id']}, not {$merchantId}"
+            );
+        }
 
+        // ═══ التحقق من الحد الأدنى ═══
         $minQty = (int) $item['min_qty'];
         if ($qty < $minQty) {
-            return $this->error(__('Minimum quantity is') . ' ' . $minQty);
+            return $this->error(__('الحد الأدنى للكمية') . ' ' . $minQty);
         }
 
-        // Validate against current stock
+        // ═══ التحقق من المخزون ═══
         $merchantItem = MerchantItem::find($item['merchant_item_id']);
         if (!$merchantItem || $merchantItem->status !== 1) {
-            // Remove invalid item
-            $this->remove($cartKey);
-            return $this->error(__('Item no longer available'));
+            unset($cart['items'][$cartKey]);
+            $this->saveStorage($cart);
+            return $this->error(__('الصنف لم يعد متاحاً'));
         }
 
-        $stock = CartItem::getEffectiveStock($merchantItem, $item['size'] ?? null); // size is optional
+        $stock = $this->getStock($merchantItem, $item['size'] ?? null);
         $isPreorder = (bool) $item['preordered'];
 
         if (!$isPreorder && $stock > 0 && $qty > $stock) {
-            return $this->error(__('Only') . ' ' . $stock . ' ' . __('available'));
+            return $this->error(__('المتاح فقط') . ' ' . $stock);
         }
 
-        // Update reservation
+        // ═══ تحديث الحجز ═══
         if (!$isPreorder && $stock > 0) {
             $this->reservation->update($item['merchant_item_id'], $qty, $item['size'] ?? null);
         }
 
-        // Update item
-        $cartItem = CartItem::fromArray($item);
-        $cartItem = $cartItem->withQty($qty);
-        $this->storage->setItem($cartKey, $cartItem->toArray());
+        // ═══ تحديث الكمية ═══
+        $cart['items'][$cartKey]['qty'] = $qty;
+        $cart['items'][$cartKey]['total_price'] = $this->calculateItemTotal($cart['items'][$cartKey]);
+        $this->saveStorage($cart);
 
-        // Recalculate totals
-        $this->recalculateTotals();
-
-        return $this->success(__('Quantity updated'), $this->getCart());
+        return $this->success(__('تم التحديث'), $this->getMerchantCart($merchantId));
     }
 
     /**
-     * Increase item quantity by 1
+     * Increase quantity by 1
      */
-    public function increase(string $cartKey): array
+    public function increaseQty(int $merchantId, string $cartKey): array
     {
-        $item = $this->storage->getItem($cartKey);
+        $cart = $this->getStorage();
+        $item = $cart['items'][$cartKey] ?? null;
 
         if (!$item) {
-            return $this->error(__('Item not found in cart'));
+            return $this->error(__('الصنف غير موجود'));
         }
 
-        // FAIL-FAST: qty must exist
-        if (!isset($item['qty'])) {
-            throw new \RuntimeException(
-                "Cart item '{$cartKey}' missing required field: qty"
-            );
-        }
-
-        $currentQty = (int) $item['qty'];
-        return $this->updateQty($cartKey, $currentQty + 1);
+        return $this->updateQty($merchantId, $cartKey, (int) $item['qty'] + 1);
     }
 
     /**
-     * Decrease item quantity by 1
+     * Decrease quantity by 1
      */
-    public function decrease(string $cartKey): array
+    public function decreaseQty(int $merchantId, string $cartKey): array
     {
-        $item = $this->storage->getItem($cartKey);
+        $cart = $this->getStorage();
+        $item = $cart['items'][$cartKey] ?? null;
 
         if (!$item) {
-            return $this->error(__('Item not found in cart'));
+            return $this->error(__('الصنف غير موجود'));
         }
 
-        // FAIL-FAST: Required fields must exist
-        if (!isset($item['qty'])) {
-            throw new \RuntimeException(
-                "Cart item '{$cartKey}' missing required field: qty"
-            );
-        }
-        if (!isset($item['min_qty'])) {
-            throw new \RuntimeException(
-                "Cart item '{$cartKey}' missing required field: min_qty"
-            );
-        }
-
-        $currentQty = (int) $item['qty'];
-        $minQty = (int) $item['min_qty'];
-
-        if ($currentQty <= $minQty) {
-            return $this->error(__('Minimum quantity is') . ' ' . $minQty);
-        }
-
-        return $this->updateQty($cartKey, $currentQty - 1);
+        return $this->updateQty($merchantId, $cartKey, (int) $item['qty'] - 1);
     }
 
-    // ===================== REMOVE ITEM =====================
+    // ══════════════════════════════════════════════════════════════
+    // حذف صنف
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Remove item from cart
-     *
-     * @param string $cartKey
-     * @return array
      */
-    public function remove(string $cartKey): array
+    public function removeItem(int $merchantId, string $cartKey): array
     {
-        $item = $this->storage->getItem($cartKey);
+        $this->validateMerchantId($merchantId);
+
+        $cart = $this->getStorage();
+        $item = $cart['items'][$cartKey] ?? null;
 
         if (!$item) {
-            return $this->error(__('Item not found in cart'));
+            return $this->error(__('الصنف غير موجود'));
         }
 
-        // Release stock reservation
-        $this->reservation->release(
-            (int) $item['merchant_item_id'],
-            $item['size'] ?? null
-        );
+        // ═══ التحقق من ملكية التاجر ═══
+        if ((int) $item['merchant_id'] !== $merchantId) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' belongs to merchant {$item['merchant_id']}, not {$merchantId}"
+            );
+        }
 
-        // Remove from storage
-        $this->storage->removeItem($cartKey);
+        // ═══ تحرير الحجز ═══
+        $this->reservation->release($item['merchant_item_id'], $item['size'] ?? null);
 
-        // Recalculate totals
-        $this->recalculateTotals();
+        // ═══ حذف من السلة ═══
+        unset($cart['items'][$cartKey]);
+        $this->saveStorage($cart);
 
-        return $this->success(__('Item removed from cart'), $this->getCart());
+        return $this->success(__('تم الحذف'), $this->getMerchantCart($merchantId));
     }
 
-    // ===================== CLEAR CART =====================
+    // ══════════════════════════════════════════════════════════════
+    // قراءة بيانات تاجر محدد
+    // ══════════════════════════════════════════════════════════════
 
     /**
-     * Clear all items from cart
+     * Get cart data for a specific merchant
+     *
+     * @param int $merchantId
+     * @return array{
+     *   merchant_id: int,
+     *   merchant_name: string,
+     *   items: array,
+     *   totals: array{qty: int, subtotal: float, discount: float, total: float},
+     *   has_other_merchants: bool
+     * }
      */
-    public function clear(): array
+    public function getMerchantCart(int $merchantId): array
     {
-        // Release all reservations
-        $this->reservation->releaseAll();
+        $this->validateMerchantId($merchantId);
 
-        // Clear storage
-        $this->storage->clear();
+        $cart = $this->getStorage();
+        $merchantItems = [];
 
-        return $this->success(__('Cart cleared'), $this->storage->getEmptyCart());
+        foreach ($cart['items'] as $key => $item) {
+            if ((int) $item['merchant_id'] === $merchantId) {
+                $merchantItems[$key] = $item;
+            }
+        }
+
+        // ═══ حساب الإجماليات ═══
+        $totals = $this->calculateTotals($merchantItems);
+
+        // ═══ معلومات التاجر ═══
+        $merchantName = '';
+        if (!empty($merchantItems)) {
+            $first = reset($merchantItems);
+            $merchantName = $first['merchant_name'] ?? '';
+        }
+
+        // ═══ هل يوجد تجار آخرين؟ ═══
+        $hasOthers = false;
+        foreach ($cart['items'] as $item) {
+            if ((int) $item['merchant_id'] !== $merchantId) {
+                $hasOthers = true;
+                break;
+            }
+        }
+
+        return [
+            'merchant_id' => $merchantId,
+            'merchant_name' => $merchantName,
+            'items' => $merchantItems,
+            'totals' => $totals,
+            'has_other_merchants' => $hasOthers,
+        ];
     }
 
-    // ===================== GET CART =====================
-
     /**
-     * Get full cart data
+     * Get items for a specific merchant (simple array)
      */
-    public function getCart(): array
+    public function getMerchantItems(int $merchantId): array
     {
-        $cart = $this->storage->get();
+        $this->validateMerchantId($merchantId);
 
-        // Add grouped by merchant
-        $cart['by_merchant'] = $this->storage->getItemsByMerchant();
+        $cart = $this->getStorage();
+        $items = [];
 
-        return $cart;
+        foreach ($cart['items'] as $key => $item) {
+            if ((int) $item['merchant_id'] === $merchantId) {
+                $items[$key] = $item;
+            }
+        }
+
+        return $items;
     }
 
     /**
-     * Get cart items
+     * Get totals for a specific merchant
      */
-    public function getItems(): array
+    public function getMerchantTotals(int $merchantId): array
     {
-        return $this->storage->getItems();
+        $items = $this->getMerchantItems($merchantId);
+        return $this->calculateTotals($items);
     }
 
-    /**
-     * Get item by key
-     */
-    public function getItem(string $cartKey): ?array
-    {
-        return $this->storage->getItem($cartKey);
-    }
+    // ══════════════════════════════════════════════════════════════
+    // قائمة التجار في السلة
+    // ══════════════════════════════════════════════════════════════
 
     /**
-     * Get cart totals
-     */
-    public function getTotals(): array
-    {
-        return $this->storage->getTotals();
-    }
-
-    /**
-     * Get total quantity
-     */
-    public function getTotalQty(): int
-    {
-        return $this->storage->getTotalQty();
-    }
-
-    /**
-     * Get total price
-     */
-    public function getTotalPrice(): float
-    {
-        return $this->storage->getTotalPrice();
-    }
-
-    /**
-     * Check if cart has items
-     */
-    public function hasItems(): bool
-    {
-        return $this->storage->hasItems();
-    }
-
-    /**
-     * Get item count
-     */
-    public function getItemCount(): int
-    {
-        return $this->storage->getItemCount();
-    }
-
-    /**
-     * Get items grouped by merchant
-     */
-    public function getItemsByMerchant(): array
-    {
-        return $this->storage->getItemsByMerchant();
-    }
-
-    /**
-     * Get items for a specific merchant
-     */
-    public function getItemsForMerchant(int $merchantId): array
-    {
-        return $this->storage->getItemsForMerchant($merchantId);
-    }
-
-    /**
-     * Get merchant IDs in cart
+     * Get list of merchant IDs in cart
      */
     public function getMerchantIds(): array
     {
-        return $this->storage->getMerchantIds();
-    }
+        $cart = $this->getStorage();
+        $ids = [];
 
-    // ===================== VALIDATION =====================
+        foreach ($cart['items'] as $item) {
+            $merchantId = (int) $item['merchant_id'];
 
-    /**
-     * Validate all items in cart (check stock, availability)
-     * Returns array of issues found
-     */
-    public function validate(): array
-    {
-        $issues = [];
-        $items = $this->storage->getItems();
-
-        foreach ($items as $key => $item) {
-            // FAIL-FAST: Validate required fields first
-            $this->validateRequiredItemFields($item, $key);
-
-            $merchantItem = MerchantItem::with('user')->find($item['merchant_item_id']);
-
-            // Check if item exists
-            if (!$merchantItem) {
-                $issues[$key] = [
-                    'type' => 'not_found',
-                    'message' => __('Item no longer exists'),
-                ];
-                continue;
+            if ($merchantId <= 0) {
+                throw new \RuntimeException(
+                    "Cart item has invalid merchant_id: {$merchantId}"
+                );
             }
 
-            // Check if item is active
-            if ($merchantItem->status !== 1) {
-                $issues[$key] = [
-                    'type' => 'inactive',
-                    'message' => __('Item is no longer available'),
-                ];
-                continue;
-            }
-
-            // Check if merchant is active
-            if (!$merchantItem->user || $merchantItem->user->is_merchant !== 2) {
-                $issues[$key] = [
-                    'type' => 'merchant_inactive',
-                    'message' => __('Merchant is no longer active'),
-                ];
-                continue;
-            }
-
-            // Check stock
-            $isPreorder = (bool) $item['preordered'];
-            if (!$isPreorder) {
-                $stock = CartItem::getEffectiveStock($merchantItem, $item['size'] ?? null); // size is optional
-                $qty = (int) $item['qty'];
-
-                if ($stock <= 0) {
-                    $issues[$key] = [
-                        'type' => 'out_of_stock',
-                        'message' => __('Item is out of stock'),
-                    ];
-                } elseif ($qty > $stock) {
-                    $issues[$key] = [
-                        'type' => 'insufficient_stock',
-                        'message' => __('Only') . ' ' . $stock . ' ' . __('available'),
-                        'available' => $stock,
-                    ];
-                }
-            }
-
-            // Check price changes
-            $currentPrice = $merchantItem->merchantSizePrice();
-            $storedPrice = (float) $item['unit_price'];
-
-            if (abs($currentPrice - $storedPrice) > 0.01) {
-                $issues[$key] = [
-                    'type' => 'price_changed',
-                    'message' => __('Price has changed'),
-                    'old_price' => $storedPrice,
-                    'new_price' => $currentPrice,
-                ];
+            if (!in_array($merchantId, $ids)) {
+                $ids[] = $merchantId;
             }
         }
 
-        return $issues;
+        return $ids;
     }
 
     /**
-     * Refresh cart items (update prices, remove invalid items)
+     * Get summary for all merchants (for cart page display)
+     *
+     * @return array<int, array{
+     *   merchant_id: int,
+     *   merchant_name: string,
+     *   items: array,
+     *   totals: array,
+     *   checkout_url: string
+     * }>
      */
-    public function refresh(): array
+    public function getAllMerchantsCart(): array
     {
-        $items = $this->storage->getItems();
-        $updated = [];
-        $removed = [];
+        $merchantIds = $this->getMerchantIds();
+        $result = [];
 
-        foreach ($items as $key => $item) {
-            // FAIL-FAST: Validate required fields
-            if (!isset($item['merchant_item_id'])) {
-                throw new \RuntimeException(
-                    "Cart item '{$key}' missing required field: merchant_item_id"
-                );
-            }
-            if (!isset($item['qty'])) {
-                throw new \RuntimeException(
-                    "Cart item '{$key}' missing required field: qty"
-                );
-            }
+        foreach ($merchantIds as $merchantId) {
+            $merchantCart = $this->getMerchantCart($merchantId);
+            $merchantCart['checkout_url'] = route('front.checkout.merchant', ['merchant' => $merchantId]);
+            $result[$merchantId] = $merchantCart;
+        }
 
-            $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->find($item['merchant_item_id']);
+        return $result;
+    }
 
-            // Remove invalid items
-            if (!$merchantItem || $merchantItem->status !== 1) {
-                $this->storage->removeItem($key);
-                $removed[] = $key;
-                continue;
-            }
+    // ══════════════════════════════════════════════════════════════
+    // Checkout
+    // ══════════════════════════════════════════════════════════════
 
-            // Check merchant
-            if (!$merchantItem->user || $merchantItem->user->is_merchant !== 2) {
-                $this->storage->removeItem($key);
-                $removed[] = $key;
-                continue;
-            }
+    /**
+     * Get data for checkout (specific merchant only)
+     */
+    public function getForCheckout(int $merchantId): array
+    {
+        $this->validateMerchantId($merchantId);
 
-            // Update item with fresh data (size, color, keys, values are optional)
-            $freshItem = CartItem::fromMerchantItem(
-                $merchantItem,
-                (int) $item['qty'],
-                $item['size'] ?? null,
-                $item['color'] ?? null,
-                $item['keys'] ?? null,
-                $item['values'] ?? null
+        $merchantCart = $this->getMerchantCart($merchantId);
+
+        if (empty($merchantCart['items'])) {
+            throw new \RuntimeException(
+                "No items in cart for merchant {$merchantId}"
             );
-
-            $this->storage->setItem($key, $freshItem->toArray());
-            $updated[] = $key;
         }
 
-        // Recalculate totals
-        $this->recalculateTotals();
-
         return [
-            'updated' => $updated,
-            'removed' => $removed,
-            'cart' => $this->getCart(),
-        ];
-    }
-
-    // ===================== CHECKOUT HELPERS =====================
-
-    /**
-     * Prepare cart data for checkout
-     * Uses CartItem as SINGLE SOURCE OF TRUTH for totals
-     */
-    public function prepareForCheckout(int $merchantId = null): array
-    {
-        $items = $merchantId
-            ? $this->storage->getItemsForMerchant($merchantId)
-            : $this->storage->getItems();
-
-        // Use CartItem for totals calculation
-        $totals = $merchantId
-            ? CartItem::calculateMerchantTotals($this->storage->getItems(), $merchantId)
-            : CartItem::calculateTotals($items);
-
-        return [
-            'items' => $items,
-            'totals' => $totals,
+            'merchant_id' => $merchantId,
+            'merchant_name' => $merchantCart['merchant_name'],
+            'items' => $merchantCart['items'],
+            'totals' => $merchantCart['totals'],
+            'has_other_merchants' => $merchantCart['has_other_merchants'],
+            'cart_payload' => [
+                'totalQty' => $merchantCart['totals']['qty'],
+                'totalPrice' => $merchantCart['totals']['total'],
+                'items' => $merchantCart['items'],
+            ],
         ];
     }
 
     /**
-     * Confirm checkout (deduct stock, clear cart)
+     * Check if there are other merchants after checkout
      */
-    public function confirmCheckout(int $merchantId = null): bool
+    public function hasOtherMerchants(int $merchantId): bool
     {
-        $items = $merchantId
-            ? $this->storage->getItemsForMerchant($merchantId)
-            : $this->storage->getItems();
+        $this->validateMerchantId($merchantId);
 
-        // Prepare reservation confirmation data
+        $cart = $this->getStorage();
+
+        foreach ($cart['items'] as $item) {
+            if ((int) $item['merchant_id'] !== $merchantId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Clear items for a specific merchant (after successful checkout)
+     */
+    public function clearMerchant(int $merchantId): void
+    {
+        $this->validateMerchantId($merchantId);
+
+        $cart = $this->getStorage();
+
+        foreach ($cart['items'] as $key => $item) {
+            if ((int) $item['merchant_id'] === $merchantId) {
+                // تحرير الحجز
+                $this->reservation->release($item['merchant_item_id'], $item['size'] ?? null);
+                unset($cart['items'][$key]);
+            }
+        }
+
+        $this->saveStorage($cart);
+    }
+
+    /**
+     * Confirm checkout and deduct stock
+     */
+    public function confirmCheckout(int $merchantId): bool
+    {
+        $this->validateMerchantId($merchantId);
+
+        $items = $this->getMerchantItems($merchantId);
+
+        if (empty($items)) {
+            return false;
+        }
+
+        // تأكيد خصم المخزون
         $confirmData = [];
         foreach ($items as $item) {
             $confirmData[$item['merchant_item_id']] = [
@@ -567,261 +545,228 @@ class MerchantCartManager
             ];
         }
 
-        // Confirm stock deduction
         if (!$this->reservation->confirm($confirmData)) {
             return false;
         }
 
-        // Clear items from cart
-        if ($merchantId) {
-            foreach ($items as $key => $item) {
-                $this->storage->removeItem($key);
-            }
-            $this->recalculateTotals();
-        } else {
-            $this->storage->clear();
-        }
+        // مسح أصناف التاجر من السلة
+        $this->clearMerchant($merchantId);
 
         return true;
     }
 
-    // ===================== PRIVATE HELPERS =====================
+    // ══════════════════════════════════════════════════════════════
+    // مساعدات التخزين (خاص - لا يُستخدم من الخارج)
+    // ══════════════════════════════════════════════════════════════
 
-    /**
-     * Recalculate cart totals
-     * Uses CartItem as SINGLE SOURCE OF TRUTH for calculation
-     */
-    private function recalculateTotals(): void
+    private function getStorage(): array
     {
-        $items = $this->storage->getItems();
-        $totals = CartItem::calculateTotals($items);
-        $this->storage->updateTotals($totals);
+        return Session::get(self::SESSION_KEY, ['items' => []]);
+    }
+
+    private function saveStorage(array $cart): void
+    {
+        Session::put(self::SESSION_KEY, $cart);
     }
 
     /**
-     * Get first available size from merchant item
+     * Clear all cart (admin/testing only)
      */
-    private function getFirstAvailableSize(MerchantItem $merchantItem): ?string
+    public function clearAll(): void
     {
-        $sizes = $this->toArray($merchantItem->size);
-        $qtys = $this->toArray($merchantItem->size_qty);
+        $this->reservation->releaseAll();
+        Session::forget(self::SESSION_KEY);
+    }
 
-        // Find first size with stock
-        foreach ($sizes as $i => $size) {
-            if ((int) ($qtys[$i] ?? 0) > 0) {
-                return trim($size);
+    // ══════════════════════════════════════════════════════════════
+    // دوال حساب خاصة
+    // ══════════════════════════════════════════════════════════════
+
+    private function calculateTotals(array $items): array
+    {
+        $totals = [
+            'qty' => 0,
+            'subtotal' => 0.0,
+            'discount' => 0.0,
+            'total' => 0.0,
+        ];
+
+        foreach ($items as $item) {
+            $totals['qty'] += (int) $item['qty'];
+            $totals['subtotal'] += (float) $item['effective_price'] * (int) $item['qty'];
+            $totals['total'] += (float) $item['total_price'];
+        }
+
+        $totals['discount'] = $totals['subtotal'] - $totals['total'];
+
+        return $totals;
+    }
+
+    private function calculateItemTotal(array $item): float
+    {
+        $effectivePrice = (float) $item['effective_price'];
+        $qty = (int) $item['qty'];
+
+        // حساب خصم الجملة
+        $discountPercent = $this->getWholesaleDiscount($item);
+
+        if ($discountPercent > 0) {
+            $effectivePrice = $effectivePrice * (1 - $discountPercent / 100);
+        }
+
+        return round($effectivePrice * $qty, 2);
+    }
+
+    private function getWholesaleDiscount(array $item): float
+    {
+        $wholeSellQty = $item['whole_sell_qty'] ?? [];
+        $wholeSellDiscount = $item['whole_sell_discount'] ?? [];
+        $qty = (int) $item['qty'];
+
+        if (empty($wholeSellQty) || empty($wholeSellDiscount)) {
+            return 0.0;
+        }
+
+        $discount = 0.0;
+        foreach ($wholeSellQty as $i => $threshold) {
+            if ($qty >= (int) $threshold && isset($wholeSellDiscount[$i])) {
+                $discount = (float) $wholeSellDiscount[$i];
             }
         }
 
-        // Return first size if none have stock
-        return !empty($sizes) ? trim($sizes[0]) : null;
+        return $discount;
     }
 
-    /**
-     * Convert value to array
-     */
-    private function toArray($value): array
-    {
-        if (is_array($value)) return $value;
-        if (is_string($value) && $value !== '') return array_map('trim', explode(',', $value));
-        return [];
-    }
+    // ══════════════════════════════════════════════════════════════
+    // دوال مساعدة
+    // ══════════════════════════════════════════════════════════════
 
-    /**
-     * Success response helper
-     */
-    private function success(string $message, array $data = []): array
-    {
-        return [
-            'success' => true,
-            'message' => $message,
-            'cart' => $data,
-        ];
-    }
-
-    /**
-     * Error response helper
-     */
-    private function error(string $message): array
-    {
-        return [
-            'success' => false,
-            'message' => $message,
-            'cart' => null,
-        ];
-    }
-
-    // ===================== CHECKOUT FLOW HELPERS =====================
-
-    /**
-     * Check if cart has items for a specific merchant
-     */
-    public function hasMerchantItems(int $merchantId): bool
-    {
-        $items = $this->storage->getItemsForMerchant($merchantId);
-        return !empty($items);
-    }
-
-    /**
-     * Check if cart has items for other merchants (besides the specified one)
-     */
-    public function hasOtherMerchants(int $merchantId): bool
-    {
-        $merchantIds = $this->storage->getMerchantIds();
-        foreach ($merchantIds as $id) {
-            if ((int) $id !== (int) $merchantId) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Get cart summary for a specific merchant
-     *
-     * @param int $merchantId
-     * @return array
-     */
-    public function getMerchantCartSummary(int $merchantId): array
-    {
-        $items = $this->storage->getItemsForMerchant($merchantId);
-
-        if (empty($items)) {
-            return [
-                'merchant_id' => $merchantId,
-                'items' => [],
-                'items_count' => 0,
-                'total_qty' => 0,
-                'total_price' => 0.0,
-            ];
-        }
-
-        $totals = CartItem::calculateMerchantTotals($this->storage->getItems(), $merchantId);
-        $merchant = User::find($merchantId);
-
-        return [
-            'merchant_id' => $merchantId,
-            'merchant_name' => $merchant->shop_name ?? $merchant->name ?? null,
-            'items' => $items,
-            'items_count' => count($items),
-            'total_qty' => $totals['qty'],
-            'total_price' => $totals['total'],
-        ];
-    }
-
-    /**
-     * Build cart payload for purchase creation
-     *
-     * @param int $merchantId
-     * @return array
-     */
-    public function buildCartPayload(int $merchantId): array
-    {
-        $items = $this->storage->getItemsForMerchant($merchantId);
-        $totals = CartItem::calculateMerchantTotals($this->storage->getItems(), $merchantId);
-
-        return [
-            'totalQty' => $totals['qty'],
-            'totalPrice' => $totals['total'],
-            'items' => $items,
-        ];
-    }
-
-    /**
-     * Remove all items for a specific merchant from cart
-     *
-     * @param int $merchantId
-     * @return array
-     */
-    public function removeMerchantItems(int $merchantId): array
+    private function validateMerchantId(int $merchantId): void
     {
         if ($merchantId <= 0) {
             throw new \InvalidArgumentException(
                 "Invalid merchantId: {$merchantId}. Must be > 0."
             );
         }
-
-        $items = $this->storage->getItemsForMerchant($merchantId);
-
-        foreach ($items as $key => $item) {
-            // FAIL-FAST: merchant_item_id must exist
-            if (!isset($item['merchant_item_id'])) {
-                throw new \RuntimeException(
-                    "Cart item '{$key}' missing required field: merchant_item_id"
-                );
-            }
-
-            // Release stock reservation (size is optional)
-            $this->reservation->release(
-                (int) $item['merchant_item_id'],
-                $item['size'] ?? null
-            );
-
-            // Remove from storage
-            $this->storage->removeItem($key);
-        }
-
-        // Recalculate totals
-        $this->recalculateTotals();
-
-        return $this->success(__('Merchant items removed'), $this->getCart());
     }
 
-    // ===================== FAIL-FAST VALIDATION =====================
-
-    /**
-     * Validate required fields exist in cart item
-     *
-     * FAIL-FAST: Missing required fields = Exception
-     *
-     * @param array $item The cart item
-     * @param string $key The cart key
-     * @throws \RuntimeException if required fields are missing
-     */
-    private function validateRequiredItemFields(array $item, string $key): void
+    private function generateKey(int $merchantItemId, ?string $size, ?string $color): string
     {
-        $requiredFields = [
-            'merchant_item_id',
-            'merchant_id',
-            'catalog_item_id',
-            'qty',
-            'min_qty',
-            'unit_price',
-            'preordered',
-        ];
+        $sessionHash = substr(md5(session()->getId()), 0, 8);
+        $sizeKey = $size ? preg_replace('/[^a-zA-Z0-9]/', '', $size) : '_';
+        $colorKey = $color ? ltrim($color, '#') : '_';
 
-        foreach ($requiredFields as $field) {
-            if (!array_key_exists($field, $item)) {
-                throw new \RuntimeException(
-                    "Cart item '{$key}' missing required field: {$field}. " .
-                    "Data is corrupted or using old format. Keys present: " . implode(', ', array_keys($item))
-                );
+        return "s{$sessionHash}_m{$merchantItemId}_{$sizeKey}_{$colorKey}";
+    }
+
+    private function getStock(MerchantItem $mp, ?string $size): int
+    {
+        if ($size && !empty($mp->size) && !empty($mp->size_qty)) {
+            $sizes = $this->parseToArray($mp->size);
+            $qtys = $this->parseToArray($mp->size_qty);
+            $idx = array_search(trim($size), array_map('trim', $sizes), true);
+
+            if ($idx !== false && isset($qtys[$idx])) {
+                return (int) $qtys[$idx];
             }
         }
 
-        // Validate critical values
-        if ((int) $item['merchant_id'] <= 0) {
-            throw new \RuntimeException(
-                "Cart item '{$key}' has invalid merchant_id: {$item['merchant_id']}. Must be > 0."
-            );
+        return (int) ($mp->stock ?? 0);
+    }
+
+    private function getFirstAvailableSize(MerchantItem $mp): ?string
+    {
+        $sizes = $this->parseToArray($mp->size);
+        $qtys = $this->parseToArray($mp->size_qty);
+
+        foreach ($sizes as $i => $size) {
+            if ((int) ($qtys[$i] ?? 0) > 0) {
+                return trim($size);
+            }
         }
 
-        if ((int) $item['merchant_item_id'] <= 0) {
-            throw new \RuntimeException(
-                "Cart item '{$key}' has invalid merchant_item_id: {$item['merchant_item_id']}. Must be > 0."
-            );
+        return !empty($sizes) ? trim($sizes[0]) : null;
+    }
+
+    private function calculateSizePrice(MerchantItem $mp, ?string $size): float
+    {
+        if (!$size || empty($mp->size) || empty($mp->size_price)) {
+            return 0.0;
         }
 
-        if ((int) $item['qty'] <= 0) {
-            throw new \RuntimeException(
-                "Cart item '{$key}' has invalid qty: {$item['qty']}. Must be > 0."
-            );
+        $sizes = $this->parseToArray($mp->size);
+        $prices = $this->parseToArray($mp->size_price);
+        $idx = array_search(trim($size), array_map('trim', $sizes), true);
+
+        if ($idx !== false && isset($prices[$idx])) {
+            return (float) $prices[$idx];
         }
 
-        if ((float) $item['unit_price'] <= 0) {
-            throw new \RuntimeException(
-                "Cart item '{$key}' has invalid unit_price: {$item['unit_price']}. Must be > 0."
-            );
+        return 0.0;
+    }
+
+    private function calculateColorPrice(MerchantItem $mp, ?string $color): float
+    {
+        if (!$color || empty($mp->color_all) || empty($mp->color_price)) {
+            return 0.0;
         }
+
+        $colors = $this->parseToArray($mp->color_all);
+        $prices = $this->parseToArray($mp->color_price);
+        $color = ltrim($color, '#');
+
+        foreach ($colors as $i => $c) {
+            if (ltrim($c, '#') === $color && isset($prices[$i])) {
+                return (float) $prices[$i];
+            }
+        }
+
+        return 0.0;
+    }
+
+    private function parseToArray($value): array
+    {
+        if (is_array($value)) return $value;
+        if (is_string($value) && $value !== '') return array_map('trim', explode(',', $value));
+        return [];
+    }
+
+    private function success(string $message, array $data = []): array
+    {
+        return [
+            'success' => true,
+            'message' => $message,
+            'data' => $data,
+        ];
+    }
+
+    private function error(string $message): array
+    {
+        return [
+            'success' => false,
+            'message' => $message,
+        ];
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // للعرض في الهيدر (عدد الأصناف فقط)
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * Get total item count for header display
+     */
+    public function getHeaderCount(): int
+    {
+        $cart = $this->getStorage();
+        return count($cart['items']);
+    }
+
+    /**
+     * Check if cart has any items
+     */
+    public function hasItems(): bool
+    {
+        $cart = $this->getStorage();
+        return !empty($cart['items']);
     }
 }

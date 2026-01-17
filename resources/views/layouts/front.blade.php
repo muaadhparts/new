@@ -139,8 +139,8 @@
     <script src="{{ asset('assets/front/js/myscript.js') }}?v={{ time() }}"></script>
     {{-- Centralized Quantity Control --}}
     <script src="{{ asset('assets/front/js/qty-control.js') }}?v={{ time() }}"></script>
-    {{-- Global Cart Handler (SINGLE SOURCE OF TRUTH) --}}
-    <script src="{{ asset('assets/front/js/cart-global.js') }}?v={{ time() }}"></script>
+    {{-- Cart Add Handler: .m-cart-add --}}
+    <script src="{{ asset('assets/front/js/m-cart-add.js') }}?v={{ time() }}"></script>
     {{-- Customer Location & Shipping Quote --}}
     <script src="{{ asset('assets/front/js/customer-location.js') }}?v={{ time() }}"></script>
     <script src="{{ asset('assets/front/js/shipping-quote.js') }}?v={{ time() }}"></script>

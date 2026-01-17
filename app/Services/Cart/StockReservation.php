@@ -163,7 +163,7 @@ class StockReservation
         }
 
         // Get actual stock
-        $actualStock = CartItem::getEffectiveStock($merchantItem, $size);
+        $actualStock = $this->getEffectiveStock($merchantItem, $size);
 
         // Subtract all active reservations (except our own)
         $totalReserved = $this->getTotalReserved($merchantItemId, $size);
@@ -310,6 +310,24 @@ class StockReservation
     }
 
     // ===================== Private Helpers =====================
+
+    /**
+     * Get effective stock for a merchant item
+     */
+    private function getEffectiveStock(MerchantItem $mp, ?string $size): int
+    {
+        if ($size && !empty($mp->size) && !empty($mp->size_qty)) {
+            $sizes = is_array($mp->size) ? $mp->size : explode(',', $mp->size);
+            $qtys = is_array($mp->size_qty) ? $mp->size_qty : explode(',', $mp->size_qty);
+            $idx = array_search(trim($size), array_map('trim', $sizes), true);
+
+            if ($idx !== false && isset($qtys[$idx])) {
+                return (int) $qtys[$idx];
+            }
+        }
+
+        return (int) ($mp->stock ?? 0);
+    }
 
     /**
      * Generate cache key for a reservation

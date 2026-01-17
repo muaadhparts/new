@@ -1,15 +1,11 @@
 /**
- * cart-global.js
- * ================
- * GLOBAL Cart Handler - Works on ALL pages
+ * m-cart-add.js
+ * ==============
+ * Handler for .m-cart-add buttons
  *
- * This is the SINGLE SOURCE OF TRUTH for adding items to cart.
- * Loaded on every frontend page via layouts.
- *
- * Handles:
- * 1. merchant-cart-button component (data on wrapper)
- * 2. Simple buttons with data-merchant-item-id
- * 3. Legacy m-cart-add class
+ * Class: .m-cart-add (ONLY)
+ * Required: data-merchant-item-id
+ * Optional: data-qty-input, data-size, data-color, data-redirect
  *
  * API: POST /merchant-cart/add
  */
@@ -27,8 +23,8 @@
         selectors: {
             // Component wrapper
             wrapper: '.m-cart-button',
-            // Add button inside wrapper (both patterns)
-            addButton: '[data-action="add-to-cart"], .m-cart-add',
+            // Add button - SINGLE pattern only
+            addButton: '.m-cart-add',
             // Size selector
             sizeButton: '.m-cart-button__size',
             // Color selector
@@ -111,8 +107,8 @@
         isProcessing = false;
 
         if (result.success) {
-            // Update header cart count
-            updateCartCount(result.cart?.totals?.qty || 0);
+            // Update header cart count (new API uses header_count)
+            updateCartCount(result.header_count ?? result.data?.totals?.qty ?? 0);
 
             // Show success notification
             showNotification('success', result.message || 'Added to cart');

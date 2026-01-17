@@ -54,6 +54,9 @@ Route::post('/api/stock/refresh', function (\Illuminate\Http\Request $request) {
     ]);
 })->middleware('throttle:5,1')->name('api.stock.refresh'); // Rate limit: 5 requests per minute
 
+// Alias for legacy route name (front.cart -> merchant-cart.index)
+Route::get('/cart', 'Front\MerchantCartController@index')->name('front.cart');
+
 // Legacy quick checkout - redirect to cart
 Route::get('/checkout/quick', function() {
     return redirect()->route('front.cart');
@@ -1555,38 +1558,42 @@ Route::group(['middleware' => 'maintenance'], function () {
     // Clean, unified cart API - replaces all old cart routes
     // Uses: App\Http\Controllers\Front\MerchantCartController
     // Service: App\Services\Cart\MerchantCartManager
+    // ALL operations are Merchant-Scoped (except add which infers merchant from item)
     Route::prefix('merchant-cart')->name('merchant-cart.')->group(function () {
         // Cart page view
         Route::get('/', 'Front\MerchantCartController@index')->name('index');
 
-        // Cart summary (AJAX)
+        // Get all merchants cart (AJAX for full page)
+        Route::get('/all', 'Front\MerchantCartController@all')->name('all');
+
+        // Get merchant cart summary (AJAX) - requires merchant_id
         Route::get('/summary', 'Front\MerchantCartController@summary')->name('summary');
 
         // Cart count (for header badge)
         Route::get('/count', 'Front\MerchantCartController@count')->name('count');
 
-        // Add item to cart
+        // Get merchant IDs in cart
+        Route::get('/merchants', 'Front\MerchantCartController@merchants')->name('merchants');
+
+        // Add item to cart (merchant inferred from merchant_item_id)
         Route::post('/add', 'Front\MerchantCartController@add')->name('add');
 
-        // Update item quantity
+        // Update item quantity - requires merchant_id
         Route::post('/update', 'Front\MerchantCartController@update')->name('update');
 
-        // Increase/Decrease quantity
+        // Increase/Decrease quantity - requires merchant_id
         Route::post('/increase', 'Front\MerchantCartController@increase')->name('increase');
         Route::post('/decrease', 'Front\MerchantCartController@decrease')->name('decrease');
 
-        // Remove item
+        // Remove item - requires merchant_id
         Route::delete('/remove/{key}', 'Front\MerchantCartController@remove')->name('remove');
-        Route::post('/remove', 'Front\MerchantCartController@remove')->name('remove.post'); // For JS without DELETE support
+        Route::post('/remove', 'Front\MerchantCartController@remove')->name('remove.post');
 
-        // Clear cart
+        // Clear merchant items - requires merchant_id
+        Route::post('/clear-merchant', 'Front\MerchantCartController@clearMerchant')->name('clear-merchant');
+
+        // Clear all cart
         Route::post('/clear', 'Front\MerchantCartController@clear')->name('clear');
-
-        // Validate cart (check stock, prices)
-        Route::get('/validate', 'Front\MerchantCartController@validateCart')->name('validate');
-
-        // Refresh cart (update prices, remove invalid items)
-        Route::post('/refresh', 'Front\MerchantCartController@refresh')->name('refresh');
     });
     // ============ END NEW MERCHANT CART SYSTEM ============
 

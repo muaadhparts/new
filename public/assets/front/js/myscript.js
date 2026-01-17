@@ -47,7 +47,7 @@
       if (totalEl) totalEl.textContent = cartTotal;
     }
 
-    // Note: Cart popup now handled by cart-global.js
+    // Note: Cart popup now handled by m-cart-add.js
   };
 
 
@@ -207,9 +207,9 @@
   });
 
   // ============================================
-  // CART SYSTEM: All cart functionality handled by cart-global.js
+  // CART SYSTEM: All cart functionality handled by m-cart-add.js
   // Uses: POST /merchant-cart/add
-  // Buttons: .m-cart-add or [data-action="add-to-cart"]
+  // Button class: .m-cart-add (ONLY)
   // Required: data-merchant-item-id
   // Optional: data-qty-input, data-redirect, data-size, data-color
   // ============================================
