@@ -188,7 +188,11 @@ class MerchantCartManager
             'whole_sell_qty' => $this->parseToArray($merchantItem->whole_sell_qty),
             'whole_sell_discount' => $this->parseToArray($merchantItem->whole_sell_discount),
 
-            // Shipping (from CatalogItem)
+            // ═══════════════════════════════════════════════════════════════════
+            // Shipping (from CatalogItem ONLY - no auto-calculation)
+            // Weight is REQUIRED for shipping. Dimensions are optional.
+            // If weight=0, shipping calculation will FAIL explicitly.
+            // ═══════════════════════════════════════════════════════════════════
             'weight' => (float) ($catalogItem->weight ?? 0),
             'length' => (float) ($catalogItem->length ?? 0),
             'height' => (float) ($catalogItem->height ?? 0),

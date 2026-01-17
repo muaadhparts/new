@@ -698,7 +698,11 @@ class ShippingApiController extends Controller
             throw new \RuntimeException("Cart has no items for merchant {$merchantId}");
         }
 
-        // NO FALLBACK - Weight must come from cart explicitly
+        // ═══════════════════════════════════════════════════════════════════
+        // IMPORTANT: NO FALLBACK for weight.
+        // Weight MUST come from cart (which gets it from catalog_items).
+        // If weight=0, FAIL explicitly - do NOT assume default weight.
+        // ═══════════════════════════════════════════════════════════════════
         if ($totalWeight <= 0) {
             throw new \RuntimeException(
                 "Cart items have no weight. Please re-add items to cart. Merchant: {$merchantId}"

@@ -410,7 +410,12 @@ class TryotoService
         $height = $dimensions['height'] ?? null;
         $width = $dimensions['width'] ?? null;
 
-        // Build request - dimensions are optional for Tryoto API
+        // ═══════════════════════════════════════════════════════════════════
+        // IMPORTANT:
+        // Tryoto API accepts weight-only requests.
+        // Do NOT auto-calculate dimensions.
+        // Dimensions are sent only if explicitly provided from catalog_items.
+        // ═══════════════════════════════════════════════════════════════════
         $requestData = [
             'originCity' => $originCity,
             'destinationCity' => $destinationCity,
@@ -664,33 +669,21 @@ class TryotoService
             ];
         }
 
-        // ✅ إذا المقاسات غير متوفرة، نحسبها من الوزن
+        // ═══════════════════════════════════════════════════════════════════
+        // IMPORTANT:
+        // Do NOT auto-calculate dimensions.
+        // Dimensions are sent only if explicitly provided from catalog_items.
+        // ═══════════════════════════════════════════════════════════════════
         $weight = $dims['weight'];
-        $length = $dims['length'];
-        $width = $dims['width'];
-        $height = $dims['height'];
+        $length = $dims['length'] && $dims['length'] > 0 ? $dims['length'] : null;
+        $width = $dims['width'] && $dims['width'] > 0 ? $dims['width'] : null;
+        $height = $dims['height'] && $dims['height'] > 0 ? $dims['height'] : null;
 
-        if (!$length || $length <= 0 || !$width || $width <= 0 || !$height || $height <= 0) {
-            // حساب حجم تقريبي من الوزن
-            $volumeCm3 = ($weight / 0.0002);
-            $sideCm = pow($volumeCm3, 1/3);
-            $sideCm = max(10, min(100, round($sideCm)));
-
-            $length = $length && $length > 0 ? $length : $sideCm;
-            $width = $width && $width > 0 ? $width : $sideCm;
-            $height = $height && $height > 0 ? $height : $sideCm;
-
-            Log::debug('Tryoto: createShipment - calculated dimensions from weight', [
-                'purchase_id' => $purchase->id,
-                'weight' => $weight,
-                'calculated_side' => $sideCm
-            ]);
-
-            // تحديث dims للاستخدام لاحقاً
-            $dims['length'] = $length;
-            $dims['width'] = $width;
-            $dims['height'] = $height;
-        }
+        Log::debug('Tryoto: createShipment - dimensions from catalog', [
+            'purchase_id' => $purchase->id,
+            'weight' => $weight,
+            'has_dimensions' => ($length !== null && $width !== null && $height !== null),
+        ]);
 
         // Determine COD amount
         $isCOD = in_array($purchase->method, ['cod', 'Cash On Delivery']);
