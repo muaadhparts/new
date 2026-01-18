@@ -46,7 +46,7 @@ class MerchantCartManager
         ?string $color = null
     ): array {
         // ═══ التحقق من MerchantItem ═══
-        $merchantItem = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])->find($merchantItemId);
+        $merchantItem = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand', 'merchantBranch'])->find($merchantItemId);
 
         if (!$merchantItem) {
             return $this->error(__('الصنف غير موجود'));
@@ -74,6 +74,14 @@ class MerchantCartManager
                 "MerchantItem {$merchantItemId} has no CatalogItem"
             );
         }
+
+        // ═══ التحقق من الفرع (Branch) ═══
+        if (!$merchantItem->merchant_branch_id || !$merchantItem->merchantBranch) {
+            throw new \RuntimeException(
+                "MerchantItem {$merchantItemId} has no valid branch assigned"
+            );
+        }
+        $branch = $merchantItem->merchantBranch;
 
         // ═══ التحقق من الكمية ═══
         $minQty = max(1, (int) ($merchantItem->minimum_qty ?? 1));
@@ -143,6 +151,8 @@ class MerchantCartManager
             'key' => $cartKey,
             'merchant_item_id' => $merchantItemId,
             'merchant_id' => $merchantItem->user_id,
+            'branch_id' => $merchantItem->merchant_branch_id,
+            'branch_name' => $branch->warehouse_name ?? '',
             'catalog_item_id' => $merchantItem->catalog_item_id,
 
             // Product snapshot
@@ -473,6 +483,8 @@ class MerchantCartManager
                 'item' => [
                     'id' => $item['catalog_item_id'],
                     'user_id' => $item['merchant_id'],
+                    'branch_id' => $item['branch_id'] ?? null,
+                    'branch_name' => $item['branch_name'] ?? '',
                     'name' => $item['name'],
                     'name_ar' => $item['name_ar'] ?? $item['name'],
                     'photo' => $item['photo'],
@@ -481,6 +493,8 @@ class MerchantCartManager
                 ],
                 'merchant_item_id' => $item['merchant_item_id'],
                 'user_id' => $item['merchant_id'],
+                'branch_id' => $item['branch_id'] ?? null,
+                'branch_name' => $item['branch_name'] ?? '',
                 'qty' => $item['qty'],
                 'price' => $item['total_price'],
                 'size' => $item['size'],

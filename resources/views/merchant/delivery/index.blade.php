@@ -467,8 +467,8 @@
     let currentPurchaseId = null;
     let currentCustomerCity = null;
     let loadedProviders = [];
-    let merchantLocations = [];
-    let defaultLocationId = null;
+    let merchantBranches = [];
+    let defaultBranchId = null;
 
     // Open shipping modal
     $(document).on('click', '.assignShippingBtn', function() {
@@ -490,37 +490,37 @@
             $('#freeShippingWarning').addClass('d-none');
         }
 
-        // ✅ Load merchant locations first, then providers
-        loadMerchantLocations(function() {
-            // After locations loaded, build provider tabs
+        // ✅ Load merchant branches first, then providers
+        loadMerchantBranches(function() {
+            // After branches loaded, build provider tabs
             loadShippingProviders();
         });
     });
 
-    // ✅ Load merchant locations (warehouses/pickup points)
-    function loadMerchantLocations(callback) {
-        $.get("{{ route('merchant.delivery.locations') }}", function(response) {
-            if (response.success && response.locations.length > 0) {
-                merchantLocations = response.locations;
-                defaultLocationId = response.default_id;
+    // ✅ Load merchant branches (warehouses/pickup points)
+    function loadMerchantBranches(callback) {
+        $.get("{{ route('merchant.delivery.branches') }}", function(response) {
+            if (response.success && response.branches.length > 0) {
+                merchantBranches = response.branches;
+                defaultBranchId = response.default_id;
 
                 // Call callback to continue loading providers
                 if (callback) callback();
             } else {
-                // No locations configured - show error
-                merchantLocations = [];
-                defaultLocationId = null;
-                showNoLocationsError(response.error);
+                // No branches configured - show error
+                merchantBranches = [];
+                defaultBranchId = null;
+                showNoBranchesError(response.error);
             }
         }).fail(function() {
-            merchantLocations = [];
-            defaultLocationId = null;
-            showNoLocationsError('@lang("Failed to load warehouse locations")');
+            merchantBranches = [];
+            defaultBranchId = null;
+            showNoBranchesError('@lang("Failed to load warehouse branches")');
         });
     }
 
-    // ✅ Show error when no locations configured
-    function showNoLocationsError(errorMessage) {
+    // ✅ Show error when no branches configured
+    function showNoBranchesError(errorMessage) {
         $('#shippingProviderTabs').html(`
             <li class="nav-item">
                 <span class="nav-link text-danger">
@@ -531,51 +531,51 @@
         $('#shippingProviderContent').html(`
             <div class="alert alert-danger">
                 <i class="fas fa-warehouse me-2"></i>
-                <strong>@lang('Warehouse Location Required')</strong>
+                <strong>@lang('Warehouse Branch Required')</strong>
                 <br>
-                ${errorMessage || '@lang("No warehouse locations configured.")'}
+                ${errorMessage || '@lang("No warehouse branches configured.")'}
                 <br><br>
-                <a href="{{ route('merchant-location-index') }}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-plus"></i> @lang('Add Warehouse Location')
+                <a href="{{ route('merchant-branch-index') }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> @lang('Add Warehouse Branch')
                 </a>
             </div>
         `);
     }
 
-    // ✅ Build merchant location dropdown HTML
-    function buildLocationDropdownHtml(idPrefix) {
-        if (!merchantLocations || merchantLocations.length === 0) {
+    // ✅ Build merchant branch dropdown HTML
+    function buildBranchDropdownHtml(idPrefix) {
+        if (!merchantBranches || merchantBranches.length === 0) {
             return `
                 <div class="alert alert-warning mb-3">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    @lang('No warehouse locations configured.')
-                    <a href="{{ route('merchant-location-index') }}" class="btn btn-sm btn-outline-primary ms-2">
-                        <i class="fas fa-plus"></i> @lang('Add Location')
+                    @lang('No warehouse branches configured.')
+                    <a href="{{ route('merchant-branch-index') }}" class="btn btn-sm btn-outline-primary ms-2">
+                        <i class="fas fa-plus"></i> @lang('Add Branch')
                     </a>
                 </div>
             `;
         }
 
-        // If only one location, auto-select and show info (no dropdown needed)
-        if (merchantLocations.length === 1) {
-            const loc = merchantLocations[0];
-            const warningHtml = !loc.has_tryoto_code ? `
+        // If only one branch, auto-select and show info (no dropdown needed)
+        if (merchantBranches.length === 1) {
+            const branch = merchantBranches[0];
+            const warningHtml = !branch.has_tryoto_code ? `
                 <div class="alert alert-warning py-1 px-2 mt-2 mb-0 small">
                     <i class="fas fa-exclamation-triangle me-1"></i>
                     @lang('Tryoto Warehouse Code not configured.')
-                    <a href="{{ route('merchant-location-index') }}">@lang('Configure')</a>
+                    <a href="{{ route('merchant-branch-index') }}">@lang('Configure')</a>
                 </div>
             ` : '';
 
             return `
-                <input type="hidden" name="merchant_location_id" id="${idPrefix}_merchant_location_id" value="${loc.id}">
-                <div class="card mb-3 ${loc.has_tryoto_code ? 'border-success' : 'border-warning'}">
+                <input type="hidden" name="merchant_branch_id" id="${idPrefix}_merchant_branch_id" value="${branch.id}">
+                <div class="card mb-3 ${branch.has_tryoto_code ? 'border-success' : 'border-warning'}">
                     <div class="card-body py-2">
                         <div class="d-flex align-items-center">
-                            <i class="fas fa-warehouse ${loc.has_tryoto_code ? 'text-success' : 'text-warning'} me-2"></i>
+                            <i class="fas fa-warehouse ${branch.has_tryoto_code ? 'text-success' : 'text-warning'} me-2"></i>
                             <div>
-                                <small class="text-muted d-block">@lang('Pickup Location')</small>
-                                <strong>${escapeHtml(loc.display_name)}</strong>
+                                <small class="text-muted d-block">@lang('Pickup Branch')</small>
+                                <strong>${escapeHtml(branch.display_name)}</strong>
                             </div>
                         </div>
                         ${warningHtml}
@@ -584,23 +584,23 @@
             `;
         }
 
-        // Multiple locations - show dropdown
-        let optionsHtml = `<option value="">@lang('Select Pickup Location')</option>`;
-        merchantLocations.forEach(function(loc) {
-            const selected = loc.id === defaultLocationId ? 'selected' : '';
-            optionsHtml += `<option value="${loc.id}" ${selected}>${escapeHtml(loc.display_name)}</option>`;
+        // Multiple branches - show dropdown
+        let optionsHtml = `<option value="">@lang('Select Pickup Branch')</option>`;
+        merchantBranches.forEach(function(branch) {
+            const selected = branch.id === defaultBranchId ? 'selected' : '';
+            optionsHtml += `<option value="${branch.id}" ${selected}>${escapeHtml(branch.display_name)}</option>`;
         });
 
         return `
             <div class="mb-3">
                 <label class="form-label">
                     <i class="fas fa-warehouse me-1"></i>
-                    @lang('Pickup Location') <span class="text-danger">*</span>
+                    @lang('Pickup Branch') <span class="text-danger">*</span>
                 </label>
-                <select class="form-select merchant-location-select" id="${idPrefix}_location_select" required>
+                <select class="form-select merchant-branch-select" id="${idPrefix}_branch_select" required>
                     ${optionsHtml}
                 </select>
-                <input type="hidden" name="merchant_location_id" id="${idPrefix}_merchant_location_id" value="${defaultLocationId || ''}">
+                <input type="hidden" name="merchant_branch_id" id="${idPrefix}_merchant_branch_id" value="${defaultBranchId || ''}">
                 <small class="text-muted">@lang('Select the warehouse from which this shipment will be picked up')</small>
             </div>
         `;
@@ -716,7 +716,7 @@
     // ✅ Build Tryoto tab content (API-based) with weight/dimensions inputs
     function buildTryotoTabContent(tabId, isActive) {
         // Build location dropdown HTML
-        const locationHtml = buildLocationDropdownHtml('tryoto');
+        const locationHtml = buildBranchDropdownHtml('tryoto');
 
         return `
             <div class="tab-pane fade ${isActive ? 'show active' : ''}" id="${tabId}-content" role="tabpanel">
@@ -833,7 +833,7 @@
     // ✅ Build generic provider tab content (non-API)
     function buildGenericProviderTabContent(tabId, provider, isActive) {
         // Build location dropdown HTML with unique prefix
-        const locationHtml = buildLocationDropdownHtml('provider_' + provider.key);
+        const locationHtml = buildBranchDropdownHtml('provider_' + provider.key);
 
         return `
             <div class="tab-pane fade ${isActive ? 'show active' : ''}" id="${tabId}-content" role="tabpanel">
@@ -1098,11 +1098,11 @@
         }
     });
 
-    // Handle merchant location dropdown change
-    $(document).on('change', '.merchant-location-select', function() {
+    // Handle merchant branch dropdown change
+    $(document).on('change', '.merchant-branch-select', function() {
         const selectedId = $(this).val();
         const $form = $(this).closest('form');
-        $form.find('input[name="merchant_location_id"]').val(selectedId);
+        $form.find('input[name="merchant_branch_id"]').val(selectedId);
     });
 
     // Helper function to escape HTML

@@ -613,7 +613,7 @@ class PaymentAccountingService
             'merchant_id' => $merchantId,
             'courier_id' => $shippingData['courier_id'] ?? null,
             'service_area_id' => $shippingData['service_area_id'] ?? null,
-            'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
+            'merchant_branch_id' => $shippingData['merchant_branch_id'] ?? null,
             'delivery_fee' => $deliveryFee,
             'purchase_amount' => $purchase->pay_amount,
             'cod_amount' => $this->calculateCourierCodAmount($paymentMethod, $purchase->pay_amount),

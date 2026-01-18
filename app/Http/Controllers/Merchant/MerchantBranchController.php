@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\MerchantLocation;
+use App\Models\MerchantBranch;
 use App\Models\City;
 use App\Models\Country;
 use Illuminate\Http\Request;
@@ -12,19 +12,19 @@ use Validator;
 use Datatables;
 
 /**
- * MerchantLocationController - Manage merchant warehouse/origin locations
+ * MerchantBranchController - Manage merchant warehouse/branch locations
  *
- * This is where merchants set their shipping origin locations.
+ * This is where merchants set their shipping origin branches.
  * Used by local couriers to collect orders for delivery to customers.
  */
-class MerchantLocationController extends MerchantBaseController
+class MerchantBranchController extends MerchantBaseController
 {
 
 
     public function index()
     {
-        $datas = MerchantLocation::with(['city', 'country'])->where('user_id', $this->user->id)->get();
-        return view('merchant.location.index', compact('datas'));
+        $datas = MerchantBranch::with(['city', 'country'])->where('user_id', $this->user->id)->get();
+        return view('merchant.branch.index', compact('datas'));
     }
 
     //*** GET Request
@@ -34,7 +34,7 @@ class MerchantLocationController extends MerchantBaseController
         $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
             $q->where('status', 1);
         })->get();
-        return view('merchant.location.create', compact('sign', 'countries'));
+        return view('merchant.branch.create', compact('sign', 'countries'));
     }
 
     /**
@@ -80,7 +80,7 @@ class MerchantLocationController extends MerchantBaseController
         ];
         $request->validate($rules);
 
-        $data = new MerchantLocation();
+        $data = new MerchantBranch();
         $data->warehouse_name = $request->warehouse_name;
         $data->tryoto_warehouse_code = $request->tryoto_warehouse_code;
         $data->location = $request->location;
@@ -98,12 +98,12 @@ class MerchantLocationController extends MerchantBaseController
     //*** GET Request
     public function edit($id)
     {
-        $data = MerchantLocation::findOrFail($id);
+        $data = MerchantBranch::findOrFail($id);
         $countries = Country::whereStatus(1)->whereHas('cities', function($q) {
             $q->where('status', 1);
         })->get();
 
-        // Get the country from merchant location or from city
+        // Get the country from merchant branch or from city
         $selectedCountryId = $data->country_id;
         if (!$selectedCountryId && $data->city_id) {
             $currentCity = City::find($data->city_id);
@@ -115,7 +115,7 @@ class MerchantLocationController extends MerchantBaseController
             ? City::where('country_id', $selectedCountryId)->where('status', 1)->orderBy('city_name')->get()
             : collect();
 
-        return view('merchant.location.edit', compact('data', 'countries', 'cities', 'selectedCountryId'));
+        return view('merchant.branch.edit', compact('data', 'countries', 'cities', 'selectedCountryId'));
     }
 
     //*** POST Request
@@ -132,7 +132,7 @@ class MerchantLocationController extends MerchantBaseController
         ];
         $request->validate($rules);
 
-        $data = MerchantLocation::findOrFail($id);
+        $data = MerchantBranch::findOrFail($id);
         $data->warehouse_name = $request->warehouse_name;
         $data->tryoto_warehouse_code = $request->tryoto_warehouse_code;
         $data->location = $request->location;
@@ -149,7 +149,7 @@ class MerchantLocationController extends MerchantBaseController
     //*** GET Request Delete (AJAX)
     public function destroy($id)
     {
-        $data = MerchantLocation::where('id', $id)->where('user_id', $this->user->id)->first();
+        $data = MerchantBranch::where('id', $id)->where('user_id', $this->user->id)->first();
         if (!$data) {
             return response()->json(['error' => __('Data not found.')], 404);
         }
@@ -159,7 +159,7 @@ class MerchantLocationController extends MerchantBaseController
 
     public function status($id1, $id2)
     {
-        $data = MerchantLocation::findOrFail($id1);
+        $data = MerchantBranch::findOrFail($id1);
         $data->status = $id2;
         $data->update();
         //--- Redirect Section

@@ -463,7 +463,7 @@ class MerchantPurchaseCreator
                     'courier_id' => $shippingData['courier_id'] ?? null,
                     'courier_name' => $shippingData['courier_name'] ?? 'Courier',
                     'price' => (float)($shippingData['courier_fee'] ?? 0),
-                    'merchant_location_id' => $shippingData['merchant_location_id'] ?? null,
+                    'merchant_branch_id' => $shippingData['merchant_branch_id'] ?? null,
                     'service_area_id' => $shippingData['service_area_id'] ?? null,
                     'selected_at' => now()->toIso8601String(),
                 ]

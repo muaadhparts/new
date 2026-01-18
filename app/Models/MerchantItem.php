@@ -15,6 +15,7 @@ class MerchantItem extends Model
     protected $fillable = [
         'catalog_item_id',
         'user_id',
+        'merchant_branch_id',
         'brand_quality_id',
         'item_type',
         'affiliate_link',
@@ -69,6 +70,22 @@ class MerchantItem extends Model
         return $this->belongsTo(QualityBrand::class, 'brand_quality_id');
     }
 
+    /**
+     * The branch where this item is stocked
+     */
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(MerchantBranch::class, 'merchant_branch_id');
+    }
+
+    /**
+     * Alias for branch() - more explicit
+     */
+    public function merchantBranch(): BelongsTo
+    {
+        return $this->belongsTo(MerchantBranch::class, 'merchant_branch_id');
+    }
+
     // ========================================
     // SCOPES
     // ========================================
@@ -106,6 +123,22 @@ class MerchantItem extends Model
             $q->where('stock', '>', 0)
               ->orWhere('preordered', true);
         });
+    }
+
+    /**
+     * Scope for items in a specific branch
+     */
+    public function scopeInBranch($query, $branchId)
+    {
+        return $query->where('merchant_branch_id', $branchId);
+    }
+
+    /**
+     * Scope for items with branch assigned
+     */
+    public function scopeWithBranch($query)
+    {
+        return $query->whereNotNull('merchant_branch_id');
     }
 
     /**

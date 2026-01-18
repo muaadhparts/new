@@ -50,7 +50,7 @@ trait SavesCustomerShippingChoice
             $courierId = $step2Data['courier_id'] ?? null;
             $courierFee = (float)($step2Data['courier_fee'] ?? 0);
             $courierName = $step2Data['courier_name'] ?? 'Courier';
-            $merchantLocationId = $step2Data['merchant_location_id'] ?? null;
+            $merchantBranchId = $step2Data['merchant_branch_id'] ?? null;
             $serviceAreaId = $step2Data['selected_service_area_id'] ?? null;
 
             if ($courierId) {
@@ -59,7 +59,7 @@ trait SavesCustomerShippingChoice
                     'courier_id' => (int) $courierId,
                     'courier_name' => $courierName,
                     'price' => $courierFee,
-                    'merchant_location_id' => $merchantLocationId,
+                    'merchant_branch_id' => $merchantBranchId,
                     'service_area_id' => $serviceAreaId,
                     'selected_at' => now()->toIso8601String(),
                 ];

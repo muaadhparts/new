@@ -206,7 +206,7 @@ class CheckoutMerchantController extends Controller
             'courier_name' => 'nullable|string',
             'courier_fee' => 'nullable|numeric',
             'service_area_id' => 'nullable|integer',
-            'merchant_location_id' => 'nullable|integer',
+            'merchant_branch_id' => 'nullable|integer',
             // Packing fields
             'packing_id' => 'nullable|integer',
             'packing_name' => 'nullable|string',

@@ -55,6 +55,27 @@
                     </div>
                     <div class="card-body">
                         <div class="row">
+                            <!-- Branch Selection (Required) -->
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label class="form-label">@lang('Branch / Warehouse*')</label>
+                                    @if($branches->count() > 0)
+                                        <select class="form-control" name="merchant_branch_id" required>
+                                            <option value="">@lang('Select Branch')</option>
+                                            @foreach($branches as $branch)
+                                                <option value="{{ $branch->id }}">{{ $branch->warehouse_name }}</option>
+                                            @endforeach
+                                        </select>
+                                        <small class="text-muted">@lang('Select the branch where this item will be shipped from')</small>
+                                    @else
+                                        <div class="alert alert-warning">
+                                            @lang('You need to create a branch first.')
+                                            <a href="{{ route('merchant.branch.create') }}" class="alert-link">@lang('Create Branch')</a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+
                             <!-- Price -->
                             <div class="col-md-6">
                                 <div class="mb-3">

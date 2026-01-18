@@ -9,7 +9,7 @@ use App\Models\Package;
 use App\Models\MerchantCommission;
 use App\Models\MerchantTaxSetting;
 use App\Models\CourierServiceArea;
-use App\Models\MerchantLocation;
+use App\Models\MerchantBranch;
 use App\Services\MonetaryUnitService;
 use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\DB;
@@ -726,7 +726,7 @@ class CheckoutPriceService
     public function canDeliverToCity(int $merchantId, int $customerCityId): bool
     {
         // Check if merchant has a warehouse location in customer's city
-        $merchantHasLocationInCity = MerchantLocation::where('user_id', $merchantId)
+        $merchantHasLocationInCity = MerchantBranch::where('user_id', $merchantId)
             ->where('city_id', $customerCityId)
             ->where('status', 1)
             ->exists();
@@ -783,22 +783,22 @@ class CheckoutPriceService
     }
 
     /**
-     * Get merchant warehouse locations in a specific city
+     * Get merchant branches in a specific city
      */
-    public function getMerchantLocationsInCity(int $merchantId, int $cityId): \Illuminate\Database\Eloquent\Collection
+    public function getMerchantBranchesInCity(int $merchantId, int $cityId): \Illuminate\Database\Eloquent\Collection
     {
-        return MerchantLocation::where('user_id', $merchantId)
+        return MerchantBranch::where('user_id', $merchantId)
             ->where('city_id', $cityId)
             ->where('status', 1)
             ->get();
     }
 
     /**
-     * Get all merchant warehouse locations
+     * Get all merchant branches
      */
-    public function getMerchantLocations(int $merchantId): \Illuminate\Database\Eloquent\Collection
+    public function getMerchantBranches(int $merchantId): \Illuminate\Database\Eloquent\Collection
     {
-        return MerchantLocation::where('user_id', $merchantId)
+        return MerchantBranch::where('user_id', $merchantId)
             ->where('status', 1)
             ->get();
     }
@@ -851,7 +851,7 @@ class CheckoutPriceService
         // 6. Get courier info from options
         $courierId = $options['courier_id'] ?? null;
         $courierFee = (float)($options['courier_fee'] ?? 0);
-        $merchantLocationId = $options['merchant_location_id'] ?? null;
+        $merchantBranchId = $options['merchant_branch_id'] ?? null;
 
         // 7. Determine payment type and money receiver
         $paymentType = $options['payment_type'] ?? 'platform';
@@ -889,7 +889,7 @@ class CheckoutPriceService
             // Courier
             'courier_id' => $courierId,
             'courier_fee' => $courierFee,
-            'merchant_location_id' => $merchantLocationId,
+            'merchant_branch_id' => $merchantBranchId,
 
             // Payment
             'payment_type' => $paymentType,

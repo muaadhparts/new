@@ -4,10 +4,10 @@
         <!-- breadcrumb start  -->
         <div class="gs-merchant-breadcrumb has-mb">
                 <div class=" d-flex align-items-center gap-4">
-                    <a href="{{route("merchant-location-index")}}"class="back-btn">
+                    <a href="{{route("merchant-branch-index")}}"class="back-btn">
                         <i class="fa-solid fa-arrow-left-long"></i>
                     </a>
-                    <h4>@lang('Add Warehouse Location')</h4>
+                    <h4>@lang('Add Warehouse Branch')</h4>
                 </div>
 
             <ul class="breadcrumb-menu">
@@ -27,7 +27,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="javascript:;" class="text-capitalize"> @lang('Add Warehouse Location') </a>
+                    <a href="javascript:;" class="text-capitalize"> @lang('Add Warehouse Branch') </a>
                 </li>
             </ul>
         </div>
@@ -37,7 +37,7 @@
         <div class="merchant-edit-profile-section-wrapper">
             <div class="gs-edit-profile-section">
 
-                <form class="edit-profile-area" action="{{ route('merchant-location-create') }}" method="POST">
+                <form class="edit-profile-area" action="{{ route('merchant-branch-create') }}" method="POST">
                     @csrf
                     <div class="row">
 
@@ -116,7 +116,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     var countrySelect = document.getElementById('country_id');
     var citySelect = document.getElementById('city_id');
-    var ajaxUrl = "{{ route('merchant-location-get-cities') }}";
+    var ajaxUrl = "{{ route('merchant-branch-get-cities') }}";
 
     if (!countrySelect || !citySelect) {
         console.error('Country or City select not found');

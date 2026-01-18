@@ -126,18 +126,18 @@ class ShipmentTrackingService
         ?string $companyName = null,
         float $shippingCost = 0,
         float $codAmount = 0,
-        ?int $merchantLocationId = null
+        ?int $merchantBranchId = null
     ): ShipmentTracking {
 
-        // ✅ جلب بيانات موقع الاستلام لتضمينها في raw_payload
+        // ✅ جلب بيانات الفرع لتضمينها في raw_payload
         $pickupLocationData = null;
-        if ($merchantLocationId) {
-            $location = \DB::table('merchant_locations')->find($merchantLocationId);
-            if ($location) {
+        if ($merchantBranchId) {
+            $branch = \DB::table('merchant_branches')->find($merchantBranchId);
+            if ($branch) {
                 $pickupLocationData = [
-                    'merchant_location_id' => $merchantLocationId,
-                    'warehouse_name' => $location->warehouse_name,
-                    'address' => $location->location,
+                    'merchant_branch_id' => $merchantBranchId,
+                    'warehouse_name' => $branch->warehouse_name,
+                    'address' => $branch->location,
                 ];
             }
         }

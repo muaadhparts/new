@@ -86,7 +86,7 @@ class MerchantPurchase extends Model
         'payment_gateway_id',
         'shipping_id',
         'courier_id',
-        'merchant_location_id',
+        'merchant_branch_id',
         'settlement_status',
         'settled_at',
         'merchant_settlement_id',
@@ -185,9 +185,9 @@ class MerchantPurchase extends Model
         return $this->belongsTo(Courier::class, 'courier_id')->withDefault();
     }
 
-    public function merchantLocation()
+    public function merchantBranch()
     {
-        return $this->belongsTo(MerchantLocation::class, 'merchant_location_id')->withDefault();
+        return $this->belongsTo(MerchantBranch::class, 'merchant_branch_id')->withDefault();
     }
 
     public function settlementBatch()

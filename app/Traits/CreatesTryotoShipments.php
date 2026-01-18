@@ -80,7 +80,7 @@ trait CreatesTryotoShipments
             }
             [$deliveryOptionId, $company, $price] = explode('#', $value);
 
-            // ✅ createShipment يجلب بيانات التاجر والمستودع من merchant_locations داخلياً
+            // ✅ createShipment يجلب بيانات التاجر والمستودع من merchant_branches داخلياً
             $merchantTryotoService = app(TryotoService::class)->forMerchant((int)$merchantId);
             $result = $merchantTryotoService->createShipment(
                 $purchase,

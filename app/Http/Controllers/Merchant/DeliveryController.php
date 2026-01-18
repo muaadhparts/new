@@ -159,7 +159,7 @@ class DeliveryController extends MerchantBaseController
 
                 if ($delivery) {
                     $message = '<strong class="display-5">Courier : ' . $delivery->courier->name . ' </br>Delivery Cost : ' . PriceHelper::showAdminCurrencyPrice($delivery->servicearea->price) . '</br>
-                    Warehouse Location : ' . $delivery->merchantLocation->location . '</br>
+                    Warehouse Location : ' . $delivery->merchantBranch->location . '</br>
                     Status :
                     <span class="badge badge-dark p-1">' . $delivery->status . '</span>
                     </strong>';
@@ -270,7 +270,7 @@ class DeliveryController extends MerchantBaseController
             $delivery->initializeAssignment(
                 courierId: $service_area->courier_id,
                 serviceAreaId: $service_area->id,
-                merchantLocationId: $request->merchant_location_id,
+                merchantBranchId: $request->merchant_branch_id,
                 deliveryFee: $deliveryFee,
                 purchaseAmount: $purchaseAmount,
                 paymentMethod: $paymentMethod
@@ -282,7 +282,7 @@ class DeliveryController extends MerchantBaseController
                 merchantId: auth()->id(),
                 courierId: $service_area->courier_id,
                 serviceAreaId: $service_area->id,
-                merchantLocationId: $request->merchant_location_id,
+                merchantBranchId: $request->merchant_branch_id,
                 deliveryFee: $deliveryFee,
                 purchaseAmount: $purchaseAmount,
                 paymentMethod: $paymentMethod
@@ -318,13 +318,13 @@ class DeliveryController extends MerchantBaseController
 
             $merchant = $this->user;
 
-            // ✅ مدينة التاجر من merchant_locations فقط
+            // ✅ مدينة التاجر من merchant_branches فقط
             $originCity = $this->resolveMerchantCity($merchant);
 
             if (!$originCity) {
-                Log::warning('Merchant Delivery: Merchant city not configured in merchant_locations', [
+                Log::warning('Merchant Delivery: Merchant city not configured in merchant_branches', [
                     'merchant_id' => $merchant->id,
-                    'tip' => 'Add merchant location in merchant_locations table'
+                    'tip' => 'Add merchant branch in merchant_branches table'
                 ]);
                 return response()->json([
                     'success' => false,
@@ -519,27 +519,27 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * ✅ مدينة التاجر من merchant_locations فقط (المصدر الوحيد)
+     * ✅ مدينة التاجر من merchant_branches فقط (المصدر الوحيد)
      */
     private function resolveMerchantCity($merchant): ?string
     {
-        // ✅ merchant_locations هو المصدر الوحيد لعنوان التاجر
-        $merchantLocation = \DB::table('merchant_locations')
+        // ✅ merchant_branches هو المصدر الوحيد لعنوان التاجر
+        $merchantBranch = \DB::table('merchant_branches')
             ->where('user_id', $merchant->id)
             ->where('status', 1)
             ->first();
 
-        if ($merchantLocation && $merchantLocation->city_id) {
-            $city = City::find($merchantLocation->city_id);
+        if ($merchantBranch && $merchantBranch->city_id) {
+            $city = City::find($merchantBranch->city_id);
             if ($city && $city->city_name) {
                 return $city->city_name;
             }
         }
 
-        Log::warning('Merchant has no location configured in merchant_locations', [
+        Log::warning('Merchant has no branch configured in merchant_branches', [
             'merchant_id' => $merchant->id,
             'merchant_name' => $merchant->name,
-            'tip' => 'Add merchant location in merchant_locations table'
+            'tip' => 'Add merchant branch in merchant_branches table'
         ]);
 
         return null;
@@ -750,17 +750,19 @@ class DeliveryController extends MerchantBaseController
      */
     public function sendToTryoto(Request $request)
     {
+        // ✅ STRICT: merchant_branch_id is REQUIRED
         $request->validate([
             'purchase_id' => 'required|exists:purchases,id',
             'delivery_option_id' => 'required|string',
             'company' => 'required|string',
             'price' => 'required|numeric',
             'service_type' => 'nullable|string',
-            'merchant_location_id' => 'nullable|exists:merchant_locations,id',
+            'merchant_branch_id' => 'required|exists:merchant_branches,id',
         ]);
 
         $purchase = Purchase::find($request->purchase_id);
         $merchantId = $this->user->id;
+        $merchantBranchId = $request->merchant_branch_id;
 
         // التحقق من أن هذا الطلب يخص هذا التاجر
         $merchantOrder = $purchase->merchantPurchases()->where('user_id', $merchantId)->first();
@@ -775,25 +777,15 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('A shipment already exists for this purchase. Tracking: ') . $existingShipment->tracking_number);
         }
 
-        // ✅ Validate merchant_location_id - NO silent fallback if multiple locations
-        $merchantLocationId = $request->merchant_location_id;
-        $activeLocations = \DB::table('merchant_locations')
+        // ✅ STRICT: Validate branch belongs to this merchant and is active
+        $branch = \DB::table('merchant_branches')
+            ->where('id', $merchantBranchId)
             ->where('user_id', $merchantId)
             ->where('status', 1)
-            ->get();
+            ->first();
 
-        if ($activeLocations->isEmpty()) {
-            return redirect()->back()->with('error', __('No warehouse location configured. Please add a location in settings.'));
-        }
-
-        if (!$merchantLocationId) {
-            if ($activeLocations->count() === 1) {
-                // Safe: only one location, use it
-                $merchantLocationId = $activeLocations->first()->id;
-            } else {
-                // Unsafe: multiple locations, cannot guess
-                return redirect()->back()->with('error', __('Please select a pickup location. You have multiple warehouses configured.'));
-            }
+        if (!$branch) {
+            return redirect()->back()->with('error', __('Invalid branch selected or branch is not active.'));
         }
 
         // ✅ Use merchant-specific credentials
@@ -806,7 +798,7 @@ class DeliveryController extends MerchantBaseController
             $request->price,
             $request->service_type ?? 'express',
             null, // merchantShippingData
-            $merchantLocationId // ✅ Pass merchant_location_id
+            $merchantBranchId // ✅ Pass merchant_branch_id
         );
 
         if ($result['success']) {
@@ -1224,11 +1216,12 @@ class DeliveryController extends MerchantBaseController
      */
     public function sendProviderShipping(Request $request)
     {
+        // ✅ STRICT: merchant_branch_id is REQUIRED - NO fallback, NO auto-select
         $request->validate([
             'purchase_id' => 'required|exists:purchases,id',
             'shipping_id' => 'required|exists:shippings,id',
             'tracking_number' => 'nullable|string|max:100',
-            'merchant_location_id' => 'nullable|exists:merchant_locations,id',
+            'merchant_branch_id' => 'required|exists:merchant_branches,id',
         ]);
 
         $purchase = Purchase::find($request->purchase_id);
@@ -1253,25 +1246,16 @@ class DeliveryController extends MerchantBaseController
             return redirect()->back()->with('error', __('Invalid shipping method'));
         }
 
-        // ✅ Validate merchant_location_id - NO silent fallback if multiple locations
-        $merchantLocationId = $request->merchant_location_id;
-        $activeLocations = \DB::table('merchant_locations')
+        // ✅ STRICT: Validate branch belongs to this merchant and is active
+        $merchantBranchId = $request->merchant_branch_id;
+        $branch = \DB::table('merchant_branches')
+            ->where('id', $merchantBranchId)
             ->where('user_id', $merchantId)
             ->where('status', 1)
-            ->get();
+            ->first();
 
-        if ($activeLocations->isEmpty()) {
-            return redirect()->back()->with('error', __('No warehouse location configured. Please add a location in settings.'));
-        }
-
-        if (!$merchantLocationId) {
-            if ($activeLocations->count() === 1) {
-                // Safe: only one location, use it
-                $merchantLocationId = $activeLocations->first()->id;
-            } else {
-                // Unsafe: multiple locations, cannot guess
-                return redirect()->back()->with('error', __('Please select a pickup location. You have multiple warehouses configured.'));
-            }
+        if (!$branch) {
+            return redirect()->back()->with('error', __('Invalid branch selected or branch is not active.'));
         }
 
         // Use tracking service to create manual shipment
@@ -1284,7 +1268,7 @@ class DeliveryController extends MerchantBaseController
             trackingNumber: $request->tracking_number,
             companyName: $shipping->name,
             shippingCost: $shipping->price,
-            merchantLocationId: $merchantLocationId // ✅ Pass merchant_location_id
+            merchantBranchId: $merchantBranchId // ✅ Pass merchant_branch_id
         );
 
         // Update merchant purchase status
@@ -1318,39 +1302,39 @@ class DeliveryController extends MerchantBaseController
     }
 
     /**
-     * ✅ Get Merchant Locations (Warehouses/Pickup Points)
-     * Returns all active locations for the current merchant
+     * ✅ Get Merchant Branches (Warehouses/Pickup Points)
+     * Returns all active branches for the current merchant
      */
-    public function getMerchantLocations(Request $request)
+    public function getMerchantBranches(Request $request)
     {
         try {
             $merchantId = $this->user->id;
 
-            $locations = \DB::table('merchant_locations')
+            $branches = \DB::table('merchant_branches')
                 ->where('user_id', $merchantId)
                 ->where('status', 1)
                 ->select('id', 'warehouse_name', 'tryoto_warehouse_code', 'location', 'city_id')
                 ->get();
 
-            if ($locations->isEmpty()) {
+            if ($branches->isEmpty()) {
                 return response()->json([
                     'success' => false,
-                    'error' => __('No warehouse locations configured. Please add a location in settings.'),
-                    'locations' => [],
+                    'error' => __('No warehouse branches configured. Please add a branch in settings.'),
+                    'branches' => [],
                     'show_settings_link' => true
                 ]);
             }
 
-            // Get city names for each location
-            $cityIds = $locations->pluck('city_id')->filter()->unique()->toArray();
+            // Get city names for each branch
+            $cityIds = $branches->pluck('city_id')->filter()->unique()->toArray();
             $cities = City::whereIn('id', $cityIds)->pluck('city_name', 'id')->toArray();
 
-            $result = $locations->map(function ($loc) use ($cities) {
-                $cityName = $cities[$loc->city_id] ?? '';
-                $displayName = $loc->warehouse_name ?: __('Warehouse');
+            $result = $branches->map(function ($branch) use ($cities) {
+                $cityName = $cities[$branch->city_id] ?? '';
+                $displayName = $branch->warehouse_name ?: __('Warehouse');
 
                 // Add Tryoto code if available (helps user verify)
-                $tryotoCode = $loc->tryoto_warehouse_code;
+                $tryotoCode = $branch->tryoto_warehouse_code;
                 if ($tryotoCode) {
                     $displayName .= ' [' . $tryotoCode . ']';
                 }
@@ -1364,32 +1348,33 @@ class DeliveryController extends MerchantBaseController
                 $hasTryotoCode = !empty($tryotoCode);
 
                 return [
-                    'id' => $loc->id,
-                    'warehouse_name' => $loc->warehouse_name,
+                    'id' => $branch->id,
+                    'warehouse_name' => $branch->warehouse_name,
                     'tryoto_code' => $tryotoCode,
                     'has_tryoto_code' => $hasTryotoCode,
-                    'location' => $loc->location,
+                    'location' => $branch->location,
                     'city_name' => $cityName,
                     'display_name' => $displayName,
                 ];
             });
 
+            // ✅ STRICT: NO default_id - user MUST explicitly select a branch
             return response()->json([
                 'success' => true,
-                'locations' => $result,
-                'default_id' => $locations->first()->id ?? null
+                'branches' => $result,
+                'requires_selection' => $result->count() > 0 // UI must show selection, no auto-select
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Get Merchant Locations Error', [
+            Log::error('Get Merchant Branches Error', [
                 'merchant_id' => $this->user->id,
                 'error' => $e->getMessage()
             ]);
 
             return response()->json([
                 'success' => false,
-                'error' => __('Failed to load warehouse locations'),
-                'locations' => []
+                'error' => __('Failed to load warehouse branches'),
+                'branches' => []
             ]);
         }
     }

@@ -261,21 +261,21 @@ class ShippingQuoteService
     }
 
     /**
-     * Get merchant's origin city name from merchant_locations
+     * Get merchant's origin city name from merchant_branches
      */
     protected function getMerchantCity(int $merchantId): ?string
     {
-        // Get first active merchant location (warehouse)
-        $merchantLocation = DB::table('merchant_locations')
+        // Get first active merchant branch (warehouse)
+        $merchantBranch = DB::table('merchant_branches')
             ->where('user_id', $merchantId)
             ->where('status', 1)
             ->first();
 
-        if (!$merchantLocation || !$merchantLocation->city_id) {
+        if (!$merchantBranch || !$merchantBranch->city_id) {
             return null;
         }
 
-        return $this->getCityName((int) $merchantLocation->city_id);
+        return $this->getCityName((int) $merchantBranch->city_id);
     }
 
     /**

@@ -200,8 +200,8 @@
                             class="sidebar-sub-menu-item {{ request()->is('merchant/package') || request()->is('merchant/package/*') ? 'active' : '' }}"
                             href="{{ route('merchant-package-index') }}">@lang('Packagings CatalogItems')</a></li>
                     <li class=""><a
-                            class="sidebar-sub-menu-item {{ request()->is('merchant/location') || request()->is('merchant/location/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-location-index') }}">@lang('Warehouse Location')</a></li>
+                            class="sidebar-sub-menu-item {{ request()->is('merchant/branch') || request()->is('merchant/branch/*') ? 'active' : '' }}"
+                            href="{{ route('merchant-branch-index') }}">@lang('Warehouse Branches')</a></li>
                 @endif
                 <li class=""><a
                         class="sidebar-sub-menu-item {{ request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'active' : '' }}"

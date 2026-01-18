@@ -27,7 +27,7 @@ class CourierController extends CourierBaseController
         $purchases = DeliveryCourier::where('courier_id', $this->courier->id)
             ->whereNotNull('purchase_id')
             ->whereHas('purchase') // Ensure the purchase still exists
-            ->with(['purchase.merchantPurchases', 'merchantLocation'])
+            ->with(['purchase.merchantPurchases', 'merchantBranch'])
             ->orderby('id', 'desc')->take(8)->get();
 
         // Get accounting report
@@ -343,7 +343,7 @@ class CourierController extends CourierBaseController
             $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
+                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
                 ->whereIn('status', [DeliveryCourier::STATUS_DELIVERED, DeliveryCourier::STATUS_CONFIRMED])
                 ->orderby('id', 'desc')
                 ->paginate(10);
@@ -352,7 +352,7 @@ class CourierController extends CourierBaseController
             $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
+                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
                 ->where('status', DeliveryCourier::STATUS_PENDING_APPROVAL)
                 ->orderby('id', 'desc')
                 ->paginate(10);
@@ -361,7 +361,7 @@ class CourierController extends CourierBaseController
             $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
+                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
                 ->whereIn('status', [
                     DeliveryCourier::STATUS_APPROVED,
                     DeliveryCourier::STATUS_READY_FOR_PICKUP,
@@ -374,7 +374,7 @@ class CourierController extends CourierBaseController
             $purchases = DeliveryCourier::where('courier_id', $courierId)
                 ->whereNotNull('purchase_id')
                 ->whereHas('purchase')
-                ->with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
+                ->with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
                 ->whereIn('status', [
                     DeliveryCourier::STATUS_PENDING_APPROVAL,
                     DeliveryCourier::STATUS_APPROVED,
@@ -390,7 +390,7 @@ class CourierController extends CourierBaseController
 
     public function orderDetails($id)
     {
-        $data = DeliveryCourier::with(['purchase.merchantPurchases', 'merchantLocation', 'merchant'])
+        $data = DeliveryCourier::with(['purchase.merchantPurchases', 'merchantBranch', 'merchant'])
             ->where('courier_id', $this->courier->id)
             ->where('id', $id)
             ->whereNotNull('purchase_id')

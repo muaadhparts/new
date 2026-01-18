@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Courier;
 use App\Models\CourierServiceArea;
 use App\Models\DeliveryCourier;
-use App\Models\MerchantLocation;
+use App\Models\MerchantBranch;
 
 class CourierAccountingService
 {
@@ -25,7 +25,7 @@ class CourierAccountingService
 
     public function canDeliverToCity(int $merchantId, int $customerCityId): bool
     {
-        $merchantHasLocation = MerchantLocation::where('user_id', $merchantId)
+        $merchantHasLocation = MerchantBranch::where('user_id', $merchantId)
             ->where('city_id', $customerCityId)
             ->where('status', 1)
             ->exists();

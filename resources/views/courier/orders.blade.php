@@ -98,11 +98,11 @@
                                         <td data-label="@lang('Merchant')">
                                             <i class="fas fa-store me-1"></i>
                                             <strong>{{ $delivery->merchant->shop_name ?? $delivery->merchant->name ?? 'N/A' }}</strong>
-                                            @if($delivery->merchantLocation && $delivery->merchantLocation->location)
+                                            @if($delivery->merchantBranch && $delivery->merchantBranch->location)
                                                 <br>
                                                 <small class="text-muted">
                                                     <i class="fas fa-map-marker-alt"></i>
-                                                    {{ Str::limit($delivery->merchantLocation->location, 25) }}
+                                                    {{ Str::limit($delivery->merchantBranch->location, 25) }}
                                                 </small>
                                             @endif
                                             @if($delivery->merchant?->shop_phone)

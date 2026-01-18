@@ -29,7 +29,7 @@ class TrackingViewService
         $shipment = ShipmentTracking::getLatestForPurchase($purchase->id, $merchantId);
         $delivery = DeliveryCourier::where('purchase_id', $purchase->id)
             ->where('merchant_id', $merchantId)
-            ->with(['courier', 'merchantLocation', 'servicearea'])
+            ->with(['courier', 'merchantBranch', 'servicearea'])
             ->first();
         $customerChoice = $purchase->getCustomerShippingChoice($merchantId);
 
@@ -61,7 +61,7 @@ class TrackingViewService
             // Delivery display values (all strings/primitives)
             'courierName' => $delivery?->courier?->name ?? null,
             'courierPhone' => $delivery?->courier?->phone ?? null,
-            'warehouseLocation' => $delivery?->merchantLocation?->location ?? null,
+            'warehouseLocation' => $delivery?->merchantBranch?->location ?? null,
             'deliveryFee' => (float)($delivery?->delivery_fee ?? 0),
             'deliveryStatus' => $delivery?->status ?? null,
             'deliveryStatusLabel' => $delivery?->status_label ?? null,
@@ -81,7 +81,7 @@ class TrackingViewService
 
             // Delivery extras
             'hasCourierPhone' => !empty($delivery?->courier?->phone),
-            'hasWarehouseLocation' => !empty($delivery?->merchantLocation?->location),
+            'hasWarehouseLocation' => !empty($delivery?->merchantBranch?->location),
             'paymentMethod' => $delivery?->payment_method ?? null,
             'isCod' => ($delivery?->payment_method ?? null) === 'cod',
             'purchaseAmount' => (float)($delivery?->purchase_amount ?? 0),
@@ -117,7 +117,7 @@ class TrackingViewService
 
         // Get deliveries with eager loaded relationships
         $deliveries = DeliveryCourier::where('purchase_id', $purchase->id)
-            ->with(['courier', 'merchantLocation', 'merchant', 'servicearea'])
+            ->with(['courier', 'merchantBranch', 'merchant', 'servicearea'])
             ->get();
 
         // Build pure DTO arrays for trackings
@@ -164,8 +164,8 @@ class TrackingViewService
                 'courierName' => $delivery->courier->name ?? 'N/A',
                 'courierPhone' => $delivery->courier->phone ?? null,
                 'hasCourierPhone' => !empty($delivery->courier->phone),
-                'warehouseLocation' => $delivery->merchantLocation->location ?? null,
-                'hasWarehouseLocation' => !empty($delivery->merchantLocation->location),
+                'warehouseLocation' => $delivery->merchantBranch->location ?? null,
+                'hasWarehouseLocation' => !empty($delivery->merchantBranch->location),
                 'deliveryFee' => (float)($delivery->delivery_fee ?? 0),
                 'status' => $delivery->status,
                 'statusLabel' => $delivery->status_label,

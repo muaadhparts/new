@@ -9,7 +9,7 @@ use App\Models\Shipping;
 use App\Models\Package;
 use App\Models\MerchantPayment;
 use App\Models\CourierServiceArea;
-use App\Models\MerchantLocation;
+use App\Models\MerchantBranch;
 use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\Auth;
 
@@ -221,11 +221,20 @@ class MerchantCheckoutService
         ];
 
         if ($deliveryType === 'local_courier') {
+            // ✅ STRICT: merchant_branch_id is REQUIRED for courier delivery - NO fallback
+            $merchantBranchId = (int)($input['merchant_branch_id'] ?? 0);
+            if ($merchantBranchId <= 0) {
+                return [
+                    'success' => false,
+                    'error' => 'branch_required',
+                    'message' => __('Please select a pickup branch for courier delivery.'),
+                ];
+            }
+
             // Courier delivery - use data from frontend (already matched by coordinates)
             $courierId = (int)($input['courier_id'] ?? 0);
             $courierFee = (float)($input['courier_fee'] ?? 0);
             $serviceAreaId = (int)($input['service_area_id'] ?? 0);
-            $merchantLocationId = (int)($input['merchant_location_id'] ?? 0);
             $courierName = $input['courier_name'] ?? null;
 
             // Fallback: If courier_fee is 0 but we have service_area_id, lookup from database
@@ -250,7 +259,7 @@ class MerchantCheckoutService
                 'courier_name' => $courierName ?: 'Courier',
                 'courier_fee' => $courierFee,
                 'service_area_id' => $serviceAreaId,
-                'merchant_location_id' => $merchantLocationId,
+                'merchant_branch_id' => $merchantBranchId,
                 'shipping_id' => 0,
                 'shipping_provider' => null,
                 'shipping_name' => null,
@@ -639,13 +648,13 @@ class MerchantCheckoutService
         }
 
         // Step 1: Find merchant's locations (warehouses)
-        $merchantLocations = MerchantLocation::where('user_id', $merchantId)
+        $merchantBranches = MerchantBranch::where('user_id', $merchantId)
             ->where('status', 1)
             ->whereNotNull('latitude')
             ->whereNotNull('longitude')
             ->get();
 
-        if ($merchantLocations->isEmpty()) {
+        if ($merchantBranches->isEmpty()) {
             \Log::debug('getCourierOptions: Merchant has no locations with coordinates');
             return [];
         }
@@ -675,10 +684,10 @@ class MerchantCheckoutService
             }
 
             // Check if any merchant location is within courier's service radius
-            $nearestMerchantLocation = null;
+            $nearestMerchantBranch = null;
             $minDistanceToMerchant = PHP_FLOAT_MAX;
 
-            foreach ($merchantLocations as $ml) {
+            foreach ($merchantBranches as $ml) {
                 $distanceToMerchant = $this->haversineDistance(
                     $courierLat, $courierLng,
                     (float)$ml->latitude, (float)$ml->longitude
@@ -686,11 +695,11 @@ class MerchantCheckoutService
 
                 if ($distanceToMerchant <= $serviceRadius && $distanceToMerchant < $minDistanceToMerchant) {
                     $minDistanceToMerchant = $distanceToMerchant;
-                    $nearestMerchantLocation = $ml;
+                    $nearestMerchantBranch = $ml;
                 }
             }
 
-            if (!$nearestMerchantLocation) {
+            if (!$nearestMerchantBranch) {
                 continue; // No merchant location within courier's service area
             }
 
@@ -706,7 +715,7 @@ class MerchantCheckoutService
                 'delivery_fee' => round((float)$sa->price, 2),
                 'service_area_id' => $sa->id,
                 'city_name' => $sa->city->name ?? '',
-                'merchant_location_id' => $nearestMerchantLocation->id,
+                'merchant_branch_id' => $nearestMerchantBranch->id,
                 'distance_to_customer' => round($distanceToCustomer, 1),
                 // ✅ المندوب يتبع المنصة دائماً → المبلغ للمنصة
                 'is_platform_provided' => true,

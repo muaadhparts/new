@@ -235,7 +235,7 @@
                 <input type="hidden" name="courier_name" id="selected_courier_name" value="">
                 <input type="hidden" name="courier_fee" id="selected_courier_fee" value="0">
                 <input type="hidden" name="service_area_id" id="selected_service_area_id" value="">
-                <input type="hidden" name="merchant_location_id" id="selected_merchant_location_id" value="">
+                <input type="hidden" name="merchant_branch_id" id="selected_merchant_branch_id" value="">
             </form>
         </div>
     </div>
@@ -400,7 +400,7 @@
                                    value="{{ $courier['courier_id'] }}"
                                    data-price="{{ $courier['delivery_fee'] }}"
                                    data-service-area="{{ $courier['service_area_id'] }}"
-                                   data-merchant-location="{{ $courier['merchant_location_id'] ?? '' }}"
+                                   data-merchant-branch="{{ $courier['merchant_branch_id'] ?? '' }}"
                                    data-name="{{ $courier['courier_name'] }}">
                             <label class="form-check-label w-100" for="courier_{{ $courier['courier_id'] }}">
                                 <div class="d-flex align-items-center justify-content-between">
@@ -750,7 +750,7 @@ $(document).on('change', 'input[name="courier_option"]', function() {
     const option = $(this);
     const price = parseFloat(option.data('price')) || 0;
     const serviceAreaId = option.data('service-area') || '';
-    const merchantLocationId = option.data('merchant-location') || '';
+    const merchantBranchId = option.data('merchant-branch') || '';
     const courierName = option.data('name') || '';
 
     // Set delivery type to local_courier
@@ -761,7 +761,7 @@ $(document).on('change', 'input[name="courier_option"]', function() {
     $('#selected_courier_name').val(courierName);
     $('#selected_courier_fee').val(price);
     $('#selected_service_area_id').val(serviceAreaId);
-    $('#selected_merchant_location_id').val(merchantLocationId);
+    $('#selected_merchant_branch_id').val(merchantBranchId);
 
     // Clear shipping selection
     $('#selected_shipping_id').val('');

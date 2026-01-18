@@ -113,7 +113,7 @@ class DeliveryCourier extends Model
         'purchase_id',
         'merchant_id',
         'courier_id',
-        'merchant_location_id',
+        'merchant_branch_id',
         'service_area_id',
         'status',
         'delivery_fee',
@@ -165,9 +165,9 @@ class DeliveryCourier extends Model
         return $this->belongsTo(User::class, 'merchant_id');
     }
 
-    public function merchantLocation()
+    public function merchantBranch()
     {
-        return $this->belongsTo(MerchantLocation::class, 'merchant_location_id')->withDefault();
+        return $this->belongsTo(MerchantBranch::class, 'merchant_branch_id')->withDefault();
     }
 
     public function servicearea()
@@ -437,7 +437,7 @@ class DeliveryCourier extends Model
      *
      * @param int $courierId
      * @param int $serviceAreaId
-     * @param int|null $merchantLocationId
+     * @param int|null $merchantBranchId
      * @param float $deliveryFee - Courier's fee portion (already included in purchaseAmount)
      * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee + packing)
      * @param string $paymentMethod (cod|online)
@@ -445,14 +445,14 @@ class DeliveryCourier extends Model
     public function initializeAssignment(
         int $courierId,
         int $serviceAreaId,
-        ?int $merchantLocationId,
+        ?int $merchantBranchId,
         float $deliveryFee,
         float $purchaseAmount,
         string $paymentMethod
     ): void {
         $this->courier_id = $courierId;
         $this->service_area_id = $serviceAreaId;
-        $this->merchant_location_id = $merchantLocationId;
+        $this->merchant_branch_id = $merchantBranchId;
         $this->status = self::STATUS_PENDING_APPROVAL;
         $this->delivery_fee = $deliveryFee;
         $this->purchase_amount = $purchaseAmount;
@@ -482,7 +482,7 @@ class DeliveryCourier extends Model
      * @param int $merchantId
      * @param int $courierId
      * @param int $serviceAreaId
-     * @param int|null $merchantLocationId
+     * @param int|null $merchantBranchId
      * @param float $deliveryFee - Courier's fee portion (already included in purchaseAmount)
      * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee + packing)
      * @param string $paymentMethod
@@ -493,7 +493,7 @@ class DeliveryCourier extends Model
         int $merchantId,
         int $courierId,
         int $serviceAreaId,
-        ?int $merchantLocationId,
+        ?int $merchantBranchId,
         float $deliveryFee,
         float $purchaseAmount,
         string $paymentMethod
@@ -503,7 +503,7 @@ class DeliveryCourier extends Model
         $delivery->merchant_id = $merchantId;
         $delivery->courier_id = $courierId;
         $delivery->service_area_id = $serviceAreaId;
-        $delivery->merchant_location_id = $merchantLocationId;
+        $delivery->merchant_branch_id = $merchantBranchId;
         $delivery->status = self::STATUS_PENDING_APPROVAL;
         $delivery->delivery_fee = $deliveryFee;
         $delivery->purchase_amount = $purchaseAmount;

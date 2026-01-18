@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Models\Operator;
 use App\Models\Country;
 use App\Models\Package;
-use App\Models\MerchantLocation;
+use App\Models\MerchantBranch;
 use App\Models\Shipping;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -48,7 +48,7 @@ class CheckoutDataService
         $merchants = self::loadMerchants($merchantIds);
         $shippingByMerchant = self::loadShipping($merchantIds, $hasAdminItems);
         $packagingByMerchant = self::loadPackaging($merchantIds);
-        $merchantLocations = self::loadMerchantLocations($merchantIds);
+        $merchantBranches = self::loadMerchantBranches($merchantIds);
         $operator = $hasAdminItems ? Operator::find(1) : null;
 
         // Provider labels (static)
@@ -65,7 +65,7 @@ class CheckoutDataService
             $shipping = $shippingByMerchant[$merchantId] ?? collect();
             $result[$merchantId] = [
                 'merchant' => $merchants[$merchantId] ?? null,
-                'merchant_location' => $merchantLocations[$merchantId] ?? null,
+                'merchant_branch' => $merchantBranches[$merchantId] ?? null,
                 'shipping' => $shipping,
                 'packaging' => $packagingByMerchant[$merchantId] ?? collect(),
                 'grouped_shipping' => $shipping->groupBy('provider'),
@@ -141,24 +141,24 @@ class CheckoutDataService
     }
 
     /**
-     * Bulk load active merchant locations (warehouses) for all merchants
-     * Returns first active location per merchant (keyed by user_id)
+     * Bulk load active merchant branches (warehouses) for all merchants
+     * Returns first active branch per merchant (keyed by user_id)
      */
-    private static function loadMerchantLocations(array $merchantIds): Collection
+    private static function loadMerchantBranches(array $merchantIds): Collection
     {
         if (empty($merchantIds)) {
             return collect();
         }
 
-        // Load all active merchant locations with city and country
-        $allLocations = MerchantLocation::whereIn('user_id', $merchantIds)
+        // Load all active merchant branches with city and country
+        $allBranches = MerchantBranch::whereIn('user_id', $merchantIds)
             ->where('status', 1)
             ->with(['city', 'country'])
             ->get();
 
-        // Get first active location per merchant (keyed by user_id)
-        return $allLocations->groupBy('user_id')->map(function ($locations) {
-            return $locations->first();
+        // Get first active branch per merchant (keyed by user_id)
+        return $allBranches->groupBy('user_id')->map(function ($branches) {
+            return $branches->first();
         });
     }
 

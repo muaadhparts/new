@@ -137,11 +137,11 @@
                                                     </a>
                                                 </div>
                                             @endif
-                                            @if($data->merchantLocation && $data->merchantLocation->location)
+                                            @if($data->merchantBranch && $data->merchantBranch->location)
                                                 <div class="mb-2 p-2 bg-light rounded">
                                                     <strong><i class="fas fa-warehouse text-success"></i> @lang('Pickup Location'):</strong>
                                                     <br>
-                                                    <span class="text-success">{{ $data->merchantLocation->location }}</span>
+                                                    <span class="text-success">{{ $data->merchantBranch->location }}</span>
                                                 </div>
                                             @endif
                                             @if($data->merchant->address)

@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\City;
 use App\Models\User;
-use App\Models\MerchantLocation;
+use App\Models\MerchantBranch;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -14,9 +14,13 @@ use Illuminate\Support\Facades\Log;
  * - Data: city_name (English only) - no city_name_ar
  * - No hardcoded values
  * - No fallback for any data
- * - Each merchant calculated independently
+ * - Each branch calculated independently (not merchant)
  * - Chargeable weight = max(actual, volumetric)
- * - Merchant origin from merchant_locations table
+ * - Branch origin from merchant_branches table
+ *
+ * IMPORTANT: As of 2026-01-18, shipping is BRANCH-SCOPED:
+ * - Use getBranchCity() for branch-specific shipping
+ * - getMerchantCity() is deprecated, kept for backward compatibility
  */
 class ShippingCalculatorService
 {
@@ -54,38 +58,38 @@ class ShippingCalculatorService
     }
 
     /**
-     * Get merchant's origin city (shipping origin)
+     * Get branch's origin city (shipping origin)
      *
-     * Source: merchant_locations table (warehouse/origin locations)
-     * - Finds first active merchant location
+     * Source: merchant_branches table
+     * - Uses branch_id to get branch data directly
      * - Uses city_id to get city data
+     *
+     * @param int $branchId The branch ID
+     * @return array|null Branch city data or null if not found
      */
-    public static function getMerchantCity(int $merchantId): ?array
+    public static function getBranchCity(int $branchId): ?array
     {
-        // Get first active merchant location
-        $merchantLocation = MerchantLocation::where('user_id', $merchantId)
+        $branch = MerchantBranch::where('id', $branchId)
             ->where('status', 1)
             ->first();
 
-        if (!$merchantLocation) {
-            Log::warning('ShippingCalculator: Merchant has no active location', ['merchant_id' => $merchantId]);
+        if (!$branch) {
+            Log::warning('ShippingCalculator: Branch not found or inactive', ['branch_id' => $branchId]);
             return null;
         }
 
-        if (!$merchantLocation->city_id) {
-            Log::warning('ShippingCalculator: Merchant location has no city', [
-                'merchant_id' => $merchantId,
-                'merchant_location_id' => $merchantLocation->id,
+        if (!$branch->city_id) {
+            Log::warning('ShippingCalculator: Branch has no city', [
+                'branch_id' => $branchId,
             ]);
             return null;
         }
 
-        $city = City::find($merchantLocation->city_id);
+        $city = City::find($branch->city_id);
         if (!$city) {
-            Log::warning('ShippingCalculator: City not found for merchant location', [
-                'merchant_id' => $merchantId,
-                'merchant_location_id' => $merchantLocation->id,
-                'city_id' => $merchantLocation->city_id,
+            Log::warning('ShippingCalculator: City not found for branch', [
+                'branch_id' => $branchId,
+                'city_id' => $branch->city_id,
             ]);
             return null;
         }
@@ -94,11 +98,67 @@ class ShippingCalculatorService
             'city_id' => $city->id,
             'city_name' => $city->city_name,
             'country_id' => $city->country_id,
-            'merchant_location_id' => $merchantLocation->id,
-            'warehouse_address' => $merchantLocation->location,
-            'latitude' => $merchantLocation->latitude,
-            'longitude' => $merchantLocation->longitude,
-            'source' => 'merchant_location',
+            'branch_id' => $branch->id,
+            'branch_name' => $branch->getDisplayName(),
+            'merchant_id' => $branch->user_id,
+            'warehouse_address' => $branch->location,
+            'latitude' => $branch->latitude,
+            'longitude' => $branch->longitude,
+            'tryoto_warehouse_code' => $branch->tryoto_warehouse_code,
+            'source' => 'merchant_branch',
+        ];
+    }
+
+    /**
+     * Get merchant's origin city (shipping origin)
+     *
+     * @deprecated Use getBranchCity() instead for branch-scoped shipping
+     *
+     * Source: merchant_branches table (warehouse/origin locations)
+     * - Finds first active merchant branch
+     * - Uses city_id to get city data
+     */
+    public static function getMerchantCity(int $merchantId): ?array
+    {
+        // Get first active merchant branch
+        $branch = MerchantBranch::where('user_id', $merchantId)
+            ->where('status', 1)
+            ->first();
+
+        if (!$branch) {
+            Log::warning('ShippingCalculator: Merchant has no active branch', ['merchant_id' => $merchantId]);
+            return null;
+        }
+
+        if (!$branch->city_id) {
+            Log::warning('ShippingCalculator: Merchant branch has no city', [
+                'merchant_id' => $merchantId,
+                'branch_id' => $branch->id,
+            ]);
+            return null;
+        }
+
+        $city = City::find($branch->city_id);
+        if (!$city) {
+            Log::warning('ShippingCalculator: City not found for merchant branch', [
+                'merchant_id' => $merchantId,
+                'branch_id' => $branch->id,
+                'city_id' => $branch->city_id,
+            ]);
+            return null;
+        }
+
+        return [
+            'city_id' => $city->id,
+            'city_name' => $city->city_name,
+            'country_id' => $city->country_id,
+            'branch_id' => $branch->id,
+            'branch_name' => $branch->getDisplayName(),
+            'warehouse_address' => $branch->location,
+            'latitude' => $branch->latitude,
+            'longitude' => $branch->longitude,
+            'tryoto_warehouse_code' => $branch->tryoto_warehouse_code,
+            'source' => 'merchant_branch',
         ];
     }
 

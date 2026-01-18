@@ -555,10 +555,10 @@ class TryotoService
      * @param float $price
      * @param string $serviceType
      * @param array|null $merchantShippingData بيانات الشحن المحسوبة مسبقاً (من MerchantCartManager)
-     * @param int|null $merchantLocationId معرف موقع الاستلام المحدد (من merchant_locations)
+     * @param int|null $merchantBranchId معرف فرع الاستلام المحدد (من merchant_branches)
      * @return array
      */
-    public function createShipment(Purchase $purchase, int $merchantId, string $deliveryOptionId, string $company, float $price, string $serviceType = '', ?array $merchantShippingData = null, ?int $merchantLocationId = null): array
+    public function createShipment(Purchase $purchase, int $merchantId, string $deliveryOptionId, string $company, float $price, string $serviceType = '', ?array $merchantShippingData = null, ?int $merchantBranchId = null): array
     {
         // Set merchant ID for merchant-specific credentials
         $this->merchantId = $merchantId;
@@ -575,31 +575,46 @@ class TryotoService
             ];
         }
 
-        // ✅ جلب بيانات المستودع من merchant_locations
-        // إذا تم تمرير merchant_location_id، استخدمه مباشرة
-        // وإلا استخدم أول موقع نشط للتاجر
-        if ($merchantLocationId) {
-            $merchantLocation = \DB::table('merchant_locations')
-                ->where('id', $merchantLocationId)
-                ->where('user_id', $merchantId)
-                ->where('status', 1)
-                ->first();
-        } else {
-            $merchantLocation = \DB::table('merchant_locations')
-                ->where('user_id', $merchantId)
-                ->where('status', 1)
-                ->first();
+        // ✅ STRICT: merchant_branch_id is REQUIRED - NO fallback, NO auto-select
+        if (!$merchantBranchId) {
+            Log::error('Tryoto: createShipment - merchant_branch_id is REQUIRED', [
+                'merchant_id' => $merchantId,
+                'purchase_id' => $purchase->id,
+            ]);
+            return [
+                'success' => false,
+                'error' => 'Branch ID is required. Please select a pickup branch.',
+                'error_code' => 'BRANCH_ID_REQUIRED'
+            ];
+        }
+
+        $merchantBranch = \DB::table('merchant_branches')
+            ->where('id', $merchantBranchId)
+            ->where('user_id', $merchantId)
+            ->where('status', 1)
+            ->first();
+
+        if (!$merchantBranch) {
+            Log::error('Tryoto: createShipment - Invalid or inactive branch', [
+                'merchant_id' => $merchantId,
+                'merchant_branch_id' => $merchantBranchId,
+            ]);
+            return [
+                'success' => false,
+                'error' => 'Invalid branch selected or branch is not active.',
+                'error_code' => 'INVALID_BRANCH'
+            ];
         }
 
         // ✅ pickupLocationCode - يجب أن يتطابق مع code المستودع في Tryoto
         // الأولوية: tryoto_warehouse_code → warehouse_name
-        $pickupLocationCode = $merchantLocation ? ($merchantLocation->tryoto_warehouse_code ?: $merchantLocation->warehouse_name) : null;
+        $pickupLocationCode = $merchantBranch ? ($merchantBranch->tryoto_warehouse_code ?: $merchantBranch->warehouse_name) : null;
 
         if (!$pickupLocationCode) {
             Log::error('Tryoto: createShipment - pickupLocationCode missing', [
                 'merchant_id' => $merchantId,
-                'merchant_location_id' => $merchantLocationId,
-                'tip' => 'Set tryoto_warehouse_code in merchant_locations to match the code in Tryoto dashboard'
+                'merchant_branch_id' => $merchantBranchId,
+                'tip' => 'Set tryoto_warehouse_code in merchant_branches to match the code in Tryoto dashboard'
             ]);
             return [
                 'success' => false,
@@ -620,19 +635,19 @@ class TryotoService
             ];
         }
 
-        // ✅ العنوان من merchant_locations فقط (المصدر الوحيد)
-        if (!$merchantLocation || !$merchantLocation->location) {
-            Log::error('Tryoto: createShipment - merchant location not configured', [
+        // ✅ العنوان من merchant_branches فقط (المصدر الوحيد)
+        if (!$merchantBranch || !$merchantBranch->location) {
+            Log::error('Tryoto: createShipment - merchant branch not configured', [
                 'merchant_id' => $merchantId,
-                'tip' => 'Configure merchant location in merchant_locations table'
+                'tip' => 'Configure merchant branch in merchant_branches table'
             ]);
             return [
                 'success' => false,
                 'error' => 'Merchant warehouse location is not configured',
-                'error_code' => 'MERCHANT_LOCATION_MISSING'
+                'error_code' => 'MERCHANT_BRANCH_MISSING'
             ];
         }
-        $originAddress = $merchantLocation->location;
+        $originAddress = $merchantBranch->location;
 
         // مدينة العميل من الطلب
         $destinationCityValue = $purchase->customer_city;

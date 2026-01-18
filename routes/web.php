@@ -1050,7 +1050,7 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('delivery/provider-options', 'Merchant\DeliveryController@getProviderShippingOptions')->name('merchant.provider.shipping.options');
             Route::post('delivery/send-provider-shipping', 'Merchant\DeliveryController@sendProviderShipping')->name('merchant.send.provider.shipping');
             Route::get('delivery/couriers', 'Merchant\DeliveryController@findCourier')->name('merchant.delivery.couriers');
-            Route::get('delivery/merchant-locations', 'Merchant\DeliveryController@getMerchantLocations')->name('merchant.delivery.locations');
+            Route::get('delivery/merchant-branches', 'Merchant\DeliveryController@getMerchantBranches')->name('merchant.delivery.branches');
 
             //------------ MERCHANT CATALOG ITEM SECTION ------------
 
@@ -1170,18 +1170,18 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/withdraw/create', 'Merchant\WithdrawController@create')->name('merchant-wt-create');
             Route::post('/withdraw/create', 'Merchant\WithdrawController@store')->name('merchant-wt-store');
 
-            //------------ MERCHANT LOCATION (Warehouse/Origin) ------------
-            Route::get('/location/datatables', 'Merchant\MerchantLocationController@datatables')->name('merchant-location-datatables');
-            Route::get('/location', 'Merchant\MerchantLocationController@index')->name('merchant-location-index');
-            Route::get('/location/create', 'Merchant\MerchantLocationController@create')->name('merchant-location-create');
-            Route::post('/location/create', 'Merchant\MerchantLocationController@store')->name('merchant-location-store');
-            Route::get('/location/edit/{id}', 'Merchant\MerchantLocationController@edit')->name('merchant-location-edit');
-            Route::post('/location/edit/{id}', 'Merchant\MerchantLocationController@update')->name('merchant-location-update');
-            Route::get('/location/delete/{id}', 'Merchant\MerchantLocationController@destroy')->name('merchant-location-delete');
-            Route::get('/location/status/{id}/{status}', 'Merchant\MerchantLocationController@status')->name('merchant-location-status');
-            Route::get('/location/cities', 'Merchant\MerchantLocationController@getCitiesByCountry')->name('merchant-location-get-cities');
+            //------------ MERCHANT BRANCH (Warehouse/Origin) ------------
+            Route::get('/branch/datatables', 'Merchant\MerchantBranchController@datatables')->name('merchant-branch-datatables');
+            Route::get('/branch', 'Merchant\MerchantBranchController@index')->name('merchant-branch-index');
+            Route::get('/branch/create', 'Merchant\MerchantBranchController@create')->name('merchant-branch-create');
+            Route::post('/branch/create', 'Merchant\MerchantBranchController@store')->name('merchant-branch-store');
+            Route::get('/branch/edit/{id}', 'Merchant\MerchantBranchController@edit')->name('merchant-branch-edit');
+            Route::post('/branch/edit/{id}', 'Merchant\MerchantBranchController@update')->name('merchant-branch-update');
+            Route::get('/branch/delete/{id}', 'Merchant\MerchantBranchController@destroy')->name('merchant-branch-delete');
+            Route::get('/branch/status/{id}/{status}', 'Merchant\MerchantBranchController@status')->name('merchant-branch-status');
+            Route::get('/branch/cities', 'Merchant\MerchantBranchController@getCitiesByCountry')->name('merchant-branch-get-cities');
 
-            //------------ MERCHANT LOCATION END ------------
+            //------------ MERCHANT BRANCH END ------------
 
             //------------ MERCHANT NETWORK PRESENCE ------------
 

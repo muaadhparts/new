@@ -189,8 +189,13 @@ class CatalogItemController extends MerchantBaseController
             return redirect()->route('merchant-catalog-item-catalogs');
         }
 
+        // Get merchant branches for selection
+        $branches = \App\Models\MerchantBranch::where('user_id', $user->id)
+            ->where('status', 1)
+            ->get();
+
         $sign = $this->curr;
-        return view('merchant.catalog-item.create.offer', compact('catalogItem', 'sign'));
+        return view('merchant.catalog-item.create.offer', compact('catalogItem', 'sign', 'branches'));
     }
 
     //*** GET Request
@@ -424,6 +429,7 @@ class CatalogItemController extends MerchantBaseController
 
         $rules = [
             'catalog_item_id' => 'required|exists:catalog_items,id',
+            'merchant_branch_id' => 'required|exists:merchant_branches,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'item_condition' => 'required|in:1,2',
@@ -436,18 +442,32 @@ class CatalogItemController extends MerchantBaseController
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Validate branch belongs to merchant
+        $branch = \App\Models\MerchantBranch::where('id', $request->merchant_branch_id)
+            ->where('user_id', $user->id)
+            ->where('status', 1)
+            ->first();
+
+        if (!$branch) {
+            Session::flash('unsuccess', __('Invalid branch selected.'));
+            return redirect()->back()->withInput();
+        }
+
+        // Check if offer exists for same catalog_item + branch combination
         $existingOffer = MerchantItem::where('catalog_item_id', $request->catalog_item_id)
             ->where('user_id', $user->id)
+            ->where('merchant_branch_id', $request->merchant_branch_id)
             ->first();
 
         if ($existingOffer) {
-            Session::flash('unsuccess', __('You already have an offer for this catalog item.'));
+            Session::flash('unsuccess', __('You already have an offer for this catalog item in this branch.'));
             return redirect()->route('merchant-catalog-item-edit', $existingOffer->id);
         }
 
         $merchantData = [
             'catalog_item_id' => $request->catalog_item_id,
             'user_id' => $user->id,
+            'merchant_branch_id' => $request->merchant_branch_id,
             'brand_quality_id' => $request->brand_quality_id,
             'price' => $request->price / $sign->value,
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
@@ -662,7 +682,12 @@ class CatalogItemController extends MerchantBaseController
         $data = $merchantItem->catalogItem;
         $sign = $this->curr;
 
-        return view('merchant.catalog-item.edit.offer', compact('data', 'merchantItem', 'sign'));
+        // Get merchant branches for selection
+        $branches = \App\Models\MerchantBranch::where('user_id', $this->user->id)
+            ->where('status', 1)
+            ->get();
+
+        return view('merchant.catalog-item.edit.offer', compact('data', 'merchantItem', 'sign', 'branches'));
     }
 
     //*** GET Request CATALOG
