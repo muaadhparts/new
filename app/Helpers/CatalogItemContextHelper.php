@@ -96,11 +96,6 @@ class CatalogItemContextHelper
         $catalogItem->stock = $mp->stock;
         $catalogItem->item_condition = $mp->item_condition;
 
-        // معلومات المقاسات
-        $catalogItem->size = $mp->size;
-        $catalogItem->size_qty = $mp->size_qty;
-        $catalogItem->size_price = $mp->size_price;
-
         // معلومات إضافية
         $catalogItem->stock_check = $mp->stock_check ?? null;
         $catalogItem->minimum_qty = $mp->minimum_qty ?? null;
@@ -110,10 +105,6 @@ class CatalogItemContextHelper
         $catalogItem->ship = $mp->ship ?? null;
         $catalogItem->policy = $mp->policy ?? null;
         $catalogItem->features = $mp->features ?? null;
-
-        // الألوان (تأتي من merchant_items فقط)
-        $catalogItem->color_all = $mp->color_all ?? null;
-        $catalogItem->color_price = $mp->color_price ?? null;
     }
 
     /**
@@ -192,9 +183,6 @@ class CatalogItemContextHelper
             'previous_price',
             'stock',
             'item_condition',
-            'size',
-            'size_qty',
-            'size_price',
             'stock_check',
             'minimum_qty',
             'whole_sell_qty',
@@ -202,8 +190,6 @@ class CatalogItemContextHelper
             'ship',
             'policy',
             'features',
-            'color_all',
-            'color_price',
         ];
 
         $attributes = $catalogItem->getAttributes();

@@ -279,8 +279,6 @@
     var prodid     = $box.find('.prodid').val();
     var itemid     = $box.find('.itemid').val();
     var domkey     = $box.find('.domkey').val();
-    var size_qty   = $box.find('.size_qty').val();
-    var size_price = $box.find('.size_price').val();
 
     var $qtyInput  = $('#qty' + domkey);
     var $priceCell = $('#prc' + domkey);
@@ -291,9 +289,7 @@
       dataType: 'json',
       data: {
         id: prodid,
-        itemid: itemid,
-        size_qty: size_qty,
-        size_price: size_price
+        itemid: itemid
       },
       success: function (resp) {
         // صامت - لا رسائل عند عدم توفر المخزون
@@ -326,8 +322,6 @@
     var prodid     = $box.find('.prodid').val();
     var itemid     = $box.find('.itemid').val();
     var domkey     = $box.find('.domkey').val();
-    var size_qty   = $box.find('.size_qty').val();
-    var size_price = $box.find('.size_price').val();
     var minQty     = parseInt($box.find('.minimum_qty').val() || '1', 10);
 
     var $qtyInput  = $('#qty' + domkey);
@@ -347,9 +341,7 @@
       dataType: 'json',
       data: {
         id: prodid,
-        itemid: itemid,
-        size_qty: size_qty,
-        size_price: size_price
+        itemid: itemid
       },
       success: function (resp) {
         // صامت
@@ -366,31 +358,12 @@
     });
   });
 
-  $(document).on("click", ".cart_size", function () {
-    let qty = $(this).data("qty");
-    $("#stock").val(qty);
-
-    // Reset quantity to minimum when size changes (new stock might be lower)
-    var minQty = parseInt($("#product_minimum_qty").val()) || 1;
-    var currentQty = parseInt($("#purchase-qty").val()) || minQty;
-
-    // If current qty exceeds new stock, reset to minimum
-    if (qty > 0 && currentQty > qty) {
-      $("#purchase-qty").val(minQty);
-    }
-
-    updateProductPrice();
-  });
-  $(document).on("click", ".cart_color", function () {
-    updateProductPrice();
-  });
+  // Attribute price update handler (for custom attributes only, no size/color)
   $(document).on("click", ".cart_attr", function () {
     updateProductPrice();
   });
 
   function updateProductPrice() {
-    let size_price = $(".cart_size input:checked").attr("data-price");
-    let color_price = $(".cart_color input:checked").attr("data-price");
     let attr_price = $(".cart_attr:checked")
       .map(function () {
         return $(this).data("price");
@@ -399,18 +372,7 @@
       .reduce((a, b) => a + b, 0);
     let main_price = $("#product_price").val();
 
-    if (size_price == undefined) {
-      size_price = 0;
-    }
-    if (color_price == undefined) {
-      color_price = 0;
-    }
-
-    let total =
-      parseFloat(size_price) +
-      parseFloat(color_price) +
-      parseFloat(attr_price) +
-      parseFloat(main_price);
+    let total = parseFloat(attr_price) + parseFloat(main_price);
 
     var pos = $("#curr_pos").val();
     var sign = $("#curr_sign").val();

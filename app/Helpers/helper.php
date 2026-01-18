@@ -399,59 +399,6 @@ if (! function_exists('monetaryUnit')) {
 }
 
 /**
- * Get current MonetaryUnit (from session or default)
- *
- * @deprecated Use monetaryUnit()->getCurrent() instead
- * @return \App\Models\MonetaryUnit|null
- */
-if (! function_exists('getCurrentMonetaryUnit')) {
-    function getCurrentMonetaryUnit(): ?\App\Models\MonetaryUnit
-    {
-        return monetaryUnit()->getCurrent();
-    }
-}
-
-/**
- * Get default MonetaryUnit (is_default = 1)
- *
- * @deprecated Use monetaryUnit()->getDefault() instead
- * @return \App\Models\MonetaryUnit|null
- */
-if (! function_exists('getDefaultMonetaryUnit')) {
-    function getDefaultMonetaryUnit(): ?\App\Models\MonetaryUnit
-    {
-        return monetaryUnit()->getDefault();
-    }
-}
-
-/**
- * Get MonetaryUnit by code (e.g., 'SAR', 'USD')
- *
- * @deprecated Use monetaryUnit()->getByCode($code) instead
- * @param string $code
- * @return \App\Models\MonetaryUnit|null
- */
-if (! function_exists('getMonetaryUnitByCode')) {
-    function getMonetaryUnitByCode(string $code): ?\App\Models\MonetaryUnit
-    {
-        return monetaryUnit()->getByCode($code);
-    }
-}
-
-/**
- * Get all active MonetaryUnits
- *
- * @deprecated Use monetaryUnit()->getAll() instead
- * @return \Illuminate\Support\Collection
- */
-if (! function_exists('getAllMonetaryUnits')) {
-    function getAllMonetaryUnits(): \Illuminate\Support\Collection
-    {
-        return monetaryUnit()->getAll();
-    }
-}
-
-/**
  * Format price with currency (convenience helper)
  *
  * @param float $amount Amount to format

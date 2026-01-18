@@ -7,7 +7,7 @@
         $catalogItemSlug = $favorite->catalogItem->slug ?? $favorite->slug ?? null;
         $favoriteCatalogItemUrl = $favoriteMerchant && $catalogItemSlug
             ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $favoriteMerchant->id])
-            : ($catalogItemSlug ? route('front.catalog-item.legacy', $catalogItemSlug) : '#');
+            : '#';
     @endphp
 
     @php

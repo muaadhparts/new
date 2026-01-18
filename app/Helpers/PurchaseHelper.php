@@ -122,31 +122,15 @@ class PurchaseHelper
         }
     }
 
+    /**
+     * @deprecated Size/qty functionality has been removed from the system
+     * This method is kept for backward compatibility but does nothing
+     */
     public static function size_qty_check($cart)
     {
-        try {
-            foreach ($cart->items as $cartItem) {
-                $x = (string)$cartItem['size_qty'];
-
-                if (!empty($x) && $x != "undefined") {
-                    // Update size_qty in merchant_items instead of catalog_items
-                    $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
-                        ->where('user_id', $cartItem['user_id'])
-                        ->first();
-
-                    if ($merchantItem) {
-                        $x = (int)$x;
-                        $x = $x - $cartItem['qty'];
-                        $temp = $merchantItem->size_qty;
-                        $temp[$cartItem['size_key']] = $x;
-                        $temp1 = implode(',', $temp);
-                        $merchantItem->size_qty = $temp1;
-                        $merchantItem->update();
-                    }
-                }
-            }
-        } catch (\Exception $e) {
-        }
+        // Size/qty columns have been removed from the database
+        // Stock is now managed directly via merchant_items.stock
+        return;
     }
 
     public static function stock_check($cart)

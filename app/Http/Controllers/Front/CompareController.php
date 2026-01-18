@@ -98,55 +98,6 @@ class CompareController extends FrontBaseController
         return response()->json($data);
     }
 
-    /**
-     * Legacy method for backward compatibility.
-     * Converts catalog_item_id to merchant_item_id.
-     * Can optionally accept user parameter to specify merchant.
-     */
-    public function addcompareLegacy(Request $request, $catalogItemId)
-    {
-        $data[0] = 0;
-        $catalogItem = CatalogItem::findOrFail($catalogItemId);
-        $oldCompare = Session::has('compare') ? Session::get('compare') : null;
-
-        $userId = $request->get('user');
-
-        // If user parameter is provided, find specific merchant item for that merchant
-        if ($userId) {
-            $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
-                ->where('catalog_item_id', $catalogItemId)
-                ->where('user_id', $userId)
-                ->where('status', 1)
-                ->first();
-        } else {
-            // Fallback: find the first active merchant item
-            $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
-                ->where('catalog_item_id', $catalogItemId)
-                ->where('status', 1)
-                ->orderBy('price')
-                ->first();
-        }
-
-        if (!$merchantItem) {
-            $data[0] = 1;
-            $data['error'] = __('CatalogItem not available from any merchant.');
-            return response()->json($data);
-        }
-
-        $compare = new Compare($oldCompare);
-        $compare->add($merchantItem, $merchantItem->id);
-        Session::put('compare', $compare);
-
-        if ($compare->items[$merchantItem->id]['ck'] == 1) {
-            $data[0] = 1;
-        }
-
-        $data[1] = count($compare->items);
-        $data['success'] = __('Successfully Added To Compare.');
-        $data['error'] = __('Already Added To Compare.');
-        return response()->json($data);
-    }
-
     public function removecompare(Request $request, $merchantItemId)
     {
         $oldCompare = Session::has('compare') ? Session::get('compare') : null;

@@ -212,65 +212,6 @@
                         @endif
 
 
-                        @php
-                            // Use merchant's stock_check and sizes (merchant-specific)
-                            $stockCheck = (int) ($merchant->stock_check ?? $catalogItem->stock_check ?? 0);
-                            $merchantSizes = !empty($merchant->size) ? (is_array($merchant->size) ? $merchant->size : explode(',', $merchant->size)) : [];
-                            $merchantSizeQty = !empty($merchant->size_qty) ? (is_array($merchant->size_qty) ? $merchant->size_qty : explode(',', $merchant->size_qty)) : [];
-                            $merchantSizePrice = !empty($merchant->size_price) ? (is_array($merchant->size_price) ? $merchant->size_price : explode(',', $merchant->size_price)) : [];
-                        @endphp
-                        @if ($stockCheck == 1)
-                            @if (!empty($merchantSizes))
-                                <!-- catalogItem size (from merchant) -->
-                                <div class="variation-wrapper variation-sizes">
-                                    <span class="varition-name">@lang('Size :')</span>
-                                    <ul>
-                                        @foreach ($merchantSizes as $key => $data1)
-                                            @php
-                                                $sizeQty = (int) ($merchantSizeQty[$key] ?? 0);
-                                                $sizePrice = (float) ($merchantSizePrice[$key] ?? 0);
-                                            @endphp
-                                            <li class="{{ $loop->first ? 'active' : '' }} cart_size"
-                                                data-price="{{ $sizePrice * $curr->value }}"
-                                                data-qty="{{ $sizeQty }}">
-                                                <input {{ $loop->first ? 'checked' : '' }} type="radio"
-                                                    id="size_{{ $key }}" data-value="{{ $key }}"
-                                                    data-key="{{ str_replace(' ', '', trim($data1)) }}"
-                                                    data-price="{{ $sizePrice * $curr->value }}"
-                                                    data-qty="{{ $sizeQty }}" value="{{ $key }}"
-                                                    name="size">
-                                                <label for="size_{{ $key }}">{{ trim($data1) }}</label>
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                            @endif
-
-
-                            @if (!empty($catalogItem->color_all))
-                                <!-- catalogItem colors -->
-                                <div class="variation-wrapper variation-colors">
-                                    <span class="varition-name">@lang('Color :')</span>
-                                    <ul>
-                                        @foreach ($catalogItem->color_all as $ckey => $color1)
-                                            <li class="{{ $loop->first ? 'active' : '' }} cart_color">
-                                                <input {{ $loop->first ? 'checked' : '' }} type="radio" data-price="0"
-                                                    data-color="{{ $color1 }}" id="color_{{ $ckey }}"
-                                                    name="colors" value="{{ $ckey }}">
-                                                <label for="color_{{ $ckey }}"
-                                                    data-color-code="{{ $color1 }}"
-                                                    data-outline-color-code="{{ $color1 }}"></label>
-                                            </li>
-                                        @endforeach
-
-                                    </ul>
-                                </div>
-                            @endif
-
-                        @endif
-
-
-
                         {{-- STOCK/QTY/PRICE: From $merchant (MerchantItem) ONLY - NO FALLBACK --}}
                         @php
                             // STRICT: Direct access - $merchant already validated at top of view
@@ -278,13 +219,10 @@
                             $mpPreordered = (bool) $merchant->preordered;
                             $mpMinQty = max(1, (int) $merchant->minimum_qty);
                             $mpPrice = (float) $merchant->price;
-
-                            // Initial stock: use first size's stock if sizes exist, otherwise general stock
-                            $initialStock = !empty($merchantSizeQty) ? (int) ($merchantSizeQty[0] ?? $mpStock) : $mpStock;
                         @endphp
 
-                        {{-- Stock from $merchant only (size-specific or general) --}}
-                        <input type="hidden" id="stock" value="{{ $initialStock }}">
+                        {{-- Stock from $merchant only --}}
+                        <input type="hidden" id="stock" value="{{ $mpStock }}">
 
 
                         <!-- add-qty-wrapper -->
@@ -352,7 +290,7 @@
                         <!-- wish-compare-report-wrapper -->
                         <div class="wish-compare-report-wrapper">
                             @if (Auth::check())
-                                <a href="javascript:;" data-href="{{ route('user-favorite-add', $catalogItem->id) }}"
+                                <a href="javascript:;" data-href="{{ route('user-favorite-add-merchant', $merchant->id) }}"
                                     class="link favorite">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none">
@@ -376,7 +314,7 @@
                                 </a>
                             @endif
 
-                            <a data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascript:;"
+                            <a data-href="{{ route('merchant.compare.add', $merchant->id) }}" href="javascript:;"
                                 class="link compare_product">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                     viewBox="0 0 24 24" fill="none">

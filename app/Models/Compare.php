@@ -35,23 +35,6 @@ class Compare extends Model
         ];
     }
 
-    /**
-     * Legacy method for backward compatibility
-     * Converts catalog_item_id to merchant_item_id
-     */
-    public function addLegacy($catalogItem, $catalogItemId)
-    {
-        // Find the first active merchant item for this catalog item
-        $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
-            ->where('status', 1)
-            ->orderBy('price')
-            ->first();
-
-        if ($merchantItem) {
-            $this->add($merchantItem, $merchantItem->id);
-        }
-    }
-
     public function removeItem($merchantItemId)
     {
         unset($this->items[$merchantItemId]);

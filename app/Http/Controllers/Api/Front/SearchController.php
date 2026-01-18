@@ -8,89 +8,10 @@ use App\Http\Resources\CatalogItemListResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-/**
- * SearchController
- *
- * Note: Old category/subcategory/childcategory methods are deprecated.
- * The new system uses TreeCategories instead.
- */
 class SearchController extends Controller
 {
     /**
-     * @deprecated Category system removed - returns empty collection
-     */
-    public function categories() {
-        return response()->json([
-            'status' => true,
-            'data' => [],
-            'error' => [],
-            'message' => 'Category system deprecated. Use TreeCategories API instead.'
-        ]);
-    }
-
-    /**
-     * @deprecated Category system removed - returns empty collection
-     */
-    public function category($id) {
-        return response()->json([
-            'status' => true,
-            'data' => [],
-            'error' => [],
-            'message' => 'Category system deprecated. Use TreeCategories API instead.'
-        ]);
-    }
-
-    /**
-     * @deprecated Subcategory system removed - returns empty collection
-     */
-    public function subcategories($id) {
-        return response()->json([
-            'status' => true,
-            'data' => [],
-            'error' => [],
-            'message' => 'Subcategory system deprecated. Use TreeCategories API instead.'
-        ]);
-    }
-
-    /**
-     * @deprecated Childcategory system removed - returns empty collection
-     */
-    public function childcategories($id) {
-        return response()->json([
-            'status' => true,
-            'data' => [],
-            'error' => [],
-            'message' => 'Childcategory system deprecated. Use TreeCategories API instead.'
-        ]);
-    }
-
-    /**
-     * @deprecated Specs for old categories removed - returns empty collection
-     */
-    public function specs(Request $request, $id) {
-        return response()->json([
-            'status' => true,
-            'data' => [],
-            'error' => [],
-            'message' => 'Spec system deprecated. Use TreeCategories API instead.'
-        ]);
-    }
-
-    /**
-     * @deprecated SpecValues removed - returns empty collection
-     */
-    public function specoptions($id) {
-        return response()->json([
-            'status' => true,
-            'data' => [],
-            'error' => [],
-            'message' => 'SpecValues system deprecated.'
-        ]);
-    }
-
-    /**
      * Basic search by name/price only
-     * Category filtering removed - use front.catalog.category route instead
      */
     public function search(Request $request)
     {

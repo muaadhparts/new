@@ -80,12 +80,6 @@ class CatalogItemDetailsResource extends JsonResource
       'stock_check'    => $mp ? $mp->stock_check : 0,
       'estimated_shipping_time' => $mp ? $mp->ship : null,
 
-      'colors'         => $mp ? $mp->color_all : [],     // Colors from merchant_items only
-      'color_prices'   => $mp ? $mp->color_price : [],   // Color prices from merchant_items
-      'sizes'          => $this->size,                   // Sizes from catalog_items (fixed at item level)
-      'size_quantity'  => $this->size_qty,               // Size quantities from catalog_items
-      'size_price'     => $this->size_price,             // Size prices from catalog_items
-
       'details'        => $mp && !empty($mp->details) ? strip_tags($mp->details) : strip_tags($this->policy),
       'policy'         => $mp && !empty($mp->policy) ? strip_tags($mp->policy) : strip_tags($this->policy),
       'features'       => $mp && !empty($mp->features) ? $mp->features : $this->features,

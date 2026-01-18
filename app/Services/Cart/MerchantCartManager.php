@@ -35,15 +35,11 @@ class MerchantCartManager
      *
      * @param int $merchantItemId
      * @param int $qty
-     * @param string|null $size
-     * @param string|null $color
      * @return array{success: bool, message: string, data?: array}
      */
     public function addItem(
         int $merchantItemId,
-        int $qty = 1,
-        ?string $size = null,
-        ?string $color = null
+        int $qty = 1
     ): array {
         // ═══ التحقق من MerchantItem ═══
         $merchantItem = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand', 'merchantBranch'])->find($merchantItemId);
@@ -89,18 +85,8 @@ class MerchantCartManager
             return $this->error(__('الحد الأدنى للكمية') . ' ' . $minQty);
         }
 
-        // ═══ تحديد المقاس واللون ═══
-        if ($size === null && !empty($merchantItem->size)) {
-            $size = $this->getFirstAvailableSize($merchantItem);
-        }
-
-        if ($color === null && !empty($merchantItem->color_all)) {
-            $colors = $this->parseToArray($merchantItem->color_all);
-            $color = !empty($colors) ? ltrim($colors[0], '#') : null;
-        }
-
         // ═══ التحقق من المخزون ═══
-        $stock = $this->getStock($merchantItem, $size);
+        $stock = $this->getStock($merchantItem);
         $isPreorder = (bool) $merchantItem->preordered;
 
         if (!$isPreorder && $stock <= 0) {
@@ -108,7 +94,7 @@ class MerchantCartManager
         }
 
         // ═══ إنشاء مفتاح السلة ═══
-        $cartKey = $this->generateKey($merchantItemId, $size, $color);
+        $cartKey = $this->generateKey($merchantItemId);
 
         // ═══ التحقق من الكمية الموجودة ═══
         $cart = $this->getStorage();
@@ -125,7 +111,7 @@ class MerchantCartManager
 
         // ═══ حجز المخزون ═══
         if (!$isPreorder && $stock > 0) {
-            $this->reservation->update($merchantItemId, $newTotalQty, $size);
+            $this->reservation->update($merchantItemId, $newTotalQty);
         }
 
         // ═══ بناء بيانات الصنف ═══
@@ -138,9 +124,7 @@ class MerchantCartManager
             );
         }
 
-        $sizePrice = $this->calculateSizePrice($merchantItem, $size);
-        $colorPrice = $this->calculateColorPrice($merchantItem, $color);
-        $effectivePrice = $unitPrice + $sizePrice + $colorPrice;
+        $effectivePrice = $unitPrice;
 
         // ═══ استخراج Brand و QualityBrand ═══
         $brand = $catalogItem->brand;
@@ -180,8 +164,6 @@ class MerchantCartManager
 
             // Pricing
             'unit_price' => $unitPrice,
-            'size_price' => $sizePrice,
-            'color_price' => $colorPrice,
             'effective_price' => $effectivePrice,
 
             // Quantity
@@ -189,10 +171,6 @@ class MerchantCartManager
             'min_qty' => $minQty,
             'stock' => $stock,
             'preordered' => $isPreorder,
-
-            // Variants
-            'size' => $size,
-            'color' => $color ? ltrim($color, '#') : null,
 
             // Wholesale
             'whole_sell_qty' => $this->parseToArray($merchantItem->whole_sell_qty),
@@ -264,7 +242,7 @@ class MerchantCartManager
             return $this->error(__('الصنف لم يعد متاحاً'));
         }
 
-        $stock = $this->getStock($merchantItem, $item['size'] ?? null);
+        $stock = $this->getStock($merchantItem);
         $isPreorder = (bool) $item['preordered'];
 
         if (!$isPreorder && $stock > 0 && $qty > $stock) {
@@ -273,7 +251,7 @@ class MerchantCartManager
 
         // ═══ تحديث الحجز ═══
         if (!$isPreorder && $stock > 0) {
-            $this->reservation->update($item['merchant_item_id'], $qty, $item['size'] ?? null);
+            $this->reservation->update($item['merchant_item_id'], $qty);
         }
 
         // ═══ تحديث الكمية ═══
@@ -340,7 +318,7 @@ class MerchantCartManager
         }
 
         // ═══ تحرير الحجز ═══
-        $this->reservation->release($item['merchant_item_id'], $item['size'] ?? null);
+        $this->reservation->release($item['merchant_item_id']);
 
         // ═══ حذف من السلة ═══
         unset($cart['items'][$cartKey]);
@@ -497,12 +475,7 @@ class MerchantCartManager
                 'branch_name' => $item['branch_name'] ?? '',
                 'qty' => $item['qty'],
                 'price' => $item['total_price'],
-                'size' => $item['size'],
-                'color' => $item['color'],
                 'stock' => $item['stock'],
-                'size_qty' => null,
-                'size_key' => null,
-                'size_price' => $item['size_price'] ?? 0,
                 'keys' => null,
                 'values' => null,
             ];
@@ -640,7 +613,7 @@ class MerchantCartManager
         foreach ($cart['items'] as $key => $item) {
             if ((int) $item['merchant_id'] === $merchantId) {
                 // تحرير الحجز
-                $this->reservation->release($item['merchant_item_id'], $item['size'] ?? null);
+                $this->reservation->release($item['merchant_item_id']);
                 unset($cart['items'][$key]);
             }
         }
@@ -666,7 +639,6 @@ class MerchantCartManager
         foreach ($items as $item) {
             $confirmData[$item['merchant_item_id']] = [
                 'qty' => $item['qty'],
-                'size' => $item['size'] ?? null,
             ];
         }
 
@@ -775,78 +747,15 @@ class MerchantCartManager
         }
     }
 
-    private function generateKey(int $merchantItemId, ?string $size, ?string $color): string
+    private function generateKey(int $merchantItemId): string
     {
         $sessionHash = substr(md5(session()->getId()), 0, 8);
-        $sizeKey = $size ? preg_replace('/[^a-zA-Z0-9]/', '', $size) : '_';
-        $colorKey = $color ? ltrim($color, '#') : '_';
-
-        return "s{$sessionHash}_m{$merchantItemId}_{$sizeKey}_{$colorKey}";
+        return "s{$sessionHash}_m{$merchantItemId}";
     }
 
-    private function getStock(MerchantItem $mp, ?string $size): int
+    private function getStock(MerchantItem $mp): int
     {
-        if ($size && !empty($mp->size) && !empty($mp->size_qty)) {
-            $sizes = $this->parseToArray($mp->size);
-            $qtys = $this->parseToArray($mp->size_qty);
-            $idx = array_search(trim($size), array_map('trim', $sizes), true);
-
-            if ($idx !== false && isset($qtys[$idx])) {
-                return (int) $qtys[$idx];
-            }
-        }
-
         return (int) ($mp->stock ?? 0);
-    }
-
-    private function getFirstAvailableSize(MerchantItem $mp): ?string
-    {
-        $sizes = $this->parseToArray($mp->size);
-        $qtys = $this->parseToArray($mp->size_qty);
-
-        foreach ($sizes as $i => $size) {
-            if ((int) ($qtys[$i] ?? 0) > 0) {
-                return trim($size);
-            }
-        }
-
-        return !empty($sizes) ? trim($sizes[0]) : null;
-    }
-
-    private function calculateSizePrice(MerchantItem $mp, ?string $size): float
-    {
-        if (!$size || empty($mp->size) || empty($mp->size_price)) {
-            return 0.0;
-        }
-
-        $sizes = $this->parseToArray($mp->size);
-        $prices = $this->parseToArray($mp->size_price);
-        $idx = array_search(trim($size), array_map('trim', $sizes), true);
-
-        if ($idx !== false && isset($prices[$idx])) {
-            return (float) $prices[$idx];
-        }
-
-        return 0.0;
-    }
-
-    private function calculateColorPrice(MerchantItem $mp, ?string $color): float
-    {
-        if (!$color || empty($mp->color_all) || empty($mp->color_price)) {
-            return 0.0;
-        }
-
-        $colors = $this->parseToArray($mp->color_all);
-        $prices = $this->parseToArray($mp->color_price);
-        $color = ltrim($color, '#');
-
-        foreach ($colors as $i => $c) {
-            if (ltrim($c, '#') === $color && isset($prices[$i])) {
-                return (float) $prices[$i];
-            }
-        }
-
-        return 0.0;
     }
 
     private function parseToArray($value): array

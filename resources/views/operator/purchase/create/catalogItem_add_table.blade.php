@@ -37,8 +37,6 @@
                             'merchant_id' => $catalogItem['user_id'],
                             'merchant_item_id' => $catalogItem['merchant_item_id']
                         ]);
-                    } elseif (isset($catalogItem['item']['slug'])) {
-                        $prodAddTableUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                     }
                  @endphp
                 <a target="_blank" href="{{ $prodAddTableUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>

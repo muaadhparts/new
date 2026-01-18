@@ -4,7 +4,7 @@
 
     $homeProdUrl = $homeProdMerchant && $cartItem->slug
         ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_item_id' => $homeProdMerchant->id])
-        : ($cartItem->slug ? route('front.catalog-item.legacy', $cartItem->slug) : '#');
+        : '#';
 @endphp
 
 <div class="catalogItem type-catalogItem">
@@ -50,7 +50,7 @@
             @endif
             @if(Auth::check())
             <div class="favorite-button">
-               <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;" data-href="{{ route('user-favorite-add',$cartItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-name="Add to Favorites" name="{{ __('Favorites') }}" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
+               <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;" data-href="{{ $homeProdMerchant ? route('user-favorite-add-merchant', $homeProdMerchant->id) : '#' }}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-name="Add to Favorites" name="{{ __('Favorites') }}" aria-label="Add to Favorites">{{ __('Favorites') }}</a>
             </div>
             @else
             <div class="favorite-button">
@@ -59,7 +59,7 @@
             @endif
 
                <div class="compare-button">
-                  <a class="compare button add_to_cart_button" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" href="javascrit:;" data-bs-toggle="tooltip" data-bs-placement="right" name="{{__('Compare')}}" data-bs-original-name="{{__('Compare')}}" aria-label="{{__('Compare')}}">{{ __('Compare') }}</a>
+                  <a class="compare button add_to_cart_button" data-href="{{ $homeProdMerchant ? route('merchant.compare.add', $homeProdMerchant->id) : '#' }}" href="javascrit:;" data-bs-toggle="tooltip" data-bs-placement="right" name="{{__('Compare')}}" data-bs-original-name="{{__('Compare')}}" aria-label="{{__('Compare')}}">{{ __('Compare') }}</a>
                </div>
          </div>
        </div>

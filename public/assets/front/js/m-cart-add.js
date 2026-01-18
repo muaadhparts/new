@@ -5,7 +5,7 @@
  *
  * Class: .m-cart-add (ONLY)
  * Required: data-merchant-item-id
- * Optional: data-qty-input, data-size, data-color, data-redirect
+ * Optional: data-qty-input, data-redirect
  *
  * API: POST /merchant-cart/add
  */
@@ -25,10 +25,6 @@
             wrapper: '.m-cart-button',
             // Add button - SINGLE pattern only
             addButton: '.m-cart-add',
-            // Size selector
-            sizeButton: '.m-cart-button__size',
-            // Color selector
-            colorButton: '.m-cart-button__color',
             // Qty input
             qtyInput: '.m-cart-button__qty-input',
             // Qty buttons
@@ -99,9 +95,6 @@
             qty: options.qty || 1,
         };
 
-        if (options.size) payload.size = options.size;
-        if (options.color) payload.color = options.color;
-
         const result = await apiRequest(CONFIG.endpoints.add, payload);
 
         isProcessing = false;
@@ -147,9 +140,6 @@
             preordered: wrapper.dataset.preordered === '1',
             minQty: parseInt(wrapper.dataset.minQty || 1, 10),
             maxQty: parseInt(wrapper.dataset.maxQty || 9999, 10),
-            sizes: JSON.parse(wrapper.dataset.sizes || '[]'),
-            sizeQtys: JSON.parse(wrapper.dataset.sizeQtys || '[]'),
-            colors: JSON.parse(wrapper.dataset.colors || '[]'),
         };
     }
 
@@ -159,26 +149,12 @@
     function getSelectedOptions(wrapper) {
         const options = {
             qty: 1,
-            size: null,
-            color: null,
         };
 
         // Get qty
         const qtyInput = wrapper.querySelector(CONFIG.selectors.qtyInput);
         if (qtyInput) {
             options.qty = parseInt(qtyInput.value, 10) || 1;
-        }
-
-        // Get selected size
-        const activeSize = wrapper.querySelector(`${CONFIG.selectors.sizeButton}.${CONFIG.classes.active}`);
-        if (activeSize) {
-            options.size = activeSize.dataset.size;
-        }
-
-        // Get selected color
-        const activeColor = wrapper.querySelector(`${CONFIG.selectors.colorButton}.${CONFIG.classes.active}`);
-        if (activeColor) {
-            options.color = activeColor.dataset.color;
         }
 
         return options;
@@ -230,41 +206,6 @@
         }
 
         wrapper.classList.toggle(CONFIG.classes.loading, loading);
-    }
-
-    // ============================================
-    // HANDLE SIZE SELECTION
-    // ============================================
-    function handleSizeSelect(wrapper, sizeBtn) {
-        const data = getWrapperData(wrapper);
-        const selectedSize = sizeBtn.dataset.size;
-        const sizeIdx = data.sizes.indexOf(selectedSize);
-        const sizeStock = data.sizeQtys[sizeIdx] || 0;
-
-        // Update active state
-        wrapper.querySelectorAll(CONFIG.selectors.sizeButton).forEach(btn => {
-            btn.classList.remove(CONFIG.classes.active);
-        });
-        sizeBtn.classList.add(CONFIG.classes.active);
-
-        // Update qty max based on size stock
-        const qtyInput = wrapper.querySelector(CONFIG.selectors.qtyInput);
-        if (qtyInput && !data.preordered) {
-            qtyInput.dataset.max = sizeStock;
-            if (parseInt(qtyInput.value, 10) > sizeStock) {
-                qtyInput.value = Math.max(1, sizeStock);
-            }
-        }
-    }
-
-    // ============================================
-    // HANDLE COLOR SELECTION
-    // ============================================
-    function handleColorSelect(wrapper, colorBtn) {
-        wrapper.querySelectorAll(CONFIG.selectors.colorButton).forEach(btn => {
-            btn.classList.remove(CONFIG.classes.active);
-        });
-        colorBtn.classList.add(CONFIG.classes.active);
     }
 
     // ============================================
@@ -331,22 +272,8 @@
                         }
                     }
 
-                    // Get size from active selector or data attribute
-                    let size = addBtn.dataset.size || null;
-                    const sizeSelector = document.querySelector('.size-option.active, .m-size-btn.active, [name="size"]:checked');
-                    if (sizeSelector) {
-                        size = sizeSelector.dataset.size || sizeSelector.value || size;
-                    }
-
-                    // Get color from active selector or data attribute
-                    let color = addBtn.dataset.color || null;
-                    const colorSelector = document.querySelector('.color-option.active, .m-color-btn.active, [name="color"]:checked');
-                    if (colorSelector) {
-                        color = colorSelector.dataset.color || colorSelector.value || color;
-                    }
-
                     addBtn.disabled = true;
-                    const result = await addToCart(merchantItemId, { qty, size, color });
+                    const result = await addToCart(merchantItemId, { qty });
                     addBtn.disabled = false;
 
                     // Handle redirect if specified (Buy Now)
@@ -356,24 +283,6 @@
                 }
             }
 
-            return;
-        }
-
-        // Handle Size selection
-        const sizeBtn = e.target.closest(CONFIG.selectors.sizeButton);
-        if (sizeBtn && !sizeBtn.disabled) {
-            e.preventDefault();
-            const wrapper = sizeBtn.closest(CONFIG.selectors.wrapper);
-            if (wrapper) handleSizeSelect(wrapper, sizeBtn);
-            return;
-        }
-
-        // Handle Color selection
-        const colorBtn = e.target.closest(CONFIG.selectors.colorButton);
-        if (colorBtn) {
-            e.preventDefault();
-            const wrapper = colorBtn.closest(CONFIG.selectors.wrapper);
-            if (wrapper) handleColorSelect(wrapper, colorBtn);
             return;
         }
 

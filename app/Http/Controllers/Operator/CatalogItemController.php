@@ -369,20 +369,6 @@ class CatalogItemController extends OperatorBaseController
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
         }
 
-        // Handle size data (belongs to catalog_items table)
-        if (empty($request->size_check)) {
-            $input['size'] = null;
-            $input['size_qty'] = null;
-        } else {
-            if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
-                $input['size'] = null;
-                $input['size_qty'] = null;
-            } else {
-                $input['size'] = implode(',', $request->size);
-                $input['size_qty'] = implode(',', $request->size_qty);
-            }
-        }
-
         if ($request->mesasure_check == "") {
             $input['measure'] = null;
         }
@@ -446,7 +432,6 @@ class CatalogItemController extends OperatorBaseController
                 'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
                 'ship' => $request->input('ship') ?: null,
                 'item_condition' => $request->input('item_condition') ?? 0,
-                'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
                 'status' => 1
             ]);
         }
@@ -545,22 +530,19 @@ class CatalogItemController extends OperatorBaseController
                         $input['photo'] = $line[5];
                         $input['name'] = $line[4];
                         $input['details'] = $line[6];
-                        $input['color'] = $line[13];
                         // Store prices temporarily for merchant_item creation
                         $csvPrice = $line[7];
                         $csvPreviousPrice = $line[8] != "" ? $line[8] : null;
                         $csvStock = $line[9];
-                        $input['size'] = $line[10];
-                        $input['size_qty'] = $line[11];
-                        $input['youtube'] = $line[15];
-                        $input['policy'] = $line[16];
-                        $input['meta_tag'] = $line[17];
-                        $input['meta_description'] = $line[18];
+                        $input['youtube'] = $line[10];
+                        $input['policy'] = $line[11];
+                        $input['meta_tag'] = $line[12];
+                        $input['meta_description'] = $line[13];
                         $input['tags'] = $line[14];
                         // item_type moved to merchant_items
-                        $csvItemType = $line[19] ?? 'normal';
+                        $csvItemType = $line[15] ?? 'normal';
                         // affiliate_link moved to merchant_items
-                        $csvAffiliateLink = $line[20] ?? null;
+                        $csvAffiliateLink = $line[16] ?? null;
                         $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['part_number']);
 
                         $image_url = $line[5];
@@ -684,29 +666,6 @@ class CatalogItemController extends OperatorBaseController
             $input['minimum_qty'] = null;
         }
 
-        // Check Size
-        if (empty($request->stock_check)) {
-            $input['stock_check'] = 0;
-            $input['size'] = null;
-            $input['size_qty'] = null;
-        } else {
-            if (in_array(null, $request->size) || in_array(null, $request->size_qty)) {
-                $input['stock_check'] = 0;
-                $input['size'] = null;
-                $input['size_qty'] = null;
-            } else {
-                $input['stock_check'] = 1;
-                $input['size'] = implode(',', $request->size);
-                $input['size_qty'] = implode(',', $request->size_qty);
-            }
-        }
-
-        if (empty($request->color_check)) {
-            $input['color_all'] = null;
-        } else {
-            $input['color_all'] = implode(',', $request->color_all);
-        }
-
         // Check Measure
         if ($request->measure_check == "") {
             $input['measure'] = null;
@@ -775,7 +734,6 @@ class CatalogItemController extends OperatorBaseController
             'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
             'ship' => $request->input('ship') ?: null,
             'item_condition' => $request->input('item_condition') ?? 0,
-            'color_all' => !empty($request->color_all) ? implode(',', $request->color_all) : null,
         ]);
         //-- Logic Section Ends
 

@@ -194,13 +194,6 @@ Route::group(['prefix' => 'front'], function () {
     //------------ Search Controller ------------
 
     Route::get('/search','Api\Front\SearchController@search');
-    Route::get('/categories', 'Api\Front\SearchController@categories');
-    Route::get('/category/catalog-item/search', 'Api\Front\SearchController@categoriesSearch');
-    Route::get('{id}/category', 'Api\Front\SearchController@category');
-    Route::get('/{id}/subcategories', 'Api\Front\SearchController@subcategories')->name('subcategories');
-    Route::get('/{id}/childcategories', 'Api\Front\SearchController@childcategories')->name('childcategories');
-    Route::get('/specs/{id}', 'Api\Front\SearchController@specs')->name('specs');
-    Route::get('/specoptions/{id}', 'Api\Front\SearchController@specoptions')->name('spec.options');
 
     //------------ Search Controller Ends ------------
 

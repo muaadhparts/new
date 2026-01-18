@@ -1,88 +1,27 @@
 <div class="catalogItem-info text-center">
   <h4 class="item-name">
     {{ $catalogItem->name }}
-  </h4>     
-                  
+  </h4>
+
         <div class="price-and-discount">
           <div class="price">
             <div class="current-price" id="sizeprice">
               {{ PriceHelper::showAdminCurrencyPrice($item['item_price']) }}
-            </div> 
+            </div>
           </div>
         </div>
-        
-              {{-- CATALOGITEM SIZE SECTION  --}}    
 
-              @if(!empty($catalogItem->size))
+              {{-- CATALOGITEM STOCK CONDITION SECTION  --}}
 
-              <div class="catalogItem-size">
-                <p class="name">{{ __('Size :') }}</p>
-                <ul class="siz-list">
-                  @foreach(array_unique($catalogItem->size) as $key => $data1)
-                    <li class="{{ $item['size'] == $data1 ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
-                      <span class="box">
-                        {{ $data1 }}     
-                      </span>
-                    </li>
-                  @endforeach
-                </ul>
-              </div>
-
+              @if(!$catalogItem->emptyStock())
+                <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->stock }}">
+              @else
+                <input type="hidden" class="catalogItem-stock" value="">
               @endif
 
-              {{-- CATALOGITEM SIZE SECTION ENDS  --}}   
+              {{-- CATALOGITEM STOCK CONDITION SECTION ENDS --}}
 
-              {{-- CATALOGITEM COLOR SECTION  --}}     
-
-              @if(!empty($catalogItem->color))
-
-              <div class="catalogItem-color">
-                <div class="name">{{ __('Color :') }}</div>
-                <ul class="color-list">
-
-                  @foreach($catalogItem->color as $key => $data1)
-
-                    <li class="{{ ('#'.$item['color'] == $data1 && $catalogItem->size[$key] == $catalogItem->size[$item['size_key']]) ? 'active' : '' }} {{ $catalogItem->IsSizeColor($catalogItem->size[$key]) ? str_replace(' ','',$catalogItem->size[$key]) : ''  }} {{ $catalogItem->size[$key] == $catalogItem->size[$item['size_key']] ? 'show-colors' : '' }}">
-                      <span class="box" data-color="{{ $catalogItem->color[$key] }}" style="background-color: {{ $catalogItem->color[$key] }}">
-
-                        <input type="hidden" class="size" value="{{ $catalogItem->size[$key] }}">
-                        <input type="hidden" class="size_qty" value="{{ $catalogItem->size_qty[$key] }}">
-                        <input type="hidden" class="size_key" value="{{$key}}">
-                        <input type="hidden" class="size_price" value="{{ round($catalogItem->size_price[$key] * $curr->value,2) }}">                        
-                      
-                      </span>
-                    </li>
-
-                  @endforeach
-
-                </ul>
-              </div>
-
-              @endif
-
-              {{-- CATALOGITEM COLOR SECTION ENDS  --}}   
-
-              {{-- CATALOGITEM STOCK CONDITION SECTION  --}}    
-
-            
-              @if(is_array($catalogItem->size))
-
-                <input type="hidden" class="catalogItem-stock" value="{{@$item['size_key'] ??  $catalogItem->size_qty[0] }}">
-
-                @else
-
-
-                @if(!$catalogItem->emptyStock())
-                  <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->stock }}">
-                @else
-                  <input type="hidden" class="catalogItem-stock" value="">
-                @endif
-
-              @endif
-
-              {{-- CATALOGITEM STOCK CONDITION SECTION ENDS --}} 
-
-              {{-- CATALOGITEM ATTRIBUTE SECTION  --}}    
+              {{-- CATALOGITEM ATTRIBUTE SECTION  --}}
 
               @if (!empty($catalogItem->attributes))
                 @php
@@ -124,7 +63,7 @@
 
               @endif
 
-    {{-- CATALOGITEM ATTRIBUTE SECTION ENDS  --}}    
+    {{-- CATALOGITEM ATTRIBUTE SECTION ENDS  --}}
 
     <input type="hidden" id="catalogItem_price" value="{{ round($catalogItem->merchantPrice() * $curr->value,2) }}">
     <input type="hidden" id="catalogItem_id" value="{{ $catalogItem->id }}">
@@ -191,11 +130,6 @@
   }
 
 
-    var sizes = "{{ $item['size'] }}";
-    var size_qty = "{{ $item['size_qty'] }}";
-    var size_price = "{{ $item['size_price'] }}";
-    var size_key = "{{ $item['size_key'] }}";
-    var colors = "#{{ $item['color'] }}";
     var mtotal = "";
     var mstock = $('.catalogItem-stock').val();
     var keys = "";
@@ -205,9 +139,9 @@
     $('.catalogItem-attr').on('change',function(){
 
       var total = 0;
-       total = mgetAmount()+mgetSizePrice();
+       total = mgetAmount();
        total = total.toFixed(2);
-       
+
        total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
 
        var pos = $('#curr_pos').val();
@@ -220,17 +154,6 @@
        $('#sizeprice').html(total+sign);
        }
     });
-
-    function mgetSizePrice()
-    {
-
-      var total = 0;
-        if($('.catalogItem-color .color-list li.active').length > 0)
-        {
-          total = parseFloat($('.catalogItem-color .color-list li.active').find('.size_price').val());
-        }
-        return total;
-    }
 
     function mgetAmount()
     {
@@ -247,69 +170,6 @@
       total += value;
       return total;
     }
-
-    // CatalogItem Details CatalogItem Size Active Js Code
-    $('.catalogItem-size .siz-list .box').on('click', function () {
-
-        var parent = $(this).parent();
-        $('.catalogItem-size .siz-list li').removeClass('active');
-        parent.addClass('active');
-
-        $('.qttotal').val('1')
-
-        $('.catalogItem-color .color-list li').removeClass('show-colors');
-        var size_color = $('.catalogItem-color .color-list li.'+parent.data('key'));
-        size_color.addClass('show-colors').first().addClass('active');
-        colors = size_color.find('span.box').data('color');
-
-        size_qty = size_color.find('.size_qty').val();
-        size_price = size_color.find('.size_price').val();
-        size_key = size_color.find('.size_key').val();
-        sizes = size_color.find('.size').val();
-        let total = mgetAmount()+parseFloat(size_price);
-        stock = size_qty;
-        total = total.toFixed(2);
-        total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-        var pos = $('#curr_pos').val();
-        var sign = $('#curr_sign').val();
-        if(pos == '0')
-        {
-         $('#sizeprice').html(sign+total);
-        }
-        else {
-         $('#sizeprice').html(total+sign);
-        }        
-
-    });
-
-    // CatalogItem Details CatalogItem Color Active Js Code
-    $('.catalogItem-color .color-list .box').on('click', function () {
-        colors = $(this).data('color');
-        var parent = $(this).parent();
-        $('.catalogItem-color .color-list li').removeClass('active');
-        parent.addClass('active');
-
-        $('.qttotal').html('1');
-         size_qty = $(this).find('.size_qty').val();
-         size_price = $(this).find('.size_price').val();
-         size_key = $(this).find('.size_key').val();
-         sizes = $(this).find('.size').val();
-         let total = mgetAmount()+parseFloat(size_price);
-         stock = size_qty;
-         total = total.toFixed(2);
-         total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-         var pos = $('#curr_pos').val();
-         var sign = $('#curr_sign').val();
-         if(pos == '0')
-         {
-         $('#sizeprice').html(sign+total);
-         }
-         else {
-         $('#sizeprice').html(total+sign);
-         }
-
-    });
-
 
     $('.qttotal').keypress(function(e){
       if (this.value.length == 0 && e.which == 48 ){
@@ -357,7 +217,7 @@
     $(document).on("click", "#qaddcrt" , function(){
       var qty = $('.qttotal').val();
       var pid = $(this).parent().parent().parent().parent().parent().find("#catalogItem_id").val();
- 
+
       if($('.catalogItem-attr').length > 0)
       {
       values = $(".catalogItem-attr:checked").map(function() {
@@ -375,8 +235,8 @@
 
       }
 
-     window.location = mainurl+"/admin/purchase/updatecart/"+order_id+"?id="+pid+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices+"&item_id="+item_id;
- 
+     window.location = mainurl+"/admin/purchase/updatecart/"+order_id+"?id="+pid+"&qty="+qty+"&keys="+keys+"&values="+values+"&prices="+prices+"&item_id="+item_id;
+
      });
 
 })(jQuery);

@@ -358,8 +358,6 @@
                                                         'merchant_id' => $catalogItem['user_id'],
                                                         'merchant_item_id' => $catalogItem['merchant_item_id']
                                                     ]);
-                                                } elseif (isset($catalogItem['item']['slug'])) {
-                                                    $merchantOrderProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                 }
                                             @endphp
                                             <a class="name-hover-color content catalogItem-name d-inline-block" target="_blank"

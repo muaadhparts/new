@@ -47,7 +47,7 @@
                @if(Auth::check())
                <div class="favorite-button">
                 <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;"
-                 data-href="{{ route('user-favorite-add', $catalogItem->id) }}" data-bs-toggle="tooltip"
+                 data-href="{{ $bestMerchantItem ? route('user-favorite-add-merchant', $bestMerchantItem->id) : '#' }}" data-bs-toggle="tooltip"
                  data-bs-placement="right" name="{{ __('Favorites') }}" data-bs-original-name="Add to Favorites"
                  aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                </div>
@@ -61,7 +61,7 @@
 
                <div class="compare-button">
                 <a class="compare button button add_to_cart_button"
-                 data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascrit:;"
+                 data-href="{{ $bestMerchantItem ? route('merchant.compare.add', $bestMerchantItem->id) : '#' }}" href="javascrit:;"
                  data-bs-toggle="tooltip" data-bs-placement="right" name="{{ __('Compare') }}"
                  data-bs-original-name="Compare" aria-label="Compare">{{ __('Compare') }}</a>
                </div>
@@ -139,7 +139,7 @@
                @if(Auth::check())
                <div class="favorite-button">
                 <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;"
-                 data-href="{{ route('user-favorite-add', $catalogItem->id) }}" data-bs-toggle="tooltip"
+                 data-href="{{ $bestMerchantItem ? route('user-favorite-add-merchant', $bestMerchantItem->id) : '#' }}" data-bs-toggle="tooltip"
                  data-bs-placement="right" name="" data-bs-original-name="Add to Favorites"
                  aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                </div>
@@ -152,7 +152,7 @@
             @endif
                <div class="compare-button">
                 <a class="compare button button add_to_cart_button"
-                 data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascrit:;"
+                 data-href="{{ $bestMerchantItem ? route('merchant.compare.add', $bestMerchantItem->id) : '#' }}" href="javascrit:;"
                  data-bs-toggle="tooltip" data-bs-placement="right" name="" data-bs-original-name="Compare"
                  aria-label="Compare">{{ __('Compare') }}</a>
                </div>
@@ -235,7 +235,7 @@
                 @if(Auth::check())
                <div class="favorite-button">
                  <a class="add_to_favorite  new button add_to_cart_button" id="add-to-wish" href="javascript:;"
-                  data-href="{{ route('user-favorite-add', $catalogItem->id) }}" data-bs-toggle="tooltip"
+                  data-href="{{ $bestMerchantItem ? route('user-favorite-add-merchant', $bestMerchantItem->id) : '#' }}" data-bs-toggle="tooltip"
                   data-bs-placement="right" name="" data-bs-original-name="Add to Favorites"
                   aria-label="Add to Favorites">{{ __('Favorites') }}</a>
                </div>
@@ -249,7 +249,7 @@
 
                <div class="compare-button">
                  <a class="compare button button add_to_cart_button"
-                  data-href="{{ route('catalog-item.compare.add', $catalogItem->id) }}" href="javascrit:;"
+                  data-href="{{ $bestMerchantItem ? route('merchant.compare.add', $bestMerchantItem->id) : '#' }}" href="javascrit:;"
                   data-bs-toggle="tooltip" data-bs-placement="right" name="" data-bs-original-name="Compare"
                   aria-label="Compare">{{ __('Compare') }}</a>
                </div>

@@ -149,55 +149,6 @@ class FavoriteController extends UserBaseController
         return response()->json($data);
     }
 
-    /**
-     * Legacy method for backward compatibility
-     */
-    public function addLegacy(Request $request, $catalogItemId)
-    {
-        $user = $this->user;
-        $data[0] = 0;
-
-        $userId = $request->get('user');
-
-        if ($userId) {
-            $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
-                ->where('user_id', $userId)
-                ->where('status', 1)
-                ->first();
-        } else {
-            $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
-                ->where('status', 1)
-                ->orderBy('price')
-                ->first();
-        }
-
-        if (!$merchantItem) {
-            $data['error'] = __('CatalogItem not available from any merchant.');
-            return response()->json($data);
-        }
-
-        $ck = FavoriteSeller::where('user_id', $user->id)
-            ->where('merchant_item_id', $merchantItem->id)
-            ->exists();
-
-        if ($ck) {
-            $data['error'] = __('Already Added To Favorites.');
-            return response()->json($data);
-        }
-
-        $favorite = new FavoriteSeller();
-        $favorite->user_id = $user->id;
-        $favorite->catalog_item_id = $catalogItemId;
-        $favorite->merchant_item_id = $merchantItem->id;
-        $favorite->save();
-
-        HeaderComposer::invalidateFavoriteCache($user->id);
-        $data[0] = 1;
-        $data[1] = FavoriteSeller::where('user_id', $user->id)->count();
-        $data['success'] = __('Successfully Added To Favorites.');
-        return response()->json($data);
-    }
-
     public function remove($id)
     {
         $user = $this->user;

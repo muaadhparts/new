@@ -98,7 +98,7 @@
 
                       @if(Auth::check())
 
-                      <a class="add-to-favorite" href="javascript:;" data-href="{{ route('user-favorite-add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Favorites') }}">
+                      <a class="add-to-favorite" href="javascript:;" data-href="{{ $quickMerchantItem ? route('user-favorite-add-merchant', $quickMerchantItem->id) : '#' }}" data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Favorites') }}">
                         <i class="far fa-heart"></i>
                       </a>
 
@@ -118,7 +118,7 @@
 
                     <div class="compear">
 
-                      <a class="add-to-compare" href="javascript:;" data-href="{{ route('catalog-item.compare.add',$catalogItem->id) }}" data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Compare') }}">
+                      <a class="add-to-compare" href="javascript:;" data-href="{{ $quickMerchantItem ? route('merchant.compare.add', $quickMerchantItem->id) : '#' }}" data-bs-toggle="tooltip" data-bs-placement="top" name="{{ __('Compare') }}">
                         <i class="fas fa-random"></i>
                       </a>
 
@@ -162,138 +162,12 @@
 
               {{-- CATALOGITEM PRICE SECTION ENDS --}}
 
-              {{-- CATALOGITEM SIZE SECTION  --}}
-
-              @if ($catalogItem->stock_check == 1)
-
-                  {{-- CATALOGITEM SIZE SECTION  --}}
-
-                  @php
-                    $merchantUserId = request()->get('user') ?? ($catalogItem->merchant_user_id ?? $catalogItem->user_id);
-                    $merchantSizes = $catalogItem->getMerchantSizes($merchantUserId);
-                  @endphp
-                  @if(!empty($merchantSizes))
-                  <div class="mproduct-size">
-                    <p class="name">{{ __('Size :') }}</p>
-                    <ul class="siz-list">
-                      @foreach($merchantSizes as $key => $data1)
-                    <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
-                          <span class="box">
-                            {{ $data1 }}
-
-                            <input type="hidden" class="msize" value="{{ $data1 }}">
-                            <input type="hidden" class="msize_key" value="{{$key}}">
-                          </span>
-                        </li>
-                      @endforeach
-                    </ul>
-                  </div>
-
-                  @endif
-
-                  {{-- CATALOGITEM SIZE SECTION ENDS  --}}
-
-                  {{-- CATALOGITEM COLOR SECTION  --}}
-
-                  @if(!empty($catalogItem->getMerchantColors()))
-
-                  <div class="mproduct-color">
-                    <div class="name">{{ __('Color :') }}</div>
-                    <ul class="color-list">
-
-                      @php
-                        $merchantColors = $catalogItem->getMerchantColors($merchantUserId);
-                      @endphp
-                      @foreach($merchantColors as $key => $data1)
-
-                        <li class="{{ $loop->first ? 'active' : '' }} {{ $catalogItem->IsSizeColor($merchantSizes[$key] ?? '') ? str_replace(' ','',($merchantSizes[$key] ?? '')) : ''  }} {{ ($merchantSizes[$key] ?? '') == ($merchantSizes[0] ?? '') ? 'show-colors' : '' }}">
-                          <span class="box" data-color="{{ $merchantColors[$key] }}" style="background-color: {{ $merchantColors[$key] }}">
-                            @php
-                                $merchantSizeQty = $catalogItem->getMerchantSizeQty($merchantUserId, $key);
-                                $merchantSizePrice = $catalogItem->getMerchantSizePrice($merchantUserId, $key);
-                            @endphp
-                            <input type="hidden" class="msize" value="{{ $merchantSizes[$key] ?? '' }}">
-                            <input type="hidden" class="msize_qty" value="{{ $merchantSizeQty }}">
-                            <input type="hidden" class="msize_key" value="{{$key}}">
-                            <input type="hidden" class="msize_price" value="{{ round($merchantSizePrice * $curr->value,2) }}">
-
-                          </span>
-                        </li>
-
-                      @endforeach
-
-                    </ul>
-                  </div>
-
-                  @endif
-
-                  {{-- CATALOGITEM COLOR SECTION ENDS  --}}
-
-                  @else
-                  @php
-                    $merchantSizeAll = $catalogItem->getMerchantSizeAll($merchantUserId);
-                @endphp
-                @if(!empty($merchantSizeAll))
-                  <div class="mproduct-size" data-key="false">
-                    <p class="name">{{ __('Size :') }}</p>
-                    <ul class="siz-list">
-                      @foreach(array_unique(explode(',', $merchantSizeAll)) as $key => $data1)
-                    <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
-                          <span class="box">
-                            {{ $data1 }}
-                            <input type="hidden" class="msize" value="{{$data1}}">
-                            <input type="hidden" class="msize_key" value="{{$key}}">
-                          </span>
-                        </li>
-                      @endforeach
-                    </ul>
-                  </div>
-                  @endif
-                  @php
-                      $merchantColorAll = $catalogItem->getMerchantColorAll($merchantUserId);
-                  @endphp
-                  @if(!empty($merchantColorAll))
-
-                  <div class="mproduct-color" data-key="false">
-                    <div class="name">{{ __('Color :') }}</div>
-                    <ul class="color-list">
-
-                      @foreach(explode(',', $merchantColorAll) as $key => $color1)
-
-                        <li class="{{ $loop->first ? 'active' : '' }} show-colors">
-                          <span class="box" data-color="{{ $color1 }}" style="background-color: {{ $color1 }}">
-                            <input type="hidden" class="msize_price" value="0">
-
-                          </span>
-                        </li>
-
-                      @endforeach
-
-                    </ul>
-                  </div>
-
-                  @endif
-                  @endif
-
-              {{-- CATALOGITEM COLOR SECTION ENDS  --}}
-
               {{-- CATALOGITEM STOCK CONDITION SECTION  --}}
 
-              @if(!empty($merchantSizes))
-
-                @php
-                    $firstSizeQty = $catalogItem->getMerchantSizeQty($merchantUserId, 0);
-                @endphp
-                <input type="hidden" class="catalogItem-stock" value="{{ $firstSizeQty }}">
-
-                @else
-
-                @if(!$catalogItem->emptyStock())
-                  <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->merchantSizeStock() }}">
-                @else
-                  <input type="hidden" class="catalogItem-stock" value="">
-                @endif
-
+              @if(!$catalogItem->emptyStock())
+                <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->merchantSizeStock() }}">
+              @else
+                <input type="hidden" class="catalogItem-stock" value="">
               @endif
 
               {{-- CATALOGITEM STOCK CONDITION SECTION ENDS --}}
@@ -533,11 +407,6 @@
             type: 'video'
         });
 
-        var sizes = "";
-        var size_qty = ($('.mproduct-color .color-list li.active').length > 0) ? parseFloat($('.mproduct-color .color-list li.active').find('.msize_qty').val()) : '';
-        var size_price = "";
-        var size_key = "";
-        var colors = "";
         var total = "";
         var mstock = $('.catalogItem-stock').val();
         var keys = "";
@@ -547,7 +416,7 @@
         $('.mproduct-attr').on('change',function(){
 
                 var total;
-                total = mgetAmount()+mgetSizePrice();
+                total = mgetAmount();
                 total = total.toFixed(2);
                 var pos = $('#mcurr_pos').val();
                 var sign = $('#mcurr_sign').val();
@@ -559,17 +428,6 @@
                 $('#msizeprice').html(total+sign);
                 }
         });
-
-
-        function mgetSizePrice()
-          {
-            var total = 0;
-            if($('.mproduct-color .color-list li.active').length > 0)
-            {
-              total = parseFloat($('.mproduct-color .color-list li.active').find('.msize_price').val());
-            }
-            return total;
-          }
 
 
         function mgetAmount()
@@ -587,81 +445,6 @@
           total += value;
           return total;
         }
-
-        // CatalogItem Details CatalogItem Size Active Js Code
-        $('.mproduct-size .siz-list .box').on('click', function () {
-
-            var parent = $(this).parent();
-            $('.mproduct-size .siz-list li').removeClass('active');
-            parent.addClass('active');
-
-            sizes = $(this).find('input.msize').val();
-            size_key = $(this).find('input.msize_key').val();
-            $('.modal-total').val('1');
-
-            if ($(this).parent().parent().parent().attr('data-key') != 'false') {
-              $('.mproduct-color .color-list li').removeClass('show-colors');
-
-            var size_color = $('.mproduct-color .color-list li.'+parent.data('key'));
-            size_color.addClass('show-colors').first().addClass('active');
-            colors = size_color.find('span.box').data('color');
-            sizes = size_color.find('.msize').val();
-            size_qty = size_color.find('.msize_qty').val();
-            size_price = size_color.find('.msize_price').val();
-            size_key = size_color.find('.msize_key').val();
-
-            total = mgetAmount()+parseFloat(size_price);
-            mstock = size_qty;
-            total = total.toFixed(2);
-            total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-            var pos = $('#mcurr_pos').val();
-            var sign = $('#mcurr_sign').val();
-            if(pos == '0')
-            {
-             $('#msizeprice').html(sign+total);
-            }
-            else {
-             $('#msizeprice').html(total+sign);
-            }
-
-          }
-
-
-
-        });
-
-
-
-        // CatalogItem Details CatalogItem Color Active Js Code
-        $('.mproduct-color .color-list .box').on('click', function () {
-            colors = $(this).data('color');
-            var parent = $(this).parent();
-            $('.mproduct-color .color-list li').removeClass('active');
-            parent.addClass('active');
-
-            $('.modal-total').html('1');
-
-            if ($(this).parent().parent().parent().attr('data-key') != 'false') {
-
-             size_qty = $(this).find('.msize_qty').val();
-             size_price = $(this).find('.msize_price').val();
-             size_key = $(this).find('.msize_key').val();
-             sizes = $(this).find('.msize').val();
-             total = mgetAmount()+parseFloat(size_price);
-             mstock = size_qty;
-             total = total.toFixed(2);
-             total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-             var pos = $('#mcurr_pos').val();
-             var sign = $('#mcurr_sign').val();
-             if(pos == '0')
-             {
-             $('#msizeprice').html(sign+total);
-             }
-             else {
-             $('#msizeprice').html(total+sign);
-             }
-            }
-        });
 
 
         $('.modal-total').keypress(function(e){

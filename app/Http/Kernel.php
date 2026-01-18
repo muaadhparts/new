@@ -73,7 +73,6 @@ class Kernel extends HttpKernel
         'super' => \App\Http\Middleware\SuperAdmin::class,
         'maintenance' => \App\Http\Middleware\MaintenanceMode::class,
         'setapi' => \App\Http\Middleware\SetApiGuard::class,
-        'localization' => \App\Http\Middleware\LocalizationMiddleware::class,
         'preserve.session' => \App\Http\Middleware\PreserveSessionDuringCheckout::class,
         'operator.protection' => \App\Http\Middleware\OperatorProtection::class,
 

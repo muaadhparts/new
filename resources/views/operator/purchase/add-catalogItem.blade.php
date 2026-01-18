@@ -12,73 +12,12 @@
     </div>
   </div>
 
-  {{-- CATALOGITEM SIZE SECTION --}}
-
-  @if(!empty($catalogItem->size))
-
-  <div class="catalogItem-size">
-    <p class="name">{{ __('Size :') }}</p>
-    <ul class="siz-list">
-      @foreach(array_unique($catalogItem->size) as $key => $data1)
-      <li class="{{ $loop->first ? 'active' : '' }}" data-key="{{ str_replace(' ','',$data1) }}">
-        <span class="box">
-          {{ $data1 }}
-        </span>
-      </li>
-      @endforeach
-    </ul>
-  </div>
-
-  @endif
-
-  {{-- CATALOGITEM SIZE SECTION ENDS --}}
-
-  {{-- CATALOGITEM COLOR SECTION --}}
-
-  @if(!empty($catalogItem->color))
-
-  <div class="catalogItem-color">
-    <div class="name">{{ __('Color :') }}</div>
-    <ul class="color-list">
-
-      @foreach($catalogItem->color as $key => $data1)
-
-      <li
-        class="{{ $loop->first ? 'active' : '' }} {{ $catalogItem->IsSizeColor($catalogItem->size[$key]) ? str_replace(' ','',$catalogItem->size[$key]) : ''  }} {{ $catalogItem->size[$key] == $catalogItem->size[0] ? 'show-colors' : '' }}">
-        <span class="box" data-color="{{ $catalogItem->color[$key] }}"
-          style="background-color: {{ $catalogItem->color[$key] }}">
-
-          <input type="hidden" class="size" value="{{ $catalogItem->size[$key] }}">
-          <input type="hidden" class="size_qty" value="{{ $catalogItem->size_qty[$key] }}">
-          <input type="hidden" class="size_key" value="{{$key}}">
-          <input type="hidden" class="size_price" value="{{ round($catalogItem->size_price[$key] * $curr->value,2) }}">
-
-        </span>
-      </li>
-
-      @endforeach
-
-    </ul>
-  </div>
-
-  @endif
-
-  {{-- CATALOGITEM COLOR SECTION ENDS --}}
-
   {{-- CATALOGITEM STOCK CONDITION SECTION --}}
-
-  @if(!empty($catalogItem->size))
-
-  <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->size_qty[0] }}">
-
-  @else
 
   @if(!$catalogItem->emptyStock())
   <input type="hidden" class="catalogItem-stock" value="{{ $catalogItem->stock }}">
   @else
   <input type="hidden" class="catalogItem-stock" value="">
-  @endif
-
   @endif
 
   {{-- CATALOGITEM STOCK CONDITION SECTION ENDS --}}
@@ -167,7 +106,7 @@
     var order_id = $('#order_id').val();
 
     let gs  = {!! json_encode(\App\Models\Muaadhsetting::first()->makeHidden(['stripe_key', 'stripe_secret', 'smtp_pass', 'instamojo_key', 'instamojo_token', 'paystack_key', 'paystack_email', 'paypal_business', 'paytm_merchant', 'paytm_secret', 'paytm_website', 'paytm_industry', 'paytm_mode', 'molly_key', 'razorpay_key', 'razorpay_secret'])) !!};
-  
+
     function number_format (number, decimals, dec_point, thousands_sep) {
         // Strip all characters but numerical ones.
         number = (number + '').replace(/[^0-9+\-Ee.]/g, '');
@@ -191,27 +130,22 @@
         }
         return s.join(dec);
     }
-  
-  
-      var sizes = "";
-      var size_qty = "";
-      var size_price = "";
-      var size_key = "";
-      var colors = "";
+
+
       var mtotal = "";
       var mstock = $('.catalogItem-stock').val();
       var keys = "";
       var values = "";
       var prices = "";
-  
+
       $('.catalogItem-attr').on('change',function(){
-  
+
         var total = 0;
-         total = mgetAmount()+mgetSizePrice();
+         total = mgetAmount();
          total = total.toFixed(2);
-         
+
          total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-  
+
          var pos = $('#curr_pos').val();
          var sign = $('#curr_sign').val();
          if(pos == '0')
@@ -222,18 +156,7 @@
          $('#sizeprice').html(total+sign);
          }
       });
-  
-      function mgetSizePrice()
-      {
-  
-        var total = 0;
-          if($('.catalogItem-color .color-list li.active').length > 0)
-          {
-            total = parseFloat($('.catalogItem-color .color-list li.active').find('.size_price').val());
-          }
-          return total;
-      }
-  
+
       function mgetAmount()
       {
         var total = 0;
@@ -241,7 +164,7 @@
         var datas = $(".catalogItem-attr:checked").map(function() {
           return $(this).data('price');
         }).get();
-  
+
         var data;
         for (data in datas) {
           total += parseFloat(datas[data]);
@@ -249,71 +172,7 @@
         total += value;
         return total;
       }
-  
-      // CatalogItem Details CatalogItem Size Active Js Code
-      $('.catalogItem-size .siz-list .box').on('click', function () {
-        var total = 0;
-          var parent = $(this).parent();
-          $('.catalogItem-size .siz-list li').removeClass('active');
-          parent.addClass('active');
-  
-          $('.qttotal').val('1')
-  
-          $('.catalogItem-color .color-list li').removeClass('show-colors');
-          var size_color = $('.catalogItem-color .color-list li.'+parent.data('key'));
-          size_color.addClass('show-colors').first().addClass('active');
-          colors = size_color.find('span.box').data('color');
-  
-          size_qty = size_color.find('.size_qty').val();
-          size_price = size_color.find('.size_price').val();
-          size_key = size_color.find('.size_key').val();
-          sizes = size_color.find('.size').val();
-          total = mgetAmount()+parseFloat(size_price);
-          mstock = size_qty;
-          total = total.toFixed(2);
-          total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-          var pos = $('#curr_pos').val();
-          var sign = $('#curr_sign').val();
-          if(pos == '0')
-          {
-           $('#sizeprice').html(sign+total);
-          }
-          else {
-           $('#sizeprice').html(total+sign);
-          }        
-  
-      });
-  
-      // CatalogItem Details CatalogItem Color Active Js Code
-      $('.catalogItem-color .color-list .box').on('click', function () {
-        var total = 0;
-          colors = $(this).data('color');
-          var parent = $(this).parent();
-          $('.catalogItem-color .color-list li').removeClass('active');
-          parent.addClass('active');
-  
-          $('.qttotal').html('1');
-           size_qty = $(this).find('.size_qty').val();
-           size_price = $(this).find('.size_price').val();
-           size_key = $(this).find('.size_key').val();
-           sizes = $(this).find('.size').val();
-           total = mgetAmount()+parseFloat(size_price);
-           mstock = size_qty;
-           total = total.toFixed(2);
-           total = number_format(total, 2, gs.decimal_separator, gs.thousand_separator);
-           var pos = $('#curr_pos').val();
-           var sign = $('#curr_sign').val();
-           if(pos == '0')
-           {
-           $('#sizeprice').html(sign+total);
-           }
-           else {
-           $('#sizeprice').html(total+sign);
-           }
-  
-      });
-  
-  
+
       $('.qttotal').keypress(function(e){
         if (this.value.length == 0 && e.which == 48 ){
           return false;
@@ -324,7 +183,7 @@
           }
         }
       });
-  
+
       $('.qtminus').on('click', function () {
         var total = 0;
           var el = $(this);
@@ -335,7 +194,7 @@
           }
           $($tselector).val(total);
       });
-  
+
       $('.qtplus').on('click', function () {
         var total = 0;
           var el = $(this);
@@ -355,31 +214,31 @@
           }
           $($tselector).val(total);
       });
-  
+
       $(document).on("click", "#qaddcrt" , function(){
         var qty = $('.qttotal').val();
         var pid = $(this).parent().parent().parent().parent().parent().find("#catalogItem_id").val();
-   
+
         if($('.catalogItem-attr').length > 0)
         {
         values = $(".catalogItem-attr:checked").map(function() {
         return $(this).val();
         }).get();
-  
+
         keys = $(".catalogItem-attr:checked").map(function() {
         return $(this).data('key');
         }).get();
-  
+
         prices = $(".catalogItem-attr:checked").map(function() {
         return $(this).data('price');
         }).get();
-  
+
         }
-  
-       window.location = mainurl+"/admin/purchase/addcart/"+order_id+"?id="+pid+"&qty="+qty+"&size="+sizes+"&color="+colors.substring(1, colors.length)+"&size_qty="+size_qty+"&size_price="+size_price+"&size_key="+size_key+"&keys="+keys+"&values="+values+"&prices="+prices;
-   
+
+       window.location = mainurl+"/admin/purchase/addcart/"+order_id+"?id="+pid+"&qty="+qty+"&keys="+keys+"&values="+values+"&prices="+prices;
+
        });
-  
+
 })(jQuery);
 
 </script>

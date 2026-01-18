@@ -204,27 +204,6 @@ class ImportController extends MerchantBaseController
             ]);
             $merchantInput['item_type'] = 'affiliate';
 
-            // المقاسات على MP
-            if (!empty($request->size)) {
-                $merchantInput['size'] = implode(',', $request->size);
-            }
-            if (!empty($request->size_qty)) {
-                $merchantInput['size_qty'] = implode(',', $request->size_qty);
-            }
-            if (!empty($request->size_price)) {
-                $size_prices = [];
-                foreach ($request->size_price as $key => $sPrice) {
-                    $size_prices[$key] = $sPrice / $sign->value;
-                }
-                $merchantInput['size_price'] = implode(',', $size_prices);
-            }
-            if (!empty($request->color_all)) {
-                $merchantInput['color_all'] = implode(',', $request->color_all);
-            }
-            if (!empty($request->size_all)) {
-                $merchantInput['size_all'] = implode(',', $request->size_all);
-            }
-
             // تحويل العملة للسعر
             $merchantInput['price'] = $request->price / $sign->value;
             $merchantInput['previous_price'] = $request->previous_price / $sign->value;
@@ -328,37 +307,6 @@ class ImportController extends MerchantBaseController
             'whole_sell_discount', 'preordered', 'minimum_qty', 'stock_check',
             'popular', 'status', 'is_popular', 'ship', 'item_condition', 'affiliate_link'
         ]);
-
-        // المقاسات على MP
-        if (!empty($request->size)) {
-            $merchantInput['size'] = implode(',', $request->size);
-        } else {
-            $merchantInput['size'] = null;
-        }
-        if (!empty($request->size_qty)) {
-            $merchantInput['size_qty'] = implode(',', $request->size_qty);
-        } else {
-            $merchantInput['size_qty'] = null;
-        }
-        if (!empty($request->size_price)) {
-            $size_prices = [];
-            foreach ($request->size_price as $key => $sPrice) {
-                $size_prices[$key] = $sPrice / $sign->value;
-            }
-            $merchantInput['size_price'] = implode(',', $size_prices);
-        } else {
-            $merchantInput['size_price'] = null;
-        }
-        if (!empty($request->color_all)) {
-            $merchantInput['color_all'] = implode(',', $request->color_all);
-        } else {
-            $merchantInput['color_all'] = null;
-        }
-        if (!empty($request->size_all)) {
-            $merchantInput['size_all'] = implode(',', $request->size_all);
-        } else {
-            $merchantInput['size_all'] = null;
-        }
 
         // تحويل العملة للسعر
         $merchantInput['price'] = $request->price / $sign->value;

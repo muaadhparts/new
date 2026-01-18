@@ -4,7 +4,7 @@
 
     $bestProdUrl = $bestProdMerchant && $cartItem->slug
         ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_item_id' => $bestProdMerchant->id])
-        : ($cartItem->slug ? route('front.catalog-item.legacy', $cartItem->slug) : '#');
+        : '#';
 @endphp
 
 <div class="col">

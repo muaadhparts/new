@@ -121,8 +121,6 @@
                                                         'merchant_id' => $catalogItem['user_id'],
                                                         'merchant_item_id' => $catalogItem['merchant_item_id']
                                                     ]);
-                                                } elseif (isset($catalogItem['item']['slug'])) {
-                                                    $invoiceProductUrl = route('front.catalog-item.legacy', $catalogItem['item']['slug']);
                                                 }
                                                 @endphp
                                                 @if(isset($user))

@@ -17,7 +17,6 @@ use Symfony\Component\HttpFoundation\Response;
  * هذا يحل محل:
  * - view()->composer('*', ...) في AppServiceProvider
  * - view()->composer('*', ...) في SeoServiceProvider
- * - LocalizationMiddleware
  *
  * المبدأ المعماري:
  * - Middleware يُنفَّذ مرة واحدة لكل request
@@ -47,7 +46,7 @@ class GlobalDataMiddleware
             app()->setLocale($language->name);
         }
 
-        // 4. معالجة الـ Popup (من LocalizationMiddleware القديم)
+        // 4. معالجة الـ Popup
         if (!Session::has('popup')) {
             view()->share('visited', 1);
         }

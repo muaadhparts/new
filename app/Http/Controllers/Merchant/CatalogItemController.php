@@ -359,26 +359,18 @@ class CatalogItemController extends MerchantBaseController
                     ];
 
                     if (!empty($line[8])) {
-                        $merchantData['color_all'] = $line[8];
+                        $merchantData['whole_sell_qty'] = $line[8];
                     }
 
                     if (!empty($line[9])) {
-                        $merchantData['color_price'] = $line[9];
+                        $merchantData['whole_sell_discount'] = $line[9];
                     }
 
                     if (!empty($line[10])) {
-                        $merchantData['whole_sell_qty'] = $line[10];
+                        $merchantData['policy'] = $line[10];
                     }
-
                     if (!empty($line[11])) {
-                        $merchantData['whole_sell_discount'] = $line[11];
-                    }
-
-                    if (!empty($line[12])) {
-                        $merchantData['policy'] = $line[12];
-                    }
-                    if (!empty($line[13])) {
-                        $merchantData['details'] = $line[13];
+                        $merchantData['details'] = $line[11];
                     }
 
 
@@ -479,13 +471,6 @@ class CatalogItemController extends MerchantBaseController
             'status' => 1,
         ];
 
-        if ($request->color_check && !empty($request->color_all)) {
-            $merchantData['color_all'] = implode(',', $request->color_all);
-            if (!empty($request->color_price)) {
-                $merchantData['color_price'] = implode(',', $request->color_price);
-            }
-        }
-
         if ($request->whole_check && !empty($request->whole_sell_qty)) {
             $merchantData['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
             if (!empty($request->whole_sell_discount)) {
@@ -567,16 +552,6 @@ class CatalogItemController extends MerchantBaseController
             'preordered' => $request->preordered ? 1 : 0,
         ];
 
-        if ($request->color_check && !empty($request->color_all)) {
-            $merchantData['color_all'] = implode(',', $request->color_all);
-            if (!empty($request->color_price)) {
-                $merchantData['color_price'] = implode(',', $request->color_price);
-            }
-        } else {
-            $merchantData['color_all'] = null;
-            $merchantData['color_price'] = null;
-        }
-
         if ($request->whole_check && !empty($request->whole_sell_qty)) {
             $merchantData['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
             if (!empty($request->whole_sell_discount)) {
@@ -648,13 +623,6 @@ class CatalogItemController extends MerchantBaseController
                 'preordered' => $request->preordered ? 1 : 0,
                 'status' => 1,
             ];
-
-            if ($request->color_check && !empty($request->color_all)) {
-                $merchantData['color_all'] = implode(',', $request->color_all);
-                if (!empty($request->color_price)) {
-                    $merchantData['color_price'] = implode(',', $request->color_price);
-                }
-            }
 
             if ($request->whole_check && !empty($request->whole_sell_qty)) {
                 $merchantData['whole_sell_qty'] = implode(',', $request->whole_sell_qty);
@@ -750,7 +718,6 @@ class CatalogItemController extends MerchantBaseController
 
         unset($input['item_condition'], $input['preordered'], $input['minimum_qty'], $input['ship']);
         unset($input['stock_check']);
-        unset($input['color_all']);
         unset($input['whole_sell_qty'], $input['whole_sell_discount']);
 
         if ($request->measure_check == "") {
@@ -792,12 +759,6 @@ class CatalogItemController extends MerchantBaseController
 
         // Update merchant item
         $mp = [];
-
-        if (!empty($request->color_all)) {
-            $mp['color_all'] = implode(',', (array)$request->color_all);
-        } else {
-            $mp['color_all'] = null;
-        }
 
         if (!empty($request->whole_sell_qty)) {
             $mp['whole_sell_qty'] = implode(',', (array)$request->whole_sell_qty);
@@ -884,9 +845,6 @@ class CatalogItemController extends MerchantBaseController
             'status'         => 1,
         ];
 
-        if (!empty($request->color_all)) {
-            $mp['color_all'] = implode(',', (array)$request->color_all);
-        }
         if (!empty($request->whole_sell_qty)) {
             $mp['whole_sell_qty'] = implode(',', (array)$request->whole_sell_qty);
         }

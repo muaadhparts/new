@@ -321,7 +321,7 @@ class CatalogItem extends Model
     }
 
     /**
-     * Show previous price (merchant previous_price + adjustments + commission).
+     * Show previous price (merchant previous_price + commission).
      * If none, return 0.
      */
     public function showPreviousPrice(?int $userId = null)
@@ -333,24 +333,6 @@ class CatalogItem extends Model
 
         // Base previous price
         $price = (float) $mi->previous_price;
-
-        // Size adjustment (first bucket if provided)
-        if (!empty($mi->size_price)) {
-            $raw = $mi->size_price;
-            if (is_string($raw)) {
-                $decoded = json_decode($raw, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $first = array_values($decoded)[0] ?? 0;
-                    $price += (float) $first;
-                } else {
-                    $parts = explode(',', $raw);
-                    $price += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
-                }
-            } elseif (is_array($raw)) {
-                $first = array_values($raw)[0] ?? 0;
-                $price += (float) $first;
-            }
-        }
 
         // Commission (per-merchant)
         $commission = $this->getMerchantCommissionFor($mi->user_id);
@@ -466,30 +448,6 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get merchant-specific colors from merchant item.
-     */
-    public function getMerchantColors(?int $userId = null)
-    {
-        $mi = $this->activeMerchant($userId);
-        if (!$mi || empty($mi->color_all)) {
-            return [];
-        }
-        return is_array($mi->color_all) ? $mi->color_all : explode(',', $mi->color_all);
-    }
-
-    /**
-     * Get merchant-specific color prices from merchant item.
-     */
-    public function getMerchantColorPrices(?int $userId = null)
-    {
-        $mi = $this->activeMerchant($userId);
-        if (!$mi || empty($mi->color_price)) {
-            return [];
-        }
-        return is_array($mi->color_price) ? $mi->color_price : explode(',', $mi->color_price);
-    }
-
-    /**
      * Get merchant-specific previous price from merchant item.
      */
     public function getMerchantPreviousPrice(?int $userId = null)
@@ -542,42 +500,6 @@ class CatalogItem extends Model
         }
         return $this->features; // Fallback to catalog item features
     }
-
-    /**
-     * Get merchant-specific size from merchant item.
-     */
-    public function getMerchantSize(?int $userId = null)
-    {
-        $mi = $this->activeMerchant($userId);
-        return $mi ? $mi->size : null;
-    }
-
-    /**
-     * Get merchant-specific size qty from merchant item.
-     */
-    public function getMerchantSizeQty(?int $userId = null, ?int $key = null)
-    {
-        $mi = $this->activeMerchant($userId);
-        if (!$mi) return null;
-        if ($key !== null && is_array($mi->size_qty)) {
-            return $mi->size_qty[$key] ?? null;
-        }
-        return $mi->size_qty;
-    }
-
-    /**
-     * Get merchant-specific size price from merchant item.
-     */
-    public function getMerchantSizePrice(?int $userId = null, ?int $key = null)
-    {
-        $mi = $this->activeMerchant($userId);
-        if (!$mi) return null;
-        if ($key !== null && is_array($mi->size_price)) {
-            return $mi->size_price[$key] ?? null;
-        }
-        return $mi->size_price;
-    }
-
 
     /**
      * Build tag cloud from catalog items that have at least one active merchant listing.
@@ -634,23 +556,11 @@ class CatalogItem extends Model
             'price' => 'merchantPrice',
             'previous_price' => 'getMerchantPreviousPrice',
             'ship' => 'getMerchantShip',
-            'size' => 'getMerchantSize',
-            'size_qty' => 'getMerchantSizeQty',
-            'size_price' => 'getMerchantSizePrice'
         ];
 
         if (array_key_exists($key, $merchantColumns)) {
             $method = $merchantColumns[$key];
             return $this->$method();
-        }
-
-        // Colors: Always redirect to merchant-specific colors from merchant_items
-        if ($key === 'color' || $key === 'colors' || $key === 'color_all') {
-            return $this->getMerchantColors();
-        }
-
-        if ($key === 'color_price') {
-            return $this->getMerchantColorPrices();
         }
 
         // Policy/Features: Try merchant first, fallback to catalog item
@@ -711,25 +621,8 @@ class CatalogItem extends Model
             return 0;
         }
 
-        // Build previous final price similar to showPreviousPrice() but in raw value.
+        // Build previous final price
         $prev = (float) $mi->previous_price;
-
-        if (!empty($mi->size_price)) {
-            $raw = $mi->size_price;
-            if (is_string($raw)) {
-                $decoded = json_decode($raw, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $first = array_values($decoded)[0] ?? 0;
-                    $prev += (float) $first;
-                } else {
-                    $parts = explode(',', $raw);
-                    $prev += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
-                }
-            } elseif (is_array($raw)) {
-                $first = array_values($raw)[0] ?? 0;
-                $prev += (float) $first;
-            }
-        }
 
         // Commission (per-merchant)
         $commission = $this->getMerchantCommissionFor($mi->user_id);
@@ -808,23 +701,6 @@ class CatalogItem extends Model
 
         $price = (float) $mi->previous_price;
 
-        if (!empty($mi->size_price)) {
-            $raw = $mi->size_price;
-            if (is_string($raw)) {
-                $decoded = json_decode($raw, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $first = array_values($decoded)[0] ?? 0;
-                    $price += (float) $first;
-                } else {
-                    $parts = explode(',', $raw);
-                    $price += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
-                }
-            } elseif (is_array($raw)) {
-                $first = array_values($raw)[0] ?? 0;
-                $price += (float) $first;
-            }
-        }
-
         // Commission (per-merchant)
         $commission = $this->getMerchantCommissionFor($mi->user_id);
         if ($commission && $commission->is_active) {
@@ -839,12 +715,6 @@ class CatalogItem extends Model
     /* =========================================================================
      |  Misc
      | ========================================================================= */
-
-    public function IsSizeColor($value)
-    {
-        $sizes = array_unique($this->size);
-        return in_array($value, $sizes);
-    }
 
     /**
      * Get the best merchant for this catalog item.
@@ -888,7 +758,7 @@ class CatalogItem extends Model
             ]);
         }
 
-        return $this->slug ? route('front.catalog-item.legacy', $this->slug) : '#';
+        return '#';
     }
 
     /**

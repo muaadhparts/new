@@ -35,9 +35,6 @@ class LanguageController extends OperatorBaseController
 
     public function create()
     {
-//        File::json(resource_path('lang/default.json'));
-//        dd( File::json(resource_path('lang/default.json')) ,resource_path('lang/default.json'));
-//        $lang = json_decode(file_get_contents(public_path() . 'resources/lang/default.json'), true);
         $lang =  File::json(resource_path('lang/default.json'));
         return view('operator.language.create', compact('lang'));
     }
@@ -192,8 +189,6 @@ class LanguageController extends OperatorBaseController
     public function edit($id)
     {
         $data = Language::findOrFail($id);
-//        $data_results = file_get_contents('project/resources/lang/' . $data->file);
-//        $lang = json_decode($data_results, true);
         $lang =  File::json(resource_path('lang/'.$data->file));
 
         return view('operator.language.edit', compact('data', 'lang'));
@@ -242,7 +237,6 @@ class LanguageController extends OperatorBaseController
         //--- Validation Section
         $rules = ['language' => 'unique:languages,language,' . $id];
         $customs = ['language.unique' => 'This language has already been taken.'];
-//        dd( $request->all());
         $validator = Validator::make($request->all(), $rules, $customs);
         if ($validator->fails()) {
             return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
@@ -252,12 +246,10 @@ class LanguageController extends OperatorBaseController
         //--- Logic Section
         $new = [];
         $input = $request->all();
-//        dd($input);
         $data = Language::findOrFail($id);
 
         $data->language = $input['language'];
         $data->rtl = $input['rtl'];
-//        dd($data);
         $data->update();
         unset($input['_token']);
         unset($input['language']);
@@ -291,19 +283,12 @@ class LanguageController extends OperatorBaseController
             ]);
         }
 
-//        dd($values);
         foreach (array_combine($filteredKeys, $filteredValues) as $key => $value) {
             $n = str_replace("_", " ", $key);
             $new[$n] = $value;
         }
-//        $mydata = json_encode($new);
         $mydata = json_encode($new, JSON_PRETTY_PRINT|JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-
-//        dd($mydata);
         file_put_contents(resource_path('lang/' . $data->file), $mydata);
-
-
-//        file_put_contents('project/resources/lang/' . $data->file, $mydata);
         //--- Logic Section Ends
 
         //--- Redirect Section
@@ -334,7 +319,6 @@ class LanguageController extends OperatorBaseController
         $keys = $request->input('keys', []);
         $values = $request->input('values', []);
 
-//        dd($keys, $values);
         $newData = [];
         foreach (array_combine($keys, $values) as $key => $value) {
             $formattedKey = str_replace("_", " ", $key);

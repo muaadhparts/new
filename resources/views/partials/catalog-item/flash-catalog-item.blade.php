@@ -4,7 +4,7 @@
 
     $flashProdUrl = $flashProdMerchant && $cartItem->slug
         ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_item_id' => $flashProdMerchant->id])
-        : ($cartItem->slug ? route('front.catalog-item.legacy', $cartItem->slug) : '#');
+        : '#';
 @endphp
 
 <a href="{{ $flashProdUrl }}" class="single-catalogItem-flas">
@@ -43,7 +43,7 @@
           {{-- FAVORITES SECTION --}}
           @if(Auth::check())
           <li>
-             <span class="wish add-to-wish" data-href="{{ route('user-favorite-add',$cartItem->id) }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Favorites') }}">
+             <span class="wish add-to-wish" data-href="{{ $flashProdMerchant ? route('user-favorite-add-merchant', $flashProdMerchant->id) : '#' }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Favorites') }}">
              <i class="far fa-heart"></i>
              </span>
           </li>
@@ -96,7 +96,7 @@
           {{-- ADD TO CART SECTION ENDS --}}
           {{-- ADD TO COMPARE SECTION --}}
           <li>
-             <span class="compear add-to-compare" data-href="{{ route('catalog-item.compare.add',$cartItem->id) }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Compare') }}">
+             <span class="compear add-to-compare" data-href="{{ $flashProdMerchant ? route('merchant.compare.add', $flashProdMerchant->id) : '#' }}" data-bs-toggle="tooltip" data-placement="top" name="{{ __('Compare') }}">
              <i class="fas fa-random"></i>
              </span>
           </li>

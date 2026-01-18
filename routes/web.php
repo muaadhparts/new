@@ -1307,8 +1307,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::get('/favorites', 'User\FavoriteController@favorites')->name('user-favorites');
 
         Route::get('/favorite/add/merchant/{merchantItemId}', 'User\FavoriteController@add')->name('user-favorite-add-merchant');
-
-        Route::get('/favorite/add/{id}', 'User\FavoriteController@addLegacy')->name('user-favorite-add');
         Route::get('/favorite/remove/{id}', 'User\FavoriteController@remove')->name('user-favorite-remove');
         // User Favorites Ends
 
@@ -1509,7 +1507,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/compare/remove/merchant/{merchantItemId}', 'Front\CompareController@removeMerchantCompare')->name('merchant.compare.remove');
     Route::get('/item/compare/add/merchant/{merchantItemId}', 'Front\CompareController@addcompare')->name('catalog-item.compare.add.merchant');
     Route::get('/item/compare/remove/{merchantItemId}', 'Front\CompareController@removecompare')->name('catalog-item.compare.remove');
-    Route::get('/item/compare/add/{id}', 'Front\CompareController@addcompareLegacy')->name('catalog-item.compare.add');
     // COMPARE SECTION ENDS
 
     // CATALOG ITEM SECTION
@@ -1517,10 +1514,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/{slug}/merchantitem/{merchant_item_id}', 'Front\CatalogItemDetailsController@showByMerchantItem')
          ->whereNumber('merchant_item_id')
          ->name('front.catalog-item');
-
-    // Legacy route without merchant (shows best offer or first available)
-    Route::get('/item/{slug}', 'Front\CatalogItemDetailsController@show')
-        ->name('front.catalog-item.legacy');
 
     Route::get('/item/show/cross/{id}', 'Front\CatalogItemDetailsController@showCrossCatalogItem')->name('front.show.cross.catalog-item');
     Route::get('/afbuy/{slug}', 'Front\CatalogItemDetailsController@affCatalogItemRedirect')->name('affiliate.catalog-item');

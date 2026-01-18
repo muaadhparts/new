@@ -77,7 +77,7 @@
         $catalogItemSlug = $isMerchantItem ? optional($actualCatalogItem)->slug : $catalogItem->slug;
         $catalogItemUrl = $merchantItem && $catalogItemSlug
             ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $merchantItem->id])
-            : ($catalogItemSlug ? route('front.catalog-item.legacy', $catalogItemSlug) : '#');
+            : '#';
 
         $mainPhoto = $actualCatalogItem->photo ?? null;
         $photo = $mainPhoto
@@ -119,9 +119,9 @@
         // item_type and affiliate_link are now on merchant_items, not catalog_items
         $affiliateCatalogItemType = $merchantItem->item_type ?? null;
         $affiliateLink = $merchantItem->affiliate_link ?? null;
-        $favoriteUrl = route('user-favorite-add', $actualCatalogItem->id);
+        $favoriteUrl = $merchantItemId ? route('user-favorite-add-merchant', $merchantItemId) : '#';
         $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualCatalogItem->id);
-        $compareUrl = route('catalog-item.compare.add', $actualCatalogItem->id);
+        $compareUrl = $merchantItemId ? route('merchant.compare.add', $merchantItemId) : '#';
     }
 
     $cardId = 'ci_' . ($catalogItemId ?? uniqid()) . '_' . ($merchantItemId ?? '0');

@@ -178,12 +178,12 @@ class CatalogItemCardDTO
         $dto->inStock = false;
         $dto->hasMerchant = false;
         $dto->offPercentage = 0;
-        $dto->detailsUrl = route('front.catalog-item.legacy', $dto->catalogItemSlug);
+        $dto->detailsUrl = '#';
 
-        // Favorites (catalog item level)
+        // Favorites (catalog item level - no merchant, so no actions available)
         $dto->isInFavorites = $favoriteCatalogItemIds->contains($dto->catalogItemId);
-        $dto->favoriteUrl = route('user-favorite-add', $dto->catalogItemId);
-        $dto->compareUrl = route('catalog-item.compare.add', $dto->catalogItemId);
+        $dto->favoriteUrl = '#';
+        $dto->compareUrl = '#';
 
         // No merchant/brand info without merchant
         $dto->merchantName = null;
@@ -222,18 +222,14 @@ class CatalogItemCardDTO
 
     private static function buildDetailsUrl(string $slug, ?int $merchantId, ?int $merchantItemId): string
     {
-        if (!$slug) {
+        if (!$slug || !$merchantItemId) {
             return '#';
         }
 
-        if ($merchantItemId) {
-            return route('front.catalog-item', [
-                'slug' => $slug,
-                'merchant_item_id' => $merchantItemId
-            ]);
-        }
-
-        return route('front.catalog-item.legacy', $slug);
+        return route('front.catalog-item', [
+            'slug' => $slug,
+            'merchant_item_id' => $merchantItemId
+        ]);
     }
 
     private static function setStockDisplay(self $dto): void

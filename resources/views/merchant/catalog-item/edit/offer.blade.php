@@ -40,9 +40,6 @@
                         <p><strong>@lang('PART_NUMBER'):</strong> {{ $data->part_number }}</p>
                         <p><strong>@lang('Type'):</strong> {{ $data->type }}</p>
                         <p><strong>@lang('Weight'):</strong> {{ $data->weight }} kg</p>
-                        @if($data->size)
-                            <p><strong>@lang('Sizes'):</strong> {{ is_array($data->size) ? implode(', ', $data->size) : $data->size }}</p>
-                        @endif
                     </div>
                 </div>
 
@@ -192,64 +189,6 @@
                                 </div>
                             </div>
 
-                            <!-- Colors -->
-                            <div class="col-12">
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="allow_colors" name="color_check"
-                                               value="1" {{ !empty($merchantItem->color_all) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="allow_colors">
-                                            @lang('Allow CatalogItem Colors')
-                                        </label>
-                                    </div>
-                                </div>
-
-                                <div id="color_section" style="display: {{ !empty($merchantItem->color_all) ? 'block' : 'none' }};">
-                                    <div class="mb-3">
-                                        <label class="form-label">@lang('Available Colors')</label>
-                                        <div id="color_inputs">
-                                            @if(!empty($merchantItem->color_all))
-                                                @php
-                                                    $colors = is_array($merchantItem->color_all) ? $merchantItem->color_all : explode(',', $merchantItem->color_all);
-                                                    $colorPrices = !empty($merchantItem->color_price)
-                                                        ? (is_array($merchantItem->color_price) ? $merchantItem->color_price : explode(',', $merchantItem->color_price))
-                                                        : [];
-                                                @endphp
-                                                @foreach($colors as $index => $color)
-                                                    <div class="row mb-2">
-                                                        <div class="col-6">
-                                                            <input type="color" class="form-control" name="color_all[]" value="{{ $color }}">
-                                                        </div>
-                                                        <div class="col-5">
-                                                            <input type="number" step="0.01" class="form-control" name="color_price[]"
-                                                                   value="{{ isset($colorPrices[$index]) ? $colorPrices[$index] : '' }}"
-                                                                   placeholder="@lang('Additional Price')">
-                                                        </div>
-                                                        <div class="col-1">
-                                                            <button type="button" class="btn btn-danger btn-sm remove-color">×</button>
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            @else
-                                                <div class="row mb-2">
-                                                    <div class="col-6">
-                                                        <input type="color" class="form-control" name="color_all[]" value="#ffffff">
-                                                    </div>
-                                                    <div class="col-5">
-                                                        <input type="number" step="0.01" class="form-control" name="color_price[]"
-                                                               placeholder="@lang('Additional Price')">
-                                                    </div>
-                                                    <div class="col-1">
-                                                        <button type="button" class="btn btn-danger btn-sm remove-color">×</button>
-                                                    </div>
-                                                </div>
-                                            @endif
-                                        </div>
-                                        <button type="button" class="btn btn-primary btn-sm" id="add_color">@lang('Add Color')</button>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Wholesale -->
                             <div class="col-12">
                                 <div class="mb-3">
@@ -335,40 +274,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Color section toggle
-    document.getElementById('allow_colors').addEventListener('change', function() {
-        document.getElementById('color_section').style.display = this.checked ? 'block' : 'none';
-    });
-
     // Wholesale section toggle
     document.getElementById('allow_wholesale').addEventListener('change', function() {
         document.getElementById('wholesale_section').style.display = this.checked ? 'block' : 'none';
-    });
-
-    // Add color functionality
-    document.getElementById('add_color').addEventListener('click', function() {
-        const colorInputs = document.getElementById('color_inputs');
-        const newRow = document.createElement('div');
-        newRow.className = 'row mb-2';
-        newRow.innerHTML = `
-            <div class="col-6">
-                <input type="color" class="form-control" name="color_all[]" value="#ffffff">
-            </div>
-            <div class="col-5">
-                <input type="number" step="0.01" class="form-control" name="color_price[]" placeholder="@lang('Additional Price')">
-            </div>
-            <div class="col-1">
-                <button type="button" class="btn btn-danger btn-sm remove-color">×</button>
-            </div>
-        `;
-        colorInputs.appendChild(newRow);
-    });
-
-    // Remove color functionality
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('remove-color')) {
-            e.target.closest('.row').remove();
-        }
     });
 
     // ============================================

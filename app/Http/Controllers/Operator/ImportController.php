@@ -237,14 +237,8 @@ class ImportController extends OperatorBaseController
         if ($request->shipping_time_check == ""){ $input['ship'] = null; }
 
         // These belong to merchant_items, not catalogItems
-        unset($input['stock_check'], $input['size'], $input['size_qty'], $input['size_price'], $input['color']);
+        unset($input['stock_check']);
 
-        // Size options for identity
-        if(empty($request->size_check)) {
-            $input['size_all'] = null;
-        } else {
-            $input['size_all'] = implode(',', (array)$request->size_all);
-        }
 
         // Check Seo
         if (empty($request->seo_check)) {
@@ -310,28 +304,6 @@ class ImportController extends OperatorBaseController
         $mpPrice         = (float) ($request->input('price', 0)) / $sign->value;
         $mpPreviousPrice = $request->filled('previous_price') ? ((float)$request->input('previous_price') / $sign->value) : null;
 
-        // Sizes / quantities / size prices (convert to base value)
-        $mpSize      = null;
-        $mpSizeQty   = null;
-        $mpSizePrice = null;
-
-        if (!empty($request->stock_check)) {
-            if (!in_array(null, (array)$request->size) &&
-                !in_array(null, (array)$request->size_qty) &&
-                !in_array(null, (array)$request->size_price)) {
-
-                $mpSize    = implode(',', (array)$request->size);
-                $mpSizeQty = implode(',', (array)$request->size_qty);
-
-                $size_prices = (array)$request->size_price;
-                $s_price = [];
-                foreach ($size_prices as $key => $sPrice) {
-                    $s_price[$key] = ((float)$sPrice) / $sign->value;
-                }
-                $mpSizePrice = implode(',', $s_price);
-            }
-        }
-
         MerchantItem::updateOrCreate(
             ['catalog_item_id' => $catalogItem->id, 'user_id' => $merchantId],
             [
@@ -339,9 +311,6 @@ class ImportController extends OperatorBaseController
                 'price'               => $mpPrice,
                 'previous_price'      => $mpPreviousPrice,
                 'stock'               => (int) $request->input('stock', 0),
-                'size'                => $mpSize,
-                'size_qty'            => $mpSizeQty,
-                'size_price'          => $mpSizePrice,
                 'minimum_qty'         => $request->input('minimum_qty') ?: null,
                 'whole_sell_qty'      => !empty($request->whole_sell_qty) ? implode(',', (array)$request->whole_sell_qty) : null,
                 'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', (array)$request->whole_sell_discount) : null,
@@ -439,23 +408,6 @@ class ImportController extends OperatorBaseController
         if ($request->preordered_check == ""){ $input['preordered'] = 0; }
         if ($request->shipping_time_check == ""){ $input['ship'] = null; }
 
-        // These belong to merchant_items, not catalogItems
-        if(empty($request->stock_check)) {
-            $input['stock_check'] = 0;
-            $input['size'] = null;
-            $input['size_qty'] = null;
-            $input['size_price'] = null;
-            $input['color'] = null;
-        } else {
-            unset($input['size'], $input['size_qty'], $input['size_price'], $input['color']);
-            $input['stock_check'] = 1;
-        }
-
-        if(empty($request->size_check)) {
-            $input['size_all'] = null;
-        } else {
-            $input['size_all'] = implode(',', (array)$request->size_all);
-        }
 
         if ($request->measure_check == "") {
             $input['measure'] = null;
@@ -536,26 +488,6 @@ class ImportController extends OperatorBaseController
         $mpPrice         = $request->filled('price') ? ((float)$request->input('price') / $sign->value) : 0.0;
         $mpPreviousPrice = $request->filled('previous_price') ? ((float)$request->input('previous_price') / $sign->value) : null;
 
-        $mpSize      = null;
-        $mpSizeQty   = null;
-        $mpSizePrice = null;
-        if (!empty($request->stock_check)) {
-            if(!in_array(null, (array)$request->size) &&
-               !in_array(null, (array)$request->size_qty) &&
-               !in_array(null, (array)$request->size_price)) {
-
-                $mpSize    = implode(',', (array)$request->size);
-                $mpSizeQty = implode(',', (array)$request->size_qty);
-
-                $size_prices = (array)$request->size_price;
-                $s_price = [];
-                foreach($size_prices as $key => $sPrice){
-                    $s_price[$key] = ((float)$sPrice) / $sign->value;
-                }
-                $mpSizePrice = implode(',', $s_price);
-            }
-        }
-
         MerchantItem::updateOrCreate(
             ['catalog_item_id' => $catalogItem->id, 'user_id' => $merchantId],
             [
@@ -563,9 +495,6 @@ class ImportController extends OperatorBaseController
                 'price'               => $mpPrice,
                 'previous_price'      => $mpPreviousPrice,
                 'stock'               => (int)$request->input('stock', 0),
-                'size'                => $mpSize,
-                'size_qty'            => $mpSizeQty,
-                'size_price'          => $mpSizePrice,
                 'minimum_qty'         => $request->input('minimum_qty') ?: null,
                 'whole_sell_qty'      => !empty($request->whole_sell_qty) ? implode(',', (array)$request->whole_sell_qty) : null,
                 'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', (array)$request->whole_sell_discount) : null,

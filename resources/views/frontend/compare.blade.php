@@ -263,7 +263,7 @@
                                 ? route('front.catalog-item', ['slug' => $catalogItemData->slug, 'merchant_item_id' => $merchantItem->id])
                                 : '#';
                         } else {
-                            $compareCatalogItemUrl = $catalogItemData->slug ? route('front.catalog-item.legacy', $catalogItemData->slug) : '#';
+                            $compareCatalogItemUrl = '#';
                         }
 
                         $processedCatalogItems[$mpId] = [

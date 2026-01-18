@@ -322,73 +322,6 @@
                                         </div>
 
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclickc" name="color_check" type="checkbox"
-                                                            id="check3" value="1"
-                                                            {{ is_array($data->color_all) ? 'checked' : '' }}>
-                                                        <label for="check3">{{ __('Allow CatalogItem Colors') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        @php
-                                            
-                                            
-                                           
-                                           
-                                        @endphp
-                                        <div class="{{is_array($data->color_all) ? '' : ' showbox' }}">
-                                            <div class="row">
-
-                                                <div class="col-lg-12">
-                                                    <div class="select-input-color" id="color-section">
-                                                        @if (is_array($data->color_all))
-                                                            
-                                                        @foreach ($data->color_all as $key => $color)
-                                                        <div class="size-area">
-                                                            <span class="remove size-remove"><i
-                                                                    class="fas fa-times"></i></span>
-                                                            <div class="row">
-                                                                <div class="col-md-12 col-sm-12">
-                                                                    <label>
-                                                                        {{ __('Color') }} :
-                                                                    </label>
-                                                                    <div class="color-area">
-                                                                        <div
-                                                                            class="input-group colorpicker-component cp">
-                                                                            <input type="text" name="color_all[]"
-                                                                                value="{{ $color }}"
-                                                                                class="form-control cp tcolor" />
-                                                                            <span
-                                                                                class="input-group-module"><i></i></span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                            </div>
-                                                        </div>
-                                                    @endforeach
-
-                                                        @endif
-                                                        
-                                                    </div>
-                                                    <a href="javascript:;" id="color-btn" class="add-more mt-4 mb-3"><i
-                                                            class="fas fa-plus"></i>{{ __('Add More Color') }} </a>
-                                                </div>
-
-                                            </div>
-                                        </div>
-
-
                                         <div class="{{ $data->measure == null ? 'showbox' : '' }}">
                                             <div class="row">
                                                 <div class="col-lg-6">
@@ -432,25 +365,6 @@
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input name="stock_check" class="stock-check" type="checkbox"
-                                                            id="size-check" value="1"
-                                                            {{ !empty($data->size) ? 'checked' : '' }}>
-                                                        <label for="size-check"
-                                                            class="stock-text">{{ __('Manage Stock') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="row {{ !empty($data->size) ? ' d-none' : '' }}" id="default_stock">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
                                                     <h4 class="heading">{{ __('CatalogItem Stock') }}*</h4>
                                                     <p class="sub-heading">
                                                         {{ __('(Leave Empty will Show Always Available)') }}</p>
@@ -459,81 +373,6 @@
                                             <div class="col-lg-12">
                                                 <input name="stock" type="number" class="form-control"
                                                     placeholder="e.g 20" value="{{ $data->stock }}" min="0">
-                                            </div>
-                                        </div>
-
-
-                                        @php
-                                        if(is_array($data->size)){
-                                            $sizes = $data->size;
-                                        }else{
-                                            $sizes = array_filter(explode(',', $data->size));
-                                        }
-                                        @endphp
-
-                                        <div class="{{ !empty($sizes) ? '' : ' showbox' }}" id="size-display">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <div class="catalogItem-size-details" id="size-section">
-
-
-                                                        @foreach ($sizes as $key => $size)
-                                                            <div class="size-area">
-                                                                <span class="remove size-remove"><i
-                                                                        class="fas fa-times"></i></span>
-                                                                <div class="row">
-                                                                    <div class="col-md-4 col-sm-4">
-                                                                        <label>
-                                                                            {{ __('Size Name') }} :
-                                                                            <span>
-                                                                                {{ __('(eg. S,M,L,XL,3XL,4XL)') }}
-                                                                            </span>
-                                                                        </label>
-                                                                        <input type="text" name="size[]"
-                                                                            class="form-control tsize"
-                                                                            placeholder="{{ __('Enter CatalogItem Size') }}"
-                                                                            value="{{ $size }}" required="">
-                                                                    </div>
-                                                                    <div class="col-md-4 col-sm-4">
-                                                                        <label>
-                                                                            {{ __('Size Qty') }} :
-                                                                            <span>
-                                                                                {{ __('(Quantity of this size)') }}
-                                                                            </span>
-                                                                        </label>
-                                                                        <input type="number" name="size_qty[]" required
-                                                                            class="form-control"
-                                                                            placeholder="{{ __('Size Qty') }}"
-                                                                            value="{{ $data->size_qty[$key] }}"
-                                                                            min="1">
-                                                                    </div>
-                                                                    <div class="col-md-4 col-sm-4">
-                                                                        <label>
-                                                                            {{ __('Size Price') }} :
-                                                                            <span>
-                                                                                {{ __('(Added with base price)') }}
-                                                                            </span>
-                                                                        </label>
-                                                                        <input type="number" name="size_price[]" required
-                                                                            class="form-control"
-                                                                            placeholder="{{ __('Size Price') }}"
-                                                                            value="{{ round($data->size_price[$key] * $curr->value, 2) }}"
-                                                                            min="0">
-                                                                    </div>
-
-
-                                                                </div>
-                                                            </div>
-                                                        @endforeach
-
-
-                                                    </div>
-
-                                                    <a href="javascript:;" id="size-btn" class="add-more"><i
-                                                            class="fas fa-plus"></i>{{ __('Add More') }} </a>
-                                                </div>
                                             </div>
                                         </div>
 
@@ -990,16 +829,6 @@
                     $('#f-link').show();
                 }
             });
-
-
-
-            $(document).on('click', '#size-check', function() {
-                if ($(this).is(':checked')) {
-                    $('#default_stock').addClass('d-none')
-                } else {
-                    $('#default_stock').removeClass('d-none');
-                }
-            })
 
 
 

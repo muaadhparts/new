@@ -136,7 +136,7 @@
 
                                         $catalogProdUrl = $catalogMerchant && isset($cartItem['slug'])
                                             ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_item_id' => $catalogMerchant->id])
-                                            : (isset($cartItem['slug']) ? route('front.catalog-item.legacy', $cartItem['slug']) : '#');
+                                            : '#';
                                     @endphp
 
                                     <div class="col mb-1">

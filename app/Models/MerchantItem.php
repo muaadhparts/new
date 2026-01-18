@@ -34,15 +34,9 @@ class MerchantItem extends Model
         'is_popular',
         'ship',
         'item_condition',
-        'color_all',
-        'color_price',
         'details',
         'policy',
         'features',
-        'colors',
-        'size',
-        'size_qty',
-        'size_price',
         // Homepage flags
         'featured',
         'top',
@@ -142,16 +136,11 @@ class MerchantItem extends Model
     }
 
     /**
-     * Calculate final price for merchant display with size/options and commissions.
+     * Calculate final price for merchant display with commissions.
      */
     public function merchantSizePrice()
     {
-        // Base price = merchant item price + any increments (sizes/options) if numeric
         $base = (float) ($this->price ?? 0);
-
-        if (!empty($this->size_price) && is_numeric($this->size_price)) {
-            $base += (float) $this->size_price;
-        }
 
         // Skip commission when base price is zero or less
         if ($base <= 0) {
@@ -220,24 +209,6 @@ class MerchantItem extends Model
         // Build previous final price similar to current price
         $prev = (float) $this->previous_price;
 
-        // Add size price to previous price if exists
-        if (!empty($this->size_price)) {
-            $raw = $this->size_price;
-            if (is_string($raw)) {
-                $decoded = json_decode($raw, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $first = array_values($decoded)[0] ?? 0;
-                    $prev += (float) $first;
-                } else {
-                    $parts = explode(',', $raw);
-                    $prev += isset($parts[0]) && $parts[0] !== '' ? (float) $parts[0] : 0.0;
-                }
-            } elseif (is_array($raw)) {
-                $first = array_values($raw)[0] ?? 0;
-                $prev += (float) $first;
-            }
-        }
-
         // Add commission to previous price (using per-merchant commission)
         $commission = $this->getMerchantCommission();
         if ($commission && $commission->is_active) {
@@ -250,46 +221,6 @@ class MerchantItem extends Model
 
         $percentage = ((float) $prev - (float) $current) * 100 / (float) $prev;
         return round($percentage, 2);
-    }
-
-    /**
-     * Get color list as array
-     */
-    public function getColorAllAttribute($value)
-    {
-        return $value === null ? [] : (is_array($value) ? $value : explode(',', $value));
-    }
-
-    /**
-     * Get color prices as array
-     */
-    public function getColorPriceAttribute($value)
-    {
-        return $value === null ? [] : (is_array($value) ? $value : explode(',', $value));
-    }
-
-    /**
-     * Get size as array
-     */
-    public function getSizeAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    /**
-     * Get size qty as array
-     */
-    public function getSizeQtyAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    /**
-     * Get size price as array
-     */
-    public function getSizePriceAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
     }
 
 }

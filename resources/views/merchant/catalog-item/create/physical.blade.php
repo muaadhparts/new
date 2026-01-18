@@ -203,103 +203,7 @@
 
 
 
-                    <!-- Allow CatalogItem Colors Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_allow-catalogItem-colors" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_allow-catalogItem-colors">
-                        <input type="checkbox" name="color_check" id="allow-allow-catalogItem-colors" class="checkclickc">
-                        <label class="icon-label check-box-label" for="allow-allow-catalogItem-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-allow-catalogItem-colors">@lang('Allow CatalogItem Colors')</label>
-                    </div>
-                    <!-- CatalogItem Colors -->
-                    <div class="input-label-wrapper collapse" id="show_allow-catalogItem-colors">
-                        <label>@lang('CatalogItem Colors* (Choose Your Favorite Colors)')</label>
-                        <div class="row gy-4">
-                            <div id="color-section">
-                                <div class="col-12 position-relative">
-                                    <input type="text" class="form-control" placeholder="#000000 ">
-                                    <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
-                                        id="favcolor_1" name="color_all[]" value="#000000">
-                                    <button type="button"
-                                        class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_color"><i
-                                            class="fa-solid fa-xmark"></i></button>
-                                </div>
-                            </div>
-
-                            <div class="col-12 d-flex justify-content-end">
-                                <button class="template-btn outline-btn" id="color-btn"
-                                    type="button">+@lang('Add More Field')</button>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- Manage Stock Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_manage-stock" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_manage-stock">
-                        <input type="checkbox" name="stock_check" id="allow-manage-stock" value="1">
-                        <label class="icon-label check-box-label" for="allow-manage-stock">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-manage-stock">@lang('Manage Stock')</label>
-                    </div>
-
-
-                    <!-- Manage Stock -->
-                    <div class="input-label-wrapper collapse" id="show_manage-stock">
-
-                        <div id="size-section" class="d-flex flex-column gap-4">
-                            <div
-                                class="row row-cols-1 row-cols-md-2 row-cols-lg-4 row-cols-xl-4 align-items-end gx-3 gy-4">
-                                <!-- Size Name -->
-                                <div class="col">
-                                    <div class="lebel-box">
-                                        <label class="main-label">@lang('Size Name :')</label>
-                                        <label class="sub-label">@lang('(eg. S,M,L,XL,3XL,4XL)')</label>
-                                    </div>
-                                    <input type="text" class="form-control" name="size[]" placeholder="">
-                                </div>
-                                <div class="col">
-                                    <div class="lebel-box">
-                                        <label class="main-label">@lang('Size Qty :')</label>
-                                        <label class="sub-label">@lang('(Quantity of this size)')</label>
-                                    </div>
-                                    <input type="text" class="form-control" name="size_qty[]" placeholder="">
-                                </div>
-                                <div class="col">
-                                    <div class="lebel-box">
-                                        <label class="main-label">@lang('Size Price :')</label>
-                                        <!-- <label class="sub-label">@lang('(Added with base price)')</label> -->
-                                        <label class="sub-label">@lang('(Price)')</label>
-                                    </div>
-                                    <input type="text" class="form-control" name="size_price[]" placeholder="">
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="btn btn-danger remove_stock text-white form-control">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="col-12 col-md-12 col-lg-12 col-xl-12 d-flex justify-content-end mt-4">
-                            <button class="template-btn outline-btn" id="size-btn"
-                                type="button">+@lang('Add More')</button>
-                        </div>
-                    </div>
-
-
-                    <div class="input-label-wrapper" id="default_stock">
+                    <div class="input-label-wrapper">
                         <label>@lang('CatalogItem Stock')</label>
                         <input type="number" class="form-control" name="stock" placeholder="@lang('Enter CatalogItem Stock') ">
                     </div>
@@ -472,26 +376,6 @@
             $('.cropme').simpleCropper();
 
 
-            $(document).on('click', "#color-btn", function() {
-                $("#color-section").append(`
-                    <div class="col-12 mt-2 position-relative">
-                        <input type="text" class="form-control" placeholder="#000000 ">
-                        <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
-                            id="favcolor_1" name="color_all[]" value="#000000">
-                        <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_color "><i
-                                class="fa-solid fa-xmark"></i></button>
-                    </div>
-                `);
-            });
-
-            $(document).on('click', ".remove_color", function() {
-                if ($('.remove_color').length > 1) {
-                    $(this).parent().remove();
-                }
-            });
-
-
-
             $(document).on('click', "#whole-btn", function() {
                 $("#whole-section").append(
                     `  <div class="row row-cols-1 row-cols-md-2 gy-4 postion-relative">
@@ -513,48 +397,6 @@
 
             $(document).on('click', ".remove_whole_sell", function() {
                 if ($('.remove_whole_sell').length > 1) {
-                    $(this).parent().parent().remove();
-                }
-            });
-
-
-            $(document).on('click', "#size-btn", function() {
-
-                $("#size-section").append(
-                    `   <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 align-items-end gx-3 gy-4">
-                                <!-- Size Name -->
-                                <div class="col">
-                                    <div class="lebel-box">
-                                        <label class="main-label">Size Name :</label>
-                                        <label class="sub-label">(eg. S,M,L,XL,3XL,4XL)</label>
-                                    </div>
-                                    <input type="text" class="form-control" name="size[]" placeholder="">
-                                </div>
-                                <div class="col">
-                                    <div class="lebel-box">
-                                        <label class="main-label">Size Qty :</label>
-                                        <label class="sub-label">(Quantity of this size)</label>
-                                    </div>
-                                    <input type="text" class="form-control" name="size_qty[]" placeholder="">
-                                </div>
-                                <div class="col">
-                                    <div class="lebel-box">
-                                        <label class="main-label">Size Price :</label>
-                                        <label class="sub-label">(Price)</label>
-                                    </div>
-                                    <input type="text" class="form-control" name="size_price[]" placeholder="">
-                                </div>
-                                <div class="col">
-                                    <button type="button" class="btn btn-danger remove_stock text-white form-control">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>`
-                );
-            });
-
-            $(document).on('click', ".remove_stock", function() {
-                if ($('.remove_stock').length > 1) {
                     $(this).parent().parent().remove();
                 }
             });

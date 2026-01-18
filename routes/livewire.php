@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('catlogs')
-    ->middleware(['web', 'localization'])
+    ->middleware(['web'])
     ->group(function () {
         // Brand catalogs list
         Route::get('{brand}', [VehicleCatalogController::class, 'index'])
