@@ -395,32 +395,6 @@ class Purchase extends Model
         return $data;
     }
 
-    public static function getPackingData($cart)
-    {
-        $merchant_packing_id = 0;
-        $user = array();
-        foreach ($cart->items as $cartItem) {
-                $user[] = $cartItem['item']['user_id'];
-        }
-        $users = array_unique($user);
-        if(count($users) == 1)
-        {
-            $package_data  = DB::table('packages')->whereUserId($users[0])->get();
-
-            // No fallback - if merchant has no packages, return empty collection
-            if(count($package_data) > 0){
-                $merchant_packing_id = $users[0];
-            }
-        }
-        else {
-            // Multi-merchant cart - no global packaging
-            $package_data = collect();
-        }
-        $data['package_data'] = $package_data;
-        $data['merchant_packing_id'] = $merchant_packing_id;
-        return $data;
-    }
-
     /**
      * Get customer's shipping choice for a specific merchant
      *

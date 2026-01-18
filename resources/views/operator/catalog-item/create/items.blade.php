@@ -19,7 +19,7 @@
                             <a href="{{ route('operator-catalog-item-index') }}">{{ __('All Catalog Items') }}</a>
                         </li>
                         <li>
-                            <a href="{{ route('operator-catalog-item-create', 'physical') }}">{{ __('Add CatalogItem') }}</a>
+                            <a href="{{ route('operator-catalog-item-create', 'items') }}">{{ __('Add CatalogItem') }}</a>
                         </li>
                     </ul>
                 </div>

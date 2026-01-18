@@ -74,27 +74,6 @@
                                 </tr>
                                 @endif
 
-                                @if($purchase->packing_name != null)
-                                <tr>
-                                    <th width="45%">{{ __('Packaging Method') }}</th>
-                                    <td width="10%">:</td>
-                                    <td width="45%">{{ $purchase->packing_name }}</td>
-                                </tr>
-                                @endif
-
-                                @if($purchase->packing_cost != 0)
-
-                                <tr>
-                                    <th width="45%">{{ __('Packaging Cost') }}</th>
-                                    <td width="10%">:</td>
-                                    <td width="45%">{{
-                                        \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost,$purchase->currency_sign)
-                                        }}</td>
-                                </tr>
-
-                                @endif
-
-
                                 @if($purchase->wallet_price != 0)
                                 <tr>
                                     <th width="45%">{{ __('Paid From Wallet') }}</th>
@@ -545,11 +524,6 @@
                                                 <span class="badge badge-success" title="{{ __('Merchant Shipping') }}"><i class="fas fa-truck"></i></span>
                                             @endif
 
-                                            @if(($merchantPurchase->packing_owner_id ?? null) === 0)
-                                                <span class="badge badge-primary" title="{{ __('Platform Packing') }}"><i class="fas fa-box"></i></span>
-                                            @elseif(($merchantPurchase->packing_cost ?? 0) > 0)
-                                                <span class="badge badge-success" title="{{ __('Merchant Packing') }}"><i class="fas fa-box"></i></span>
-                                            @endif
                                         </div>
 
                                         @endif

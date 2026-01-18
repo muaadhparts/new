@@ -5,168 +5,177 @@ namespace App\Services\MerchantCheckout;
 use Illuminate\Support\Facades\Session;
 
 /**
- * Session management for Merchant Checkout
+ * Session management for Branch Checkout
  *
  * Unified session key management - no hardcoded strings
+ * NOTE: Session keys use branch_id (not merchant_id) for branch-scoped checkout
  */
 class MerchantSessionManager
 {
     /**
-     * Session key prefixes
+     * Session key prefixes (Branch-Scoped)
      */
-    const PREFIX_ADDRESS = 'checkout.merchant.%d.address';
-    const PREFIX_SHIPPING = 'checkout.merchant.%d.shipping';
-    const PREFIX_PAYMENT = 'checkout.merchant.%d.payment';
-    const PREFIX_DISCOUNT = 'checkout.merchant.%d.discount';
-    const PREFIX_LOCATION_DRAFT = 'checkout.merchant.%d.location_draft';
+    const PREFIX_ADDRESS = 'checkout.branch.%d.address';
+    const PREFIX_SHIPPING = 'checkout.branch.%d.shipping';
+    const PREFIX_PAYMENT = 'checkout.branch.%d.payment';
+    const PREFIX_DISCOUNT = 'checkout.branch.%d.discount';
+    const PREFIX_LOCATION_DRAFT = 'checkout.branch.%d.location_draft';
+
+    // ══════════════════════════════════════════════════════════════
+    // Branch-Scoped Methods (الأساسية)
+    // ══════════════════════════════════════════════════════════════
 
     /**
-     * Get address step data
+     * Get address step data (branch-scoped)
      */
-    public function getAddressData(int $merchantId): ?array
+    public function getAddressData(int $branchId): ?array
     {
-        return Session::get($this->addressKey($merchantId));
+        return Session::get($this->addressKey($branchId));
     }
 
     /**
-     * Save address step data
+     * Save address step data (branch-scoped)
      */
-    public function saveAddressData(int $merchantId, array $data): void
+    public function saveAddressData(int $branchId, array $data): void
     {
-        Session::put($this->addressKey($merchantId), $data);
+        Session::put($this->addressKey($branchId), $data);
         Session::save();
     }
 
     /**
-     * Get shipping step data
+     * Get shipping step data (branch-scoped)
      */
-    public function getShippingData(int $merchantId): ?array
+    public function getShippingData(int $branchId): ?array
     {
-        return Session::get($this->shippingKey($merchantId));
+        return Session::get($this->shippingKey($branchId));
     }
 
     /**
-     * Save shipping step data
+     * Save shipping step data (branch-scoped)
      */
-    public function saveShippingData(int $merchantId, array $data): void
+    public function saveShippingData(int $branchId, array $data): void
     {
-        Session::put($this->shippingKey($merchantId), $data);
+        Session::put($this->shippingKey($branchId), $data);
         Session::save();
     }
 
     /**
-     * Get payment step data
+     * Get payment step data (branch-scoped)
      */
-    public function getPaymentData(int $merchantId): ?array
+    public function getPaymentData(int $branchId): ?array
     {
-        return Session::get($this->paymentKey($merchantId));
+        return Session::get($this->paymentKey($branchId));
     }
 
     /**
-     * Save payment step data
+     * Save payment step data (branch-scoped)
      */
-    public function savePaymentData(int $merchantId, array $data): void
+    public function savePaymentData(int $branchId, array $data): void
     {
-        Session::put($this->paymentKey($merchantId), $data);
+        Session::put($this->paymentKey($branchId), $data);
         Session::save();
     }
 
     /**
-     * Get discount data
+     * Get discount data (branch-scoped)
      */
-    public function getDiscountData(int $merchantId): ?array
+    public function getDiscountData(int $branchId): ?array
     {
-        return Session::get($this->discountKey($merchantId));
+        return Session::get($this->discountKey($branchId));
     }
 
     /**
-     * Save discount data
+     * Save discount data (branch-scoped)
      */
-    public function saveDiscountData(int $merchantId, array $data): void
+    public function saveDiscountData(int $branchId, array $data): void
     {
-        Session::put($this->discountKey($merchantId), $data);
+        Session::put($this->discountKey($branchId), $data);
         Session::save();
     }
 
     /**
-     * Clear discount data
+     * Clear discount data (branch-scoped)
      */
-    public function clearDiscountData(int $merchantId): void
+    public function clearDiscountData(int $branchId): void
     {
-        Session::forget($this->discountKey($merchantId));
+        Session::forget($this->discountKey($branchId));
         Session::save();
     }
 
     /**
-     * Get location draft data
+     * Get location draft data (branch-scoped)
      */
-    public function getLocationDraft(int $merchantId): ?array
+    public function getLocationDraft(int $branchId): ?array
     {
-        return Session::get($this->locationDraftKey($merchantId));
+        return Session::get($this->locationDraftKey($branchId));
     }
 
     /**
-     * Save location draft data
+     * Save location draft data (branch-scoped)
      */
-    public function saveLocationDraft(int $merchantId, array $data): void
+    public function saveLocationDraft(int $branchId, array $data): void
     {
-        Session::put($this->locationDraftKey($merchantId), $data);
+        Session::put($this->locationDraftKey($branchId), $data);
         Session::save();
     }
 
     /**
-     * Get all checkout data for merchant
+     * Get all checkout data for branch
      */
-    public function getAllCheckoutData(int $merchantId): array
+    public function getAllCheckoutData(int $branchId): array
     {
         return [
-            'address' => $this->getAddressData($merchantId),
-            'shipping' => $this->getShippingData($merchantId),
-            'payment' => $this->getPaymentData($merchantId),
-            'discount' => $this->getDiscountData($merchantId),
-            'location_draft' => $this->getLocationDraft($merchantId),
+            'address' => $this->getAddressData($branchId),
+            'shipping' => $this->getShippingData($branchId),
+            'payment' => $this->getPaymentData($branchId),
+            'discount' => $this->getDiscountData($branchId),
+            'location_draft' => $this->getLocationDraft($branchId),
         ];
     }
 
     /**
-     * Check if step is completed
+     * Check if step is completed (branch-scoped)
      */
-    public function isStepCompleted(int $merchantId, string $step): bool
+    public function isStepCompleted(int $branchId, string $step): bool
     {
         return match ($step) {
-            'address' => $this->getAddressData($merchantId) !== null,
-            'shipping' => $this->getShippingData($merchantId) !== null,
-            'payment' => $this->getPaymentData($merchantId) !== null,
+            'address' => $this->getAddressData($branchId) !== null,
+            'shipping' => $this->getShippingData($branchId) !== null,
+            'payment' => $this->getPaymentData($branchId) !== null,
             default => false,
         };
     }
 
     /**
-     * Get current step for merchant
+     * Get current step for branch
      */
-    public function getCurrentStep(int $merchantId): string
+    public function getCurrentStep(int $branchId): string
     {
-        if (!$this->isStepCompleted($merchantId, 'address')) {
+        if (!$this->isStepCompleted($branchId, 'address')) {
             return 'address';
         }
-        if (!$this->isStepCompleted($merchantId, 'shipping')) {
+        if (!$this->isStepCompleted($branchId, 'shipping')) {
             return 'shipping';
         }
         return 'payment';
     }
 
     /**
-     * Clear all checkout data for merchant
+     * Clear all checkout data for branch
      */
-    public function clearAllCheckoutData(int $merchantId): void
+    public function clearAllCheckoutData(int $branchId): void
     {
-        Session::forget($this->addressKey($merchantId));
-        Session::forget($this->shippingKey($merchantId));
-        Session::forget($this->paymentKey($merchantId));
-        Session::forget($this->discountKey($merchantId));
-        Session::forget($this->locationDraftKey($merchantId));
+        Session::forget($this->addressKey($branchId));
+        Session::forget($this->shippingKey($branchId));
+        Session::forget($this->paymentKey($branchId));
+        Session::forget($this->discountKey($branchId));
+        Session::forget($this->locationDraftKey($branchId));
         Session::save();
     }
+
+    // ══════════════════════════════════════════════════════════════
+    // Temp Storage (Global - not branch-scoped)
+    // ══════════════════════════════════════════════════════════════
 
     /**
      * Store temp purchase for success page
@@ -220,31 +229,32 @@ class MerchantSessionManager
         Session::save();
     }
 
-    /**
-     * Session key builders
-     */
-    protected function addressKey(int $merchantId): string
+    // ══════════════════════════════════════════════════════════════
+    // Session Key Builders
+    // ══════════════════════════════════════════════════════════════
+
+    protected function addressKey(int $branchId): string
     {
-        return sprintf(self::PREFIX_ADDRESS, $merchantId);
+        return sprintf(self::PREFIX_ADDRESS, $branchId);
     }
 
-    protected function shippingKey(int $merchantId): string
+    protected function shippingKey(int $branchId): string
     {
-        return sprintf(self::PREFIX_SHIPPING, $merchantId);
+        return sprintf(self::PREFIX_SHIPPING, $branchId);
     }
 
-    protected function paymentKey(int $merchantId): string
+    protected function paymentKey(int $branchId): string
     {
-        return sprintf(self::PREFIX_PAYMENT, $merchantId);
+        return sprintf(self::PREFIX_PAYMENT, $branchId);
     }
 
-    protected function discountKey(int $merchantId): string
+    protected function discountKey(int $branchId): string
     {
-        return sprintf(self::PREFIX_DISCOUNT, $merchantId);
+        return sprintf(self::PREFIX_DISCOUNT, $branchId);
     }
 
-    protected function locationDraftKey(int $merchantId): string
+    protected function locationDraftKey(int $branchId): string
     {
-        return sprintf(self::PREFIX_LOCATION_DRAFT, $merchantId);
+        return sprintf(self::PREFIX_LOCATION_DRAFT, $branchId);
     }
 }

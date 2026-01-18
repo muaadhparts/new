@@ -1476,14 +1476,6 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         </tr>
                                         @endif
 
-                                        @if($purchase\->packing_cost != 0)
-                                        <tr class="no-border">
-                                            <td colspan="1"></td>
-                                            <td><strong>{{ __('Packaging Cost') }}({{$purchase\->currency_sign}})</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase\->packing_cost,$purchase\->currency_sign) }}</td>
-                                        </tr>
-                                        @endif
-
                                         @if($purchase\->tax != 0)
                                         <tr class="no-border">
                                             <td colspan="1"></td>

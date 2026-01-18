@@ -138,7 +138,7 @@ class CatalogItemController extends MerchantBaseController
         return view('merchant.catalog-item.catalogs', compact('datas', 'user'));
     }
 
-    //*** GET Request - Show create form for physical catalog item
+    //*** GET Request - Show create form for catalog item
     public function create($slug)
     {
         $user = $this->user;
@@ -154,9 +154,8 @@ class CatalogItemController extends MerchantBaseController
         $cats = collect(); // Category::all();
         $sign = $this->curr;
 
-        // Physical-only system - all items are physical
-        if ($slug === 'physical') {
-            return view('merchant.catalog-item.create.physical', compact('cats', 'sign'));
+        if ($slug === 'items') {
+            return view('merchant.catalog-item.create.items', compact('cats', 'sign'));
         }
 
         Session::flash('unsuccess', __('Invalid catalog item type.'));
@@ -252,165 +251,6 @@ class CatalogItemController extends MerchantBaseController
         $data->update();
 
         return response()->json(['status' => true, 'file_name' => $image_name]);
-    }
-
-    //*** POST Request
-    public function import()
-    {
-        // TODO: Removed - old category system
-        $cats = collect(); // Category::all();
-        $sign = $this->curr;
-        return view('merchant.catalog-item.catalogitemcsv', compact('cats', 'sign'));
-    }
-
-    public function importSubmit(Request $request)
-    {
-        $user = $this->user;
-        $package = $user->membershipPlans()->orderBy('id', 'desc')->first();
-
-        // Count merchant items
-        $prods = $user->merchantItems()->count();
-
-        if (Muaadhsetting::find(1)->verify_item == 1) {
-            if (!$user->isTrustBadgeTrusted()) {
-                return back()->with('unsuccess', __('You must complete your trust badge first.'));
-            }
-        }
-
-        if ($prods < $package->allowed_items || $package->allowed_items == 0) {
-            $log = "";
-            $successCount = 0;
-            $errorCount = 0;
-
-            $request->validate([
-                'csvfile' => 'required',
-            ]);
-
-            $filename = '';
-            if ($file = $request->file('csvfile')) {
-                $extensions = ['csv'];
-                if (!in_array($file->getClientOriginalExtension(), $extensions)) {
-                    return back()->with('unsuccess', __('Only CSV format is supported'));
-                }
-                $filename = time() . '-' . $file->getClientOriginalName();
-                $file->move('assets/temp_files', $filename);
-            }
-
-            $file = fopen(public_path('assets/temp_files/' . $filename), "r");
-            $i = 1;
-            $sign = $this->curr;
-
-            while (($line = fgetcsv($file)) !== false) {
-                if ($i != 1) {
-                    $partNumber = trim($line[0] ?? '');
-
-                    if (empty($partNumber)) {
-                        $log .= "<br>" . __('Row') . " {$i}: " . __('Missing part number (PART_NUMBER)') . "<br>";
-                        $errorCount++;
-                        $i++;
-                        continue;
-                    }
-
-                    // 1. Find existing catalog item by part_number (part_number)
-                    $catalogItem = CatalogItem::where('part_number', $partNumber)->first();
-
-                    if (!$catalogItem) {
-                        $log .= "<br>" . __('Row') . " {$i}: " . __('Catalog item with part number') . " '{$partNumber}' " . __('not found in catalog') . "<br>";
-                        $errorCount++;
-                        $i++;
-                        continue;
-                    }
-
-                    // 2. Validate required merchant fields
-                    $price = floatval($line[1] ?? 0);
-                    $stock = intval($line[2] ?? 0);
-
-                    if ($price <= 0) {
-                        $log .= "<br>" . __('Row') . " {$i}: " . __('Invalid price for part number') . " '{$partNumber}'<br>";
-                        $errorCount++;
-                        $i++;
-                        continue;
-                    }
-
-                    if ($stock < 0) {
-                        $log .= "<br>" . __('Row') . " {$i}: " . __('Invalid stock for part number') . " '{$partNumber}'<br>";
-                        $errorCount++;
-                        $i++;
-                        continue;
-                    }
-
-                    // 3. Check if merchant already has this catalog item
-                    $existingMerchantItem = MerchantItem::where('catalog_item_id', $catalogItem->id)
-                        ->where('user_id', $user->id)
-                        ->first();
-
-                    // 4. Prepare merchant item data
-                    $merchantData = [
-                        'catalog_item_id' => $catalogItem->id,
-                        'user_id' => $user->id,
-                        'price' => $price / $sign->value,
-                        'previous_price' => !empty($line[3]) ? (floatval($line[3]) / $sign->value) : null,
-                        'stock' => $stock,
-                        'item_condition' => intval($line[4] ?? 2),
-                        'minimum_qty' => !empty($line[5]) ? $line[5] : null,
-                        'ship' => !empty($line[6]) ? $line[6] : null,
-                        'preordered' => intval($line[7] ?? 0),
-                        'status' => 1,
-                    ];
-
-                    if (!empty($line[8])) {
-                        $merchantData['whole_sell_qty'] = $line[8];
-                    }
-
-                    if (!empty($line[9])) {
-                        $merchantData['whole_sell_discount'] = $line[9];
-                    }
-
-                    if (!empty($line[10])) {
-                        $merchantData['policy'] = $line[10];
-                    }
-                    if (!empty($line[11])) {
-                        $merchantData['details'] = $line[11];
-                    }
-
-
-                    try {
-                        // 5. Create or update merchant item
-                        if ($existingMerchantItem) {
-                            $existingMerchantItem->update($merchantData);
-                            $log .= "<br>" . __('Row') . " {$i}: " . __('Updated merchant listing for') . " '{$partNumber}'<br>";
-                        } else {
-                            MerchantItem::create($merchantData);
-                            $log .= "<br>" . __('Row') . " {$i}: " . __('Created merchant listing for') . " '{$partNumber}'<br>";
-                        }
-                        $successCount++;
-                    } catch (\Exception $e) {
-                        $log .= "<br>" . __('Row') . " {$i}: " . __('Error processing') . " '{$partNumber}': " . $e->getMessage() . "<br>";
-                        $errorCount++;
-                    }
-                }
-                $i++;
-            }
-            fclose($file);
-
-            if (file_exists(public_path('assets/temp_files/' . $filename))) {
-                unlink(public_path('assets/temp_files/' . $filename));
-            }
-
-            $summary = "<br><strong>" . __('Import Summary') . ":</strong><br>";
-            $summary .= __('Successfully processed') . ": {$successCount}<br>";
-            $summary .= __('Errors') . ": {$errorCount}<br>";
-
-            $msg = __('Merchant item import completed.') . $summary . $log;
-
-            if ($successCount > 0) {
-                return back()->with('success', $msg);
-            } else {
-                return back()->with('unsuccess', $msg);
-            }
-        } else {
-            return back()->with('unsuccess', __('You Can\'t Add More Items. Package limit reached.'));
-        }
     }
 
     //*** POST Request - Store merchant offer for existing catalog item
@@ -685,7 +525,7 @@ class CatalogItemController extends MerchantBaseController
 
         $sign = $this->curr;
 
-        return view('merchant.catalog-item.edit.catalog.physical', compact('cats', 'data', 'merchantItem', 'sign'));
+        return view('merchant.catalog-item.edit.items', compact('cats', 'data', 'merchantItem', 'sign'));
     }
 
     //*** POST Request

@@ -46,8 +46,8 @@
         <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="myForm" action="{{ route('merchant-catalog-item-update', $data->id) }}"
             method="POST" enctype="multipart/form-data">
             @csrf
-            <!-- inputes of physical catalogItem start  -->
-            <div class="col-12 col-lg-8 physical-catalogItem-inputes-wrapper show">
+            <!-- inputes of catalog item start  -->
+            <div class="col-12 col-lg-8 items-catalogItem-inputes-wrapper show">
                 <div class="form-group">
                     <!-- CatalogItem Name -->
                     <div class="input-label-wrapper">

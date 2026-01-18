@@ -250,7 +250,7 @@
                                 <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">
-                                            {{ __('Merchant Physical CatalogItems') }}
+                                            {{ __('Merchant CatalogItems') }}
                                         </h4>
                                     </div>
                                 </div>

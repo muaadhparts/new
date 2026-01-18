@@ -14,23 +14,45 @@ class CatalogItem extends Model
     protected $table = 'catalog_items';
 
     /**
-     * CatalogItem model stores only catalogue-level attributes;
-     * merchant-specific data is stored on MerchantItem.
+     * CatalogItem model stores only catalogue-level attributes.
+     * Merchant-specific data (price, stock, policy, features, status, etc.) is in MerchantItem.
+     *
+     * Actual catalog_items columns:
+     * id, brand_id, part_number, weight, label_en, label_ar, attributes, name, slug,
+     * photo, thumbnail, views, tags, is_meta, meta_tag, meta_description, youtube,
+     * measure, hot, latest, sale, is_catalog, catalog_id, cross_items
      */
     protected $fillable = [
-        'brand_id', 'part_number',
-        'label_en', 'label_ar', 'attributes', 'name', 'slug', 'photo', 'thumbnail', 'weight',
-        'length', 'width', 'height', 'status',
-        'policy', 'views', 'tags', 'features', 'is_meta', 'meta_tag', 'meta_description',
-        'youtube', 'measure', 'featured', 'best', 'top', 'hot', 'latest', 'big',
-        'trending', 'sale', 'is_catalog', 'catalog_id', 'cross_items'
+        'brand_id',
+        'part_number',
+        'label_en',
+        'label_ar',
+        'attributes',
+        'name',
+        'slug',
+        'photo',
+        'thumbnail',
+        'weight',
+        'views',
+        'tags',
+        'is_meta',
+        'meta_tag',
+        'meta_description',
+        'youtube',
+        'measure',
+        'hot',
+        'latest',
+        'sale',
+        'is_catalog',
+        'catalog_id',
+        'cross_items',
     ];
 
     /**
      * Selectable columns for listing catalog items (catalog-level only).
      */
     public $selectable = [
-        'id', 'name', 'slug', 'features', 'thumbnail', 'attributes',
+        'id', 'name', 'slug', 'thumbnail', 'attributes',
         'brand_id', 'weight'
     ];
 
@@ -466,39 +488,33 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get merchant-specific details from merchant item, fallback to catalog item policy.
+     * Get merchant-specific details from merchant item.
+     * (details column exists only in merchant_items, not in catalog_items)
      */
-    public function getMerchantDetails(?int $userId = null)
+    public function getMerchantDetails(?int $userId = null): ?string
     {
         $mi = $this->activeMerchant($userId);
-        if ($mi && !empty($mi->details)) {
-            return $mi->details;
-        }
-        return $this->policy; // Fallback to catalog item policy
+        return $mi?->details;
     }
 
     /**
-     * Get merchant-specific policy from merchant item, fallback to catalog item policy.
+     * Get merchant-specific policy from merchant item.
+     * (policy column exists only in merchant_items, not in catalog_items)
      */
-    public function getMerchantPolicy(?int $userId = null)
+    public function getMerchantPolicy(?int $userId = null): ?string
     {
         $mi = $this->activeMerchant($userId);
-        if ($mi && !empty($mi->policy)) {
-            return $mi->policy;
-        }
-        return $this->policy; // Fallback to catalog item policy
+        return $mi?->policy;
     }
 
     /**
-     * Get merchant-specific features from merchant item, fallback to catalog item features.
+     * Get merchant-specific features from merchant item.
+     * (features column exists only in merchant_items, not in catalog_items)
      */
-    public function getMerchantFeatures(?int $userId = null)
+    public function getMerchantFeatures(?int $userId = null): ?string
     {
         $mi = $this->activeMerchant($userId);
-        if ($mi && !empty($mi->features)) {
-            return $mi->features;
-        }
-        return $this->features; // Fallback to catalog item features
+        return $mi?->features;
     }
 
     /**
@@ -529,51 +545,8 @@ class CatalogItem extends Model
     }
 
     /* =========================================================================
-     |  Accessors (legacy)
-     |  NOTE: These accessors now redirect merchant-specific columns to merchant_items.
+     |  Accessors
      | ========================================================================= */
-
-    /**
-     * Legacy accessors for merchant-specific columns.
-     * These now redirect to the active merchant item according to final schema.
-     */
-    public function __get($key)
-    {
-        // CRITICAL FIX: Check if attribute exists in $attributes array FIRST
-        // This allows manually injected values (e.g., in cart context) to take precedence
-        // over computed merchant methods. Without this check, cart items would always
-        // get the price from activeMerchant() (first merchant), not the specific merchant.
-        if (array_key_exists($key, $this->attributes)) {
-            return $this->attributes[$key];
-        }
-
-        // Handle merchant-specific columns that were moved to merchant_items
-        $merchantColumns = [
-            'item_condition' => 'getItemCondition',
-            'minimum_qty' => 'getMinimumQty',
-            'stock_check' => 'getStockCheck',
-            'stock' => 'merchantSizeStock',
-            'price' => 'merchantPrice',
-            'previous_price' => 'getMerchantPreviousPrice',
-            'ship' => 'getMerchantShip',
-        ];
-
-        if (array_key_exists($key, $merchantColumns)) {
-            $method = $merchantColumns[$key];
-            return $this->$method();
-        }
-
-        // Policy/Features: Try merchant first, fallback to catalog item
-        if ($key === 'details') {
-            return $this->getMerchantDetails();
-        }
-
-        // Fall back to parent implementation
-        return parent::__get($key);
-    }
-
-
-
 
     public function getTagsAttribute($value)
     {
@@ -581,22 +554,6 @@ class CatalogItem extends Model
     }
 
     public function getMetaTagAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    public function getFeaturesAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-
-    public function getWholeSellQtyAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    public function getWholeSellDiscountAttribute($value)
     {
         return $value === null ? '' : explode(',', $value);
     }

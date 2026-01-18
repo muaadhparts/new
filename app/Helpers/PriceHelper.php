@@ -4,7 +4,6 @@ namespace App\Helpers;
 
 use App\Models\Country;
 use App\Models\MonetaryUnit;
-use App\Models\Package;
 use App\Models\Shipping;
 use DB;
 use Session;
@@ -87,38 +86,30 @@ class PriceHelper
             // شحن مفرد
             if ((int)$gs->multiple_shipping === 0) {
                 $merchant_shipping_ids = [];
-                $merchant_packing_ids  = [];
 
                 foreach ($merchant_ids as $merchant_id) {
                     $merchant_shipping_ids[$merchant_id] = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0) ? (int)$input['shipping_id'] : null;
-                    $merchant_packing_ids[$merchant_id]  = (!empty($input['packaging_id']) && (int)$input['packaging_id'] !== 0) ? (int)$input['packaging_id'] : null;
                 }
 
                 $shipping = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0)
                     ? Shipping::find((int)$input['shipping_id']) : null;
 
-                $packeing = (!empty($input['packaging_id']) && (int)$input['packaging_id'] !== 0)
-                    ? Package::find((int)$input['packaging_id']) : null;
-
                 $shipping_cost = $shipping ? (float)$shipping->price : 0.0;
-                $packaging_cost = $packeing ? (float)$packeing->price : 0.0;
 
-                $totalAmount += $shipping_cost + $packaging_cost;
+                $totalAmount += $shipping_cost;
 
                 // كود الخصم
                 if (!empty($input['discount_code_id'])) {
                     $totalAmount -= (float)($input['discount_amount'] ?? 0);
                 }
 
-                // // dd('single', $input, $shipping_cost, $packaging_cost, $tax_amount, $totalAmount);
-
                 return [
                     'total_amount'        => $totalAmount,
                     'shipping'            => $shipping,
-                    'packeing'            => $packeing,
+                    'packeing'            => null, // Packing removed
                     'tax'                 => $tax_amount,
                     'merchant_shipping_ids' => @json_encode($merchant_shipping_ids),
-                    'merchant_packing_ids'  => @json_encode($merchant_packing_ids),
+                    'merchant_packing_ids'  => @json_encode([]), // Packing removed
                     'merchant_ids'          => @json_encode($merchant_ids),
                     'success'             => true,
                 ];
@@ -165,46 +156,24 @@ class PriceHelper
                 }
             }
 
-            // 2) التغليف
-            if (isset($input['packeging']) && is_string($input['packeging'])) {
-                $packegingData = json_decode($input['packeging'], true);
-            } else {
-                $packegingData = $input['packeging'] ?? null;
-            }
-
-            $packaging_cost = 0.0;
-            if (is_array($packegingData)) {
-                foreach ($packegingData as $key => $packaging_id) {
-                    $pkgId = (int)$packaging_id;
-                    if ($pkgId > 0) {
-                        $pack = Package::find($pkgId);
-                        if ($pack) {
-                            $packaging_cost += (float)$pack->price;
-                        }
-                    }
-                }
-            }
-
-            // إجمالي
-            $totalAmount += $shipping_cost + $packaging_cost;
+            // إجمالي (packing removed)
+            $totalAmount += $shipping_cost;
 
             // كود الخصم
             if (!empty($input['discount_code_id'])) {
                 $totalAmount -= (float)($input['discount_amount'] ?? 0);
             }
 
-            // // dd('multi', $input, $shipping_cost, $packaging_cost, $tax_amount, $totalAmount);
-
             return [
                 'total_amount'        => $totalAmount,
                 'shipping'            => null, // متعدد: لا يوجد واحد محدد
-                'packeing'            => null,
+                'packeing'            => null, // Packing removed
                 'tax'                 => $tax_amount,
                 'merchant_shipping_ids' => @json_encode($input['shipping'] ?? []),
-                'merchant_packing_ids'  => @json_encode($input['packeging'] ?? []),
+                'merchant_packing_ids'  => @json_encode([]), // Packing removed
                 'merchant_ids'          => @json_encode($merchant_ids),
                 'shipping_cost'       => $shipping_cost,
-                'packing_cost'        => $packaging_cost,
+                'packing_cost'        => 0, // Packing removed
                 'success'             => true,
             ];
         } catch (\Exception $e) {
@@ -246,8 +215,7 @@ class PriceHelper
             // شحن مفرد
             if ((int)$gs->multiple_shipping === 0) {
                 $shipping = Shipping::findOrFail((int)$input['shipping_id']);
-                $packeing = Package::findOrFail((int)$input['packaging_id']);
-                $totalAmount += (float)$shipping->price + (float)$packeing->price;
+                $totalAmount += (float)$shipping->price; // Packing removed
 
                 // ملاحظة: نحافظ على نفس سلوكك السابق (قسمة) لعدم كسر بقية المنطق
                 return round($totalAmount / $currValue, 2);
@@ -255,7 +223,6 @@ class PriceHelper
 
             // شحن متعدد
             $shipping_cost  = 0.0;
-            $packaging_cost = 0.0;
 
             // شحن
             if (isset($input['shipping_cost']) && is_numeric($input['shipping_cost'])) {
@@ -288,22 +255,7 @@ class PriceHelper
                 }
             }
 
-            // تغليف
-            $packegingData = isset($input['packeging']) && is_string($input['packeging'])
-                ? json_decode($input['packeging'], true)
-                : ($input['packeging'] ?? null);
-
-            if (is_array($packegingData)) {
-                foreach ($packegingData as $k => $packaging_id) {
-                    $pkgId = (int)$packaging_id;
-                    if ($pkgId > 0) {
-                        $pack = Package::find($pkgId);
-                        if ($pack) $packaging_cost += (float)$pack->price;
-                    }
-                }
-            }
-
-            $totalAmount += $shipping_cost + $packaging_cost;
+            $totalAmount += $shipping_cost; // Packing removed
 
             // ملاحظة: نحافظ على سلوكك القديم هنا (الضرب) لتفادي كسر أجزاء أخرى تعتمد عليه
             return round($totalAmount * $currValue, 2);

@@ -90,7 +90,7 @@
 
 
                     <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalog-items/physical/create') ? 'active' : '' }}"
-                            href="{{ route('merchant-catalog-item-create', 'physical') }}">@lang('Add New CatalogItem')</a>
+                            href="{{ route('merchant-catalog-item-create', 'items') }}">@lang('Add New CatalogItem')</a>
                     </li>
                     <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/edit/*') ? 'active' : '' }}"
                             href="{{ route('merchant-catalog-item-index') }}">@lang('All CatalogItem')</a></li>
@@ -102,17 +102,6 @@
 
 
 
-
-            <li class="{{ request()->is('merchant/catalogItems/import') ? 'active' : '' }}">
-                <a href="{{ route('merchant-catalog-item-import') }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                        <path
-                            d="M16 12L12 8M12 8L8 12M12 8V17.2C12 18.5907 12 19.2861 12.5505 20.0646C12.9163 20.5819 13.9694 21.2203 14.5972 21.3054C15.5421 21.4334 15.9009 21.2462 16.6186 20.8719C19.8167 19.2036 22 15.8568 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 15.7014 4.01099 18.9331 7 20.6622"
-                            stroke="#1F0300" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                    </svg>
-                    <span class="label">@lang('Bulk Item Upload')</span>
-                </a>
-            </li>
 
             <li class="{{ request()->is('merchant/withdraw') || request()->is('merchant/withdraw/create') ? 'active' : '' }}">
                 <a href="{{ route('merchant-wt-index') }}">
@@ -127,9 +116,9 @@
 
 
             <li
-                class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'active' : '' }}">
+                class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'active' : '' }}">
                 <a href="#merchant-collapsed-settings"
-                    class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? '' : 'collapsed' }}"
+                    class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? '' : 'collapsed' }}"
                     data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapsed-settings">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                         <path
@@ -142,15 +131,12 @@
                     <span class="label">@lang('Settings')</span>
                     <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
                 </a>
-                <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/package') || request()->is('merchant/package/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'show' : '' }}"
+                <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'show' : '' }}"
                     id="merchant-collapsed-settings">
                     @if ($gs->merchant_ship_info == 1)
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') ? 'active' : '' }}"
                             href="{{ route('merchant-shipping-index') }}">@lang('Shipping Methods')</a></li>
-                    <li class=""><a
-                            class="sidebar-sub-menu-item {{ request()->is('merchant/package') || request()->is('merchant/package/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-package-index') }}">@lang('Packagings CatalogItems')</a></li>
                     <li class=""><a
                             class="sidebar-sub-menu-item {{ request()->is('merchant/branch') || request()->is('merchant/branch/*') ? 'active' : '' }}"
                             href="{{ route('merchant-branch-index') }}">@lang('Warehouse Branches')</a></li>

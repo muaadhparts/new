@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Operator;
 use App\Models\Country;
-use App\Models\Package;
 use App\Models\MerchantBranch;
 use App\Models\Shipping;
 use App\Models\User;
@@ -17,7 +16,7 @@ use Illuminate\Support\Collection;
  * N+1 queries inside Blade templates.
  *
  * Performance Impact:
- * - Before: 3-5 queries per merchant (Shipping, Package, User) = O(n) queries
+ * - Before: 3-5 queries per merchant (Shipping, User) = O(n) queries
  * - After: 3 bulk queries total = O(1) queries
  */
 class CheckoutDataService
@@ -47,7 +46,6 @@ class CheckoutDataService
         // Bulk load all data
         $merchants = self::loadMerchants($merchantIds);
         $shippingByMerchant = self::loadShipping($merchantIds, $hasAdminItems);
-        $packagingByMerchant = self::loadPackaging($merchantIds);
         $merchantBranches = self::loadMerchantBranches($merchantIds);
         $operator = $hasAdminItems ? Operator::find(1) : null;
 
@@ -67,7 +65,7 @@ class CheckoutDataService
                 'merchant' => $merchants[$merchantId] ?? null,
                 'merchant_branch' => $merchantBranches[$merchantId] ?? null,
                 'shipping' => $shipping,
-                'packaging' => $packagingByMerchant[$merchantId] ?? collect(),
+                'packaging' => collect(), // Packaging removed
                 'grouped_shipping' => $shipping->groupBy('provider'),
                 'provider_labels' => $providerLabels,
             ];
@@ -79,7 +77,7 @@ class CheckoutDataService
             $result[0] = [
                 'merchant' => $operator,
                 'shipping' => $operatorShipping,
-                'packaging' => collect(), // No global packaging
+                'packaging' => collect(), // Packaging removed
                 'grouped_shipping' => $operatorShipping->groupBy('provider'),
                 'provider_labels' => $providerLabels,
             ];
@@ -122,22 +120,6 @@ class CheckoutDataService
 
         // Group by user_id - returns Collection of Collections
         return $allShipping->groupBy('user_id');
-    }
-
-    /**
-     * Bulk load packaging for all merchants
-     * ✅ FIX: Returns Collection grouped by user_id
-     */
-    private static function loadPackaging(array $merchantIds): Collection
-    {
-        if (empty($merchantIds)) {
-            return collect();
-        }
-
-        $allPackaging = Package::whereIn('user_id', $merchantIds)->get();
-
-        // Group by user_id - returns Collection of Collections
-        return $allPackaging->groupBy('user_id');
     }
 
     /**

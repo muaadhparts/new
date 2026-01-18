@@ -221,18 +221,6 @@
                                             @endif
                                         @endif
 
-                                        @if($purchase->packing_cost != 0)
-                                        @php
-                                        $pprice = round(($purchase->packing_cost / $purchase->currency_value),2);
-                                        @endphp
-                                        @if(DB::table('packages')->where('price','=',$pprice)->count() > 0)
-                                        <tr>
-                                            <td colspan="2">{{ DB::table('packages')->where('price','=',$pprice)->first()->name }}({{$purchase->currency_sign}})</td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost,$purchase->currency_sign) }}</td>
-                                        </tr>
-                                        @endif
-                                        @endif
-
                                         @if($purchase->tax != 0)
                                         <tr>
                                             <td colspan="2">{{ __('Tax') }}</td>

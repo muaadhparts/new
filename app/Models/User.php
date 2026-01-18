@@ -144,11 +144,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany('App\Models\Shipping', 'user_id');
     }
 
-    public function packages()
-    {
-        return $this->hasMany('App\Models\Package', 'user_id');
-    }
-
     public function abuseFlags()
     {
         return $this->hasMany('App\Models\AbuseFlag', 'user_id');

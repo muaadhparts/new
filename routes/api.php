@@ -151,14 +151,6 @@ Route::group(['prefix' => 'user'], function () {
 
         // ---------------------FAVORITE CONTROLLER ENDS ---------------------
 
-        // ---------------------PACKAGE CONTROLLER ---------------------
-
-        Route::get('/packages', 'Api\User\PackageController@packages');
-        Route::get('/package/details', 'Api\User\PackageController@packageDetails');
-        Route::post('/package/store', 'Api\User\PackageController@store');
-
-        // ---------------------PACKAGE CONTROLLER ENDS ---------------------
-
     });
 
 });

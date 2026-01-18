@@ -486,17 +486,6 @@
                         @endphp
                     @endif
                 @endif
-                @if (Auth::user()->id == $purchase->merchant_packing_id)
-                    @if ($purchase->packing_cost != 0)
-                        <li class="calculation-list-item">
-                            <span class="amount-type">@lang('Packaging Cost')</span> <span
-                                class="amount">{{ \PriceHelper::showOrderCurrencyPrice($purchase->packing_cost, $purchase->currency_sign) }}</span>
-                        </li>
-                        @php
-                            $data += round($purchase->packing_cost, 2);
-                        @endphp
-                    @endif
-                @endif
 
                 {{-- Local Courier Delivery Fee (Pure DTO) --}}
                 @if($trackingData['hasDelivery'] && $trackingData['deliveryFee'] > 0)

@@ -349,28 +349,6 @@ Route::prefix('operator')->group(function () {
 
     //------------ OPERATORCATALOG ITEM SECTION ENDS------------
 
-    //------------ OPERATORAFFILIATE CATALOG ITEM SECTION ------------
-
-    Route::group(['middleware' => 'permissions:affilate_catalog_items'], function () {
-        Route::get('/catalog-items/import/create', 'Operator\ImportController@createImport')->name('operator-import-create');
-        Route::get('/catalog-items/import/edit/{id}', 'Operator\ImportController@edit')->name('operator-import-edit');
-        Route::get('/catalog-items/import/datatables', 'Operator\ImportController@datatables')->name('operator-import-datatables');
-        Route::get('/catalog-items/import/index', 'Operator\ImportController@index')->name('operator-import-index');
-        Route::post('/catalog-items/import/store', 'Operator\ImportController@store')->name('operator-import-store');
-        Route::post('/catalog-items/import/update/{id}', 'Operator\ImportController@update')->name('operator-import-update');
-        Route::delete('/affiliate/catalog-items/delete/{id}', 'Operator\CatalogItemController@destroy')->name('operator-affiliate-catalog-item-delete');
-    });
-
-    //------------ OPERATORAFFILIATE CATALOG ITEM SECTION ENDS ------------
-
-    //------------ OPERATORCSV IMPORT SECTION ------------
-
-    Route::group(['middleware' => 'permissions:bulk_catalog_item_upload'], function () {
-        Route::get('/catalog-items/import', 'Operator\CatalogItemController@import')->name('operator-catalog-item-import');
-        Route::post('/catalog-items/import-submit', 'Operator\CatalogItemController@importSubmit')->name('operator-catalog-item-importsubmit');
-    });
-
-    //------------ OPERATORCSV IMPORT SECTION ENDS ------------
 
     //------------ OPERATORCATALOGITEM DISCUSSION SECTION ------------
 
@@ -621,18 +599,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/shipping/delete/{id}', 'Operator\ShippingController@destroy')->name('operator-shipping-delete');
 
         //------------ OPERATORSHIPPING ENDS ------------
-
-        //------------ OPERATORPACKAGE ------------
-
-        Route::get('/package/datatables', 'Operator\PackageController@datatables')->name('operator-package-datatables');
-        Route::get('/package', 'Operator\PackageController@index')->name('operator-package-index');
-        Route::get('/package/create', 'Operator\PackageController@create')->name('operator-package-create');
-        Route::post('/package/create', 'Operator\PackageController@store')->name('operator-package-store');
-        Route::get('/package/edit/{id}', 'Operator\PackageController@edit')->name('operator-package-edit');
-        Route::post('/package/edit/{id}', 'Operator\PackageController@update')->name('operator-package-update');
-        Route::delete('/package/delete/{id}', 'Operator\PackageController@destroy')->name('operator-package-delete');
-
-        //------------ OPERATORPACKAGE ENDS------------
 
     });
 
@@ -1066,8 +1032,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/catalog-items/{slug}/create', 'Merchant\CatalogItemController@create')->name('merchant-catalog-item-create');
             Route::post('/catalog-items/store', 'Merchant\CatalogItemController@store')->name('merchant-catalog-item-store');
             Route::get('/getspecs', 'Merchant\CatalogItemController@getSpecs')->name('merchant-catalog-item-getspecs');
-            Route::get('/catalog-items/import', 'Merchant\CatalogItemController@import')->name('merchant-catalog-item-import');
-            Route::post('/catalog-items/import-submit', 'Merchant\CatalogItemController@importSubmit')->name('merchant-catalog-item-importsubmit');
             Route::get('/catalog-items/catalog/datatables', 'Merchant\CatalogItemController@catalogdatatables')->name('merchant-catalog-item-catalog-datatables');
             Route::get('/catalog-items/catalogs', 'Merchant\CatalogItemController@catalogs')->name('merchant-catalog-item-catalogs');
             Route::get('/catalog-items/create-offer/{catalog_item_id}', 'Merchant\CatalogItemController@createOffer')->name('merchant-catalog-item-create-offer');
@@ -1077,16 +1041,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::post('/catalog-items/edit/{merchantItemId}', 'Merchant\CatalogItemController@update')->name('merchant-catalog-item-update');
             Route::get('/catalog-items/catalog/{id}', 'Merchant\CatalogItemController@catalogedit')->name('merchant-catalog-item-catalog-edit');
             Route::post('/catalog-items/catalog/{id}', 'Merchant\CatalogItemController@catalogupdate')->name('merchant-catalog-item-catalog-update');
-
-            // IMPORT SECTION
-            Route::get('/catalog-items/import/create', 'Merchant\ImportController@createImport')->name('merchant-import-create');
-            Route::get('/catalog-items/import/edit/{id}', 'Merchant\ImportController@edit')->name('merchant-import-edit');
-            Route::get('/catalog-items/import/csv', 'Merchant\ImportController@importCSV')->name('merchant-import-csv');
-            Route::get('/catalog-items/import/datatables', 'Merchant\ImportController@datatables')->name('merchant-import-datatables');
-            Route::get('/catalog-items/import/index', 'Merchant\ImportController@index')->name('merchant-import-index');
-            Route::post('/catalog-items/import/store', 'Merchant\ImportController@store')->name('merchant-import-store');
-            Route::post('/catalog-items/import/update/{id}', 'Merchant\ImportController@update')->name('merchant-import-update');
-            Route::post('/catalog-items/import/csv/store', 'Merchant\ImportController@importStore')->name('merchant-import-csv-store');
 
             // STATUS SECTION
             Route::get('/catalog-items/status/{id1}/{id2}', 'Merchant\CatalogItemController@status')->name('merchant-catalog-item-status');
@@ -1137,18 +1091,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/warehouse/get-cities', 'Merchant\WarehouseController@getCities')->name('merchant-warehouse-get-cities');
 
             //------------ MERCHANT WAREHOUSE ENDS ------------
-
-            //------------ MERCHANT PACKAGE ------------
-
-            Route::get('/package/datatables', 'Merchant\PackageController@datatables')->name('merchant-package-datatables');
-            Route::get('/package', 'Merchant\PackageController@index')->name('merchant-package-index');
-            Route::get('/package/create', 'Merchant\PackageController@create')->name('merchant-package-create');
-            Route::post('/package/create', 'Merchant\PackageController@store')->name('merchant-package-store');
-            Route::get('/package/edit/{id}', 'Merchant\PackageController@edit')->name('merchant-package-edit');
-            Route::post('/package/edit/{id}', 'Merchant\PackageController@update')->name('merchant-package-update');
-            Route::delete('/package/delete/{id}', 'Merchant\PackageController@destroy')->name('merchant-package-delete');
-
-            //------------ MERCHANT PACKAGE ENDS------------
 
             //------------ MERCHANT CATALOG EVENT SECTION ------------
 

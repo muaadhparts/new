@@ -411,12 +411,6 @@ class UserController extends OperatorBaseController
             }
         }
 
-        if($user->packages->count() > 0)
-        {
-            foreach ($user->packages as $gal) {
-                $gal->delete();
-            }
-        }
         if($user->verifies->count() > 0)
         {
             foreach ($user->verifies as $gal) {

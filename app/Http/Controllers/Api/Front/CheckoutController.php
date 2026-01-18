@@ -15,7 +15,6 @@ use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
-use App\Models\Package;
 use App\Models\FrontendSetting;
 use App\Models\CatalogItem;
 use App\Models\Shipping;
@@ -543,16 +542,17 @@ class CheckoutController extends Controller
     public function getShippingPackaging()
     {
         $shipping  = Shipping::whereUserId(0)->get();
-        $packaging = Package::whereUserId(0)->get();
-        return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => $packaging], 'error' => []]);
+        return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => []], 'error' => []]);
     }
 
     public function MerchantWisegetShippingPackaging(Request $request)
     {
         $explode = explode(',', $request->merchant_ids);
+        $shipping = [];
+        $packaging = [];
         foreach ($explode as $key => $value) {
             $shipping[$value]  = Shipping::forMerchant($value)->get();
-            $packaging[$value] = Package::where('user_id', $value)->get();
+            $packaging[$value] = []; // Packaging removed
         }
         return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => $packaging], 'error' => []]);
     }

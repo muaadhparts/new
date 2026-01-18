@@ -535,6 +535,7 @@ class MerchantCartManager
      *   totals: array,
      *   checkout_url: string
      * }>
+     * @deprecated Use getAllBranchesCart() instead for branch-based checkout
      */
     public function getAllMerchantsCart(): array
     {
@@ -548,6 +549,425 @@ class MerchantCartManager
         }
 
         return $result;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // Branch-Scoped Methods (للتجميع حسب الفرع)
+    // ══════════════════════════════════════════════════════════════
+
+    /**
+     * Get list of branch IDs in cart
+     */
+    public function getBranchIds(): array
+    {
+        $cart = $this->getStorage();
+        $ids = [];
+
+        foreach ($cart['items'] as $item) {
+            $branchId = (int) ($item['branch_id'] ?? 0);
+
+            if ($branchId <= 0) {
+                throw new \RuntimeException(
+                    "Cart item has invalid branch_id: {$branchId}"
+                );
+            }
+
+            if (!in_array($branchId, $ids)) {
+                $ids[] = $branchId;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
+     * Get cart data for a specific branch
+     *
+     * @param int $branchId
+     * @return array{
+     *   branch_id: int,
+     *   branch_name: string,
+     *   merchant_id: int,
+     *   merchant_name: string,
+     *   items: array,
+     *   totals: array{qty: int, subtotal: float, discount: float, total: float},
+     *   has_other_branches: bool
+     * }
+     */
+    public function getBranchCart(int $branchId): array
+    {
+        $this->validateBranchId($branchId);
+
+        $cart = $this->getStorage();
+        $branchItems = [];
+
+        foreach ($cart['items'] as $key => $item) {
+            if ((int) ($item['branch_id'] ?? 0) === $branchId) {
+                $branchItems[$key] = $item;
+            }
+        }
+
+        // ═══ حساب الإجماليات ═══
+        $totals = $this->calculateTotals($branchItems);
+
+        // ═══ معلومات الفرع والتاجر ═══
+        $branchName = '';
+        $merchantId = 0;
+        $merchantName = '';
+        if (!empty($branchItems)) {
+            $first = reset($branchItems);
+            $branchName = $first['branch_name'] ?? '';
+            $merchantId = (int) ($first['merchant_id'] ?? 0);
+            $merchantName = $first['merchant_name'] ?? '';
+        }
+
+        // ═══ هل يوجد فروع أخرى؟ ═══
+        $hasOthers = false;
+        foreach ($cart['items'] as $item) {
+            if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
+                $hasOthers = true;
+                break;
+            }
+        }
+
+        return [
+            'branch_id' => $branchId,
+            'branch_name' => $branchName,
+            'merchant_id' => $merchantId,
+            'merchant_name' => $merchantName,
+            'items' => $branchItems,
+            'totals' => $totals,
+            'has_other_branches' => $hasOthers,
+        ];
+    }
+
+    /**
+     * Get items for a specific branch (simple array)
+     */
+    public function getBranchItems(int $branchId): array
+    {
+        $this->validateBranchId($branchId);
+
+        $cart = $this->getStorage();
+        $items = [];
+
+        foreach ($cart['items'] as $key => $item) {
+            if ((int) ($item['branch_id'] ?? 0) === $branchId) {
+                $items[$key] = $item;
+            }
+        }
+
+        return $items;
+    }
+
+    /**
+     * Check if branch has items in cart
+     */
+    public function hasBranchItems(int $branchId): bool
+    {
+        return !empty($this->getBranchItems($branchId));
+    }
+
+    /**
+     * Get totals for a specific branch
+     */
+    public function getBranchTotals(int $branchId): array
+    {
+        $items = $this->getBranchItems($branchId);
+        return $this->calculateTotals($items);
+    }
+
+    /**
+     * Get branch cart summary (for checkout pages)
+     *
+     * @return array{items_count: int, total_qty: int, total_price: float, items: array}
+     */
+    public function getBranchCartSummary(int $branchId): array
+    {
+        $this->validateBranchId($branchId);
+
+        $items = $this->getBranchItems($branchId);
+        $totals = $this->calculateTotals($items);
+
+        return [
+            'items_count' => count($items),
+            'total_qty' => $totals['qty'],
+            'total_price' => $totals['total'],
+            'subtotal' => $totals['subtotal'],
+            'discount' => $totals['discount'],
+            'items' => $items,
+        ];
+    }
+
+    /**
+     * Build cart payload for purchase creation (branch-scoped)
+     *
+     * @return array{totalQty: int, totalPrice: float, items: array}
+     */
+    public function buildBranchCartPayload(int $branchId): array
+    {
+        $this->validateBranchId($branchId);
+
+        $items = $this->getBranchItems($branchId);
+        $totals = $this->calculateTotals($items);
+
+        // Transform items to purchase format
+        $purchaseItems = [];
+        foreach ($items as $key => $item) {
+            $purchaseItems[$key] = [
+                'item' => [
+                    'id' => $item['catalog_item_id'],
+                    'user_id' => $item['merchant_id'],
+                    'branch_id' => $item['branch_id'] ?? null,
+                    'branch_name' => $item['branch_name'] ?? '',
+                    'name' => $item['name'],
+                    'name_ar' => $item['name_ar'] ?? $item['name'],
+                    'photo' => $item['photo'],
+                    'slug' => $item['slug'],
+                    'part_number' => $item['part_number'] ?? '',
+                ],
+                'merchant_item_id' => $item['merchant_item_id'],
+                'user_id' => $item['merchant_id'],
+                'branch_id' => $item['branch_id'] ?? null,
+                'branch_name' => $item['branch_name'] ?? '',
+                'qty' => $item['qty'],
+                'price' => $item['total_price'],
+                'stock' => $item['stock'],
+                'keys' => null,
+                'values' => null,
+            ];
+        }
+
+        return [
+            'totalQty' => $totals['qty'],
+            'totalPrice' => $totals['total'],
+            'items' => $purchaseItems,
+        ];
+    }
+
+    /**
+     * Get summary for all branches (for cart page display)
+     *
+     * @return array<int, array{
+     *   branch_id: int,
+     *   branch_name: string,
+     *   merchant_id: int,
+     *   merchant_name: string,
+     *   items: array,
+     *   totals: array,
+     *   checkout_url: string
+     * }>
+     */
+    public function getAllBranchesCart(): array
+    {
+        $branchIds = $this->getBranchIds();
+        $result = [];
+
+        foreach ($branchIds as $branchId) {
+            $branchCart = $this->getBranchCart($branchId);
+            $branchCart['checkout_url'] = route('branch.checkout.address', ['branchId' => $branchId]);
+            $result[$branchId] = $branchCart;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Update item quantity (branch-scoped)
+     */
+    public function updateBranchQty(int $branchId, string $cartKey, int $qty): array
+    {
+        $this->validateBranchId($branchId);
+
+        $cart = $this->getStorage();
+        $item = $cart['items'][$cartKey] ?? null;
+
+        if (!$item) {
+            return $this->error(__('الصنف غير موجود في السلة'));
+        }
+
+        // ═══ التحقق من ملكية الفرع ═══
+        if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' belongs to branch {$item['branch_id']}, not {$branchId}"
+            );
+        }
+
+        // ═══ التحقق من الحد الأدنى ═══
+        $minQty = (int) $item['min_qty'];
+        if ($qty < $minQty) {
+            return $this->error(__('الحد الأدنى للكمية') . ' ' . $minQty);
+        }
+
+        // ═══ التحقق من المخزون ═══
+        $merchantItem = MerchantItem::find($item['merchant_item_id']);
+        if (!$merchantItem || $merchantItem->status !== 1) {
+            unset($cart['items'][$cartKey]);
+            $this->saveStorage($cart);
+            return $this->error(__('الصنف لم يعد متاحاً'));
+        }
+
+        $stock = $this->getStock($merchantItem);
+        $isPreorder = (bool) $item['preordered'];
+
+        if (!$isPreorder && $stock > 0 && $qty > $stock) {
+            return $this->error(__('المتاح فقط') . ' ' . $stock);
+        }
+
+        // ═══ تحديث الحجز ═══
+        if (!$isPreorder && $stock > 0) {
+            $this->reservation->update($item['merchant_item_id'], $qty);
+        }
+
+        // ═══ تحديث الكمية ═══
+        $cart['items'][$cartKey]['qty'] = $qty;
+        $cart['items'][$cartKey]['total_price'] = $this->calculateItemTotal($cart['items'][$cartKey]);
+        $this->saveStorage($cart);
+
+        return $this->success(__('تم التحديث'), $this->getBranchCart($branchId));
+    }
+
+    /**
+     * Remove item from cart (branch-scoped)
+     */
+    public function removeBranchItem(int $branchId, string $cartKey): array
+    {
+        $this->validateBranchId($branchId);
+
+        $cart = $this->getStorage();
+        $item = $cart['items'][$cartKey] ?? null;
+
+        if (!$item) {
+            return $this->error(__('الصنف غير موجود'));
+        }
+
+        // ═══ التحقق من ملكية الفرع ═══
+        if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
+            throw new \RuntimeException(
+                "Cart item '{$cartKey}' belongs to branch {$item['branch_id']}, not {$branchId}"
+            );
+        }
+
+        // ═══ تحرير الحجز ═══
+        $this->reservation->release($item['merchant_item_id']);
+
+        // ═══ حذف من السلة ═══
+        unset($cart['items'][$cartKey]);
+        $this->saveStorage($cart);
+
+        return $this->success(__('تم الحذف'), $this->getBranchCart($branchId));
+    }
+
+    /**
+     * Clear items for a specific branch (after successful checkout)
+     */
+    public function clearBranch(int $branchId): void
+    {
+        $this->validateBranchId($branchId);
+
+        $cart = $this->getStorage();
+
+        foreach ($cart['items'] as $key => $item) {
+            if ((int) ($item['branch_id'] ?? 0) === $branchId) {
+                // تحرير الحجز
+                $this->reservation->release($item['merchant_item_id']);
+                unset($cart['items'][$key]);
+            }
+        }
+
+        $this->saveStorage($cart);
+    }
+
+    /**
+     * Check if there are other branches after checkout
+     */
+    public function hasOtherBranches(int $branchId): bool
+    {
+        $this->validateBranchId($branchId);
+
+        $cart = $this->getStorage();
+
+        foreach ($cart['items'] as $item) {
+            if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Confirm checkout and deduct stock (branch-scoped)
+     */
+    public function confirmBranchCheckout(int $branchId): bool
+    {
+        $this->validateBranchId($branchId);
+
+        $items = $this->getBranchItems($branchId);
+
+        if (empty($items)) {
+            return false;
+        }
+
+        // تأكيد خصم المخزون
+        $confirmData = [];
+        foreach ($items as $item) {
+            $confirmData[$item['merchant_item_id']] = [
+                'qty' => $item['qty'],
+            ];
+        }
+
+        if (!$this->reservation->confirm($confirmData)) {
+            return false;
+        }
+
+        // مسح أصناف الفرع من السلة
+        $this->clearBranch($branchId);
+
+        return true;
+    }
+
+    /**
+     * Get data for checkout (branch-scoped)
+     */
+    public function getForBranchCheckout(int $branchId): array
+    {
+        $this->validateBranchId($branchId);
+
+        $branchCart = $this->getBranchCart($branchId);
+
+        if (empty($branchCart['items'])) {
+            throw new \RuntimeException(
+                "No items in cart for branch {$branchId}"
+            );
+        }
+
+        return [
+            'branch_id' => $branchId,
+            'branch_name' => $branchCart['branch_name'],
+            'merchant_id' => $branchCart['merchant_id'],
+            'merchant_name' => $branchCart['merchant_name'],
+            'items' => $branchCart['items'],
+            'totals' => $branchCart['totals'],
+            'has_other_branches' => $branchCart['has_other_branches'],
+            'cart_payload' => [
+                'totalQty' => $branchCart['totals']['qty'],
+                'totalPrice' => $branchCart['totals']['total'],
+                'items' => $branchCart['items'],
+            ],
+        ];
+    }
+
+    /**
+     * Validate branch ID
+     */
+    private function validateBranchId(int $branchId): void
+    {
+        if ($branchId <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid branchId: {$branchId}. Must be > 0."
+            );
+        }
     }
 
     // ══════════════════════════════════════════════════════════════

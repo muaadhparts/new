@@ -268,7 +268,7 @@ class CatalogItemController extends OperatorBaseController
         // TODO: Removed - old category system
         $cats = collect(); // Category::all();
         $sign = $this->curr;
-        return view('operator.catalog-item.create.physical', compact('cats', 'sign'));
+        return view('operator.catalog-item.create.items', compact('cats', 'sign'));
     }
 
     //*** GET Request
@@ -470,150 +470,6 @@ class CatalogItemController extends OperatorBaseController
     }
 
     //*** GET Request
-    public function import()
-    {
-        // TODO: Removed - old category system
-        $cats = collect(); // Category::all();
-        $sign = $this->curr;
-
-        // Get merchants list for dropdown (verified merchants with active status)
-        // is_merchant=2 means verified merchant, status=2 means active
-        $merchants = \App\Models\User::where('is_merchant', 2)->where('status', 2)->get();
-
-        return view('operator.catalog-item.catalogitemcsv', compact('cats', 'sign', 'merchants'));
-    }
-
-    //*** POST Request
-    public function importSubmit(Request $request)
-    {
-        $log = "";
-        //--- Validation Section
-        $rules = [
-            'csvfile' => 'required|mimes:csv,txt',
-            'merchant_id' => 'required|exists:users,id',
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
-        }
-
-        $filename = '';
-        if ($file = $request->file('csvfile')) {
-            $filename = time() . '-' . $file->getClientOriginalExtension();
-            $file->move('assets/temp_files', $filename);
-        }
-
-        $datas = "";
-
-        $file = fopen(public_path('assets/temp_files/' . $filename), "r");
-        $i = 1;
-
-        while (($line = fgetcsv($file)) !== false) {
-
-            if ($i != 1) {
-
-                if (!CatalogItem::where('part_number', $line[0])->exists()) {
-                    //--- Validation Section Ends
-
-                    //--- Logic Section
-                    $data = new CatalogItem;
-                    $sign = monetaryUnit()->getDefault();
-
-                    $input['part_number'] = $line[0];
-
-                    // Old category system removed - now using TreeCategories
-                    // category_id, subcategory_id, childcategory_id no longer used
-                    // Categories are linked via parts tables instead
-
-                        $input['photo'] = $line[5];
-                        $input['name'] = $line[4];
-                        $input['details'] = $line[6];
-                        // Store prices temporarily for merchant_item creation
-                        $csvPrice = $line[7];
-                        $csvPreviousPrice = $line[8] != "" ? $line[8] : null;
-                        $csvStock = $line[9];
-                        $input['youtube'] = $line[10];
-                        $input['policy'] = $line[11];
-                        $input['meta_tag'] = $line[12];
-                        $input['meta_description'] = $line[13];
-                        $input['tags'] = $line[14];
-                        // item_type moved to merchant_items
-                        $csvItemType = $line[15] ?? 'normal';
-                        // affiliate_link moved to merchant_items
-                        $csvAffiliateLink = $line[16] ?? null;
-                        $input['slug'] = Str::slug($input['name'], '-') . '-' . strtolower($input['part_number']);
-
-                        $image_url = $line[5];
-
-                        $ch = curl_init();
-                        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                        curl_setopt($ch, CURLOPT_URL, $image_url);
-                        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-                        curl_setopt($ch, CURLOPT_USERAGENT, $_SERVER['HTTP_USER_AGENT']);
-                        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-                        curl_setopt($ch, CURLOPT_HEADER, true);
-                        curl_setopt($ch, CURLOPT_NOBODY, true);
-
-                        $content = curl_exec($ch);
-                        $contentType = curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
-
-                        $thumb_url = '';
-
-                        if (strpos($contentType, 'image/') !== false) {
-                            $fimg = Image::make($line[5])->resize(800, 800);
-                            $fphoto = time() . Str::random(8) . '.jpg';
-                            $fimg->save(public_path() . '/assets/images/catalogItems/' . $fphoto);
-                            $input['photo'] = $fphoto;
-                            $thumb_url = $line[5];
-                        } else {
-                            $fimg = Image::make(public_path() . '/assets/images/noimage.png')->resize(800, 800);
-                            $fphoto = time() . Str::random(8) . '.jpg';
-                            $fimg->save(public_path() . '/assets/images/catalogItems/' . $fphoto);
-                            $input['photo'] = $fphoto;
-                            $thumb_url = public_path() . '/assets/images/noimage.png';
-                        }
-
-                        $timg = Image::make($thumb_url)->resize(285, 285);
-                        $thumbnail = time() . Str::random(8) . '.jpg';
-                        $timg->save(public_path() . '/assets/images/thumbnails/' . $thumbnail);
-                        $input['thumbnail'] = $thumbnail;
-
-                        // Convert Price According to Currency
-                        $convertedPrice = ($csvPrice / $sign->value);
-                        $convertedPreviousPrice = ($csvPreviousPrice / $sign->value);
-
-                        // Save base catalog item data (without merchant-specific fields)
-                        $data->fill($input)->save();
-
-                        // Create merchant_item entry for selected merchant
-                        MerchantItem::create([
-                            'catalog_item_id' => $data->id,
-                            'user_id' => $request->merchant_id,
-                            'item_type' => $csvItemType,
-                            'price' => $convertedPrice,
-                            'previous_price' => $convertedPreviousPrice,
-                            'stock' => (int) $csvStock,
-                            'affiliate_link' => $csvAffiliateLink,
-                            'status' => 1
-                        ]);
-
-                } else {
-                    $log .= "<br>" . __('Row No') . ": " . $i . " - " . __('Duplicate CatalogItem Code!') . "<br>";
-                }
-            }
-
-            $i++;
-        }
-        fclose($file);
-
-        //--- Redirect Section
-        $msg = __('Bulk CatalogItem File Imported Successfully.') . $log;
-        return response()->json($msg);
-    }
-
-    //*** GET Request
     public function edit($merchantItemId)
     {
         // TODO: Removed - old category system
@@ -629,7 +485,7 @@ class CatalogItemController extends OperatorBaseController
         // Get quality brands for dropdown
         $qualityBrands = \App\Models\QualityBrand::all();
 
-        return view('operator.catalog-item.edit.physical', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
+        return view('operator.catalog-item.edit.items', compact('cats', 'data', 'merchantItem', 'sign', 'merchants', 'qualityBrands'));
     }
 
     //*** POST Request

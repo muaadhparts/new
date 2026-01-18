@@ -9891,14 +9891,12 @@ ul.tagit li.tagit-choice .tagit-close {
 .add-catalogItem-form .form-group .input-label-wrapper {
   width: 100%;
 }
-.add-catalogItem-form .physical-catalogItem-inputes-wrapper,
-.add-catalogItem-form .digital-catalogItem-inputes-wrapper,
+.add-catalogItem-form .items-catalogItem-inputes-wrapper,
 .add-catalogItem-form .upload-by-file,
 .add-catalogItem-form .upload-by-url {
   display: none;
 }
-.add-catalogItem-form .physical-catalogItem-inputes-wrapper.show,
-.add-catalogItem-form .digital-catalogItem-inputes-wrapper.show,
+.add-catalogItem-form .items-catalogItem-inputes-wrapper.show,
 .add-catalogItem-form .upload-by-file.show,
 .add-catalogItem-form .upload-by-url.show {
   display: initial;

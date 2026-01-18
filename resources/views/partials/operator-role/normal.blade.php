@@ -79,7 +79,7 @@
     </a>
     <ul class="collapse list-unstyled" id="menu2" data-bs-parent="#accordion">
         <li>
-            <a href="{{ route('operator-catalog-item-create', 'physical') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
+            <a href="{{ route('operator-catalog-item-create', 'items') }}"><span>{{ __('Add New CatalogItem') }}</span></a>
         </li>
         <li>
             <a href="{{ route('operator-catalog-item-index') }}"><span>{{ __('All CatalogItems') }}</span></a>
@@ -94,32 +94,6 @@
             <a href="{{ route('operator-gs-catalog-item-settings') }}"><span>{{ __('CatalogItem Settings') }}</span></a>
         </li>
     </ul>
-</li>
-
-@endif
-
-@if(Auth::guard('operator')->user()->sectionCheck('affilate_products'))
-
-<li>
-    <a href="#affiliateprod" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="icofont-opencart"></i>{{ __('Affiliate CatalogItems') }}
-    </a>
-    <ul class="collapse list-unstyled" id="affiliateprod" data-bs-parent="#accordion">
-        <li>
-            <a href="{{ route('operator-import-create') }}"><span>{{ __('Add Affiliate CatalogItem') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-import-index') }}"><span>{{ __('All Affiliate CatalogItems') }}</span></a>
-        </li>
-    </ul>
-</li>
-
-@endif
-
-@if(Auth::guard('operator')->user()->sectionCheck('bulk_product_upload'))
-
-<li>
-    <a href="{{ route('operator-catalog-item-import') }}"><i class="fas fa-upload"></i>{{ __('Bulk CatalogItem Upload') }}</a>
 </li>
 
 @endif
@@ -278,9 +252,6 @@
  
         <li>
             <a href="{{ route('operator-shipping-index') }}"><span>{{ __('Shipping Methods') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-package-index') }}"><span>{{ __('Packagings') }}</span></a>
         </li>
         <li>
             <a href="{{ route('operator-gs-contents') }}"><span>{{ __('Website Contents') }}</span></a>

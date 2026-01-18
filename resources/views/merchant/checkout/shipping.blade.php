@@ -179,15 +179,6 @@
                                         </span>
                                         <span id="summary-shipping">@lang('Select method')</span>
                                     </li>
-                                    {{-- Packaging Row --}}
-                                    <li class="packing-row d-none">
-                                        <span>
-                                            <i class="fas fa-box me-1 text-muted"></i>
-                                            @lang('Packaging')
-                                            <small class="text-muted d-block" id="packing-name-display"></small>
-                                        </span>
-                                        <span id="summary-packing">-</span>
-                                    </li>
                                     @if(($totals['tax_amount'] ?? 0) > 0)
                                     <li>
                                         <span>@lang('Tax') ({{ $totals['tax_rate'] ?? 0 }}%)</span>
@@ -226,10 +217,6 @@
                 <input type="hidden" name="shipping_original_cost" id="selected_shipping_original_cost" value="0">
                 <input type="hidden" name="shipping_is_free" id="selected_shipping_is_free" value="0">
                 <input type="hidden" name="shipping_provider" id="selected_shipping_provider" value="">
-                {{-- Packaging Fields --}}
-                <input type="hidden" name="packing_id" id="selected_packing_id" value="">
-                <input type="hidden" name="packing_name" id="selected_packing_name" value="">
-                <input type="hidden" name="packing_cost" id="selected_packing_cost" value="0">
                 {{-- Courier Fields --}}
                 <input type="hidden" name="courier_id" id="selected_courier_id" value="">
                 <input type="hidden" name="courier_name" id="selected_courier_name" value="">
@@ -462,11 +449,9 @@ function updateSummary() {
     const originalShippingCost = parseFloat($('#selected_shipping_original_cost').val()) || shippingCost;
     const isFreeShipping = $('#selected_shipping_is_free').val() === '1';
     const courierFee = parseFloat($('#selected_courier_fee').val()) || 0;
-    const packingCost = parseFloat($('#selected_packing_cost').val()) || 0;
     const deliveryName = deliveryType === 'local_courier'
         ? $('#selected_courier_name').val() || ''
         : $('#selected_shipping_name').val() || '';
-    const packingName = $('#selected_packing_name').val() || '';
 
     // Update UI labels and icons
     if (deliveryType === 'local_courier') {
@@ -491,15 +476,6 @@ function updateSummary() {
         }
     }
 
-    // Packaging display
-    if (packingCost > 0 || packingName) {
-        $('.packing-row').removeClass('d-none');
-        $('#packing-name-display').text(packingName);
-        $('#summary-packing').text(formatPrice(packingCost));
-    } else {
-        $('.packing-row').addClass('d-none');
-    }
-
     // Call API to get calculated grand total
     $.ajax({
         url: apiBaseUrl + '/preview-totals',
@@ -508,8 +484,7 @@ function updateSummary() {
             _token: $('meta[name="csrf-token"]').attr('content'),
             delivery_type: deliveryType,
             shipping_cost: shippingCost,
-            courier_fee: courierFee,
-            packing_cost: packingCost
+            courier_fee: courierFee
         },
         success: function(response) {
             if (response.success && response.formatted) {
@@ -714,34 +689,6 @@ $(document).on('change', 'input[name="shipping_option"]', function() {
     // Close modal after selection
     setTimeout(function() {
         $('.modal').modal('hide');
-    }, 300);
-});
-
-// Handle packaging selection
-$(document).on('change', 'input[name="packaging_option"]', function() {
-    const option = $(this);
-    const price = parseFloat(option.data('price')) || 0;
-    const name = option.data('name');
-
-    // Update packing hidden fields
-    $('#selected_packing_id').val(option.val());
-    $('#selected_packing_name').val(name); // Store packing name
-    $('#selected_packing_cost').val(price);
-
-    // Update button text
-    const displayText = price > 0 ? name + ': ' + formatPrice(price) : name + ': @lang("Free")';
-    $('#packaging-selected-text').text(displayText).removeClass('text-muted').addClass('text-success');
-    $('#packaging-btn').removeClass('m-btn--outline').addClass('m-btn--success-outline');
-
-    // Update UI
-    $('.packaging-option').removeClass('border-primary bg-light');
-    option.closest('.packaging-option').addClass('border-primary bg-light');
-
-    updateSummary();
-
-    // Close modal
-    setTimeout(function() {
-        $('#packagingModal').modal('hide');
     }, 300);
 });
 

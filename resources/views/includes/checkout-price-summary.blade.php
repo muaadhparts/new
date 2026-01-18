@@ -52,8 +52,6 @@
     $isFreeShipping = $prices['is_free_shipping'];
     $freeShippingDiscount = $prices['free_shipping_discount'];
     $shippingCompany = $prices['shipping_company'];
-    $packingCost = $prices['packing_cost'];
-    $packingCompany = $prices['packing_company'];
     $grandTotal = $prices['grand_total'];
     $subtotalBeforeDiscount = $prices['subtotal_before_discount'];
 
@@ -234,29 +232,7 @@
             @endif
         @endif
 
-        {{-- ================================================================
-            ROW 5: Packing (Step 2 & 3 only, physical catalogItems)
-        ================================================================= --}}
-        @if($currentStep >= 2)
-            @if($currentStep == 2)
-                {{-- Step 2: Dynamic Packing via JavaScript --}}
-                <div class="price-details" id="packing-row">
-                    <span>@lang('Packaging Cost')</span>
-                    <span class="right-side packing-cost-display" id="packing-cost-display">{{ $formatPrice(0) }}</span>
-                </div>
-            @else
-                {{-- Step 3: Packing from session --}}
-                <div class="price-details">
-                    <span>@lang('Packaging Cost')</span>
-                    <span class="right-side">{{ $formatPrice($packingCost) }}</span>
-                </div>
-                @if($packingCompany)
-                <div class="price-details">
-                    <small class="text-muted">{{ $packingCompany }}</small>
-                </div>
-                @endif
-            @endif
-        @endif
+        {{-- ROW 5: Packing - REMOVED --}}
 
     </div>
 

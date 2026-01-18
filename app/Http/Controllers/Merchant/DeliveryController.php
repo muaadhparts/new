@@ -11,7 +11,6 @@ use App\Helpers\PriceHelper;
 use App\Models\City;
 use App\Models\Country;
 use App\Models\DeliveryCourier;
-use App\Models\Package;
 use App\Models\Courier;
 use App\Models\CourierServiceArea;
 use App\Models\Shipping;

@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\DiscountCode;
 use App\Models\MonetaryUnit;
 use App\Models\Shipping;
-use App\Models\Package;
 use App\Models\MerchantCommission;
 use App\Models\MerchantTaxSetting;
 use App\Models\CourierServiceArea;
@@ -30,8 +29,7 @@ use Illuminate\Support\Facades\Session;
  * subtotal            = catalog_items_total - discount_amount
  * tax_amount          = subtotal * tax_rate / 100
  * shipping_cost       = Selected shipping price (after free_above check)
- * packing_cost        = Selected packaging price
- * grand_total         = subtotal + tax_amount + shipping_cost + packing_cost
+ * grand_total         = subtotal + tax_amount + shipping_cost
  *
  * Currency Conversion:
  * ====================
@@ -42,7 +40,7 @@ use Illuminate\Support\Facades\Session;
  * Data Flow:
  * ==========
  * Step1: catalog_items_total, tax_rate, tax_amount
- * Step2: + shipping_cost, packing_cost, grand_total
+ * Step2: + shipping_cost, grand_total
  * Step3: Read-only display from step2 session
  *
  * ============================================================================
@@ -271,32 +269,6 @@ class CheckoutPriceService
     }
 
     /**
-     * Calculate packing cost
-     */
-    public function calculatePackingCost($packingId)
-    {
-        if (!$packingId) {
-            return [
-                'cost' => 0,
-                'company' => '',
-            ];
-        }
-
-        $package = Package::find($packingId);
-        if (!$package) {
-            return [
-                'cost' => 0,
-                'company' => '',
-            ];
-        }
-
-        return [
-            'cost' => (float)$package->price,
-            'company' => $package->name,
-        ];
-    }
-
-    /**
      * ========================================================================
      * MASTER CALCULATION - Step 1
      * ========================================================================
@@ -344,7 +316,7 @@ class CheckoutPriceService
      * ========================================================================
      * Returns all data needed for Step 2 display and session storage
      */
-    public function calculateStep2($merchantId, $step1Data, $shippingData, $packingId)
+    public function calculateStep2($merchantId, $step1Data, $shippingData, $packingId = null)
     {
         // Get step1 values
         $catalogItemsTotal = $step1Data['catalog_items_total'] ?? 0;
@@ -357,14 +329,11 @@ class CheckoutPriceService
         // Calculate shipping
         $shippingResult = $this->processShippingData($shippingData, $catalogItemsTotal, $merchantId);
 
-        // Calculate packing
-        $packingResult = $this->calculatePackingCost($packingId);
-
-        // Grand Total = subtotal + tax + shipping + packing
-        $grandTotal = $subtotal + $taxAmount + $shippingResult['cost'] + $packingResult['cost'];
+        // Grand Total = subtotal + tax + shipping (packing removed)
+        $grandTotal = $subtotal + $taxAmount + $shippingResult['cost'];
 
         // Subtotal before discount (for discount code operations in step3)
-        $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount + $shippingResult['cost'] + $packingResult['cost'];
+        $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount + $shippingResult['cost'];
 
         return [
             // From Step 1
@@ -385,9 +354,9 @@ class CheckoutPriceService
             'free_shipping_discount' => $shippingResult['free_discount'],
             'shipping_company' => $shippingResult['company'],
 
-            // Packing
-            'packing_cost' => $packingResult['cost'],
-            'packing_company' => $packingResult['company'],
+            // Packing (removed - always 0)
+            'packing_cost' => 0,
+            'packing_company' => '',
 
             // Totals
             'subtotal_before_discount' => $subtotalBeforeDiscount,  // For discount recalculation
@@ -845,20 +814,17 @@ class CheckoutPriceService
         $shippingType = $options['shipping_type'] ?? 'platform';
         $shippingId = $options['shipping_id'] ?? null;
 
-        // 5. Get packing cost from options
-        $packingCost = (float)($options['packing_cost'] ?? 0);
-
-        // 6. Get courier info from options
+        // 5. Get courier info from options
         $courierId = $options['courier_id'] ?? null;
         $courierFee = (float)($options['courier_fee'] ?? 0);
         $merchantBranchId = $options['merchant_branch_id'] ?? null;
 
-        // 7. Determine payment type and money receiver
+        // 6. Determine payment type and money receiver
         $paymentType = $options['payment_type'] ?? 'platform';
         $paymentGatewayId = $options['payment_gateway_id'] ?? null;
         $moneyReceivedBy = $options['money_received_by'] ?? 'platform';
 
-        // 8. Calculate net amount (what merchant gets after commission)
+        // 7. Calculate net amount (what merchant gets after commission)
         $netAmount = $itemsTotal - $commissionAmount;
 
         return [
@@ -883,8 +849,8 @@ class CheckoutPriceService
             'shipping_type' => $shippingType,
             'shipping_id' => $shippingId,
 
-            // Packing
-            'packing_cost' => $packingCost,
+            // Packing (removed - always 0)
+            'packing_cost' => 0,
 
             // Courier
             'courier_id' => $courierId,
@@ -900,7 +866,7 @@ class CheckoutPriceService
             'net_amount' => round($netAmount, 2),
 
             // Grand total for this merchant (what customer pays for this merchant's items)
-            'merchant_total' => round($itemsTotal + $taxAmount + $shippingCost + $packingCost + $courierFee, 2),
+            'merchant_total' => round($itemsTotal + $taxAmount + $shippingCost + $courierFee, 2),
         ];
     }
 

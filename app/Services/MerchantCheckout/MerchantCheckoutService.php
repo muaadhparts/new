@@ -6,7 +6,6 @@ use App\Models\User;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\Shipping;
-use App\Models\Package;
 use App\Models\MerchantPayment;
 use App\Models\CourierServiceArea;
 use App\Models\MerchantBranch;
@@ -14,9 +13,11 @@ use App\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * Main Merchant Checkout Service
+ * Main Branch Checkout Service
  *
  * Orchestrates the entire checkout flow - single source of truth
+ * NOTE: Checkout is now branch-scoped, but payment/shipping methods
+ *       remain merchant-scoped (from branch->user)
  */
 class MerchantCheckoutService
 {
@@ -35,20 +36,32 @@ class MerchantCheckoutService
     }
 
     /**
-     * Initialize checkout for merchant - get address page data
+     * Initialize checkout for branch - get address page data
      */
-    public function initializeAddressStep(int $merchantId): array
+    public function initializeAddressStep(int $branchId): array
     {
-        // Validate merchant has items
-        if (!$this->cartService->hasMerchantItems($merchantId)) {
+        // Get branch and merchant
+        $branch = MerchantBranch::with('user')->find($branchId);
+        if (!$branch) {
             return [
                 'success' => false,
-                'error' => 'no_items',
-                'message' => __('No items found for this merchant'),
+                'error' => 'invalid_branch',
+                'message' => __('Invalid branch'),
             ];
         }
 
-        $merchant = User::find($merchantId);
+        $merchant = $branch->user;
+        $merchantId = $merchant->id;
+
+        // Validate branch has items
+        if (!$this->cartService->hasBranchItems($branchId)) {
+            return [
+                'success' => false,
+                'error' => 'no_items',
+                'message' => __('No items found for this branch'),
+            ];
+        }
+
         if (!$merchant || (int)$merchant->is_merchant !== 2) {
             return [
                 'success' => false,
@@ -58,9 +71,9 @@ class MerchantCheckoutService
         }
 
         $user = Auth::user();
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
-        $savedAddress = $this->sessionManager->getAddressData($merchantId);
-        $locationDraft = $this->sessionManager->getLocationDraft($merchantId);
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
+        $savedAddress = $this->sessionManager->getAddressData($branchId);
+        $locationDraft = $this->sessionManager->getLocationDraft($branchId);
 
         // Get customer defaults
         $customerData = $this->getCustomerDefaults($user, $savedAddress, $locationDraft);
@@ -71,6 +84,10 @@ class MerchantCheckoutService
         return [
             'success' => true,
             'data' => [
+                'branch' => [
+                    'id' => $branch->id,
+                    'name' => $branch->warehouse_name ?? $branch->name ?? '',
+                ],
                 'merchant' => [
                     'id' => $merchant->id,
                     'name' => $merchant->shop_name ?? $merchant->name,
@@ -91,8 +108,20 @@ class MerchantCheckoutService
     /**
      * Process address step submission
      */
-    public function processAddressStep(int $merchantId, array $input): array
+    public function processAddressStep(int $branchId, array $input): array
     {
+        // Get branch and merchant
+        $branch = MerchantBranch::with('user')->find($branchId);
+        if (!$branch) {
+            return [
+                'success' => false,
+                'error' => 'invalid_branch',
+                'message' => __('Invalid branch'),
+            ];
+        }
+
+        $merchantId = $branch->user_id;
+
         // Get user info
         $user = Auth::user();
 
@@ -111,6 +140,8 @@ class MerchantCheckoutService
             'city_id' => (int)($input['city_id'] ?? 0),
             'latitude' => $input['latitude'] ?? null,
             'longitude' => $input['longitude'] ?? null,
+            // Store merchant_id for reference
+            'merchant_id' => $merchantId,
         ];
 
         // Calculate tax for this location
@@ -123,66 +154,78 @@ class MerchantCheckoutService
         $addressData['tax_location'] = $taxInfo['tax_location'];
 
         // Calculate tax amount
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
         $taxAmount = $this->priceCalculator->calculateTax(
             $cartSummary['total_price'],
             $taxInfo['tax_rate']
         );
         $addressData['tax_amount'] = $taxAmount;
 
-        // Save to session
-        $this->sessionManager->saveAddressData($merchantId, $addressData);
+        // Save to session (branch-scoped)
+        $this->sessionManager->saveAddressData($branchId, $addressData);
 
         return [
             'success' => true,
             'data' => $addressData,
             'next_step' => 'shipping',
-            'redirect' => route('merchant.checkout.shipping', $merchantId),
+            'redirect' => route('branch.checkout.shipping', $branchId),
         ];
     }
 
     /**
      * Initialize shipping step
      */
-    public function initializeShippingStep(int $merchantId): array
+    public function initializeShippingStep(int $branchId): array
     {
+        // Get branch and merchant
+        $branch = MerchantBranch::with('user')->find($branchId);
+        if (!$branch) {
+            return [
+                'success' => false,
+                'error' => 'invalid_branch',
+                'message' => __('Invalid branch'),
+            ];
+        }
+
+        $merchant = $branch->user;
+        $merchantId = $merchant->id;
+
         // Check address is completed
-        $addressData = $this->sessionManager->getAddressData($merchantId);
+        $addressData = $this->sessionManager->getAddressData($branchId);
         if (!$addressData) {
             return [
                 'success' => false,
                 'error' => 'address_required',
                 'message' => __('Please complete address step first'),
-                'redirect' => route('merchant.checkout.address', $merchantId),
+                'redirect' => route('branch.checkout.address', $branchId),
             ];
         }
 
-        $merchant = User::find($merchantId);
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
 
-        // Get shipping options for this merchant
+        // Get shipping options for this merchant (payment/shipping from merchant, not branch)
         $shippingOptions = $this->getMerchantShippingOptions($merchantId, $cartSummary['total_price']);
 
-        // Get packaging options
-        $packagingOptions = $this->getMerchantPackagingOptions($merchantId);
-
         // Get courier options if available
-        $courierOptions = $this->getCourierOptions($merchantId, $addressData);
+        $courierOptions = $this->getCourierOptions($branchId, $addressData);
 
         // Get saved shipping selection
-        $savedShipping = $this->sessionManager->getShippingData($merchantId);
+        $savedShipping = $this->sessionManager->getShippingData($branchId);
 
         // Calculate totals preview
         $totals = $this->priceCalculator->calculateTotals($cartSummary['items'], [
             'tax_rate' => $addressData['tax_rate'],
             'shipping_cost' => $savedShipping['shipping_cost'] ?? 0,
-            'packing_cost' => $savedShipping['packing_cost'] ?? 0,
             'courier_fee' => $savedShipping['courier_fee'] ?? 0,
         ]);
 
         return [
             'success' => true,
             'data' => [
+                'branch' => [
+                    'id' => $branch->id,
+                    'name' => $branch->warehouse_name ?? $branch->name ?? '',
+                ],
                 'merchant' => [
                     'id' => $merchant->id,
                     'name' => $merchant->shop_name ?? $merchant->name,
@@ -190,7 +233,7 @@ class MerchantCheckoutService
                 'address' => $addressData,
                 'cart' => $cartSummary,
                 'shipping_options' => $shippingOptions,
-                'packaging_options' => $packagingOptions,
+                'packaging_options' => [], // Packaging removed
                 'courier_options' => $courierOptions,
                 'saved_shipping' => $savedShipping,
                 'totals' => $totals,
@@ -201,36 +244,40 @@ class MerchantCheckoutService
     /**
      * Process shipping step submission
      */
-    public function processShippingStep(int $merchantId, array $input): array
+    public function processShippingStep(int $branchId, array $input): array
     {
-        $addressData = $this->sessionManager->getAddressData($merchantId);
+        // Get branch and merchant
+        $branch = MerchantBranch::with('user')->find($branchId);
+        if (!$branch) {
+            return [
+                'success' => false,
+                'error' => 'invalid_branch',
+                'message' => __('Invalid branch'),
+            ];
+        }
+
+        $merchantId = $branch->user_id;
+
+        $addressData = $this->sessionManager->getAddressData($branchId);
         if (!$addressData) {
             return [
                 'success' => false,
                 'error' => 'address_required',
-                'redirect' => route('merchant.checkout.address', $merchantId),
+                'redirect' => route('branch.checkout.address', $branchId),
             ];
         }
 
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
         $deliveryType = $input['delivery_type'] ?? 'shipping';
 
         $shippingData = [
             'delivery_type' => $deliveryType,
             'items_total' => $cartSummary['total_price'],
+            // Store branch_id for reference
+            'merchant_branch_id' => $branchId,
         ];
 
         if ($deliveryType === 'local_courier') {
-            // ✅ STRICT: merchant_branch_id is REQUIRED for courier delivery - NO fallback
-            $merchantBranchId = (int)($input['merchant_branch_id'] ?? 0);
-            if ($merchantBranchId <= 0) {
-                return [
-                    'success' => false,
-                    'error' => 'branch_required',
-                    'message' => __('Please select a pickup branch for courier delivery.'),
-                ];
-            }
-
             // Courier delivery - use data from frontend (already matched by coordinates)
             $courierId = (int)($input['courier_id'] ?? 0);
             $courierFee = (float)($input['courier_fee'] ?? 0);
@@ -259,7 +306,6 @@ class MerchantCheckoutService
                 'courier_name' => $courierName ?: 'Courier',
                 'courier_fee' => $courierFee,
                 'service_area_id' => $serviceAreaId,
-                'merchant_branch_id' => $merchantBranchId,
                 'shipping_id' => 0,
                 'shipping_provider' => null,
                 'shipping_name' => null,
@@ -348,42 +394,17 @@ class MerchantCheckoutService
             }
         }
 
-        // ═══════════════════════════════════════════════════════════════════
-        // PACKAGING: Supports operator pattern (user_id=0, operator=merchantId)
-        // - user_id = 0 + operator = merchantId → Platform provides for merchant
-        // - user_id = merchantId → Merchant's own packaging
-        // ═══════════════════════════════════════════════════════════════════
-        $packingId = (int)($input['packing_id'] ?? 0);
-        $packingName = $input['packing_name'] ?? null;
-        $packingCost = 0;
-        $packingIsPlatformProvided = false;
-        $packingOwnerUserId = $merchantId;
-
-        if ($packingId > 0) {
-            $packingInfo = $this->priceCalculator->calculatePackingCost($packingId);
-            $packingName = !empty($packingName) ? $packingName : $packingInfo['packing_name'];
-            $packingCost = $packingInfo['packing_cost'];
-
-            // Get owner from database - check for operator pattern
-            $packingRecord = Package::find($packingId);
-            if ($packingRecord) {
-                // Platform-provided = user_id is 0
-                $packingIsPlatformProvided = (int)$packingRecord->user_id === 0;
-                $packingOwnerUserId = $packingIsPlatformProvided ? 0 : (int)$packingRecord->user_id;
-            }
-        }
-
+        // Packing removed - set defaults
         $shippingData = array_merge($shippingData, [
-            'packing_id' => $packingId,
-            'packing_name' => $packingName,
-            'packing_cost' => $packingCost,
-            // ✅ للحسابات المالية
-            'packing_is_platform_provided' => $packingIsPlatformProvided,
-            'packing_owner_user_id' => $packingOwnerUserId,
+            'packing_id' => 0,
+            'packing_name' => null,
+            'packing_cost' => 0,
+            'packing_is_platform_provided' => false,
+            'packing_owner_user_id' => 0,
         ]);
 
         // Get discount if any
-        $discountData = $this->sessionManager->getDiscountData($merchantId);
+        $discountData = $this->sessionManager->getDiscountData($branchId);
         $discountAmount = $discountData['amount'] ?? 0;
 
         // Calculate final totals
@@ -391,7 +412,6 @@ class MerchantCheckoutService
             'discount_amount' => $discountAmount,
             'tax_rate' => $addressData['tax_rate'],
             'shipping_cost' => $shippingData['shipping_cost'],
-            'packing_cost' => $shippingData['packing_cost'],
             'courier_fee' => $shippingData['courier_fee'],
         ]);
 
@@ -402,32 +422,45 @@ class MerchantCheckoutService
             'grand_total' => $totals['grand_total'],
         ]);
 
-        // Save to session
-        $this->sessionManager->saveShippingData($merchantId, $shippingData);
+        // Save to session (branch-scoped)
+        $this->sessionManager->saveShippingData($branchId, $shippingData);
 
         return [
             'success' => true,
             'data' => $shippingData,
             'totals' => $totals,
             'next_step' => 'payment',
-            'redirect' => route('merchant.checkout.payment', $merchantId),
+            'redirect' => route('branch.checkout.payment', $branchId),
         ];
     }
 
     /**
      * Initialize payment step
      */
-    public function initializePaymentStep(int $merchantId): array
+    public function initializePaymentStep(int $branchId): array
     {
+        // Get branch and merchant
+        $branch = MerchantBranch::with('user')->find($branchId);
+        if (!$branch) {
+            return [
+                'success' => false,
+                'error' => 'invalid_branch',
+                'message' => __('Invalid branch'),
+            ];
+        }
+
+        $merchant = $branch->user;
+        $merchantId = $merchant->id;
+
         // Check previous steps
-        $addressData = $this->sessionManager->getAddressData($merchantId);
-        $shippingData = $this->sessionManager->getShippingData($merchantId);
+        $addressData = $this->sessionManager->getAddressData($branchId);
+        $shippingData = $this->sessionManager->getShippingData($branchId);
 
         if (!$addressData) {
             return [
                 'success' => false,
                 'error' => 'address_required',
-                'redirect' => route('merchant.checkout.address', $merchantId),
+                'redirect' => route('branch.checkout.address', $branchId),
             ];
         }
 
@@ -435,14 +468,13 @@ class MerchantCheckoutService
             return [
                 'success' => false,
                 'error' => 'shipping_required',
-                'redirect' => route('merchant.checkout.shipping', $merchantId),
+                'redirect' => route('branch.checkout.shipping', $branchId),
             ];
         }
 
-        $merchant = User::find($merchantId);
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
 
-        // Get payment methods for this merchant ONLY
+        // Get payment methods for this merchant (payment from merchant, not branch)
         $paymentMethods = $this->getMerchantPaymentMethods($merchantId);
 
         if (empty($paymentMethods)) {
@@ -454,18 +486,21 @@ class MerchantCheckoutService
         }
 
         // Final totals
-        $discountData = $this->sessionManager->getDiscountData($merchantId);
+        $discountData = $this->sessionManager->getDiscountData($branchId);
         $totals = $this->priceCalculator->calculateTotals($cartSummary['items'], [
             'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'],
             'shipping_cost' => $shippingData['shipping_cost'],
-            'packing_cost' => $shippingData['packing_cost'],
             'courier_fee' => $shippingData['courier_fee'],
         ]);
 
         return [
             'success' => true,
             'data' => [
+                'branch' => [
+                    'id' => $branch->id,
+                    'name' => $branch->warehouse_name ?? $branch->name ?? '',
+                ],
                 'merchant' => [
                     'id' => $merchant->id,
                     'name' => $merchant->shop_name ?? $merchant->name,
@@ -584,59 +619,30 @@ class MerchantCheckoutService
     }
 
     /**
-     * Get merchant packaging options
-     *
-     * OPERATOR PATTERN:
-     * - user_id = merchantId → Merchant's own packaging
-     * - user_id = 0, operator = merchantId → Platform provides for merchant
-     */
-    protected function getMerchantPackagingOptions(int $merchantId): array
-    {
-        $packages = Package::where(function ($q) use ($merchantId) {
-                // Merchant's own packaging
-                $q->where('user_id', $merchantId)
-                  // OR Platform-provided packaging for this merchant
-                  ->orWhere(function ($q2) use ($merchantId) {
-                      $q2->where('user_id', 0)
-                         ->where('operator', $merchantId);
-                  });
-            })
-            ->orderBy('price')
-            ->get();
-
-        return $packages->map(function ($p) {
-            // Platform-provided = user_id is 0
-            $isPlatformProvided = (int)$p->user_id === 0;
-            $ownerUserId = $isPlatformProvided ? 0 : (int)$p->user_id;
-
-            return [
-                'id' => $p->id,
-                'name' => $p->name,
-                'subname' => $p->subname,
-                'price' => round((float)$p->price, 2),
-                // ✅ للحسابات المالية
-                'is_platform_provided' => $isPlatformProvided,
-                'owner_user_id' => $ownerUserId,
-            ];
-        })->toArray();
-    }
-
-    /**
      * Get courier options for address
      *
      * Couriers are shown if:
      * 1. Customer's location is within courier's service radius
-     * 2. Merchant has a location within courier's service radius
+     * 2. Branch location is within courier's service radius
      * 3. Courier is active
      *
      * Uses Haversine formula to calculate distance between coordinates
      */
-    protected function getCourierOptions(int $merchantId, array $addressData): array
+    protected function getCourierOptions(int $branchId, array $addressData): array
     {
         $customerLat = (float)($addressData['latitude'] ?? 0);
         $customerLng = (float)($addressData['longitude'] ?? 0);
 
-        \Log::debug('getCourierOptions: Checking couriers', [
+        // Get the branch
+        $branch = MerchantBranch::find($branchId);
+        if (!$branch) {
+            return [];
+        }
+
+        $merchantId = $branch->user_id;
+
+        \Log::debug('getCourierOptions: Checking couriers for branch', [
+            'branch_id' => $branchId,
             'merchant_id' => $merchantId,
             'customer_lat' => $customerLat,
             'customer_lng' => $customerLng,
@@ -647,15 +653,9 @@ class MerchantCheckoutService
             return [];
         }
 
-        // Step 1: Find merchant's locations (warehouses)
-        $merchantBranches = MerchantBranch::where('user_id', $merchantId)
-            ->where('status', 1)
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->get();
-
-        if ($merchantBranches->isEmpty()) {
-            \Log::debug('getCourierOptions: Merchant has no locations with coordinates');
+        // Get branch location (single branch, not all merchant branches)
+        if (!$branch->latitude || !$branch->longitude) {
+            \Log::debug('getCourierOptions: Branch has no coordinates');
             return [];
         }
 
@@ -683,27 +683,17 @@ class MerchantCheckoutService
                 continue; // Customer is too far from this courier
             }
 
-            // Check if any merchant location is within courier's service radius
-            $nearestMerchantBranch = null;
-            $minDistanceToMerchant = PHP_FLOAT_MAX;
+            // Check if branch is within courier's service radius
+            $distanceToBranch = $this->haversineDistance(
+                $courierLat, $courierLng,
+                (float)$branch->latitude, (float)$branch->longitude
+            );
 
-            foreach ($merchantBranches as $ml) {
-                $distanceToMerchant = $this->haversineDistance(
-                    $courierLat, $courierLng,
-                    (float)$ml->latitude, (float)$ml->longitude
-                );
-
-                if ($distanceToMerchant <= $serviceRadius && $distanceToMerchant < $minDistanceToMerchant) {
-                    $minDistanceToMerchant = $distanceToMerchant;
-                    $nearestMerchantBranch = $ml;
-                }
+            if ($distanceToBranch > $serviceRadius) {
+                continue; // Branch is outside courier's service area
             }
 
-            if (!$nearestMerchantBranch) {
-                continue; // No merchant location within courier's service area
-            }
-
-            // Both customer and merchant are within courier's service radius
+            // Both customer and branch are within courier's service radius
             // Use shop_name for display, fallback to name
             $courierDisplayName = $sa->courier->shop_name ?? $sa->courier->name ?? 'Courier';
 
@@ -715,7 +705,7 @@ class MerchantCheckoutService
                 'delivery_fee' => round((float)$sa->price, 2),
                 'service_area_id' => $sa->id,
                 'city_name' => $sa->city->name ?? '',
-                'merchant_branch_id' => $nearestMerchantBranch->id,
+                'merchant_branch_id' => $branchId,
                 'distance_to_customer' => round($distanceToCustomer, 1),
                 // ✅ المندوب يتبع المنصة دائماً → المبلغ للمنصة
                 'is_platform_provided' => true,
@@ -726,7 +716,7 @@ class MerchantCheckoutService
                 'courier_id' => $sa->courier_id,
                 'courier_name' => $sa->courier->name,
                 'distance_to_customer_km' => round($distanceToCustomer, 1),
-                'distance_to_merchant_km' => round($minDistanceToMerchant, 1),
+                'distance_to_branch_km' => round($distanceToBranch, 1),
                 'service_radius_km' => $serviceRadius,
             ]);
         }

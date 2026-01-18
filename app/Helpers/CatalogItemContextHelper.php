@@ -11,15 +11,18 @@ use Illuminate\Support\Facades\DB;
  *
  * Helper مركزي لحقن سياق التاجر (Merchant Context) في كائن CatalogItem.
  *
- * المشكلة التي يحلها:
- * - CatalogItem model لديه __get() الذي يُعيد 'price' => 'merchantPrice()'
- * - merchantPrice() تستدعي activeMerchant() التي تُعيد أول merchant دائماً
- * - هذا يؤدي لأخذ سعر خاطئ عند وجود عدة تجار لنفس المنتج
+ * المعمارية الجديدة:
+ * - CatalogItem يحتوي فقط على بيانات الكتالوج (catalog_items table)
+ * - MerchantItem يحتوي على بيانات التاجر (price, stock, policy, features...)
+ * - لا يوجد __get magic fallback بين الجدولين
  *
- * الحل:
- * - حقن السعر والبيانات مباشرة في $attributes
- * - CatalogItem::__get() معدّل ليتحقق من $attributes أولاً قبل استدعاء merchantPrice()
- * - كل combination من (catalog_item_id, user_id, brand_quality_id) يكون مستقل
+ * متى يُستخدم هذا Helper:
+ * - عند الحاجة لإرفاق سياق تاجر معين مع كائن CatalogItem
+ * - في سياق السلة والدفع حيث نحتاج CatalogItem مع سعر/مخزون تاجر محدد
+ *
+ * كيف يعمل:
+ * - يحقن قيم MerchantItem مباشرة في $attributes
+ * - Laravel's default __get يُعيد هذه القيم عند الوصول
  *
  * الاستخدام:
  * ```php
@@ -69,10 +72,9 @@ class CatalogItemContextHelper
      * - السعر المحسوب من MerchantItem::merchantSizePrice()
      * - معلومات التاجر (user_id, merchant_item_id)
      * - معلومات الجودة (brand_quality_id)
-     * - المخزون والأحجام والألوان
+     * - المخزون وبيانات إضافية
      *
-     * CRITICAL: القيم المحقونة تُخزن في $attributes مباشرة
-     * وبفضل تعديل CatalogItem::__get()، هذه القيم لها الأولوية على merchantPrice()
+     * القيم المحقونة تُخزن في $attributes ويمكن الوصول إليها عبر Laravel's default __get
      *
      * @param CatalogItem $catalogItem
      * @param MerchantItem $mp
@@ -85,13 +87,12 @@ class CatalogItemContextHelper
             ? $mp->merchantSizePrice()
             : (float)$mp->price;
 
-        // حقن معلومات التاجر والسعر
-        // CRITICAL: هذه القيم تُخزن في $attributes وتأخذ الأولوية على __get()
+        // حقن معلومات التاجر والسعر في attributes
         $catalogItem->merchant_user_id = $mp->user_id;
         $catalogItem->user_id = $mp->user_id;
         $catalogItem->merchant_item_id = $mp->id;
-        $catalogItem->brand_quality_id = $mp->brand_quality_id; // مهم: لتمييز نفس المنتج بجودة مختلفة
-        $catalogItem->price = $calculatedPrice; // الآن __get() سيُعيد هذا بدلاً من merchantPrice()
+        $catalogItem->brand_quality_id = $mp->brand_quality_id;
+        $catalogItem->price = $calculatedPrice;
         $catalogItem->previous_price = $mp->previous_price;
         $catalogItem->stock = $mp->stock;
         $catalogItem->item_condition = $mp->item_condition;

@@ -4,7 +4,6 @@ namespace App\Services\MerchantCheckout;
 
 use App\Models\MonetaryUnit;
 use App\Models\Shipping;
-use App\Models\Package;
 use App\Models\Country;
 use App\Models\State;
 use App\Models\CourierServiceArea;
@@ -32,7 +31,6 @@ class MerchantPriceCalculator
         $itemsTotal = $this->calculateItemsTotal($cartItems);
         $discountAmount = $options['discount_amount'] ?? 0;
         $shippingCost = $options['shipping_cost'] ?? 0;
-        $packingCost = $options['packing_cost'] ?? 0;
         $courierFee = $options['courier_fee'] ?? 0;
         $taxRate = $options['tax_rate'] ?? 0;
 
@@ -42,8 +40,8 @@ class MerchantPriceCalculator
         // Subtotal = Items - Discount
         $subtotal = $itemsTotal - $discountAmount;
 
-        // Grand Total = Subtotal + Tax + Shipping + Packing + Courier
-        $grandTotal = $subtotal + $taxAmount + $shippingCost + $packingCost + $courierFee;
+        // Grand Total = Subtotal + Tax + Shipping + Courier (packing removed)
+        $grandTotal = $subtotal + $taxAmount + $shippingCost + $courierFee;
 
         return [
             'items_total' => round($itemsTotal, 2),
@@ -52,7 +50,7 @@ class MerchantPriceCalculator
             'tax_rate' => $taxRate,
             'tax_amount' => round($taxAmount, 2),
             'shipping_cost' => round($shippingCost, 2),
-            'packing_cost' => round($packingCost, 2),
+            'packing_cost' => 0, // Packing removed - always 0
             'courier_fee' => round($courierFee, 2),
             'grand_total' => round($grandTotal, 2),
             'currency' => [
@@ -66,7 +64,7 @@ class MerchantPriceCalculator
                 'subtotal' => $this->formatPrice($subtotal),
                 'tax_amount' => $this->formatPrice($taxAmount),
                 'shipping_cost' => $this->formatPrice($shippingCost),
-                'packing_cost' => $this->formatPrice($packingCost),
+                'packing_cost' => $this->formatPrice(0),
                 'courier_fee' => $this->formatPrice($courierFee),
                 'grand_total' => $this->formatPrice($grandTotal),
             ],
@@ -156,28 +154,6 @@ class MerchantPriceCalculator
             'original_cost' => round($originalCost, 2),
             'is_free' => $isFree,
             'free_threshold' => $freeAbove,
-        ];
-    }
-
-    /**
-     * Calculate packing cost
-     */
-    public function calculatePackingCost(int $packingId): array
-    {
-        $package = Package::find($packingId);
-
-        if (!$package) {
-            return [
-                'packing_id' => 0,
-                'packing_name' => null,
-                'packing_cost' => 0,
-            ];
-        }
-
-        return [
-            'packing_id' => $package->id,
-            'packing_name' => $package->name,
-            'packing_cost' => round((float)$package->price, 2),
         ];
     }
 

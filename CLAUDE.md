@@ -999,3 +999,161 @@ database/migrations/2026_01_08_100002_rename_legacy_indexes_to_new_names.php
 ```
 
 Run migrations: `php artisan migrate`
+
+---
+
+## CRITICAL: Removed Features & Dead Code (2026-01-19)
+
+⚠️ **DO NOT recreate, reference, or add fallbacks for any of these removed features!**
+
+### 1. Package/Packaging System - COMPLETELY REMOVED
+
+The packaging feature has been **permanently deleted**. The system was built as if packaging never existed.
+
+**What was removed:**
+- `packages` table (dropped via migration)
+- `Package` model (`app/Models/Package.php`)
+- `PackageController` (Operator, Merchant, API)
+- `PackageResource`, `PackageDetailsResource`
+- All package views (`operator/package/`, `merchant/package/`)
+- All package routes
+- Sidebar navigation links for packages
+
+**Services cleaned (packing_cost = 0 always):**
+- `CheckoutPriceService`
+- `CheckoutDataService`
+- `MerchantPriceCalculator`
+- `MerchantCheckoutService`
+- `MerchantPurchaseCreator`
+
+**FORBIDDEN:**
+```php
+// ❌ NEVER do this:
+$package = Package::find($id);
+$packingCost = $purchase->packing_cost; // Always 0
+$data['package_id'] = $packageId;
+```
+
+### 2. Bulk Import Feature - COMPLETELY REMOVED
+
+Catalog item bulk import has been **permanently deleted** from both Operator and Merchant panels.
+
+**What was removed:**
+- `app/Http/Controllers/Operator/ImportController.php`
+- `app/Http/Controllers/Merchant/ImportController.php`
+- Import methods from `CatalogItemController` (both panels)
+- `resources/views/operator/catalog-item-import/` (entire folder)
+- `resources/views/merchant/catalog-item-import/` (entire folder)
+- All import routes from `web.php` and `api.php`
+- Sidebar navigation links for import
+
+**FORBIDDEN:**
+```php
+// ❌ NEVER recreate:
+Route::get('catalog-items/import', ...);
+class ImportController extends Controller { ... }
+```
+
+### 3. Digital Products - REMOVED
+
+The system only supports physical items. Digital product logic has been removed.
+
+**What was removed:**
+- `digital.blade.php` files
+- Digital product type logic
+- `item_type = 'digital'` checks
+
+**FORBIDDEN:**
+```php
+// ❌ NEVER do this:
+if ($item->item_type === 'digital') { ... }
+@include('merchant.catalog-item.edit.digital')
+```
+
+### 4. Removed Columns from `catalog_items`
+
+These columns were removed because they belong ONLY to `merchant_items`:
+
+| Removed Column | Reason |
+|----------------|--------|
+| `color` | Merchant-specific, use `merchant_items.color` |
+| `size` | Merchant-specific, use `merchant_items.size` |
+| `length` | Not needed, was never used |
+| `width` | Not needed, was never used |
+| `height` | Not needed, was never used |
+| `status` | Never existed in schema |
+| `policy` | Never existed in schema |
+| `features` | Never existed in schema |
+| `featured` | Never existed in schema |
+| `best` | Never existed in schema |
+| `top` | Never existed in schema |
+| `big` | Never existed in schema |
+| `trending` | Never existed in schema |
+| `whole_sell_qty` | Never existed in schema |
+| `whole_sell_discount` | Never existed in schema |
+
+**CatalogItem $fillable (correct):**
+```php
+protected $fillable = [
+    'brand_id', 'part_number', 'label_en', 'label_ar', 'attributes', 'name', 'slug',
+    'photo', 'thumbnail', 'weight', 'views', 'tags', 'is_meta', 'meta_tag',
+    'meta_description', 'youtube', 'measure', 'hot', 'latest', 'sale',
+    'is_catalog', 'catalog_id', 'cross_items',
+];
+```
+
+**FORBIDDEN:**
+```php
+// ❌ NEVER access these on CatalogItem:
+$catalogItem->color;      // Use $merchantItem->color
+$catalogItem->size;       // Use $merchantItem->size
+$catalogItem->price;      // Use $merchantItem->price
+$catalogItem->stock;      // Use $merchantItem->stock
+$catalogItem->features;   // Doesn't exist
+```
+
+### 5. Magic `__get` Fallback - REMOVED from CatalogItem
+
+The `__get` magic method that caused confusion between tables was removed. Code must now explicitly access the correct model.
+
+**FORBIDDEN:**
+```php
+// ❌ NEVER add implicit fallbacks:
+public function __get($key) {
+    if (!$this->getAttribute($key) && $this->merchantItem) {
+        return $this->merchantItem->$key;  // DON'T!
+    }
+}
+```
+
+**REQUIRED:**
+```php
+// ✅ Be explicit about which model:
+$price = $merchantItem->price;          // Merchant data
+$partNumber = $catalogItem->part_number; // Catalog data
+```
+
+### 6. Naming Changes
+
+| Old Name | New Name | Context |
+|----------|----------|---------|
+| `physical` | `items` | File names, CSS classes, routes |
+| `physical.blade.php` | `items.blade.php` | View files |
+| `physical-catalogItem-inputes-wrapper` | `items-catalogItem-inputes-wrapper` | CSS class |
+| `/physical` route | `/items` route | URL slugs |
+
+### Migrations for Removed Features
+
+```
+database/migrations/2026_01_18_xxxxxx_remove_color_size_from_catalog_items.php
+database/migrations/2026_01_18_203457_remove_dimensions_from_catalog_items.php
+database/migrations/2026_01_19_100000_drop_packages_table.php
+```
+
+### When You Encounter Dead Code References
+
+If you find code referencing removed features:
+1. **DELETE** the dead code completely
+2. **DO NOT** add fallbacks or compatibility layers
+3. **DO NOT** recreate the removed functionality
+4. Update related code to work without the removed feature

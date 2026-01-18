@@ -211,7 +211,7 @@
 
             $(function() {
                 $(".btn-area").append('<div class="col-sm-4 table-contents">' +
-                    '<a class="add-btn" href="{{ route('operator-catalog-item-create', 'physical') }}">' +
+                    '<a class="add-btn" href="{{ route('operator-catalog-item-create', 'items') }}">' +
                     '<i class="fas fa-plus"></i> <span class="remove-mobile">{{ __('Add CatalogItem') }}<span>' +
                     '</a>' +
                     '</div>');
