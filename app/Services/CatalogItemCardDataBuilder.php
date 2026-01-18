@@ -38,6 +38,7 @@ class CatalogItemCardDataBuilder
     public const MERCHANT_ITEM_RELATIONS = [
         'user:id,is_merchant,name,shop_name,shop_name_ar,email',
         'qualityBrand:id,name_en,name_ar,logo',
+        'merchantBranch:id,warehouse_name',
         'catalogItem' => [
             'brand:id,name,name_ar,photo',
         ],
@@ -74,6 +75,7 @@ class CatalogItemCardDataBuilder
         return $query->with([
             'user:id,is_merchant,name,shop_name,shop_name_ar,email',
             'qualityBrand:id,name_en,name_ar,logo',
+            'merchantBranch:id,warehouse_name',
             'catalogItem' => function ($q) {
                 $q->with('brand:id,name,name_ar,photo')
                     ->withCount('catalogReviews')
@@ -94,6 +96,7 @@ class CatalogItemCardDataBuilder
                     ->with([
                         'user:id,is_merchant,name,shop_name,shop_name_ar,email',
                         'qualityBrand:id,name_en,name_ar,logo',
+                        'merchantBranch:id,warehouse_name',
                     ])
                     ->orderBy('price');
             },

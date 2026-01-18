@@ -172,6 +172,14 @@
                             </tr>
                         @endif
 
+                        {{-- Branch --}}
+                        @if($mp?->merchantBranch)
+                            <tr>
+                                <td class="catalog-info-label"><i class="fas fa-warehouse"></i> @lang('Branch')</td>
+                                <td class="catalog-info-value">{{ $mp->merchantBranch->warehouse_name }}</td>
+                            </tr>
+                        @endif
+
                         {{-- Stock --}}
                         <tr>
                             <td class="catalog-info-label"><i class="fas fa-boxes"></i> @lang('Stock')</td>
@@ -252,7 +260,7 @@
 
                 {{-- View Details Link --}}
                 @if($mp)
-                    <a href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $merchantUserId, 'merchant_item_id' => $mp->id]) }}"
+                    <a href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_item_id' => $mp->id]) }}"
                        class="catalog-quickview-btn catalog-quickview-btn-details"
                        target="_blank">
                         <i class="fas fa-external-link-alt"></i> @lang('View Details')

@@ -48,6 +48,10 @@ class CatalogItemCardDTO
     // Merchant
     public ?string $merchantName;
 
+    // Branch
+    public ?int $branchId = null;
+    public ?string $branchName = null;
+
     // Brand
     public ?string $brandName;
     public ?string $brandLogo;
@@ -112,6 +116,10 @@ class CatalogItemCardDTO
 
         // Merchant (from eager-loaded relation) - localized
         $dto->merchantName = $merchant->user ? getLocalizedShopName($merchant->user) : null;
+
+        // Branch (from eager-loaded relation)
+        $dto->branchId = $merchant->merchant_branch_id;
+        $dto->branchName = $merchant->merchantBranch?->warehouse_name;
 
         // Brand (from eager-loaded relation)
         $dto->brandName = $catalogItem->brand?->localized_name;
@@ -218,10 +226,9 @@ class CatalogItemCardDTO
             return '#';
         }
 
-        if ($merchantId && $merchantItemId) {
+        if ($merchantItemId) {
             return route('front.catalog-item', [
                 'slug' => $slug,
-                'merchant_id' => $merchantId,
                 'merchant_item_id' => $merchantItemId
             ]);
         }

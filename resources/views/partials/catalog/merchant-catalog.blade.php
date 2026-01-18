@@ -148,7 +148,7 @@
                                         $vCatalogMerchant = $vCatalogProdObj?->best_merchant_item;
 
                                         $vCatalogProdUrl = $vCatalogMerchant && isset($cartItem['slug'])
-                                            ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_id' => $vCatalogMerchant->user_id, 'merchant_item_id' => $vCatalogMerchant->id])
+                                            ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_item_id' => $vCatalogMerchant->id])
                                             : (isset($cartItem['slug']) ? route('front.catalog-item.legacy', $cartItem['slug']) : '#');
                                     @endphp
 

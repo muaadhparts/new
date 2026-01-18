@@ -23,62 +23,32 @@ class CatalogItemDetailsController extends FrontBaseController
      * ==========================================================================
      * STRICT MERCHANT ITEM ROUTE
      * ==========================================================================
-     * /item/{slug}/store/{merchant_id}/merchant_items/{merchant_item_id}
+     * /item/{slug}/merchantitem/{merchant_item_id}
      *
      * SECURITY RULES:
      * 1. MerchantItem MUST exist and be active
-     * 2. merchant_id MUST match merchant_item.user_id (STRICT - no fallback)
-     * 3. CatalogItem data is READONLY - price/stock/qty come ONLY from MerchantItem
-     * 4. NO best_merchant_item or merchantItems()->first() allowed
+     * 2. CatalogItem data is READONLY - price/stock/qty come ONLY from MerchantItem
+     * 3. NO best_merchant_item or merchantItems()->first() allowed
+     * 4. merchant_item_id is unique - sufficient to identify the listing
      * ==========================================================================
      */
-    public function showByMerchantItem(Request $request, $slug, $merchant_id = null, $merchant_item_id = null)
+    public function showByMerchantItem(Request $request, $slug, $merchant_item_id)
     {
         $gs = $this->gs;
 
         // ======================================================================
-        // STEP 1: PARSE ROUTE PARAMETERS
-        // ======================================================================
-        $routeParams = $request->route()->parameters();
-
-        // Handle old short route format: /item/{slug}/{merchant_item_id}
-        if (count($routeParams) == 2) {
-            $merchant_item_id = $merchant_id;
-            $merchant_id = null;
-        }
-
-        // ======================================================================
-        // STEP 2: STRICT GUARD - MerchantItem MUST exist
+        // STEP 1: STRICT GUARD - MerchantItem MUST exist
         // ======================================================================
         $merchantItem = MerchantItem::with([
             'user',
             'qualityBrand',
+            'merchantBranch',
             'catalogItem.merchantPhotos',
             'catalogItem.brand',
         ])->find($merchant_item_id);
 
         if (!$merchantItem) {
             abort(404, 'Merchant item not found');
-        }
-
-        // ======================================================================
-        // STEP 3: STRICT GUARD - Merchant ID MUST match (when provided)
-        // ======================================================================
-        if ($merchant_id !== null) {
-            $merchant_id = (int) $merchant_id;
-            $actualMerchantId = (int) $merchantItem->user_id;
-
-            if ($merchant_id !== $actualMerchantId) {
-                // Log security violation attempt
-                \Log::warning('CatalogItemDetails: merchant_id mismatch', [
-                    'requested_merchant_id' => $merchant_id,
-                    'actual_merchant_id' => $actualMerchantId,
-                    'merchant_item_id' => $merchant_item_id,
-                    'ip' => $request->ip(),
-                ]);
-
-                abort(403, 'Merchant ID does not match merchant item owner');
-            }
         }
 
         // ======================================================================
@@ -115,7 +85,6 @@ class CatalogItemDetailsController extends FrontBaseController
         if ($catalogItem->slug !== $slug) {
             return redirect()->route('front.catalog-item', [
                 'slug' => $catalogItem->slug,
-                'merchant_id' => $merchantItem->user_id,
                 'merchant_item_id' => $merchantItem->id
             ], 301);
         }
@@ -132,14 +101,14 @@ class CatalogItemDetailsController extends FrontBaseController
         }
 
         // ======================================================================
-        // STEP 9: Other sellers (same catalog item, different merchants)
+        // STEP 9: Other sellers (same catalog item, different merchants/branches)
         // ======================================================================
         $otherSellers = MerchantItem::query()
             ->where('catalog_item_id', $catalogItem->id)
             ->where('status', 1)
             ->where('id', '<>', $merchantItem->id)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->with(['user', 'qualityBrand'])
+            ->with(['user', 'qualityBrand', 'merchantBranch'])
             ->orderBy('price')
             ->get();
 

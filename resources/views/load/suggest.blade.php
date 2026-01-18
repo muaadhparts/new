@@ -16,8 +16,8 @@
 			$catalogItemSlug = $cartItem->slug;
 		}
 
-		$catalogItemUrl = ($merchantItemId && $merchantId)
-			? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_id' => $merchantId, 'merchant_item_id' => $merchantItemId])
+		$catalogItemUrl = $merchantItemId
+			? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $merchantItemId])
 			: 'javascript:;';
 	@endphp
 	<div class="docname">

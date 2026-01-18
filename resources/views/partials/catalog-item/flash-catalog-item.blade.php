@@ -3,7 +3,7 @@
     $flashProdMerchant = $cartItem->best_merchant_item;
 
     $flashProdUrl = $flashProdMerchant && $cartItem->slug
-        ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_id' => $flashProdMerchant->user_id, 'merchant_item_id' => $flashProdMerchant->id])
+        ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_item_id' => $flashProdMerchant->id])
         : ($cartItem->slug ? route('front.catalog-item.legacy', $cartItem->slug) : '#');
 @endphp
 

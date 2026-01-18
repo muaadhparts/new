@@ -96,8 +96,8 @@
         $catalogItemRoute = route('search.result', $part_number);
     } else {
         // Use catalog item details route
-        $catalogItemRoute = !empty($slug) && $userId && $mpId
-            ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $userId, 'merchant_item_id' => $mpId])
+        $catalogItemRoute = !empty($slug) && $mpId
+            ? route('front.catalog-item', ['slug' => $slug, 'merchant_item_id' => $mpId])
             : '#';
     }
 @endphp

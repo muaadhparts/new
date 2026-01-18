@@ -520,6 +520,7 @@ class CatalogItemController extends MerchantBaseController
             ->firstOrFail();
 
         $rules = [
+            'merchant_branch_id' => 'required|exists:merchant_branches,id',
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'item_condition' => 'required|in:1,2',
@@ -532,17 +533,30 @@ class CatalogItemController extends MerchantBaseController
             return redirect()->back()->withErrors($validator)->withInput();
         }
 
+        // Validate branch belongs to merchant
+        $branch = \App\Models\MerchantBranch::where('id', $request->merchant_branch_id)
+            ->where('user_id', $user->id)
+            ->where('status', 1)
+            ->first();
+
+        if (!$branch) {
+            return redirect()->back()->withErrors(['merchant_branch_id' => __('Invalid branch selected.')])->withInput();
+        }
+
+        // Check for conflict (same item + branch + quality brand combination)
         $conflict = MerchantItem::where('catalog_item_id', $merchantItem->catalog_item_id)
             ->where('user_id', $merchantItem->user_id)
+            ->where('merchant_branch_id', $request->merchant_branch_id)
             ->where('brand_quality_id', $request->brand_quality_id)
             ->where('id', '<>', $merchantItem->id)
             ->exists();
 
         if ($conflict) {
-            return redirect()->back()->withErrors(['brand_quality_id' => __('You already have an offer for this catalog item with this brand quality.')])->withInput();
+            return redirect()->back()->withErrors(['brand_quality_id' => __('You already have an offer for this catalog item in this branch with this brand quality.')])->withInput();
         }
 
         $merchantData = [
+            'merchant_branch_id' => $request->merchant_branch_id,
             'brand_quality_id' => $request->brand_quality_id,
             'price' => $request->price / $sign->value,
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,

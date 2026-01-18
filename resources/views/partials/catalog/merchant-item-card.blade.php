@@ -58,6 +58,10 @@
         ? ($locale === 'ar' ? ($qualityBrand->name_ar ?: $qualityBrand->name) : $qualityBrand->name)
         : null;
 
+    // Branch - use eager loaded relationship
+    $branch = $merchantItem->merchantBranch ?? null;
+    $branchName = $branch?->warehouse_name;
+
     // URL - use joined slug
     $itemUrl = $slug
         ? route('front.catalog-item', [
@@ -96,6 +100,9 @@
                         <span class="m-catalogItem-card__quality">{{ $qualityName }}</span>
                     @endif
                     <span class="m-catalogItem-card__seller">{{ $merchantName }}</span>
+                    @if($branchName)
+                        <span class="m-catalogItem-card__branch"><i class="fas fa-warehouse"></i> {{ $branchName }}</span>
+                    @endif
                 </div>
                 <div class="m-catalogItem-card__footer">
                     <div class="m-catalogItem-card__price-wrapper">
@@ -145,6 +152,9 @@
                 @endif
                 @if($qualityName)
                     <span class="m-catalogItem-card__quality">{{ $qualityName }}</span>
+                @endif
+                @if($branchName)
+                    <span class="m-catalogItem-card__branch"><i class="fas fa-warehouse"></i> {{ $branchName }}</span>
                 @endif
                 <div class="m-catalogItem-card__price-wrapper">
                     <span class="m-catalogItem-card__price">{{ \PriceHelper::showCurrencyPrice($finalPrice) }}</span>

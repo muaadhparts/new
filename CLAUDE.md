@@ -172,15 +172,19 @@ php artisan test --filter=TestName  # Run specific test
 
 ## Architecture
 
-### Catalog System (Multi-Merchant)
+### Catalog System (Multi-Merchant, Branch-First)
 - **CatalogItem**: Catalog-level item data (SKU, category, attributes, fitments)
-- **MerchantItem**: Merchant-specific listing (price, stock, user_id) - each row is one seller
+- **MerchantBranch**: Merchant warehouse/branch (location, coordinates, shipping origin)
+- **MerchantItem**: Merchant-specific listing (price, stock) - each row is one seller + branch
 - **Stock**: Raw inventory data from DBF files per branch/merchant
 - CatalogItems have fitments linking them to vehicle trees via `CatalogItemFitment`
+- Every MerchantItem MUST belong to a MerchantBranch (enforced by NOT NULL FK)
 
 ### Key Models
 - `Purchase` - stores cart as JSON array, supports multiple merchants per purchase
 - `MerchantPurchase` - per-merchant breakdown of purchases
+- `MerchantBranch` - merchant warehouse/branch with location and shipping origin
+- `MerchantItem` - merchant-specific listing (always belongs to a branch)
 - `FavoriteSeller` - user favorites/wishlist
 - `CatalogReview` - product reviews
 - `ShipmentTracking` - Unified shipment tracking (API + Manual)
@@ -262,7 +266,8 @@ MySQL database with the following structure:
 
 ### Key Tables (New Naming Convention)
 - `catalog_items` - Product catalog (SKU, name, attributes)
-- `merchant_items` - Merchant-specific listings (price, stock per merchant)
+- `merchant_items` - Merchant-specific listings (price, stock per branch) - FK to `merchant_branches`
+- `merchant_branches` - Merchant warehouses/branches (location, coordinates, shipping origin)
 - `purchases` - Customer orders/purchases
 - `merchant_purchases` - Per-merchant breakdown of purchases
 - `favorite_sellers` - User favorites/wishlist
@@ -646,6 +651,27 @@ This project operates as a **TRUE Multi-Merchant** system, NOT a superficial mar
    - `merchant_items` = ALL merchant-specific data (price, stock, status)
    - Never mix catalog data with merchant data
 
+4. **Branch-First Architecture** (2026-01-18)
+   - **MerchantBranch**: Operational unit with location, contact, and shipping origin
+   - Every `merchant_item` MUST have a `merchant_branch_id` (NOT NULL, FK constraint)
+   - Same SKU can exist in multiple branches of the same merchant (different stock/price)
+   - Shipping quotes are calculated from the branch's coordinates
+   - Cart items include `branch_id` and `branch_name` for grouping
+
+   **Key Relationships:**
+   ```
+   User (Merchant)
+     └── MerchantBranch (has address, coordinates)
+           └── MerchantItem (price, stock for this branch)
+   ```
+
+   **Required Fields on MerchantItem:**
+   - `merchant_branch_id` - FK to `merchant_branches.id` (REQUIRED)
+
+   **Creating Merchant Items:**
+   - Branch selection is REQUIRED when creating offers
+   - Conflict check includes branch_id (same SKU + same merchant + same branch = conflict)
+
 ### Accounting System
 
 This is a **ledger system**, not just display reports:
@@ -927,7 +953,8 @@ $catalogItem = CatalogItem::find($id); // ✓
 | Data Type | Table | Notes |
 |-----------|-------|-------|
 | Item catalog info | `catalog_items` | SKU, name, photos, specs |
-| Item pricing/stock | `merchant_items` | Per-merchant, all commercial data |
+| Item pricing/stock | `merchant_items` | Per-branch, all commercial data |
+| Merchant branches | `merchant_branches` | Warehouses, shipping origins |
 | Customer orders | `purchases` | Main order record |
 | Per-merchant breakdown | `merchant_purchases` | Split by merchant |
 | Categories | `newcategories` | 3-level hierarchy per catalog |

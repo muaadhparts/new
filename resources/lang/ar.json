@@ -3855,7 +3855,15 @@
     "All Catalogs": "جميع الكتالوجات",
     "Usage Limit": "حد الاستخدام",
     "Enter Usage Limit": "أدخل حد الاستخدام",
-    "View Discount Code Lists": "عرض قائمة أكواد الخصم"
+    "View Discount Code Lists": "عرض قائمة أكواد الخصم",
+
+    "Branch": "الفرع",
+    "Branch :": "الفرع :",
+    "Branch / Warehouse*": "الفرع / المستودع*",
+    "Select Branch": "اختر الفرع",
+    "Select the branch where this item will be shipped from": "اختر الفرع الذي سيتم شحن هذا الصنف منه",
+    "You need to create a branch first.": "يجب عليك إنشاء فرع أولاً.",
+    "Create Branch": "إنشاء فرع"
 }
 
 

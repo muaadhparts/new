@@ -158,7 +158,7 @@
                                         @php
                                             // Build catalog item URL using merchant item data
                                             $merchantProdUrl = $merchantItem && $data->slug
-                                                ? route('front.catalog-item', ['slug' => $data->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
+                                                ? route('front.catalog-item', ['slug' => $data->slug, 'merchant_item_id' => $merchantItem->id])
                                                 : '#';
                                         @endphp
                                         <a href="{{ $merchantProdUrl }}" target="_blank"

@@ -155,7 +155,7 @@ class MerchantController extends OperatorBaseController
             ->addColumn('mp_id', function (MerchantItem $data) {
                 $dt = $data->catalogItem;
                 $adminMerchantUrl = $dt && $dt->slug
-                    ? route('front.catalog-item', ['slug' => $dt->slug, 'merchant_id' => $data->user_id, 'merchant_item_id' => $data->id])
+                    ? route('front.catalog-item', ['slug' => $dt->slug, 'merchant_item_id' => $data->id])
                     : '#';
                 return '<a href="' . $adminMerchantUrl . '" target="_blank">' . sprintf("%'.06d", $data->id) . '</a>';
             })

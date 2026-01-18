@@ -378,6 +378,37 @@
     border-radius: 2px;
 }
 
+.catalog-item-card__merchant,
+.catalogItem-card__merchant {
+    color: var(--pc-primary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+}
+
+.catalog-item-card__merchant i,
+.catalogItem-card__merchant i {
+    font-size: 10px;
+}
+
+.catalog-item-card__branch,
+.catalogItem-card__branch {
+    background: #1e293b;
+    color: #f8fafc;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.catalog-item-card__branch i,
+.catalogItem-card__branch i {
+    font-size: 10px;
+}
+
 .catalog-item-card__stock,
 .catalogItem-card__stock {
     padding: 2px 8px;

@@ -2,7 +2,7 @@
 @section('seo')
     @if(isset($catalogItem, $merchantId, $merchant) && $merchantId && $merchant)
         @php
-            $productUrl = route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_id'=>$merchantId, 'merchant_item_id'=>$merchant->id]);
+            $productUrl = route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_item_id'=>$merchant->id]);
             $imageUrl = $catalogItem->photo
                 ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : \Illuminate\Support\Facades\Storage::url($catalogItem->photo))
                 : asset('assets/images/noimage.png');

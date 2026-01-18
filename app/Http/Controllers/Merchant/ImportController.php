@@ -39,9 +39,9 @@ class ImportController extends MerchantBaseController
                     ? mb_substr(strip_tags($catalogItem->name), 0, 50, 'UTF-8') . '...'
                     : strip_tags($catalogItem->name);
 
-                // تمرير {merchant_id} و {merchant_item_id} في الرابط
+                // تمرير {merchant_item_id} في الرابط
                 $id = '<small>' . __('Catalog Item ID') . ': <a href="' .
-                    route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $data->user_id, 'merchant_item_id' => $data->id]) .
+                    route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_item_id' => $data->id]) .
                     '" target="_blank">' . sprintf("%'.08d", $catalogItem->id) . '</a></small>';
 
                 return $name . '<br>' . $id;

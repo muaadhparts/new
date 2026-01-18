@@ -59,8 +59,8 @@
     $color = $item['color'] ?? null;
 
     // Item URL
-    $itemUrl = ($slug && $merchantId && $merchantItemId)
-        ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $merchantId, 'merchant_item_id' => $merchantItemId])
+    $itemUrl = ($slug && $merchantItemId)
+        ? route('front.catalog-item', ['slug' => $slug, 'merchant_item_id' => $merchantItemId])
         : '#';
 
     // Has issue?

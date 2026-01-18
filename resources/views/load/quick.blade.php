@@ -482,7 +482,7 @@
                     $detailMerchantItemId = $detailMerchantItem->id ?? null;
                 @endphp
                 @if($detailMerchantItemId)
-                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_id' => $detailMerchantUserId, 'merchant_item_id' => $detailMerchantItemId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_item_id' => $detailMerchantItemId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
                 @endif
               </div>
 

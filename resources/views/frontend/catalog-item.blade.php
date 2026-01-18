@@ -521,6 +521,11 @@
                                     </a>
                                 @endif
                             </span>
+                            @if($merchant->merchantBranch)
+                            <span> <b>@lang('Branch :')</b>
+                                <i class="fas fa-warehouse"></i> {{ $merchant->merchantBranch->warehouse_name }}
+                            </span>
+                            @endif
                             <span> <b>@lang('Total Items :')</b>
                                 {{ App\Models\MerchantItem::where('user_id', '=', $merchant->user_id)->where('status', 1)->count() }}
                             </span>

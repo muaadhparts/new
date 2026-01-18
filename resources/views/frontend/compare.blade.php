@@ -260,7 +260,7 @@
 
                         if ($merchantItem) {
                             $compareCatalogItemUrl = $catalogItemData->slug
-                                ? route('front.catalog-item', ['slug' => $catalogItemData->slug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
+                                ? route('front.catalog-item', ['slug' => $catalogItemData->slug, 'merchant_item_id' => $merchantItem->id])
                                 : '#';
                         } else {
                             $compareCatalogItemUrl = $catalogItemData->slug ? route('front.catalog-item.legacy', $catalogItemData->slug) : '#';

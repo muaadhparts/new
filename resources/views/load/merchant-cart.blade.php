@@ -24,8 +24,8 @@
                     $discountPercent = (float) ($item['discount_percent'] ?? 0);
 
                     $photoUrl = $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png');
-                    $itemUrl = ($slug && $merchantId && $merchantItemId)
-                        ? route('front.catalog-item', ['slug' => $slug, 'merchant_id' => $merchantId, 'merchant_item_id' => $merchantItemId])
+                    $itemUrl = ($slug && $merchantItemId)
+                        ? route('front.catalog-item', ['slug' => $slug, 'merchant_item_id' => $merchantItemId])
                         : '#';
                 @endphp
 

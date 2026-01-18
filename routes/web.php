@@ -1513,25 +1513,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     // COMPARE SECTION ENDS
 
     // CATALOG ITEM SECTION
-    Route::get(
-        '/item/{slug}/store/{merchant_id}/merchant_items/{merchant_item_id}',
-        'Front\CatalogItemDetailsController@showByMerchantItem'
-    )->whereNumber('merchant_id')->whereNumber('merchant_item_id')
-    ->name('front.catalog-item');
+    // PRIMARY ROUTE: Simple format using merchant_item_id (unique identifier)
+    Route::get('/item/{slug}/merchantitem/{merchant_item_id}', 'Front\CatalogItemDetailsController@showByMerchantItem')
+         ->whereNumber('merchant_item_id')
+         ->name('front.catalog-item');
 
-    Route::get('/item/{slug}/{user}', 'Front\CatalogItemDetailsController@showByUser')
-        ->name('front.catalog-item.user');
-
+    // Legacy route without merchant (shows best offer or first available)
     Route::get('/item/{slug}', 'Front\CatalogItemDetailsController@show')
         ->name('front.catalog-item.legacy');
-
-    Route::get('/item/{slug}/{merchant_item_id}', 'Front\CatalogItemDetailsController@showByMerchantItem')
-         ->whereNumber('merchant_item_id')
-         ->name('front.catalog-item.short');
-
-    Route::get('/item/{slug}/{user}/{brand_quality_id}', 'Front\CatalogItemDetailsController@showByUserQuality')
-         ->whereNumber('user')->whereNumber('brand_quality_id')
-         ->name('front.catalog-item.user_quality');
 
     Route::get('/item/show/cross/{id}', 'Front\CatalogItemDetailsController@showCrossCatalogItem')->name('front.show.cross.catalog-item');
     Route::get('/afbuy/{slug}', 'Front\CatalogItemDetailsController@affCatalogItemRedirect')->name('affiliate.catalog-item');

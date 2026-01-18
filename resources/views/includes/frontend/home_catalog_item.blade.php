@@ -33,6 +33,7 @@
         $qualityBrandName = $card->qualityBrandName;
         $qualityBrandLogo = $card->qualityBrandLogo ?? null;
         $merchantName = $card->merchantName;
+        $branchName = $card->branchName ?? null;
         $offPercentage = $card->offPercentage;
         $inStock = $card->inStock;
         $stockQty = $card->stock;
@@ -75,7 +76,7 @@
 
         $catalogItemSlug = $isMerchantItem ? optional($actualCatalogItem)->slug : $catalogItem->slug;
         $catalogItemUrl = $merchantItem && $catalogItemSlug
-            ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_id' => $merchantItem->user_id, 'merchant_item_id' => $merchantItem->id])
+            ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $merchantItem->id])
             : ($catalogItemSlug ? route('front.catalog-item.legacy', $catalogItemSlug) : '#');
 
         $mainPhoto = $actualCatalogItem->photo ?? null;
@@ -89,6 +90,7 @@
         $qualityBrandName = $merchantItem?->qualityBrand?->localized_name;
         $qualityBrandLogo = $merchantItem?->qualityBrand?->logo_url;
         $merchantName = $merchantItem?->user ? getLocalizedShopName($merchantItem->user) : null;
+        $branchName = $merchantItem?->merchantBranch?->warehouse_name;
 
         $offPercentage = $merchantItem && method_exists($merchantItem, 'offPercentage')
             ? $merchantItem->offPercentage()
@@ -195,6 +197,11 @@
                 @if($merchantName)
                     <span class="badge bg-primary">
                         <i class="fas fa-store me-1"></i>{{ $merchantName }}
+                    </span>
+                @endif
+                @if($branchName)
+                    <span class="badge bg-dark">
+                        <i class="fas fa-warehouse me-1"></i>{{ $branchName }}
                     </span>
                 @endif
                 <span class="badge {{ $inStock ? 'bg-success' : 'bg-danger' }}">{{ $stockText }}</span>
@@ -340,6 +347,11 @@
                 @if($merchantName)
                     <span class="catalogItem-card__merchant">
                         <i class="fas fa-store"></i> {{ $merchantName }}
+                    </span>
+                @endif
+                @if($branchName)
+                    <span class="catalogItem-card__branch">
+                        <i class="fas fa-warehouse"></i> {{ $branchName }}
                     </span>
                 @endif
                 <span class="catalogItem-card__stock {{ $inStock ? 'catalogItem-card__stock--in' : 'catalogItem-card__stock--out' }}">
