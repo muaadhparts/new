@@ -279,23 +279,36 @@ class CatalogController extends FrontBaseController
     }
 
     /**
-     * Get branches for a specific merchant (AJAX endpoint)
-     * Branches are ALWAYS tied to a merchant - cannot be fetched globally
+     * Get branches for one or more merchants (AJAX endpoint)
+     * Accepts: merchant_ids[] (array) or merchant_id (single)
+     * Returns branches grouped by merchant for multi-merchant selection
      */
     public function getMerchantBranches(Request $request)
     {
-        $merchantId = (int) $request->input('merchant_id');
+        // Accept both array (merchant_ids[]) and single (merchant_id) formats
+        $merchantIds = $request->input('merchant_ids', []);
 
-        if (!$merchantId) {
+        // Fallback to single merchant_id for backward compatibility
+        if (empty($merchantIds) && $request->filled('merchant_id')) {
+            $merchantIds = [(int) $request->input('merchant_id')];
+        }
+
+        // Normalize to array of integers
+        $merchantIds = array_filter(array_map('intval', (array) $merchantIds));
+
+        if (empty($merchantIds)) {
             return response()->json([]);
         }
 
-        // Get ALL branches for this merchant (user_id = merchant_id)
-        $branches = $this->filterService->getBranchesForMerchant($merchantId);
+        // Get branches for all selected merchants
+        $branches = $this->filterService->getBranchesForMerchants($merchantIds);
 
+        // Return with merchant info for grouping in frontend
         return response()->json($branches->map(fn($b) => [
             'id' => $b->id,
             'name' => $b->branch_name,
+            'merchant_id' => $b->merchant_id,
+            'merchant_name' => $b->merchant_name,
         ]));
     }
 

@@ -55,21 +55,50 @@ class CatalogItemFilterService
     }
 
     /**
-     * Get branches for a specific merchant based on ACTUAL merchant_items data
-     * Returns branches that have items for this merchant
+     * Get branches for one or more merchants based on ACTUAL merchant_items data
+     * Returns branches that have items for these merchants
+     *
+     * @param array $merchantIds Array of merchant IDs (user_id)
+     * @return \Illuminate\Support\Collection
+     */
+    public function getBranchesForMerchants(array $merchantIds)
+    {
+        if (empty($merchantIds)) {
+            return collect([]);
+        }
+
+        // Get distinct branches from merchant_items for selected merchants
+        // Include merchant info so frontend can group by merchant if needed
+        return DB::table('merchant_items')
+            ->join('merchant_branches', 'merchant_branches.id', '=', 'merchant_items.merchant_branch_id')
+            ->join('users', 'users.id', '=', 'merchant_items.user_id')
+            ->whereIn('merchant_items.user_id', $merchantIds)
+            ->where('merchant_items.status', 1)
+            ->where('merchant_branches.status', 1)
+            ->groupBy(
+                'merchant_items.merchant_branch_id',
+                'merchant_branches.branch_name',
+                'merchant_items.user_id',
+                'users.shop_name'
+            )
+            ->orderBy('users.shop_name', 'asc')
+            ->orderBy('merchant_branches.branch_name', 'asc')
+            ->select(
+                'merchant_items.merchant_branch_id as id',
+                'merchant_branches.branch_name',
+                'merchant_items.user_id as merchant_id',
+                'users.shop_name as merchant_name'
+            )
+            ->get();
+    }
+
+    /**
+     * Legacy method for single merchant - calls the new multi-merchant method
+     * @deprecated Use getBranchesForMerchants() instead
      */
     public function getBranchesForMerchant(int $merchantId)
     {
-        // Get distinct branch IDs from merchant_items for this merchant
-        return DB::table('merchant_items')
-            ->join('merchant_branches', 'merchant_branches.id', '=', 'merchant_items.merchant_branch_id')
-            ->where('merchant_items.user_id', $merchantId)
-            ->where('merchant_items.status', 1)
-            ->where('merchant_branches.status', 1)
-            ->groupBy('merchant_items.merchant_branch_id', 'merchant_branches.branch_name')
-            ->orderBy('merchant_items.merchant_branch_id', 'asc')
-            ->select('merchant_items.merchant_branch_id as id', 'merchant_branches.branch_name')
-            ->get();
+        return $this->getBranchesForMerchants([$merchantId]);
     }
 
     /**
@@ -295,20 +324,19 @@ class CatalogItemFilterService
     }
 
     /**
-     * Apply branch filter (only valid when exactly one merchant is selected)
-     * Branch filtering requires merchant context - branches cannot be filtered globally
+     * Apply branch filter
+     * Works with one or more merchants selected
+     * If branches are selected, filter to only those branches
      */
     public function applyBranchFilter(Builder $query, Request $request): void
     {
         $branchFilter = $this->normalizeArrayInput($request->branch);
-        $merchantFilter = $this->normalizeArrayInput($request->merchant);
 
-        // Branch filter only applies when exactly one merchant is selected
-        if (!empty($branchFilter) && count($merchantFilter) === 1) {
-            // Filter directly by branch IDs from merchant_items
+        // If branches are selected, apply the filter
+        // This works regardless of how many merchants are selected
+        if (!empty($branchFilter)) {
             $query->whereIn('merchant_items.merchant_branch_id', $branchFilter);
         }
-        // If multiple merchants selected or no merchant, ignore branch filter
     }
 
     /**
@@ -496,9 +524,9 @@ class CatalogItemFilterService
             $summary['hasFilters'] = true;
         }
 
-        // Branches - fetch names only when filter is applied (within merchant context)
+        // Branches - fetch names when filter is applied
         $branchIds = $this->normalizeArrayInput($request->branch);
-        if (!empty($branchIds) && count($merchantIds) === 1) {
+        if (!empty($branchIds)) {
             // Get branch names directly by IDs
             $branchNames = DB::table('merchant_branches')
                 ->whereIn('id', $branchIds)
