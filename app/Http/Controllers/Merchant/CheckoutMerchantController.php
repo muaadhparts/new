@@ -96,8 +96,6 @@ class CheckoutMerchantController extends Controller
         return view('merchant.checkout.address', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
-            'merchant_id' => $result['data']['merchant']['id'] ?? 0,
-            'merchant' => $result['data']['merchant'] ?? [],
             'address' => $address,
             'cart' => $result['data']['cart'] ?? [],
             'googleMapsApiKey' => $googleMapsApiKey,
@@ -171,8 +169,6 @@ class CheckoutMerchantController extends Controller
         return view('merchant.checkout.shipping', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
-            'merchant_id' => $result['data']['merchant']['id'] ?? 0,
-            'merchant' => $result['data']['merchant'] ?? [],
             'address' => $result['data']['address'] ?? [],
             'cart' => $result['data']['cart'] ?? [],
             'totals' => $result['data']['totals'] ?? [],
@@ -327,8 +323,6 @@ class CheckoutMerchantController extends Controller
         return view('merchant.checkout.payment', [
             'branch_id' => $branchId,
             'branch' => $result['data']['branch'] ?? [],
-            'merchant_id' => $result['data']['merchant']['id'] ?? 0,
-            'merchant' => $result['data']['merchant'] ?? [],
             'cart' => $result['data']['cart'] ?? [],
             'totals' => $result['data']['totals'] ?? [],
             'shipping' => $result['data']['shipping'] ?? [],

@@ -361,7 +361,6 @@
 @section('script')
 <script>
 const branchId = {{ $branch_id }};
-const merchantId = {{ $merchant_id }};
 const apiBaseUrl = '/branch/' + branchId + '/checkout';
 const currencySign = '{{ $curr->sign ?? "" }}';
 const currencyFormat = {{ $gs->currency_format ?? 0 }};

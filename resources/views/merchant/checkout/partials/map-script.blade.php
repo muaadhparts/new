@@ -205,7 +205,7 @@ function confirmLocation() {
         data: {
             latitude: selectedLat,
             longitude: selectedLng,
-            merchant_id: merchantId,
+            branch_id: branchId,
             locale: currentLocale,
             _token: $('meta[name="csrf-token"]').attr('content')
         },

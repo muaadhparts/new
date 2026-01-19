@@ -103,7 +103,25 @@ class PurchaseController extends OperatorBaseController
         // Prepare tracking data for view (no logic in Blade)
         $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
 
-        return view('operator.purchase.details', compact('purchase', 'cart', 'trackingData'));
+        // ✅ تحميل بيانات MerchantPurchases مع الفروع
+        $merchantPurchases = $purchase->merchantPurchases()
+            ->with(['user', 'merchantBranch'])
+            ->get();
+
+        // بناء lookup للفروع حسب التاجر
+        $branchesLookup = [];
+        foreach ($merchantPurchases as $mp) {
+            if ($mp->merchantBranch) {
+                $branchesLookup[$mp->user_id] = [
+                    'id' => $mp->merchantBranch->id,
+                    'name' => $mp->merchantBranch->name,
+                    'city' => $mp->merchantBranch->city ?? '',
+                    'address' => $mp->merchantBranch->address ?? '',
+                ];
+            }
+        }
+
+        return view('operator.purchase.details', compact('purchase', 'cart', 'trackingData', 'merchantPurchases', 'branchesLookup'));
     }
 
     public function invoice($id)
@@ -114,7 +132,25 @@ class PurchaseController extends OperatorBaseController
         // Prepare tracking data for view (no logic in Blade)
         $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
 
-        return view('operator.purchase.invoice', compact('purchase', 'cart', 'trackingData'));
+        // ✅ تحميل بيانات MerchantPurchases مع الفروع
+        $merchantPurchases = $purchase->merchantPurchases()
+            ->with(['user', 'merchantBranch'])
+            ->get();
+
+        // بناء lookup للفروع حسب التاجر
+        $branchesLookup = [];
+        foreach ($merchantPurchases as $mp) {
+            if ($mp->merchantBranch) {
+                $branchesLookup[$mp->user_id] = [
+                    'id' => $mp->merchantBranch->id,
+                    'name' => $mp->merchantBranch->name,
+                    'city' => $mp->merchantBranch->city ?? '',
+                    'address' => $mp->merchantBranch->address ?? '',
+                ];
+            }
+        }
+
+        return view('operator.purchase.invoice', compact('purchase', 'cart', 'trackingData', 'merchantPurchases', 'branchesLookup'));
     }
 
     public function emailsub(Request $request)
@@ -149,7 +185,25 @@ class PurchaseController extends OperatorBaseController
         // Prepare tracking data for view (no logic in Blade)
         $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
 
-        return view('operator.purchase.print', compact('purchase', 'cart', 'trackingData'));
+        // ✅ تحميل بيانات MerchantPurchases مع الفروع
+        $merchantPurchases = $purchase->merchantPurchases()
+            ->with(['user', 'merchantBranch'])
+            ->get();
+
+        // بناء lookup للفروع حسب التاجر
+        $branchesLookup = [];
+        foreach ($merchantPurchases as $mp) {
+            if ($mp->merchantBranch) {
+                $branchesLookup[$mp->user_id] = [
+                    'id' => $mp->merchantBranch->id,
+                    'name' => $mp->merchantBranch->name,
+                    'city' => $mp->merchantBranch->city ?? '',
+                    'address' => $mp->merchantBranch->address ?? '',
+                ];
+            }
+        }
+
+        return view('operator.purchase.print', compact('purchase', 'cart', 'trackingData', 'branchesLookup'));
     }
 
     public function edit($id)

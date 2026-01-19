@@ -61,6 +61,10 @@ html {
                         <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $purchase->id) }}</span><br>
                         <span><strong>{{ __('Purchase Date') }} :</strong> {{ date('d-M-Y',strtotime($purchase->created_at)) }}</span><br>
                         <span><strong>{{  __('Purchase ID')}} :</strong> {{ $purchase->purchase_number }}</span><br>
+                        {{-- Branch Info --}}
+                        @if(!empty($branchData))
+                        <span><strong>{{ __('Branch') }} :</strong> {{ $branchData['name'] }}@if($branchData['city']) ({{ $branchData['city'] }})@endif</span><br>
+                        @endif
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
                             {{ __('Ship To Address') }}
                         </span><br>

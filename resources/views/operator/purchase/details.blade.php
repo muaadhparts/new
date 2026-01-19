@@ -476,10 +476,22 @@
                                         @if($catalogItem['item']['user_id'] != 0)
                                         @php
                                         $user = App\Models\User::find($catalogItem['item']['user_id']);
+                                        $branchInfo = $branchesLookup[$catalogItem['item']['user_id']] ?? null;
                                         @endphp
                                         @if(isset($user))
                                         <a target="_blank"
                                             href="{{route('operator-merchant-show',$user->id)}}">{{$user->shop_name}}</a>
+                                        {{-- Branch Info --}}
+                                        @if($branchInfo)
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-warehouse"></i>
+                                                {{ $branchInfo['name'] }}
+                                                @if($branchInfo['city'])
+                                                    ({{ $branchInfo['city'] }})
+                                                @endif
+                                            </small>
+                                        @endif
                                         @else
                                         {{ __('Merchant Removed') }}
                                         @endif

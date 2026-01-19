@@ -74,6 +74,21 @@
                                 class="info">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
                         </li>
 
+                        {{-- Branch Info (Branch-scoped checkout) --}}
+                        @if(!empty($branchData))
+                        <li class="info-list-item">
+                            <span class="info-type">
+                                <i class="fas fa-warehouse"></i> @lang('Branch')
+                            </span>
+                            <span class="info">
+                                <span class="m-badge m-badge--info">{{ $branchData['name'] }}</span>
+                                @if($branchData['city'])
+                                    <small class="text-muted">({{ $branchData['city'] }})</small>
+                                @endif
+                            </span>
+                        </li>
+                        @endif
+
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Payment Method')</span> <span class="info">{{ $purchase->method }}</span>

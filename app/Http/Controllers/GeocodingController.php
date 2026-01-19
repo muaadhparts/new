@@ -706,9 +706,9 @@ class GeocodingController extends Controller
             $taxLocation = $country->country_name;
         }
 
-        // 4. حساب مبلغ الضريبة من سلة التاجر المحدد فقط
-        $merchantId = (int) $request->input('merchant_id');
-        $cartSummary = $this->cartManager->getMerchantCartSummary($merchantId);
+        // 4. حساب مبلغ الضريبة من سلة الفرع المحدد فقط
+        $branchId = (int) $request->input('branch_id');
+        $cartSummary = $this->cartManager->getBranchCartSummary($branchId);
         $cartTotal = $cartSummary['total_price'];
         $taxAmount = ($cartTotal * $taxRate) / 100;
         // Store location data in location_draft session (merchant-scoped)
@@ -727,12 +727,12 @@ class GeocodingController extends Controller
             'tax_location' => $taxLocation,
         ];
 
-        // Always merchant-scoped (merchant_id is required)
-        \Session::put('location_draft_merchant_' . $merchantId, $locationDraft);
+        // Always branch-scoped (branch_id is required)
+        \Session::put('location_draft_branch_' . $branchId, $locationDraft);
 
         return response()->json([
             'success' => true,
-            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
             'geocoding_success' => $geocodingSuccess,
             'country_id' => $country->id ?? null,
             'country_name' => $country->country_name ?? $countryName,
@@ -744,7 +744,7 @@ class GeocodingController extends Controller
             'tax_rate' => $taxRate,
             'tax_amount' => round($taxAmount, 2),
             'tax_location' => $taxLocation,
-            'merchant_cart_total' => $cartTotal,
+            'branch_cart_total' => $cartTotal,
             'message' => $geocodingSuccess
                 ? ($taxRate > 0 ? "الضريبة {$taxRate}%" : 'لا توجد ضريبة')
                 : 'تم تحديد الموقع (الضريبة ستُحسب عند الإرسال)'

@@ -239,7 +239,6 @@
 
 <script>
 const branchId = {{ $branch_id }};
-const merchantId = {{ $merchant_id }};
 const apiBaseUrl = '/branch/' + branchId + '/checkout';
 let selectedPaymentMethod = null;
 

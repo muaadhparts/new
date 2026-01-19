@@ -3,17 +3,13 @@
 namespace App\Services\Cart;
 
 use App\Models\MerchantItem;
-use App\Models\User;
 use Illuminate\Support\Facades\Session;
 
 /**
- * MerchantCartManager - المصدر الوحيد للحقيقة
+ * MerchantCartManager - Branch-Scoped Cart Management
  *
- * ❌ لا يوجد Cart عام
- * ❌ لا Items بدون merchant
- * ❌ لا منطق مشترك بين التجار
- * ✅ كل عملية تتطلب merchantId
- * ✅ Fail-Fast فقط
+ * All cart operations are scoped by branch (branch_id).
+ * Each item belongs to a specific branch.
  */
 class MerchantCartManager
 {
@@ -176,12 +172,8 @@ class MerchantCartManager
             'whole_sell_qty' => $this->parseToArray($merchantItem->whole_sell_qty),
             'whole_sell_discount' => $this->parseToArray($merchantItem->whole_sell_discount),
 
-            // ═══════════════════════════════════════════════════════════════════
-            // Shipping (from CatalogItem ONLY - no auto-calculation)
-            // Weight is REQUIRED for shipping.
-            // If weight=0, shipping calculation will FAIL explicitly.
-            // Note: Dimensions (length, height, width) removed from catalog_items
-            // ═══════════════════════════════════════════════════════════════════
+            // Shipping (from CatalogItem ONLY)
+            // Weight is REQUIRED for shipping. If weight=0, shipping calculation will FAIL.
             'weight' => (float) ($catalogItem->weight ?? 0),
 
             // Timestamp
@@ -197,360 +189,12 @@ class MerchantCartManager
 
         return $this->success(
             __('تمت الإضافة للسلة'),
-            $this->getMerchantCart($merchantItem->user_id)
+            $this->getBranchCart($merchantItem->merchant_branch_id)
         );
     }
 
     // ══════════════════════════════════════════════════════════════
-    // تعديل الكمية
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Update item quantity
-     */
-    public function updateQty(int $merchantId, string $cartKey, int $qty): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $cart = $this->getStorage();
-        $item = $cart['items'][$cartKey] ?? null;
-
-        if (!$item) {
-            return $this->error(__('الصنف غير موجود في السلة'));
-        }
-
-        // ═══ التحقق من ملكية التاجر ═══
-        if ((int) $item['merchant_id'] !== $merchantId) {
-            throw new \RuntimeException(
-                "Cart item '{$cartKey}' belongs to merchant {$item['merchant_id']}, not {$merchantId}"
-            );
-        }
-
-        // ═══ التحقق من الحد الأدنى ═══
-        $minQty = (int) $item['min_qty'];
-        if ($qty < $minQty) {
-            return $this->error(__('الحد الأدنى للكمية') . ' ' . $minQty);
-        }
-
-        // ═══ التحقق من المخزون ═══
-        $merchantItem = MerchantItem::find($item['merchant_item_id']);
-        if (!$merchantItem || $merchantItem->status !== 1) {
-            unset($cart['items'][$cartKey]);
-            $this->saveStorage($cart);
-            return $this->error(__('الصنف لم يعد متاحاً'));
-        }
-
-        $stock = $this->getStock($merchantItem);
-        $isPreorder = (bool) $item['preordered'];
-
-        if (!$isPreorder && $stock > 0 && $qty > $stock) {
-            return $this->error(__('المتاح فقط') . ' ' . $stock);
-        }
-
-        // ═══ تحديث الحجز ═══
-        if (!$isPreorder && $stock > 0) {
-            $this->reservation->update($item['merchant_item_id'], $qty);
-        }
-
-        // ═══ تحديث الكمية ═══
-        $cart['items'][$cartKey]['qty'] = $qty;
-        $cart['items'][$cartKey]['total_price'] = $this->calculateItemTotal($cart['items'][$cartKey]);
-        $this->saveStorage($cart);
-
-        return $this->success(__('تم التحديث'), $this->getMerchantCart($merchantId));
-    }
-
-    /**
-     * Increase quantity by 1
-     */
-    public function increaseQty(int $merchantId, string $cartKey): array
-    {
-        $cart = $this->getStorage();
-        $item = $cart['items'][$cartKey] ?? null;
-
-        if (!$item) {
-            return $this->error(__('الصنف غير موجود'));
-        }
-
-        return $this->updateQty($merchantId, $cartKey, (int) $item['qty'] + 1);
-    }
-
-    /**
-     * Decrease quantity by 1
-     */
-    public function decreaseQty(int $merchantId, string $cartKey): array
-    {
-        $cart = $this->getStorage();
-        $item = $cart['items'][$cartKey] ?? null;
-
-        if (!$item) {
-            return $this->error(__('الصنف غير موجود'));
-        }
-
-        return $this->updateQty($merchantId, $cartKey, (int) $item['qty'] - 1);
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // حذف صنف
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Remove item from cart
-     */
-    public function removeItem(int $merchantId, string $cartKey): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $cart = $this->getStorage();
-        $item = $cart['items'][$cartKey] ?? null;
-
-        if (!$item) {
-            return $this->error(__('الصنف غير موجود'));
-        }
-
-        // ═══ التحقق من ملكية التاجر ═══
-        if ((int) $item['merchant_id'] !== $merchantId) {
-            throw new \RuntimeException(
-                "Cart item '{$cartKey}' belongs to merchant {$item['merchant_id']}, not {$merchantId}"
-            );
-        }
-
-        // ═══ تحرير الحجز ═══
-        $this->reservation->release($item['merchant_item_id']);
-
-        // ═══ حذف من السلة ═══
-        unset($cart['items'][$cartKey]);
-        $this->saveStorage($cart);
-
-        return $this->success(__('تم الحذف'), $this->getMerchantCart($merchantId));
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // قراءة بيانات تاجر محدد
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Get cart data for a specific merchant
-     *
-     * @param int $merchantId
-     * @return array{
-     *   merchant_id: int,
-     *   merchant_name: string,
-     *   items: array,
-     *   totals: array{qty: int, subtotal: float, discount: float, total: float},
-     *   has_other_merchants: bool
-     * }
-     */
-    public function getMerchantCart(int $merchantId): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $cart = $this->getStorage();
-        $merchantItems = [];
-
-        foreach ($cart['items'] as $key => $item) {
-            if ((int) $item['merchant_id'] === $merchantId) {
-                $merchantItems[$key] = $item;
-            }
-        }
-
-        // ═══ حساب الإجماليات ═══
-        $totals = $this->calculateTotals($merchantItems);
-
-        // ═══ معلومات التاجر ═══
-        $merchantName = '';
-        if (!empty($merchantItems)) {
-            $first = reset($merchantItems);
-            $merchantName = $first['merchant_name'] ?? '';
-        }
-
-        // ═══ هل يوجد تجار آخرين؟ ═══
-        $hasOthers = false;
-        foreach ($cart['items'] as $item) {
-            if ((int) $item['merchant_id'] !== $merchantId) {
-                $hasOthers = true;
-                break;
-            }
-        }
-
-        return [
-            'merchant_id' => $merchantId,
-            'merchant_name' => $merchantName,
-            'items' => $merchantItems,
-            'totals' => $totals,
-            'has_other_merchants' => $hasOthers,
-        ];
-    }
-
-    /**
-     * Get items for a specific merchant (simple array)
-     */
-    public function getMerchantItems(int $merchantId): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $cart = $this->getStorage();
-        $items = [];
-
-        foreach ($cart['items'] as $key => $item) {
-            if ((int) $item['merchant_id'] === $merchantId) {
-                $items[$key] = $item;
-            }
-        }
-
-        return $items;
-    }
-
-    /**
-     * Check if merchant has items in cart
-     */
-    public function hasMerchantItems(int $merchantId): bool
-    {
-        return !empty($this->getMerchantItems($merchantId));
-    }
-
-    /**
-     * Get totals for a specific merchant
-     */
-    public function getMerchantTotals(int $merchantId): array
-    {
-        $items = $this->getMerchantItems($merchantId);
-        return $this->calculateTotals($items);
-    }
-
-    /**
-     * Get merchant cart summary (for checkout pages)
-     *
-     * @return array{items_count: int, total_qty: int, total_price: float, items: array}
-     */
-    public function getMerchantCartSummary(int $merchantId): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $items = $this->getMerchantItems($merchantId);
-        $totals = $this->calculateTotals($items);
-
-        return [
-            'items_count' => count($items),
-            'total_qty' => $totals['qty'],
-            'total_price' => $totals['total'],
-            'subtotal' => $totals['subtotal'],
-            'discount' => $totals['discount'],
-            'items' => $items,
-        ];
-    }
-
-    /**
-     * Build cart payload for purchase creation
-     *
-     * @return array{totalQty: int, totalPrice: float, items: array}
-     */
-    public function buildCartPayload(int $merchantId): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $items = $this->getMerchantItems($merchantId);
-        $totals = $this->calculateTotals($items);
-
-        // Transform items to purchase format
-        $purchaseItems = [];
-        foreach ($items as $key => $item) {
-            $purchaseItems[$key] = [
-                'item' => [
-                    'id' => $item['catalog_item_id'],
-                    'user_id' => $item['merchant_id'],
-                    'branch_id' => $item['branch_id'] ?? null,
-                    'branch_name' => $item['branch_name'] ?? '',
-                    'name' => $item['name'],
-                    'name_ar' => $item['name_ar'] ?? $item['name'],
-                    'photo' => $item['photo'],
-                    'slug' => $item['slug'],
-                    'part_number' => $item['part_number'] ?? '',
-                ],
-                'merchant_item_id' => $item['merchant_item_id'],
-                'user_id' => $item['merchant_id'],
-                'branch_id' => $item['branch_id'] ?? null,
-                'branch_name' => $item['branch_name'] ?? '',
-                'qty' => $item['qty'],
-                'price' => $item['total_price'],
-                'stock' => $item['stock'],
-                'keys' => null,
-                'values' => null,
-            ];
-        }
-
-        return [
-            'totalQty' => $totals['qty'],
-            'totalPrice' => $totals['total'],
-            'items' => $purchaseItems,
-        ];
-    }
-
-    /**
-     * Remove all items for a merchant (alias for clearMerchant)
-     */
-    public function removeMerchantItems(int $merchantId): void
-    {
-        $this->clearMerchant($merchantId);
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // قائمة التجار في السلة
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Get list of merchant IDs in cart
-     */
-    public function getMerchantIds(): array
-    {
-        $cart = $this->getStorage();
-        $ids = [];
-
-        foreach ($cart['items'] as $item) {
-            $merchantId = (int) $item['merchant_id'];
-
-            if ($merchantId <= 0) {
-                throw new \RuntimeException(
-                    "Cart item has invalid merchant_id: {$merchantId}"
-                );
-            }
-
-            if (!in_array($merchantId, $ids)) {
-                $ids[] = $merchantId;
-            }
-        }
-
-        return $ids;
-    }
-
-    /**
-     * Get summary for all merchants (for cart page display)
-     *
-     * @return array<int, array{
-     *   merchant_id: int,
-     *   merchant_name: string,
-     *   items: array,
-     *   totals: array,
-     *   checkout_url: string
-     * }>
-     * @deprecated Use getAllBranchesCart() instead for branch-based checkout
-     */
-    public function getAllMerchantsCart(): array
-    {
-        $merchantIds = $this->getMerchantIds();
-        $result = [];
-
-        foreach ($merchantIds as $merchantId) {
-            $merchantCart = $this->getMerchantCart($merchantId);
-            $merchantCart['checkout_url'] = route('merchant.checkout.address', ['merchantId' => $merchantId]);
-            $result[$merchantId] = $merchantCart;
-        }
-
-        return $result;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // Branch-Scoped Methods (للتجميع حسب الفرع)
+    // Branch-Scoped Methods
     // ══════════════════════════════════════════════════════════════
 
     /**
@@ -579,18 +223,32 @@ class MerchantCartManager
     }
 
     /**
+     * Get list of merchant IDs in cart
+     */
+    public function getMerchantIds(): array
+    {
+        $cart = $this->getStorage();
+        $ids = [];
+
+        foreach ($cart['items'] as $item) {
+            $merchantId = (int) $item['merchant_id'];
+
+            if ($merchantId <= 0) {
+                throw new \RuntimeException(
+                    "Cart item has invalid merchant_id: {$merchantId}"
+                );
+            }
+
+            if (!in_array($merchantId, $ids)) {
+                $ids[] = $merchantId;
+            }
+        }
+
+        return $ids;
+    }
+
+    /**
      * Get cart data for a specific branch
-     *
-     * @param int $branchId
-     * @return array{
-     *   branch_id: int,
-     *   branch_name: string,
-     *   merchant_id: int,
-     *   merchant_name: string,
-     *   items: array,
-     *   totals: array{qty: int, subtotal: float, discount: float, total: float},
-     *   has_other_branches: bool
-     * }
      */
     public function getBranchCart(int $branchId): array
     {
@@ -605,10 +263,8 @@ class MerchantCartManager
             }
         }
 
-        // ═══ حساب الإجماليات ═══
         $totals = $this->calculateTotals($branchItems);
 
-        // ═══ معلومات الفرع والتاجر ═══
         $branchName = '';
         $merchantId = 0;
         $merchantName = '';
@@ -619,7 +275,6 @@ class MerchantCartManager
             $merchantName = $first['merchant_name'] ?? '';
         }
 
-        // ═══ هل يوجد فروع أخرى؟ ═══
         $hasOthers = false;
         foreach ($cart['items'] as $item) {
             if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
@@ -640,7 +295,7 @@ class MerchantCartManager
     }
 
     /**
-     * Get items for a specific branch (simple array)
+     * Get items for a specific branch
      */
     public function getBranchItems(int $branchId): array
     {
@@ -677,8 +332,6 @@ class MerchantCartManager
 
     /**
      * Get branch cart summary (for checkout pages)
-     *
-     * @return array{items_count: int, total_qty: int, total_price: float, items: array}
      */
     public function getBranchCartSummary(int $branchId): array
     {
@@ -698,9 +351,7 @@ class MerchantCartManager
     }
 
     /**
-     * Build cart payload for purchase creation (branch-scoped)
-     *
-     * @return array{totalQty: int, totalPrice: float, items: array}
+     * Build cart payload for purchase creation
      */
     public function buildBranchCartPayload(int $branchId): array
     {
@@ -709,7 +360,6 @@ class MerchantCartManager
         $items = $this->getBranchItems($branchId);
         $totals = $this->calculateTotals($items);
 
-        // Transform items to purchase format
         $purchaseItems = [];
         foreach ($items as $key => $item) {
             $purchaseItems[$key] = [
@@ -745,16 +395,6 @@ class MerchantCartManager
 
     /**
      * Get summary for all branches (for cart page display)
-     *
-     * @return array<int, array{
-     *   branch_id: int,
-     *   branch_name: string,
-     *   merchant_id: int,
-     *   merchant_name: string,
-     *   items: array,
-     *   totals: array,
-     *   checkout_url: string
-     * }>
      */
     public function getAllBranchesCart(): array
     {
@@ -784,20 +424,17 @@ class MerchantCartManager
             return $this->error(__('الصنف غير موجود في السلة'));
         }
 
-        // ═══ التحقق من ملكية الفرع ═══
         if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
             throw new \RuntimeException(
                 "Cart item '{$cartKey}' belongs to branch {$item['branch_id']}, not {$branchId}"
             );
         }
 
-        // ═══ التحقق من الحد الأدنى ═══
         $minQty = (int) $item['min_qty'];
         if ($qty < $minQty) {
             return $this->error(__('الحد الأدنى للكمية') . ' ' . $minQty);
         }
 
-        // ═══ التحقق من المخزون ═══
         $merchantItem = MerchantItem::find($item['merchant_item_id']);
         if (!$merchantItem || $merchantItem->status !== 1) {
             unset($cart['items'][$cartKey]);
@@ -812,12 +449,10 @@ class MerchantCartManager
             return $this->error(__('المتاح فقط') . ' ' . $stock);
         }
 
-        // ═══ تحديث الحجز ═══
         if (!$isPreorder && $stock > 0) {
             $this->reservation->update($item['merchant_item_id'], $qty);
         }
 
-        // ═══ تحديث الكمية ═══
         $cart['items'][$cartKey]['qty'] = $qty;
         $cart['items'][$cartKey]['total_price'] = $this->calculateItemTotal($cart['items'][$cartKey]);
         $this->saveStorage($cart);
@@ -839,17 +474,14 @@ class MerchantCartManager
             return $this->error(__('الصنف غير موجود'));
         }
 
-        // ═══ التحقق من ملكية الفرع ═══
         if ((int) ($item['branch_id'] ?? 0) !== $branchId) {
             throw new \RuntimeException(
                 "Cart item '{$cartKey}' belongs to branch {$item['branch_id']}, not {$branchId}"
             );
         }
 
-        // ═══ تحرير الحجز ═══
         $this->reservation->release($item['merchant_item_id']);
 
-        // ═══ حذف من السلة ═══
         unset($cart['items'][$cartKey]);
         $this->saveStorage($cart);
 
@@ -867,7 +499,6 @@ class MerchantCartManager
 
         foreach ($cart['items'] as $key => $item) {
             if ((int) ($item['branch_id'] ?? 0) === $branchId) {
-                // تحرير الحجز
                 $this->reservation->release($item['merchant_item_id']);
                 unset($cart['items'][$key]);
             }
@@ -907,7 +538,6 @@ class MerchantCartManager
             return false;
         }
 
-        // تأكيد خصم المخزون
         $confirmData = [];
         foreach ($items as $item) {
             $confirmData[$item['merchant_item_id']] = [
@@ -919,7 +549,6 @@ class MerchantCartManager
             return false;
         }
 
-        // مسح أصناف الفرع من السلة
         $this->clearBranch($branchId);
 
         return true;
@@ -956,122 +585,8 @@ class MerchantCartManager
         ];
     }
 
-    /**
-     * Validate branch ID
-     */
-    private function validateBranchId(int $branchId): void
-    {
-        if ($branchId <= 0) {
-            throw new \InvalidArgumentException(
-                "Invalid branchId: {$branchId}. Must be > 0."
-            );
-        }
-    }
-
     // ══════════════════════════════════════════════════════════════
-    // Checkout
-    // ══════════════════════════════════════════════════════════════
-
-    /**
-     * Get data for checkout (specific merchant only)
-     */
-    public function getForCheckout(int $merchantId): array
-    {
-        $this->validateMerchantId($merchantId);
-
-        $merchantCart = $this->getMerchantCart($merchantId);
-
-        if (empty($merchantCart['items'])) {
-            throw new \RuntimeException(
-                "No items in cart for merchant {$merchantId}"
-            );
-        }
-
-        return [
-            'merchant_id' => $merchantId,
-            'merchant_name' => $merchantCart['merchant_name'],
-            'items' => $merchantCart['items'],
-            'totals' => $merchantCart['totals'],
-            'has_other_merchants' => $merchantCart['has_other_merchants'],
-            'cart_payload' => [
-                'totalQty' => $merchantCart['totals']['qty'],
-                'totalPrice' => $merchantCart['totals']['total'],
-                'items' => $merchantCart['items'],
-            ],
-        ];
-    }
-
-    /**
-     * Check if there are other merchants after checkout
-     */
-    public function hasOtherMerchants(int $merchantId): bool
-    {
-        $this->validateMerchantId($merchantId);
-
-        $cart = $this->getStorage();
-
-        foreach ($cart['items'] as $item) {
-            if ((int) $item['merchant_id'] !== $merchantId) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Clear items for a specific merchant (after successful checkout)
-     */
-    public function clearMerchant(int $merchantId): void
-    {
-        $this->validateMerchantId($merchantId);
-
-        $cart = $this->getStorage();
-
-        foreach ($cart['items'] as $key => $item) {
-            if ((int) $item['merchant_id'] === $merchantId) {
-                // تحرير الحجز
-                $this->reservation->release($item['merchant_item_id']);
-                unset($cart['items'][$key]);
-            }
-        }
-
-        $this->saveStorage($cart);
-    }
-
-    /**
-     * Confirm checkout and deduct stock
-     */
-    public function confirmCheckout(int $merchantId): bool
-    {
-        $this->validateMerchantId($merchantId);
-
-        $items = $this->getMerchantItems($merchantId);
-
-        if (empty($items)) {
-            return false;
-        }
-
-        // تأكيد خصم المخزون
-        $confirmData = [];
-        foreach ($items as $item) {
-            $confirmData[$item['merchant_item_id']] = [
-                'qty' => $item['qty'],
-            ];
-        }
-
-        if (!$this->reservation->confirm($confirmData)) {
-            return false;
-        }
-
-        // مسح أصناف التاجر من السلة
-        $this->clearMerchant($merchantId);
-
-        return true;
-    }
-
-    // ══════════════════════════════════════════════════════════════
-    // مساعدات التخزين (خاص - لا يُستخدم من الخارج)
+    // Storage Methods
     // ══════════════════════════════════════════════════════════════
 
     private function getStorage(): array
@@ -1085,7 +600,7 @@ class MerchantCartManager
     }
 
     /**
-     * Clear all cart (admin/testing only)
+     * Clear all cart
      */
     public function clearAll(): void
     {
@@ -1094,7 +609,7 @@ class MerchantCartManager
     }
 
     // ══════════════════════════════════════════════════════════════
-    // دوال حساب خاصة
+    // Calculation Methods
     // ══════════════════════════════════════════════════════════════
 
     private function calculateTotals(array $items): array
@@ -1122,7 +637,6 @@ class MerchantCartManager
         $effectivePrice = (float) $item['effective_price'];
         $qty = (int) $item['qty'];
 
-        // حساب خصم الجملة
         $discountPercent = $this->getWholesaleDiscount($item);
 
         if ($discountPercent > 0) {
@@ -1153,14 +667,14 @@ class MerchantCartManager
     }
 
     // ══════════════════════════════════════════════════════════════
-    // دوال مساعدة
+    // Helper Methods
     // ══════════════════════════════════════════════════════════════
 
-    private function validateMerchantId(int $merchantId): void
+    private function validateBranchId(int $branchId): void
     {
-        if ($merchantId <= 0) {
+        if ($branchId <= 0) {
             throw new \InvalidArgumentException(
-                "Invalid merchantId: {$merchantId}. Must be > 0."
+                "Invalid branchId: {$branchId}. Must be > 0."
             );
         }
     }
@@ -1201,7 +715,7 @@ class MerchantCartManager
     }
 
     // ══════════════════════════════════════════════════════════════
-    // للعرض في الهيدر (عدد الأصناف فقط)
+    // Header Display
     // ══════════════════════════════════════════════════════════════
 
     /**

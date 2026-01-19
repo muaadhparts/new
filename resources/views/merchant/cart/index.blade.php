@@ -748,26 +748,6 @@
     color: var(--text-primary);
 }
 
-/* Legacy support for merchant sections */
-.m-cart__merchant-section {
-    margin-bottom: 2rem;
-}
-
-.m-cart__merchant-separator {
-    border: none;
-    border-top: 2px dashed var(--border-default, #dee2e6);
-    margin: 2rem 0;
-}
-
-.m-cart__clear-merchant-btn {
-    margin-top: 0.5rem;
-    color: var(--text-secondary);
-}
-
-.m-cart__clear-merchant-btn:hover {
-    color: var(--action-danger);
-}
-
 /* RTL Support */
 [dir="rtl"] .m-cart__item-actions {
     right: auto;

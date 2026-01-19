@@ -31,8 +31,7 @@
     $branchId = (int) ($item['branch_id'] ?? 0);
     $branchName = $item['branch_name'] ?? '';
 
-    // Merchant info (for reference)
-    $merchantId = (int) ($item['merchant_id'] ?? 0);
+    // Merchant item ID
     $merchantItemId = (int) ($item['merchant_item_id'] ?? 0);
     $merchantName = app()->getLocale() === 'ar' && !empty($item['merchant_name_ar'])
         ? $item['merchant_name_ar']
@@ -76,8 +75,7 @@
 <div class="m-cart__item {{ $hasIssue ? 'm-cart__item--has-issue' : '' }}"
      id="cart-row-{{ $domKey }}"
      data-cart-key="{{ $key }}"
-     data-branch-id="{{ $branchId }}"
-     data-merchant-id="{{ $merchantId }}">
+     data-branch-id="{{ $branchId }}">
 
     {{-- Issue Banner --}}
     @if($hasIssue)

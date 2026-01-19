@@ -1534,10 +1534,10 @@ Route::group(['middleware' => 'maintenance'], function () {
     // FAVORITE SECTION ENDS
 
     // ====================================================================
-    // CHECKOUT SECTION - NEW MERCHANT CHECKOUT SYSTEM
+    // CHECKOUT SECTION - BRANCH CHECKOUT SYSTEM
     // ====================================================================
     // All checkout routes are now in: routes/merchant-checkout.php
-    // Route prefix: /merchant/{merchantId}/checkout/
+    // Route prefix: /branch/{branchId}/checkout/
     // See: App\Http\Controllers\Merchant\CheckoutMerchantController
     // ====================================================================
 
@@ -1567,14 +1567,20 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::post('/checkout/payment/razorpay-notify', [\App\Http\Controllers\Merchant\Payment\RazorpayPaymentController::class, 'notify'])->name('front.razorpay.notify');
     Route::post('/checkout/payment/ssl-notify', [\App\Http\Controllers\Merchant\Payment\SslCommerzPaymentController::class, 'notify'])->name('front.ssl.notify');
 
-    // Payment return/cancel (legacy redirect - merchant_id from session)
+    // Payment return/cancel (legacy redirect - branch_id from session)
     Route::get('/checkout/payment/return', function() {
-        $merchantId = session('checkout_merchant_id', 0);
-        return redirect()->route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'success']);
+        $branchId = session('checkout_branch_id', 0);
+        if ($branchId) {
+            return redirect()->route('branch.checkout.return', ['branchId' => $branchId, 'status' => 'success']);
+        }
+        return redirect()->route('merchant-cart.index')->with('success', __('Payment completed'));
     })->name('front.payment.return');
     Route::get('/checkout/payment/cancle', function() {
-        $merchantId = session('checkout_merchant_id', 0);
-        return redirect()->route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'cancelled']);
+        $branchId = session('checkout_branch_id', 0);
+        if ($branchId) {
+            return redirect()->route('branch.checkout.return', ['branchId' => $branchId, 'status' => 'cancelled']);
+        }
+        return redirect()->route('merchant-cart.index')->with('error', __('Payment cancelled'));
     })->name('front.payment.cancle');
 
     // Discount Code routes (global - for cart page)

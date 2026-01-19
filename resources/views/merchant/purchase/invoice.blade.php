@@ -90,6 +90,27 @@
                             <span class="fw-normal">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
                         </li>
 
+                        {{-- Branch Info (Branch-scoped checkout) --}}
+                        @if(!empty($branchData))
+                        <li>
+                            <span class="fw-semibold">
+                                <i class="fas fa-warehouse"></i> @lang('Branch :')
+                            </span>
+                            <span class="fw-normal">
+                                {{ $branchData['name'] }}
+                                @if($branchData['city'])
+                                    ({{ $branchData['city'] }})
+                                @endif
+                            </span>
+                        </li>
+                        @if($branchData['address'])
+                        <li>
+                            <span class="fw-semibold">@lang('Branch Address :')</span>
+                            <span class="fw-normal">{{ $branchData['address'] }}</span>
+                        </li>
+                        @endif
+                        @endif
+
                         {{-- Customer Shipping Choice (from $trackingData) --}}
                         @if ($trackingData['hasCustomerChoice'])
                             <li>

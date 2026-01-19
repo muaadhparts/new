@@ -137,6 +137,18 @@
                                                 @elseif(isset($user))
                                                     <strong>{{ __('Merchant') }}:</strong> {{ $user->shop_name ?? $user->name }}<br>
                                                 @endif
+                                                {{-- Branch Info --}}
+                                                @php
+                                                    $itemMerchantId = $catalogItem['item']['user_id'] ?? 0;
+                                                    $branchInfo = $branchesLookup[$itemMerchantId] ?? null;
+                                                @endphp
+                                                @if($branchInfo)
+                                                    <strong><i class="fas fa-warehouse"></i> {{ __('Branch') }}:</strong> {{ $branchInfo['name'] }}
+                                                    @if($branchInfo['city'])
+                                                        <small>({{ $branchInfo['city'] }})</small>
+                                                    @endif
+                                                    <br>
+                                                @endif
                                                 @if(isset($catalogItem['item']['brand_name']))
                                                     <strong>{{ __('Brand') }}:</strong> {{ $catalogItem['item']['brand_name'] }}<br>
                                                 @endif

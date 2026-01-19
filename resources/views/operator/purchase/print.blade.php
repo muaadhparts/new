@@ -149,6 +149,14 @@ html {
                                                     @php $user = App\Models\User::find($catalogItem['item']['user_id']); @endphp
                                                     {{ $user->shop_name ?? $user->name ?? '' }}
                                                 @endif
+                                                {{-- Branch Info --}}
+                                                @php
+                                                    $itemMerchantId = $catalogItem['item']['user_id'] ?? 0;
+                                                    $branchInfo = isset($branchesLookup) ? ($branchesLookup[$itemMerchantId] ?? null) : null;
+                                                @endphp
+                                                @if($branchInfo)
+                                                    <br><small>{{ $branchInfo['name'] }}@if($branchInfo['city']) ({{ $branchInfo['city'] }})@endif</small>
+                                                @endif
                                             </td>
 
                                             <td>

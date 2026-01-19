@@ -56,6 +56,23 @@ class PurchaseController extends MerchantBaseController
             ->selectRaw('SUM(qty) as total_qty, SUM(price) as total_price, COUNT(*) as items_count')
             ->first();
 
+        // ✅ تحميل بيانات الفرع (Branch-scoped checkout)
+        $merchantPurchase = $purchase->merchantPurchases()
+            ->where('user_id', $merchantId)
+            ->with('merchantBranch')
+            ->first();
+
+        $branchData = null;
+        if ($merchantPurchase && $merchantPurchase->merchantBranch) {
+            $branch = $merchantPurchase->merchantBranch;
+            $branchData = [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'city' => $branch->city ?? '',
+                'address' => $branch->address ?? '',
+            ];
+        }
+
         // ✅ فحص حالة التوصيل والإكمال في الـ Controller
         $deliveryCourier = \App\Models\DeliveryCourier::where('merchant_id', $merchantId)
             ->where('purchase_id', $purchase->id)
@@ -100,7 +117,8 @@ class PurchaseController extends MerchantBaseController
             'trackingData',
             'purchaseStats',
             'merchantsLookup',
-            'merchantPurchasesLookup'
+            'merchantPurchasesLookup',
+            'branchData'
         ));
     }
 
@@ -117,10 +135,24 @@ class PurchaseController extends MerchantBaseController
         $cart = $purchase->cart;
         $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
 
-        // جلب بيانات MerchantPurchase في الـ Controller بدلاً من الـ View
+        // جلب بيانات MerchantPurchase مع الفرع في الـ Controller بدلاً من الـ View
         $merchantPurchase = $purchase->merchantPurchases()
             ->where('user_id', $user->id)
+            ->with('merchantBranch')
             ->first();
+
+        // ✅ بيانات الفرع (Branch-scoped checkout)
+        $branchData = null;
+        if ($merchantPurchase && $merchantPurchase->merchantBranch) {
+            $branch = $merchantPurchase->merchantBranch;
+            $branchData = [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'city' => $branch->city ?? '',
+                'address' => $branch->address ?? '',
+                'phone' => $branch->phone ?? '',
+            ];
+        }
 
         // تحضير البيانات المالية للعرض - كل القيم من قاعدة البيانات
         $merchantInvoiceData = [
@@ -134,7 +166,7 @@ class PurchaseController extends MerchantBaseController
             'tax_amount' => $merchantPurchase ? ($merchantPurchase->tax_amount ?? 0) : 0,
         ];
 
-        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData', 'merchantInvoiceData'));
+        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData', 'merchantInvoiceData', 'branchData'));
     }
 
     public function printpage($slug)
@@ -150,7 +182,25 @@ class PurchaseController extends MerchantBaseController
         $cart = $purchase->cart;
         $trackingData = app(TrackingViewService::class)->forMerchant($purchase, $user->id);
 
-        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData'));
+        // ✅ بيانات الفرع (Branch-scoped checkout)
+        $merchantPurchase = $purchase->merchantPurchases()
+            ->where('user_id', $user->id)
+            ->with('merchantBranch')
+            ->first();
+
+        $branchData = null;
+        if ($merchantPurchase && $merchantPurchase->merchantBranch) {
+            $branch = $merchantPurchase->merchantBranch;
+            $branchData = [
+                'id' => $branch->id,
+                'name' => $branch->name,
+                'city' => $branch->city ?? '',
+                'address' => $branch->address ?? '',
+                'phone' => $branch->phone ?? '',
+            ];
+        }
+
+        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData'));
     }
 
     /**

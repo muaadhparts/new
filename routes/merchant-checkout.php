@@ -6,8 +6,8 @@
  * All routes require authentication and follow RESTful conventions.
  * Controllers return JSON responses for API calls, or views for browser requests.
  *
- * NOTE: Checkout is now branch-scoped (branchId parameter),
- *       but payment/shipping methods remain merchant-scoped (from branch->user)
+ * Checkout is branch-scoped (branchId parameter),
+ * but payment/shipping methods remain merchant-scoped (from branch->user)
  */
 
 use App\Http\Controllers\Merchant\CheckoutMerchantController;
@@ -30,10 +30,9 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Branch Checkout Routes (NEW - Primary)
+| Branch Checkout Routes
 |--------------------------------------------------------------------------
 |
-| New API-First checkout flow for branch-specific purchases.
 | All routes are prefixed with /branch/{branchId}/checkout
 |
 */
@@ -170,45 +169,11 @@ Route::prefix('branch/{branchId}/checkout')
 
 /*
 |--------------------------------------------------------------------------
-| Legacy Merchant Checkout Routes (Redirects to Branch)
-|--------------------------------------------------------------------------
-|
-| Keep old merchant routes for backwards compatibility.
-| These redirect to new branch routes when accessed.
-|
-*/
-
-Route::prefix('merchant/{merchantId}/checkout')
-    ->middleware(['web', 'preserve.session'])
-    ->group(function () {
-
-        // Redirect to branch checkout if accessed
-        Route::get('/address', function (int $merchantId) {
-            return redirect()->route('merchant-cart.index')
-                ->with('info', __('Please select a branch to checkout'));
-        })->name('merchant.checkout.address');
-
-        Route::get('/shipping', function (int $merchantId) {
-            return redirect()->route('merchant-cart.index');
-        })->name('merchant.checkout.shipping');
-
-        Route::get('/payment', function (int $merchantId) {
-            return redirect()->route('merchant-cart.index');
-        })->name('merchant.checkout.payment');
-
-        Route::get('/return/{status?}', function (int $merchantId) {
-            return redirect()->route('merchant-cart.index');
-        })->name('merchant.checkout.return');
-    });
-
-/*
-|--------------------------------------------------------------------------
 | Payment Callback Routes (No Branch ID in URL)
 |--------------------------------------------------------------------------
 |
-| These routes handle payment gateway callbacks that don't include
-| branch_id in the URL. The branch_id is passed via query parameter
-| or stored in session.
+| These routes handle payment gateway callbacks.
+| The branch_id is passed via query parameter or stored in session.
 |
 */
 
@@ -251,51 +216,4 @@ Route::prefix('branch/payment')
         // SSL Commerz Callback
         Route::post('/sslcommerz/callback', [SslCommerzPaymentController::class, 'handleCallback'])
             ->name('branch.payment.sslcommerz.callback');
-    });
-
-/*
-|--------------------------------------------------------------------------
-| Legacy Payment Callback Routes (Keep for existing payments)
-|--------------------------------------------------------------------------
-*/
-
-Route::prefix('merchant/payment')
-    ->middleware(['web', 'preserve.session'])
-    ->group(function () {
-
-        // Stripe Callback
-        Route::get('/stripe/callback', [StripePaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.stripe.callback');
-
-        // PayPal Callback
-        Route::get('/paypal/callback', [PaypalPaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.paypal.callback');
-
-        // Razorpay Callback
-        Route::post('/razorpay/callback', [RazorpayPaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.razorpay.callback');
-
-        // MyFatoorah Callback
-        Route::get('/myfatoorah/callback', [MyFatoorahPaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.myfatoorah.callback');
-
-        // Instamojo Callback
-        Route::get('/instamojo/callback', [InstamojoPaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.instamojo.callback');
-
-        // Paytm Callback
-        Route::post('/paytm/callback', [PaytmPaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.paytm.callback');
-
-        // Mollie Callback
-        Route::get('/mollie/callback', [MolliePaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.mollie.callback');
-
-        // Flutterwave Callback
-        Route::get('/flutterwave/callback', [FlutterwavePaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.flutterwave.callback');
-
-        // SSL Commerz Callback
-        Route::post('/sslcommerz/callback', [SslCommerzPaymentController::class, 'handleCallback'])
-            ->name('merchant.payment.sslcommerz.callback');
     });
