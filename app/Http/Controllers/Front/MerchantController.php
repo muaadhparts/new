@@ -10,6 +10,7 @@ use App\{
     Models\ChatEntry
 };
 use App\Models\QualityBrand;
+use App\Models\MerchantBranch;
 use Illuminate\{
     Http\Request,
     Support\Facades\DB
@@ -22,6 +23,7 @@ class MerchantController extends FrontBaseController
         $sort   = $request->sort;
         $pageby = $request->pageby;
         $brandQualityFilter = $request->input('brand_quality', []);
+        $branchFilter = $request->input('branch', []);
 
         $string = str_replace('-', ' ', $slug);
         $merchant = User::where('shop_name', '=', $string)->first();
@@ -47,6 +49,19 @@ class MerchantController extends FrontBaseController
             ->pluck('brand_quality_id');
 
         $data['brand_qualities'] = QualityBrand::whereIn('id', $merchantQualityIds)->get();
+
+        // Get branches for this merchant that have items
+        $merchantBranchIds = DB::table('merchant_items')
+            ->where('user_id', $merchant->id)
+            ->where('status', 1)
+            ->whereNotNull('merchant_branch_id')
+            ->distinct()
+            ->pluck('merchant_branch_id');
+
+        $data['branches'] = MerchantBranch::whereIn('id', $merchantBranchIds)
+            ->where('status', 1)
+            ->orderBy('branch_name', 'asc')
+            ->get();
 
         // Latest items: based on merchant_items (active + merchant enabled)
         $data['latest_products'] = CatalogItem::status(1)
@@ -79,14 +94,19 @@ class MerchantController extends FrontBaseController
             }
         ]);
 
-        // Filter by specific merchant and Brand Quality via merchant_items
-        $prods = $prods->whereHas('merchantItems', function ($q) use ($merchant, $brandQualityFilter, $request) {
+        // Filter by specific merchant, Brand Quality, and Branch via merchant_items
+        $prods = $prods->whereHas('merchantItems', function ($q) use ($merchant, $brandQualityFilter, $branchFilter, $request) {
             $q->where('user_id', $merchant->id)
               ->where('status', 1);
 
             // Filter by Brand Quality
             if (!empty($brandQualityFilter)) {
                 $q->whereIn('brand_quality_id', (array) $brandQualityFilter);
+            }
+
+            // Filter by Branch
+            if (!empty($branchFilter)) {
+                $q->whereIn('merchant_branch_id', (array) $branchFilter);
             }
 
             // Discount filter (type) from merchant_items

@@ -66,6 +66,36 @@
                             
                             
                         </div>
+                        <!-- Branch Filter -->
+                        @if(isset($branches) && $branches->count() > 0)
+                        <div class="single-catalogItem-widget">
+                            <h5 class="widget-name">@lang('Branch')</h5>
+                            <div class="warranty-type m-filter-scroll-box">
+                                <ul>
+                                    @foreach ($branches as $branch)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input branch-filter"
+                                                name="branch[]"
+                                                {{ isset($_GET['branch']) && in_array($branch->id, (array)$_GET['branch']) ? 'checked' : '' }}
+                                                id="branch_{{ $branch->id }}"
+                                                value="{{ $branch->id }}">
+                                            <label class="icon-label"
+                                                for="branch_{{ $branch->id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="branch_{{ $branch->id }}">{{ $branch->branch_name }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- Brand Quality Filter -->
                         @if(isset($brand_qualities) && $brand_qualities->count() > 0)
                         <div class="single-catalogItem-widget">
@@ -448,10 +478,17 @@
                     const sortVal = urlParams.get('sort') || 'date_desc';
                     $('#sortby').val(sortVal);
 
-                    // Update Brand Quality checkboxes
+                    // Reset all filter checkboxes
                     $('.attribute-input').prop('checked', false);
+
+                    // Update Brand Quality checkboxes
                     urlParams.getAll('brand_quality[]').forEach(function(val) {
                         $('input[name="brand_quality[]"][value="' + val + '"]').prop('checked', true);
+                    });
+
+                    // Update Branch checkboxes
+                    urlParams.getAll('branch[]').forEach(function(val) {
+                        $('input[name="branch[]"][value="' + val + '"]').prop('checked', true);
                     });
 
                     // Load content without adding to history

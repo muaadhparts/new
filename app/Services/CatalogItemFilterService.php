@@ -24,7 +24,7 @@ class CatalogItemFilterService
     ) {}
 
     /**
-     * Get filter sidebar data (merchants, brand qualities, categories)
+     * Get filter sidebar data (merchants, branches, brand qualities, categories)
      * Now uses Brand → Catalog hierarchy
      */
     public function getFilterSidebarData(): array
@@ -34,6 +34,7 @@ class CatalogItemFilterService
             // Catalog has 'childs' accessor that returns NewCategories Level 1
             'categories' => Brand::with('catalogs')->where('status', 1)->get(),
             'merchants' => $this->getActiveMerchants(),
+            'branches' => $this->getActiveBranches(),
             'brand_qualities' => QualityBrand::active()->orderBy('name_en', 'asc')->get(),
         ];
     }
@@ -50,6 +51,24 @@ class CatalogItemFilterService
             ->groupBy('merchant_items.user_id')
             ->selectRaw('merchant_items.user_id, users.shop_name, users.shop_name_ar')
             ->orderBy('users.shop_name', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get active branches with catalog items
+     */
+    public function getActiveBranches()
+    {
+        return MerchantItem::select('merchant_items.merchant_branch_id')
+            ->join('merchant_branches', 'merchant_branches.id', '=', 'merchant_items.merchant_branch_id')
+            ->join('users', 'users.id', '=', 'merchant_branches.user_id')
+            ->where('merchant_items.status', 1)
+            ->where('merchant_branches.status', 1)
+            ->where('users.is_merchant', 2)
+            ->groupBy('merchant_items.merchant_branch_id')
+            ->selectRaw('merchant_items.merchant_branch_id, merchant_branches.branch_name, merchant_branches.user_id, users.shop_name, users.shop_name_ar')
+            ->orderBy('users.shop_name', 'asc')
+            ->orderBy('merchant_branches.branch_name', 'asc')
             ->get();
     }
 
@@ -276,6 +295,18 @@ class CatalogItemFilterService
     }
 
     /**
+     * Apply branch filter
+     */
+    public function applyBranchFilter(Builder $query, Request $request): void
+    {
+        $branchFilter = $this->normalizeArrayInput($request->branch);
+
+        if (!empty($branchFilter)) {
+            $query->whereIn('merchant_items.merchant_branch_id', $branchFilter);
+        }
+    }
+
+    /**
      * Apply brand quality filter
      */
     public function applyBrandQualityFilter(Builder $query, Request $request): void
@@ -354,6 +385,7 @@ class CatalogItemFilterService
     ): void {
         $this->applyFitmentFilters($query, $cat, $subcat, $childcat, $catalog);
         $this->applyMerchantFilter($query, $request);
+        $this->applyBranchFilter($query, $request);
         $this->applyBrandQualityFilter($query, $request);
         $this->applyPriceFilter(
             $query,
@@ -405,6 +437,7 @@ class CatalogItemFilterService
             $hierarchy['subcat'],
             $deepestCategory,
             $sidebarData['merchants'],
+            $sidebarData['branches'],
             $sidebarData['brand_qualities']
         );
 
@@ -424,6 +457,7 @@ class CatalogItemFilterService
         $subcat,
         $childcat,
         $allMerchants,
+        $allBranches,
         $allBrandQualities
     ): array {
         $summary = [
@@ -432,6 +466,7 @@ class CatalogItemFilterService
             'subcategory' => null,
             'childcategory' => null,
             'merchants' => [],
+            'branches' => [],
             'brandQualities' => [],
         ];
 
@@ -453,6 +488,16 @@ class CatalogItemFilterService
             foreach ($allMerchants as $merchant) {
                 if (in_array($merchant->user_id, $merchantIds)) {
                     $summary['merchants'][] = $this->getLocalizedShopName($merchant);
+                }
+            }
+            $summary['hasFilters'] = true;
+        }
+
+        $branchIds = $this->normalizeArrayInput($request->branch);
+        if (!empty($branchIds)) {
+            foreach ($allBranches as $branch) {
+                if (in_array($branch->merchant_branch_id, $branchIds)) {
+                    $summary['branches'][] = $branch->branch_name;
                 }
             }
             $summary['hasFilters'] = true;

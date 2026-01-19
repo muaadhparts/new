@@ -351,6 +351,39 @@
                         </div>
                         @endif
 
+                        <!-- Branch Filter -->
+                        @if(isset($branches) && $branches->count() > 0)
+                        <div class="single-catalogItem-widget">
+                            <h5 class="widget-name">@lang('Branch')</h5>
+                            <div class="warranty-type m-filter-scroll-box">
+                                <ul>
+                                    @foreach ($branches as $branch)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input branch-filter"
+                                                name="branch[]"
+                                                {{ isset($_GET['branch']) && in_array($branch->merchant_branch_id, (array)$_GET['branch']) ? 'checked' : '' }}
+                                                id="branch_{{ $branch->merchant_branch_id }}"
+                                                value="{{ $branch->merchant_branch_id }}">
+                                            <label class="icon-label"
+                                                for="branch_{{ $branch->merchant_branch_id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="branch_{{ $branch->merchant_branch_id }}">
+                                                {{ $branch->branch_name }}
+                                                <small class="text-muted">({{ getLocalizedShopName($branch) }})</small>
+                                            </label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endif
+
                         <!-- Brand Quality Filter -->
                         @if(isset($brand_qualities) && $brand_qualities->count() > 0)
                         <div class="single-catalogItem-widget">
@@ -475,6 +508,13 @@
                                             <li>
                                                 <span class="m-no-results-box__filter-label">@lang('Merchant'):</span>
                                                 <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['merchants']) }}</span>
+                                            </li>
+                                            @endif
+
+                                            @if(!empty($filterSummary['branches']))
+                                            <li>
+                                                <span class="m-no-results-box__filter-label">@lang('Branch'):</span>
+                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['branches']) }}</span>
                                             </li>
                                             @endif
 
@@ -877,13 +917,17 @@
                     params.append('merchant[]', $(this).val());
                 });
 
+                $(".branch-filter:checked").each(function() {
+                    params.append('branch[]', $(this).val());
+                });
+
                 $(".brand-quality-filter:checked").each(function() {
                     params.append('brand_quality[]', $(this).val());
                 });
 
                 $(".attribute-input:checked").each(function() {
                     const name = $(this).attr('name');
-                    if (name !== 'merchant[]' && name !== 'brand_quality[]') {
+                    if (name !== 'merchant[]' && name !== 'branch[]' && name !== 'brand_quality[]') {
                         params.append(name, $(this).val());
                     }
                 });
