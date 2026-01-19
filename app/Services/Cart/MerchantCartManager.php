@@ -178,13 +178,11 @@ class MerchantCartManager
 
             // ═══════════════════════════════════════════════════════════════════
             // Shipping (from CatalogItem ONLY - no auto-calculation)
-            // Weight is REQUIRED for shipping. Dimensions are optional.
+            // Weight is REQUIRED for shipping.
             // If weight=0, shipping calculation will FAIL explicitly.
+            // Note: Dimensions (length, height, width) removed from catalog_items
             // ═══════════════════════════════════════════════════════════════════
             'weight' => (float) ($catalogItem->weight ?? 0),
-            'length' => (float) ($catalogItem->length ?? 0),
-            'height' => (float) ($catalogItem->height ?? 0),
-            'width' => (float) ($catalogItem->width ?? 0),
 
             // Timestamp
             'added_at' => now()->toDateTimeString(),

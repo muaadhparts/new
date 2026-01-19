@@ -129,28 +129,6 @@
                             </div>
                         </div>
 
-                        {{-- Packaging Button --}}
-                        @if(!empty($packaging) && count($packaging) > 0)
-                        <div class="m-card mb-4">
-                            <div class="m-card__header">
-                                <h5 class="m-0">
-                                    <i class="fas fa-box me-2"></i>
-                                    @lang('Packaging')
-                                </h5>
-                            </div>
-                            <div class="m-card__body">
-                                <button type="button" class="m-btn m-btn--outline w-100 d-flex align-items-center justify-content-between"
-                                        id="packaging-btn" data-bs-toggle="modal" data-bs-target="#packagingModal">
-                                    <span>
-                                        <i class="fas fa-gift me-2"></i>
-                                        @lang('Select Packaging')
-                                    </span>
-                                    <span id="packaging-selected-text" class="text-muted">@lang('Optional')</span>
-                                </button>
-                            </div>
-                        </div>
-                        @endif
-
                     </div>
 
                     {{-- Order Summary --}}
@@ -321,50 +299,6 @@
                 </div>
             @endif
         @endforeach
-    @endif
-
-    {{-- Packaging Modal --}}
-    @if(!empty($packaging) && count($packaging) > 0)
-    <div class="modal fade gs-modal" id="packagingModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-name">
-                        <i class="fas fa-box me-2"></i>
-                        @lang('Select Packaging')
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-0">
-                    <div class="packaging-options p-3" style="max-height: 400px; overflow-y: auto;">
-                        @foreach($packaging as $pack)
-                        <div class="form-check p-3 border rounded mb-2 packaging-option" data-price="{{ $pack['price'] }}">
-                            <input class="form-check-input" type="radio" name="packaging_option"
-                                   id="pack_{{ $pack['id'] }}" value="{{ $pack['id'] }}"
-                                   data-price="{{ $pack['price'] }}"
-                                   data-name="{{ $pack['name'] }}">
-                            <label class="form-check-label w-100 d-flex justify-content-between align-items-center" for="pack_{{ $pack['id'] }}">
-                                <div>
-                                    <strong>{{ $pack['name'] }}</strong>
-                                    @if(!empty($pack['subname']))
-                                    <br><small class="text-muted">{{ $pack['subname'] }}</small>
-                                    @endif
-                                </div>
-                                <span class="text-success fw-bold">
-                                    @if($pack['price'] > 0)
-                                        {{ $curr->sign ?? '' }}{{ number_format($pack['price'], 2) }}
-                                    @else
-                                        @lang('Free')
-                                    @endif
-                                </span>
-                            </label>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
     @endif
 
     {{-- Courier Modal --}}
