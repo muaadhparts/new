@@ -1433,6 +1433,9 @@ Route::group(['middleware' => 'maintenance'], function () {
     // AJAX APIs for catalog selector (lightweight on-demand loading)
     Route::get('/api/catalog/catalogs', 'Front\CatalogController@getCatalogs')->name('front.api.catalogs');
     Route::get('/api/catalog/tree', 'Front\CatalogController@getTreeCategories')->name('front.api.tree');
+
+    // AJAX API for merchant branches (branches are fetched per merchant context only)
+    Route::get('/api/merchant/branches', 'Front\CatalogController@getMerchantBranches')->name('front.api.merchant.branches');
     // CATALOG SECTION ENDS
 
     // TAG SECTION

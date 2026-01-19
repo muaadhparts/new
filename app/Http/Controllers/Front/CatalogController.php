@@ -278,6 +278,36 @@ class CatalogController extends FrontBaseController
         ]));
     }
 
+    /**
+     * Get branches for a specific merchant (AJAX endpoint)
+     * Branches are ALWAYS tied to a merchant - cannot be fetched globally
+     */
+    public function getMerchantBranches(Request $request)
+    {
+        $merchantId = (int) $request->input('merchant_id');
+
+        if (!$merchantId) {
+            return response()->json([]);
+        }
+
+        // Verify merchant exists and is active
+        $merchant = \App\Models\User::where('id', $merchantId)
+            ->where('is_merchant', 2)
+            ->first();
+
+        if (!$merchant) {
+            return response()->json([]);
+        }
+
+        // Get branches that have items in stock for this merchant
+        $branches = $this->filterService->getBranchesForMerchant($merchantId);
+
+        return response()->json($branches->map(fn($b) => [
+            'id' => $b->id,
+            'name' => $b->branch_name,
+        ]));
+    }
+
     public function report(Request $request)
     {
 

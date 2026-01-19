@@ -351,38 +351,18 @@
                         </div>
                         @endif
 
-                        <!-- Branch Filter -->
-                        @if(isset($branches) && $branches->count() > 0)
-                        <div class="single-catalogItem-widget">
+                        <!-- Branch Filter (Loaded via AJAX when ONE merchant is selected) -->
+                        <div class="single-catalogItem-widget d-none" id="branch-filter-widget">
                             <h5 class="widget-name">@lang('Branch')</h5>
                             <div class="warranty-type m-filter-scroll-box">
-                                <ul>
-                                    @foreach ($branches as $branch)
-                                        <li class="gs-checkbox-wrapper">
-                                            <input type="checkbox" class="attribute-input branch-filter"
-                                                name="branch[]"
-                                                {{ isset($_GET['branch']) && in_array($branch->merchant_branch_id, (array)$_GET['branch']) ? 'checked' : '' }}
-                                                id="branch_{{ $branch->merchant_branch_id }}"
-                                                value="{{ $branch->merchant_branch_id }}">
-                                            <label class="icon-label"
-                                                for="branch_{{ $branch->merchant_branch_id }}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
-                                                    height="12" viewBox="0 0 12 12" fill="none">
-                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
-                                                        stroke-width="1.6666" stroke-linecap="round"
-                                                        stroke-linejoin="round" />
-                                                </svg>
-                                            </label>
-                                            <label for="branch_{{ $branch->merchant_branch_id }}">
-                                                {{ $branch->branch_name }}
-                                                <small class="text-muted">({{ getLocalizedShopName($branch) }})</small>
-                                            </label>
-                                        </li>
-                                    @endforeach
+                                <ul id="branch-filter-list">
+                                    <!-- Branches loaded via AJAX -->
                                 </ul>
                             </div>
+                            <p class="text-muted small mt-2 branch-loading-msg d-none">
+                                <i class="fas fa-spinner fa-spin"></i> @lang('Loading branches...')
+                            </p>
                         </div>
-                        @endif
 
                         <!-- Brand Quality Filter -->
                         @if(isset($brand_qualities) && $brand_qualities->count() > 0)
@@ -789,9 +769,124 @@
             window.categoryPagination.updateUI = updatePaginationUI;
 
             // ========================================
-            // Filter Events (Brand Quality, Merchant)
+            // Dynamic Branch Filter via AJAX (merchant context required)
             // ========================================
-            $(".attribute-input").on('change', function() {
+            const branchApiUrl = '{{ route("front.api.merchant.branches") }}';
+            const $branchWidget = $('#branch-filter-widget');
+            const $branchList = $('#branch-filter-list');
+            const $branchLoadingMsg = $('.branch-loading-msg');
+            let currentBranchMerchantId = null;
+
+            // Get selected branches from URL (for page load restoration)
+            function getSelectedBranchesFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.getAll('branch[]');
+            }
+
+            // Load branches for a specific merchant via AJAX
+            function loadBranchesForMerchant(merchantId) {
+                if (!merchantId) {
+                    hideBranchFilter();
+                    return;
+                }
+
+                // Skip if already loaded for this merchant
+                if (currentBranchMerchantId === merchantId) {
+                    return;
+                }
+
+                currentBranchMerchantId = merchantId;
+                $branchWidget.removeClass('d-none');
+                $branchList.empty();
+                $branchLoadingMsg.removeClass('d-none');
+
+                $.ajax({
+                    url: branchApiUrl,
+                    type: 'GET',
+                    data: { merchant_id: merchantId },
+                    dataType: 'json',
+                    success: function(branches) {
+                        $branchLoadingMsg.addClass('d-none');
+
+                        if (branches.length === 0) {
+                            $branchWidget.addClass('d-none');
+                            currentBranchMerchantId = null;
+                            return;
+                        }
+
+                        const selectedBranches = getSelectedBranchesFromUrl();
+
+                        branches.forEach(function(branch) {
+                            const isChecked = selectedBranches.includes(branch.id.toString()) ? 'checked' : '';
+                            const html = `
+                                <li class="gs-checkbox-wrapper">
+                                    <input type="checkbox" class="attribute-input branch-filter"
+                                        name="branch[]"
+                                        id="branch_${branch.id}"
+                                        value="${branch.id}" ${isChecked}>
+                                    <label class="icon-label" for="branch_${branch.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                            <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </label>
+                                    <label for="branch_${branch.id}">${branch.name}</label>
+                                </li>
+                            `;
+                            $branchList.append(html);
+                        });
+
+                        // Bind change event to new branch checkboxes
+                        $branchList.find('.branch-filter').on('change', function() {
+                            currentPage = 1;
+                            loadContent(1);
+                        });
+                    },
+                    error: function() {
+                        $branchLoadingMsg.addClass('d-none');
+                        $branchWidget.addClass('d-none');
+                        currentBranchMerchantId = null;
+                    }
+                });
+            }
+
+            // Hide branch filter and clear selection
+            function hideBranchFilter() {
+                $branchWidget.addClass('d-none');
+                $branchList.empty();
+                currentBranchMerchantId = null;
+            }
+
+            // Update branch filter based on merchant selection
+            function updateBranchFilter() {
+                const selectedMerchants = [];
+                $('.merchant-filter:checked').each(function() {
+                    selectedMerchants.push($(this).val());
+                });
+
+                if (selectedMerchants.length === 1) {
+                    // Exactly ONE merchant selected - load their branches
+                    loadBranchesForMerchant(selectedMerchants[0]);
+                } else {
+                    // No merchant or multiple merchants - hide branch filter
+                    hideBranchFilter();
+                }
+            }
+
+            // Initialize branch filter on page load
+            updateBranchFilter();
+
+            // ========================================
+            // Filter Events (Merchant, Branch, Brand Quality)
+            // ========================================
+            // Merchant filter change - update branches then load content
+            $(".merchant-filter").on('change', function() {
+                updateBranchFilter();
+                currentPage = 1;
+                loadContent(1);
+            });
+
+            // Other attribute filters (excluding merchant and branch which are handled separately)
+            $(".attribute-input").not('.merchant-filter').not('.branch-filter').on('change', function() {
                 // Reset to page 1 when filter changes
                 currentPage = 1;
                 loadContent(1);
@@ -871,13 +966,17 @@
                     categoryPageSort = sortVal; // Update global persistent state
                     $('#sortby').val(sortVal);
 
-                    // Update filter checkboxes
-                    $('.attribute-input').prop('checked', false);
+                    // Update filter checkboxes (except branch which is handled dynamically)
+                    $('.attribute-input').not('.branch-filter').prop('checked', false);
                     urlParams.forEach(function(value, key) {
-                        if (key.endsWith('[]')) {
+                        if (key.endsWith('[]') && key !== 'branch[]') {
                             $('input[name="' + key + '"][value="' + value + '"]').prop('checked', true);
                         }
                     });
+
+                    // Reset branch state and reload based on merchant selection
+                    currentBranchMerchantId = null;
+                    updateBranchFilter();
 
                     // Load content without adding to history
                     currentPage = state.page;
