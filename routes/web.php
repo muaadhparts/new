@@ -1484,39 +1484,42 @@ Route::group(['middleware' => 'maintenance'], function () {
     // Clean, unified cart API - replaces all old cart routes
     // Uses: App\Http\Controllers\Front\MerchantCartController
     // Service: App\Services\Cart\MerchantCartManager
-    // ALL operations are Merchant-Scoped (except add which infers merchant from item)
+    // ALL operations are Branch-Scoped (except add which infers branch from item)
     Route::prefix('merchant-cart')->name('merchant-cart.')->group(function () {
-        // Cart page view
+        // Cart page view (grouped by branch)
         Route::get('/', 'Front\MerchantCartController@index')->name('index');
 
-        // Get all merchants cart (AJAX for full page)
+        // Get all branches cart (AJAX for full page)
         Route::get('/all', 'Front\MerchantCartController@all')->name('all');
 
-        // Get merchant cart summary (AJAX) - requires merchant_id
+        // Get branch cart summary (AJAX) - requires branch_id
         Route::get('/summary', 'Front\MerchantCartController@summary')->name('summary');
 
         // Cart count (for header badge)
         Route::get('/count', 'Front\MerchantCartController@count')->name('count');
 
-        // Get merchant IDs in cart
+        // Get branch IDs in cart
+        Route::get('/branches', 'Front\MerchantCartController@branches')->name('branches');
+
+        // Get merchant IDs in cart (legacy support)
         Route::get('/merchants', 'Front\MerchantCartController@merchants')->name('merchants');
 
-        // Add item to cart (merchant inferred from merchant_item_id)
+        // Add item to cart (branch inferred from merchant_item_id)
         Route::post('/add', 'Front\MerchantCartController@add')->name('add');
 
-        // Update item quantity - requires merchant_id
+        // Update item quantity - requires branch_id
         Route::post('/update', 'Front\MerchantCartController@update')->name('update');
 
-        // Increase/Decrease quantity - requires merchant_id
+        // Increase/Decrease quantity - requires branch_id
         Route::post('/increase', 'Front\MerchantCartController@increase')->name('increase');
         Route::post('/decrease', 'Front\MerchantCartController@decrease')->name('decrease');
 
-        // Remove item - requires merchant_id
+        // Remove item - requires branch_id
         Route::delete('/remove/{key}', 'Front\MerchantCartController@remove')->name('remove');
         Route::post('/remove', 'Front\MerchantCartController@remove')->name('remove.post');
 
-        // Clear merchant items - requires merchant_id
-        Route::post('/clear-merchant', 'Front\MerchantCartController@clearMerchant')->name('clear-merchant');
+        // Clear branch items - requires branch_id
+        Route::post('/clear-branch', 'Front\MerchantCartController@clearBranch')->name('clear-branch');
 
         // Clear all cart
         Route::post('/clear', 'Front\MerchantCartController@clear')->name('clear');

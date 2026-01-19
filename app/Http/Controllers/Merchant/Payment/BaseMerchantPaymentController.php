@@ -10,6 +10,7 @@ use App\Services\Cart\MerchantCartManager;
 use App\Services\MerchantCheckout\MerchantPriceCalculator;
 use App\Models\MerchantPayment;
 use App\Models\MerchantCredential;
+use App\Models\MerchantBranch;
 use App\Models\Purchase;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -19,6 +20,9 @@ use Illuminate\Support\Facades\Session;
  * Base Merchant Payment Controller
  *
  * Common functionality for all payment gateways
+ *
+ * NOTE: Routes now use branchId, but payment/shipping methods are merchant-scoped.
+ * We extract merchantId from branch->user_id for payment configuration.
  */
 abstract class BaseMerchantPaymentController extends Controller
 {
@@ -159,19 +163,30 @@ abstract class BaseMerchantPaymentController extends Controller
     }
 
     /**
-     * Validate checkout is ready for payment
+     * Get merchant ID from branch
+     * Payment methods are merchant-scoped, so we need the merchant from the branch
      */
-    protected function validateCheckoutReady(int $merchantId): array
+    protected function getMerchantIdFromBranch(int $branchId): ?int
     {
-        $addressData = $this->sessionManager->getAddressData($merchantId);
-        $shippingData = $this->sessionManager->getShippingData($merchantId);
+        $branch = MerchantBranch::find($branchId);
+        return $branch?->user_id;
+    }
+
+    /**
+     * Validate checkout is ready for payment (branch-scoped)
+     */
+    protected function validateCheckoutReady(int $branchId): array
+    {
+        // Session data is branch-scoped
+        $addressData = $this->sessionManager->getAddressData($branchId);
+        $shippingData = $this->sessionManager->getShippingData($branchId);
 
         if (!$addressData) {
             return [
                 'valid' => false,
                 'error' => 'address_required',
                 'message' => __('Please complete address step first'),
-                'redirect' => route('merchant.checkout.address', $merchantId),
+                'redirect' => route('branch.checkout.address', $branchId),
             ];
         }
 
@@ -180,15 +195,16 @@ abstract class BaseMerchantPaymentController extends Controller
                 'valid' => false,
                 'error' => 'shipping_required',
                 'message' => __('Please select shipping method first'),
-                'redirect' => route('merchant.checkout.shipping', $merchantId),
+                'redirect' => route('branch.checkout.shipping', $branchId),
             ];
         }
 
-        if (!$this->cartService->hasMerchantItems($merchantId)) {
+        // Cart is branch-scoped
+        if (!$this->cartService->hasBranchItems($branchId)) {
             return [
                 'valid' => false,
                 'error' => 'empty_cart',
-                'message' => __('No items in cart for this merchant'),
+                'message' => __('No items in cart for this branch'),
                 'redirect' => route('merchant-cart.index'),
             ];
         }
@@ -197,24 +213,31 @@ abstract class BaseMerchantPaymentController extends Controller
     }
 
     /**
-     * Get checkout data for payment processing
+     * Get checkout data for payment processing (branch-scoped)
      */
-    protected function getCheckoutData(int $merchantId): array
+    protected function getCheckoutData(int $branchId): array
     {
-        $addressData = $this->sessionManager->getAddressData($merchantId);
-        $shippingData = $this->sessionManager->getShippingData($merchantId);
-        $discountData = $this->sessionManager->getDiscountData($merchantId);
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+        // Session data is branch-scoped
+        $addressData = $this->sessionManager->getAddressData($branchId);
+        $shippingData = $this->sessionManager->getShippingData($branchId);
+        $discountData = $this->sessionManager->getDiscountData($branchId);
+
+        // Cart is branch-scoped
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
+
+        // Get merchantId from branch for reference
+        $merchantId = $this->getMerchantIdFromBranch($branchId);
 
         $totals = $this->priceCalculator->calculateTotals($cartSummary['items'], [
             'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'] ?? 0,
             'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
-            'packing_cost' => $shippingData['packing_cost'] ?? 0,
+            'packing_cost' => 0, // Packaging removed
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
         ]);
 
         return [
+            'branch_id' => $branchId,
             'merchant_id' => $merchantId,
             'address' => $addressData,
             'shipping' => $shippingData,
@@ -225,96 +248,96 @@ abstract class BaseMerchantPaymentController extends Controller
     }
 
     /**
-     * Store input data in session for callback
+     * Store input data in session for callback (branch-scoped)
      */
-    protected function storeInputForCallback(int $merchantId, array $data): void
+    protected function storeInputForCallback(int $branchId, array $data): void
     {
-        Session::put('merchant_payment_input_' . $merchantId, $data);
+        Session::put('branch_payment_input_' . $branchId, $data);
         Session::save();
     }
 
     /**
-     * Get stored input data from callback
+     * Get stored input data from callback (branch-scoped)
      */
-    protected function getStoredInput(int $merchantId): ?array
+    protected function getStoredInput(int $branchId): ?array
     {
-        return Session::get('merchant_payment_input_' . $merchantId);
+        return Session::get('branch_payment_input_' . $branchId);
     }
 
     /**
-     * Clear stored input data
+     * Clear stored input data (branch-scoped)
      */
-    protected function clearStoredInput(int $merchantId): void
+    protected function clearStoredInput(int $branchId): void
     {
-        Session::forget('merchant_payment_input_' . $merchantId);
+        Session::forget('branch_payment_input_' . $branchId);
         Session::save();
     }
 
     /**
-     * Create purchase after successful payment
+     * Create purchase after successful payment (branch-scoped)
      */
-    protected function createSuccessfulPurchase(int $merchantId, array $paymentData): array
+    protected function createSuccessfulPurchase(int $branchId, array $paymentData): array
     {
-        return $this->purchaseCreator->createPurchase($merchantId, array_merge($paymentData, [
+        return $this->purchaseCreator->createPurchase($branchId, array_merge($paymentData, [
             'method' => $this->paymentMethod,
             'payment_status' => 'Completed',
         ]));
     }
 
     /**
-     * Get success redirect URL
-     * Always shows success page - the page will display "Continue to Other Items" button if needed
+     * Get success redirect URL (branch-scoped)
      */
-    protected function getSuccessUrl(int $merchantId): string
+    protected function getSuccessUrl(int $branchId): string
     {
-        return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'success']);
+        return route('branch.checkout.return', ['branchId' => $branchId, 'status' => 'success']);
     }
 
     /**
-     * Get cancel redirect URL
+     * Get cancel redirect URL (branch-scoped)
      */
-    protected function getCancelUrl(int $merchantId): string
+    protected function getCancelUrl(int $branchId): string
     {
-        return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'cancelled']);
+        return route('branch.checkout.return', ['branchId' => $branchId, 'status' => 'cancelled']);
     }
 
     /**
-     * Get failure redirect URL
+     * Get failure redirect URL (branch-scoped)
      */
-    protected function getFailureUrl(int $merchantId): string
+    protected function getFailureUrl(int $branchId): string
     {
-        return route('merchant.checkout.return', ['merchantId' => $merchantId, 'status' => 'failed']);
+        return route('branch.checkout.return', ['branchId' => $branchId, 'status' => 'failed']);
     }
 
     /**
-     * Handle payment error response
+     * Handle payment error response (branch-scoped)
      */
-    protected function handlePaymentError(int $merchantId, string $message): JsonResponse
+    protected function handlePaymentError(int $branchId, string $message): JsonResponse
     {
         return response()->json([
             'success' => false,
             'error' => 'payment_failed',
             'message' => $message,
-            'redirect' => $this->getFailureUrl($merchantId),
+            'redirect' => $this->getFailureUrl($branchId),
         ], 400);
     }
 
     /**
-     * Handle successful payment response
+     * Handle successful payment response (branch-scoped)
      */
-    protected function handlePaymentSuccess(int $merchantId, Purchase $purchase): JsonResponse
+    protected function handlePaymentSuccess(int $branchId, Purchase $purchase): JsonResponse
     {
         return response()->json([
             'success' => true,
             'purchase_number' => $purchase->purchase_number,
-            'redirect' => $this->getSuccessUrl($merchantId),
+            'redirect' => $this->getSuccessUrl($branchId),
         ]);
     }
 
     /**
      * Abstract method - process payment (must be implemented by each gateway)
+     * NOTE: Routes pass branchId, extract merchantId using getMerchantIdFromBranch()
      */
-    abstract public function processPayment(Request $request, int $merchantId);
+    abstract public function processPayment(Request $request, int $branchId);
 
     /**
      * Abstract method - handle payment callback/notify (must be implemented by each gateway)

@@ -7,6 +7,8 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Manual/Bank Transfer Payment Controller
+ *
+ * NOTE: Routes use branchId, but payment methods are merchant-scoped.
  */
 class ManualPaymentController extends BaseMerchantPaymentController
 {
@@ -50,24 +52,30 @@ class ManualPaymentController extends BaseMerchantPaymentController
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/payment/manual
+     * POST /branch/{branchId}/checkout/payment/manual
      */
-    public function processPayment(Request $request, int $merchantId): JsonResponse
+    public function processPayment(Request $request, int $branchId): JsonResponse
     {
         $validated = $request->validate([
             'txn_img' => 'required|image|max:2048',
         ]);
 
-        // Validate checkout is ready
-        $validation = $this->validateCheckoutReady($merchantId);
+        // Validate checkout is ready (branch-scoped)
+        $validation = $this->validateCheckoutReady($branchId);
         if (!$validation['valid']) {
             return response()->json($validation, 400);
         }
 
-        // Get payment config
+        // Get merchantId from branch (payment methods are merchant-scoped)
+        $merchantId = $this->getMerchantIdFromBranch($branchId);
+        if (!$merchantId) {
+            return $this->handlePaymentError($branchId, __('Invalid branch'));
+        }
+
+        // Get payment config (merchant-scoped)
         $config = $this->getPaymentConfig($merchantId);
         if (!$config) {
-            return $this->handlePaymentError($merchantId, __('Manual payment is not available for this merchant'));
+            return $this->handlePaymentError($branchId, __('Manual payment is not available for this merchant'));
         }
 
         // Upload transaction image
@@ -77,8 +85,8 @@ class ManualPaymentController extends BaseMerchantPaymentController
             $txnImage = $file->store('payments/manual', 'public');
         }
 
-        // Create purchase with pending verification status
-        $result = $this->purchaseCreator->createPurchase($merchantId, [
+        // Create purchase with pending verification status (branch-scoped)
+        $result = $this->purchaseCreator->createPurchase($branchId, [
             'method' => $this->paymentMethod,
             'pay_id' => $config['id'],
             'txnid' => $txnImage,
@@ -86,14 +94,14 @@ class ManualPaymentController extends BaseMerchantPaymentController
         ]);
 
         if (!$result['success']) {
-            return $this->handlePaymentError($merchantId, $result['message'] ?? __('Failed to create order'));
+            return $this->handlePaymentError($branchId, $result['message'] ?? __('Failed to create order'));
         }
 
         return response()->json([
             'success' => true,
             'message' => __('Your order has been placed. Please wait for payment verification.'),
             'purchase_number' => $result['purchase']->purchase_number,
-            'redirect' => $this->getSuccessUrl($merchantId),
+            'redirect' => $this->getSuccessUrl($branchId),
         ]);
     }
 

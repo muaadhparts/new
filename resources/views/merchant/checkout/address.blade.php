@@ -143,8 +143,9 @@
 
 @section('script')
 <script>
+const branchId = {{ $branch_id }};
 const merchantId = {{ $merchant_id }};
-const apiBaseUrl = '/merchant/' + merchantId + '/checkout';
+const apiBaseUrl = '/branch/' + branchId + '/checkout';
 
 // Calculate tax when location is selected
 function calculateTax() {

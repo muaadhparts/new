@@ -387,9 +387,16 @@ class CheckoutPriceService
                     $price = (float)($parts[2] ?? 0);
                     $totalOriginal += $price;
 
-                    // Check free_above for Tryoto
-                    $merchantTryoto = Shipping::where('user_id', $mid)
-                        ->where('provider', 'tryoto')
+                    // Check free_above for Tryoto (merchant's own or platform-provided)
+                    $merchantTryoto = Shipping::where('provider', 'tryoto')
+                        ->where('status', 1)
+                        ->where(function ($q) use ($mid) {
+                            $q->where('user_id', $mid)
+                              ->orWhere(function ($q2) use ($mid) {
+                                  $q2->where('user_id', 0)
+                                     ->where('operator', $mid);
+                              });
+                        })
                         ->first();
                     $freeAbove = $merchantTryoto ? (float)$merchantTryoto->free_above : 0;
 

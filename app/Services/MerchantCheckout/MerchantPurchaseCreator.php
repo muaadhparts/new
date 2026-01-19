@@ -4,6 +4,7 @@ namespace App\Services\MerchantCheckout;
 
 use App\Models\Purchase;
 use App\Models\MerchantPurchase;
+use App\Models\MerchantBranch;
 use App\Models\User;
 use App\Models\MonetaryUnit;
 use App\Models\DeliveryCourier;
@@ -18,9 +19,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Purchase creation for Merchant Checkout
+ * Purchase creation for Branch Checkout
  *
  * Handles final purchase record creation and notifications
+ * NOTE: Checkout is now branch-scoped, but payment/shipping ownership
+ *       is still determined by merchant (branch->user)
  */
 class MerchantPurchaseCreator
 {
@@ -49,14 +52,28 @@ class MerchantPurchaseCreator
     }
 
     /**
-     * Create purchase from checkout data
+     * Create purchase from checkout data (branch-scoped)
      */
-    public function createPurchase(int $merchantId, array $paymentData): array
+    public function createPurchase(int $branchId, array $paymentData): array
     {
-        $addressData = $this->sessionManager->getAddressData($merchantId);
-        $shippingData = $this->sessionManager->getShippingData($merchantId);
-        $discountData = $this->sessionManager->getDiscountData($merchantId);
-        $cartPayload = $this->cartService->buildCartPayload($merchantId);
+        // Get branch and merchant
+        $branch = MerchantBranch::with('user')->find($branchId);
+        if (!$branch) {
+            return [
+                'success' => false,
+                'error' => 'invalid_branch',
+                'message' => __('Invalid branch'),
+            ];
+        }
+
+        $merchant = $branch->user;
+        $merchantId = $merchant->id;
+
+        // Get checkout data (branch-scoped session)
+        $addressData = $this->sessionManager->getAddressData($branchId);
+        $shippingData = $this->sessionManager->getShippingData($branchId);
+        $discountData = $this->sessionManager->getDiscountData($branchId);
+        $cartPayload = $this->cartService->buildBranchCartPayload($branchId);
 
         if (!$addressData || !$shippingData) {
             return [
@@ -67,7 +84,6 @@ class MerchantPurchaseCreator
         }
 
         $user = Auth::user();
-        $merchant = User::find($merchantId);
         $currency = $this->priceCalculator->getMonetaryUnit();
 
         // Calculate final totals
@@ -128,7 +144,7 @@ class MerchantPurchaseCreator
                 'shipping' => 'shipto',
                 'shipping_name' => $shippingData['shipping_name'] ?? $shippingData['courier_name'] ?? '',
 
-                // Multi-merchant
+                // Multi-merchant (single merchant per branch checkout)
                 'merchant_ids' => json_encode([$merchantId]),
                 'merchant_shipping_id' => $shippingData['shipping_id'] ?? 0,
                 'merchant_packing_id' => 0, // Packing removed
@@ -140,14 +156,15 @@ class MerchantPurchaseCreator
                     'service_area_id' => $shippingData['service_area_id'] ?? null,
                 ]) : null,
 
-                // ✅ اختيار العميل لشركة الشحن
-                'customer_shipping_choice' => $this->buildCustomerShippingChoice($merchantId, $shippingData),
+                // Customer shipping choice (branch-scoped)
+                'customer_shipping_choice' => $this->buildCustomerShippingChoice($branchId, $merchantId, $shippingData),
             ]);
             $purchase->save();
 
-            // Create merchant purchase record
+            // Create merchant purchase record (with branch_id)
             $merchantPurchase = $this->createMerchantPurchase(
                 $purchase,
+                $branchId,
                 $merchantId,
                 $cartPayload,
                 $shippingData,
@@ -157,7 +174,7 @@ class MerchantPurchaseCreator
 
             // Create courier delivery if needed
             if ($shippingData['delivery_type'] === 'local_courier' && $shippingData['courier_id']) {
-                $this->createCourierDelivery($purchase, $merchantId, $shippingData, $addressData, $paymentData);
+                $this->createCourierDelivery($purchase, $branchId, $merchantId, $shippingData, $addressData, $paymentData);
             }
 
             // Create tracking record
@@ -175,9 +192,9 @@ class MerchantPurchaseCreator
             $this->sessionManager->storeTempPurchase($purchase);
             $this->sessionManager->storeTempCart($cartPayload);
 
-            // Clean up cart and session
-            $this->cartService->removeMerchantItems($merchantId);
-            $this->sessionManager->clearAllCheckoutData($merchantId);
+            // Clean up cart and session (branch-scoped)
+            $this->cartService->clearBranch($branchId);
+            $this->sessionManager->clearAllCheckoutData($branchId);
 
             return [
                 'success' => true,
@@ -197,12 +214,13 @@ class MerchantPurchaseCreator
     }
 
     /**
-     * Create merchant purchase record
+     * Create merchant purchase record (with branch_id)
      *
      * Integrates with PaymentAccountingService for debt tracking
      */
     protected function createMerchantPurchase(
         Purchase $purchase,
+        int $branchId,
         int $merchantId,
         array $cartPayload,
         array $shippingData,
@@ -241,11 +259,35 @@ class MerchantPurchaseCreator
         // ═══════════════════════════════════════════════════════════════════
         $shippingOwnerId = $shippingData['owner_user_id'] ?? $merchantId;
         $isPlatformShipping = $shippingData['is_platform_provided'] ?? false;
+        $isCourier = ($deliveryType === 'local_courier') || ($deliveryMethod === MerchantPurchase::DELIVERY_LOCAL_COURIER);
 
-        // Payment owner: depends on who owns the payment gateway
-        // For COD via courier/shipping company → platform owns collection
-        // For online payment → depends on whose gateway is used
-        $paymentOwnerId = $isCod ? 0 : $this->determinePaymentOwnerId($merchantId, $paymentData);
+        // ═══════════════════════════════════════════════════════════════════
+        // PAYMENT OWNER: depends on payment method and shipping owner
+        //
+        // للدفع عند الاستلام (COD):
+        // - إذا الشحن تبع التاجر → COD تبع التاجر
+        // - إذا الشحن تبع المنصة → COD تبع المنصة
+        // - إذا الشحن عبر المندوب → COD تبع المنصة (كل ما يخص المندوب = منصة)
+        //
+        // للدفع الإلكتروني:
+        // - يعتمد على من يملك بوابة الدفع
+        // ═══════════════════════════════════════════════════════════════════
+        if ($isCod) {
+            // COD ownership follows shipping ownership
+            if ($isCourier) {
+                // Courier delivery → Platform handles COD collection
+                $paymentOwnerId = 0;
+            } elseif ($isPlatformShipping || $shippingOwnerId === 0) {
+                // Platform shipping → Platform handles COD
+                $paymentOwnerId = 0;
+            } else {
+                // Merchant's own shipping → Merchant handles COD
+                $paymentOwnerId = $shippingOwnerId;
+            }
+        } else {
+            // Online payment → depends on whose gateway is used
+            $paymentOwnerId = $this->determinePaymentOwnerId($merchantId, $paymentData);
+        }
 
         // === Calculate Debt Ledger via Accounting Service ===
         $accountingData = $this->accountingService->calculateDebtLedger([
@@ -268,6 +310,7 @@ class MerchantPurchaseCreator
         $merchantPurchase->fill([
             'purchase_id' => $purchase->id,
             'user_id' => $merchantId,
+            'merchant_branch_id' => $branchId, // ✅ Branch ID stored
             'purchase_number' => $purchase->purchase_number,
             'cart' => $cartPayload,
             'qty' => $cartPayload['totalQty'],
@@ -318,22 +361,11 @@ class MerchantPurchaseCreator
         $merchantPurchase->save();
 
         // === Record Full Accounting Entries ===
-        // تسجيل جميع القيود المحاسبية التفصيلية
         try {
-            // Use the comprehensive AccountingEntryService for all entry types:
-            // - SALE_REVENUE
-            // - COMMISSION_EARNED
-            // - TAX_COLLECTED
-            // - SHIPPING_FEE_PLATFORM / SHIPPING_FEE_MERCHANT
-            // - PACKING_FEE_PLATFORM / PACKING_FEE_MERCHANT
-            // - COURIER_FEE
-            // - COD_PENDING
             $this->entryService->createOrderEntries($merchantPurchase);
         } catch (\Exception $e) {
-            // Log but don't fail - accounting entries can be reconciled later
             \Log::warning('Failed to record accounting entries for purchase #' . $merchantPurchase->purchase_number . ': ' . $e->getMessage());
 
-            // Fallback to legacy ledger service for basic debt tracking
             try {
                 $this->ledgerService->recordDebtsForMerchantPurchase($merchantPurchase);
             } catch (\Exception $fallbackEx) {
@@ -346,12 +378,10 @@ class MerchantPurchaseCreator
 
     /**
      * Create courier delivery record
-     *
-     * ⚠️ WARNING: cod_amount is calculated via PaymentAccountingService!
-     *    DO NOT calculate it manually here. Use accountingService->prepareDeliveryCourierData()
      */
     protected function createCourierDelivery(
         Purchase $purchase,
+        int $branchId,
         int $merchantId,
         array $shippingData,
         array $addressData,
@@ -359,14 +389,15 @@ class MerchantPurchaseCreator
     ): void {
         $paymentMethod = $paymentData['method'] ?? 'online';
 
-        // ✅ Use centralized service for cod_amount calculation
-        // @see PaymentAccountingService::prepareDeliveryCourierData()
         $courierData = $this->accountingService->prepareDeliveryCourierData(
             $purchase,
             $merchantId,
             $shippingData,
             $paymentMethod
         );
+
+        // Add branch_id to courier data
+        $courierData['merchant_branch_id'] = $branchId;
 
         DeliveryCourier::create($courierData);
     }
@@ -397,7 +428,6 @@ class MerchantPurchaseCreator
                 ], $merchant->email);
             }
         } catch (\Exception $e) {
-            // Log but don't fail the purchase
             \Log::error('Failed to send purchase notification: ' . $e->getMessage());
         }
     }
@@ -442,18 +472,14 @@ class MerchantPurchaseCreator
     }
 
     /**
-     * ✅ بناء اختيار العميل لشركة الشحن من بيانات الشحن المحفوظة
-     *
-     * @param int $merchantId
-     * @param array $shippingData
-     * @return array|null
+     * Build customer shipping choice (branch-scoped)
      */
-    protected function buildCustomerShippingChoice(int $merchantId, array $shippingData): ?array
+    protected function buildCustomerShippingChoice(int $branchId, int $merchantId, array $shippingData): ?array
     {
         $deliveryType = $shippingData['delivery_type'] ?? null;
         $shippingProvider = $shippingData['shipping_provider'] ?? null;
 
-        // ✅ حالة 1: توصيل محلي (كوريير)
+        // Case 1: Local courier
         if ($deliveryType === 'local_courier') {
             return [
                 $merchantId => [
@@ -461,19 +487,17 @@ class MerchantPurchaseCreator
                     'courier_id' => $shippingData['courier_id'] ?? null,
                     'courier_name' => $shippingData['courier_name'] ?? 'Courier',
                     'price' => (float)($shippingData['courier_fee'] ?? 0),
-                    'merchant_branch_id' => $shippingData['merchant_branch_id'] ?? null,
+                    'merchant_branch_id' => $branchId,
                     'service_area_id' => $shippingData['service_area_id'] ?? null,
                     'selected_at' => now()->toIso8601String(),
                 ]
             ];
         }
 
-        // ✅ حالة 2: Tryoto (API provider)
-        // shipping_provider = 'tryoto' AND shipping_id = "deliveryOptionId#companyName#price"
+        // Case 2: Tryoto (API provider)
         if ($shippingProvider === 'tryoto') {
             $shippingIdValue = $shippingData['shipping_id'] ?? '';
 
-            // استخراج البيانات من القيمة المركبة "123456#Omni Llama#15"
             $deliveryOptionId = $shippingIdValue;
             $companyName = $shippingData['shipping_name'] ?? '';
             $price = (float)($shippingData['shipping_cost'] ?? 0);
@@ -485,8 +509,7 @@ class MerchantPurchaseCreator
                 $price = isset($parts[2]) ? (float)$parts[2] : $price;
             }
 
-            // ✅ الحصول على المدينة المدعومة من الجلسة (تم تحديدها عند جلب خيارات الشحن)
-            $addressData = $this->sessionManager->getAddressData($merchantId);
+            $addressData = $this->sessionManager->getAddressData($branchId);
             $shippingCity = $addressData['shipping_city'] ?? $addressData['customer_city'] ?? null;
 
             return [
@@ -497,23 +520,24 @@ class MerchantPurchaseCreator
                     'price' => $price,
                     'original_price' => (float)($shippingData['original_shipping_cost'] ?? $price),
                     'is_free' => $shippingData['is_free_shipping'] ?? false,
-                    'shipping_city' => $shippingCity, // ✅ المدينة المدعومة للشحن
+                    'shipping_city' => $shippingCity,
+                    'merchant_branch_id' => $branchId,
                     'selected_at' => now()->toIso8601String(),
                 ]
             ];
         }
 
-        // ✅ حالة 3: شحن عادي (من جدول shippings)
+        // Case 3: Regular shipping
         if (!empty($shippingData['shipping_id']) && is_numeric($shippingData['shipping_id'])) {
-            // جلب بيانات الشحن من الجدول
             $shipping = \DB::table('shippings')->find($shippingData['shipping_id']);
 
             return [
                 $merchantId => [
-                    'provider' => $shipping->provider ?? $shippingProvider, // من الجدول مباشرة
+                    'provider' => $shipping->provider ?? $shippingProvider,
                     'shipping_id' => (int)$shippingData['shipping_id'],
                     'name' => $shippingData['shipping_name'] ?? $shipping->name ?? null,
                     'price' => (float)($shippingData['shipping_cost'] ?? $shipping->price ?? 0),
+                    'merchant_branch_id' => $branchId,
                     'selected_at' => now()->toIso8601String(),
                 ]
             ];
@@ -524,30 +548,17 @@ class MerchantPurchaseCreator
 
     /**
      * Determine who owns the payment gateway
-     *
-     * OWNERSHIP RULES:
-     * - If payment data explicitly specifies owner → use that
-     * - If merchant has credentials for SELECTED gateway → merchant owns
-     * - If merchant has ANY payment credentials → merchant owns
-     * - Otherwise → platform owns (returns 0)
-     *
-     * @param int $merchantId
-     * @param array $paymentData
-     * @return int 0 for platform, merchantId for merchant
      */
     protected function determinePaymentOwnerId(int $merchantId, array $paymentData): int
     {
-        // Priority 1: Check if payment data explicitly specifies owner
         if (isset($paymentData['payment_owner_id'])) {
             return (int) $paymentData['payment_owner_id'];
         }
 
         $credentialService = app(\App\Services\MerchantCredentialService::class);
 
-        // Priority 2: Check if merchant has credentials for the SELECTED gateway
         $paymentKeyword = $paymentData['keyword'] ?? $paymentData['method'] ?? null;
         if ($paymentKeyword) {
-            // Normalize keyword (some methods like 'Cash On Delivery' aren't gateways)
             $normalizedKeyword = strtolower(str_replace(' ', '', $paymentKeyword));
             if (in_array($normalizedKeyword, ['myfatoorah', 'stripe', 'paypal', 'razorpay', 'tap'])) {
                 if ($credentialService->hasPaymentCredentialsFor($merchantId, $normalizedKeyword)) {
@@ -556,12 +567,10 @@ class MerchantPurchaseCreator
             }
         }
 
-        // Priority 3: Check if merchant has ANY payment credentials
         if ($credentialService->hasPaymentCredentials($merchantId)) {
             return $merchantId;
         }
 
-        // Default: Platform handles payment (owner_id = 0)
         return 0;
     }
 

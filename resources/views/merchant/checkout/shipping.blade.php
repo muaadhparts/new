@@ -49,7 +49,7 @@
                         <div class="m-card mb-4">
                             <div class="m-card__header d-flex justify-content-between align-items-center">
                                 <h5 class="m-0">@lang('Delivery Address')</h5>
-                                <a href="{{ route('merchant.checkout.address', $merchant_id) }}" class="m-btn m-btn--sm m-btn--outline">
+                                <a href="{{ route('branch.checkout.address', $branch_id) }}" class="m-btn m-btn--sm m-btn--outline">
                                     <i class="fas fa-edit me-1"></i> @lang('Edit')
                                 </a>
                             </div>
@@ -106,7 +106,7 @@
                                         <button type="button" class="m-btn m-btn--outline w-100 d-flex align-items-center justify-content-between provider-btn"
                                                 id="provider-btn-{{ $providerSlug }}"
                                                 data-bs-toggle="modal"
-                                                data-bs-target="#modal_{{ $providerSlug }}_{{ $merchant_id }}"
+                                                data-bs-target="#modal_{{ $providerSlug }}_{{ $branch_id }}"
                                                 data-provider="{{ $providerSlug }}"
                                                 data-provider-name="{{ $providerData['provider'] }}">
                                             <span>
@@ -198,7 +198,7 @@
                                         @lang('Continue to Payment')
                                         <i class="fas fa-arrow-right ms-2"></i>
                                     </button>
-                                    <a href="{{ route('merchant.checkout.address', $merchant_id) }}" class="template-btn dark-outline w-100 mt-2">
+                                    <a href="{{ route('branch.checkout.address', $branch_id) }}" class="template-btn dark-outline w-100 mt-2">
                                         <i class="fas fa-arrow-left me-2"></i>
                                         @lang('Back')
                                     </a>
@@ -236,7 +236,7 @@
             @endphp
             @if($providerData['is_api'] ?? false)
                 {{-- API Provider Modal (e.g., Tryoto) - Loads from API --}}
-                <div class="modal fade gs-modal api-provider-modal" id="modal_{{ $providerSlug }}_{{ $merchant_id }}" data-provider="{{ $providerSlug }}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal fade gs-modal api-provider-modal" id="modal_{{ $providerSlug }}_{{ $branch_id }}" data-provider="{{ $providerSlug }}" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -259,7 +259,7 @@
                 </div>
             @else
                 {{-- Regular Provider Modal - Data from DB --}}
-                <div class="modal fade gs-modal" id="modal_{{ $providerSlug }}_{{ $merchant_id }}" tabindex="-1" role="dialog" aria-hidden="true">
+                <div class="modal fade gs-modal" id="modal_{{ $providerSlug }}_{{ $branch_id }}" tabindex="-1" role="dialog" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered" role="document">
                         <div class="modal-content">
                             <div class="modal-header">
@@ -426,8 +426,9 @@
 
 @section('script')
 <script>
+const branchId = {{ $branch_id }};
 const merchantId = {{ $merchant_id }};
-const apiBaseUrl = '/merchant/' + merchantId + '/checkout';
+const apiBaseUrl = '/branch/' + branchId + '/checkout';
 const currencySign = '{{ $curr->sign ?? "" }}';
 const currencyFormat = {{ $gs->currency_format ?? 0 }};
 // Track which API providers have been loaded
@@ -536,7 +537,7 @@ function loadApiProviderOptions(provider) {
         method: 'POST',
         data: {
             _token: $('meta[name="csrf-token"]').attr('content'),
-            merchant_id: merchantId
+            branch_id: branchId
         },
         success: function(response) {
             apiProvidersLoaded[provider] = true;

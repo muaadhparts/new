@@ -2,17 +2,17 @@
  * MerchantCart - Cart Page JavaScript
  *
  * For cart page operations (update, remove, etc.)
- * Works with MerchantCartController (Merchant-Scoped API)
+ * Works with MerchantCartController (Branch-Scoped API)
  *
  * API Endpoints:
  * POST /merchant-cart/add      { merchant_item_id, qty?, size?, color? }
- * POST /merchant-cart/update   { merchant_id, key, qty }
- * POST /merchant-cart/increase { merchant_id, key }
- * POST /merchant-cart/decrease { merchant_id, key }
- * POST /merchant-cart/remove   { merchant_id, key }
- * POST /merchant-cart/clear-merchant { merchant_id }
+ * POST /merchant-cart/update   { branch_id, key, qty }
+ * POST /merchant-cart/increase { branch_id, key }
+ * POST /merchant-cart/decrease { branch_id, key }
+ * POST /merchant-cart/remove   { branch_id, key }
+ * POST /merchant-cart/clear-branch { branch_id }
  * POST /merchant-cart/clear
- * GET  /merchant-cart/summary?merchant_id=X
+ * GET  /merchant-cart/summary?branch_id=X
  * GET  /merchant-cart/count
  */
 const MerchantCart = (function() {
@@ -26,7 +26,7 @@ const MerchantCart = (function() {
             increase: '/merchant-cart/increase',
             decrease: '/merchant-cart/decrease',
             remove: '/merchant-cart/remove',
-            clearMerchant: '/merchant-cart/clear-merchant',
+            clearBranch: '/merchant-cart/clear-branch',
             clear: '/merchant-cart/clear',
             summary: '/merchant-cart/summary',
             count: '/merchant-cart/count',
@@ -69,9 +69,9 @@ const MerchantCart = (function() {
                 e.preventDefault();
                 const btn = e.target.closest('[data-action="increase"]');
                 const key = btn.dataset.cartKey;
-                const merchantId = getMerchantIdFromElement(btn);
-                if (key && merchantId) {
-                    increase(merchantId, key);
+                const branchId = getBranchIdFromElement(btn);
+                if (key && branchId) {
+                    increase(branchId, key);
                 }
             }
 
@@ -80,9 +80,9 @@ const MerchantCart = (function() {
                 e.preventDefault();
                 const btn = e.target.closest('[data-action="decrease"]');
                 const key = btn.dataset.cartKey;
-                const merchantId = getMerchantIdFromElement(btn);
-                if (key && merchantId) {
-                    decrease(merchantId, key);
+                const branchId = getBranchIdFromElement(btn);
+                if (key && branchId) {
+                    decrease(branchId, key);
                 }
             }
 
@@ -91,21 +91,21 @@ const MerchantCart = (function() {
                 e.preventDefault();
                 const btn = e.target.closest('[data-action="remove"]');
                 const key = btn.dataset.cartKey;
-                const merchantId = getMerchantIdFromElement(btn);
+                const branchId = getBranchIdFromElement(btn);
 
-                if (key && merchantId) {
-                    remove(merchantId, key, true); // silent = true
+                if (key && branchId) {
+                    remove(branchId, key, true); // silent = true
                 }
             }
 
-            // Clear merchant button (silent - no confirmation)
-            if (e.target.closest('[data-action="clear-merchant"]')) {
+            // Clear branch button (silent - no confirmation)
+            if (e.target.closest('[data-action="clear-branch"]')) {
                 e.preventDefault();
-                const btn = e.target.closest('[data-action="clear-merchant"]');
-                const merchantId = parseInt(btn.dataset.merchantId, 10);
+                const btn = e.target.closest('[data-action="clear-branch"]');
+                const branchId = parseInt(btn.dataset.branchId, 10);
 
-                if (merchantId) {
-                    clearMerchant(merchantId, true); // silent = true
+                if (branchId) {
+                    clearBranch(branchId, true); // silent = true
                 }
             }
 
@@ -121,35 +121,35 @@ const MerchantCart = (function() {
             if (e.target.classList.contains('m-cart__qty-input')) {
                 const input = e.target;
                 const key = input.dataset.cartKey;
-                const merchantId = getMerchantIdFromElement(input);
+                const branchId = getBranchIdFromElement(input);
                 const qty = parseInt(input.value, 10);
 
-                if (qty && qty > 0 && key && merchantId) {
-                    update(merchantId, key, qty);
+                if (qty && qty > 0 && key && branchId) {
+                    update(branchId, key, qty);
                 }
             }
         });
     }
 
     /**
-     * Get merchant ID from element or its parent
+     * Get branch ID from element or its parent
      */
-    function getMerchantIdFromElement(el) {
+    function getBranchIdFromElement(el) {
         // Check element itself
-        if (el.dataset.merchantId) {
-            return parseInt(el.dataset.merchantId, 10);
+        if (el.dataset.branchId) {
+            return parseInt(el.dataset.branchId, 10);
         }
 
         // Check parent row
-        const row = el.closest('[data-merchant-id]');
+        const row = el.closest('[data-branch-id]');
         if (row) {
-            return parseInt(row.dataset.merchantId, 10);
+            return parseInt(row.dataset.branchId, 10);
         }
 
-        // Check parent group
-        const group = el.closest('.m-cart__merchant-group');
-        if (group && group.dataset.merchantId) {
-            return parseInt(group.dataset.merchantId, 10);
+        // Check parent group/section
+        const section = el.closest('.m-cart__branch-section');
+        if (section && section.dataset.branchId) {
+            return parseInt(section.dataset.branchId, 10);
         }
 
         return null;
@@ -185,17 +185,17 @@ const MerchantCart = (function() {
     /**
      * Update item quantity
      */
-    async function update(merchantId, cartKey, qty) {
+    async function update(branchId, cartKey, qty) {
         if (state.loading) return;
 
         const response = await request('update', {
-            merchant_id: merchantId,
+            branch_id: branchId,
             key: cartKey,
             qty: qty
         });
 
         if (response && response.success) {
-            updateMerchantUI(merchantId, response);
+            updateBranchUI(branchId, response);
             updateHeaderCount(response.header_count);
             dispatchEvent('cart:updated', response);
         } else {
@@ -208,16 +208,16 @@ const MerchantCart = (function() {
     /**
      * Increase item quantity
      */
-    async function increase(merchantId, cartKey) {
+    async function increase(branchId, cartKey) {
         if (state.loading) return;
 
         const response = await request('increase', {
-            merchant_id: merchantId,
+            branch_id: branchId,
             key: cartKey
         });
 
         if (response && response.success) {
-            updateMerchantUI(merchantId, response);
+            updateBranchUI(branchId, response);
             updateHeaderCount(response.header_count);
             dispatchEvent('cart:updated', response);
         } else {
@@ -230,16 +230,16 @@ const MerchantCart = (function() {
     /**
      * Decrease item quantity
      */
-    async function decrease(merchantId, cartKey) {
+    async function decrease(branchId, cartKey) {
         if (state.loading) return;
 
         const response = await request('decrease', {
-            merchant_id: merchantId,
+            branch_id: branchId,
             key: cartKey
         });
 
         if (response && response.success) {
-            updateMerchantUI(merchantId, response);
+            updateBranchUI(branchId, response);
             updateHeaderCount(response.header_count);
             dispatchEvent('cart:updated', response);
         } else {
@@ -253,17 +253,17 @@ const MerchantCart = (function() {
      * Remove item from cart
      * @param {boolean} silent - Skip notifications and reload
      */
-    async function remove(merchantId, cartKey, silent = false) {
+    async function remove(branchId, cartKey, silent = false) {
         if (state.loading) return;
 
         const response = await request('remove', {
-            merchant_id: merchantId,
+            branch_id: branchId,
             key: cartKey
         });
 
         if (response && response.success) {
             // Remove item row from DOM
-            removeItemFromDOM(cartKey, merchantId);
+            removeItemFromDOM(cartKey, branchId);
             updateHeaderCount(response.header_count);
             dispatchEvent('cart:removed', response);
 
@@ -279,32 +279,32 @@ const MerchantCart = (function() {
     }
 
     /**
-     * Clear merchant items
+     * Clear branch items
      * @param {boolean} silent - Skip notifications and reload
      */
-    async function clearMerchant(merchantId, silent = false) {
+    async function clearBranch(branchId, silent = false) {
         if (state.loading) return;
 
-        const response = await request('clearMerchant', {
-            merchant_id: merchantId
+        const response = await request('clearBranch', {
+            branch_id: branchId
         });
 
         if (response && response.success) {
-            // Remove merchant section from DOM
-            const section = document.querySelector(`.m-cart__merchant-section[data-merchant-id="${merchantId}"]`);
+            // Remove branch section from DOM
+            const section = document.querySelector(`.m-cart__branch-section[data-branch-id="${branchId}"]`);
             if (section) {
                 section.style.transition = 'all 0.3s ease';
                 section.style.opacity = '0';
                 setTimeout(() => {
                     section.remove();
                     // Remove separator if exists
-                    const separator = document.querySelector('.m-cart__merchant-separator');
+                    const separator = document.querySelector('.m-cart__branch-separator');
                     if (separator) separator.remove();
                 }, 300);
             }
 
             updateHeaderCount(response.header_count);
-            dispatchEvent('cart:merchantCleared', response);
+            dispatchEvent('cart:branchCleared', response);
 
             // Show empty state if cart is empty (no reload)
             if (response.header_count === 0) {
@@ -338,10 +338,10 @@ const MerchantCart = (function() {
     }
 
     /**
-     * Get merchant summary
+     * Get branch summary
      */
-    async function getSummary(merchantId) {
-        return await request('summary', { merchant_id: merchantId }, 'GET');
+    async function getSummary(branchId) {
+        return await request('summary', { branch_id: branchId }, 'GET');
     }
 
     /**
@@ -416,13 +416,13 @@ const MerchantCart = (function() {
     }
 
     /**
-     * Update merchant section UI
+     * Update branch section UI
      */
-    function updateMerchantUI(merchantId, response) {
+    function updateBranchUI(branchId, response) {
         const data = response.data;
         if (!data || !data.items) return;
 
-        // Update each item in this merchant's section
+        // Update each item in this branch's section
         Object.entries(data.items).forEach(([key, item]) => {
             const row = document.querySelector(`[data-cart-key="${key}"]`);
             if (!row) return;
@@ -451,15 +451,15 @@ const MerchantCart = (function() {
             }
         });
 
-        // Update merchant totals
-        const group = document.querySelector(`.m-cart__merchant-group[data-merchant-id="${merchantId}"]`);
-        if (group && data.totals) {
-            const subtotalEl = group.querySelector('.m-cart__merchant-subtotal-value');
+        // Update branch totals
+        const section = document.querySelector(`.m-cart__branch-section[data-branch-id="${branchId}"]`);
+        if (section && data.totals) {
+            const subtotalEl = section.querySelector('.m-cart__summary-value--total');
             if (subtotalEl) {
                 subtotalEl.textContent = formatPrice(data.totals.total);
             }
 
-            const qtyEl = group.querySelector('.m-cart__merchant-qty');
+            const qtyEl = section.querySelector('.count-value');
             if (qtyEl) {
                 qtyEl.textContent = data.totals.qty;
             }
@@ -469,7 +469,7 @@ const MerchantCart = (function() {
     /**
      * Remove item from DOM
      */
-    function removeItemFromDOM(cartKey, merchantId) {
+    function removeItemFromDOM(cartKey, branchId) {
         const row = document.querySelector(`[data-cart-key="${cartKey}"]`);
         if (!row) return;
 
@@ -480,8 +480,8 @@ const MerchantCart = (function() {
         setTimeout(() => {
             row.remove();
 
-            // Check if merchant section is empty
-            const section = document.querySelector(`.m-cart__merchant-section[data-merchant-id="${merchantId}"]`);
+            // Check if branch section is empty
+            const section = document.querySelector(`.m-cart__branch-section[data-branch-id="${branchId}"]`);
             if (section) {
                 const remainingItems = section.querySelectorAll('.m-cart__item');
                 if (remainingItems.length === 0) {
@@ -490,7 +490,7 @@ const MerchantCart = (function() {
                     setTimeout(() => {
                         section.remove();
                         // Remove separator if exists
-                        const separator = document.querySelector('.m-cart__merchant-separator');
+                        const separator = document.querySelector('.m-cart__branch-separator');
                         if (separator) separator.remove();
                     }, 300);
                 }
@@ -505,9 +505,9 @@ const MerchantCart = (function() {
         const container = document.querySelector('.gs-cart-section .container');
         if (!container) return;
 
-        // Remove all merchant sections
-        container.querySelectorAll('.m-cart__merchant-section').forEach(el => el.remove());
-        container.querySelectorAll('.m-cart__merchant-separator').forEach(el => el.remove());
+        // Remove all branch sections
+        container.querySelectorAll('.m-cart__branch-section').forEach(el => el.remove());
+        container.querySelectorAll('.m-cart__branch-separator').forEach(el => el.remove());
         container.querySelectorAll('.text-center.mt-4').forEach(el => el.remove());
 
         // Insert empty state HTML
@@ -602,7 +602,7 @@ const MerchantCart = (function() {
         increase,
         decrease,
         remove,
-        clearMerchant,
+        clearBranch,
         clearAll,
         getSummary,
         getCount,

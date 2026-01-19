@@ -13,10 +13,13 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
 /**
- * Merchant Checkout Controller - API First
+ * Branch Checkout Controller - API First
  *
- * Clean checkout flow for merchant-only system
+ * Clean checkout flow for branch-scoped system
  * All methods return JSON for API or render views
+ *
+ * NOTE: Checkout is now branch-scoped (branchId parameter),
+ *       but payment/shipping methods remain merchant-scoped (from branch->user)
  */
 class CheckoutMerchantController extends Controller
 {
@@ -44,12 +47,12 @@ class CheckoutMerchantController extends Controller
     // =========================================================================
 
     /**
-     * GET /merchant/{merchantId}/checkout/address
+     * GET /branch/{branchId}/checkout/address
      * Display address form
      */
-    public function showAddress(int $merchantId): View|JsonResponse|\Illuminate\Http\RedirectResponse
+    public function showAddress(int $branchId): View|JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $result = $this->checkoutService->initializeAddressStep($merchantId);
+        $result = $this->checkoutService->initializeAddressStep($branchId);
 
         if (!$result['success']) {
             if (request()->wantsJson()) {
@@ -91,7 +94,10 @@ class CheckoutMerchantController extends Controller
         ]);
 
         return view('merchant.checkout.address', [
-            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
+            'branch' => $result['data']['branch'] ?? [],
+            'merchant_id' => $result['data']['merchant']['id'] ?? 0,
+            'merchant' => $result['data']['merchant'] ?? [],
             'address' => $address,
             'cart' => $result['data']['cart'] ?? [],
             'googleMapsApiKey' => $googleMapsApiKey,
@@ -101,20 +107,20 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * GET /merchant/{merchantId}/checkout/address/api
+     * GET /branch/{branchId}/checkout/address/api
      * API endpoint for address step data
      */
-    public function getAddressData(int $merchantId): JsonResponse
+    public function getAddressData(int $branchId): JsonResponse
     {
-        $result = $this->checkoutService->initializeAddressStep($merchantId);
+        $result = $this->checkoutService->initializeAddressStep($branchId);
         return response()->json($result, $result['success'] ? 200 : 400);
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/address
+     * POST /branch/{branchId}/checkout/address
      * Process address submission
      */
-    public function processAddress(Request $request, int $merchantId): JsonResponse
+    public function processAddress(Request $request, int $branchId): JsonResponse
     {
         $validated = $request->validate([
             'customer_address' => 'required|string|max:500',
@@ -129,7 +135,7 @@ class CheckoutMerchantController extends Controller
             'longitude' => 'nullable|numeric',
         ]);
 
-        $result = $this->checkoutService->processAddressStep($merchantId, $validated);
+        $result = $this->checkoutService->processAddressStep($branchId, $validated);
 
         return response()->json($result, $result['success'] ? 200 : 400);
     }
@@ -139,18 +145,18 @@ class CheckoutMerchantController extends Controller
     // =========================================================================
 
     /**
-     * GET /merchant/{merchantId}/checkout/shipping
+     * GET /branch/{branchId}/checkout/shipping
      * Display shipping options
      */
-    public function showShipping(int $merchantId): View|JsonResponse|\Illuminate\Http\RedirectResponse
+    public function showShipping(int $branchId): View|JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $result = $this->checkoutService->initializeShippingStep($merchantId);
+        $result = $this->checkoutService->initializeShippingStep($branchId);
 
         if (!$result['success']) {
             if (request()->wantsJson()) {
                 return response()->json($result, 400);
             }
-            $redirectUrl = $result['redirect'] ?? route('merchant.checkout.address', $merchantId);
+            $redirectUrl = $result['redirect'] ?? route('branch.checkout.address', $branchId);
             return redirect()->to($redirectUrl)
                 ->with('unsuccess', $result['message'] ?? __('Please complete previous step'));
         }
@@ -163,12 +169,14 @@ class CheckoutMerchantController extends Controller
         $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();
 
         return view('merchant.checkout.shipping', [
-            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
+            'branch' => $result['data']['branch'] ?? [],
+            'merchant_id' => $result['data']['merchant']['id'] ?? 0,
             'merchant' => $result['data']['merchant'] ?? [],
             'address' => $result['data']['address'] ?? [],
             'cart' => $result['data']['cart'] ?? [],
             'totals' => $result['data']['totals'] ?? [],
-            'shipping_providers' => $result['data']['shipping_options'] ?? [], // Now grouped by provider
+            'shipping_providers' => $result['data']['shipping_options'] ?? [],
             'packaging' => $result['data']['packaging_options'] ?? [],
             'couriers' => $result['data']['courier_options'] ?? [],
             'curr' => $curr,
@@ -177,20 +185,20 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * GET /merchant/{merchantId}/checkout/shipping/api
+     * GET /branch/{branchId}/checkout/shipping/api
      * API endpoint for shipping step data
      */
-    public function getShippingData(int $merchantId): JsonResponse
+    public function getShippingData(int $branchId): JsonResponse
     {
-        $result = $this->checkoutService->initializeShippingStep($merchantId);
+        $result = $this->checkoutService->initializeShippingStep($branchId);
         return response()->json($result, $result['success'] ? 200 : 400);
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/shipping
+     * POST /branch/{branchId}/checkout/shipping
      * Process shipping selection
      */
-    public function processShipping(Request $request, int $merchantId): JsonResponse
+    public function processShipping(Request $request, int $branchId): JsonResponse
     {
         $validated = $request->validate([
             'delivery_type' => 'required|in:shipping,local_courier',
@@ -207,33 +215,33 @@ class CheckoutMerchantController extends Controller
             'courier_fee' => 'nullable|numeric',
             'service_area_id' => 'nullable|integer',
             'merchant_branch_id' => 'nullable|integer',
-            // Packing fields
+            // Packing fields (removed but kept for compatibility)
             'packing_id' => 'nullable|integer',
             'packing_name' => 'nullable|string',
             'packing_cost' => 'nullable|numeric',
         ]);
 
-        $result = $this->checkoutService->processShippingStep($merchantId, $validated);
+        $result = $this->checkoutService->processShippingStep($branchId, $validated);
 
         return response()->json($result, $result['success'] ? 200 : 400);
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/shipping/calculate
+     * POST /branch/{branchId}/checkout/shipping/calculate
      * Calculate shipping cost (AJAX)
      */
-    public function calculateShipping(Request $request, int $merchantId): JsonResponse
+    public function calculateShipping(Request $request, int $branchId): JsonResponse
     {
         $priceCalculator = $this->checkoutService->getPriceCalculator();
         $cartService = $this->checkoutService->getCartService();
 
-        $cartSummary = $cartService->getMerchantCartSummary($merchantId);
+        $cartSummary = $cartService->getBranchCartSummary($branchId);
         $itemsTotal = $cartSummary['total_price'];
 
         $deliveryType = $request->input('delivery_type', 'shipping');
 
         if ($deliveryType === 'local_courier') {
-            $addressData = $this->sessionManager->getAddressData($merchantId);
+            $addressData = $this->sessionManager->getAddressData($branchId);
             $courierInfo = $priceCalculator->calculateCourierFee(
                 (int)$request->input('courier_id', 0),
                 (int)($addressData['city_id'] ?? 0)
@@ -260,12 +268,12 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/delivery-options
-     * Get available delivery options for the merchant
+     * POST /branch/{branchId}/checkout/delivery-options
+     * Get available delivery options for the branch
      */
-    public function getDeliveryOptions(Request $request, int $merchantId): JsonResponse
+    public function getDeliveryOptions(Request $request, int $branchId): JsonResponse
     {
-        $result = $this->checkoutService->initializeShippingStep($merchantId);
+        $result = $this->checkoutService->initializeShippingStep($branchId);
 
         if (!$result['success']) {
             return response()->json([
@@ -287,12 +295,12 @@ class CheckoutMerchantController extends Controller
     // =========================================================================
 
     /**
-     * GET /merchant/{merchantId}/checkout/payment
+     * GET /branch/{branchId}/checkout/payment
      * Display payment methods
      */
-    public function showPayment(int $merchantId): View|JsonResponse|\Illuminate\Http\RedirectResponse
+    public function showPayment(int $branchId): View|JsonResponse|\Illuminate\Http\RedirectResponse
     {
-        $result = $this->checkoutService->initializePaymentStep($merchantId);
+        $result = $this->checkoutService->initializePaymentStep($branchId);
 
         if (!$result['success']) {
             if (request()->wantsJson()) {
@@ -317,7 +325,10 @@ class CheckoutMerchantController extends Controller
         $curr = $priceCalculator->getMonetaryUnit();
 
         return view('merchant.checkout.payment', [
-            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
+            'branch' => $result['data']['branch'] ?? [],
+            'merchant_id' => $result['data']['merchant']['id'] ?? 0,
+            'merchant' => $result['data']['merchant'] ?? [],
             'cart' => $result['data']['cart'] ?? [],
             'totals' => $result['data']['totals'] ?? [],
             'shipping' => $result['data']['shipping'] ?? [],
@@ -329,34 +340,34 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * GET /merchant/{merchantId}/checkout/payment/api
+     * GET /branch/{branchId}/checkout/payment/api
      * API endpoint for payment step data
      */
-    public function getPaymentData(int $merchantId): JsonResponse
+    public function getPaymentData(int $branchId): JsonResponse
     {
-        $result = $this->checkoutService->initializePaymentStep($merchantId);
+        $result = $this->checkoutService->initializePaymentStep($branchId);
         return response()->json($result, $result['success'] ? 200 : 400);
     }
 
     /**
-     * GET /merchant/{merchantId}/checkout/totals
+     * GET /branch/{branchId}/checkout/totals
      * Get current totals (AJAX)
      */
-    public function getTotals(int $merchantId): JsonResponse
+    public function getTotals(int $branchId): JsonResponse
     {
         $priceCalculator = $this->checkoutService->getPriceCalculator();
         $cartService = $this->checkoutService->getCartService();
 
-        $addressData = $this->sessionManager->getAddressData($merchantId);
-        $shippingData = $this->sessionManager->getShippingData($merchantId);
-        $discountData = $this->sessionManager->getDiscountData($merchantId);
-        $cartSummary = $cartService->getMerchantCartSummary($merchantId);
+        $addressData = $this->sessionManager->getAddressData($branchId);
+        $shippingData = $this->sessionManager->getShippingData($branchId);
+        $discountData = $this->sessionManager->getDiscountData($branchId);
+        $cartSummary = $cartService->getBranchCartSummary($branchId);
 
         $totals = $priceCalculator->calculateTotals($cartSummary['items'], [
             'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'] ?? 0,
             'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
-            'packing_cost' => $shippingData['packing_cost'] ?? 0,
+            'packing_cost' => 0, // Packing removed
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
         ]);
 
@@ -371,18 +382,18 @@ class CheckoutMerchantController extends Controller
     // =========================================================================
 
     /**
-     * GET /merchant/{merchantId}/checkout/return/{status?}
+     * GET /branch/{branchId}/checkout/return/{status?}
      * Show purchase result
      */
-    public function showReturn(int $merchantId, ?string $status = null, Request $request = null): View|JsonResponse|\Illuminate\Http\RedirectResponse
+    public function showReturn(int $branchId, ?string $status = null, Request $request = null): View|JsonResponse|\Illuminate\Http\RedirectResponse
     {
         $request = $request ?? request();
         $status = $status ?? $request->query('status', 'success');
         $purchase = $this->sessionManager->getTempPurchase();
         $cart = $this->sessionManager->getTempCart();
 
-        // Check if there are more merchants to checkout
-        $hasMoreMerchants = $this->cartService->hasOtherMerchants($merchantId);
+        // Check if there are more branches to checkout
+        $hasMoreBranches = $this->cartService->hasOtherBranches($branchId);
 
         if (!$purchase && $status === 'success') {
             if ($request->wantsJson()) {
@@ -409,15 +420,15 @@ class CheckoutMerchantController extends Controller
                 'success' => $status === 'success',
                 'status' => $status,
                 'purchase' => $purchase,
-                'has_more_merchants' => $hasMoreMerchants,
+                'has_more_branches' => $hasMoreBranches,
             ]);
         }
 
         return view('merchant.checkout.return', [
-            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
             'status' => $status,
             'purchase' => $purchase,
-            'has_more_merchants' => $hasMoreMerchants,
+            'has_more_branches' => $hasMoreBranches,
             'error_message' => $errorMessage,
             'gs' => \DB::table('muaadhsettings')->first(),
         ]);
@@ -428,10 +439,10 @@ class CheckoutMerchantController extends Controller
     // =========================================================================
 
     /**
-     * POST /merchant/{merchantId}/checkout/discount/apply
+     * POST /branch/{branchId}/checkout/discount/apply
      * Apply discount code
      */
-    public function applyDiscount(Request $request, int $merchantId): JsonResponse
+    public function applyDiscount(Request $request, int $branchId): JsonResponse
     {
         $code = $request->input('code');
 
@@ -443,12 +454,6 @@ class CheckoutMerchantController extends Controller
         }
 
         // TODO: Implement discount code validation logic
-        // This should check the discount_codes table and validate:
-        // - Code exists and is active
-        // - Code is valid for this merchant
-        // - Code hasn't expired
-        // - Usage limit hasn't been reached
-        // - Minimum purchase amount met
 
         return response()->json([
             'success' => false,
@@ -457,12 +462,12 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * DELETE /merchant/{merchantId}/checkout/discount
+     * DELETE /branch/{branchId}/checkout/discount
      * Remove discount code
      */
-    public function removeDiscount(int $merchantId): JsonResponse
+    public function removeDiscount(int $branchId): JsonResponse
     {
-        $this->sessionManager->clearDiscountData($merchantId);
+        $this->sessionManager->clearDiscountData($branchId);
 
         return response()->json([
             'success' => true,
@@ -475,23 +480,23 @@ class CheckoutMerchantController extends Controller
     // =========================================================================
 
     /**
-     * GET /merchant/{merchantId}/checkout/status
+     * GET /branch/{branchId}/checkout/status
      * Get current checkout status
      */
-    public function getStatus(int $merchantId): JsonResponse
+    public function getStatus(int $branchId): JsonResponse
     {
-        $currentStep = $this->sessionManager->getCurrentStep($merchantId);
-        $allData = $this->sessionManager->getAllCheckoutData($merchantId);
-        $cartSummary = $this->cartService->getMerchantCartSummary($merchantId);
+        $currentStep = $this->sessionManager->getCurrentStep($branchId);
+        $allData = $this->sessionManager->getAllCheckoutData($branchId);
+        $cartSummary = $this->cartService->getBranchCartSummary($branchId);
 
         return response()->json([
             'success' => true,
-            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
             'current_step' => $currentStep,
             'steps_completed' => [
-                'address' => $this->sessionManager->isStepCompleted($merchantId, 'address'),
-                'shipping' => $this->sessionManager->isStepCompleted($merchantId, 'shipping'),
-                'payment' => $this->sessionManager->isStepCompleted($merchantId, 'payment'),
+                'address' => $this->sessionManager->isStepCompleted($branchId, 'address'),
+                'shipping' => $this->sessionManager->isStepCompleted($branchId, 'shipping'),
+                'payment' => $this->sessionManager->isStepCompleted($branchId, 'payment'),
             ],
             'cart' => [
                 'items_count' => $cartSummary['items_count'],
@@ -503,12 +508,12 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * DELETE /merchant/{merchantId}/checkout
+     * DELETE /branch/{branchId}/checkout
      * Cancel checkout and clear session
      */
-    public function cancelCheckout(int $merchantId): JsonResponse
+    public function cancelCheckout(int $branchId): JsonResponse
     {
-        $this->sessionManager->clearAllCheckoutData($merchantId);
+        $this->sessionManager->clearAllCheckoutData($branchId);
 
         return response()->json([
             'success' => true,
@@ -518,10 +523,10 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/location-draft
+     * POST /branch/{branchId}/checkout/location-draft
      * Save location draft from map
      */
-    public function saveLocationDraft(Request $request, int $merchantId): JsonResponse
+    public function saveLocationDraft(Request $request, int $branchId): JsonResponse
     {
         $validated = $request->validate([
             'address' => 'required|string',
@@ -532,7 +537,7 @@ class CheckoutMerchantController extends Controller
             'country_id' => 'nullable|integer',
         ]);
 
-        $this->sessionManager->saveLocationDraft($merchantId, $validated);
+        $this->sessionManager->saveLocationDraft($branchId, $validated);
 
         return response()->json([
             'success' => true,
@@ -541,24 +546,24 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/preview-totals
+     * POST /branch/{branchId}/checkout/preview-totals
      * Calculate totals preview without saving to session (AJAX)
      */
-    public function previewTotals(Request $request, int $merchantId): JsonResponse
+    public function previewTotals(Request $request, int $branchId): JsonResponse
     {
         $priceCalculator = $this->checkoutService->getPriceCalculator();
         $cartService = $this->checkoutService->getCartService();
 
         // Get cart and session data
-        $cartSummary = $cartService->getMerchantCartSummary($merchantId);
-        $addressData = $this->sessionManager->getAddressData($merchantId);
-        $discountData = $this->sessionManager->getDiscountData($merchantId);
+        $cartSummary = $cartService->getBranchCartSummary($branchId);
+        $addressData = $this->sessionManager->getAddressData($branchId);
+        $discountData = $this->sessionManager->getDiscountData($branchId);
 
         // Get delivery costs from request
         $deliveryType = $request->input('delivery_type', 'shipping');
         $shippingCost = (float) $request->input('shipping_cost', 0);
         $courierFee = (float) $request->input('courier_fee', 0);
-        $packingCost = (float) $request->input('packing_cost', 0);
+        $packingCost = 0; // Packing removed
 
         // Calculate totals
         $totals = $priceCalculator->calculateTotals($cartSummary['items'], [
@@ -586,10 +591,10 @@ class CheckoutMerchantController extends Controller
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/calculate-tax
+     * POST /branch/{branchId}/checkout/calculate-tax
      * Calculate tax for location (AJAX)
      */
-    public function calculateTax(Request $request, int $merchantId): JsonResponse
+    public function calculateTax(Request $request, int $branchId): JsonResponse
     {
         $countryId = (int) $request->input('country_id', 0);
         $stateId = (int) $request->input('state_id', 0);
@@ -601,7 +606,7 @@ class CheckoutMerchantController extends Controller
         $taxInfo = $priceCalculator->getTaxRateForLocation($countryId, $stateId);
 
         // Get cart total
-        $cartSummary = $cartService->getMerchantCartSummary($merchantId);
+        $cartSummary = $cartService->getBranchCartSummary($branchId);
         $subtotal = $cartSummary['total_price'];
 
         // Calculate tax amount

@@ -11,7 +11,7 @@ use Illuminate\View\View;
 /**
  * MerchantCartController - Cart API
  *
- * كل العمليات Merchant-Scoped
+ * كل العمليات Branch-Scoped (التجميع حسب الفرع)
  * لا يوجد عمليات عامة على السلة بالكامل
  */
 class MerchantCartController extends Controller
@@ -28,20 +28,20 @@ class MerchantCartController extends Controller
     // ══════════════════════════════════════════════════════════════
 
     /**
-     * Cart page - shows all merchants grouped
+     * Cart page - shows all branches grouped
      * GET /merchant-cart
      *
-     * Each merchant has their own section with:
+     * Each branch has their own section with:
      * - Items list
-     * - Per-merchant totals
-     * - Per-merchant checkout button
+     * - Per-branch totals
+     * - Per-branch checkout button
      */
     public function index(): View
     {
-        $byMerchant = $this->cart->getAllMerchantsCart();
+        $byBranch = $this->cart->getAllBranchesCart();
 
         return view('merchant.cart.index', [
-            'byMerchant' => $byMerchant,
+            'byBranch' => $byBranch,
             'isEmpty' => !$this->cart->hasItems(),
         ]);
     }
@@ -59,15 +59,11 @@ class MerchantCartController extends Controller
         $request->validate([
             'merchant_item_id' => 'required|integer|exists:merchant_items,id',
             'qty' => 'nullable|integer|min:1',
-            'size' => 'nullable|string|max:100',
-            'color' => 'nullable|string|max:50',
         ]);
 
         $result = $this->cart->addItem(
             merchantItemId: (int) $request->merchant_item_id,
-            qty: (int) ($request->qty ?? 1),
-            size: $request->size,
-            color: $request->color
+            qty: (int) ($request->qty ?? 1)
         );
 
         return response()->json([
@@ -79,23 +75,23 @@ class MerchantCartController extends Controller
     }
 
     // ══════════════════════════════════════════════════════════════
-    // تعديل الكمية
+    // تعديل الكمية (Branch-Scoped)
     // ══════════════════════════════════════════════════════════════
 
     /**
-     * Update item quantity
+     * Update item quantity (branch-scoped)
      * POST /merchant-cart/update
      */
     public function update(Request $request): JsonResponse
     {
         $request->validate([
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
             'key' => 'required|string',
             'qty' => 'required|integer|min:1',
         ]);
 
-        $result = $this->cart->updateQty(
-            merchantId: (int) $request->merchant_id,
+        $result = $this->cart->updateBranchQty(
+            branchId: (int) $request->branch_id,
             cartKey: $request->key,
             qty: (int) $request->qty
         );
@@ -109,19 +105,36 @@ class MerchantCartController extends Controller
     }
 
     /**
-     * Increase item quantity by 1
+     * Increase item quantity by 1 (branch-scoped)
      * POST /merchant-cart/increase
      */
     public function increase(Request $request): JsonResponse
     {
         $request->validate([
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
             'key' => 'required|string',
         ]);
 
-        $result = $this->cart->increaseQty(
-            merchantId: (int) $request->merchant_id,
-            cartKey: $request->key
+        $branchId = (int) $request->branch_id;
+        $cartKey = $request->key;
+
+        // Get current item
+        $items = $this->cart->getBranchItems($branchId);
+        $item = $items[$cartKey] ?? null;
+
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => __('الصنف غير موجود'),
+            ], 422);
+        }
+
+        $newQty = ($item['qty'] ?? 1) + 1;
+
+        $result = $this->cart->updateBranchQty(
+            branchId: $branchId,
+            cartKey: $cartKey,
+            qty: $newQty
         );
 
         return response()->json([
@@ -133,19 +146,47 @@ class MerchantCartController extends Controller
     }
 
     /**
-     * Decrease item quantity by 1
+     * Decrease item quantity by 1 (branch-scoped)
      * POST /merchant-cart/decrease
      */
     public function decrease(Request $request): JsonResponse
     {
         $request->validate([
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
             'key' => 'required|string',
         ]);
 
-        $result = $this->cart->decreaseQty(
-            merchantId: (int) $request->merchant_id,
-            cartKey: $request->key
+        $branchId = (int) $request->branch_id;
+        $cartKey = $request->key;
+
+        // Get current item
+        $items = $this->cart->getBranchItems($branchId);
+        $item = $items[$cartKey] ?? null;
+
+        if (!$item) {
+            return response()->json([
+                'success' => false,
+                'message' => __('الصنف غير موجود'),
+            ], 422);
+        }
+
+        $currentQty = $item['qty'] ?? 1;
+        $minQty = (int) ($item['min_qty'] ?? 1);
+
+        // Check minimum quantity
+        if ($currentQty <= $minQty) {
+            return response()->json([
+                'success' => false,
+                'message' => __('الحد الأدنى للكمية') . ' ' . $minQty,
+            ], 422);
+        }
+
+        $newQty = $currentQty - 1;
+
+        $result = $this->cart->updateBranchQty(
+            branchId: $branchId,
+            cartKey: $cartKey,
+            qty: $newQty
         );
 
         return response()->json([
@@ -157,18 +198,18 @@ class MerchantCartController extends Controller
     }
 
     // ══════════════════════════════════════════════════════════════
-    // حذف
+    // حذف (Branch-Scoped)
     // ══════════════════════════════════════════════════════════════
 
     /**
-     * Remove item from cart
+     * Remove item from cart (branch-scoped)
      * DELETE /merchant-cart/remove/{key}
      * POST /merchant-cart/remove
      */
     public function remove(Request $request, ?string $key = null): JsonResponse
     {
         $request->validate([
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
         ]);
 
         $cartKey = $key ?? $request->input('key');
@@ -180,8 +221,8 @@ class MerchantCartController extends Controller
             ], 422);
         }
 
-        $result = $this->cart->removeItem(
-            merchantId: (int) $request->merchant_id,
+        $result = $this->cart->removeBranchItem(
+            branchId: (int) $request->branch_id,
             cartKey: urldecode($cartKey)
         );
 
@@ -194,20 +235,20 @@ class MerchantCartController extends Controller
     }
 
     /**
-     * Clear merchant items
-     * POST /merchant-cart/clear-merchant
+     * Clear branch items
+     * POST /merchant-cart/clear-branch
      */
-    public function clearMerchant(Request $request): JsonResponse
+    public function clearBranch(Request $request): JsonResponse
     {
         $request->validate([
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
         ]);
 
-        $this->cart->clearMerchant((int) $request->merchant_id);
+        $this->cart->clearBranch((int) $request->branch_id);
 
         return response()->json([
             'success' => true,
-            'message' => __('تم مسح أصناف التاجر'),
+            'message' => __('تم مسح أصناف الفرع'),
             'header_count' => $this->cart->getHeaderCount(),
         ]);
     }
@@ -228,43 +269,45 @@ class MerchantCartController extends Controller
     }
 
     // ══════════════════════════════════════════════════════════════
-    // قراءة البيانات
+    // قراءة البيانات (Branch-Scoped)
     // ══════════════════════════════════════════════════════════════
 
     /**
-     * Get merchant cart summary (AJAX)
-     * GET /merchant-cart/summary?merchant_id=X
+     * Get branch cart summary (AJAX)
+     * GET /merchant-cart/summary?branch_id=X
      */
     public function summary(Request $request): JsonResponse
     {
         $request->validate([
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
         ]);
 
-        $merchantId = (int) $request->merchant_id;
-        $merchantCart = $this->cart->getMerchantCart($merchantId);
+        $branchId = (int) $request->branch_id;
+        $branchCart = $this->cart->getBranchCart($branchId);
 
         return response()->json([
             'success' => true,
-            'merchant_id' => $merchantId,
-            'merchant_name' => $merchantCart['merchant_name'],
-            'items' => array_values($merchantCart['items']),
-            'totals' => $this->formatTotals($merchantCart['totals']),
-            'has_other_merchants' => $merchantCart['has_other_merchants'],
+            'branch_id' => $branchId,
+            'branch_name' => $branchCart['branch_name'],
+            'merchant_id' => $branchCart['merchant_id'],
+            'merchant_name' => $branchCart['merchant_name'],
+            'items' => array_values($branchCart['items']),
+            'totals' => $this->formatTotals($branchCart['totals']),
+            'has_other_branches' => $branchCart['has_other_branches'],
         ]);
     }
 
     /**
-     * Get all merchants cart (for full page)
+     * Get all branches cart (for full page)
      * GET /merchant-cart/all
      */
     public function all(): JsonResponse
     {
-        $merchantsCart = $this->cart->getAllMerchantsCart();
+        $branchesCart = $this->cart->getAllBranchesCart();
 
         return response()->json([
             'success' => true,
-            'merchants' => $merchantsCart,
+            'branches' => $branchesCart,
             'header_count' => $this->cart->getHeaderCount(),
         ]);
     }
@@ -282,7 +325,19 @@ class MerchantCartController extends Controller
     }
 
     /**
-     * Get merchant IDs in cart
+     * Get branch IDs in cart
+     * GET /merchant-cart/branches
+     */
+    public function branches(): JsonResponse
+    {
+        return response()->json([
+            'success' => true,
+            'branch_ids' => $this->cart->getBranchIds(),
+        ]);
+    }
+
+    /**
+     * Get merchant IDs in cart (legacy support)
      * GET /merchant-cart/merchants
      */
     public function merchants(): JsonResponse

@@ -368,31 +368,55 @@ class Purchase extends Model
         return true;
     }
 
+    /**
+     * Get shipping data for cart
+     *
+     * المنطق:
+     * | user_id | operator    | المعنى                                    |
+     * |---------|-------------|-------------------------------------------|
+     * | 0       | 0           | موقف/معطّل - لا يظهر                      |
+     * | 0       | merchant_id | شحنة المنصة مُفعّلة لتاجر معين             |
+     * | merchant_id | 0       | شحنة خاصة بالتاجر                         |
+     */
     public static function getShipData($cart)
     {
-//        dd($cart);
         $merchant_shipping_id = 0;
-        $user = array();
+        $users = [];
+
         foreach ($cart->items as $cartItem) {
-                $user[] = $cartItem['item']['user_id'];
+            $users[] = $cartItem['item']['user_id'];
         }
-        $users = array_unique($user);
-        if(count($users) == 1)
-        {
-            $shipping_data  = DB::table('shippings')->whereUserId($users[0])->get();
-            if(count($shipping_data) == 0){
-                $shipping_data  = DB::table('shippings')->whereUserId(0)->get();
+        $users = array_unique($users);
+
+        if (count($users) == 1) {
+            $merchantId = (int) $users[0];
+
+            // Get merchant's shipping using the new operator logic
+            $shipping_data = \App\Models\Shipping::where('status', 1)
+                ->where(function ($q) use ($merchantId) {
+                    // شحنات التاجر الخاصة
+                    $q->where('user_id', $merchantId)
+                      // أو شحنات المنصة المُفعّلة لهذا التاجر
+                      ->orWhere(function ($q2) use ($merchantId) {
+                          $q2->where('user_id', 0)
+                             ->where('operator', $merchantId);
+                      });
+                })
+                ->get();
+
+            if ($shipping_data->count() > 0) {
+                $merchant_shipping_id = $merchantId;
             }
-            else{
-                $merchant_shipping_id = $users[0];
-            }
+        } else {
+            // Multiple merchants - get shipping for each using scope
+            // For now, return empty - should use per-merchant checkout flow
+            $shipping_data = collect();
         }
-        else {
-            $shipping_data  = DB::table('shippings')->whereUserId(0)->get();
-        }
-        $data['shipping_data'] = $shipping_data;
-        $data['merchant_shipping_id'] = $merchant_shipping_id;
-        return $data;
+
+        return [
+            'shipping_data' => $shipping_data,
+            'merchant_shipping_id' => $merchant_shipping_id,
+        ];
     }
 
     /**

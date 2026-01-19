@@ -102,24 +102,50 @@ class CheckoutDataService
 
     /**
      * Bulk load shipping for all merchants
-     * ✅ FIX: Returns Collection grouped by user_id (not array)
+     *
+     * المنطق:
+     * | user_id | operator    | المعنى                                    |
+     * |---------|-------------|-------------------------------------------|
+     * | 0       | 0           | موقف/معطّل - لا يظهر                      |
+     * | 0       | merchant_id | شحنة المنصة مُفعّلة لتاجر معين             |
+     * | merchant_id | 0       | شحنة خاصة بالتاجر                         |
+     *
+     * @return Collection grouped by effective merchant_id
      */
     private static function loadShipping(array $merchantIds, bool $includeAdmin = false): Collection
     {
-        $allMerchantIds = $merchantIds;
-        if ($includeAdmin) {
-            $allMerchantIds[] = 0;
-        }
-
-        if (empty($allMerchantIds)) {
+        if (empty($merchantIds)) {
             return collect();
         }
 
-        // Load all shipping records for all merchants at once
-        $allShipping = Shipping::whereIn('user_id', $allMerchantIds)->get();
+        // Load shipping records:
+        // 1. Merchant's own shipping (user_id = merchantId)
+        // 2. Platform shipping enabled for specific merchants (user_id = 0 AND operator IN merchantIds)
+        $allShipping = Shipping::where('status', 1)
+            ->where(function ($q) use ($merchantIds) {
+                // شحنات التجار الخاصة
+                $q->whereIn('user_id', $merchantIds)
+                  // أو شحنات المنصة المُفعّلة لهؤلاء التجار
+                  ->orWhere(function ($q2) use ($merchantIds) {
+                      $q2->where('user_id', 0)
+                         ->whereIn('operator', $merchantIds);
+                  });
+            })
+            ->get();
 
-        // Group by user_id - returns Collection of Collections
-        return $allShipping->groupBy('user_id');
+        // Group by effective merchant_id:
+        // - If user_id > 0 → group by user_id (merchant's own)
+        // - If user_id = 0 → group by operator (platform's for specific merchant)
+        $grouped = collect();
+        foreach ($allShipping as $shipping) {
+            $effectiveMerchantId = $shipping->user_id > 0 ? $shipping->user_id : $shipping->operator;
+            if (!$grouped->has($effectiveMerchantId)) {
+                $grouped[$effectiveMerchantId] = collect();
+            }
+            $grouped[$effectiveMerchantId]->push($shipping);
+        }
+
+        return $grouped;
     }
 
     /**

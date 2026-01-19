@@ -35,20 +35,35 @@ class MerchantPayment extends Model
     }
 
     /**
-     * يعيد بوابات الدفع للتاجر + البوابات العامة (الأوبريتور)
-     * user_id = 0 (operator/platform) - متاحة لجميع التجار
-     * user_id = $merchantId - بوابات التاجر الخاصة
-     * ويقدّم بوابات التاجر في الترتيب.
+     * يعيد بوابات الدفع المتاحة للتاجر
+     *
+     * المنطق:
+     * | user_id | operator    | المعنى                                    |
+     * |---------|-------------|-------------------------------------------|
+     * | 0       | 0           | موقف/معطّل - لا يظهر لأحد                 |
+     * | 0       | merchant_id | بوابة المنصة مُفعّلة لتاجر معين            |
+     * | merchant_id | 0       | بوابة خاصة بالتاجر (أضافها بنفسه)         |
+     *
+     * الأولوية: بوابات التاجر الخاصة أولاً، ثم بوابات المنصة
      */
     public function scopeForMerchant(Builder $query, int $merchantId): Builder
     {
         return $query
-            ->whereIn('user_id', [0, $merchantId])
+            ->where('status', 1)
+            ->where(function ($q) use ($merchantId) {
+                // 1. بوابات التاجر الخاصة (user_id = merchantId)
+                $q->where('user_id', $merchantId)
+                // 2. أو بوابات المنصة المُفعّلة لهذا التاجر (user_id = 0 AND operator = merchantId)
+                ->orWhere(function ($q2) use ($merchantId) {
+                    $q2->where('user_id', 0)
+                       ->where('operator', $merchantId);
+                });
+            })
             ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId]);
     }
 
     /**
-     * فقط بوابات المنصة (الأوبريتور)
+     * بوابات المنصة فقط (للإدارة)
      */
     public function scopePlatformOnly(Builder $query): Builder
     {
@@ -69,6 +84,24 @@ class MerchantPayment extends Model
     public function isMerchantOwned(int $merchantId): bool
     {
         return $this->user_id > 0 && $this->user_id === $merchantId;
+    }
+
+    /**
+     * هل هذه البوابة مُفعّلة لتاجر معين؟
+     */
+    public function isEnabledForMerchant(int $merchantId): bool
+    {
+        // بوابة التاجر الخاصة
+        if ($this->user_id === $merchantId) {
+            return true;
+        }
+
+        // بوابة المنصة المُفعّلة لهذا التاجر
+        if ($this->user_id === 0 && $this->operator === $merchantId) {
+            return true;
+        }
+
+        return false;
     }
 
     public static function scopeHasGateway($curr)

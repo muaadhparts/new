@@ -1,18 +1,20 @@
 {{--
     =====================================================================
-    MERCHANT CART PAGE - v4.1 (Per-Merchant Summary)
+    MERCHANT CART PAGE - v5.0 (Per-Branch Summary)
     =====================================================================
     Controller: App\Http\Controllers\Front\MerchantCartController@index
     Service: App\Services\Cart\MerchantCartManager
 
     Variables passed:
-    - $byMerchant: Items grouped by merchant (each with items + totals)
+    - $byBranch: Items grouped by branch (each with items + totals)
     - $isEmpty: Whether cart is empty
 
-    Architecture: Each merchant has their own complete section with:
+    Architecture: Each branch has their own complete section with:
     - Items list
-    - Per-merchant summary
-    - Per-merchant checkout button
+    - Per-branch summary
+    - Per-branch checkout button
+
+    Note: Payment and shipping methods remain merchant-scoped (via branch->user)
     =====================================================================
 --}}
 @extends('layouts.front')
@@ -41,20 +43,21 @@
                 {{-- Empty Cart --}}
                 @include('merchant.cart.partials.empty')
             @else
-                {{-- Each Merchant = Complete Section with Items + Summary + Checkout --}}
-                @foreach ($byMerchant as $merchantId => $merchantGroup)
-                    <div class="m-cart__merchant-section" data-merchant-id="{{ $merchantId }}">
+                {{-- Each Branch = Complete Section with Items + Summary + Checkout --}}
+                @foreach ($byBranch as $branchId => $branchGroup)
+                    <div class="m-cart__branch-section" data-branch-id="{{ $branchId }}">
                         <div class="row">
                             {{-- Items Column --}}
                             <div class="col-lg-8">
                                 <div class="m-cart__merchant">
-                                    {{-- Merchant Header --}}
+                                    {{-- Branch Header --}}
                                     <div class="m-cart__merchant-header">
                                         <div class="m-cart__merchant-info">
-                                            <i class="fas fa-store"></i>
-                                            <span class="m-cart__merchant-name">{{ $merchantGroup['merchant_name'] ?? __('Merchant') }}</span>
+                                            <i class="fas fa-warehouse"></i>
+                                            <span class="m-cart__branch-name">{{ $branchGroup['branch_name'] ?? __('Branch') }}</span>
+                                            <small class="text-muted ms-2">({{ $branchGroup['merchant_name'] ?? __('Merchant') }})</small>
                                             <span class="m-cart__merchant-count">
-                                                <span class="count-value">{{ $merchantGroup['totals']['qty'] ?? 0 }}</span> @lang('Items')
+                                                <span class="count-value">{{ $branchGroup['totals']['qty'] ?? 0 }}</span> @lang('Items')
                                             </span>
                                         </div>
                                     </div>
@@ -71,8 +74,8 @@
                                         </div>
 
                                         {{-- Items --}}
-                                        <div class="m-cart__items" id="merchant-items-{{ $merchantId }}">
-                                            @foreach ($merchantGroup['items'] as $key => $item)
+                                        <div class="m-cart__items" id="branch-items-{{ $branchId }}">
+                                            @foreach ($branchGroup['items'] as $key => $item)
                                                 @include('merchant.cart.partials.item', [
                                                     'item' => $item,
                                                     'issue' => null
@@ -83,33 +86,33 @@
                                 </div>
                             </div>
 
-                            {{-- Per-Merchant Summary Column --}}
+                            {{-- Per-Branch Summary Column --}}
                             <div class="col-lg-4">
-                                <div class="m-cart__summary" data-merchant-id="{{ $merchantId }}">
+                                <div class="m-cart__summary" data-branch-id="{{ $branchId }}">
                                     <h4 class="m-cart__summary-title">
                                         <i class="fas fa-receipt me-2"></i>
-                                        @lang('Summary') - {{ $merchantGroup['merchant_name'] ?? __('Merchant') }}
+                                        @lang('Summary') - {{ $branchGroup['branch_name'] ?? __('Branch') }}
                                     </h4>
 
                                     <div class="m-cart__summary-rows">
                                         {{-- Subtotal --}}
                                         <div class="m-cart__summary-row">
                                             <span class="m-cart__summary-label">
-                                                @lang('Subtotal') <small>({{ $merchantGroup['totals']['qty'] ?? 0 }} @lang('items'))</small>
+                                                @lang('Subtotal') <small>({{ $branchGroup['totals']['qty'] ?? 0 }} @lang('items'))</small>
                                             </span>
                                             <span class="m-cart__summary-value">
-                                                {{ monetaryUnit()->convertAndFormat($merchantGroup['totals']['subtotal'] ?? 0) }}
+                                                {{ monetaryUnit()->convertAndFormat($branchGroup['totals']['subtotal'] ?? 0) }}
                                             </span>
                                         </div>
 
                                         {{-- Wholesale Discount (if any) --}}
-                                        @if (($merchantGroup['totals']['discount'] ?? 0) > 0)
+                                        @if (($branchGroup['totals']['discount'] ?? 0) > 0)
                                             <div class="m-cart__summary-row m-cart__summary-row--discount">
                                                 <span class="m-cart__summary-label">
                                                     <i class="fas fa-tag"></i> @lang('Wholesale Discount')
                                                 </span>
                                                 <span class="m-cart__summary-value">
-                                                    -{{ monetaryUnit()->convertAndFormat($merchantGroup['totals']['discount']) }}
+                                                    -{{ monetaryUnit()->convertAndFormat($branchGroup['totals']['discount']) }}
                                                 </span>
                                             </div>
                                         @endif
@@ -131,23 +134,23 @@
                                         <div class="m-cart__summary-row m-cart__summary-row--total">
                                             <span class="m-cart__summary-label">@lang('Total')</span>
                                             <span class="m-cart__summary-value m-cart__summary-value--total">
-                                                {{ monetaryUnit()->convertAndFormat($merchantGroup['totals']['total'] ?? 0) }}
+                                                {{ monetaryUnit()->convertAndFormat($branchGroup['totals']['total'] ?? 0) }}
                                             </span>
                                         </div>
                                     </div>
 
                                     {{-- Checkout Button --}}
-                                    <a href="{{ $merchantGroup['checkout_url'] ?? route('merchant.checkout.address', ['merchantId' => $merchantId]) }}"
+                                    <a href="{{ $branchGroup['checkout_url'] ?? route('branch.checkout.address', ['branchId' => $branchId]) }}"
                                        class="m-btn m-btn--primary m-btn--lg m-btn--block m-cart__checkout-btn">
                                         <i class="fas fa-lock me-2"></i>
-                                        @lang('Checkout') - {{ $merchantGroup['merchant_name'] ?? __('Merchant') }}
+                                        @lang('Checkout') - {{ $branchGroup['branch_name'] ?? __('Branch') }}
                                     </a>
 
-                                    {{-- Clear Merchant Items --}}
+                                    {{-- Clear Branch Items --}}
                                     <button type="button"
-                                            class="m-btn m-btn--text m-btn--block m-cart__clear-merchant-btn"
-                                            data-action="clear-merchant"
-                                            data-merchant-id="{{ $merchantId }}">
+                                            class="m-btn m-btn--text m-btn--block m-cart__clear-branch-btn"
+                                            data-action="clear-branch"
+                                            data-branch-id="{{ $branchId }}">
                                         <i class="fas fa-trash me-2"></i>
                                         @lang('Remove all items')
                                     </button>
@@ -156,9 +159,9 @@
                         </div>
                     </div>
 
-                    {{-- Separator between merchants --}}
+                    {{-- Separator between branches --}}
                     @if (!$loop->last)
-                        <hr class="m-cart__merchant-separator">
+                        <hr class="m-cart__branch-separator">
                     @endif
                 @endforeach
 
@@ -178,7 +181,7 @@
 <script src="{{ asset('assets/front/js/merchant-cart.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize cart
+        // Initialize cart (now branch-scoped)
         if (typeof MerchantCart !== 'undefined') {
             MerchantCart.init({
                 endpoints: {
@@ -187,6 +190,7 @@
                     increase: '{{ route('merchant-cart.increase') }}',
                     decrease: '{{ route('merchant-cart.decrease') }}',
                     remove: '{{ route('merchant-cart.remove.post') }}',
+                    clearBranch: '{{ route('merchant-cart.clear-branch') }}',
                     clear: '{{ route('merchant-cart.clear') }}',
                     summary: '{{ route('merchant-cart.summary') }}',
                     count: '{{ route('merchant-cart.count') }}',
@@ -719,7 +723,32 @@
     }
 }
 
-/* Merchant Section (Per-Merchant Layout) */
+/* Branch Section (Per-Branch Layout) */
+.m-cart__branch-section {
+    margin-bottom: 2rem;
+}
+
+.m-cart__branch-separator {
+    border: none;
+    border-top: 2px dashed var(--border-default, #dee2e6);
+    margin: 2rem 0;
+}
+
+.m-cart__clear-branch-btn {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.m-cart__clear-branch-btn:hover {
+    color: var(--action-danger);
+}
+
+.m-cart__branch-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Legacy support for merchant sections */
 .m-cart__merchant-section {
     margin-bottom: 2rem;
 }

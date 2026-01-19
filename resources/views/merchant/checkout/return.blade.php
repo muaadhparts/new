@@ -73,15 +73,15 @@
                                         <i class="fas fa-home me-2"></i>@lang('Continue Shopping')
                                     </a>
 
-                                    {{-- Check if there are more merchants to checkout --}}
-                                    @if($has_more_merchants ?? false)
+                                    {{-- Check if there are more branches to checkout --}}
+                                    @if($has_more_branches ?? false)
                                     <div class="w-100 mt-3">
                                         <div class="m-alert m-alert--warning mb-3">
                                             <i class="fas fa-info-circle me-2"></i>
-                                            @lang('You still have items from other merchants in your cart')
+                                            @lang('You still have items from other branches in your cart')
                                         </div>
                                         <a href="{{ route('merchant-cart.index') }}" class="m-btn m-btn--warning w-100">
-                                            <i class="fas fa-shopping-cart me-2"></i>@lang('Complete Other Merchants Orders')
+                                            <i class="fas fa-shopping-cart me-2"></i>@lang('Complete Other Orders')
                                         </a>
                                     </div>
                                     @endif
@@ -103,7 +103,7 @@
                                 </p>
 
                                 <div class="d-flex flex-wrap justify-content-center gap-3">
-                                    <a href="{{ route('merchant.checkout.payment', $merchant_id) }}" class="m-btn m-btn--primary">
+                                    <a href="{{ route('branch.checkout.payment', $branch_id) }}" class="m-btn m-btn--primary">
                                         <i class="fas fa-redo me-2"></i>@lang('Try Again')
                                     </a>
                                     <a href="{{ route('merchant-cart.index') }}" class="m-btn m-btn--outline">
@@ -125,7 +125,7 @@
                                 <p class="text-muted mb-4">@lang('You have cancelled the payment process. Your cart items are still saved.')</p>
 
                                 <div class="d-flex flex-wrap justify-content-center gap-3">
-                                    <a href="{{ route('merchant.checkout.payment', $merchant_id) }}" class="m-btn m-btn--primary">
+                                    <a href="{{ route('branch.checkout.payment', $branch_id) }}" class="m-btn m-btn--primary">
                                         <i class="fas fa-credit-card me-2"></i>@lang('Complete Payment')
                                     </a>
                                     <a href="{{ route('merchant-cart.index') }}" class="m-btn m-btn--outline">

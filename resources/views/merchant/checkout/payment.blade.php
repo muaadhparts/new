@@ -51,7 +51,7 @@
                                 <i class="fas fa-shipping-fast me-2"></i>
                                 @lang('Delivery Details')
                             </h5>
-                            <a href="{{ route('merchant.checkout.shipping', $merchant_id) }}" class="m-btn m-btn--sm m-btn--outline">
+                            <a href="{{ route('branch.checkout.shipping', $branch_id) }}" class="m-btn m-btn--sm m-btn--outline">
                                 <i class="fas fa-edit me-1"></i> @lang('Edit')
                             </a>
                         </div>
@@ -213,7 +213,7 @@
                                     <i class="fas fa-lock me-2"></i>
                                     @lang('Place Order')
                                 </button>
-                                <a href="{{ route('merchant.checkout.shipping', $merchant_id) }}" class="template-btn dark-outline w-100 mt-2">
+                                <a href="{{ route('branch.checkout.shipping', $branch_id) }}" class="template-btn dark-outline w-100 mt-2">
                                     <i class="fas fa-arrow-left me-2"></i>
                                     @lang('Back')
                                 </a>
@@ -238,8 +238,9 @@
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
+const branchId = {{ $branch_id }};
 const merchantId = {{ $merchant_id }};
-const apiBaseUrl = '/merchant/' + merchantId + '/checkout';
+const apiBaseUrl = '/branch/' + branchId + '/checkout';
 let selectedPaymentMethod = null;
 
 // Handle payment method selection

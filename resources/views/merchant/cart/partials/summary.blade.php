@@ -1,6 +1,6 @@
 {{--
     Cart Summary
-    Variables: $totals (array), $merchantId (optional - for merchant-specific checkout)
+    Variables: $totals (array), $branchId (optional - for branch-specific checkout)
 --}}
 @php
     $subtotal = (float) ($totals['subtotal'] ?? 0);
@@ -58,18 +58,18 @@
     </div>
 
     {{-- Checkout Button --}}
-    @if(isset($merchantId) && $merchantId > 0)
-        {{-- Single Merchant Checkout --}}
-        <a href="{{ route('merchant.checkout.address', ['merchantId' => $merchantId]) }}"
+    @if(isset($branchId) && $branchId > 0)
+        {{-- Single Branch Checkout --}}
+        <a href="{{ route('branch.checkout.address', ['branchId' => $branchId]) }}"
            class="m-btn m-btn--primary m-btn--lg m-btn--block m-cart__checkout-btn">
             <i class="fas fa-lock me-2"></i>
             @lang('Proceed to Checkout')
         </a>
     @else
-        {{-- Multi-Merchant: Show checkout per merchant group --}}
+        {{-- Multi-Branch: Show checkout per branch group --}}
         <p class="m-cart__summary-note">
             <i class="fas fa-info-circle"></i>
-            @lang('Items from different merchants will be checked out separately')
+            @lang('Items from different branches will be checked out separately')
         </p>
     @endif
 

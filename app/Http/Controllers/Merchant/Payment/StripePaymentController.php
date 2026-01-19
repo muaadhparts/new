@@ -10,6 +10,8 @@ use Stripe\Checkout\Session as StripeSession;
 
 /**
  * Stripe Payment Controller
+ *
+ * NOTE: Routes use branchId, but payment methods are merchant-scoped.
  */
 class StripePaymentController extends BaseMerchantPaymentController
 {
@@ -17,12 +19,12 @@ class StripePaymentController extends BaseMerchantPaymentController
     protected string $paymentMethod = 'Stripe';
 
     /**
-     * POST /merchant/{merchantId}/checkout/payment/stripe
+     * POST /branch/{branchId}/checkout/payment/stripe
      */
-    public function processPayment(Request $request, int $merchantId): JsonResponse|RedirectResponse
+    public function processPayment(Request $request, int $branchId): JsonResponse|RedirectResponse
     {
-        // Validate checkout is ready
-        $validation = $this->validateCheckoutReady($merchantId);
+        // Validate checkout is ready (branch-scoped)
+        $validation = $this->validateCheckoutReady($branchId);
         if (!$validation['valid']) {
             if ($request->wantsJson()) {
                 return response()->json($validation, 400);
@@ -30,18 +32,25 @@ class StripePaymentController extends BaseMerchantPaymentController
             return redirect($validation['redirect'])->with('unsuccess', $validation['message']);
         }
 
-        // Get payment config
-        $config = $this->getPaymentConfig($merchantId);
-        if (!$config) {
-            return $this->handlePaymentError($merchantId, __('Stripe is not available for this merchant'));
+        // Get merchantId from branch (payment methods are merchant-scoped)
+        $merchantId = $this->getMerchantIdFromBranch($branchId);
+        if (!$merchantId) {
+            return $this->handlePaymentError($branchId, __('Invalid branch'));
         }
 
-        // Get checkout data
-        $checkoutData = $this->getCheckoutData($merchantId);
+        // Get payment config (merchant-scoped)
+        $config = $this->getPaymentConfig($merchantId);
+        if (!$config) {
+            return $this->handlePaymentError($branchId, __('Stripe is not available for this merchant'));
+        }
+
+        // Get checkout data (branch-scoped)
+        $checkoutData = $this->getCheckoutData($branchId);
         $currency = $this->priceCalculator->getMonetaryUnit();
 
-        // Store checkout data for callback
-        $this->storeInputForCallback($merchantId, [
+        // Store checkout data for callback (branch-scoped)
+        $this->storeInputForCallback($branchId, [
+            'branch_id' => $branchId,
             'merchant_id' => $merchantId,
             'pay_id' => $config['id'],
         ]);
@@ -98,9 +107,10 @@ class StripePaymentController extends BaseMerchantPaymentController
                 'payment_method_types' => ['card'],
                 'line_items' => $lineItems,
                 'mode' => 'payment',
-                'success_url' => route('merchant.payment.stripe.callback') . '?session_id={CHECKOUT_SESSION_ID}&merchant_id=' . $merchantId,
-                'cancel_url' => $this->getCancelUrl($merchantId),
+                'success_url' => route('branch.payment.stripe.callback') . '?session_id={CHECKOUT_SESSION_ID}&branch_id=' . $branchId,
+                'cancel_url' => $this->getCancelUrl($branchId),
                 'metadata' => [
+                    'branch_id' => $branchId,
                     'merchant_id' => $merchantId,
                 ],
             ]);
@@ -116,34 +126,41 @@ class StripePaymentController extends BaseMerchantPaymentController
             return redirect($session->url);
 
         } catch (\Exception $e) {
-            return $this->handlePaymentError($merchantId, $e->getMessage());
+            return $this->handlePaymentError($branchId, $e->getMessage());
         }
     }
 
     /**
-     * GET /merchant/payment/stripe/callback
+     * GET /branch/payment/stripe/callback
      */
     public function handleCallback(Request $request): RedirectResponse
     {
         $sessionId = $request->query('session_id');
-        $merchantId = (int)$request->query('merchant_id');
+        $branchId = (int)$request->query('branch_id');
 
-        if (!$sessionId || !$merchantId) {
-            return redirect($this->getFailureUrl($merchantId ?: 0))
+        if (!$sessionId || !$branchId) {
+            return redirect(route('merchant-cart.index'))
                 ->with('unsuccess', __('Invalid payment response'));
         }
 
-        // Get stored input
-        $storedInput = $this->getStoredInput($merchantId);
+        // Get stored input (branch-scoped)
+        $storedInput = $this->getStoredInput($branchId);
         if (!$storedInput) {
-            return redirect($this->getFailureUrl($merchantId))
+            return redirect($this->getFailureUrl($branchId))
                 ->with('unsuccess', __('Payment session expired'));
         }
 
-        // Get payment config
+        // Get merchantId from stored session
+        $merchantId = $storedInput['merchant_id'] ?? $this->getMerchantIdFromBranch($branchId);
+        if (!$merchantId) {
+            return redirect($this->getFailureUrl($branchId))
+                ->with('unsuccess', __('Invalid branch'));
+        }
+
+        // Get payment config (merchant-scoped)
         $config = $this->getPaymentConfig($merchantId);
         if (!$config) {
-            return redirect($this->getFailureUrl($merchantId))
+            return redirect($this->getFailureUrl($branchId))
                 ->with('unsuccess', __('Payment configuration not found'));
         }
 
@@ -154,12 +171,12 @@ class StripePaymentController extends BaseMerchantPaymentController
             $session = StripeSession::retrieve($sessionId);
 
             if ($session->payment_status !== 'paid') {
-                return redirect($this->getFailureUrl($merchantId))
+                return redirect($this->getFailureUrl($branchId))
                     ->with('unsuccess', __('Payment was not completed'));
             }
 
-            // Create purchase
-            $result = $this->purchaseCreator->createPurchase($merchantId, [
+            // Create purchase (branch-scoped)
+            $result = $this->purchaseCreator->createPurchase($branchId, [
                 'method' => $this->paymentMethod,
                 'pay_id' => $config['id'],
                 'txnid' => $session->payment_intent,
@@ -168,18 +185,18 @@ class StripePaymentController extends BaseMerchantPaymentController
             ]);
 
             // Clear stored input
-            $this->clearStoredInput($merchantId);
+            $this->clearStoredInput($branchId);
 
             if (!$result['success']) {
-                return redirect($this->getFailureUrl($merchantId))
+                return redirect($this->getFailureUrl($branchId))
                     ->with('unsuccess', $result['message'] ?? __('Failed to create order'));
             }
 
-            return redirect($this->getSuccessUrl($merchantId))
+            return redirect($this->getSuccessUrl($branchId))
                 ->with('success', __('Payment successful!'));
 
         } catch (\Exception $e) {
-            return redirect($this->getFailureUrl($merchantId))
+            return redirect($this->getFailureUrl($branchId))
                 ->with('unsuccess', $e->getMessage());
         }
     }

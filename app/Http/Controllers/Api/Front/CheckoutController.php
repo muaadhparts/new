@@ -195,10 +195,21 @@ class CheckoutController extends Controller
                 $firstMerchantId = $merchantIdsArray[0] ?? null;
 
                 if ($firstMerchantId) {
-                    $addressData = Session::get('checkout.merchant.' . $firstMerchantId . '.address')
-                        ?? Session::get('merchant_step1_' . $firstMerchantId)
-                        ?? Session::get('step1')
-                        ?? [];
+                    // Try branch-scoped session first (new format)
+                    // Note: For API, we may receive branch_id directly or need to look up from merchant
+                    $branchId = $input['branch_id'] ?? null;
+                    $addressData = [];
+
+                    if ($branchId) {
+                        $addressData = Session::get('checkout.branch.' . $branchId . '.address') ?? [];
+                    }
+
+                    // Fallback to legacy session keys
+                    if (empty($addressData)) {
+                        $addressData = Session::get('merchant_step1_' . $firstMerchantId)
+                            ?? Session::get('step1')
+                            ?? [];
+                    }
 
                     if (!empty($addressData['latitude']) && !empty($addressData['longitude'])) {
                         $input['customer_latitude'] = (float) $addressData['latitude'];
@@ -539,9 +550,16 @@ class CheckoutController extends Controller
         }
     }
 
+    /**
+     * Get platform shipping only (for legacy/admin purposes)
+     *
+     * @deprecated Use MerchantWisegetShippingPackaging instead
+     */
     public function getShippingPackaging()
     {
-        $shipping  = Shipping::whereUserId(0)->get();
+        // Returns only platform's own shipping (not assigned to any merchant)
+        // This is mainly for admin/legacy purposes
+        $shipping = Shipping::where('user_id', 0)->where('status', 1)->get();
         return response()->json(['status' => true, 'data' => ['shipping' => $shipping, 'packaging' => []], 'error' => []]);
     }
 

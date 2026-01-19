@@ -10,6 +10,8 @@ use MyFatoorah\Library\API\Payment\MyFatoorahPaymentStatus;
 
 /**
  * MyFatoorah Payment Controller (Middle East)
+ *
+ * NOTE: Routes use branchId, but payment methods are merchant-scoped.
  */
 class MyFatoorahPaymentController extends BaseMerchantPaymentController
 {
@@ -17,30 +19,40 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
     protected string $paymentMethod = 'MyFatoorah';
 
     /**
-     * POST /merchant/{merchantId}/checkout/payment/myfatoorah
+     * POST /branch/{branchId}/checkout/payment/myfatoorah
      */
-    public function processPayment(Request $request, int $merchantId): JsonResponse|RedirectResponse
+    public function processPayment(Request $request, int $branchId): JsonResponse|RedirectResponse
     {
-        $validation = $this->validateCheckoutReady($merchantId);
+        // Validate checkout is ready (branch-scoped)
+        $validation = $this->validateCheckoutReady($branchId);
         if (!$validation['valid']) {
             return $request->wantsJson() ? response()->json($validation, 400) : redirect($validation['redirect']);
         }
 
-        $config = $this->getPaymentConfig($merchantId);
-        if (!$config) {
-            return $this->handlePaymentError($merchantId, __('MyFatoorah is not available for this merchant'));
+        // Get merchantId from branch (payment methods are merchant-scoped)
+        $merchantId = $this->getMerchantIdFromBranch($branchId);
+        if (!$merchantId) {
+            return $this->handlePaymentError($branchId, __('Invalid branch'));
         }
 
-        $checkoutData = $this->getCheckoutData($merchantId);
+        // Get payment config (merchant-scoped)
+        $config = $this->getPaymentConfig($merchantId);
+        if (!$config) {
+            return $this->handlePaymentError($branchId, __('MyFatoorah is not available for this merchant'));
+        }
+
+        $checkoutData = $this->getCheckoutData($branchId);
         $currency = $this->priceCalculator->getMonetaryUnit();
 
         // Validate amount
         $totalAmount = $checkoutData['totals']['grand_total'];
         if ($totalAmount <= 0) {
-            return $this->handlePaymentError($merchantId, __('Invalid payment amount'));
+            return $this->handlePaymentError($branchId, __('Invalid payment amount'));
         }
 
-        $this->storeInputForCallback($merchantId, [
+        // Store branchId for callback (session is branch-scoped)
+        $this->storeInputForCallback($branchId, [
+            'branch_id' => $branchId,
             'merchant_id' => $merchantId,
             'pay_id' => $config['id'],
         ]);
@@ -68,20 +80,20 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
                 'InvoiceValue'       => round($finalAmount, 2),
                 'DisplayCurrencyIso' => $currency->name ?? 'SAR',
                 'CustomerEmail'      => $customerEmail,
-                'CallBackUrl'        => route('merchant.payment.myfatoorah.callback') . '?merchant_id=' . $merchantId,
-                'ErrorUrl'           => $this->getFailureUrl($merchantId),
+                'CallBackUrl'        => route('branch.payment.myfatoorah.callback') . '?branch_id=' . $branchId,
+                'ErrorUrl'           => $this->getFailureUrl($branchId),
                 'MobileCountryCode'  => '+966',
                 'CustomerMobile'     => substr($customerPhone, 0, 15),
                 'Language'           => app()->getLocale() === 'ar' ? 'ar' : 'en',
-                'CustomerReference'  => 'order_' . time() . '_' . $merchantId,
-                'SourceInfo'         => 'Laravel - Merchant Checkout',
+                'CustomerReference'  => 'order_' . time() . '_' . $branchId,
+                'SourceInfo'         => 'Laravel - Branch Checkout',
             ];
 
             $mfObj = new MyFatoorahPayment($mfConfig);
             $payment = $mfObj->getInvoiceURL($curlData);
 
             if (empty($payment['invoiceURL'])) {
-                return $this->handlePaymentError($merchantId, __('Failed to create payment invoice'));
+                return $this->handlePaymentError($branchId, __('Failed to create payment invoice'));
             }
 
             if ($request->wantsJson()) {
@@ -95,20 +107,20 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
 
         } catch (\Exception $e) {
             report($e);
-            return $this->handlePaymentError($merchantId, __('Payment processing failed. Please try again.'));
+            return $this->handlePaymentError($branchId, __('Payment processing failed. Please try again.'));
         }
     }
 
     /**
-     * GET /merchant/payment/myfatoorah/callback
+     * GET /branch/payment/myfatoorah/callback
      */
     public function handleCallback(Request $request): RedirectResponse
     {
-        $merchantId = (int)$request->query('merchant_id');
+        $branchId = (int)$request->query('branch_id');
         $paymentId = $request->query('paymentId');
 
         // Validate required parameters
-        if (!$merchantId || !$paymentId) {
+        if (!$branchId || !$paymentId) {
             return redirect(route('merchant-cart.index'))->with('unsuccess', __('Invalid payment response'));
         }
 
@@ -117,19 +129,26 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
             return redirect(route('merchant-cart.index'))->with('unsuccess', __('Invalid payment response'));
         }
 
-        $storedInput = $this->getStoredInput($merchantId);
+        // Get stored input (branch-scoped)
+        $storedInput = $this->getStoredInput($branchId);
         if (!$storedInput) {
-            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment session expired'));
+            return redirect($this->getFailureUrl($branchId))->with('unsuccess', __('Payment session expired'));
         }
 
-        // Verify merchant_id matches stored session
-        if (($storedInput['merchant_id'] ?? null) !== $merchantId) {
-            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Invalid payment session'));
+        // Verify branch_id matches stored session
+        if (($storedInput['branch_id'] ?? null) !== $branchId) {
+            return redirect($this->getFailureUrl($branchId))->with('unsuccess', __('Invalid payment session'));
+        }
+
+        // Get merchantId from stored session (payment methods are merchant-scoped)
+        $merchantId = $storedInput['merchant_id'] ?? $this->getMerchantIdFromBranch($branchId);
+        if (!$merchantId) {
+            return redirect($this->getFailureUrl($branchId))->with('unsuccess', __('Invalid branch'));
         }
 
         $config = $this->getPaymentConfig($merchantId);
         if (!$config) {
-            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment configuration not found'));
+            return redirect($this->getFailureUrl($branchId))->with('unsuccess', __('Payment configuration not found'));
         }
 
         try {
@@ -145,27 +164,28 @@ class MyFatoorahPaymentController extends BaseMerchantPaymentController
             $status = $data->InvoiceStatus ?? '';
 
             if ($status !== 'Paid') {
-                return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment was not completed'));
+                return redirect($this->getFailureUrl($branchId))->with('unsuccess', __('Payment was not completed'));
             }
 
-            $purchaseResult = $this->purchaseCreator->createPurchase($merchantId, [
+            // Create purchase (branch-scoped)
+            $purchaseResult = $this->purchaseCreator->createPurchase($branchId, [
                 'method' => $this->paymentMethod,
                 'pay_id' => $config['id'],
                 'txnid' => $paymentId,
                 'payment_status' => 'Completed',
             ]);
 
-            $this->clearStoredInput($merchantId);
+            $this->clearStoredInput($branchId);
 
             if (!$purchaseResult['success']) {
-                return redirect($this->getFailureUrl($merchantId))->with('unsuccess', $purchaseResult['message']);
+                return redirect($this->getFailureUrl($branchId))->with('unsuccess', $purchaseResult['message']);
             }
 
-            return redirect($this->getSuccessUrl($merchantId))->with('success', __('Payment successful!'));
+            return redirect($this->getSuccessUrl($branchId))->with('success', __('Payment successful!'));
 
         } catch (\Exception $e) {
             report($e);
-            return redirect($this->getFailureUrl($merchantId))->with('unsuccess', __('Payment verification failed. Please contact support.'));
+            return redirect($this->getFailureUrl($branchId))->with('unsuccess', __('Payment verification failed. Please contact support.'));
         }
     }
 

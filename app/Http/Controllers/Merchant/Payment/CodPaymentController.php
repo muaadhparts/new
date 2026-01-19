@@ -8,6 +8,8 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * Cash on Delivery Payment Controller
+ *
+ * NOTE: Routes use branchId, but payment methods are merchant-scoped.
  */
 class CodPaymentController extends BaseMerchantPaymentController
 {
@@ -56,34 +58,40 @@ class CodPaymentController extends BaseMerchantPaymentController
     }
 
     /**
-     * POST /merchant/{merchantId}/checkout/payment/cod
+     * POST /branch/{branchId}/checkout/payment/cod
      */
-    public function processPayment(Request $request, int $merchantId): JsonResponse
+    public function processPayment(Request $request, int $branchId): JsonResponse
     {
-        // Validate checkout is ready
-        $validation = $this->validateCheckoutReady($merchantId);
+        // Validate checkout is ready (branch-scoped)
+        $validation = $this->validateCheckoutReady($branchId);
         if (!$validation['valid']) {
             return response()->json($validation, 400);
         }
 
-        // Get payment config
-        $config = $this->getPaymentConfig($merchantId);
-        if (!$config) {
-            return $this->handlePaymentError($merchantId, __('Cash on Delivery is not available for this merchant'));
+        // Get merchantId from branch (payment methods are merchant-scoped)
+        $merchantId = $this->getMerchantIdFromBranch($branchId);
+        if (!$merchantId) {
+            return $this->handlePaymentError($branchId, __('Invalid branch'));
         }
 
-        // Create purchase with pending status
-        $result = $this->purchaseCreator->createPurchase($merchantId, [
+        // Get payment config (merchant-scoped)
+        $config = $this->getPaymentConfig($merchantId);
+        if (!$config) {
+            return $this->handlePaymentError($branchId, __('Cash on Delivery is not available for this merchant'));
+        }
+
+        // Create purchase with pending status (branch-scoped)
+        $result = $this->purchaseCreator->createPurchase($branchId, [
             'method' => $this->paymentMethod,
             'pay_id' => $config['id'],
             'payment_status' => 'pending',
         ]);
 
         if (!$result['success']) {
-            return $this->handlePaymentError($merchantId, $result['message'] ?? __('Failed to create order'));
+            return $this->handlePaymentError($branchId, $result['message'] ?? __('Failed to create order'));
         }
 
-        return $this->handlePaymentSuccess($merchantId, $result['purchase']);
+        return $this->handlePaymentSuccess($branchId, $result['purchase']);
     }
 
     /**

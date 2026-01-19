@@ -1077,11 +1077,21 @@ class DeliveryController extends MerchantBaseController
         try {
             $merchantId = $this->user->id;
 
-            // Get distinct providers for this merchant (merchant's + platform/operator default)
-            // Note: Don't use forMerchant scope here as it adds ORDER BY which conflicts with DISTINCT
-            // user_id=0 → Operator/Platform (متاح للجميع)
-            // user_id=$merchantId → شحنات التاجر الخاصة
-            $providers = Shipping::whereIn('user_id', [0, $merchantId])
+            // Get distinct providers for this merchant
+            // المنطق:
+            // | user_id | operator    | المعنى                                    |
+            // |---------|-------------|-------------------------------------------|
+            // | 0       | 0           | موقف/معطّل - لا يظهر                      |
+            // | 0       | merchant_id | شحنة المنصة مُفعّلة لهذا التاجر            |
+            // | merchant_id | 0       | شحنة خاصة بالتاجر                         |
+            $providers = Shipping::where('status', 1)
+                ->where(function ($q) use ($merchantId) {
+                    $q->where('user_id', $merchantId)
+                      ->orWhere(function ($q2) use ($merchantId) {
+                          $q2->where('user_id', 0)
+                             ->where('operator', $merchantId);
+                      });
+                })
                 ->whereNotNull('provider')
                 ->where('provider', '!=', '')
                 ->select('provider')
