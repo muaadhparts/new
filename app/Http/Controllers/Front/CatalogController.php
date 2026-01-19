@@ -290,16 +290,7 @@ class CatalogController extends FrontBaseController
             return response()->json([]);
         }
 
-        // Verify merchant exists and is active
-        $merchant = \App\Models\User::where('id', $merchantId)
-            ->where('is_merchant', 2)
-            ->first();
-
-        if (!$merchant) {
-            return response()->json([]);
-        }
-
-        // Get branches that have items in stock for this merchant
+        // Get ALL branches for this merchant (user_id = merchant_id)
         $branches = $this->filterService->getBranchesForMerchant($merchantId);
 
         return response()->json($branches->map(fn($b) => [

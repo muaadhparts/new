@@ -22,7 +22,7 @@ class MerchantController extends FrontBaseController
     {
         $sort   = $request->sort;
         $pageby = $request->pageby;
-        $brandQualityFilter = $request->input('brand_quality', []);
+        $qualityBrandFilter = $request->input('quality_brand', []);
         $branchFilter = $request->input('branch', []);
 
         $string = str_replace('-', ' ', $slug);
@@ -44,11 +44,11 @@ class MerchantController extends FrontBaseController
         $merchantQualityIds = DB::table('merchant_items')
             ->where('user_id', $merchant->id)
             ->where('status', 1)
-            ->whereNotNull('brand_quality_id')
+            ->whereNotNull('quality_brand_id')
             ->distinct()
-            ->pluck('brand_quality_id');
+            ->pluck('quality_brand_id');
 
-        $data['brand_qualities'] = QualityBrand::whereIn('id', $merchantQualityIds)->get();
+        $data['quality_brands'] = QualityBrand::whereIn('id', $merchantQualityIds)->get();
 
         // Get branches for this merchant that have items
         $merchantBranchIds = DB::table('merchant_items')
@@ -94,14 +94,14 @@ class MerchantController extends FrontBaseController
             }
         ]);
 
-        // Filter by specific merchant, Brand Quality, and Branch via merchant_items
-        $prods = $prods->whereHas('merchantItems', function ($q) use ($merchant, $brandQualityFilter, $branchFilter, $request) {
+        // Filter by specific merchant, Quality Brand, and Branch via merchant_items
+        $prods = $prods->whereHas('merchantItems', function ($q) use ($merchant, $qualityBrandFilter, $branchFilter, $request) {
             $q->where('user_id', $merchant->id)
               ->where('status', 1);
 
-            // Filter by Brand Quality
-            if (!empty($brandQualityFilter)) {
-                $q->whereIn('brand_quality_id', (array) $brandQualityFilter);
+            // Filter by Quality Brand
+            if (!empty($qualityBrandFilter)) {
+                $q->whereIn('quality_brand_id', (array) $qualityBrandFilter);
             }
 
             // Filter by Branch

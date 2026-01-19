@@ -265,7 +265,7 @@ class CatalogItemController extends MerchantBaseController
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'item_condition' => 'required|in:1,2',
-            'brand_quality_id' => 'required|exists:brand_qualities,id',
+            'quality_brand_id' => 'required|exists:quality_brands,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -300,7 +300,7 @@ class CatalogItemController extends MerchantBaseController
             'catalog_item_id' => $request->catalog_item_id,
             'user_id' => $user->id,
             'merchant_branch_id' => $request->merchant_branch_id,
-            'brand_quality_id' => $request->brand_quality_id,
+            'quality_brand_id' => $request->quality_brand_id,
             'price' => $request->price / $sign->value,
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
             'stock' => $request->stock,
@@ -349,7 +349,7 @@ class CatalogItemController extends MerchantBaseController
             'price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
             'item_condition' => 'required|in:1,2',
-            'brand_quality_id' => 'required|exists:brand_qualities,id',
+            'quality_brand_id' => 'required|exists:quality_brands,id',
         ];
 
         $validator = Validator::make($request->all(), $rules);
@@ -372,17 +372,17 @@ class CatalogItemController extends MerchantBaseController
         $conflict = MerchantItem::where('catalog_item_id', $merchantItem->catalog_item_id)
             ->where('user_id', $merchantItem->user_id)
             ->where('merchant_branch_id', $request->merchant_branch_id)
-            ->where('brand_quality_id', $request->brand_quality_id)
+            ->where('quality_brand_id', $request->quality_brand_id)
             ->where('id', '<>', $merchantItem->id)
             ->exists();
 
         if ($conflict) {
-            return redirect()->back()->withErrors(['brand_quality_id' => __('You already have an offer for this catalog item in this branch with this brand quality.')])->withInput();
+            return redirect()->back()->withErrors(['quality_brand_id' => __('You already have an offer for this catalog item in this branch with this quality brand.')])->withInput();
         }
 
         $merchantData = [
             'merchant_branch_id' => $request->merchant_branch_id,
-            'brand_quality_id' => $request->brand_quality_id,
+            'quality_brand_id' => $request->quality_brand_id,
             'price' => $request->price / $sign->value,
             'previous_price' => $request->previous_price ? ($request->previous_price / $sign->value) : null,
             'stock' => $request->stock,

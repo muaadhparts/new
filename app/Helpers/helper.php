@@ -18,7 +18,7 @@ function getMerchantDisplayName($merchantItem)
     $merchant = $merchantItem->user;
     $displayName = $merchant->shop_name ?: $merchant->name;
 
-    // Add brand quality if available
+    // Add quality brand  if available
     if ($merchantItem->qualityBrand) {
         $displayName .= ' (' . $merchantItem->qualityBrand->display_name . ')';
     }

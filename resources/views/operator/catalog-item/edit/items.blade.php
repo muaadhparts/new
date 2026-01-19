@@ -87,11 +87,11 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_quality_id" class="form-control">
+                                                <select name="quality_brand_id" class="form-control">
                                                     <option value="">{{ __('Select Quality Brand') }}</option>
                                                     @foreach ($qualityBrands as $qb)
                                                         <option value="{{ $qb->id }}"
-                                                            {{ $merchantItem->brand_quality_id == $qb->id ? 'selected' : '' }}>
+                                                            {{ $merchantItem->quality_brand_id == $qb->id ? 'selected' : '' }}>
                                                             {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
                                                         </option>
                                                     @endforeach

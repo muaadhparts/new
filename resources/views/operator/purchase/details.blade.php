@@ -574,8 +574,10 @@
                                         @php
                                             // جودة البراند والشركة المصنعة
                                             $qualityBrand = null;
-                                            if (isset($catalogItem['brand_quality_id']) && $catalogItem['brand_quality_id']) {
-                                                $qualityBrand = \App\Models\QualityBrand::find($catalogItem['brand_quality_id']);
+                                            // Check both new name (quality_brand_id) and old name (quality_brand_id) for backward compatibility
+                                            $qbId = $catalogItem['quality_brand_id'] ?? $catalogItem['quality_brand_id'] ?? null;
+                                            if ($qbId) {
+                                                $qualityBrand = \App\Models\QualityBrand::find($qbId);
                                             }
                                             // حالة المنتج (جديد/مستعمل)
                                             $itemCondition = isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? __('Used') : __('New');

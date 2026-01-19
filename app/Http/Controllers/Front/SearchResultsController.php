@@ -54,7 +54,7 @@ class SearchResultsController extends Controller
             ->where('status', 1)
             ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar']);
 
-        $allForFilters = $filtersQuery->get(['id', 'user_id', 'brand_quality_id']);
+        $allForFilters = $filtersQuery->get(['id', 'user_id', 'quality_brand_id']);
         $availableStores = $allForFilters->pluck('user')->filter()->unique('id')->keyBy('id');
         $availableQualities = $allForFilters->pluck('qualityBrand')->filter()->unique('id')->keyBy('id');
 
@@ -135,7 +135,7 @@ class SearchResultsController extends Controller
         }
 
         if ($qualityFilter !== 'all') {
-            $query->where('brand_quality_id', $qualityFilter);
+            $query->where('quality_brand_id', $qualityFilter);
         }
 
         // Apply sorting at QUERY level (not collection level)
@@ -167,7 +167,7 @@ class SearchResultsController extends Controller
         }
 
         if ($qualityFilter !== 'all') {
-            $query->where('brand_quality_id', $qualityFilter);
+            $query->where('quality_brand_id', $qualityFilter);
         }
 
         // Apply sorting at QUERY level

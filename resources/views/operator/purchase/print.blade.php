@@ -132,8 +132,10 @@ html {
                                                 @endif
                                                 @php
                                                     $printQualityBrand = null;
-                                                    if (isset($catalogItem['brand_quality_id']) && $catalogItem['brand_quality_id']) {
-                                                        $printQualityBrand = \App\Models\QualityBrand::find($catalogItem['brand_quality_id']);
+                                                    // Check both new name (quality_brand_id) and old name (quality_brand_id) for backward compatibility
+                                                    $qbId = $catalogItem['quality_brand_id'] ?? $catalogItem['quality_brand_id'] ?? null;
+                                                    if ($qbId) {
+                                                        $printQualityBrand = \App\Models\QualityBrand::find($qbId);
                                                     }
                                                     $printCondition = isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? __('Used') : __('New');
                                                 @endphp

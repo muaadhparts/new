@@ -16,7 +16,7 @@ class MerchantItem extends Model
         'catalog_item_id',
         'user_id',
         'merchant_branch_id',
-        'brand_quality_id',
+        'quality_brand_id',
         'item_type',
         'affiliate_link',
         'price',
@@ -61,7 +61,7 @@ class MerchantItem extends Model
 
     public function qualityBrand(): BelongsTo
     {
-        return $this->belongsTo(QualityBrand::class, 'brand_quality_id');
+        return $this->belongsTo(QualityBrand::class, 'quality_brand_id');
     }
 
     /**

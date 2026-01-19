@@ -7,8 +7,8 @@ use App\Models\MerchantItem;
 
 class QualityBrand extends Model
 {
-    // Correct table
-    protected $table = 'brand_qualities';
+    // Table follows Laravel convention: QualityBrand -> quality_brands
+    protected $table = 'quality_brands';
 
     protected $fillable = [
         'code','name_en','name_ar','logo','country','website','description','is_active',
@@ -27,7 +27,7 @@ class QualityBrand extends Model
      */
     public function merchantItems()
     {
-        return $this->hasMany(MerchantItem::class, 'brand_quality_id');
+        return $this->hasMany(MerchantItem::class, 'quality_brand_id');
     }
 
 

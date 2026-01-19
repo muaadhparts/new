@@ -35,7 +35,7 @@ class CatalogItemFilterService
             // Catalog has 'childs' accessor that returns NewCategories Level 1
             'categories' => Brand::with('catalogs')->where('status', 1)->get(),
             'merchants' => $this->getActiveMerchants(),
-            'brand_qualities' => QualityBrand::active()->orderBy('name_en', 'asc')->get(),
+            'quality_brands' => QualityBrand::active()->orderBy('name_en', 'asc')->get(),
         ];
     }
 
@@ -55,20 +55,20 @@ class CatalogItemFilterService
     }
 
     /**
-     * Get branches for a specific merchant that have catalog items
-     * Branch is ALWAYS tied to a single merchant - cannot exist independently
+     * Get branches for a specific merchant based on ACTUAL merchant_items data
+     * Returns branches that have items for this merchant
      */
     public function getBranchesForMerchant(int $merchantId)
     {
-        return MerchantItem::select('merchant_items.merchant_branch_id')
+        // Get distinct branch IDs from merchant_items for this merchant
+        return DB::table('merchant_items')
             ->join('merchant_branches', 'merchant_branches.id', '=', 'merchant_items.merchant_branch_id')
             ->where('merchant_items.user_id', $merchantId)
             ->where('merchant_items.status', 1)
             ->where('merchant_branches.status', 1)
-            ->where('merchant_branches.user_id', $merchantId) // Ensure branch belongs to this merchant
-            ->groupBy('merchant_items.merchant_branch_id')
-            ->selectRaw('merchant_items.merchant_branch_id as id, merchant_branches.branch_name')
-            ->orderBy('merchant_branches.branch_name', 'asc')
+            ->groupBy('merchant_items.merchant_branch_id', 'merchant_branches.branch_name')
+            ->orderBy('merchant_items.merchant_branch_id', 'asc')
+            ->select('merchant_items.merchant_branch_id as id', 'merchant_branches.branch_name')
             ->get();
     }
 
@@ -305,32 +305,21 @@ class CatalogItemFilterService
 
         // Branch filter only applies when exactly one merchant is selected
         if (!empty($branchFilter) && count($merchantFilter) === 1) {
-            $merchantId = (int) $merchantFilter[0];
-
-            // Only apply branches that belong to the selected merchant
-            $validBranchIds = DB::table('merchant_branches')
-                ->whereIn('id', $branchFilter)
-                ->where('user_id', $merchantId)
-                ->where('status', 1)
-                ->pluck('id')
-                ->toArray();
-
-            if (!empty($validBranchIds)) {
-                $query->whereIn('merchant_items.merchant_branch_id', $validBranchIds);
-            }
+            // Filter directly by branch IDs from merchant_items
+            $query->whereIn('merchant_items.merchant_branch_id', $branchFilter);
         }
         // If multiple merchants selected or no merchant, ignore branch filter
     }
 
     /**
-     * Apply brand quality filter
+     * Apply quality brand filter
      */
-    public function applyBrandQualityFilter(Builder $query, Request $request): void
+    public function applyQualityBrandFilter(Builder $query, Request $request): void
     {
-        $brandQuality = $this->normalizeArrayInput($request->brand_quality);
+        $qualityBrand = $this->normalizeArrayInput($request->quality_brand);
 
-        if (!empty($brandQuality)) {
-            $query->whereIn('merchant_items.brand_quality_id', $brandQuality);
+        if (!empty($qualityBrand)) {
+            $query->whereIn('merchant_items.quality_brand_id', $qualityBrand);
         }
     }
 
@@ -402,7 +391,7 @@ class CatalogItemFilterService
         $this->applyFitmentFilters($query, $cat, $subcat, $childcat, $catalog);
         $this->applyMerchantFilter($query, $request);
         $this->applyBranchFilter($query, $request);
-        $this->applyBrandQualityFilter($query, $request);
+        $this->applyQualityBrandFilter($query, $request);
         $this->applyPriceFilter(
             $query,
             $request->filled('min') ? (float) $request->min : null,
@@ -453,7 +442,7 @@ class CatalogItemFilterService
             $hierarchy['subcat'],
             $deepestCategory,
             $sidebarData['merchants'],
-            $sidebarData['brand_qualities']
+            $sidebarData['quality_brands']
         );
 
         return array_merge($sidebarData, $hierarchy, [
@@ -472,7 +461,7 @@ class CatalogItemFilterService
         $subcat,
         $childcat,
         $allMerchants,
-        $allBrandQualities
+        $allQualityBrands
     ): array {
         $summary = [
             'hasFilters' => false,
@@ -481,7 +470,7 @@ class CatalogItemFilterService
             'childcategory' => null,
             'merchants' => [],
             'branches' => [],
-            'brandQualities' => [],
+            'qualityBrands' => [],
         ];
 
         if ($cat) {
@@ -510,10 +499,9 @@ class CatalogItemFilterService
         // Branches - fetch names only when filter is applied (within merchant context)
         $branchIds = $this->normalizeArrayInput($request->branch);
         if (!empty($branchIds) && count($merchantIds) === 1) {
-            // Only show branch summary when exactly one merchant is selected
+            // Get branch names directly by IDs
             $branchNames = DB::table('merchant_branches')
                 ->whereIn('id', $branchIds)
-                ->where('user_id', $merchantIds[0]) // Ensure branches belong to selected merchant
                 ->pluck('branch_name')
                 ->toArray();
             $summary['branches'] = $branchNames;
@@ -522,11 +510,11 @@ class CatalogItemFilterService
             }
         }
 
-        $brandQualityIds = $this->normalizeArrayInput($request->brand_quality);
-        if (!empty($brandQualityIds)) {
-            foreach ($allBrandQualities as $bq) {
-                if (in_array($bq->id, $brandQualityIds)) {
-                    $summary['brandQualities'][] = $bq->localized_name ?? $bq->name_en;
+        $qualityBrandIds = $this->normalizeArrayInput($request->quality_brand);
+        if (!empty($qualityBrandIds)) {
+            foreach ($allQualityBrands as $qb) {
+                if (in_array($qb->id, $qualityBrandIds)) {
+                    $summary['qualityBrands'][] = $qb->localized_name ?? $qb->name_en;
                 }
             }
             $summary['hasFilters'] = true;

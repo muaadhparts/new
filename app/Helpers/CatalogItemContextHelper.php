@@ -71,7 +71,7 @@ class CatalogItemContextHelper
      * هذا Method يحقن:
      * - السعر المحسوب من MerchantItem::merchantSizePrice()
      * - معلومات التاجر (user_id, merchant_item_id)
-     * - معلومات الجودة (brand_quality_id)
+     * - معلومات الجودة (quality_brand_id)
      * - المخزون وبيانات إضافية
      *
      * القيم المحقونة تُخزن في $attributes ويمكن الوصول إليها عبر Laravel's default __get
@@ -91,7 +91,7 @@ class CatalogItemContextHelper
         $catalogItem->merchant_user_id = $mp->user_id;
         $catalogItem->user_id = $mp->user_id;
         $catalogItem->merchant_item_id = $mp->id;
-        $catalogItem->brand_quality_id = $mp->brand_quality_id;
+        $catalogItem->quality_brand_id = $mp->quality_brand_id;
         $catalogItem->price = $calculatedPrice;
         $catalogItem->previous_price = $mp->previous_price;
         $catalogItem->stock = $mp->stock;
@@ -162,7 +162,7 @@ class CatalogItemContextHelper
             'merchant_item_id' => $attributes['merchant_item_id'] ?? null,
             'user_id' => $attributes['user_id'] ?? null,
             'merchant_user_id' => $attributes['merchant_user_id'] ?? null,
-            'brand_quality_id' => $attributes['brand_quality_id'] ?? null,
+            'quality_brand_id' => $attributes['quality_brand_id'] ?? null,
             'price' => $attributes['price'] ?? null,
             'stock' => $attributes['stock'] ?? null,
         ];
@@ -179,7 +179,7 @@ class CatalogItemContextHelper
         $contextKeys = [
             'merchant_user_id',
             'merchant_item_id',
-            'brand_quality_id',
+            'quality_brand_id',
             'price',
             'previous_price',
             'stock',

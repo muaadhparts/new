@@ -96,21 +96,21 @@
                         </div>
                         @endif
 
-                        <!-- Brand Quality Filter -->
-                        @if(isset($brand_qualities) && $brand_qualities->count() > 0)
+                        <!-- Quality Brand Filter -->
+                        @if(isset($quality_brands) && $quality_brands->count() > 0)
                         <div class="single-catalogItem-widget">
-                            <h5 class="widget-name">@lang('Brand Quality')</h5>
+                            <h5 class="widget-name">@lang('Quality Brand')</h5>
                             <div class="warranty-type m-filter-scroll-box">
                                 <ul>
-                                    @foreach ($brand_qualities as $quality)
+                                    @foreach ($quality_brands as $quality)
                                         <li class="gs-checkbox-wrapper">
-                                            <input type="checkbox" class="attribute-input brand-quality-filter"
-                                                name="brand_quality[]"
-                                                {{ isset($_GET['brand_quality']) && in_array($quality->id, (array)$_GET['brand_quality']) ? 'checked' : '' }}
-                                                id="brand_quality_{{ $quality->id }}"
+                                            <input type="checkbox" class="attribute-input quality-brand-filter"
+                                                name="quality_brand[]"
+                                                {{ isset($_GET['quality_brand']) && in_array($quality->id, (array)$_GET['quality_brand']) ? 'checked' : '' }}
+                                                id="quality_brand_{{ $quality->id }}"
                                                 value="{{ $quality->id }}">
                                             <label class="icon-label"
-                                                for="brand_quality_{{ $quality->id }}">
+                                                for="quality_brand_{{ $quality->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12"
                                                     height="12" viewBox="0 0 12 12" fill="none">
                                                     <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
@@ -118,7 +118,7 @@
                                                         stroke-linejoin="round" />
                                                 </svg>
                                             </label>
-                                            <label for="brand_quality_{{ $quality->id }}">{{ $quality->localized_name }}</label>
+                                            <label for="quality_brand_{{ $quality->id }}">{{ $quality->localized_name }}</label>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -288,7 +288,7 @@
                     params.set('page', page);
                 }
 
-                // Brand Quality filters
+                // Quality Brand filters
                 $(".attribute-input:checked").each(function() {
                     params.append($(this).attr('name'), $(this).val());
                 });
@@ -408,7 +408,7 @@
             }
 
             // ========================================
-            // Filter Events (Brand Quality & Sort)
+            // Filter Events (Quality Brand & Sort)
             // ========================================
             $(".attribute-input, #sortby").on('change', function() {
                 // Reset to page 1 when filter changes
@@ -481,9 +481,9 @@
                     // Reset all filter checkboxes
                     $('.attribute-input').prop('checked', false);
 
-                    // Update Brand Quality checkboxes
-                    urlParams.getAll('brand_quality[]').forEach(function(val) {
-                        $('input[name="brand_quality[]"][value="' + val + '"]').prop('checked', true);
+                    // Update Quality Brand checkboxes
+                    urlParams.getAll('quality_brand[]').forEach(function(val) {
+                        $('input[name="quality_brand[]"][value="' + val + '"]').prop('checked', true);
                     });
 
                     // Update Branch checkboxes

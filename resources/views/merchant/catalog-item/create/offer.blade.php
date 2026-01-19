@@ -120,12 +120,12 @@
                                 </div>
                             </div>
 
-                            <!-- Brand Quality -->
+                            <!-- Quality Brand -->
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">@lang('Brand Quality*')</label>
-                                    <select class="form-control" name="brand_quality_id" required>
-                                        <option value="">@lang('Select Brand Quality')</option>
+                                    <label class="form-label">@lang('Quality Brand*')</label>
+                                    <select class="form-control" name="quality_brand_id" required>
+                                        <option value="">@lang('Select Quality Brand')</option>
                                         @foreach(\App\Models\QualityBrand::active()->get() as $qualityBrand)
                                             <option value="{{ $qualityBrand->id }}">
                                                 {{ $qualityBrand->display_name }}

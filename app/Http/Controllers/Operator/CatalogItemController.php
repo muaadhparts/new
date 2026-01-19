@@ -398,10 +398,10 @@ class CatalogItemController extends OperatorBaseController
 
         // Store merchant-specific data before removing from input
         $merchantId = (int) ($request->input('user_id') ?? 0);
-        $brandQualityId = $request->input('brand_quality_id') ?: null;
+        $qualityBrandId = $request->input('quality_brand_id') ?: null;
 
         // Remove merchant-specific fields from catalog item table input
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['brand_quality_id'], $input['merchant_id']);
+        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['quality_brand_id'], $input['merchant_id']);
         if ($request->cross_items) {
             $input['cross_items'] = implode(',', $request->cross_items);
         }
@@ -423,7 +423,7 @@ class CatalogItemController extends OperatorBaseController
             MerchantItem::create([
                 'catalog_item_id' => $data->id,
                 'user_id' => $merchantId,
-                'brand_quality_id' => $brandQualityId,
+                'quality_brand_id' => $qualityBrandId,
                 'price' => $basePrice,
                 'previous_price' => $basePreviousPrice,
                 'stock' => (int) $request->input('stock', 0),
@@ -581,7 +581,7 @@ class CatalogItemController extends OperatorBaseController
         // Update merchant_item entry
         $merchantItem->update([
             'user_id' => (int) ($request->input('merchant_id') ?? $merchantItem->user_id),
-            'brand_quality_id' => $request->input('brand_quality_id') ?: null,
+            'quality_brand_id' => $request->input('quality_brand_id') ?: null,
             'price' => $basePrice,
             'previous_price' => $basePreviousPrice,
             'stock' => $request->input('stock') !== null ? (int) $request->input('stock') : null,

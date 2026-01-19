@@ -155,8 +155,10 @@
                                                 @php
                                                     // جودة البراند والشركة المصنعة
                                                     $invoiceQualityBrand = null;
-                                                    if (isset($catalogItem['brand_quality_id']) && $catalogItem['brand_quality_id']) {
-                                                        $invoiceQualityBrand = \App\Models\QualityBrand::find($catalogItem['brand_quality_id']);
+                                                    // Check both new name (quality_brand_id) and old name (quality_brand_id) for backward compatibility
+                                                    $qbId = $catalogItem['quality_brand_id'] ?? $catalogItem['quality_brand_id'] ?? null;
+                                                    if ($qbId) {
+                                                        $invoiceQualityBrand = \App\Models\QualityBrand::find($qbId);
                                                     }
                                                 @endphp
                                                 @if($invoiceQualityBrand)

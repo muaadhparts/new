@@ -202,13 +202,13 @@ class StockManagerCommand extends Command
         $this->line("📊 Aggregating into `stock_all`...");
         $this->line("Aggregating stock data...");
 
-        // تجميع البيانات من جدول stocks مع brand_quality_id ثابت = 1
+        // تجميع البيانات من جدول stocks مع quality_brand_id ثابت = 1
         $sql = "
-            INSERT INTO stock_all (part_number, part_number, brand_quality_id, qty, cost_price, updated_at)
+            INSERT INTO stock_all (part_number, part_number, quality_brand_id, qty, cost_price, updated_at)
             SELECT 
                 s.part_number,
                 s.part_number AS part_number,
-                1 AS brand_quality_id,  -- ✅ القيمة الثابتة الآن = 1 بدل NULL أو 0
+                1 AS quality_brand_id,  -- ✅ القيمة الثابتة الآن = 1 بدل NULL أو 0
                 SUM(COALESCE(s.qty, 0)) AS qty,
                 AVG(COALESCE(s.cost_price, 0)) AS cost_price,
                 NOW() AS updated_at
@@ -229,7 +229,7 @@ class StockManagerCommand extends Command
         ";
         DB::statement($fixSkuSql);
 
-        $this->info("✔ Stock aggregation completed successfully (brand_quality_id=1) and PART_NUMBER filled where missing.");
+        $this->info("✔ Stock aggregation completed successfully (quality_brand_id=1) and PART_NUMBER filled where missing.");
         return self::SUCCESS;
     }
 
@@ -346,12 +346,12 @@ class StockManagerCommand extends Command
         // 0) إدراج الصفوف الناقصة أولًا
         $insertMissingSql = "
             INSERT INTO merchant_items (
-                catalog_item_id, user_id, brand_quality_id, stock, created_at, updated_at
+                catalog_item_id, user_id, quality_brand_id, stock, created_at, updated_at
             )
             SELECT
                 p.id AS catalog_item_id,
                 ?   AS user_id,
-                s.brand_quality_id,
+                s.quality_brand_id,
                 COALESCE(s.qty, 0) AS stock,
                 NOW(), NOW()
             FROM catalog_items p
@@ -359,7 +359,7 @@ class StockManagerCommand extends Command
             LEFT JOIN merchant_items mp
                 ON mp.catalog_item_id = p.id
                 AND mp.user_id = ?
-                AND mp.brand_quality_id = s.brand_quality_id
+                AND mp.quality_brand_id = s.quality_brand_id
             WHERE mp.id IS NULL
         ";
         DB::insert($insertMissingSql, [$userId, $userId]);
@@ -377,8 +377,8 @@ class StockManagerCommand extends Command
                     COALESCE(se.qty, sf.qty) AS s_qty
                 FROM merchant_items mp
                 JOIN catalog_items p ON mp.catalog_item_id = p.id
-                LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id   -- exact
-                LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1                      -- fallback
+                LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id   -- exact
+                LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1                      -- fallback
                 WHERE mp.user_id = ?
             ) t
         ", [$userId]);
@@ -391,8 +391,8 @@ class StockManagerCommand extends Command
         $affected = DB::update("
             UPDATE merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id
-            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1
+            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id
+            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1
             SET mp.stock = COALESCE(se.qty, sf.qty, 0)
             WHERE mp.user_id = ?
             AND COALESCE(se.qty, sf.qty, 0) <> COALESCE(mp.stock, 0)
@@ -410,8 +410,8 @@ class StockManagerCommand extends Command
                 SUM(CASE WHEN COALESCE(se.qty, sf.qty, 0) <> COALESCE(mp.stock, 0) THEN 1 ELSE 0 END) AS remaining
             FROM merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id
-            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1
+            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id
+            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1
             WHERE mp.user_id = ?
         ", [$userId]);
 
@@ -437,12 +437,12 @@ class StockManagerCommand extends Command
             // 0) إدراج الصفوف الناقصة لهذا التاجر
             $insertMissingSql = "
                 INSERT INTO merchant_items (
-                    catalog_item_id, user_id, brand_quality_id, stock, created_at, updated_at
+                    catalog_item_id, user_id, quality_brand_id, stock, created_at, updated_at
                 )
                 SELECT
                     p.id AS catalog_item_id,
                     ?   AS user_id,
-                    s.brand_quality_id,
+                    s.quality_brand_id,
                     COALESCE(s.qty, 0) AS stock,
                     NOW() AS created_at,
                     NOW() AS updated_at
@@ -452,7 +452,7 @@ class StockManagerCommand extends Command
                 LEFT JOIN merchant_items mp
                     ON mp.catalog_item_id = p.id
                     AND mp.user_id = ?
-                    AND mp.brand_quality_id = s.brand_quality_id
+                    AND mp.quality_brand_id = s.quality_brand_id
                 WHERE mp.id IS NULL
             ";
             DB::insert($insertMissingSql, [$uid, $uid]);
@@ -467,7 +467,7 @@ class StockManagerCommand extends Command
                 JOIN catalog_items p ON mp.catalog_item_id = p.id
                 LEFT JOIN stock_all s
                     ON s.part_number = p.part_number
-                AND (s.brand_quality_id = mp.brand_quality_id OR s.brand_quality_id = 1)
+                AND (s.quality_brand_id = mp.quality_brand_id OR s.quality_brand_id = 1)
                 WHERE mp.user_id = ?
             ", [$uid]);
 
@@ -483,7 +483,7 @@ class StockManagerCommand extends Command
                 JOIN catalog_items p ON mp.catalog_item_id = p.id
                 LEFT JOIN stock_all s
                     ON s.part_number = p.part_number
-                AND (s.brand_quality_id = mp.brand_quality_id OR s.brand_quality_id = 1)
+                AND (s.quality_brand_id = mp.quality_brand_id OR s.quality_brand_id = 1)
                 SET mp.stock = COALESCE(s.qty, 0)
                 WHERE mp.user_id = ?
                 AND s.part_number IS NOT NULL
@@ -518,8 +518,8 @@ class StockManagerCommand extends Command
                 ) AS needs_update
             FROM merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id
-            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1
+            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id
+            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1
             WHERE mp.user_id = ?
         ", [$margin, $userId]);
 
@@ -530,8 +530,8 @@ class StockManagerCommand extends Command
         $affected = DB::update("
             UPDATE merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id
-            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1
+            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id
+            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1
             SET mp.price = ROUND(COALESCE(se.cost_price, sf.cost_price, 0) * ?, 2)
             WHERE mp.user_id = ?
             AND (
@@ -571,7 +571,7 @@ class StockManagerCommand extends Command
                 JOIN catalog_items p ON mp.catalog_item_id = p.id
                 JOIN stock_all s
                     ON s.part_number = p.part_number
-                AND s.brand_quality_id = mp.brand_quality_id
+                AND s.quality_brand_id = mp.quality_brand_id
                 WHERE mp.user_id = ?
             ", [$margin, $uid]);
 
@@ -585,7 +585,7 @@ class StockManagerCommand extends Command
                 JOIN catalog_items p ON mp.catalog_item_id = p.id
                 JOIN stock_all s
                     ON s.part_number = p.part_number
-                AND s.brand_quality_id = mp.brand_quality_id
+                AND s.quality_brand_id = mp.quality_brand_id
                 SET mp.price = ROUND(s.cost_price * ?, 2)
                 WHERE mp.user_id = ?
                 AND ROUND(s.cost_price * ?, 2) <> mp.price
@@ -612,8 +612,8 @@ class StockManagerCommand extends Command
                 SUM(CASE WHEN COALESCE(se.qty, sf.qty, 0) <> COALESCE(mp.stock, 0) THEN 1 ELSE 0 END) AS needs_update
             FROM merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id
-            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1
+            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id
+            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1
             WHERE mp.user_id = ?
         ", [$userId]);
 
@@ -635,8 +635,8 @@ class StockManagerCommand extends Command
                 ) AS needs_update
             FROM merchant_items mp
             JOIN catalog_items p ON mp.catalog_item_id = p.id
-            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.brand_quality_id = mp.brand_quality_id
-            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.brand_quality_id = 1
+            LEFT JOIN stock_all se ON se.part_number = p.part_number AND se.quality_brand_id = mp.quality_brand_id
+            LEFT JOIN stock_all sf ON sf.part_number = p.part_number AND sf.quality_brand_id = 1
             WHERE mp.user_id = ?
         ", [$margin, $userId]);
 

@@ -81,11 +81,11 @@
                 </li>
                 @endif
 
-                {{-- Brand Qualities --}}
-                @if(!empty($filterSummary['brandQualities']))
+                {{-- Quality Brands --}}
+                @if(!empty($filterSummary['qualityBrands']))
                 <li>
-                    <span class="m-no-results-box__filter-label">@lang('Brand Quality'):</span>
-                    <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['brandQualities']) }}</span>
+                    <span class="m-no-results-box__filter-label">@lang('Quality Brand'):</span>
+                    <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['qualityBrands']) }}</span>
                 </li>
                 @endif
             </ul>

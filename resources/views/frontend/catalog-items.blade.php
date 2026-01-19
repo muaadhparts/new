@@ -364,21 +364,21 @@
                             </p>
                         </div>
 
-                        <!-- Brand Quality Filter -->
-                        @if(isset($brand_qualities) && $brand_qualities->count() > 0)
+                        <!-- Quality Brand Filter -->
+                        @if(isset($quality_brands) && $quality_brands->count() > 0)
                         <div class="single-catalogItem-widget">
-                            <h5 class="widget-name">@lang('Brand Quality')</h5>
+                            <h5 class="widget-name">@lang('Quality Brand')</h5>
                             <div class="warranty-type m-filter-scroll-box">
                                 <ul>
-                                    @foreach ($brand_qualities as $quality)
+                                    @foreach ($quality_brands as $quality)
                                         <li class="gs-checkbox-wrapper">
-                                            <input type="checkbox" class="attribute-input brand-quality-filter"
-                                                name="brand_quality[]"
-                                                {{ isset($_GET['brand_quality']) && in_array($quality->id, (array)$_GET['brand_quality']) ? 'checked' : '' }}
-                                                id="brand_quality_{{ $quality->id }}"
+                                            <input type="checkbox" class="attribute-input quality-brand-filter"
+                                                name="quality_brand[]"
+                                                {{ isset($_GET['quality_brand']) && in_array($quality->id, (array)$_GET['quality_brand']) ? 'checked' : '' }}
+                                                id="quality_brand_{{ $quality->id }}"
                                                 value="{{ $quality->id }}">
                                             <label class="icon-label"
-                                                for="brand_quality_{{ $quality->id }}">
+                                                for="quality_brand_{{ $quality->id }}">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="12"
                                                     height="12" viewBox="0 0 12 12" fill="none">
                                                     <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
@@ -386,7 +386,7 @@
                                                         stroke-linejoin="round" />
                                                 </svg>
                                             </label>
-                                            <label for="brand_quality_{{ $quality->id }}">{{ $quality->localized_name }}</label>
+                                            <label for="quality_brand_{{ $quality->id }}">{{ $quality->localized_name }}</label>
                                         </li>
                                     @endforeach
                                 </ul>
@@ -498,10 +498,10 @@
                                             </li>
                                             @endif
 
-                                            @if(!empty($filterSummary['brandQualities']))
+                                            @if(!empty($filterSummary['qualityBrands']))
                                             <li>
-                                                <span class="m-no-results-box__filter-label">@lang('Brand Quality'):</span>
-                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['brandQualities']) }}</span>
+                                                <span class="m-no-results-box__filter-label">@lang('Quality Brand'):</span>
+                                                <span class="m-no-results-box__filter-value">{{ implode(', ', $filterSummary['qualityBrands']) }}</span>
                                             </li>
                                             @endif
                                         </ul>
@@ -640,7 +640,7 @@
                     params.set('page', page);
                 }
 
-                // All filter checkboxes (Brand Quality, Merchant, etc.)
+                // All filter checkboxes (Quality Brand, Merchant, etc.)
                 $(".attribute-input:checked").each(function() {
                     params.append($(this).attr('name'), $(this).val());
                 });
@@ -876,7 +876,7 @@
             updateBranchFilter();
 
             // ========================================
-            // Filter Events (Merchant, Branch, Brand Quality)
+            // Filter Events (Merchant, Branch, Quality Brand)
             // ========================================
             // Merchant filter change - update branches then load content
             $(".merchant-filter").on('change', function() {
@@ -1020,13 +1020,13 @@
                     params.append('branch[]', $(this).val());
                 });
 
-                $(".brand-quality-filter:checked").each(function() {
-                    params.append('brand_quality[]', $(this).val());
+                $(".quality-brand-filter:checked").each(function() {
+                    params.append('quality_brand[]', $(this).val());
                 });
 
                 $(".attribute-input:checked").each(function() {
                     const name = $(this).attr('name');
-                    if (name !== 'merchant[]' && name !== 'branch[]' && name !== 'brand_quality[]') {
+                    if (name !== 'merchant[]' && name !== 'branch[]' && name !== 'quality_brand[]') {
                         params.append(name, $(this).val());
                     }
                 });

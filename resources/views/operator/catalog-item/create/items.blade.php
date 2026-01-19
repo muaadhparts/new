@@ -86,7 +86,7 @@
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_quality_id" class="form-control">
+                                                <select name="quality_brand_id" class="form-control">
                                                     <option value="">{{ __('Select Quality Brand') }}</option>
                                                     @foreach (\App\Models\QualityBrand::all() as $qb)
                                                         <option value="{{ $qb->id }}">
