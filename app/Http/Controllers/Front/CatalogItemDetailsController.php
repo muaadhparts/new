@@ -12,6 +12,7 @@ use App\Models\CatalogReview;
 use App\Models\NoteResponse;
 use App\Models\AbuseFlag;
 use App\Models\User;
+use App\Services\CatalogItemOffersService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -218,6 +219,24 @@ class CatalogItemDetailsController extends FrontBaseController
     {
         $part_number = $key;
         return response()->view('partials.alternative', compact('part_number'));
+    }
+
+    /**
+     * Get offers for a catalog item (grouped by Quality Brand → Merchant → Branch)
+     *
+     * Returns HTML fragment for modal display
+     * API: GET /modal/offers/{catalogItemId}
+     */
+    public function offersFragment(int $catalogItemId, CatalogItemOffersService $offersService)
+    {
+        $data = $offersService->getGroupedOffers($catalogItemId);
+
+        // Return as JSON for API or HTML for modal
+        if (request()->wantsJson() || request()->has('json')) {
+            return response()->json($data);
+        }
+
+        return response()->view('partials.catalog-item-offers', $data);
     }
 
     public function report(Request $request)

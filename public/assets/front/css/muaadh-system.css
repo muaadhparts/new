@@ -6231,6 +6231,302 @@ select option {
 }
 
 /* ============================================================================
+   CATALOG ITEM OFFERS MODAL
+   Grouped by: Quality Brand → Merchant → Branch
+   ============================================================================ */
+
+/* ----- Offers Content Container ----- */
+.catalog-offers-content {
+    padding: 0;
+}
+
+/* ----- Header Section ----- */
+.catalog-offers-header {
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.catalog-offers-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: contain;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid var(--border-light, #e5e7eb);
+    background: var(--surface-card, #fff);
+}
+
+.catalog-offers-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    margin: 0;
+}
+
+.catalog-offers-summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.catalog-offers-from {
+    font-size: 0.875rem;
+    color: var(--text-muted, #6b7280);
+}
+
+/* ----- Quality Brand Groups ----- */
+.catalog-offers-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.catalog-offers-quality-group {
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    overflow: hidden;
+    background: var(--surface-card, #fff);
+}
+
+.catalog-offers-quality-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface-elevated, #f9fafb);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.catalog-offers-quality-logo {
+    width: 32px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.catalog-offers-quality-name {
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+}
+
+.catalog-offers-quality-price {
+    font-size: 0.875rem;
+    color: var(--action-success, #10b981);
+    font-weight: 500;
+}
+
+/* ----- Merchant Groups ----- */
+.catalog-offers-merchants {
+    padding: 8px;
+}
+
+.catalog-offers-merchant-group {
+    margin-bottom: 12px;
+}
+
+.catalog-offers-merchant-group:last-child {
+    margin-bottom: 0;
+}
+
+.catalog-offers-merchant-header {
+    padding: 8px 12px;
+    background: var(--surface-sunken, #f3f4f6);
+    border-radius: var(--radius-md, 8px);
+    margin-bottom: 8px;
+}
+
+.catalog-offers-merchant-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.catalog-offers-merchant-avatar--placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--action-primary-muted, rgba(124, 58, 237, 0.1));
+    color: var(--action-primary, #7c3aed);
+    font-size: 12px;
+}
+
+.catalog-offers-merchant-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--text-primary, #111827);
+}
+
+/* ----- Branch Offers ----- */
+.catalog-offers-branches {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 0 4px;
+}
+
+.catalog-offers-branch {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: var(--radius-md, 8px);
+    background: var(--surface-card, #fff);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.catalog-offers-branch:hover {
+    border-color: var(--action-primary, #7c3aed);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+}
+
+.catalog-offers-branch--available {
+    border-left: 3px solid var(--action-success, #10b981);
+}
+
+.catalog-offers-branch--unavailable {
+    opacity: 0.6;
+    border-left: 3px solid var(--text-muted, #9ca3af);
+}
+
+.catalog-offers-branch-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 120px;
+}
+
+.catalog-offers-branch-name {
+    font-size: 0.8125rem;
+    color: var(--text-secondary, #4b5563);
+}
+
+.catalog-offers-branch-name i {
+    color: var(--text-muted, #9ca3af);
+    margin-right: 4px;
+}
+
+.catalog-offers-branch-price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 100px;
+}
+
+.catalog-offers-price-current {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--action-success, #10b981);
+}
+
+.catalog-offers-price-old {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #9ca3af);
+}
+
+.catalog-offers-photos {
+    display: flex;
+    gap: 4px;
+    flex: 0 0 auto;
+}
+
+.catalog-offers-photo-thumb {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 1px solid var(--border-light, #e5e7eb);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.catalog-offers-photo-thumb:hover {
+    transform: scale(1.1);
+}
+
+.catalog-offers-branch-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+/* ----- Offers Button (for card) ----- */
+.catalog-offers-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: var(--action-primary-muted, rgba(124, 58, 237, 0.1));
+    color: var(--action-primary, #7c3aed);
+    border: 1px solid var(--action-primary, #7c3aed);
+    border-radius: var(--radius-md, 6px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.catalog-offers-btn:hover {
+    background: var(--action-primary, #7c3aed);
+    color: var(--text-on-primary, #fff);
+}
+
+.catalog-offers-btn i {
+    font-size: 0.75rem;
+}
+
+.catalog-offers-btn .offers-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    background: var(--action-primary, #7c3aed);
+    color: var(--text-on-primary, #fff);
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.catalog-offers-btn:hover .offers-count {
+    background: var(--text-on-primary, #fff);
+    color: var(--action-primary, #7c3aed);
+}
+
+/* ----- Mobile Responsive ----- */
+@media (max-width: 767px) {
+    .catalog-offers-branch {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .catalog-offers-branch-info,
+    .catalog-offers-branch-price,
+    .catalog-offers-branch-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .catalog-offers-branch-actions {
+        padding-top: 8px;
+        border-top: 1px solid var(--border-light, #e5e7eb);
+        margin-top: 8px;
+    }
+
+    .catalog-offers-quality-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 

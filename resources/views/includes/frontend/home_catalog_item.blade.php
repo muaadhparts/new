@@ -55,6 +55,9 @@
         $favoriteUrl = $card->favoriteUrl ?? null;
         $isInFavorites = $card->isInFavorites ?? false;
         $compareUrl = $card->compareUrl;
+        // Offers count
+        $offersCount = $card->offersCount ?? 1;
+        $hasMultipleOffers = $card->hasMultipleOffers ?? false;
     } else {
         // === Source: CatalogItem + MerchantItem ===
         $isMerchantItem = $catalogItem instanceof \App\Models\MerchantItem;
@@ -130,6 +133,12 @@
         $favoriteUrl = $merchantItemId ? route('user-favorite-add-merchant', $merchantItemId) : '#';
         $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualCatalogItem->id);
         $compareUrl = $merchantItemId ? route('merchant.compare.add', $merchantItemId) : '#';
+        // Offers count
+        $offersCount = $actualCatalogItem->merchantItems()
+            ->where('status', 1)
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
+            ->count();
+        $hasMultipleOffers = $offersCount > 1;
     }
 
     $cardId = 'ci_' . ($catalogItemId ?? uniqid()) . '_' . ($merchantItemId ?? '0');
@@ -221,6 +230,17 @@
                     </span>
                 @endif
                 <span class="badge {{ $inStock ? 'bg-success' : 'bg-danger' }}">{{ $stockText }}</span>
+
+                {{-- Offers Button --}}
+                @if($hasMultipleOffers)
+                    <button type="button" class="catalog-offers-btn"
+                            data-catalog-item-id="{{ $catalogItemId }}"
+                            data-part-number="{{ $part_number }}">
+                        <i class="fas fa-tags"></i>
+                        <span class="offers-count">{{ $offersCount }}</span>
+                        @lang('offers')
+                    </button>
+                @endif
             </div>
 
             {{-- Rating --}}
@@ -381,6 +401,17 @@
                 <span class="catalogItem-card__stock {{ $inStock ? 'catalogItem-card__stock--in' : 'catalogItem-card__stock--out' }}">
                     {{ $stockText }}
                 </span>
+
+                {{-- Offers Button --}}
+                @if($hasMultipleOffers)
+                    <button type="button" class="catalog-offers-btn"
+                            data-catalog-item-id="{{ $catalogItemId }}"
+                            data-part-number="{{ $part_number }}">
+                        <i class="fas fa-tags"></i>
+                        <span class="offers-count">{{ $offersCount }}</span>
+                        @lang('offers')
+                    </button>
+                @endif
             </div>
 
             {{-- Price --}}

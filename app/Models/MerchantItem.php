@@ -80,6 +80,26 @@ class MerchantItem extends Model
         return $this->belongsTo(MerchantBranch::class, 'merchant_branch_id');
     }
 
+    /**
+     * Photos for this merchant item
+     */
+    public function photos()
+    {
+        return $this->hasMany(MerchantPhoto::class, 'merchant_item_id')
+            ->where('status', 1)
+            ->orderBy('sort_order');
+    }
+
+    /**
+     * Get primary photo for this merchant item
+     */
+    public function primaryPhoto()
+    {
+        return $this->hasOne(MerchantPhoto::class, 'merchant_item_id')
+            ->where('is_primary', true)
+            ->where('status', 1);
+    }
+
     // ========================================
     // SCOPES
     // ========================================

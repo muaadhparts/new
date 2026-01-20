@@ -68,6 +68,10 @@ class CatalogItemCardDTO
     public string $stockClass;
     public string $stockBadgeClass;
 
+    // Offers Count (total active merchant items for this catalog item)
+    public int $offersCount = 1;
+    public bool $hasMultipleOffers = false;
+
 
     /**
      * Build DTO from MerchantItem with all pre-loaded relations
@@ -135,6 +139,9 @@ class CatalogItemCardDTO
         // Stock display
         self::setStockDisplay($dto);
 
+        // Offers count (how many merchants/branches sell this item)
+        self::setOffersCount($dto, $catalogItem);
+
         return $dto;
     }
 
@@ -198,6 +205,9 @@ class CatalogItemCardDTO
 
         // Stock display
         self::setStockDisplay($dto);
+
+        // Offers count
+        self::setOffersCount($dto, $catalogItem);
 
         return $dto;
     }
@@ -286,5 +296,27 @@ class CatalogItemCardDTO
         $dto->fitmentCount = count($dto->fitmentBrands);
         $dto->hasSingleBrand = $dto->fitmentCount === 1;
         $dto->fitsMultipleBrands = $dto->fitmentCount > 1;
+    }
+
+    /**
+     * Set offers count from catalog item's merchant items
+     * Counts active merchant items with status = 1 and active merchants
+     */
+    private static function setOffersCount(self $dto, CatalogItem $catalogItem): void
+    {
+        // If merchantItems relation is loaded, count from it
+        if ($catalogItem->relationLoaded('merchantItems')) {
+            $dto->offersCount = $catalogItem->merchantItems
+                ->filter(fn($mi) => $mi->status == 1)
+                ->count();
+        } else {
+            // Count active merchant items (single query)
+            $dto->offersCount = MerchantItem::where('catalog_item_id', $catalogItem->id)
+                ->where('status', 1)
+                ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
+                ->count();
+        }
+
+        $dto->hasMultipleOffers = $dto->offersCount > 1;
     }
 }

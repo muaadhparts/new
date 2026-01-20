@@ -116,16 +116,28 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get all merchant photos for this catalog item
+     * Get all merchant photos for this catalog item (via merchant_items).
+     * Photos are linked to merchant_items, not directly to catalog_items.
      */
     public function merchantPhotos()
     {
-        return $this->hasMany(MerchantPhoto::class, 'catalog_item_id');
+        return $this->hasManyThrough(
+            MerchantPhoto::class,
+            MerchantItem::class,
+            'catalog_item_id',    // FK on merchant_items
+            'merchant_item_id',   // FK on merchant_photos
+            'id',                 // Local key on catalog_items
+            'id'                  // Local key on merchant_items
+        )->where('merchant_photos.status', 1)
+         ->orderBy('merchant_photos.sort_order');
     }
 
     /**
      * Get merchant photos filtered by merchant user_id.
      * Use this for merchant-specific photo display.
+     *
+     * Since merchant_photos links to merchant_items (not directly to catalog_items),
+     * we find merchant_items for this catalog_item + user, then get their photos.
      *
      * @param int|null $userId Merchant user ID
      * @param int $limit Max number of photos
@@ -137,8 +149,19 @@ class CatalogItem extends Model
             return collect();
         }
 
-        return MerchantPhoto::where('catalog_item_id', $this->id)
+        // Get merchant_item IDs for this catalog_item + user
+        $merchantItemIds = MerchantItem::where('catalog_item_id', $this->id)
             ->where('user_id', $userId)
+            ->where('status', 1)
+            ->pluck('id');
+
+        if ($merchantItemIds->isEmpty()) {
+            return collect();
+        }
+
+        return MerchantPhoto::whereIn('merchant_item_id', $merchantItemIds)
+            ->where('status', 1)
+            ->orderBy('sort_order')
             ->take($limit)
             ->get();
     }
