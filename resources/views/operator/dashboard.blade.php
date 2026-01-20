@@ -157,7 +157,7 @@
                 <div class="card-body">
 
                 <div class="table-responsive  dashboard-home-table">
-                                    <table id="popularMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="recentPurchases" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                             <thead>
                                 <tr>
 
@@ -190,7 +190,7 @@
                         <div class="card-body">
         
                              <div class="table-responsive  dashboard-home-table">
-                                    <table id="popularMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="recentUsers" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                     <thead>
                                         <tr>
                                             <th>{{ __('Customer Email') }}</th>
@@ -222,37 +222,40 @@
                     <div class="card">
                             <h5 class="card-header">{{ __('Popular CatalogItem(s)') }}</h5>
                             <div class="card-body">
-            
+
                                 <div class="table-responsive  dashboard-home-table">
-                                    <table id="popularMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="popularCatalogItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                         <thead>
                                             <tr>
                                                 <th>{{ __('Featured Image') }}</th>
                                                 <th>{{ __('Name') }}</th>
-                                                <th>{{ __('Category') }}</th>
-                                                <th>{{ __('Type') }}</th>
+                                                <th>{{ __('Brand') }}</th>
+                                                <th>{{ __('Views') }}</th>
                                                 <th>{{ __('Price') }}</th>
                                                 <th></th>
-                                                
+
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            @foreach($popularMerchantItems as $data)
-                                            <tr>
-                                            <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                            <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
+                                            @foreach($popularCatalogItems as $catalogItem)
                                             @php
-                                                $fitments = $data->catalogItem?->fitments ?? collect();
+                                                $merchantItem = $catalogItem->merchantItems->first();
+                                            @endphp
+                                            <tr>
+                                            <td><img src="{{filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                            <td>{{ getLocalizedCatalogItemName($catalogItem, 50) }}</td>
+                                            @php
+                                                $fitments = $catalogItem->fitments ?? collect();
                                                 $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
                                                 $firstBrand = $brands->first();
                                             @endphp
                                             <td>{{ $firstBrand ? $firstBrand->localized_name : 'N/A' }}</td>
-                                                <td>{{ $data->catalogItem->type ?? 'N/A' }}</td>
+                                                <td>{{ $catalogItem->views ?? 0 }}</td>
 
-                                                <td> {{ $data->showPrice() }} </td>
+                                                <td>{{ $merchantItem ? $merchantItem->showPrice() : 'N/A' }}</td>
 
                                                 <td>
-                                                    <div class="action-list"><a href="{{ route('operator-catalog-item-edit',$data->id) }}"><i
+                                                    <div class="action-list"><a href="{{ $merchantItem ? route('operator-catalog-item-edit', $merchantItem->id) : '#' }}"><i
                                                                 class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                     </div>
                                                 </td>
@@ -263,9 +266,9 @@
                                 </div>
                             </div>
                         </div>
-    
+
             </div>
-    
+
         </div>
 
     <div class="row row-cards-one">
@@ -274,35 +277,38 @@
                     <div class="card">
                             <h5 class="card-header">{{ __('Recent CatalogItem(s)') }}</h5>
                             <div class="card-body">
-            
+
                                 <div class="table-responsive dashboard-home-table">
-                                    <table id="latestMerchantItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
+                                    <table id="latestCatalogItems" class="table table-hover dt-responsive" cellspacing="0" width="100%">
                                             <thead>
                                                     <tr>
                                                         <th>{{ __('Featured Image') }}</th>
                                                         <th>{{ __('Name') }}</th>
-                                                        <th>{{ __('Category') }}</th>
-                                                        <th>{{ __('Type') }}</th>
+                                                        <th>{{ __('Brand') }}</th>
+                                                        <th>{{ __('Part Number') }}</th>
                                                         <th>{{ __('Price') }}</th>
                                                         <th></th>
-                                                        
+
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    @foreach($latestMerchantItems as $data)
-                                                    <tr>
-                                                    <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
-                                                    <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
+                                                    @foreach($latestCatalogItems as $catalogItem)
                                                     @php
-                                                        $fitments2 = $data->catalogItem?->fitments ?? collect();
+                                                        $merchantItem = $catalogItem->merchantItems->first();
+                                                    @endphp
+                                                    <tr>
+                                                    <td><img src="{{filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
+                                                    <td>{{ getLocalizedCatalogItemName($catalogItem, 50) }}</td>
+                                                    @php
+                                                        $fitments2 = $catalogItem->fitments ?? collect();
                                                         $brands2 = $fitments2->map(fn($f) => $f->brand)->filter()->unique('id')->values();
                                                         $firstBrand2 = $brands2->first();
                                                     @endphp
                                                     <td>{{ $firstBrand2 ? $firstBrand2->localized_name : 'N/A' }}</td>
-                                                        <td>{{ $data->catalogItem->type ?? 'N/A' }}</td>
-                                                        <td> {{ $data->showPrice() }} </td>
+                                                        <td>{{ $catalogItem->part_number ?? 'N/A' }}</td>
+                                                        <td>{{ $merchantItem ? $merchantItem->showPrice() : 'N/A' }}</td>
                                                         <td>
-                                                            <div class="action-list"><a href="{{ route('operator-catalog-item-edit',$data->catalogItem->id ?? $data->id) }}"><i
+                                                            <div class="action-list"><a href="{{ $merchantItem ? route('operator-catalog-item-edit', $merchantItem->id) : '#' }}"><i
                                                                         class="fas fa-eye"></i> {{ __('Details') }}</a>
                                                             </div>
                                                         </td>
@@ -311,12 +317,12 @@
                                                 </tbody>
                                     </table>
                                 </div>
-            
+
                             </div>
                         </div>
-    
+
             </div>
-    
+
     </div>
 
     <div class="row row-cards-one">
@@ -376,7 +382,7 @@
         var lineChart = new Chart(ctx).Line(data, options);
     }
 
-    $('#popularMerchantItems').dataTable( {
+    $('#popularCatalogItems').dataTable( {
       "ordering": false,
           'lengthChange': false,
           'searching'   : false,
@@ -387,7 +393,7 @@
           'paging'  : false
     } );
 
-    $('#latestMerchantItems').dataTable( {
+    $('#latestCatalogItems').dataTable( {
       "ordering": false,
       'lengthChange': false,
           'searching'   : false,

@@ -606,7 +606,21 @@
             // ========================================
             // Category Items AJAX System
             // ========================================
-            const baseUrl = '{{ route('front.catalog', [Request::route('category'), Request::route('subcategory'), Request::route('childcategory')]) }}';
+            // Dynamic baseUrl - gets updated when category selector navigates
+            // Initial value from server, but can be updated by category selector
+            let categoryBaseUrlPath = '{{ route('front.catalog', ['brand' => Request::route('brand'), 'catalog' => Request::route('catalog'), 'cat1' => Request::route('cat1'), 'cat2' => Request::route('cat2'), 'cat3' => Request::route('cat3')]) }}';
+
+            // Function to get current base URL (uses path from current location or stored path)
+            function getBaseUrl() {
+                // Use the current pathname (without query string) as the base
+                // This ensures filters work correctly after category selector navigation
+                return window.location.pathname;
+            }
+
+            // Expose setter for category selector to update the path
+            window.updateCategoryBasePath = function(newPath) {
+                categoryBaseUrlPath = newPath;
+            };
             const $scrollContainer = $('.category-catalogItems-scroll');
             const $itemsContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
@@ -656,6 +670,8 @@
                     params.set('view_check', viewMode);
                 }
 
+                // Use dynamic base URL (current pathname) to support category selector navigation
+                const baseUrl = getBaseUrl();
                 const queryString = params.toString();
                 return queryString ? baseUrl + '?' + queryString : baseUrl;
             }

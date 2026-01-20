@@ -166,8 +166,6 @@ Route::group(['prefix' => 'front'], function () {
     Route::get('/default/monetary-unit', 'Api\Front\FrontendController@defaultMonetaryUnit');
     Route::get('/monetary-unit/{id}', 'Api\Front\FrontendController@monetaryUnit');
     Route::get('/monetary-units', 'Api\Front\FrontendController@monetaryUnits');
-    Route::get('/deal-of-day', 'Api\Front\FrontendController@deal');
-    Route::get('/arrival', 'Api\Front\FrontendController@arrival');
     Route::get('/arrival', 'Api\Front\FrontendController@arrival');
 
     Route::get('/banners', 'Api\Front\FrontendController@banners');

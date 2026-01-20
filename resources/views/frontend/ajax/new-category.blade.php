@@ -5,7 +5,7 @@
 
 {{-- Products Content Container for AJAX replacement --}}
 <div id="ajax-catalogItems-content">
-    @if ($items->total() == 0)
+    @if ($cards->total() == 0)
         <div class="m-no-results-box">
             <div class="m-no-results-box__icon">
                 <i class="fas fa-search"></i>
@@ -37,8 +37,8 @@
             <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                 id="layout-list-pane" role="tabpanel" tabindex="0">
                 <div class="row gy-4">
-                    @foreach ($items as $item)
-                        @include('partials.catalog.merchant-item-card', ['item' => $item, 'layout' => 'list'])
+                    @foreach ($cards as $card)
+                        @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'list'])
                     @endforeach
                 </div>
             </div>
@@ -46,8 +46,8 @@
             <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
                 id="layout-grid-pane" role="tabpanel" tabindex="0">
                 <div class="row gy-4">
-                    @foreach ($items as $item)
-                        @include('partials.catalog.merchant-item-card', ['item' => $item, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                    @foreach ($cards as $card)
+                        @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                     @endforeach
                 </div>
             </div>
@@ -58,22 +58,22 @@
 {{-- Pagination data for JavaScript --}}
 <script type="application/json" id="ajax-pagination-data">
 {
-    "currentPage": {{ $items->currentPage() }},
-    "lastPage": {{ $items->lastPage() }},
-    "total": {{ $items->total() }},
-    "perPage": {{ $items->perPage() }}
+    "currentPage": {{ $cards->currentPage() }},
+    "lastPage": {{ $cards->lastPage() }},
+    "total": {{ $cards->total() }},
+    "perPage": {{ $cards->perPage() }}
 }
 </script>
 
 {{-- Updated Pagination UI --}}
 <div class="m-pagination-simple"
-     data-current="{{ $items->currentPage() }}"
-     data-last="{{ $items->lastPage() }}"
-     data-total="{{ $items->total() }}">
+     data-current="{{ $cards->currentPage() }}"
+     data-last="{{ $cards->lastPage() }}"
+     data-total="{{ $cards->total() }}">
 
     {{-- Previous Button --}}
-    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $items->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
-            {{ $items->onFirstPage() ? 'disabled' : '' }}>
+    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $cards->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
+            {{ $cards->onFirstPage() ? 'disabled' : '' }}>
         <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
     </button>
 
@@ -81,16 +81,16 @@
     <div class="m-pagination-simple__input-group">
         <input type="number"
                class="m-pagination-simple__input"
-               value="{{ $items->currentPage() }}"
+               value="{{ $cards->currentPage() }}"
                min="1"
-               max="{{ $items->lastPage() }}">
+               max="{{ $cards->lastPage() }}">
         <span class="m-pagination-simple__separator">@lang('of')</span>
-        <span class="m-pagination-simple__total">{{ $items->lastPage() }}</span>
+        <span class="m-pagination-simple__total">{{ $cards->lastPage() }}</span>
     </div>
 
     {{-- Next Button --}}
-    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next {{ !$items->hasMorePages() ? 'm-pagination-simple__btn--disabled' : '' }}"
-            {{ !$items->hasMorePages() ? 'disabled' : '' }}>
+    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next {{ !$cards->hasMorePages() ? 'm-pagination-simple__btn--disabled' : '' }}"
+            {{ !$cards->hasMorePages() ? 'disabled' : '' }}>
         <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
     </button>
 </div>

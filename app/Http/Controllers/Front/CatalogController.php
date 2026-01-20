@@ -62,6 +62,18 @@ class CatalogController extends FrontBaseController
      */
     public function catalog(Request $request, $brand = null, $catalog = null, $cat1 = null, $cat2 = null, $cat3 = null)
     {
+        // DEBUG: Log route parameters
+        \Log::info('CatalogController@catalog called', [
+            'brand' => $brand,
+            'catalog' => $catalog,
+            'cat1' => $cat1,
+            'cat2' => $cat2,
+            'cat3' => $cat3,
+            'is_ajax' => $request->ajax(),
+            'merchant_filter' => $request->merchant,
+            'url' => $request->fullUrl(),
+        ]);
+
         // Handle view mode
         if ($request->view_check) {
             Session::put('view', $request->view_check);
@@ -101,6 +113,7 @@ class CatalogController extends FrontBaseController
      *
      * Shows all parts from selected category AND all descendant categories
      * Only shows parts that have merchant_items (available for sale)
+     * NOW WITH FULL FILTER SUPPORT (merchant, branch, quality_brand, price, sort)
      */
     public function newCategory(
         Request $request,
@@ -120,7 +133,7 @@ class CatalogController extends FrontBaseController
             ? (int)$request->pageby
             : null;
         $perPage = $pageby ?? $this->gs->page_count ?? 12;
-        $page = max(1, (int)$request->get('page', 1));
+        $currValue = $this->curr->value ?? 1;
 
         // Resolve brand and catalog from URL slugs
         $resolved = $this->categoryTreeService->resolveBrandAndCatalog($brand_slug, $catalog_slug);
@@ -149,38 +162,39 @@ class CatalogController extends FrontBaseController
         // Get all descendant category IDs (includes selected category)
         $categoryIds = [];
         if ($selectedCategory) {
-            $categoryIds = $this->categoryTreeService->getDescendantIds(
+            $categoryIds = $this->filterService->getDescendantIds(
                 $selectedCategory->id,
                 $catalog->id
             );
         }
 
-        // Get parts with merchant_items only
-        $items = $this->categoryTreeService->getPartsWithMerchantItems(
-            $categoryIds,
+        // Get CatalogItems with FULL FILTER SUPPORT via CatalogItemFilterService
+        $filterResults = $this->filterService->getCatalogItemsFromCategoryTree(
+            $request,
+            $catalog->id,
             $catalog->code,
+            $categoryIds,
             $perPage,
-            $page
+            $currValue
         );
 
         // Build category tree for sidebar
         $categoryTree = $this->categoryTreeService->buildCategoryTree($catalog->id, $brand->id);
 
-        // Prepare data for view
-        $data = [
+        // Prepare data for view (merge filter results with category tree data)
+        $data = array_merge($filterResults, [
             'brand' => $brand,
             'catalog' => $catalog,
             'categoryTree' => $categoryTree,
             'selectedCategory' => $selectedCategory,
             'breadcrumb' => $breadcrumb,
             'hierarchy' => $hierarchy,
-            'items' => $items,
             'cat1_slug' => $cat1,
             'cat2_slug' => $cat2,
             'cat3_slug' => $cat3,
             'brand_slug' => $brand_slug,
             'catalog_slug' => $catalog_slug,
-        ];
+        ]);
 
         if ($request->ajax()) {
             $data['ajax_check'] = 1;

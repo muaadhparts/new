@@ -53,29 +53,29 @@ class FrontendController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ['message' => 'Merchant not found']]);
             }
 
-            // Get catalogItems through merchant_items for this merchant
-            // item_type is now on merchant_items, not catalogItems
-            $merchantItemsQuery = \App\Models\MerchantItem::where('user_id', $user->id)
-                ->where('status', 1)
-                ->with(['catalogItem' => function($query) {
-                    $query->where('status', 1);
+            // CatalogItem-first: Query catalog items that have merchant offers from this merchant
+            $query = CatalogItem::whereHas('merchantItems', function($q) use ($user, $request) {
+                    $q->where('user_id', $user->id)->where('status', 1);
+                    if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
+                        $q->where('item_type', $request->type);
+                    }
+                })
+                ->with(['merchantItems' => function($q) use ($user, $request) {
+                    $q->where('user_id', $user->id)->where('status', 1);
+                    if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
+                        $q->where('item_type', $request->type);
+                    }
                 }]);
 
-            if ($request->type && in_array($request->type, ['normal', 'affiliate'])) {
-                $merchantItemsQuery->where('item_type', $request->type);
-            }
+            $prods = $query->get();
 
-            $merchantItems = $merchantItemsQuery->get();
-
-            // Extract catalog items and inject merchant context using CatalogItemContextHelper
-            $prods = $merchantItems->map(function($mp) use ($user) {
-                if (!$mp->catalogItem) return null;
-
-                $catalogItem = $mp->catalogItem;
-                // Use CatalogItemContextHelper for consistency
-                CatalogItemContextHelper::apply($catalogItem, $mp);
-                return $catalogItem;
-            })->filter()->values();
+            // Inject merchant context for each catalog item
+            $prods->each(function($catalogItem) {
+                $mp = $catalogItem->merchantItems->first();
+                if ($mp) {
+                    CatalogItemContextHelper::apply($catalogItem, $mp);
+                }
+            });
 
             return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
         } catch (\Exception $e) {
@@ -215,73 +215,41 @@ class FrontendController extends Controller
 
     public function catalogItems(Request $request)
     {
-
         try {
             $input = $request->all();
 
             if (!empty($input)) {
-
-                $type = isset($input['type']) ? $input['type'] : '';
-                $typeCheck = !empty($type) && $type === 'Physical';
-                $highlight = isset($input['highlight']) ? $input['highlight'] : '';
-                $highlightCheck = !empty($highlight) && in_array($highlight, ['featured', 'best', 'top', 'big', 'is_discount', 'hot', 'latest', 'trending', 'sale']);
                 $itemType = isset($input['item_type']) ? $input['item_type'] : '';
                 $itemTypeCheck = !empty($itemType) && in_array($itemType, ['normal', 'affiliate']);
                 $limit = isset($input['limit']) ? (int) $input['limit'] : 0;
                 $paginate = isset($input['paginate']) ? (int) $input['paginate'] : 0;
+                $highlight = isset($input['highlight']) ? $input['highlight'] : '';
 
-                $prods = CatalogItem::whereStatus(1);
+                $prods = CatalogItem::where('status', 1);
 
-                if ($typeCheck) {
-                    $prods = $prods->whereType($type);
-                }
-
-                // item_type is now on merchant_items, not catalog_items
+                // item_type filter via merchantItems
                 if ($itemTypeCheck) {
-                    $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('item_type', $itemType));
+                    $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('item_type', $itemType)->where('status', 1));
                 }
 
-                // All highlight flags (featured, best, top, big, trending) are on merchant_items table
-                if ($highlightCheck) {
-                    if ($highlight == 'featured') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('featured', 1)->where('status', 1));
-                    } else if ($highlight == 'best') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('best', 1)->where('status', 1));
-                    } else if ($highlight == 'top') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('top', 1)->where('status', 1));
-                    } else if ($highlight == 'big') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('big', 1)->where('status', 1));
-                    } else if ($highlight == 'is_discount') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('is_discount', 1)->where('discount_date', '>=', date('Y-m-d'))->where('status', 1));
-                    } else if ($highlight == 'hot') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('hot', 1)->where('status', 1));
-                    } else if ($highlight == 'latest') {
-                        $prods = $prods->orderBy('id', 'desc');
-                    } else if ($highlight == 'trending') {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('trending', 1)->where('status', 1));
-                    } else {
-                        $prods = $prods->whereHas('merchantItems', fn($q) => $q->where('sale', 1)->where('status', 1));
-                    }
+                // Only 'latest' highlight is supported (others are removed)
+                if ($highlight == 'latest') {
+                    $prods = $prods->orderBy('id', 'desc');
                 }
 
                 if ($limit != 0) {
-                    $prods = $prods->where('status', 1)->take($limit);
+                    $prods = $prods->take($limit);
                 }
 
                 if ($paginate == 0) {
-                    $prods = $prods->where('status', 1)->get();
+                    $prods = $prods->get();
                 } else {
-                    $prods = $prods->where('status', 1)->paginate($paginate);
+                    $prods = $prods->paginate($paginate);
                 }
 
-                // Note: General listing shows catalog items from all merchants
-                // For merchant-specific data, CatalogItemListResource will use the first available merchant_item
                 return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods)->response()->getData(true), 'error' => []]);
             } else {
-
-                $prods = CatalogItem::status(1)->get();
-                // Note: General listing shows catalog items from all merchants
-                // For merchant-specific data, CatalogItemListResource will use the first available merchant_item
+                $prods = CatalogItem::where('status', 1)->get();
                 return response()->json(['status' => true, 'data' => CatalogItemListResource::collection($prods), 'error' => []]);
             }
         } catch (\Exception $e) {
@@ -446,17 +414,6 @@ class FrontendController extends Controller
     }
 
     // Send Email To Admin Ends
-
-    public function deal()
-    {
-        $gs = Muaadhsetting::findOrFail(1);
-        $data['name'] = $gs->deal_name;
-        $data['deal_details'] = $gs->deal_details;
-        $data['time'] = $gs->deal_time;
-        $data['image'] = url('/') . '/assets/images/' . $gs->deal_background;
-        $data['link'] = $gs->link;
-        return response()->json(['status' => true, 'data' => $data, 'error' => []]);
-    }
 
     public function arrival()
     {

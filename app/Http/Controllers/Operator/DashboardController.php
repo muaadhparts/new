@@ -32,25 +32,21 @@ class DashboardController extends OperatorBaseController
         $data['catalogItems'] = CatalogItem::count();
         $data['publications'] = Publication::count();
 
-        // Get latest merchant items (active only)
-        $data['latestMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
-            ->where('status', 1)
-            ->whereHas('catalogItem')
+        // CatalogItem-first: Get latest catalog items with active merchant offers
+        $data['latestCatalogItems'] = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
+            ->with(['merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price')])
             ->latest('id')
             ->take(5)
             ->get();
 
         $data['recentPurchases'] = Purchase::latest('id')->take(5)->get();
 
-        // Get popular merchant items (by views from catalog_items)
-        $data['popularMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
-            ->where('status', 1)
-            ->whereHas('catalogItem')
+        // CatalogItem-first: Get popular catalog items (by views)
+        $data['popularCatalogItems'] = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
+            ->with(['merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price')])
+            ->orderByDesc('views')
             ->take(5)
-            ->get()
-            ->sortByDesc(function($mi) {
-                return $mi->catalogItem->views ?? 0;
-            });
+            ->get();
 
         $data['recentUsers'] = User::latest('id')->take(5)->get();
 

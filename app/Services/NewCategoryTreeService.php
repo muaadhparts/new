@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\Brand;
 use App\Models\Catalog;
-use App\Models\MerchantItem;
 use App\Models\NewCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -102,68 +101,6 @@ class NewCategoryTreeService
         $results = DB::select($sql, $params);
 
         return array_map(fn($row) => $row->id, $results);
-    }
-
-    /**
-     * Get parts from dynamic tables that have merchant_items (available for sale)
-     *
-     * @param array $categoryIds Array of category IDs to search
-     * @param string $catalogCode Catalog code for dynamic table names
-     * @param int $perPage Items per page
-     * @param int $page Current page
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
-    public function getPartsWithMerchantItems(
-        array $categoryIds,
-        string $catalogCode,
-        int $perPage = 12,
-        int $page = 1
-    ) {
-        if (empty($categoryIds)) {
-            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage, $page);
-        }
-
-        $partsTable = $this->dyn('parts', $catalogCode);
-        $sectionPartsTable = $this->dyn('section_parts', $catalogCode);
-
-        // Check if dynamic tables exist
-        if (!Schema::hasTable($partsTable) || !Schema::hasTable($sectionPartsTable)) {
-            return new \Illuminate\Pagination\LengthAwarePaginator([], 0, $perPage, $page);
-        }
-
-        $placeholders = implode(',', array_fill(0, count($categoryIds), '?'));
-
-        // Query to get merchant_items that match parts in selected categories
-        // Note: catalog_items table uses 'name' for EN and 'label_ar' for AR names
-        $query = MerchantItem::query()
-            ->select([
-                'merchant_items.*',
-                'catalog_items.part_number',
-                'catalog_items.name as catalog_item_name',
-                'catalog_items.label_ar as catalog_item_name_ar', // catalog_items uses label_ar not name_ar
-                'catalog_items.slug as catalog_item_slug',
-                'catalog_items.photo',
-                'catalog_items.thumbnail',
-                DB::raw("(SELECT label_en FROM {$partsTable} WHERE part_number = catalog_items.part_number LIMIT 1) as part_label_en"),
-                DB::raw("(SELECT label_ar FROM {$partsTable} WHERE part_number = catalog_items.part_number LIMIT 1) as part_label_ar"),
-            ])
-            ->with(['catalogItem', 'user', 'qualityBrand']) // Eager load relationships for view
-            ->join('catalog_items', 'catalog_items.id', '=', 'merchant_items.catalog_item_id')
-            ->whereExists(function ($query) use ($partsTable, $sectionPartsTable, $categoryIds) {
-                $query->select(DB::raw(1))
-                    ->from("{$partsTable} as p")
-                    ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
-                    ->join('sections as s', 's.id', '=', 'sp.section_id')
-                    ->whereColumn('p.part_number', 'catalog_items.part_number')
-                    ->whereIn('s.category_id', $categoryIds);
-            })
-            ->where('merchant_items.status', 1)
-            ->where('merchant_items.stock', '>=', 1)
-            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->distinct('catalog_items.part_number')
-            ->orderBy('catalog_items.part_number');
-
-        return $query->paginate($perPage, ['*'], 'page', $page);
     }
 
     /**

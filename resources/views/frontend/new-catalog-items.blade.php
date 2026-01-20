@@ -139,6 +139,79 @@
                             </div>
                         </div>
 
+                        <!-- Merchant Filter -->
+                        @if(isset($merchants) && $merchants->count() > 0)
+                        <div class="single-catalogItem-widget">
+                            <h5 class="widget-name">@lang('Merchant')</h5>
+                            <div class="warranty-type m-filter-scroll-box">
+                                <ul>
+                                    @foreach ($merchants as $merchant)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input merchant-filter"
+                                                name="merchant[]"
+                                                {{ isset($_GET['merchant']) && in_array($merchant->user_id, (array)$_GET['merchant']) ? 'checked' : '' }}
+                                                id="merchant_{{ $merchant->user_id }}"
+                                                value="{{ $merchant->user_id }}">
+                                            <label class="icon-label"
+                                                for="merchant_{{ $merchant->user_id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="merchant_{{ $merchant->user_id }}">{{ getLocalizedShopName($merchant) }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Branch Filter (Loaded via AJAX when merchants are selected) -->
+                        <div class="single-catalogItem-widget d-none" id="branch-filter-widget">
+                            <h5 class="widget-name">@lang('Branch')</h5>
+                            <div class="warranty-type m-filter-scroll-box">
+                                <ul id="branch-filter-list">
+                                    <!-- Branches loaded via AJAX -->
+                                </ul>
+                            </div>
+                            <p class="text-muted small mt-2 branch-loading-msg d-none">
+                                <i class="fas fa-spinner fa-spin"></i> @lang('Loading branches...')
+                            </p>
+                        </div>
+
+                        <!-- Quality Brand Filter -->
+                        @if(isset($quality_brands) && $quality_brands->count() > 0)
+                        <div class="single-catalogItem-widget">
+                            <h5 class="widget-name">@lang('Quality Brand')</h5>
+                            <div class="warranty-type m-filter-scroll-box">
+                                <ul>
+                                    @foreach ($quality_brands as $quality)
+                                        <li class="gs-checkbox-wrapper">
+                                            <input type="checkbox" class="attribute-input quality-brand-filter"
+                                                name="quality_brand[]"
+                                                {{ isset($_GET['quality_brand']) && in_array($quality->id, (array)$_GET['quality_brand']) ? 'checked' : '' }}
+                                                id="quality_brand_{{ $quality->id }}"
+                                                value="{{ $quality->id }}">
+                                            <label class="icon-label"
+                                                for="quality_brand_{{ $quality->id }}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="12"
+                                                    height="12" viewBox="0 0 12 12" fill="none">
+                                                    <path d="M10 3L4.5 8.5L2 6" stroke="currentColor"
+                                                        stroke-width="1.6666" stroke-linecap="round"
+                                                        stroke-linejoin="round" />
+                                                </svg>
+                                            </label>
+                                            <label for="quality_brand_{{ $quality->id }}">{{ $quality->localized_name }}</label>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        </div>
+                        @endif
+
                     </div>
                 </div>
 
@@ -150,7 +223,7 @@
 
                     <!-- catalogItem nav wrapper -->
                     <div class="catalogItem-nav-wrapper">
-                        <h5>@lang('Total Items Found:') {{ $items->total() }}</h5>
+                        <h5>@lang('Total Items Found:') {{ $cards->total() }}</h5>
                         <div class="filter-wrapper">
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
@@ -189,7 +262,7 @@
                         </div>
                     </div>
 
-                    @if ($items->total() == 0)
+                    @if ($cards->total() == 0)
                         {{-- Zero Results Box --}}
                         <div class="category-catalogItems-box">
                             <div class="category-catalogItems-scroll" id="catalogItems-container">
@@ -229,8 +302,8 @@
                                     <div class="tab-pane fade {{ $view == 'list-view' ? 'show active' : '' }}"
                                         id="layout-list-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
-                                            @foreach ($items as $item)
-                                                @include('partials.catalog.merchant-item-card', ['item' => $item, 'layout' => 'list'])
+                                            @foreach ($cards as $card)
+                                                @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'list'])
                                             @endforeach
                                         </div>
                                     </div>
@@ -238,8 +311,8 @@
                                     <div class="tab-pane fade {{ $view == 'grid-view' ? 'show active' : '' }}"
                                         id="layout-grid-pane" role="tabpanel" tabindex="0">
                                         <div class="row gy-4">
-                                            @foreach ($items as $item)
-                                                @include('partials.catalog.merchant-item-card', ['item' => $item, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
+                                            @foreach ($cards as $card)
+                                                @include('includes.frontend.home_catalog_item', ['card' => $card, 'layout' => 'grid', 'class' => 'col-6 col-md-4 col-lg-3'])
                                             @endforeach
                                         </div>
                                     </div>
@@ -248,13 +321,13 @@
                             <!-- Pagination -->
                             <div class="category-catalogItems-pagination">
                                 <div class="m-pagination-simple"
-                                     data-current="{{ $items->currentPage() }}"
-                                     data-last="{{ $items->lastPage() }}"
-                                     data-total="{{ $items->total() }}">
+                                     data-current="{{ $cards->currentPage() }}"
+                                     data-last="{{ $cards->lastPage() }}"
+                                     data-total="{{ $cards->total() }}">
 
                                     {{-- Previous Button --}}
-                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $items->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
-                                            {{ $items->onFirstPage() ? 'disabled' : '' }}>
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__prev {{ $cards->onFirstPage() ? 'm-pagination-simple__btn--disabled' : '' }}"
+                                            {{ $cards->onFirstPage() ? 'disabled' : '' }}>
                                         <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'right' : 'left' }}"></i>
                                     </button>
 
@@ -262,16 +335,16 @@
                                     <div class="m-pagination-simple__input-group">
                                         <input type="number"
                                                class="m-pagination-simple__input"
-                                               value="{{ $items->currentPage() }}"
+                                               value="{{ $cards->currentPage() }}"
                                                min="1"
-                                               max="{{ $items->lastPage() }}">
+                                               max="{{ $cards->lastPage() }}">
                                         <span class="m-pagination-simple__separator">@lang('of')</span>
-                                        <span class="m-pagination-simple__total">{{ $items->lastPage() }}</span>
+                                        <span class="m-pagination-simple__total">{{ $cards->lastPage() }}</span>
                                     </div>
 
                                     {{-- Next Button --}}
-                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next {{ !$items->hasMorePages() ? 'm-pagination-simple__btn--disabled' : '' }}"
-                                            {{ !$items->hasMorePages() ? 'disabled' : '' }}>
+                                    <button type="button" class="m-pagination-simple__btn m-pagination-simple__next {{ !$cards->hasMorePages() ? 'm-pagination-simple__btn--disabled' : '' }}"
+                                            {{ !$cards->hasMorePages() ? 'disabled' : '' }}>
                                         <i class="fas fa-chevron-{{ app()->getLocale() === 'ar' ? 'left' : 'right' }}"></i>
                                     </button>
                                 </div>
@@ -289,10 +362,17 @@
 
 @section('script')
     <script>
+        // Global sort state
+        var categoryPageSort = '{{ request('sort', 'date_desc') }}';
+
         (function($) {
             "use strict";
 
+            // ========================================
+            // Category Items AJAX System with Full Filters
+            // ========================================
             const baseUrl = '{{ route('front.catalog.category', ['brand_slug' => $brand_slug, 'catalog_slug' => $catalog_slug, 'cat1' => $cat1_slug, 'cat2' => $cat2_slug, 'cat3' => $cat3_slug]) }}';
+            const branchApiUrl = '{{ route("front.api.merchant.branches") }}';
             const $scrollContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
             const $totalItems = $('.catalogItem-nav-wrapper h5').first();
@@ -300,20 +380,32 @@
             let isLoading = false;
             let currentPage = parseInt($paginationContainer.data('current')) || 1;
             let lastPage = parseInt($paginationContainer.data('last')) || 1;
-            let currentSort = $('#sortby').val() || 'date_desc';
 
-            // Build URL with filters
+            // Persistent sort state
+            categoryPageSort = $('#sortby').val() || categoryPageSort;
+
+            // ========================================
+            // Build URL with all current filters
+            // ========================================
             function buildUrl(page) {
                 let params = new URLSearchParams();
 
+                // Page
                 if (page && page > 1) {
                     params.set('page', page);
                 }
 
-                if (currentSort && currentSort !== 'date_desc') {
-                    params.set('sort', currentSort);
+                // All filter checkboxes (Merchant, Quality Brand, Branch)
+                $(".attribute-input:checked").each(function() {
+                    params.append($(this).attr('name'), $(this).val());
+                });
+
+                // Sort
+                if (categoryPageSort && categoryPageSort !== 'date_desc') {
+                    params.set('sort', categoryPageSort);
                 }
 
+                // View mode
                 const viewMode = $('.check_view.active').data('shopview');
                 if (viewMode) {
                     params.set('view_check', viewMode);
@@ -323,7 +415,9 @@
                 return queryString ? baseUrl + '?' + queryString : baseUrl;
             }
 
+            // ========================================
             // Load content via AJAX
+            // ========================================
             function loadContent(page, updateHistory = true) {
                 if (isLoading) return;
 
@@ -381,7 +475,9 @@
                 });
             }
 
+            // ========================================
             // Update Pagination UI
+            // ========================================
             function updatePaginationUI() {
                 const $input = $paginationContainer.find('.m-pagination-simple__input');
                 const $prevBtn = $paginationContainer.find('.m-pagination-simple__prev');
@@ -404,14 +500,185 @@
                 }
             }
 
-            // Sort Event
-            $("#sortby").on('change', function() {
-                currentSort = $(this).val();
+            // ========================================
+            // Dynamic Branch Filter via AJAX
+            // ========================================
+            const $branchWidget = $('#branch-filter-widget');
+            const $branchList = $('#branch-filter-list');
+            const $branchLoadingMsg = $('.branch-loading-msg');
+            let currentLoadedMerchantIds = [];
+            let branchMerchantMap = {};
+
+            function getSelectedBranchesFromUrl() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.getAll('branch[]');
+            }
+
+            function getSelectedBranchIds() {
+                const selected = [];
+                $('.branch-filter:checked').each(function() {
+                    selected.push($(this).val());
+                });
+                return selected;
+            }
+
+            function loadBranchesForMerchants(merchantIds, removedMerchantId = null) {
+                if (!merchantIds || merchantIds.length === 0) {
+                    hideBranchFilter();
+                    return;
+                }
+
+                const sortedIds = [...merchantIds].sort().join(',');
+                const currentIds = [...currentLoadedMerchantIds].sort().join(',');
+
+                let previouslySelected = getSelectedBranchIds();
+                const urlSelected = getSelectedBranchesFromUrl();
+
+                if (removedMerchantId) {
+                    previouslySelected = previouslySelected.filter(branchId => {
+                        return branchMerchantMap[branchId] != removedMerchantId;
+                    });
+                }
+
+                const allSelected = [...new Set([...previouslySelected, ...urlSelected])];
+
+                if (sortedIds === currentIds && !removedMerchantId) {
+                    return;
+                }
+
+                currentLoadedMerchantIds = [...merchantIds];
+                $branchWidget.removeClass('d-none');
+                $branchLoadingMsg.removeClass('d-none');
+                $branchList.empty();
+                branchMerchantMap = {};
+
+                $.ajax({
+                    url: branchApiUrl,
+                    type: 'GET',
+                    data: { 'merchant_ids[]': merchantIds },
+                    dataType: 'json',
+                    traditional: true,
+                    success: function(branches) {
+                        $branchLoadingMsg.addClass('d-none');
+
+                        if (branches.length === 0) {
+                            $branchWidget.addClass('d-none');
+                            currentLoadedMerchantIds = [];
+                            return;
+                        }
+
+                        const groupByMerchant = merchantIds.length > 1;
+                        let currentMerchantId = null;
+
+                        branches.forEach(function(branch) {
+                            branchMerchantMap[branch.id] = branch.merchant_id;
+
+                            if (groupByMerchant && branch.merchant_id !== currentMerchantId) {
+                                currentMerchantId = branch.merchant_id;
+                                const headerHtml = `
+                                    <li class="branch-merchant-header" style="font-weight: bold; padding: 8px 0 4px 0; border-bottom: 1px solid var(--border-light); margin-bottom: 4px; color: var(--text-secondary);">
+                                        <small>${branch.merchant_name}</small>
+                                    </li>
+                                `;
+                                $branchList.append(headerHtml);
+                            }
+
+                            const merchantStillSelected = merchantIds.includes(branch.merchant_id.toString());
+                            const wasSelected = allSelected.includes(branch.id.toString());
+                            const isChecked = (merchantStillSelected && wasSelected) ? 'checked' : '';
+
+                            const html = `
+                                <li class="gs-checkbox-wrapper">
+                                    <input type="checkbox" class="attribute-input branch-filter"
+                                        name="branch[]"
+                                        id="branch_${branch.id}"
+                                        value="${branch.id}"
+                                        data-merchant-id="${branch.merchant_id}" ${isChecked}>
+                                    <label class="icon-label" for="branch_${branch.id}">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                            <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </label>
+                                    <label for="branch_${branch.id}">${branch.name}</label>
+                                </li>
+                            `;
+                            $branchList.append(html);
+                        });
+
+                        // Bind change event to new branch checkboxes
+                        $branchList.find('.branch-filter').on('change', function() {
+                            currentPage = 1;
+                            loadContent(1);
+                        });
+                    },
+                    error: function() {
+                        $branchLoadingMsg.addClass('d-none');
+                        $branchWidget.addClass('d-none');
+                        currentLoadedMerchantIds = [];
+                        branchMerchantMap = {};
+                    }
+                });
+            }
+
+            function hideBranchFilter() {
+                $branchWidget.addClass('d-none');
+                $branchList.empty();
+                currentLoadedMerchantIds = [];
+                branchMerchantMap = {};
+            }
+
+            function updateBranchFilter(removedMerchantId = null) {
+                const selectedMerchants = [];
+                $('.merchant-filter:checked').each(function() {
+                    selectedMerchants.push($(this).val());
+                });
+
+                if (selectedMerchants.length > 0) {
+                    loadBranchesForMerchants(selectedMerchants, removedMerchantId);
+                } else {
+                    hideBranchFilter();
+                }
+            }
+
+            // Initialize branch filter on page load
+            updateBranchFilter();
+
+            // ========================================
+            // Filter Events
+            // ========================================
+            // Merchant filter change
+            $(".merchant-filter").on('change', function() {
+                const merchantId = $(this).val();
+                const isChecked = $(this).is(':checked');
+
+                if (isChecked) {
+                    updateBranchFilter();
+                } else {
+                    updateBranchFilter(merchantId);
+                }
+
                 currentPage = 1;
                 loadContent(1);
             });
 
+            // Other attribute filters (excluding merchant and branch)
+            $(".attribute-input").not('.merchant-filter').not('.branch-filter').on('change', function() {
+                currentPage = 1;
+                loadContent(1);
+            });
+
+            // ========================================
+            // Sort Event
+            // ========================================
+            $("#sortby").on('change', function() {
+                categoryPageSort = $(this).val();
+                currentPage = 1;
+                loadContent(1);
+            });
+
+            // ========================================
             // Pagination Events
+            // ========================================
             $paginationContainer.on('click', '.m-pagination-simple__prev', function(e) {
                 e.preventDefault();
                 if (!$(this).prop('disabled') && !isLoading && currentPage > 1) {
@@ -451,14 +718,29 @@
                 }
             });
 
+            // ========================================
             // Browser History
+            // ========================================
             $(window).on('popstate', function(e) {
                 const state = e.originalEvent.state;
                 if (state && state.page) {
                     const urlParams = new URLSearchParams(window.location.search);
                     const sortVal = urlParams.get('sort') || 'date_desc';
-                    currentSort = sortVal;
+                    categoryPageSort = sortVal;
                     $('#sortby').val(sortVal);
+
+                    // Update filter checkboxes (except branch)
+                    $('.attribute-input').not('.branch-filter').prop('checked', false);
+                    urlParams.forEach(function(value, key) {
+                        if (key.endsWith('[]') && key !== 'branch[]') {
+                            $('input[name="' + key + '"][value="' + value + '"]').prop('checked', true);
+                        }
+                    });
+
+                    // Reset branch state and reload
+                    currentLoadedMerchantIds = [];
+                    branchMerchantMap = {};
+                    updateBranchFilter();
 
                     currentPage = state.page;
                     loadContent(state.page, false);

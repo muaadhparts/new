@@ -33,48 +33,43 @@ class MerchantController extends Controller
             }
             $data['merchant'] = new MerchantResource($merchant);
 
-            // Get catalog items through merchant_items for this merchant
-            $merchantItemsQuery = \App\Models\MerchantItem::where('user_id', $merchant->id)
-                ->where('status', 1)
-                ->with(['catalogItem' => function($query) {
-                    $query->where('status', 1);
+            // CatalogItem-first: Query catalog items that have merchant offers from this merchant
+            $query = CatalogItem::whereHas('merchantItems', function($q) use ($merchant) {
+                    $q->where('user_id', $merchant->id)->where('status', 1);
+                })
+                ->with(['merchantItems' => function($q) use ($merchant, $minprice, $maxprice) {
+                    $q->where('user_id', $merchant->id)->where('status', 1);
+                    if ($minprice) $q->where('price', '>=', $minprice);
+                    if ($maxprice) $q->where('price', '<=', $maxprice);
                 }]);
 
-            // Apply price filtering on merchant_items.price
-            $merchantItemsQuery->when($minprice, function ($query, $minprice) {
-                return $query->where('price', '>=', $minprice);
-            })
-            ->when($maxprice, function ($query, $maxprice) {
-                return $query->where('price', '<=', $maxprice);
-            });
+            // Apply price filtering via whereHas
+            if ($minprice || $maxprice) {
+                $query->whereHas('merchantItems', function($q) use ($merchant, $minprice, $maxprice) {
+                    $q->where('user_id', $merchant->id)->where('status', 1);
+                    if ($minprice) $q->where('price', '>=', $minprice);
+                    if ($maxprice) $q->where('price', '<=', $maxprice);
+                });
+            }
 
             // Apply sorting
-            $merchantItemsQuery->when($sort, function ($query, $sort) {
-                if ($sort == 'date_desc') {
-                    return $query->orderBy('id', 'DESC');
-                } elseif ($sort == 'date_asc') {
-                    return $query->orderBy('id', 'ASC');
-                } elseif ($sort == 'price_desc') {
-                    return $query->orderBy('price', 'DESC');
-                } elseif ($sort == 'price_asc') {
-                    return $query->orderBy('price', 'ASC');
+            if ($sort == 'date_desc') {
+                $query->orderBy('id', 'DESC');
+            } elseif ($sort == 'date_asc') {
+                $query->orderBy('id', 'ASC');
+            } else {
+                $query->orderBy('id', 'DESC');
+            }
+
+            $prods = $query->get();
+
+            // Inject merchant context for each catalog item
+            $prods->each(function($catalogItem) use ($merchant) {
+                $mp = $catalogItem->merchantItems->first();
+                if ($mp) {
+                    CatalogItemContextHelper::apply($catalogItem, $mp);
                 }
-            })
-            ->when(empty($sort), function ($query, $sort) {
-                return $query->orderBy('id', 'DESC');
             });
-
-            $merchantItems = $merchantItemsQuery->get();
-
-            // Extract catalog items and inject merchant context using CatalogItemContextHelper
-            $prods = $merchantItems->map(function($mp) use ($merchant) {
-                if (!$mp->catalogItem) return null;
-
-                $catalogItem = $mp->catalogItem;
-                // Use CatalogItemContextHelper for consistency
-                CatalogItemContextHelper::apply($catalogItem, $mp);
-                return $catalogItem;
-            })->filter()->values();
 
             $vprods = (new Collection(CatalogItem::filterProducts($prods)));
             $data['catalogItems'] = CatalogItemListResource::collection($vprods);
