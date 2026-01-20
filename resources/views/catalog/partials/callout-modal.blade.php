@@ -56,11 +56,11 @@
     </div>
 </div>
 
-{{-- تمرير مفاتيح الترجمة ومسارات الأجزاء --}}
+{{-- Translations and Routes for illustrated.js --}}
 <script>
 window.locale = "{{ app()->getLocale() }}";
 window.i18n = {
-    /* رؤوس الأعمدة */
+    /* Column headers */
     "columns.number": "@lang('columns.number')",
     "columns.callout": "@lang('columns.callout')",
     "columns.name": "@lang('columns.name')",
@@ -72,10 +72,10 @@ window.i18n = {
     "columns.substitutions": "@lang('columns.substitutions')",
     "columns.fits": "@lang('columns.fits')",
 
-    /* قيم ثابتة */
+    /* Fixed values */
     "values.generic": "@lang('values.generic')",
 
-    /* تسميات (للنص داخل الأزرار) */
+    /* Labels */
     "labels.period": "@lang('labels.period')",
     "labels.name": "@lang('labels.name')",
     "labels.qty": "@lang('labels.qty')",
@@ -84,21 +84,18 @@ window.i18n = {
     "labels.extensions": "@lang('labels.extensions')",
     "labels.number": "@lang('labels.number')",
     "labels.price": "@lang('labels.price')",
-    "labels.quick_view": "@lang('labels.quick_view')",
     "labels.substitutions": "@lang('labels.substitutions')",
     "labels.fits": "@lang('labels.fits')",
 
-    /* عناوين شاشات المودال */
+    /* Modal titles */
     "catalog.modal.name": "@lang('catalog.modal.name')",
-    "catalog.quickview.name": "@lang('catalog.quickview.name')",
     "catalog.alternative_modal.name": "@lang('catalog.alternative_modal.name')",
     "catalog.compatibility_modal.name": "@lang('catalog.compatibility_modal.name')",
-    "catalog.product_modal.name": "@lang('catalog.product_modal.name')",
     "catalog.offers_modal.name": "@lang('catalog.offers_modal.name')",
     "catalog.modal.back": "@lang('catalog.modal.back')",
     "catalog.modal.loading": "@lang('catalog.modal.loading')",
 
-    /* رسائل */
+    /* Messages */
     "messages.no_matches": "@lang('messages.no_matches')",
     "messages.api_error": "@lang('messages.api_error')",
     "messages.load_failed": "@lang('messages.load_failed')",
@@ -106,7 +103,7 @@ window.i18n = {
     "messages.stock_limit": "@lang('messages.stock_limit')",
     "messages.min_qty": "@lang('messages.min_qty')",
 
-    /* مفاتيح الامتدادات */
+    /* Extension keys */
     "ext.partCode": "@lang('ext.partCode')",
     "ext.market": "@lang('ext.market')",
     "ext.specialNote": "@lang('ext.specialNote')",
@@ -143,11 +140,7 @@ window.i18n = {
 };
 
 window.ILL_ROUTES = {
-  quick:        "{{ route('modal.quickview',    ['id' => 0]) }}".replace(/0$/, ''),
-  catalogItem:  "{{ route('modal.catalog-item', ['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, ''),
   alternative:  "{{ route('modal.alternative',  ['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, ''),
   compatibility:"{{ route('modal.compatibility',['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, '')
 };
 </script>
-
-{{-- Styles moved to MUAADH.css: Callout Modal Body, Table, Badges, Action Buttons --}}
