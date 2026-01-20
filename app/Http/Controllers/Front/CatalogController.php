@@ -62,18 +62,6 @@ class CatalogController extends FrontBaseController
      */
     public function catalog(Request $request, $brand = null, $catalog = null, $cat1 = null, $cat2 = null, $cat3 = null)
     {
-        // DEBUG: Log route parameters
-        \Log::info('CatalogController@catalog called', [
-            'brand' => $brand,
-            'catalog' => $catalog,
-            'cat1' => $cat1,
-            'cat2' => $cat2,
-            'cat3' => $cat3,
-            'is_ajax' => $request->ajax(),
-            'merchant_filter' => $request->merchant,
-            'url' => $request->fullUrl(),
-        ]);
-
         // Handle view mode
         if ($request->view_check) {
             Session::put('view', $request->view_check);

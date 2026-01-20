@@ -342,23 +342,13 @@ class CatalogItemFilterService
      */
     public function applyCatalogItemFitmentFilters(Builder $query, $cat, $subcat, $childcat, $catalog = null): void
     {
-        // DEBUG: Log filter state
-        \Log::info('applyCatalogItemFitmentFilters called', [
-            'cat' => $cat ? get_class($cat) . '#' . $cat->id : null,
-            'subcat' => $subcat ? get_class($subcat) . '#' . $subcat->id : null,
-            'childcat' => $childcat ? (get_class($childcat) . '#' . $childcat->id) : null,
-            'catalog' => $catalog ? get_class($catalog) . '#' . $catalog->id : null,
-        ]);
-
         // No filters = show all
         if (!$cat && !$subcat && !$childcat) {
-            \Log::info('applyCatalogItemFitmentFilters: No filters, showing all');
             return;
         }
 
         // Only Brand selected → filter via catalog_item_fitments
         if ($cat && !$subcat && !$childcat) {
-            \Log::info('applyCatalogItemFitmentFilters: Brand only filter', ['brand_id' => $cat->id]);
             $query->whereHas('fitments', fn($f) => $f->where('brand_id', $cat->id));
             return;
         }
@@ -366,19 +356,13 @@ class CatalogItemFilterService
         // Get catalog for dynamic table names
         $catalogObj = $catalog ?? $subcat;
         if (!$catalogObj || !($catalogObj instanceof Catalog)) {
-            \Log::info('applyCatalogItemFitmentFilters: No valid catalog object', [
-                'catalogObj' => $catalogObj,
-                'instanceof_check' => $catalogObj ? ($catalogObj instanceof Catalog) : false,
-            ]);
             return;
         }
 
         $catalogCode = $catalogObj->code;
-        \Log::info('applyCatalogItemFitmentFilters: Catalog code resolved', ['code' => $catalogCode]);
 
         // Only Catalog selected (no NewCategory)
         if (!$childcat) {
-            \Log::info('applyCatalogItemFitmentFilters: Applying catalog-level filter (no category)');
             $this->applyCatalogItemPartsTableFilter($query, $catalogCode, null);
             return;
         }
@@ -432,10 +416,6 @@ class CatalogItemFilterService
     public function applyCatalogItemMerchantFilter(Builder $query, Request $request): void
     {
         $merchantFilter = $this->normalizeArrayInput($request->merchant);
-        \Log::info('applyCatalogItemMerchantFilter', [
-            'merchant_raw' => $request->merchant,
-            'merchant_normalized' => $merchantFilter,
-        ]);
 
         if (empty($merchantFilter) && $request->filled('user')) {
             $merchantFilter = [(int) $request->user];
