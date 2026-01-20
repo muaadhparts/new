@@ -50,14 +50,28 @@
                             <tr class="{{ $highlight ? 'row-available' : 'row-unavailable' }}">
                                 <td><code class="fw-bold text-dark">{{ $catalogItem->part_number }}</code></td>
                                 <td class="text-truncate" style="max-width: 200px;">{{ getLocalizedCatalogItemName($catalogItem) }}</td>
+                                {{-- Vehicle Fitment Brands (from catalog_item_fitments) --}}
+                                @php
+                                    $altFitments = $catalogItem->fitments ?? collect();
+                                    $altBrands = $altFitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                    $altBrandCount = $altBrands->count();
+                                    $altBrandsJson = $altBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
+                                @endphp
                                 <td>
-                                    @if($catalogItem->brand)
+                                    @if($altBrandCount === 1)
                                         <span class="catalog-quality-badge">
-                                            @if($catalogItem->brand->photo_url)
-                                                <img src="{{ $catalogItem->brand->photo_url }}" alt="{{ getLocalizedBrandName($catalogItem->brand) }}" class="catalog-quality-badge__logo">
+                                            @if($altBrands->first()->photo_url)
+                                                <img src="{{ $altBrands->first()->photo_url }}" alt="" class="catalog-quality-badge__logo">
                                             @endif
-                                            {{ Str::ucfirst(getLocalizedBrandName($catalogItem->brand)) }}
+                                            {{ Str::ucfirst(getLocalizedBrandName($altBrands->first())) }}
                                         </span>
+                                    @elseif($altBrandCount > 1)
+                                        <button type="button" class="fitment-brands-btn"
+                                                data-brands="{{ json_encode($altBrandsJson) }}"
+                                                data-part-number="{{ $catalogItem->part_number }}">
+                                            <i class="fas fa-car"></i>
+                                            {{ __('Fits') }} {{ $altBrandCount }}
+                                        </button>
                                     @else
                                         <span class="text-muted">-</span>
                                     @endif
@@ -152,16 +166,33 @@
                     <div class="catalog-card-body">
                         <div class="catalog-card-name">{{ getLocalizedCatalogItemName($catalogItem) }}</div>
 
+                        {{-- Vehicle Fitment Brands (from catalog_item_fitments) --}}
+                        @php
+                            $cardFitments = $catalogItem->fitments ?? collect();
+                            $cardBrands = $cardFitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                            $cardBrandCount = $cardBrands->count();
+                            $cardBrandsJson = $cardBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
+                        @endphp
                         <div class="catalog-card-details">
-                            @if($catalogItem->brand)
+                            @if($cardBrandCount === 1)
                                 <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Brand'):</span>
+                                    <span class="catalog-card-label">@lang('Fits'):</span>
                                     <span class="catalog-quality-badge">
-                                        @if($catalogItem->brand->photo_url)
-                                            <img src="{{ $catalogItem->brand->photo_url }}" alt="{{ getLocalizedBrandName($catalogItem->brand) }}" class="catalog-quality-badge__logo">
+                                        @if($cardBrands->first()->photo_url)
+                                            <img src="{{ $cardBrands->first()->photo_url }}" alt="" class="catalog-quality-badge__logo">
                                         @endif
-                                        {{ getLocalizedBrandName($catalogItem->brand) }}
+                                        {{ getLocalizedBrandName($cardBrands->first()) }}
                                     </span>
+                                </div>
+                            @elseif($cardBrandCount > 1)
+                                <div class="catalog-card-detail">
+                                    <span class="catalog-card-label">@lang('Fits'):</span>
+                                    <button type="button" class="fitment-brands-btn"
+                                            data-brands="{{ json_encode($cardBrandsJson) }}"
+                                            data-part-number="{{ $catalogItem->part_number }}">
+                                        <i class="fas fa-car"></i>
+                                        {{ $cardBrandCount }} @lang('brands')
+                                    </button>
                                 </div>
                             @endif
 

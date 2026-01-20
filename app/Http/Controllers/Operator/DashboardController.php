@@ -33,7 +33,8 @@ class DashboardController extends OperatorBaseController
         $data['publications'] = Publication::count();
 
         // Get latest merchant items (active only)
-        $data['latestMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
+        $data['latestMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1);
@@ -45,7 +46,8 @@ class DashboardController extends OperatorBaseController
         $data['recentPurchases'] = Purchase::latest('id')->take(5)->get();
 
         // Get popular merchant items (by views from catalog_items)
-        $data['popularMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
+        $data['popularMerchantItems'] = \App\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1)->orderBy('views', 'desc');

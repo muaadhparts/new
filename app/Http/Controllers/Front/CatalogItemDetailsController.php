@@ -39,12 +39,13 @@ class CatalogItemDetailsController extends FrontBaseController
         // ======================================================================
         // STEP 1: STRICT GUARD - MerchantItem MUST exist
         // ======================================================================
+        // Note: brand comes from catalog_item_fitments (vehicle compatibility)
         $merchantItem = MerchantItem::with([
             'user',
             'qualityBrand',
             'merchantBranch',
+            'catalogItem.fitments.brand',  // brand via catalog_item_fitments
             'catalogItem.merchantPhotos',
-            'catalogItem.brand',
         ])->find($merchant_item_id);
 
         if (!$merchantItem) {
@@ -192,14 +193,9 @@ class CatalogItemDetailsController extends FrontBaseController
             }
         }
 
-        // Get brand from catalog item
-        $brand = null;
-        if ($catalogItem->brand_id) {
-            $brand = \App\Models\Brand::find($catalogItem->brand_id);
-        }
-
         // Note: 'catalogItem' kept for backward compatibility in views
-        return response()->view('partials.catalog-item', ['catalogItem' => $catalogItem, 'mp' => $mp, 'brand' => $brand]);
+        // Brand extraction from fitments happens in the view itself
+        return response()->view('partials.catalog-item', ['catalogItem' => $catalogItem, 'mp' => $mp]);
     }
 
 

@@ -51,14 +51,15 @@ class AlternativeService
         }
 
         // ✅ استعلام واحد لجميع merchant_items باستخدام JOIN
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
         $listings = MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
             ->whereIn('merchant_items.catalog_item_id', $catalogItemIds->toArray())
             ->where('merchant_items.status', 1)
             ->with([
-                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
-                    ->with('brand:id,name,name_ar,photo'),
+                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo'),
+                'brand:id,name,name_ar,photo',  // brand is now on merchant_items
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
@@ -91,14 +92,15 @@ class AlternativeService
      */
     protected function fetchSameCatalogItemVariants(int $catalogItemId, bool $includeSelf): Collection
     {
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
         return MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
             ->where('merchant_items.status', 1)
             ->where('merchant_items.catalog_item_id', $catalogItemId)
             ->with([
-                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
-                    ->with('brand:id,name,name_ar,photo'),
+                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo'),
+                'brand:id,name,name_ar,photo',  // brand is now on merchant_items
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
@@ -134,14 +136,15 @@ class AlternativeService
 
         if (empty($catalogItemIds)) return collect();
 
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
         $listings = MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
             ->whereIn('merchant_items.catalog_item_id', $catalogItemIds)
             ->where('merchant_items.status', 1)
             ->with([
-                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo', 'brand_id')
-                    ->with('brand:id,name,name_ar,photo'),
+                'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo'),
+                'brand:id,name,name_ar,photo',  // brand is now on merchant_items
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])

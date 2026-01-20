@@ -28,8 +28,11 @@
         $catalogItemUrl = $card->detailsUrl;
         $photo = $card->photo;
         $part_number = $card->part_number;
-        $brandName = $card->brandName;
-        $brandLogo = $card->brandLogo ?? null;
+        // Vehicle fitment brands (multiple brands support)
+        $fitmentBrands = $card->fitmentBrands ?? [];
+        $fitmentCount = $card->fitmentCount ?? 0;
+        $hasSingleBrand = $card->hasSingleBrand ?? false;
+        $fitsMultipleBrands = $card->fitsMultipleBrands ?? false;
         $qualityBrandName = $card->qualityBrandName;
         $qualityBrandLogo = $card->qualityBrandLogo ?? null;
         $merchantName = $card->merchantName;
@@ -85,8 +88,13 @@
             : $defaultImage;
 
         $part_number = $actualCatalogItem->part_number ?? null;
-        $brandName = $actualCatalogItem->brand?->localized_name;
-        $brandLogo = $actualCatalogItem->brand?->photo_url;
+        // Vehicle fitment brands from catalog_item_fitments (multiple brands support)
+        $fitments = $actualCatalogItem->fitments ?? collect();
+        $uniqueBrands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+        $fitmentBrands = $uniqueBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
+        $fitmentCount = count($fitmentBrands);
+        $hasSingleBrand = $fitmentCount === 1;
+        $fitsMultipleBrands = $fitmentCount > 1;
         $qualityBrandName = $merchantItem?->qualityBrand?->localized_name;
         $qualityBrandLogo = $merchantItem?->qualityBrand?->logo_url;
         $merchantName = $merchantItem?->user ? getLocalizedShopName($merchantItem->user) : null;
@@ -178,13 +186,21 @@
                         <i class="fas fa-barcode me-1"></i>{{ $part_number }}
                     </span>
                 @endif
-                @if($brandName)
+                {{-- Vehicle Fitment Brands --}}
+                @if($hasSingleBrand && isset($fitmentBrands[0]))
                     <span class="badge bg-secondary">
-                        @if($brandLogo)
-                            <img src="{{ $brandLogo }}" alt="" class="catalogItem-card__brand-logo me-1">
+                        @if($fitmentBrands[0]['logo'])
+                            <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo me-1">
                         @endif
-                        {{ $brandName }}
+                        {{ $fitmentBrands[0]['name'] }}
                     </span>
+                @elseif($fitsMultipleBrands)
+                    <button type="button" class="fitment-brands-btn"
+                            data-brands="{{ json_encode($fitmentBrands) }}"
+                            data-part-number="{{ $part_number }}">
+                        <i class="fas fa-car"></i>
+                        {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
+                    </button>
                 @endif
                 @if($qualityBrandName)
                     <span class="badge bg-info text-dark">
@@ -328,13 +344,21 @@
                 @if($part_number)
                     <span class="catalogItem-card__sku">{{ $part_number }}</span>
                 @endif
-                @if($brandName)
+                {{-- Vehicle Fitment Brands --}}
+                @if($hasSingleBrand && isset($fitmentBrands[0]))
                     <span class="catalogItem-card__brand">
-                        @if($brandLogo)
-                            <img src="{{ $brandLogo }}" alt="" class="catalogItem-card__brand-logo">
+                        @if($fitmentBrands[0]['logo'])
+                            <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo">
                         @endif
-                        {{ $brandName }}
+                        {{ $fitmentBrands[0]['name'] }}
                     </span>
+                @elseif($fitsMultipleBrands)
+                    <button type="button" class="fitment-brands-btn"
+                            data-brands="{{ json_encode($fitmentBrands) }}"
+                            data-part-number="{{ $part_number }}">
+                        <i class="fas fa-car"></i>
+                        {{ __('Fits') }} {{ $fitmentCount }}
+                    </button>
                 @endif
                 @if($qualityBrandName)
                     <span class="catalogItem-card__quality">

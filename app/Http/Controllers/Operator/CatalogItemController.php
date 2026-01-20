@@ -25,7 +25,8 @@ class CatalogItemController extends OperatorBaseController
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
         // item_type is now on merchant_items, not catalog_items
-        $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
+        // Note: brand is now on merchant_items (2026-01-20)
+        $query = MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
             ->where('item_type', 'normal');
 
         if ($request->type == 'deactive') {
@@ -69,8 +70,13 @@ class CatalogItemController extends OperatorBaseController
                 return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                return $catalogItem && $catalogItem->brand ? getLocalizedBrandName($catalogItem->brand) : __('N/A');
+                // All brands from catalog_item_fitments (vehicle compatibility)
+                $fitments = $mp->catalogItem?->fitments ?? collect();
+                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                $count = $brands->count();
+                if ($count === 0) return __('N/A');
+                if ($count === 1) return getLocalizedBrandName($brands->first());
+                return __('Fits') . ' ' . $count . ' ' . __('brands');
             })
             ->addColumn('quality_brand', function (MerchantItem $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
@@ -118,16 +124,12 @@ class CatalogItemController extends OperatorBaseController
                 $catalogItem = $mp->catalogItem;
                 if (!$catalogItem) return '';
 
-                $catalog = $catalogItem->is_catalog == 1
-                    ? '<a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>'
-                    : '<a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 1]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"> <i class="fas fa-plus"></i> ' . __("Add To Catalog") . '</a>';
-
+                // Note: is_catalog column removed (2026-01-20)
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
                         <a href="' . route('operator-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
-                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>'
-                        . $catalog .
-                        '<a data-href="' . route('operator-catalog-item-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
+                        <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
+                        <a data-href="' . route('operator-catalog-item-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
                         <a href="javascript:;" data-href="' . route('operator-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete CatalogItem") . '</a>
                     </div></div>';
             })
@@ -139,11 +141,10 @@ class CatalogItemController extends OperatorBaseController
     public function catalogdatatables()
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        // فقط المنتجات المضافة للكتالوج (is_catalog = 1)
-        $query = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand'])
-            ->whereHas('catalogItem', function($q) {
-                $q->where('is_catalog', 1);
-            });
+        // Note: is_catalog column removed (2026-01-20)
+        // Now all items with active merchant listings are catalog items
+        $query = MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
+            ->where('status', 1);
 
         $datas = $query->latest('id');
 
@@ -182,8 +183,13 @@ class CatalogItemController extends OperatorBaseController
                 return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                return $catalogItem && $catalogItem->brand ? getLocalizedBrandName($catalogItem->brand) : __('N/A');
+                // All brands from catalog_item_fitments (vehicle compatibility)
+                $fitments = $mp->catalogItem?->fitments ?? collect();
+                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                $count = $brands->count();
+                if ($count === 0) return __('N/A');
+                if ($count === 1) return getLocalizedBrandName($brands->first());
+                return __('Fits') . ' ' . $count . ' ' . __('brands');
             })
             ->addColumn('quality_brand', function (MerchantItem $mp) {
                 return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
@@ -716,17 +722,15 @@ class CatalogItemController extends OperatorBaseController
         //--- Redirect Section Ends
     }
 
+    /**
+     * @deprecated is_catalog column removed (2026-01-20)
+     * This feature is no longer available - all items with merchant listings are catalog items
+     */
     public function catalog($id1, $id2)
     {
-        $data = CatalogItem::findOrFail($id1);
-        $data->is_catalog = $id2;
-        $data->update();
-        if ($id2 == 1) {
-            $msg = "CatalogItem added to catalog successfully.";
-        } else {
-            $msg = "CatalogItem removed from catalog successfully.";
-        }
-        return response()->json($msg);
+        // is_catalog column has been removed from catalog_items table
+        // All items with active merchant listings are now considered catalog items
+        return response()->json(__('This feature has been removed. All items with active merchant listings are automatically in the catalog.'));
     }
 
     public function settingUpdate(Request $request)

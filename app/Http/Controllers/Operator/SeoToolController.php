@@ -43,12 +43,13 @@ class SeoToolController extends OperatorBaseController
     }
 
      
+    // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
     public function popular($id)
     {
         $expDate = Carbon::now()->subDays($id);
 
         // Group by merchant_item_id for merchant-specific tracking
-        $items = CatalogItemClick::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])
+        $items = CatalogItemClick::with(['catalogItem', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.brand'])
             ->whereDate('date', '>', $expDate)
             ->get()
             ->groupBy(function ($item) {

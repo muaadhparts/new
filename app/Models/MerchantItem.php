@@ -16,7 +16,7 @@ class MerchantItem extends Model
         'catalog_item_id',
         'user_id',
         'merchant_branch_id',
-        'quality_brand_id',
+        'quality_brand_id',   // Quality brand (OEM, Aftermarket, etc.)
         'item_type',
         'affiliate_link',
         'price',

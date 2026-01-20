@@ -38,7 +38,8 @@ class MerchantCartManager
         int $qty = 1
     ): array {
         // ═══ التحقق من MerchantItem ═══
-        $merchantItem = MerchantItem::with(['catalogItem.brand', 'user', 'qualityBrand', 'merchantBranch'])->find($merchantItemId);
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
+        $merchantItem = MerchantItem::with(['catalogItem', 'brand', 'user', 'qualityBrand', 'merchantBranch'])->find($merchantItemId);
 
         if (!$merchantItem) {
             return $this->error(__('الصنف غير موجود'));
@@ -123,7 +124,8 @@ class MerchantCartManager
         $effectivePrice = $unitPrice;
 
         // ═══ استخراج Brand و QualityBrand ═══
-        $brand = $catalogItem->brand;
+        // brand_id moved from catalog_items to merchant_items (2026-01-20)
+        $brand = $merchantItem->brand;
         $qualityBrand = $merchantItem->qualityBrand;
 
         $itemData = [

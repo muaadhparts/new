@@ -34,21 +34,20 @@ class CatalogItemCardDataBuilder
 
     /**
      * Standard eager loading for MerchantItem queries
+     * Brand comes from catalog_item_fitments (vehicle compatibility table)
      */
     public const MERCHANT_ITEM_RELATIONS = [
         'user:id,is_merchant,name,shop_name,shop_name_ar,email',
         'qualityBrand:id,name_en,name_ar,logo',
         'merchantBranch:id,warehouse_name',
-        'catalogItem' => [
-            'brand:id,name,name_ar,photo',
-        ],
+        'catalogItem.fitments.brand',  // brand via fitments
     ];
 
     /**
      * Standard eager loading for CatalogItem queries
      */
     public const CATALOG_ITEM_RELATIONS = [
-        'brand:id,name,name_ar,photo',
+        'fitments.brand',
     ];
 
     /**
@@ -69,6 +68,7 @@ class CatalogItemCardDataBuilder
 
     /**
      * Apply standard eager loading to a MerchantItem query
+     * Brand comes from catalog_item_fitments via catalogItem
      */
     public function applyMerchantItemEagerLoading(Builder $query): Builder
     {
@@ -77,7 +77,7 @@ class CatalogItemCardDataBuilder
             'qualityBrand:id,name_en,name_ar,logo',
             'merchantBranch:id,warehouse_name',
             'catalogItem' => function ($q) {
-                $q->with('brand:id,name,name_ar,photo')
+                $q->with('fitments.brand')
                     ->withCount('catalogReviews')
                     ->withAvg('catalogReviews', 'rating');
             },
@@ -86,11 +86,12 @@ class CatalogItemCardDataBuilder
 
     /**
      * Apply standard eager loading to a CatalogItem query
+     * Brand comes from catalog_item_fitments
      */
     public function applyCatalogItemEagerLoading(Builder $query): Builder
     {
         return $query->with([
-            'brand:id,name,name_ar,photo',
+            'fitments.brand',  // load vehicle fitments
             'merchantItems' => function ($q) {
                 $q->where('status', 1)
                     ->with([

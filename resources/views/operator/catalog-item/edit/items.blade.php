@@ -59,23 +59,29 @@
                                             </div>
                                         </div>
 
-                                        {{-- Brand (العلامة التجارية) --}}
+                                        {{-- Vehicle Brands (from catalog_item_fitments - read only) --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+                                                    <h4 class="heading">{{ __('Vehicle Brands') }} ({{ __('Fits These Vehicles') }})</h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_id" class="form-control">
-                                                    <option value="">{{ __('Select Brand') }}</option>
-                                                    @foreach (\App\Models\Brand::all() as $brand)
-                                                        <option value="{{ $brand->id }}"
-                                                            {{ $data->brand_id == $brand->id ? 'selected' : '' }}>
-                                                            {{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                                @php
+                                                    $fitmentBrands = $merchantItem->catalogItem?->fitments?->map(fn($f) => $f->brand)->filter()->unique('id');
+                                                @endphp
+                                                @if($fitmentBrands && $fitmentBrands->count() > 0)
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        @foreach($fitmentBrands as $brand)
+                                                            <span class="badge badge-primary">
+                                                                {{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
+                                                            </span>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">{{ __('No vehicle fitment data') }}</span>
+                                                @endif
+                                                <small class="text-muted d-block mt-1">{{ __('Vehicle compatibility is set at catalog level, not per merchant') }}</small>
                                             </div>
                                         </div>
 

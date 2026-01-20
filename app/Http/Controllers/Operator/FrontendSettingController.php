@@ -140,12 +140,13 @@ class FrontendSettingController extends OperatorBaseController
         $data = FrontendSetting::findOrFail(1);
 
         // Get current deal catalogItems (is_discount = 1 and valid discount_date)
+        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
         $dealCatalogItems = \App\Models\MerchantItem::where('is_discount', 1)
             ->where('discount_date', '>=', date('Y-m-d'))
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number,brand_id',
-                'catalogItem.brand', // CatalogItem brand (Toyota, Nissan, etc.)
+                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number',
+                'brand',  // brand is now on merchant_items
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand' // Quality brand (OEM, Aftermarket, etc.)
             ])
@@ -240,28 +241,30 @@ class FrontendSettingController extends OperatorBaseController
 
     /**
      * Get merchants for a specific catalog item (Step 2: Choose merchant + quality brand)
+     * Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
      */
     public function getCatalogItemMerchants(\Illuminate\Http\Request $request)
     {
         $catalogItemId = $request->get('catalog_item_id');
 
-        // Get catalog item with brand
-        $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
+        // Get catalog item (brand is now on merchant_items)
+        $catalogItem = \App\Models\CatalogItem::find($catalogItemId);
 
         $merchants = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
                 'user:id,shop_name,shop_name_ar',
-                'qualityBrand'
+                'qualityBrand',
+                'brand'  // brand is now on merchant_items
             ])
             ->get()
-            ->map(function($mi) use ($catalogItem) {
+            ->map(function($mi) {
                 return [
                     'id' => $mi->id,
-                    // CatalogItem Brand (Toyota, Nissan, etc.)
-                    'brand_name' => $catalogItem->brand?->localized_name,
-                    'brand_logo' => $catalogItem->brand?->photo_url,
+                    // Brand is now on merchant_items (2026-01-20)
+                    'brand_name' => $mi->brand?->localized_name,
+                    'brand_logo' => $mi->brand?->photo_url,
                     // Quality Brand (OEM, Aftermarket, etc.)
                     'quality_brand_id' => $mi->quality_brand_id,
                     'quality_brand' => $mi->qualityBrand?->localized_name,
@@ -355,6 +358,7 @@ class FrontendSettingController extends OperatorBaseController
 
     /**
      * Show Best Sellers management page
+     * Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
      */
     public function bestSellers()
     {
@@ -362,8 +366,8 @@ class FrontendSettingController extends OperatorBaseController
         $bestCatalogItems = \App\Models\MerchantItem::where('best', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number,brand_id',
-                'catalogItem.brand',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number',
+                'brand',  // brand is now on merchant_items
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
             ])
@@ -453,25 +457,26 @@ class FrontendSettingController extends OperatorBaseController
 
     /**
      * Get merchants for a specific catalog item (best sellers)
+     * Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
      */
     public function getBestSellersMerchants(\Illuminate\Http\Request $request)
     {
         $catalogItemId = $request->get('catalog_item_id');
-        $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
 
         $merchantItems = \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
                 'user:id,shop_name,shop_name_ar',
-                'qualityBrand'
+                'qualityBrand',
+                'brand'  // brand is now on merchant_items
             ])
             ->get()
-            ->map(function($mi) use ($catalogItem) {
+            ->map(function($mi) {
                 return [
                     'id' => $mi->id,
-                    'brand_name' => $catalogItem->brand?->localized_name,
-                    'brand_logo' => $catalogItem->brand?->photo_url,
+                    'brand_name' => $mi->brand?->localized_name,
+                    'brand_logo' => $mi->brand?->photo_url,
                     'quality_brand_id' => $mi->quality_brand_id,
                     'quality_brand' => $mi->qualityBrand?->localized_name,
                     'quality_brand_logo' => $mi->qualityBrand?->logo_url,
@@ -495,14 +500,15 @@ class FrontendSettingController extends OperatorBaseController
 
     /**
      * Generic method to get merchant items by flag
+     * Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
      */
     private function getCatalogItemsByFlag($flag)
     {
         return \App\Models\MerchantItem::where($flag, 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
             ->with([
-                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number,brand_id',
-                'catalogItem.brand',
+                'catalogItem:id,name,label_en,label_ar,slug,photo,part_number',
+                'brand',  // brand is now on merchant_items
                 'user:id,shop_name,shop_name_ar',
                 'qualityBrand'
             ])
@@ -558,20 +564,30 @@ class FrontendSettingController extends OperatorBaseController
 
     /**
      * Generic get merchant items for catalog item
+     * Note: brand comes from catalog_item_fitments (vehicle compatibility)
      */
     private function getMerchants($catalogItemId, $flag)
     {
-        $catalogItem = \App\Models\CatalogItem::with('brand')->find($catalogItemId);
         return \App\Models\MerchantItem::where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand'])
+            ->with(['user:id,shop_name,shop_name_ar', 'qualityBrand', 'catalogItem.fitments.brand'])  // brand via fitments
             ->get()
-            ->map(function($mi) use ($catalogItem, $flag) {
+            ->map(function($mi) use ($flag) {
+                // All brands from catalog_item_fitments
+                $fitments = $mi->catalogItem?->fitments ?? collect();
+                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                $brandCount = $brands->count();
+                $firstBrand = $brands->first();
+
                 return [
                     'id' => $mi->id,
-                    'brand_name' => $catalogItem->brand?->localized_name,
-                    'brand_logo' => $catalogItem->brand?->photo_url,
+                    'brand_name' => $brandCount === 1
+                        ? $firstBrand?->localized_name
+                        : ($brandCount > 1 ? __('Fits') . ' ' . $brandCount . ' ' . __('brands') : null),
+                    'brand_logo' => $brandCount === 1 ? $firstBrand?->photo_url : null,
+                    'brand_count' => $brandCount,
+                    'brands' => $brands->map(fn($b) => ['name' => $b->localized_name, 'logo' => $b->photo_url])->toArray(),
                     'quality_brand' => $mi->qualityBrand?->localized_name,
                     'quality_brand_logo' => $mi->qualityBrand?->logo_url,
                     'merchant_name' => app()->getLocale() == 'ar' ? ($mi->user->shop_name_ar ?: $mi->user->shop_name) : $mi->user->shop_name,

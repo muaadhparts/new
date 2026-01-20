@@ -24,16 +24,18 @@ class CatalogItemController extends MerchantBaseController
         $user = $this->user;
 
         // Get CatalogItems that belong to this merchant via merchant_items
+        // Note: brand relationship removed from CatalogItem (2026-01-20)
+        // brand_id is now in merchant_items table
         $datas = CatalogItem::whereHas('merchantItems', function($query) use ($user) {
                 $query->where('user_id', $user->id)
                       ->where('item_type', 'normal');
             })
             ->with([
-                'brand',
                 'merchantItems' => function($query) use ($user) {
                     $query->where('user_id', $user->id)
                           ->with(['qualityBrand', 'user']);
-                }
+                },
+                'fitments.brand'  // brand via catalog_item_fitments
             ])
             ->latest('id')
             ->paginate(10);
@@ -71,9 +73,8 @@ class CatalogItemController extends MerchantBaseController
         }
 
         // Search for catalog item by PART_NUMBER
-        $catalogItem = CatalogItem::where('part_number', $part_number)
-            ->with(['brand', 'category'])
-            ->first();
+        // Note: brand relationship removed from CatalogItem (2026-01-20)
+        $catalogItem = CatalogItem::where('part_number', $part_number)->first();
 
         if (!$catalogItem) {
             return response()->json([
@@ -117,7 +118,6 @@ class CatalogItemController extends MerchantBaseController
                 'id' => $catalogItem->id,
                 'name' => $catalogItem->name,
                 'part_number' => $catalogItem->part_number,
-                'brand' => $catalogItem->brand ? $catalogItem->brand->name : null,
                 'photo' => $photoUrl,
             ]
         ]);
@@ -127,11 +127,13 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
+        // Get catalog items that have active merchant listings
+        // Note: is_catalog column removed (2026-01-20) - old tree system
+        // Now all items with merchant listings are considered catalog items
         $datas = CatalogItem::whereHas('merchantItems', function($q) {
-                $q->where('item_type', 'normal');
+                $q->where('item_type', 'normal')
+                  ->where('status', 1);
             })
-            ->where('is_catalog', '=', 1)
-            ->status(1)
             ->latest('id')
             ->get();
 
@@ -173,10 +175,9 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        // Check if catalog item exists and is in catalog
-        $catalogItem = CatalogItem::where('id', $catalog_item_id)
-            ->where('is_catalog', 1)
-            ->firstOrFail();
+        // Check if catalog item exists
+        // Note: is_catalog column removed (2026-01-20)
+        $catalogItem = CatalogItem::findOrFail($catalog_item_id);
 
         // Check if merchant already has an offer for this catalog item
         $existingOffer = MerchantItem::where('catalog_item_id', $catalog_item_id)

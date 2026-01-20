@@ -57,11 +57,19 @@ class Brand extends Model
     }
 
     /**
-     * Get catalog items for this brand.
+     * Vehicle fitments - which catalog items fit this brand's vehicles
      */
-    public function catalogItems(): HasMany
+    public function fitments(): HasMany
     {
-        return $this->hasMany(CatalogItem::class, 'brand_id');
+        return $this->hasMany(CatalogItemFitment::class, 'brand_id');
+    }
+
+    /**
+     * Get catalog items that fit this brand's vehicles (via fitments)
+     */
+    public function catalogItems()
+    {
+        return $this->belongsToMany(CatalogItem::class, 'catalog_item_fitments', 'brand_id', 'catalog_item_id');
     }
 
 

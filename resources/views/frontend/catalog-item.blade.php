@@ -7,10 +7,22 @@
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
                     <h2 class="breadcrumb-name">{{ $catalogItem->localized_name }}</h2>
+                    {{-- All brands from catalog_item_fitments (vehicle compatibility) --}}
+                    @php
+                        $fitments = $catalogItem->fitments ?? collect();
+                        $fitmentBrands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                        $fitmentCount = $fitmentBrands->count();
+                    @endphp
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        @if ($catalogItem->brand)
-                            <li><a href="{{ route('front.catalog', $catalogItem->brand->slug) }}">{{ $catalogItem->brand->localized_name }}</a></li>
+                        @if ($fitmentCount === 1)
+                            <li><a href="{{ route('front.catalog', $fitmentBrands->first()->slug) }}">{{ $fitmentBrands->first()->localized_name }}</a></li>
+                        @elseif ($fitmentCount > 1)
+                            <li>
+                                <span class="breadcrumb-fitment-badge">
+                                    @lang('Fits') {{ $fitmentCount }} @lang('brands')
+                                </span>
+                            </li>
                         @endif
                         <li><a href="javascript:;">{{ Str::limit($catalogItem->localized_name, 30) }}</a></li>
                     </ul>

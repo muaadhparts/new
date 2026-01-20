@@ -328,17 +328,35 @@
 
               @endif
 
-              @if($catalogItem->brand)
-              <div class="catalogItem-id">
-                {{ __('Brand:') }}
-                <span>{{ Str::ucfirst(getLocalizedBrandName($catalogItem->brand)) }}</span>
-              </div>
-              @endif
-
               @php
                 $qualityMerchantUserId = request()->get('user', $catalogItem->user_id);
-                $qualityMerchantItem = $catalogItem->merchantItems()->where('user_id', $qualityMerchantUserId)->where('status', 1)->first();
+                $qualityMerchantItem = $catalogItem->merchantItems()
+                    ->where('user_id', $qualityMerchantUserId)
+                    ->where('status', 1)
+                    ->first();
+                // All brands from catalog_item_fitments (vehicle compatibility)
+                $quickFitments = $catalogItem->fitments ?? collect();
+                $quickBrands = $quickFitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                $quickBrandCount = $quickBrands->count();
+                $quickBrandsJson = $quickBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
               @endphp
+
+              {{-- Vehicle Fitment Brands (from catalog_item_fitments) --}}
+              @if($quickBrandCount === 1)
+              <div class="catalogItem-id">
+                {{ __('Fits:') }}
+                <span>{{ Str::ucfirst(getLocalizedBrandName($quickBrands->first())) }}</span>
+              </div>
+              @elseif($quickBrandCount > 1)
+              <div class="catalogItem-id">
+                {{ __('Fits:') }}
+                <button type="button" class="fitment-brands-btn"
+                        data-brands="{{ json_encode($quickBrandsJson) }}"
+                        data-part-number="{{ $catalogItem->part_number }}">
+                    <i class="fas fa-car"></i> {{ $quickBrandCount }} {{ __('brands') }}
+                </button>
+              </div>
+              @endif
 
               @if($qualityMerchantItem && $qualityMerchantItem->qualityBrand)
               <div class="catalogItem-id">

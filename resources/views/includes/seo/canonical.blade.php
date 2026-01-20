@@ -8,7 +8,15 @@
                 : asset('assets/images/noimage.png');
             $description = $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? $catalogItem->name);
             $currency = isset($curr) ? $curr->name : 'SAR';
-            $brandName = $catalogItem->brand->name ?? 'Generic';
+            // All brands from catalog_item_fitments (vehicle compatibility)
+            $fitments = $catalogItem->fitments ?? collect();
+            $fitmentBrands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+            $fitmentCount = $fitmentBrands->count();
+            $hasFitments = $fitmentCount > 0;
+            $firstBrand = $fitmentBrands->first();
+            // For SEO: comma-separated brand names
+            $allBrandNames = $fitmentBrands->pluck('name')->implode(', ');
+            $brandName = $allBrandNames ?: 'Generic';
         @endphp
 
         {{-- Canonical URL --}}
@@ -49,8 +57,8 @@
                 "@type": "Brand",
                 "name": {!! json_encode($brandName) !!}
             },
-            @if($catalogItem->brand)
-            "category": {!! json_encode($catalogItem->brand->name) !!},
+            @if($hasFitments)
+            "category": {!! json_encode($allBrandNames) !!},
             @endif
             "offers": {
                 "@type": "Offer",
@@ -93,12 +101,12 @@
                     "name": {!! json_encode(__('Catalog')) !!},
                     "item": {!! json_encode(route('front.catalog')) !!}
                 }
-                @if($catalogItem->brand)
+                @if($hasFitments && $firstBrand)
                 ,{
                     "@type": "ListItem",
                     "position": 3,
-                    "name": {!! json_encode($catalogItem->brand->name) !!},
-                    "item": {!! json_encode(route('front.catalog', ['category' => $catalogItem->brand->slug])) !!}
+                    "name": {!! json_encode($fitmentCount > 1 ? $allBrandNames : $firstBrand->name) !!},
+                    "item": {!! json_encode(route('front.catalog', ['category' => $firstBrand->slug])) !!}
                 },
                 {
                     "@type": "ListItem",

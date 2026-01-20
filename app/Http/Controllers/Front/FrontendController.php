@@ -143,7 +143,7 @@ class FrontendController extends FrontBaseController
                     ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                     ->with([
                         'catalogItem' => fn($q) => $q->withCount('catalogReviews')->withAvg('catalogReviews', 'rating'),
-                        'catalogItem.brand', // CatalogItem brand (Toyota, Nissan, etc.)
+                        'brand',  // brand is now on merchant_items (2026-01-20)
                         'user:id,shop_name,shop_name_ar,is_merchant',
                         'qualityBrand:id,name_en,name_ar,logo'
                     ])

@@ -143,9 +143,10 @@ class MerchantController extends OperatorBaseController
     }
 
     //*** JSON Request - Merchant Items DataTables
+    // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
     public function merchantItemsDatatables($id)
     {
-        $datas = MerchantItem::with(['catalogItem.brand', 'qualityBrand'])
+        $datas = MerchantItem::with(['catalogItem', 'qualityBrand', 'brand'])
             ->where('user_id', $id)
             ->latest('id');
 
@@ -164,8 +165,8 @@ class MerchantController extends OperatorBaseController
                 return $dt ? getLocalizedCatalogItemName($dt, 50) : __('N/A');
             })
             ->addColumn('brand', function (MerchantItem $data) {
-                $dt = $data->catalogItem;
-                return $dt && $dt->brand ? getLocalizedBrandName($dt->brand) : __('N/A');
+                // brand is now on merchant_items (2026-01-20)
+                return $data->brand ? getLocalizedBrandName($data->brand) : __('N/A');
             })
             ->addColumn('quality_brand', function (MerchantItem $data) {
                 return $data->qualityBrand ? getLocalizedQualityName($data->qualityBrand) : __('N/A');

@@ -48,13 +48,13 @@ class CatalogItemSchema extends SchemaBuilder
         $this->data['sku'] = $this->catalogItem->part_number ?? $this->catalogItem->sku ?? '';
         $this->data['mpn'] = $this->catalogItem->part_number ?? '';
 
-        // Brand
-        if ($this->catalogItem->brand) {
+        // Brand (from merchant_items - moved from catalog_items 2026-01-20)
+        if ($this->merchant->brand) {
             $this->data['brand'] = [
                 '@type' => 'Brand',
-                'name' => $this->catalogItem->brand->name
+                'name' => $this->merchant->brand->name
             ];
-            $this->data['category'] = $this->catalogItem->brand->name;
+            $this->data['category'] = $this->merchant->brand->name;
         }
 
         // Offers

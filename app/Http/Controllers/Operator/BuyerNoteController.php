@@ -9,9 +9,10 @@ class BuyerNoteController extends OperatorBaseController
 {
 
 	//*** JSON Request
+	// Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
 	public function datatables()
 	{
-		$datas = BuyerNote::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'user'])
+		$datas = BuyerNote::with(['catalogItem', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.brand', 'user'])
 			->latest('id')
 			->get();
 
@@ -36,7 +37,8 @@ class BuyerNoteController extends OperatorBaseController
 				return $item;
 			})
 			->addColumn('brand', function (BuyerNote $data) {
-				return $data->catalogItem && $data->catalogItem->brand ? getLocalizedBrandName($data->catalogItem->brand) : __('N/A');
+				// brand is now on merchant_items (2026-01-20)
+				return $data->merchantItem && $data->merchantItem->brand ? getLocalizedBrandName($data->merchantItem->brand) : __('N/A');
 			})
 			->addColumn('quality_brand', function (BuyerNote $data) {
 				return $data->merchantItem && $data->merchantItem->qualityBrand
@@ -73,7 +75,8 @@ class BuyerNoteController extends OperatorBaseController
 	//*** GET Request
 	public function show($id)
 	{
-		$data = BuyerNote::with(['catalogItem.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])->findOrFail($id);
+		// brand is now on merchant_items (2026-01-20)
+		$data = BuyerNote::with(['catalogItem', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.brand'])->findOrFail($id);
 		return view('operator.buyer-note.show', compact('data'));
 	}
 

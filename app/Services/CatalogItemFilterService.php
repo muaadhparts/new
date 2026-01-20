@@ -139,6 +139,7 @@ class CatalogItemFilterService
         }
 
         // Level 2: Resolve Catalog from slug
+        // Note: catalogs.brand_id still exists (catalog belongs to brand)
         if (!empty($subcatSlug) && $cat) {
             $catalog = Catalog::where('slug', $subcatSlug)
                 ->where('brand_id', $cat->id)
@@ -238,9 +239,9 @@ class CatalogItemFilterService
             return;
         }
 
-        // Only Brand selected → filter by brand_id
+        // Only Brand selected → filter via catalog_item_fitments
         if ($cat && !$subcat && !$childcat) {
-            $query->whereHas('catalogItem', fn($q) => $q->where('brand_id', $cat->id));
+            $query->whereHas('catalogItem.fitments', fn($f) => $f->where('brand_id', $cat->id));
             return;
         }
 

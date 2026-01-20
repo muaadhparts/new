@@ -52,9 +52,12 @@ class CatalogItemCardDTO
     public ?int $branchId = null;
     public ?string $branchName = null;
 
-    // Brand
-    public ?string $brandName;
-    public ?string $brandLogo;
+    // Vehicle Fitment Brands (from catalog_item_fitments)
+    // A part can fit MULTIPLE vehicle brands - we store ALL of them
+    public array $fitmentBrands = [];      // Array of ['id', 'name', 'logo', 'slug']
+    public int $fitmentCount = 0;          // Number of brands this part fits
+    public bool $hasSingleBrand = false;   // True if exactly 1 brand
+    public bool $fitsMultipleBrands = false; // True if 2+ brands
 
     // Quality Brand
     public ?string $qualityBrandName;
@@ -121,9 +124,9 @@ class CatalogItemCardDTO
         $dto->branchId = $merchant->merchant_branch_id;
         $dto->branchName = $merchant->merchantBranch?->warehouse_name;
 
-        // Brand (from eager-loaded relation)
-        $dto->brandName = $catalogItem->brand?->localized_name;
-        $dto->brandLogo = $catalogItem->brand?->photo_url;
+        // Vehicle Fitment Brands (from catalog_item_fitments)
+        // A part can fit MULTIPLE brands - we store ALL of them
+        self::setFitmentBrands($dto, $catalogItem);
 
         // Quality Brand (from eager-loaded relation)
         $dto->qualityBrandName = $merchant->qualityBrand?->localized_name;
@@ -185,12 +188,13 @@ class CatalogItemCardDTO
         $dto->favoriteUrl = '#';
         $dto->compareUrl = '#';
 
-        // No merchant/brand info without merchant
+        // No merchant info without merchant
         $dto->merchantName = null;
-        $dto->brandName = $catalogItem->brand?->localized_name;
-        $dto->brandLogo = $catalogItem->brand?->photo_url;
         $dto->qualityBrandName = null;
         $dto->qualityBrandLogo = null;
+
+        // Vehicle Fitment Brands (from catalog_item_fitments)
+        self::setFitmentBrands($dto, $catalogItem);
 
         // Stock display
         self::setStockDisplay($dto);
@@ -247,5 +251,40 @@ class CatalogItemCardDTO
             $dto->stockClass = 'text-success';
             $dto->stockBadgeClass = 'bg-success';
         }
+    }
+
+    /**
+     * Set fitment brands from catalog_item_fitments
+     * A part can fit MULTIPLE vehicle brands - we store ALL of them
+     */
+    private static function setFitmentBrands(self $dto, CatalogItem $catalogItem): void
+    {
+        $fitments = $catalogItem->fitments;
+
+        if (!$fitments || $fitments->isEmpty()) {
+            $dto->fitmentBrands = [];
+            $dto->fitmentCount = 0;
+            $dto->hasSingleBrand = false;
+            $dto->fitsMultipleBrands = false;
+            return;
+        }
+
+        // Get unique brands from fitments
+        $uniqueBrands = $fitments
+            ->map(fn($f) => $f->brand)
+            ->filter()
+            ->unique('id')
+            ->values();
+
+        $dto->fitmentBrands = $uniqueBrands->map(fn($brand) => [
+            'id' => $brand->id,
+            'name' => $brand->localized_name,
+            'logo' => $brand->photo_url,
+            'slug' => $brand->slug,
+        ])->toArray();
+
+        $dto->fitmentCount = count($dto->fitmentBrands);
+        $dto->hasSingleBrand = $dto->fitmentCount === 1;
+        $dto->fitsMultipleBrands = $dto->fitmentCount > 1;
     }
 }

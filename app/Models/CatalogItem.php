@@ -18,12 +18,14 @@ class CatalogItem extends Model
      * Merchant-specific data (price, stock, policy, features, status, etc.) is in MerchantItem.
      *
      * Actual catalog_items columns:
-     * id, brand_id, part_number, weight, label_en, label_ar, attributes, name, slug,
+     * id, part_number, weight, label_en, label_ar, attributes, name, slug,
      * photo, thumbnail, views, tags, is_meta, meta_tag, meta_description, youtube,
-     * measure, hot, latest, sale, is_catalog, catalog_id, cross_items
+     * measure, hot, latest, sale, cross_items
+     *
+     * Vehicle fitment (brand compatibility) is stored in catalog_item_fitments table.
+     * One catalog_item can fit multiple vehicle brands (Toyota, Nissan, etc.)
      */
     protected $fillable = [
-        'brand_id',
         'part_number',
         'label_en',
         'label_ar',
@@ -43,8 +45,6 @@ class CatalogItem extends Model
         'hot',
         'latest',
         'sale',
-        'is_catalog',
-        'catalog_id',
         'cross_items',
     ];
 
@@ -52,8 +52,7 @@ class CatalogItem extends Model
      * Selectable columns for listing catalog items (catalog-level only).
      */
     public $selectable = [
-        'id', 'name', 'slug', 'thumbnail', 'attributes',
-        'brand_id', 'weight'
+        'id', 'name', 'slug', 'thumbnail', 'attributes', 'weight'
     ];
 
     /* =========================================================================
@@ -86,9 +85,21 @@ class CatalogItem extends Model
      |  Relations
      | ========================================================================= */
 
-    public function brand()
+    /**
+     * Vehicle fitments - which brands/vehicles this part fits.
+     * One catalog_item can have multiple fitments (fits Toyota AND Lexus)
+     */
+    public function fitments()
     {
-        return $this->belongsTo('App\Models\Brand')->withDefault();
+        return $this->hasMany(CatalogItemFitment::class, 'catalog_item_id');
+    }
+
+    /**
+     * Get all brands this catalog item fits (via fitments)
+     */
+    public function brands()
+    {
+        return $this->belongsToMany(Brand::class, 'catalog_item_fitments', 'catalog_item_id', 'brand_id');
     }
 
     /**

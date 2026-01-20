@@ -21,13 +21,15 @@ class FavoriteController extends UserBaseController
         $user = $this->user;
         $page_count = isset($pageby) ? $pageby : $gs->favorite_count;
 
+        // Note: brand comes from catalog_item_fitments (vehicle compatibility)
         $favoriteQuery = FavoriteSeller::where('user_id', $user->id)
             ->with([
                 'catalogItem.merchantItems' => fn($q) => $q->where('status', 1)->with(['qualityBrand', 'user'])->orderBy('price'),
-                'catalogItem.brand',
+                'catalogItem.fitments.brand',  // brand via fitments
                 'merchantItem',
                 'merchantItem.user',
-                'merchantItem.qualityBrand'
+                'merchantItem.qualityBrand',
+                'merchantItem.catalogItem.fitments.brand',  // brand via fitments
             ]);
 
         if (!empty($request->sort)) {
