@@ -47,16 +47,22 @@ class CatalogItemDetailsController extends FrontBaseController
 
     /**
      * Catalog item fragment by part number or slug
+     * Now returns offers view (grouped by Quality Brand → Merchant → Branch)
      *
      * @param string $key Part number or slug
+     * @param CatalogItemOffersService $offersService
      * @return \Illuminate\Http\Response
      */
-    public function catalogItemFragment(string $key)
+    public function catalogItemFragment(string $key, CatalogItemOffersService $offersService)
     {
         $catalogItem = CatalogItem::where('part_number', $key)->first()
                 ?: CatalogItem::where('slug', $key)->firstOrFail();
 
-        return response()->view('partials.catalog-item', ['catalogItem' => $catalogItem]);
+        // Return offers view instead of single item view
+        $sort = request()->input('sort', 'price_asc');
+        $data = $offersService->getGroupedOffers($catalogItem->id, $sort);
+
+        return response()->view('partials.catalog-item-offers', $data);
     }
 
     /**
@@ -95,7 +101,8 @@ class CatalogItemDetailsController extends FrontBaseController
      */
     public function offersFragment(int $catalogItemId, CatalogItemOffersService $offersService)
     {
-        $data = $offersService->getGroupedOffers($catalogItemId);
+        $sort = request()->input('sort', 'price_asc');
+        $data = $offersService->getGroupedOffers($catalogItemId, $sort);
 
         // Return as JSON for API or HTML for modal
         if (request()->wantsJson() || request()->has('json')) {

@@ -2084,12 +2084,15 @@
     "labels.quick_view": "عرض سريع",
     "labels.substitutions": "استعراض",
     "labels.fits": "المركبات المناسبة",
+    "labels.no_alternatives": "لا توجد بدائل",
+    "labels.error_loading": "خطأ في تحميل البيانات",
 
     "catalog.modal.name": "تفاصيل القطعة ومواصفاتها",
     "catalog.quickview.name": "عرض سريع",
-    "catalog.alternative_modal.name": "استعراض المنتج",
+    "catalog.alternative_modal.name": "البدائل",
     "catalog.compatibility_modal.name": "التوافقية",
-    "catalog.product_modal.name": "المنتج",
+    "catalog.product_modal.name": "العروض",
+    "catalog.offers_modal.name": "عروض لـ",
     "catalog.modal.back": "رجوع",
     "catalog.modal.loading": "جاري التحميل...",
 
@@ -3863,7 +3866,34 @@
     "Select Branch": "اختر الفرع",
     "Select the branch where this item will be shipped from": "اختر الفرع الذي سيتم شحن هذا الصنف منه",
     "You need to create a branch first.": "يجب عليك إنشاء فرع أولاً.",
-    "Create Branch": "إنشاء فرع"
+    "Create Branch": "إنشاء فرع",
+
+    "offers": "عروض",
+    "branches": "فروع",
+    "Sort by": "ترتيب حسب",
+    "Preorder": "طلب مسبق",
+    "Unavailable": "غير متاح",
+    "View Product": "عرض المنتج",
+    "No offers available": "لا توجد عروض متاحة",
+    "No offers available for this part": "لا توجد عروض متاحة لهذه القطعة",
+    "Check back later or search for alternative parts": "تحقق لاحقاً أو ابحث عن قطع بديلة",
+    "Fits": "يناسب",
+    "brands": "ماركات",
+    "Search Parts": "البحث عن قطع",
+    "Loading branches...": "جاري تحميل الفروع...",
+    "Total Items Found:": "إجمالي العناصر الموجودة:",
+    "Name A-Z": "الاسم أ-ي",
+    "List View": "عرض قائمة",
+    "Grid View": "عرض شبكة",
+    "No matching catalogItems": "لا توجد منتجات مطابقة",
+    "Try selecting a different category or browse all categories.": "جرب اختيار تصنيف مختلف أو تصفح جميع التصنيفات.",
+    "Selected Category:": "التصنيف المحدد:",
+    "Sort by:": "ترتيب حسب:",
+    "Applied Filters:": "الفلاتر المطبقة:",
+    "Try adjusting your filters to find what you are looking for.": "جرب تعديل الفلاتر للعثور على ما تبحث عنه.",
+    "Offers for": "عروض لـ",
+    "Model": "الموديل",
+    "Select Model": "اختر الموديل"
 }
 
 

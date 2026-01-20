@@ -19,15 +19,17 @@ class CatalogItemOffersService
      * Get all offers for a catalog item, grouped by Quality → Merchant → Branch
      *
      * @param int $catalogItemId
+     * @param string $sort Sort order: 'price_asc' (default), 'price_desc'
      * @return array{
      *   catalog_item: array,
      *   offers_count: int,
      *   lowest_price: float,
      *   grouped_offers: array,
-     *   flat_offers: array
+     *   flat_offers: array,
+     *   current_sort: string
      * }
      */
-    public function getGroupedOffers(int $catalogItemId): array
+    public function getGroupedOffers(int $catalogItemId, string $sort = 'price_asc'): array
     {
         $catalogItem = CatalogItem::with(['fitments.brand'])->find($catalogItemId);
 
@@ -38,8 +40,12 @@ class CatalogItemOffersService
                 'lowest_price' => 0,
                 'grouped_offers' => [],
                 'flat_offers' => [],
+                'current_sort' => $sort,
             ];
         }
+
+        // Determine sort direction
+        $sortDirection = $sort === 'price_desc' ? 'desc' : 'asc';
 
         // Fetch all active merchant items with relations
         $merchantItems = MerchantItem::with([
@@ -51,7 +57,7 @@ class CatalogItemOffersService
             ->where('catalog_item_id', $catalogItemId)
             ->where('status', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2)) // Active merchants only
-            ->orderBy('price')
+            ->orderBy('price', $sortDirection)
             ->get();
 
         if ($merchantItems->isEmpty()) {
@@ -61,6 +67,7 @@ class CatalogItemOffersService
                 'lowest_price' => 0,
                 'grouped_offers' => [],
                 'flat_offers' => [],
+                'current_sort' => $sort,
             ];
         }
 
@@ -68,18 +75,22 @@ class CatalogItemOffersService
         $flatOffers = $merchantItems->map(fn($mi) => $this->formatOffer($mi))->values()->toArray();
 
         // Group by Quality Brand → Merchant → Branch
-        $groupedOffers = $this->groupOffers($merchantItems);
+        $groupedOffers = $this->groupOffers($merchantItems, $sort);
 
-        // Get lowest price
+        // Get lowest and highest prices
         $lowestPrice = $merchantItems->min('price') ?? 0;
+        $highestPrice = $merchantItems->max('price') ?? 0;
 
         return [
             'catalog_item' => $this->formatCatalogItem($catalogItem),
             'offers_count' => $merchantItems->count(),
             'lowest_price' => (float) $lowestPrice,
             'lowest_price_formatted' => \App\Models\CatalogItem::convertPrice($lowestPrice),
+            'highest_price' => (float) $highestPrice,
+            'highest_price_formatted' => \App\Models\CatalogItem::convertPrice($highestPrice),
             'grouped_offers' => $groupedOffers,
             'flat_offers' => $flatOffers,
+            'current_sort' => $sort,
         ];
     }
 
@@ -201,9 +212,10 @@ class CatalogItemOffersService
      * Group offers by Quality Brand → Merchant → Branch
      *
      * @param Collection $merchantItems
+     * @param string $sort Sort order for quality groups
      * @return array
      */
-    protected function groupOffers(Collection $merchantItems): array
+    protected function groupOffers(Collection $merchantItems, string $sort = 'price_asc'): array
     {
         $grouped = [];
 
@@ -228,6 +240,7 @@ class CatalogItemOffersService
                     'merchants' => [],
                     'offers_count' => 0,
                     'lowest_price' => null,
+                    'highest_price' => null,
                 ];
             }
 
@@ -252,9 +265,12 @@ class CatalogItemOffersService
             $grouped[$qualityKey]['merchants'][$merchantKey]['offers_count']++;
             $grouped[$qualityKey]['offers_count']++;
 
-            // Track lowest price per quality
+            // Track lowest and highest price per quality
             if ($grouped[$qualityKey]['lowest_price'] === null || $mi->price < $grouped[$qualityKey]['lowest_price']) {
                 $grouped[$qualityKey]['lowest_price'] = (float) $mi->price;
+            }
+            if ($grouped[$qualityKey]['highest_price'] === null || $mi->price > $grouped[$qualityKey]['highest_price']) {
+                $grouped[$qualityKey]['highest_price'] = (float) $mi->price;
             }
         }
 
@@ -266,11 +282,16 @@ class CatalogItemOffersService
                 $merchantData['branches'] = array_values($merchantData['branches']);
             }
             $qualityData['lowest_price_formatted'] = \App\Models\CatalogItem::convertPrice($qualityData['lowest_price']);
+            $qualityData['highest_price_formatted'] = \App\Models\CatalogItem::convertPrice($qualityData['highest_price']);
             $result[] = $qualityData;
         }
 
-        // Sort by lowest price
-        usort($result, fn($a, $b) => ($a['lowest_price'] ?? PHP_INT_MAX) <=> ($b['lowest_price'] ?? PHP_INT_MAX));
+        // Sort quality groups by price
+        if ($sort === 'price_desc') {
+            usort($result, fn($a, $b) => ($b['lowest_price'] ?? 0) <=> ($a['lowest_price'] ?? 0));
+        } else {
+            usort($result, fn($a, $b) => ($a['lowest_price'] ?? PHP_INT_MAX) <=> ($b['lowest_price'] ?? PHP_INT_MAX));
+        }
 
         return $result;
     }

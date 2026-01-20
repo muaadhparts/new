@@ -2006,12 +2006,15 @@
     "labels.quick_view": "Quick View",
     "labels.substitutions": "Review",
     "labels.fits": "Fits Vehicles",
+    "labels.no_alternatives": "No alternatives found",
+    "labels.error_loading": "Error loading data",
 
     "catalog.modal.name": "Part Details and Specifications",
     "catalog.quickview.name": "Quick View",
-    "catalog.alternative_modal.name": "CatalogItem Review",
+    "catalog.alternative_modal.name": "Alternatives",
     "catalog.compatibility_modal.name": "Compatibility",
-    "catalog.product_modal.name": "CatalogItem",
+    "catalog.product_modal.name": "Offers",
+    "catalog.offers_modal.name": "Offers for",
     "catalog.modal.back": "Back",
     "catalog.modal.loading": "Loading...",
 

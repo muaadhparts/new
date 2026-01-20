@@ -855,6 +855,25 @@
       openCompatibilityInline($(this).data('part_number'));
     });
 
+    /* زر عروض البديل - يفتح صفحة العروض داخل المودال */
+    $(document).off('click.ill_alt_offers').on('click.ill_alt_offers', '.alt-offers-btn', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const catalogItemId = $(this).data('catalog-item-id') || $(this).data('catalogItemId');
+      const partNumber = $(this).data('part-number') || $(this).data('partNumber');
+
+      if (!catalogItemId) {
+        console.warn('alt-offers-btn: missing data-catalog-item-id');
+        return;
+      }
+
+      const url = '/modal/offers/' + catalogItemId;
+      const name = t('catalog.offers_modal.name') || (t('Offers for') + ' ' + (partNumber || ''));
+
+      loadIntoModal(url, name);
+    });
+
     /* ============== أزرار الكمية في Alternatives و Quick View ============== */
     /* ✅ Selectors موحّدة تدعم الكلاسات الجديدة (catalog-*) والقديمة للتوافقية */
 

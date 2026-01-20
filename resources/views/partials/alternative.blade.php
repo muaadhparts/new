@@ -16,7 +16,7 @@
     const part_number = '{{ $part_number }}';
     const container = document.getElementById('alternatives-container-' + part_number);
 
-    fetch('/api/catalogItem/alternatives/' + encodeURIComponent(part_number) + '/html')
+    fetch('/api/catalog-item/alternatives/' + encodeURIComponent(part_number) + '/html')
         .then(response => response.json())
         .then(data => {
             if (data.success && data.html) {

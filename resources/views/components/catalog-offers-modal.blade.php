@@ -28,11 +28,21 @@
  * Open the catalog offers modal
  * @param {number} catalogItemId - The catalog item ID
  * @param {string} partNumber - Part number for display (optional)
+ * @param {string} sort - Sort order (optional, defaults to 'price_asc')
  */
-function openCatalogOffersModal(catalogItemId, partNumber) {
-    const modal = new bootstrap.Modal(document.getElementById('catalogOffersModal'));
+function openCatalogOffersModal(catalogItemId, partNumber, sort = 'price_asc') {
+    const modalEl = document.getElementById('catalogOffersModal');
+    let modal = bootstrap.Modal.getInstance(modalEl);
+    if (!modal) {
+        modal = new bootstrap.Modal(modalEl);
+    }
+
     const modalBody = document.getElementById('catalogOffersModalBody');
     const modalTitle = document.getElementById('offersModalTitle');
+
+    // Store current catalog item info for sorting
+    modalEl.dataset.catalogItemId = catalogItemId;
+    modalEl.dataset.partNumber = partNumber || '';
 
     // Update title
     if (partNumber) {
@@ -53,8 +63,8 @@ function openCatalogOffersModal(catalogItemId, partNumber) {
     // Show modal
     modal.show();
 
-    // Fetch offers
-    fetch(`/modal/offers/${catalogItemId}`, {
+    // Fetch offers with sort parameter
+    fetch(`/modal/offers/${catalogItemId}?sort=${sort}`, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
@@ -83,6 +93,57 @@ function openCatalogOffersModal(catalogItemId, partNumber) {
                 {{ __('Failed to load offers. Please try again.') }}
             </div>
         `;
+    });
+}
+
+/**
+ * Reload offers with new sort order (silent update without loading spinner)
+ * @param {string} sort - Sort order ('price_asc' or 'price_desc')
+ */
+function reloadOffersWithSort(sort) {
+    const modalEl = document.getElementById('catalogOffersModal');
+    const modalBody = document.getElementById('catalogOffersModalBody');
+    const catalogItemId = modalEl.dataset.catalogItemId;
+
+    if (!catalogItemId) return;
+
+    // Add loading overlay without replacing content
+    const offersContent = modalBody.querySelector('.catalog-offers-content');
+    if (offersContent) {
+        offersContent.style.opacity = '0.5';
+        offersContent.style.pointerEvents = 'none';
+    }
+
+    // Fetch offers with new sort (add timestamp to prevent caching)
+    fetch(`/modal/offers/${catalogItemId}?sort=${sort}&_t=${Date.now()}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+            'Cache-Control': 'no-cache'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Network response was not ok');
+        return response.text();
+    })
+    .then(html => {
+        modalBody.innerHTML = html;
+
+        // Initialize quantity controls
+        initializeQtyControls(modalBody);
+
+        // Initialize cart buttons
+        if (typeof initCartButtons === 'function') {
+            initCartButtons(modalBody);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading offers:', error);
+        // Restore opacity on error
+        if (offersContent) {
+            offersContent.style.opacity = '1';
+            offersContent.style.pointerEvents = 'auto';
+        }
     });
 }
 
@@ -135,6 +196,13 @@ document.addEventListener('click', function(e) {
         if (catalogItemId) {
             openCatalogOffersModal(catalogItemId, partNumber);
         }
+    }
+});
+
+// Event delegation for sort dropdown inside modal
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'offersSort') {
+        reloadOffersWithSort(e.target.value);
     }
 });
 </script>

@@ -94,6 +94,7 @@ window.i18n = {
     "catalog.alternative_modal.name": "@lang('catalog.alternative_modal.name')",
     "catalog.compatibility_modal.name": "@lang('catalog.compatibility_modal.name')",
     "catalog.product_modal.name": "@lang('catalog.product_modal.name')",
+    "catalog.offers_modal.name": "@lang('catalog.offers_modal.name')",
     "catalog.modal.back": "@lang('catalog.modal.back')",
     "catalog.modal.loading": "@lang('catalog.modal.loading')",
 

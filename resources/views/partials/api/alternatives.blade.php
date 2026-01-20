@@ -1,6 +1,7 @@
 {{-- resources/views/partials/api/alternatives.blade.php --}}
-{{-- API-based alternatives partial (No Livewire) --}}
+{{-- Simplified alternatives list with offers button --}}
 {{-- Uses catalog-unified.css for styling --}}
+{{-- Integrates with illustrated.js navigation system --}}
 
 <div class="catalog-modal-content ill-alt">
     @if($alternatives && $alternatives->count() > 0)
@@ -8,7 +9,7 @@
         <div class="catalog-section-header">
             <h5>
                 <i class="fas fa-exchange-alt"></i>
-                @lang('labels.substitutions')
+                @lang('Alternatives')
             </h5>
             <span class="badge bg-secondary">{{ $alternatives->count() }} @lang('items')</span>
         </div>
@@ -21,110 +22,39 @@
                         <tr>
                             <th>@lang('Part Number')</th>
                             <th>@lang('Name')</th>
-                            <th>@lang('Brand')</th>
-                            <th>@lang('Quality')</th>
-                            <th>@lang('Merchant')</th>
-                            <th class="text-center">@lang('Stock')</th>
-                            <th class="text-center">@lang('Qty')</th>
                             <th class="text-end">@lang('Price')</th>
-                            <th class="text-center" style="width: 100px;">@lang('Action')</th>
+                            <th class="text-center" style="width: 120px;">@lang('Action')</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($alternatives as $idx => $mp)
-                            @php
-                                $catalogItem = $mp->catalogItem;
-                                $vp = method_exists($mp,'merchantSizePrice') ? (float)$mp->merchantSizePrice() : (float)$mp->price;
-                                $inStock = ($mp->stock ?? 0) > 0;
-                                $hasPrice = $vp > 0;
-                                $highlight = ($inStock || $mp->preordered) && $hasPrice;
-                                $qualityBrand = $mp->qualityBrand;
-                                $minQty = (int)($mp->minimum_qty ?? 1);
-                                if ($minQty < 1) $minQty = 1;
-                                $stock = (int)($mp->stock ?? 0);
-                                $preordered = (int)($mp->preordered ?? 0);
-                                $canBuy = ($inStock || $preordered) && $hasPrice;
-                                $uniqueId = 'alt_' . $mp->id . '_' . $idx;
-                            @endphp
-
-                            <tr class="{{ $highlight ? 'row-available' : 'row-unavailable' }}">
-                                <td><code class="fw-bold text-dark">{{ $catalogItem->part_number }}</code></td>
-                                <td class="text-truncate" style="max-width: 200px;">{{ getLocalizedCatalogItemName($catalogItem) }}</td>
-                                {{-- Vehicle Fitment Brands (from catalog_item_fitments) --}}
-                                @php
-                                    $altFitments = $catalogItem->fitments ?? collect();
-                                    $altBrands = $altFitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                    $altBrandCount = $altBrands->count();
-                                    $altBrandsJson = $altBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
-                                @endphp
+                        @foreach($alternatives as $catalogItem)
+                            <tr>
                                 <td>
-                                    @if($altBrandCount === 1)
-                                        <span class="catalog-quality-badge">
-                                            @if($altBrands->first()->photo_url)
-                                                <img src="{{ $altBrands->first()->photo_url }}" alt="" class="catalog-quality-badge__logo">
-                                            @endif
-                                            {{ Str::ucfirst(getLocalizedBrandName($altBrands->first())) }}
-                                        </span>
-                                    @elseif($altBrandCount > 1)
-                                        <button type="button" class="fitment-brands-btn"
-                                                data-brands="{{ json_encode($altBrandsJson) }}"
-                                                data-part-number="{{ $catalogItem->part_number }}">
-                                            <i class="fas fa-car"></i>
-                                            {{ __('Fits') }} {{ $altBrandCount }}
-                                        </button>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
+                                    <code class="fw-bold text-dark">{{ $catalogItem->part_number }}</code>
                                 </td>
-                                <td>
-                                    @if($qualityBrand)
-                                        <span class="catalog-quality-badge">
-                                            @if($qualityBrand->logo)
-                                                <img src="{{ $qualityBrand->logo_url }}" alt="{{ getLocalizedQualityName($qualityBrand) }}" class="catalog-quality-badge__logo">
-                                            @endif
-                                            {{ getLocalizedQualityName($qualityBrand) }}
-                                        </span>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td><span class="small">{{ $mp->user ? getLocalizedShopName($mp->user) : '-' }}</span></td>
-                                <td class="text-center">
-                                    @if($inStock)
-                                        <span class="catalog-badge catalog-badge-success">{{ $mp->stock }}</span>
-                                    @elseif($preordered)
-                                        <span class="catalog-badge catalog-badge-warning">@lang('Preorder')</span>
-                                    @else
-                                        <span class="catalog-badge catalog-badge-secondary">0</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    @if($canBuy)
-                                        <div class="catalog-qty-control">
-                                            <button type="button" class="catalog-qty-btn qty-minus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
-                                            <input type="text" class="catalog-qty-input qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
-                                            <button type="button" class="catalog-qty-btn qty-plus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
-                                        </div>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
+                                <td class="text-truncate" style="max-width: 250px;">
+                                    {{ $catalogItem->localized_name }}
                                 </td>
                                 <td class="text-end">
-                                    <span class="fw-bold {{ $hasPrice ? 'text-success' : 'text-muted' }}">
-                                        {{ $hasPrice ? \App\Models\CatalogItem::convertPrice($vp) : '-' }}
-                                    </span>
+                                    @if($catalogItem->lowest_price_formatted)
+                                        <div>
+                                            <small class="text-muted">@lang('From')</small>
+                                            <span class="fw-bold text-success">{{ $catalogItem->lowest_price_formatted }}</span>
+                                        </div>
+                                        <small class="text-muted">{{ $catalogItem->offers_count }} @lang('offers')</small>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
                                 </td>
                                 <td class="text-center">
-                                    <div class="btn-group btn-group-sm">
-                                        <button type="button" class="btn btn-outline-primary quick-view" data-id="{{ $catalogItem->id }}" data-url="{{ route('modal.quickview', ['id' => $catalogItem->id]) }}?user={{ $mp->user_id }}" name="@lang('Quick View')">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        @if($canBuy)
-                                            <button type="button" class="btn btn-success m-cart-add" data-merchant-item-id="{{ $mp->id }}" name="@lang('Add To Cart')">
-                                                <i class="fas fa-cart-plus"></i>
-                                            </button>
-                                        @endif
-                                    </div>
+                                    <button type="button"
+                                            class="btn btn-primary btn-sm alt-offers-btn"
+                                            data-catalog-item-id="{{ $catalogItem->id }}"
+                                            data-part-number="{{ $catalogItem->part_number }}"
+                                            data-name="{{ $catalogItem->localized_name }}">
+                                        <i class="fas fa-tags me-1"></i>
+                                        @lang('Offers')
+                                    </button>
                                 </td>
                             </tr>
                         @endforeach
@@ -135,112 +65,39 @@
 
         {{-- Mobile Cards --}}
         <div class="d-block d-md-none catalog-cards">
-            @foreach($alternatives as $idx => $mp)
-                @php
-                    $catalogItem = $mp->catalogItem;
-                    $vp = method_exists($mp,'merchantSizePrice') ? (float)$mp->merchantSizePrice() : (float)$mp->price;
-                    $inStock = ($mp->stock ?? 0) > 0;
-                    $hasPrice = $vp > 0;
-                    $highlight = ($inStock || $mp->preordered) && $hasPrice;
-                    $qualityBrand = $mp->qualityBrand;
-                    $minQty = (int)($mp->minimum_qty ?? 1);
-                    if ($minQty < 1) $minQty = 1;
-                    $stock = (int)($mp->stock ?? 0);
-                    $preordered = (int)($mp->preordered ?? 0);
-                    $canBuy = ($inStock || $preordered) && $hasPrice;
-                    $uniqueId = 'altm_' . $mp->id . '_' . $idx;
-                @endphp
-
-                <div class="catalog-card {{ $highlight ? 'card-available' : 'card-unavailable' }}">
+            @foreach($alternatives as $catalogItem)
+                <div class="catalog-card card-available">
                     <div class="catalog-card-header">
                         <code class="fw-bold">{{ $catalogItem->part_number }}</code>
-                        @if($inStock)
-                            <span class="catalog-badge catalog-badge-success">{{ $mp->stock }} @lang('In Stock')</span>
-                        @elseif($preordered)
-                            <span class="catalog-badge catalog-badge-warning">@lang('Preorder')</span>
-                        @else
-                            <span class="catalog-badge catalog-badge-secondary">@lang('Out of Stock')</span>
+                        @if($catalogItem->offers_count > 0)
+                            <span class="catalog-badge catalog-badge-success">
+                                {{ $catalogItem->offers_count }} @lang('offers')
+                            </span>
                         @endif
                     </div>
 
                     <div class="catalog-card-body">
-                        <div class="catalog-card-name">{{ getLocalizedCatalogItemName($catalogItem) }}</div>
-
-                        {{-- Vehicle Fitment Brands (from catalog_item_fitments) --}}
-                        @php
-                            $cardFitments = $catalogItem->fitments ?? collect();
-                            $cardBrands = $cardFitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                            $cardBrandCount = $cardBrands->count();
-                            $cardBrandsJson = $cardBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
-                        @endphp
-                        <div class="catalog-card-details">
-                            @if($cardBrandCount === 1)
-                                <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Fits'):</span>
-                                    <span class="catalog-quality-badge">
-                                        @if($cardBrands->first()->photo_url)
-                                            <img src="{{ $cardBrands->first()->photo_url }}" alt="" class="catalog-quality-badge__logo">
-                                        @endif
-                                        {{ getLocalizedBrandName($cardBrands->first()) }}
-                                    </span>
-                                </div>
-                            @elseif($cardBrandCount > 1)
-                                <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Fits'):</span>
-                                    <button type="button" class="fitment-brands-btn"
-                                            data-brands="{{ json_encode($cardBrandsJson) }}"
-                                            data-part-number="{{ $catalogItem->part_number }}">
-                                        <i class="fas fa-car"></i>
-                                        {{ $cardBrandCount }} @lang('brands')
-                                    </button>
-                                </div>
-                            @endif
-
-                            @if($qualityBrand)
-                                <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Quality'):</span>
-                                    <span class="catalog-quality-badge">
-                                        @if($qualityBrand->logo)
-                                            <img src="{{ $qualityBrand->logo_url }}" alt="{{ getLocalizedQualityName($qualityBrand) }}" class="catalog-quality-badge__logo">
-                                        @endif
-                                        {{ getLocalizedQualityName($qualityBrand) }}
-                                    </span>
-                                </div>
-                            @endif
-
-                            @if($mp->user)
-                                <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Merchant'):</span>
-                                    <span>{{ getLocalizedShopName($mp->user) }}</span>
-                                </div>
-                            @endif
-
-                            @if($canBuy)
-                                <div class="catalog-card-detail">
-                                    <span class="catalog-card-label">@lang('Qty'):</span>
-                                    <div class="catalog-qty-control">
-                                        <button type="button" class="catalog-qty-btn qty-minus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
-                                        <input type="text" class="catalog-qty-input qty-input" id="qty_{{ $uniqueId }}" value="{{ $minQty }}" readonly data-min="{{ $minQty }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">
-                                        <button type="button" class="catalog-qty-btn qty-plus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered }}">+</button>
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
+                        <div class="catalog-card-name">{{ $catalogItem->localized_name }}</div>
                     </div>
 
                     <div class="catalog-card-footer">
-                        <div class="catalog-card-price {{ $hasPrice ? 'text-success' : 'text-muted' }}">
-                            {{ $hasPrice ? \App\Models\CatalogItem::convertPrice($vp) : __('Price not available') }}
+                        <div class="catalog-card-price">
+                            @if($catalogItem->lowest_price_formatted)
+                                <small class="text-muted">@lang('From')</small>
+                                <span class="text-success fw-bold">{{ $catalogItem->lowest_price_formatted }}</span>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
                         </div>
                         <div class="catalog-card-actions">
-                            <button type="button" class="catalog-btn catalog-btn-outline quick-view" data-id="{{ $catalogItem->id }}" data-url="{{ route('modal.quickview', ['id' => $catalogItem->id]) }}?user={{ $mp->user_id }}">
-                                <i class="fas fa-eye"></i>
+                            <button type="button"
+                                    class="catalog-btn catalog-btn-primary alt-offers-btn"
+                                    data-catalog-item-id="{{ $catalogItem->id }}"
+                                    data-part-number="{{ $catalogItem->part_number }}"
+                                    data-name="{{ $catalogItem->localized_name }}">
+                                <i class="fas fa-tags"></i>
+                                @lang('Offers')
                             </button>
-                            @if($canBuy)
-                                <button type="button" class="catalog-btn catalog-btn-success m-cart-add" data-merchant-item-id="{{ $mp->id }}">
-                                    <i class="fas fa-cart-plus"></i> @lang('Add')
-                                </button>
-                            @endif
                         </div>
                     </div>
                 </div>
@@ -250,9 +107,7 @@
     @else
         <div class="catalog-empty">
             <i class="fas fa-box-open"></i>
-            <p>@lang('No alternatives found')</p>
+            <p>@lang('labels.no_alternatives')</p>
         </div>
     @endif
 </div>
-
-{{-- JavaScript moved to illustrated.js for proper event delegation --}}

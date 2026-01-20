@@ -21,16 +21,40 @@
                 </div>
             </div>
 
-            {{-- Summary --}}
-            <div class="catalog-offers-summary">
-                <span class="catalog-badge catalog-badge-primary">
-                    <i class="fas fa-tags"></i>
-                    {{ $offers_count ?? 0 }} @lang('offers')
-                </span>
-                @if($lowest_price_formatted ?? null)
-                    <span class="catalog-offers-from">
-                        @lang('From') <strong class="text-success">{{ $lowest_price_formatted }}</strong>
+            {{-- Summary & Sort --}}
+            <div class="catalog-offers-summary d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="catalog-badge catalog-badge-primary">
+                        <i class="fas fa-tags"></i>
+                        {{ $offers_count ?? 0 }} @lang('offers')
                     </span>
+                    @if($lowest_price_formatted ?? null)
+                        <span class="catalog-offers-from">
+                            <small class="text-muted">@lang('From')</small>
+                            <strong class="text-success">{{ $lowest_price_formatted }}</strong>
+                            @if(($highest_price_formatted ?? null) && ($lowest_price ?? 0) != ($highest_price ?? 0))
+                                <small class="text-muted mx-1">@lang('To')</small>
+                                <strong class="text-danger">{{ $highest_price_formatted }}</strong>
+                            @endif
+                        </span>
+                    @endif
+                </div>
+
+                {{-- Sort Dropdown --}}
+                @if(($offers_count ?? 0) > 1)
+                    <div class="catalog-offers-sort d-flex align-items-center gap-2">
+                        <select class="form-select form-select-sm"
+                                id="offersSort"
+                                data-catalog-item-id="{{ $catalog_item['id'] ?? '' }}"
+                                style="min-width: 140px;">
+                            <option value="price_asc" {{ ($current_sort ?? 'price_asc') === 'price_asc' ? 'selected' : '' }}>
+                                @lang('Lowest Price')
+                            </option>
+                            <option value="price_desc" {{ ($current_sort ?? '') === 'price_desc' ? 'selected' : '' }}>
+                                @lang('Highest Price')
+                            </option>
+                        </select>
+                    </div>
                 @endif
             </div>
         </div>
@@ -55,7 +79,12 @@
                             </div>
                         </div>
                         <span class="catalog-offers-quality-price">
-                            @lang('From') {{ $qualityGroup['lowest_price_formatted'] }}
+                            <small class="text-muted">@lang('From')</small>
+                            <span class="text-success">{{ $qualityGroup['lowest_price_formatted'] }}</span>
+                            @if(($qualityGroup['highest_price_formatted'] ?? null) && ($qualityGroup['lowest_price'] ?? 0) != ($qualityGroup['highest_price'] ?? 0))
+                                <small class="text-muted mx-1">@lang('To')</small>
+                                <span class="text-danger">{{ $qualityGroup['highest_price_formatted'] }}</span>
+                            @endif
                         </span>
                     </div>
 

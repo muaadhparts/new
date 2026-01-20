@@ -21,7 +21,7 @@ class SearchController extends Controller
             $sort = $request->sort;
             $search = $request->search;
 
-            $prods = CatalogItem::query()
+            $productsQuery = CatalogItem::query()
                 ->when($search, function ($query, $search) {
                     return $query->where('name', 'like', '%' . $search . '%');
                 })
@@ -31,20 +31,29 @@ class SearchController extends Controller
                 ->when($maxprice, function($query, $maxprice) {
                     return $query->where('price', '<=', $maxprice);
                 })
-                ->when($sort, function ($query, $sort) {
-                    return match ($sort) {
-                        'price_desc' => $query->orderBy('price', 'DESC'),
-                        'price_asc' => $query->orderBy('price', 'ASC'),
-                        'part_number' => $query->orderBy('catalog_item_id', 'ASC'),
-                        'name_asc' => $query->orderBy('catalog_item_id', 'ASC'),
-                        default => $query->orderBy('price', 'ASC'),
-                    };
-                })
-                ->when(empty($sort), function ($query) {
-                    return $query->orderBy('price', 'ASC');
-                })
-                ->where('status', 1)
-                ->get();
+                ->where('status', 1);
+
+            $sort = $sort ?? 'price_asc';
+
+            $isArabic = app()->getLocale() === 'ar';
+
+            if ($sort === 'name_asc') {
+                if ($isArabic) {
+                    $productsQuery->orderByRaw("CASE WHEN label_ar IS NOT NULL AND label_ar != '' THEN 0 ELSE 1 END ASC")
+                                  ->orderByRaw("COALESCE(NULLIF(label_ar, ''), NULLIF(label_en, ''), name) ASC");
+                } else {
+                    $productsQuery->orderByRaw("CASE WHEN label_en IS NOT NULL AND label_en != '' THEN 0 ELSE 1 END ASC")
+                                  ->orderByRaw("COALESCE(NULLIF(label_en, ''), NULLIF(label_ar, ''), name) ASC");
+                }
+            } else {
+                match ($sort) {
+                    'price_desc' => $productsQuery->orderBy('price', 'desc'),
+                    'part_number' => $productsQuery->orderBy('part_number', 'asc'),
+                    default => $productsQuery->orderBy('price', 'asc'),
+                };
+            }
+
+            $prods = $productsQuery->get();
 
             $prods = (new Collection(CatalogItem::filterProducts($prods)));
 

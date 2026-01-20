@@ -25,10 +25,11 @@ class PartResultController extends FrontBaseController
     /**
      * Show all offers for a part number
      *
+     * @param Request $request
      * @param string $part_number The part number to look up
      * @return \Illuminate\View\View
      */
-    public function show(string $part_number)
+    public function show(Request $request, string $part_number)
     {
         // Find catalog item by part number
         $catalogItem = CatalogItem::where('part_number', $part_number)
@@ -41,8 +42,11 @@ class PartResultController extends FrontBaseController
             abort(404, __('Part not found'));
         }
 
-        // Get grouped offers using existing service
-        $offersData = $this->offersService->getGroupedOffers($catalogItem->id);
+        // Get sort parameter
+        $sort = $request->input('sort', 'price_asc');
+
+        // Get grouped offers using existing service with sort
+        $offersData = $this->offersService->getGroupedOffers($catalogItem->id, $sort);
 
         // Extract fitment brands for breadcrumb
         $fitmentBrands = [];
@@ -61,12 +65,20 @@ class PartResultController extends FrontBaseController
                 ->toArray();
         }
 
-        return view('frontend.part-result', [
+        $viewData = [
             'catalogItem' => $catalogItem,
             'part_number' => $part_number,
             'offersData' => $offersData,
             'fitmentBrands' => $fitmentBrands,
+            'currentSort' => $sort,
             'gs' => $this->gs,
-        ]);
+        ];
+
+        // Return only offers section for AJAX requests
+        if ($request->ajax() || $request->has('ajax')) {
+            return view('frontend.partials.part-result-offers', $viewData);
+        }
+
+        return view('frontend.part-result', $viewData);
     }
 }
