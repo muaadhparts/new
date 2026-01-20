@@ -324,19 +324,107 @@ class CatalogItemFilterService
     }
 
     /**
-     * Apply branch filter
-     * Works with one or more merchants selected
-     * If branches are selected, filter to only those branches
+     * Apply branch filter with merchant context isolation
+     *
+     * Key behavior:
+     * - Branch selections only affect their own merchant
+     * - When Merchant A has branches selected and Merchant B is added,
+     *   Merchant B shows ALL items (not limited by A's branch selection)
+     * - AND between different filter groups, OR within same group
      */
     public function applyBranchFilter(Builder $query, Request $request): void
     {
         $branchFilter = $this->normalizeArrayInput($request->branch);
+        $merchantFilter = $this->normalizeArrayInput($request->merchant);
 
-        // If branches are selected, apply the filter
-        // This works regardless of how many merchants are selected
-        if (!empty($branchFilter)) {
-            $query->whereIn('merchant_items.merchant_branch_id', $branchFilter);
+        // Fallback to user/store param for single merchant
+        if (empty($merchantFilter) && $request->filled('user')) {
+            $merchantFilter = [(int) $request->user];
         }
+        if (empty($merchantFilter) && $request->filled('store')) {
+            $merchantFilter = [(int) $request->store];
+        }
+
+        // If no branches selected, no branch filter needed
+        if (empty($branchFilter)) {
+            return;
+        }
+
+        // If no merchants selected, branches have no context
+        if (empty($merchantFilter)) {
+            return;
+        }
+
+        // Get which merchant each selected branch belongs to
+        $branchMerchantMap = $this->getBranchMerchantMapping($branchFilter);
+
+        if (empty($branchMerchantMap)) {
+            return;
+        }
+
+        // Group branches by their merchant
+        $branchesByMerchant = [];
+        foreach ($branchFilter as $branchId) {
+            $branchId = (int) $branchId;
+            if (isset($branchMerchantMap[$branchId])) {
+                $merchantId = $branchMerchantMap[$branchId];
+                if (!isset($branchesByMerchant[$merchantId])) {
+                    $branchesByMerchant[$merchantId] = [];
+                }
+                $branchesByMerchant[$merchantId][] = $branchId;
+            }
+        }
+
+        // Find merchants that have NO branches selected (they show ALL items)
+        $merchantsWithBranches = array_keys($branchesByMerchant);
+        $merchantsWithoutBranches = array_diff(array_map('intval', $merchantFilter), $merchantsWithBranches);
+
+        // Build the context-aware filter:
+        // - Merchants WITH branch selections: filter to those specific branches
+        // - Merchants WITHOUT branch selections: show all their items
+        $query->where(function ($q) use ($branchesByMerchant, $merchantsWithoutBranches) {
+            // For merchants WITH branch selections: show only selected branches
+            foreach ($branchesByMerchant as $merchantId => $branches) {
+                $q->orWhere(function ($subQ) use ($merchantId, $branches) {
+                    $subQ->where('merchant_items.user_id', $merchantId)
+                         ->whereIn('merchant_items.merchant_branch_id', $branches);
+                });
+            }
+
+            // For merchants WITHOUT branch selections: show all items
+            if (!empty($merchantsWithoutBranches)) {
+                $q->orWhereIn('merchant_items.user_id', $merchantsWithoutBranches);
+            }
+        });
+    }
+
+    /**
+     * Get mapping of branch IDs to their merchant IDs
+     *
+     * @param array $branchIds Array of branch IDs
+     * @return array [branch_id => merchant_id, ...]
+     */
+    protected function getBranchMerchantMapping(array $branchIds): array
+    {
+        if (empty($branchIds)) {
+            return [];
+        }
+
+        // Query merchant_items to find which merchant owns each branch
+        // Each branch belongs to one merchant (via merchant_items.merchant_branch_id + user_id)
+        $results = DB::table('merchant_items')
+            ->whereIn('merchant_branch_id', $branchIds)
+            ->where('status', 1)
+            ->groupBy('merchant_branch_id', 'user_id')
+            ->select('merchant_branch_id', 'user_id')
+            ->get();
+
+        $mapping = [];
+        foreach ($results as $row) {
+            $mapping[$row->merchant_branch_id] = $row->user_id;
+        }
+
+        return $mapping;
     }
 
     /**

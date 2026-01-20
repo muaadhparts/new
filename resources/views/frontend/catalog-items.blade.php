@@ -770,12 +770,16 @@
 
             // ========================================
             // Dynamic Branch Filter via AJAX (supports multiple merchants)
+            // Branch selections are merchant-context isolated:
+            // - Selecting a branch affects ONLY that branch's merchant
+            // - When a merchant is unchecked, their branch selections are removed
             // ========================================
             const branchApiUrl = '{{ route("front.api.merchant.branches") }}';
             const $branchWidget = $('#branch-filter-widget');
             const $branchList = $('#branch-filter-list');
             const $branchLoadingMsg = $('.branch-loading-msg');
             let currentLoadedMerchantIds = []; // Track which merchants' branches are loaded
+            let branchMerchantMap = {}; // Map branch_id -> merchant_id for context tracking
 
             // Get selected branches from URL (for page load restoration)
             function getSelectedBranchesFromUrl() {
@@ -792,8 +796,22 @@
                 return selected;
             }
 
+            // Get branches selected for a specific merchant
+            function getBranchesForMerchant(merchantId) {
+                const selected = [];
+                $(`.branch-filter:checked[data-merchant-id="${merchantId}"]`).each(function() {
+                    selected.push($(this).val());
+                });
+                return selected;
+            }
+
+            // Remove branch selections for a specific merchant
+            function removeBranchesForMerchant(merchantId) {
+                $(`.branch-filter[data-merchant-id="${merchantId}"]`).prop('checked', false);
+            }
+
             // Load branches for selected merchants via AJAX
-            function loadBranchesForMerchants(merchantIds) {
+            function loadBranchesForMerchants(merchantIds, removedMerchantId = null) {
                 if (!merchantIds || merchantIds.length === 0) {
                     hideBranchFilter();
                     return;
@@ -803,21 +821,29 @@
                 const sortedIds = [...merchantIds].sort().join(',');
                 const currentIds = [...currentLoadedMerchantIds].sort().join(',');
 
-                // Skip if already loaded for same merchants
-                if (sortedIds === currentIds) {
+                // Preserve currently selected branches (except for removed merchant)
+                let previouslySelected = getSelectedBranchIds();
+                const urlSelected = getSelectedBranchesFromUrl();
+
+                // If a merchant was removed, filter out their branches from selection
+                if (removedMerchantId) {
+                    previouslySelected = previouslySelected.filter(branchId => {
+                        return branchMerchantMap[branchId] != removedMerchantId;
+                    });
+                }
+
+                const allSelected = [...new Set([...previouslySelected, ...urlSelected])];
+
+                // Skip reload if same merchants and no merchant removed
+                if (sortedIds === currentIds && !removedMerchantId) {
                     return;
                 }
 
                 currentLoadedMerchantIds = [...merchantIds];
                 $branchWidget.removeClass('d-none');
                 $branchLoadingMsg.removeClass('d-none');
-
-                // Preserve currently selected branches
-                const previouslySelected = getSelectedBranchIds();
-                const urlSelected = getSelectedBranchesFromUrl();
-                const allSelected = [...new Set([...previouslySelected, ...urlSelected])];
-
                 $branchList.empty();
+                branchMerchantMap = {}; // Reset mapping
 
                 $.ajax({
                     url: branchApiUrl,
@@ -839,20 +865,28 @@
                         let currentMerchantId = null;
 
                         branches.forEach(function(branch) {
+                            // Store branch-merchant mapping
+                            branchMerchantMap[branch.id] = branch.merchant_id;
+
                             // Add merchant header if grouping and merchant changed
                             if (groupByMerchant && branch.merchant_id !== currentMerchantId) {
                                 currentMerchantId = branch.merchant_id;
                                 const headerHtml = `
-                                    <li class="branch-merchant-header" style="font-weight: bold; padding: 8px 0 4px 0; border-bottom: 1px solid var(--border-light); margin-bottom: 4px; color: var(--text-secondary);">
+                                    <li class="branch-merchant-header" data-merchant-id="${branch.merchant_id}" style="font-weight: bold; padding: 8px 0 4px 0; border-bottom: 1px solid var(--border-light); margin-bottom: 4px; color: var(--text-secondary);">
                                         <small>${branch.merchant_name}</small>
                                     </li>
                                 `;
                                 $branchList.append(headerHtml);
                             }
 
-                            const isChecked = allSelected.includes(branch.id.toString()) ? 'checked' : '';
+                            // Only restore selection if this branch's merchant is still selected
+                            // AND the branch was previously selected
+                            const merchantStillSelected = merchantIds.includes(branch.merchant_id.toString());
+                            const wasSelected = allSelected.includes(branch.id.toString());
+                            const isChecked = (merchantStillSelected && wasSelected) ? 'checked' : '';
+
                             const html = `
-                                <li class="gs-checkbox-wrapper">
+                                <li class="gs-checkbox-wrapper" data-merchant-id="${branch.merchant_id}">
                                     <input type="checkbox" class="attribute-input branch-filter"
                                         name="branch[]"
                                         id="branch_${branch.id}"
@@ -879,6 +913,7 @@
                         $branchLoadingMsg.addClass('d-none');
                         $branchWidget.addClass('d-none');
                         currentLoadedMerchantIds = [];
+                        branchMerchantMap = {};
                     }
                 });
             }
@@ -888,10 +923,12 @@
                 $branchWidget.addClass('d-none');
                 $branchList.empty();
                 currentLoadedMerchantIds = [];
+                branchMerchantMap = {};
             }
 
             // Update branch filter based on merchant selection
-            function updateBranchFilter() {
+            // removedMerchantId: if provided, that merchant was just unchecked
+            function updateBranchFilter(removedMerchantId = null) {
                 const selectedMerchants = [];
                 $('.merchant-filter:checked').each(function() {
                     selectedMerchants.push($(this).val());
@@ -899,7 +936,7 @@
 
                 if (selectedMerchants.length > 0) {
                     // One or more merchants selected - load their branches
-                    loadBranchesForMerchants(selectedMerchants);
+                    loadBranchesForMerchants(selectedMerchants, removedMerchantId);
                 } else {
                     // No merchant selected - hide branch filter
                     hideBranchFilter();
@@ -913,8 +950,19 @@
             // Filter Events (Merchant, Branch, Quality Brand)
             // ========================================
             // Merchant filter change - update branches then load content
+            // When a merchant is unchecked, their branch selections are automatically removed
             $(".merchant-filter").on('change', function() {
-                updateBranchFilter();
+                const merchantId = $(this).val();
+                const isChecked = $(this).is(':checked');
+
+                if (isChecked) {
+                    // Merchant added - load branches (preserving existing selections)
+                    updateBranchFilter();
+                } else {
+                    // Merchant removed - clear their branches from selection and reload
+                    updateBranchFilter(merchantId);
+                }
+
                 currentPage = 1;
                 loadContent(1);
             });
@@ -1009,7 +1057,9 @@
                     });
 
                     // Reset branch state and reload based on merchant selection
-                    currentBranchMerchantId = null;
+                    // The branch selections will be restored from URL when branches load
+                    currentLoadedMerchantIds = [];
+                    branchMerchantMap = {};
                     updateBranchFilter();
 
                     // Load content without adding to history
