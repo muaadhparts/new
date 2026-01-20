@@ -1402,14 +1402,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/api/merchant/branches', 'Front\CatalogController@getMerchantBranches')->name('front.api.merchant.branches');
     // CATALOG SECTION ENDS
 
-    // TAG SECTION
-    Route::get('/tag/{slug}', 'Front\CatalogController@tag')->name('front.tag');
-    // TAG SECTION ENDS
-
-    // TAG SECTION
-    Route::get('/search', 'Front\CatalogController@search')->name('front.search');
-    // TAG SECTION ENDS
-
     // COMPARE SECTION
     Route::get('/item/compare/view', 'Front\CompareController@compare')->name('catalog-item.compare');
     Route::get('/compare/add/merchant/{merchantItemId}', 'Front\CompareController@addMerchantCompare')->name('merchant.compare.add');

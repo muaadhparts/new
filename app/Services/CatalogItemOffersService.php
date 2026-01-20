@@ -105,13 +105,11 @@ class CatalogItemOffersService
                 ->toArray();
         }
 
-        // Build photo URL
-        $photoUrl = null;
+        // Build photo URL (same logic as CatalogItemCardDTO::resolvePhoto)
+        $photoUrl = asset('assets/images/noimage.png');
         if ($item->photo) {
             if (filter_var($item->photo, FILTER_VALIDATE_URL)) {
                 $photoUrl = $item->photo;
-            } elseif (str_starts_with($item->photo, 'LargePNG/') || str_starts_with($item->photo, 'SmallPNG/')) {
-                $photoUrl = asset('assets/images/' . $item->photo);
             } else {
                 $photoUrl = \Illuminate\Support\Facades\Storage::url($item->photo);
             }

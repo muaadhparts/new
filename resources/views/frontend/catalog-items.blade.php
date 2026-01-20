@@ -63,10 +63,68 @@
         <div class="container">
             <div class="row justify-content-center content-wrapper">
                 <div class="col-12">
-                    <h2 class="breadcrumb-name">@lang('CatalogItem')</h2>
-                    <ul class="bread-menu">
+                    {{-- Dynamic Title based on deepest selection --}}
+                    <h2 class="breadcrumb-name" id="breadcrumb-title">
+                        @if(!empty($childcat))
+                            {{ app()->getLocale() == 'ar' ? ($childcat->label_ar ?: $childcat->label_en) : $childcat->label_en }}
+                        @elseif(!empty($subcat))
+                            {{ app()->getLocale() == 'ar' ? ($subcat->name_ar ?: $subcat->name) : $subcat->name }}
+                        @elseif(!empty($cat))
+                            {{ app()->getLocale() == 'ar' ? ($cat->name_ar ?: $cat->name) : $cat->name }}
+                        @else
+                            @lang('CatalogItem')
+                        @endif
+                    </h2>
+
+                    {{-- Dynamic Breadcrumb --}}
+                    <ul class="bread-menu" id="breadcrumb-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="javascript:;">@lang('CatalogItem')</a></li>
+                        <li><a href="{{ route('front.catalog') }}">@lang('CatalogItem')</a></li>
+
+                        {{-- Brand Level --}}
+                        @if(!empty($cat))
+                            <li>
+                                <a href="{{ route('front.catalog', ['brand' => $cat->slug]) }}">
+                                    {{ app()->getLocale() == 'ar' ? ($cat->name_ar ?: $cat->name) : $cat->name }}
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Catalog/Model Level --}}
+                        @if(!empty($subcat))
+                            <li>
+                                <a href="{{ route('front.catalog', ['brand' => $cat->slug ?? '', 'catalog' => $subcat->slug]) }}">
+                                    {{ app()->getLocale() == 'ar' ? ($subcat->name_ar ?: $subcat->name) : $subcat->name }}
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- NewCategory Level 1 --}}
+                        @if(!empty($childcat))
+                            <li>
+                                <a href="{{ route('front.catalog', ['brand' => $cat->slug ?? '', 'catalog' => $subcat->slug ?? '', 'cat1' => $childcat->slug]) }}">
+                                    {{ app()->getLocale() == 'ar' ? ($childcat->label_ar ?: $childcat->label_en) : $childcat->label_en }}
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- NewCategory Level 2 --}}
+                        @if(!empty($cat2))
+                            <li>
+                                <a href="{{ route('front.catalog', ['brand' => $cat->slug ?? '', 'catalog' => $subcat->slug ?? '', 'cat1' => $childcat->slug ?? '', 'cat2' => $cat2->slug]) }}">
+                                    {{ app()->getLocale() == 'ar' ? ($cat2->label_ar ?: $cat2->label_en) : $cat2->label_en }}
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- NewCategory Level 3 --}}
+                        @if(!empty($cat3))
+                            <li>
+                                <a href="javascript:;">
+                                    {{ app()->getLocale() == 'ar' ? ($cat3->label_ar ?: $cat3->label_en) : $cat3->label_en }}
+                                </a>
+                            </li>
+                        @endif
                     </ul>
                 </div>
             </div>
@@ -606,23 +664,7 @@
             // ========================================
             // Category Items AJAX System
             // ========================================
-            // Dynamic baseUrl - gets updated when category selector navigates
-            // Initial value from server, but can be updated by category selector
-            let categoryBaseUrlPath = '{{ route('front.catalog', ['brand' => Request::route('brand'), 'catalog' => Request::route('catalog'), 'cat1' => Request::route('cat1'), 'cat2' => Request::route('cat2'), 'cat3' => Request::route('cat3')]) }}';
-
-            // Function to get current base URL (uses path from current location or stored path)
-            function getBaseUrl() {
-                // Use the current pathname (without query string) as the base
-                // This ensures filters work correctly after category selector navigation
-                return window.location.pathname;
-            }
-
-            // Expose setter for category selector to update the path
-            window.updateCategoryBasePath = function(newPath) {
-                categoryBaseUrlPath = newPath;
-            };
             const $scrollContainer = $('.category-catalogItems-scroll');
-            const $itemsContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
             const $totalItems = $('.catalogItem-nav-wrapper h5').first();
 
@@ -670,10 +712,9 @@
                     params.set('view_check', viewMode);
                 }
 
-                // Use dynamic base URL (current pathname) to support category selector navigation
-                const baseUrl = getBaseUrl();
+                // Use current pathname as base URL (supports category selector navigation)
                 const queryString = params.toString();
-                return queryString ? baseUrl + '?' + queryString : baseUrl;
+                return queryString ? window.location.pathname + '?' + queryString : window.location.pathname;
             }
 
             // ========================================
@@ -739,6 +780,14 @@
                         // Reinitialize tooltips
                         $('[data-bs-toggle="tooltip"]').tooltip({});
                         $('[rel-toggle="tooltip"]').tooltip();
+
+                        // Reinitialize shipping quote buttons for newly loaded content
+                        // Use setTimeout to ensure DOM is fully updated after .html()
+                        setTimeout(function() {
+                            if (typeof ShippingQuote !== 'undefined' && typeof ShippingQuote.initButtons === 'function') {
+                                ShippingQuote.initButtons();
+                            }
+                        }, 50);
                     },
                     error: function(xhr, status, error) {
                         console.error('AJAX Error:', error);
@@ -1099,6 +1148,57 @@
             const apiUrls = JSON.parse($('#category-api-urls').text() || '{}');
             const categoryBaseUrl = apiUrls.category || '{{ route("front.catalog") }}';
 
+            // Breadcrumb update function
+            function updateBreadcrumb() {
+                const brandSelect = $('#brand-select');
+                const catalogSelect = $('#catalog-select');
+                const level1Select = $('#level1-select');
+                const level2Select = $('#level2-select');
+                const level3Select = $('#level3-select');
+
+                const brandSlug = brandSelect.val();
+                const brandName = brandSlug ? brandSelect.find('option:selected').text().trim() : '';
+                const catalogSlug = catalogSelect.val();
+                const catalogName = catalogSlug ? catalogSelect.find('option:selected').text().trim() : '';
+                const level1Slug = level1Select.val();
+                const level1Name = level1Slug ? level1Select.find('option:selected').text().trim() : '';
+                const level2Slug = level2Select.val();
+                const level2Name = level2Slug ? level2Select.find('option:selected').text().trim() : '';
+                const level3Slug = level3Select.val();
+                const level3Name = level3Slug ? level3Select.find('option:selected').text().trim() : '';
+
+                // Build breadcrumb HTML
+                let breadcrumbHtml = `<li><a href="{{ route('front.index') }}">@lang('Home')</a></li>`;
+                breadcrumbHtml += `<li><a href="${categoryBaseUrl}">@lang('CatalogItem')</a></li>`;
+
+                let title = '@lang("CatalogItem")';
+
+                if (brandSlug) {
+                    breadcrumbHtml += `<li><a href="${categoryBaseUrl}/${brandSlug}">${brandName}</a></li>`;
+                    title = brandName;
+                }
+                if (catalogSlug) {
+                    breadcrumbHtml += `<li><a href="${categoryBaseUrl}/${brandSlug}/${catalogSlug}">${catalogName}</a></li>`;
+                    title = catalogName;
+                }
+                if (level1Slug) {
+                    breadcrumbHtml += `<li><a href="${categoryBaseUrl}/${brandSlug}/${catalogSlug}/${level1Slug}">${level1Name}</a></li>`;
+                    title = level1Name;
+                }
+                if (level2Slug) {
+                    breadcrumbHtml += `<li><a href="${categoryBaseUrl}/${brandSlug}/${catalogSlug}/${level1Slug}/${level2Slug}">${level2Name}</a></li>`;
+                    title = level2Name;
+                }
+                if (level3Slug) {
+                    breadcrumbHtml += `<li><a href="javascript:;">${level3Name}</a></li>`;
+                    title = level3Name;
+                }
+
+                // Update DOM
+                $('#breadcrumb-menu').html(breadcrumbHtml);
+                $('#breadcrumb-title').text(title);
+            }
+
             // Reference to AJAX system
             const $scrollContainer = $('.category-catalogItems-scroll');
             const $paginationContainer = $('.m-pagination-simple');
@@ -1188,6 +1288,14 @@
                         $scrollContainer.scrollTop(0);
                         history.pushState({categoryUrl: url}, '', url);
                         $('[data-bs-toggle="tooltip"]').tooltip({});
+
+                        // Reinitialize shipping quote buttons for newly loaded content
+                        // Use setTimeout to ensure DOM is fully updated after .html()
+                        setTimeout(function() {
+                            if (typeof ShippingQuote !== 'undefined' && typeof ShippingQuote.initButtons === 'function') {
+                                ShippingQuote.initButtons();
+                            }
+                        }, 50);
                     },
                     error: function() {
                         window.location.href = url;
@@ -1224,6 +1332,7 @@
                 resetStepsFrom('catalog');
 
                 if (!selectedSlug) {
+                    updateBreadcrumb();
                     loadCategoryContent(categoryBaseUrl);
                     return;
                 }
@@ -1236,6 +1345,7 @@
                     }
                 });
 
+                updateBreadcrumb();
                 loadCategoryContent(categoryBaseUrl + '/' + selectedSlug);
             });
 
@@ -1246,6 +1356,7 @@
                 resetStepsFrom('level1');
 
                 if (!selectedSlug) {
+                    updateBreadcrumb();
                     loadCategoryContent(categoryBaseUrl + '/' + brandSlug);
                     return;
                 }
@@ -1258,6 +1369,7 @@
                     }
                 });
 
+                updateBreadcrumb();
                 loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + selectedSlug);
             });
 
@@ -1269,6 +1381,7 @@
                 resetStepsFrom('level2');
 
                 if (!selectedSlug) {
+                    updateBreadcrumb();
                     loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug);
                     return;
                 }
@@ -1281,6 +1394,7 @@
                     }
                 });
 
+                updateBreadcrumb();
                 loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + selectedSlug);
             });
 
@@ -1293,6 +1407,7 @@
                 resetStepsFrom('level3');
 
                 if (!selectedSlug) {
+                    updateBreadcrumb();
                     loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug);
                     return;
                 }
@@ -1305,6 +1420,7 @@
                     }
                 });
 
+                updateBreadcrumb();
                 loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug + '/' + selectedSlug);
             });
 
@@ -1317,10 +1433,12 @@
                 const selectedSlug = $(this).val();
 
                 if (!selectedSlug) {
+                    updateBreadcrumb();
                     loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug + '/' + level2Slug);
                     return;
                 }
 
+                updateBreadcrumb();
                 loadCategoryContent(categoryBaseUrl + '/' + brandSlug + '/' + catalogSlug + '/' + level1Slug + '/' + level2Slug + '/' + selectedSlug);
             });
 

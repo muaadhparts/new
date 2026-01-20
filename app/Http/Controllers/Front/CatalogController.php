@@ -30,11 +30,11 @@ class CatalogController extends FrontBaseController
         $currValue = $this->curr->value ?? 1;
 
         // Use service to get all data (no category selected = ALL catalog items)
-        $data = $this->filterService->getCatalogItemResults(
+        $data = $this->filterService->getCatalogItemFirstResults(
             $request,
-            null,  // no category
-            null,  // no subcategory
-            null,  // no childcategory
+            null,
+            null,
+            null,
             $perPage,
             $currValue
         );
@@ -74,15 +74,15 @@ class CatalogController extends FrontBaseController
 
         // Use service to get all data with filters applied
         // Pass all 5 levels: brand, catalog, cat1, cat2, cat3
-        $data = $this->filterService->getCatalogItemResults(
+        $data = $this->filterService->getCatalogItemFirstResults(
             $request,
-            $brand,      // Brand slug
-            $catalog,    // Catalog slug
-            $cat1,       // NewCategory L1 slug
+            $brand,
+            $catalog,
+            $cat1,
             $perPage,
             $currValue,
-            $cat2,       // NewCategory L2 slug
-            $cat3        // NewCategory L3 slug
+            $cat2,
+            $cat3
         );
 
         if ($request->ajax()) {
@@ -193,15 +193,6 @@ class CatalogController extends FrontBaseController
     }
 
     // -------------------------------- NEW CATEGORY TREE SECTION ENDS ----------------------------------------
-
-    /**
-     * @deprecated Use getCatalogs() instead
-     */
-    public function getsubs(Request $request)
-    {
-        // Legacy method - now redirects to getCatalogs
-        return $this->getCatalogs($request);
-    }
 
     // =========================================================
     // AJAX API - جلب البيانات عند الطلب (لتخفيف الحمل)

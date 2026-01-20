@@ -94,15 +94,6 @@ class CatalogItemFilterService
     }
 
     /**
-     * Legacy method for single merchant - calls the new multi-merchant method
-     * @deprecated Use getBranchesForMerchants() instead
-     */
-    public function getBranchesForMerchant(int $merchantId)
-    {
-        return $this->getBranchesForMerchants([$merchantId]);
-    }
-
-    /**
      * Get localized shop name
      */
     private function getLocalizedShopName($merchant): string
@@ -496,6 +487,31 @@ class CatalogItemFilterService
     }
 
     /**
+     * Get mapping of branch IDs to their merchant IDs
+     *
+     * @param array $branchIds Array of branch IDs
+     * @return array [branch_id => merchant_id, ...]
+     */
+    protected function getBranchMerchantMapping(array $branchIds): array
+    {
+        if (empty($branchIds)) {
+            return [];
+        }
+
+        $results = DB::table('merchant_branches')
+            ->whereIn('id', $branchIds)
+            ->select('id', 'user_id')
+            ->get();
+
+        $mapping = [];
+        foreach ($results as $row) {
+            $mapping[$row->id] = $row->user_id;
+        }
+
+        return $mapping;
+    }
+
+    /**
      * Apply quality brand filter for CatalogItem query
      */
     public function applyCatalogItemQualityBrandFilter(Builder $query, Request $request): void
@@ -601,324 +617,6 @@ class CatalogItemFilterService
 
         // Apply filtered eager loading (loads only matching merchantItems for display)
         $this->applyMerchantItemsEagerLoad($query, $request);
-    }
-
-    /**
-     * Apply fitment filter using NewCategories → sections → parts tables
-     */
-    public function applyFitmentFilters(Builder $query, $cat, $subcat, $childcat, $catalog = null): void
-    {
-        // No filters = show all
-        if (!$cat && !$subcat && !$childcat) {
-            return;
-        }
-
-        // Only Brand selected → filter via catalog_item_fitments
-        if ($cat && !$subcat && !$childcat) {
-            $query->whereHas('catalogItem.fitments', fn($f) => $f->where('brand_id', $cat->id));
-            return;
-        }
-
-        // Get catalog for dynamic table names
-        $catalogObj = $catalog ?? $subcat;
-        if (!$catalogObj || !($catalogObj instanceof Catalog)) {
-            return;
-        }
-
-        $catalogCode = $catalogObj->code;
-
-        // Only Catalog selected (no NewCategory)
-        if (!$childcat) {
-            $this->applyPartsTableFilter($query, $catalogCode, null);
-            return;
-        }
-
-        // NewCategory selected → get all descendants
-        $categoryIds = $this->getDescendantIds($childcat->id, $catalogObj->id);
-
-        if (empty($categoryIds)) {
-            $query->whereRaw('1 = 0');
-            return;
-        }
-
-        $this->applyPartsTableFilter($query, $catalogCode, $categoryIds);
-    }
-
-    /**
-     * Apply filter using dynamic parts tables
-     */
-    protected function applyPartsTableFilter(Builder $query, string $catalogCode, ?array $categoryIds): void
-    {
-        // Validate catalog code
-        if (!preg_match('/^[A-Za-z0-9_]+$/', $catalogCode)) {
-            $query->whereRaw('1 = 0');
-            return;
-        }
-
-        $partsTable = strtolower("parts_{$catalogCode}");
-        $sectionPartsTable = strtolower("section_parts_{$catalogCode}");
-
-        // Check tables exist
-        if (!Schema::hasTable($partsTable) || !Schema::hasTable($sectionPartsTable)) {
-            $query->whereRaw('1 = 0');
-            return;
-        }
-
-        $query->whereHas('catalogItem', function ($catalogItemQuery) use ($partsTable, $sectionPartsTable, $categoryIds) {
-            $catalogItemQuery->whereExists(function ($exists) use ($partsTable, $sectionPartsTable, $categoryIds) {
-                $exists->selectRaw(1)
-                    ->from("{$partsTable} as p")
-                    ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
-                    ->whereColumn('p.part_number', 'catalog_items.part_number');
-
-                // section_parts.category_id links directly to newcategories (level 3 only)
-                if ($categoryIds !== null) {
-                    $exists->whereIn('sp.category_id', $categoryIds);
-                }
-            });
-        });
-    }
-
-    /**
-     * Apply merchant filter
-     */
-    public function applyMerchantFilter(Builder $query, Request $request): void
-    {
-        $merchantFilter = $this->normalizeArrayInput($request->merchant);
-
-        if (empty($merchantFilter) && $request->filled('user')) {
-            $merchantFilter = [(int) $request->user];
-        }
-        if (empty($merchantFilter) && $request->filled('store')) {
-            $merchantFilter = [(int) $request->store];
-        }
-
-        if (!empty($merchantFilter)) {
-            $query->whereIn('merchant_items.user_id', $merchantFilter);
-        }
-    }
-
-    /**
-     * Apply branch filter with merchant context isolation
-     *
-     * Key behavior:
-     * - Branch selections only affect their own merchant
-     * - When Merchant A has branches selected and Merchant B is added,
-     *   Merchant B shows ALL items (not limited by A's branch selection)
-     * - AND between different filter groups, OR within same group
-     */
-    public function applyBranchFilter(Builder $query, Request $request): void
-    {
-        $branchFilter = $this->normalizeArrayInput($request->branch);
-        $merchantFilter = $this->normalizeArrayInput($request->merchant);
-
-        // Fallback to user/store param for single merchant
-        if (empty($merchantFilter) && $request->filled('user')) {
-            $merchantFilter = [(int) $request->user];
-        }
-        if (empty($merchantFilter) && $request->filled('store')) {
-            $merchantFilter = [(int) $request->store];
-        }
-
-        // If no branches selected, no branch filter needed
-        if (empty($branchFilter)) {
-            return;
-        }
-
-        // If no merchants selected, branches have no context
-        if (empty($merchantFilter)) {
-            return;
-        }
-
-        // Get which merchant each selected branch belongs to
-        $branchMerchantMap = $this->getBranchMerchantMapping($branchFilter);
-
-        if (empty($branchMerchantMap)) {
-            return;
-        }
-
-        // Group branches by their merchant
-        $branchesByMerchant = [];
-        foreach ($branchFilter as $branchId) {
-            $branchId = (int) $branchId;
-            if (isset($branchMerchantMap[$branchId])) {
-                $merchantId = $branchMerchantMap[$branchId];
-                if (!isset($branchesByMerchant[$merchantId])) {
-                    $branchesByMerchant[$merchantId] = [];
-                }
-                $branchesByMerchant[$merchantId][] = $branchId;
-            }
-        }
-
-        // Find merchants that have NO branches selected (they show ALL items)
-        $merchantsWithBranches = array_keys($branchesByMerchant);
-        $merchantsWithoutBranches = array_diff(array_map('intval', $merchantFilter), $merchantsWithBranches);
-
-        // Build the context-aware filter:
-        // - Merchants WITH branch selections: filter to those specific branches
-        // - Merchants WITHOUT branch selections: show all their items
-        $query->where(function ($q) use ($branchesByMerchant, $merchantsWithoutBranches) {
-            // For merchants WITH branch selections: show only selected branches
-            foreach ($branchesByMerchant as $merchantId => $branches) {
-                $q->orWhere(function ($subQ) use ($merchantId, $branches) {
-                    $subQ->where('merchant_items.user_id', $merchantId)
-                         ->whereIn('merchant_items.merchant_branch_id', $branches);
-                });
-            }
-
-            // For merchants WITHOUT branch selections: show all items
-            if (!empty($merchantsWithoutBranches)) {
-                $q->orWhereIn('merchant_items.user_id', $merchantsWithoutBranches);
-            }
-        });
-    }
-
-    /**
-     * Get mapping of branch IDs to their merchant IDs
-     *
-     * @param array $branchIds Array of branch IDs
-     * @return array [branch_id => merchant_id, ...]
-     */
-    protected function getBranchMerchantMapping(array $branchIds): array
-    {
-        if (empty($branchIds)) {
-            return [];
-        }
-
-        // Query merchant_items to find which merchant owns each branch
-        // Each branch belongs to one merchant (via merchant_items.merchant_branch_id + user_id)
-        $results = DB::table('merchant_items')
-            ->whereIn('merchant_branch_id', $branchIds)
-            ->where('status', 1)
-            ->groupBy('merchant_branch_id', 'user_id')
-            ->select('merchant_branch_id', 'user_id')
-            ->get();
-
-        $mapping = [];
-        foreach ($results as $row) {
-            $mapping[$row->merchant_branch_id] = $row->user_id;
-        }
-
-        return $mapping;
-    }
-
-    /**
-     * Apply quality brand filter
-     */
-    public function applyQualityBrandFilter(Builder $query, Request $request): void
-    {
-        $qualityBrand = $this->normalizeArrayInput($request->quality_brand);
-
-        if (!empty($qualityBrand)) {
-            $query->whereIn('merchant_items.quality_brand_id', $qualityBrand);
-        }
-    }
-
-    /**
-     * Apply price range filter
-     */
-    public function applyPriceFilter(Builder $query, ?float $minPrice, ?float $maxPrice, float $currencyValue = 1): void
-    {
-        if ($minPrice) {
-            $query->where('merchant_items.price', '>=', $minPrice / $currencyValue);
-        }
-        if ($maxPrice) {
-            $query->where('merchant_items.price', '<=', $maxPrice / $currencyValue);
-        }
-    }
-
-    /**
-     * Apply search filter
-     */
-    public function applySearchFilter(Builder $query, ?string $search): void
-    {
-        if (!empty($search)) {
-            $query->whereHas('catalogItem', fn($pq) =>
-                $pq->where('name', 'like', '%' . $search . '%')
-                   ->orWhere('part_number', 'like', $search . '%')
-            );
-        }
-    }
-
-    /**
-     * Apply discount filter
-     */
-    public function applyDiscountFilter(Builder $query, bool $hasDiscount): void
-    {
-        if ($hasDiscount) {
-            $query->where('merchant_items.is_discount', 1)
-                  ->where('merchant_items.discount_date', '>=', date('Y-m-d'));
-        }
-    }
-
-    /**
-     * Apply sorting
-     */
-    public function applySorting(Builder $query, ?string $sort): void
-    {
-        match ($sort) {
-            'date_desc' => $query->latest('merchant_items.id'),
-            'date_asc' => $query->oldest('merchant_items.id'),
-            'price_asc' => $query->orderBy('merchant_items.price', 'asc'),
-            'price_desc' => $query->orderBy('merchant_items.price', 'desc'),
-            'sku_asc' => $query->orderBy('catalog_items.part_number', 'asc'),
-            'sku_desc' => $query->orderBy('catalog_items.part_number', 'desc'),
-            default => $query->latest('merchant_items.id'),
-        };
-    }
-
-    /**
-     * Apply all filters
-     */
-    public function applyAllFilters(
-        Builder $query,
-        Request $request,
-        $cat = null,
-        $subcat = null,
-        $childcat = null,
-        float $currencyValue = 1,
-        $catalog = null
-    ): void {
-        $this->applyFitmentFilters($query, $cat, $subcat, $childcat, $catalog);
-        $this->applyMerchantFilter($query, $request);
-        $this->applyBranchFilter($query, $request);
-        $this->applyQualityBrandFilter($query, $request);
-        $this->applyPriceFilter(
-            $query,
-            $request->filled('min') ? (float) $request->min : null,
-            $request->filled('max') ? (float) $request->max : null,
-            $currencyValue
-        );
-        $this->applySearchFilter($query, $request->search);
-        $this->applyDiscountFilter($query, $request->has('type'));
-        $this->applySorting($query, $request->sort);
-    }
-
-    /**
-     * Execute full category query with pagination (LEGACY - MerchantItem-first)
-     * @deprecated Use getCatalogItemFirstResults() instead
-     */
-    public function getCatalogItemResults(
-        Request $request,
-        ?string $catSlug = null,
-        ?string $subcatSlug = null,
-        ?string $childcatSlug = null,
-        int $perPage = 12,
-        float $currencyValue = 1,
-        ?string $cat2Slug = null,
-        ?string $cat3Slug = null
-    ): array {
-        // REDIRECT TO NEW CatalogItem-first approach
-        return $this->getCatalogItemFirstResults(
-            $request,
-            $catSlug,
-            $subcatSlug,
-            $childcatSlug,
-            $perPage,
-            $currencyValue,
-            $cat2Slug,
-            $cat3Slug
-        );
     }
 
     /**

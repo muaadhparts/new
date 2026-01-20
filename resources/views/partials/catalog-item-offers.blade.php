@@ -148,20 +148,6 @@
                                             {{-- Actions --}}
                                             <div class="catalog-offers-branch-actions">
                                                 @if($canBuy)
-                                                    {{-- Quantity Control --}}
-                                                    <div class="catalog-qty-control">
-                                                        <button type="button" class="catalog-qty-btn qty-minus" data-target="{{ $uniqueId }}" data-min="{{ $minQty }}">-</button>
-                                                        <input type="text"
-                                                               class="catalog-qty-input qty-input"
-                                                               id="qty_{{ $uniqueId }}"
-                                                               value="{{ $minQty }}"
-                                                               readonly
-                                                               data-min="{{ $minQty }}"
-                                                               data-stock="{{ $stock }}"
-                                                               data-preordered="{{ $preordered ? 1 : 0 }}">
-                                                        <button type="button" class="catalog-qty-btn qty-plus" data-target="{{ $uniqueId }}" data-stock="{{ $stock }}" data-preordered="{{ $preordered ? 1 : 0 }}">+</button>
-                                                    </div>
-
                                                     {{-- Add to Cart Button --}}
                                                     <button type="button"
                                                             class="catalog-btn catalog-btn-success m-cart-add"
@@ -170,8 +156,7 @@
                                                             data-catalog-item-id="{{ $catalog_item['id'] }}"
                                                             data-min-qty="{{ $minQty }}"
                                                             data-stock="{{ $stock }}"
-                                                            data-preordered="{{ $preordered ? 1 : 0 }}"
-                                                            data-qty-input="#qty_{{ $uniqueId }}">
+                                                            data-preordered="{{ $preordered ? 1 : 0 }}">
                                                         <i class="fas fa-cart-plus"></i>
                                                         <span class="d-none d-md-inline">@lang('Add')</span>
                                                     </button>
@@ -179,14 +164,22 @@
                                                     <span class="text-muted">@lang('Unavailable')</span>
                                                 @endif
 
-                                                {{-- Quick View Button --}}
+                                                {{-- Shipping Quote Button --}}
                                                 <button type="button"
-                                                        class="catalog-btn catalog-btn-outline quick-view"
-                                                        data-id="{{ $catalog_item['id'] }}"
-                                                        data-url="{{ route('modal.quickview', ['id' => $catalog_item['id']]) }}?user={{ $offer['user_id'] }}"
-                                                        title="@lang('Quick View')">
-                                                    <i class="fas fa-eye"></i>
+                                                        class="catalog-btn catalog-btn-outline"
+                                                        data-shipping-quote
+                                                        data-merchant-user-id="{{ $offer['user_id'] }}"
+                                                        data-catalog-item-name="{{ $catalog_item['name'] ?? '' }}"
+                                                        title="@lang('احسب الشحن')">
+                                                    <i class="fas fa-truck"></i>
                                                 </button>
+
+                                                {{-- View Product Button --}}
+                                                <a href="{{ route('front.part-result', $catalog_item['part_number'] ?? '') }}"
+                                                   class="catalog-btn catalog-btn-outline"
+                                                   title="@lang('View Product')">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
                                             </div>
                                         </div>
                                     @endforeach

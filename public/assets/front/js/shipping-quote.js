@@ -223,69 +223,88 @@ const ShippingQuote = (function() {
     }
 
     /**
-     * Initialize shipping quote buttons on the page
+     * Handle shipping quote button click
+     */
+    async function handleButtonClick(button) {
+        const merchantUserId = parseInt(button.dataset.merchantUserId);
+        const weight = parseFloat(button.dataset.weight || 0.5);
+        const productName = button.dataset.catalogItemName || button.dataset.productName || '';
+        const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
+
+        if (!merchantUserId) return;
+
+        // Show loading state
+        const originalContent = button.innerHTML;
+        button.classList.add('m-shipping-quote-btn--loading');
+        button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${isRtl ? 'جاري التحميل...' : 'Loading...'}</span>`;
+
+        // Check location first
+        if (!CustomerLocation.hasCity()) {
+            const city = await CustomerLocation.requestLocation();
+            if (!city) {
+                button.classList.remove('m-shipping-quote-btn--loading');
+                button.innerHTML = originalContent;
+                return;
+            }
+        }
+
+        // Get quick estimate
+        const result = await getQuickEstimate(merchantUserId, weight);
+
+        button.classList.remove('m-shipping-quote-btn--loading');
+
+        if (result.success && result.price) {
+            // Show inline result with price
+            button.innerHTML = `
+                <i class="fas fa-truck m-shipping-quote-btn__icon"></i>
+                <span class="m-shipping-quote-btn__price">${result.formatted_price}</span>
+            `;
+            button.classList.add('has-price');
+            // Mark as showing price so next click opens modal
+            button.dataset.shippingQuoteHasPrice = 'true';
+        } else {
+            // Show error or no service message
+            const errorMsg = isRtl ? 'غير متاح' : 'N/A';
+            button.innerHTML = `<i class="fas fa-times"></i> <span>${errorMsg}</span>`;
+            button.classList.add('m-shipping-quote-btn--error');
+
+            // Reset after 3 seconds
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+                button.classList.remove('m-shipping-quote-btn--error');
+                delete button.dataset.shippingQuoteHasPrice;
+            }, 3000);
+        }
+    }
+
+    /**
+     * Initialize shipping quote buttons using event delegation
+     * This works automatically for dynamically added buttons (AJAX)
      */
     function initButtons() {
-        const buttons = document.querySelectorAll('[data-shipping-quote]');
+        // Only set up delegation once
+        if (document.body.dataset.shippingQuoteDelegation) return;
+        document.body.dataset.shippingQuoteDelegation = 'true';
 
-        buttons.forEach(button => {
-            if (button.dataset.shippingQuoteInit) return;
-            button.dataset.shippingQuoteInit = 'true';
+        // Use event delegation on document body
+        document.body.addEventListener('click', async function(e) {
+            const button = e.target.closest('[data-shipping-quote]');
+            if (!button) return;
 
-            button.addEventListener('click', async function(e) {
-                e.preventDefault();
-                e.stopPropagation();
+            e.preventDefault();
+            e.stopPropagation();
 
-                const merchantUserId = parseInt(this.dataset.merchantUserId);
-                const weight = parseFloat(this.dataset.weight || 0.5);
-                const productName = this.dataset.catalogItemName || this.dataset.productName || '';
-                const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
+            // If already showing price, open modal instead
+            if (button.dataset.shippingQuoteHasPrice === 'true') {
+                const merchantUserId = parseInt(button.dataset.merchantUserId);
+                const weight = parseFloat(button.dataset.weight || 0.5);
+                const productName = button.dataset.catalogItemName || button.dataset.productName || '';
+                showQuoteModal(merchantUserId, weight, productName);
+                return;
+            }
 
-                if (!merchantUserId) return;
-
-                // Show loading state
-                const originalContent = this.innerHTML;
-                this.classList.add('m-shipping-quote-btn--loading');
-                this.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${isRtl ? 'جاري التحميل...' : 'Loading...'}</span>`;
-
-                // Check location first
-                if (!CustomerLocation.hasCity()) {
-                    const city = await CustomerLocation.requestLocation();
-                    if (!city) {
-                        this.classList.remove('m-shipping-quote-btn--loading');
-                        this.innerHTML = originalContent;
-                        return;
-                    }
-                }
-
-                // Get quick estimate
-                const result = await getQuickEstimate(merchantUserId, weight);
-
-                this.classList.remove('m-shipping-quote-btn--loading');
-
-                if (result.success && result.price) {
-                    // Show inline result with price
-                    this.innerHTML = `
-                        <i class="fas fa-truck m-shipping-quote-btn__icon"></i>
-                        <span class="m-shipping-quote-btn__price">${result.formatted_price}</span>
-                    `;
-                    this.classList.add('has-price');
-
-                    // Click again to show full modal with all options
-                    this.onclick = () => showQuoteModal(merchantUserId, weight, productName);
-                } else {
-                    // Show error or no service message
-                    const errorMsg = isRtl ? 'غير متاح' : 'N/A';
-                    this.innerHTML = `<i class="fas fa-times"></i> <span>${errorMsg}</span>`;
-                    this.classList.add('m-shipping-quote-btn--error');
-
-                    // Reset after 3 seconds
-                    setTimeout(() => {
-                        this.innerHTML = originalContent;
-                        this.classList.remove('m-shipping-quote-btn--error');
-                    }, 3000);
-                }
-            });
+            // Otherwise, get quick estimate
+            await handleButtonClick(button);
         });
     }
 
