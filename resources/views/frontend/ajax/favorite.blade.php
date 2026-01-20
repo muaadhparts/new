@@ -4,9 +4,9 @@
         $favoriteMerchant = $favorite->effective_merchant_item
             ?? $favorite->getEffectiveMerchantItem();
 
-        $catalogItemSlug = $favorite->catalogItem->slug ?? $favorite->slug ?? null;
-        $favoriteCatalogItemUrl = $favoriteMerchant && $catalogItemSlug
-            ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $favoriteMerchant->id])
+        $partNumber = $favorite->catalogItem->part_number ?? null;
+        $favoriteCatalogItemUrl = $partNumber
+            ? route('front.part-result', $partNumber)
             : '#';
     @endphp
 

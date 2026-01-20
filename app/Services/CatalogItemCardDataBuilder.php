@@ -266,6 +266,34 @@ class CatalogItemCardDataBuilder
     }
 
     /**
+     * Build CatalogItemCardDTOs from paginated CatalogItem results
+     * Returns a LengthAwarePaginator with DTOs instead of models
+     *
+     * This is the NEW method for CatalogItem-first queries (one card per CatalogItem)
+     *
+     * @param \Illuminate\Pagination\LengthAwarePaginator $paginator
+     * @return \Illuminate\Pagination\LengthAwarePaginator
+     */
+    public function buildCardsFromCatalogItemPaginator($paginator): \Illuminate\Pagination\LengthAwarePaginator
+    {
+        $this->initialize();
+
+        $dtos = $paginator->getCollection()->map(function ($catalogItem) {
+            // Get best merchant (first from eager-loaded, sorted by price)
+            $merchant = $catalogItem->merchantItems?->first();
+
+            return CatalogItemCardDTO::fromCatalogItemFirst(
+                $catalogItem,
+                $merchant,
+                $this->userFavoriteCatalogItemIds,
+                $this->userFavoriteMerchantIds
+            );
+        });
+
+        return $paginator->setCollection($dtos);
+    }
+
+    /**
      * Build a single CatalogItemCardDTO from MerchantItem
      */
     public function buildCardFromMerchant(MerchantItem $merchant): CatalogItemCardDTO

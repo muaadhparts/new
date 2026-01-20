@@ -76,11 +76,9 @@ class CatalogItemSchema extends SchemaBuilder
 
     protected function buildOffers(): array
     {
-        $url = route('front.catalog-item', [
-            'slug' => $this->catalogItem->slug,
-            'merchant_id' => $this->merchant->user_id,
-            'merchant_item_id' => $this->merchant->id
-        ]);
+        $url = $this->catalogItem->part_number
+            ? route('front.part-result', $this->catalogItem->part_number)
+            : url()->current();
 
         return [
             '@type' => 'Offer',

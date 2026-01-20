@@ -366,14 +366,9 @@
                                             @if ($catalogItem['item']['user_id'] != 0)
                                             {{-- ✅ URL الرابط يُحسب بدون query - البيانات موجودة في الـ cart --}}
                                             @php
-                                                $merchantOrderProductUrl = '#';
-                                                if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
-                                                    $merchantOrderProductUrl = route('front.catalog-item', [
-                                                        'slug' => $catalogItem['item']['slug'],
-                                                        'merchant_id' => $catalogItem['user_id'],
-                                                        'merchant_item_id' => $catalogItem['merchant_item_id']
-                                                    ]);
-                                                }
+                                                $merchantOrderProductUrl = !empty($catalogItem['item']['part_number'])
+                                                    ? route('front.part-result', $catalogItem['item']['part_number'])
+                                                    : '#';
                                             @endphp
                                             <a class="name-hover-color content catalogItem-name d-inline-block" target="_blank"
                                                 href="{{ $merchantOrderProductUrl }}">

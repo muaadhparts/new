@@ -283,8 +283,8 @@
                 @endif
 
                 {{-- View Details Link --}}
-                @if($mp)
-                    <a href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_item_id' => $mp->id]) }}"
+                @if($catalogItem->part_number)
+                    <a href="{{ route('front.part-result', $catalogItem->part_number) }}"
                        class="catalog-quickview-btn catalog-quickview-btn-details"
                        target="_blank">
                         <i class="fas fa-external-link-alt"></i> @lang('View Details')

@@ -155,8 +155,8 @@ class MerchantController extends OperatorBaseController
         return Datatables::of($datas)
             ->addColumn('mp_id', function (MerchantItem $data) {
                 $dt = $data->catalogItem;
-                $adminMerchantUrl = $dt && $dt->slug
-                    ? route('front.catalog-item', ['slug' => $dt->slug, 'merchant_item_id' => $data->id])
+                $adminMerchantUrl = $dt && $dt->part_number
+                    ? route('front.part-result', $dt->part_number)
                     : '#';
                 return '<a href="' . $adminMerchantUrl . '" target="_blank">' . sprintf("%'.06d", $data->id) . '</a>';
             })

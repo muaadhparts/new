@@ -1455,31 +1455,9 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/compare/remove/{merchantItemId}', 'Front\CompareController@removecompare')->name('catalog-item.compare.remove');
     // COMPARE SECTION ENDS
 
-    // CATALOG ITEM SECTION
-    // PRIMARY ROUTE: Simple format using merchant_item_id (unique identifier)
-    Route::get('/item/{slug}/merchantitem/{merchant_item_id}', 'Front\CatalogItemDetailsController@showByMerchantItem')
-         ->whereNumber('merchant_item_id')
-         ->name('front.catalog-item');
-
-    Route::get('/item/show/cross/{id}', 'Front\CatalogItemDetailsController@showCrossCatalogItem')->name('front.show.cross.catalog-item');
-    Route::get('/afbuy/{slug}', 'Front\CatalogItemDetailsController@affCatalogItemRedirect')->name('affiliate.catalog-item');
-    Route::get('/item/quick/view/{id}/', 'Front\CatalogItemDetailsController@quick')->name('catalog-item.quick');
-    Route::post('/item/review', 'Front\CatalogItemDetailsController@reviewsubmit')->name('front.catalog-item.review.submit');
-    Route::get('/item/view/review/{id}', 'Front\CatalogItemDetailsController@reviews')->name('front.catalog-item.reviews');
-    Route::get('/item/view/side/review/{id}', 'Front\CatalogItemDetailsController@sideReviews')->name('front.catalog-item.side.reviews');
-    // CATALOG ITEM SECTION ENDS
-
-    // BUYER NOTE SECTION
-    Route::post('/item/buyer-note/store', 'Front\CatalogItemDetailsController@buyerNoteStore')->name('catalog-item.buyer-note');
-    Route::post('/item/buyer-note/edit/{id}', 'Front\CatalogItemDetailsController@buyerNoteEdit')->name('catalog-item.buyer-note.edit');
-    Route::get('/item/buyer-note/delete/{id}', 'Front\CatalogItemDetailsController@buyerNoteDelete')->name('catalog-item.buyer-note.delete');
-    // BUYER NOTE SECTION ENDS
-
-    // REPLY SECTION
-    Route::post('/item/reply/{id}', 'Front\CatalogItemDetailsController@reply')->name('catalog-item.reply');
-    Route::post('/item/reply/edit/{id}', 'Front\CatalogItemDetailsController@replyedit')->name('catalog-item.reply.edit');
-    Route::get('/item/reply/delete/{id}', 'Front\CatalogItemDetailsController@replydelete')->name('catalog-item.reply.delete');
-    // REPLY SECTION ENDS
+    // PART RESULT PAGE - Shows all offers for a part number
+    // NEW: CatalogItem-first approach (one page per part_number, not per merchant_item)
+    Route::get('/result/{part_number}', 'Front\PartResultController@show')->name('front.part-result');
 
     // Discount code validation
     Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');

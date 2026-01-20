@@ -1,8 +1,8 @@
 {{-- SEO Canonical & Structured Data Tags --}}
 @section('seo')
-    @if(isset($catalogItem, $merchantId, $merchant) && $merchantId && $merchant)
+    @if(isset($catalogItem) && $catalogItem->part_number)
         @php
-            $productUrl = route('front.catalog-item', ['slug'=>$catalogItem->slug, 'merchant_item_id'=>$merchant->id]);
+            $productUrl = route('front.part-result', $catalogItem->part_number);
             $imageUrl = $catalogItem->photo
                 ? (filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : \Illuminate\Support\Facades\Storage::url($catalogItem->photo))
                 : asset('assets/images/noimage.png');

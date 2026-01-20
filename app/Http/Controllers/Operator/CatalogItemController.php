@@ -57,11 +57,9 @@ class CatalogItemController extends OperatorBaseController
                 $catalogItem = $mp->catalogItem;
                 if (!$catalogItem) return __('N/A');
 
-                $prodLink = route('front.catalog-item', [
-                    'slug' => $catalogItem->slug,
-                    'merchant_id' => $mp->user_id,
-                    'merchant_item_id' => $mp->id
-                ]);
+                $prodLink = $catalogItem->part_number
+                    ? route('front.part-result', $catalogItem->part_number)
+                    : '#';
 
                 $displayName = getLocalizedCatalogItemName($catalogItem);
                 $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';
@@ -170,11 +168,9 @@ class CatalogItemController extends OperatorBaseController
                 $catalogItem = $mp->catalogItem;
                 if (!$catalogItem) return __('N/A');
 
-                $prodLink = route('front.catalog-item', [
-                    'slug' => $catalogItem->slug,
-                    'merchant_id' => $mp->user_id,
-                    'merchant_item_id' => $mp->id
-                ]);
+                $prodLink = $catalogItem->part_number
+                    ? route('front.part-result', $catalogItem->part_number)
+                    : '#';
 
                 $displayName = getLocalizedCatalogItemName($catalogItem);
                 $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';

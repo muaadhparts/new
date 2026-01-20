@@ -422,14 +422,9 @@
 
                                             <div class="td-name td-catalogItem-namee">
                                                 @php
-                                                    $userPurchaseProductUrl = '#';
-                                                    if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
-                                                        $userPurchaseProductUrl = route('front.catalog-item', [
-                                                            'slug' => $catalogItem['item']['slug'],
-                                                            'merchant_id' => $catalogItem['user_id'],
-                                                            'merchant_item_id' => $catalogItem['merchant_item_id']
-                                                        ]);
-                                                    }
+                                                    $userPurchaseProductUrl = !empty($catalogItem['item']['part_number'])
+                                                        ? route('front.part-result', $catalogItem['item']['part_number'])
+                                                        : '#';
                                                 @endphp
                                                 <b>
                                                     <a class="a_name_link d-block name-hover-color" target="_blank"

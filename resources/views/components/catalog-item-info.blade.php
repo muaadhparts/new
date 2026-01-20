@@ -25,14 +25,7 @@
         return;
     }
 
-    // STRICT: NO FALLBACK - $mp MUST be passed from Controller
-    // If on catalog item detail page and $mp is missing, throw error
-    if (!$mp && request()->routeIs('front.catalog-item')) {
-        throw new \LogicException(
-            "CatalogItemInfo component: \$mp (MerchantItem) is REQUIRED on catalog item detail page. " .
-            "Pass it explicitly from Controller. CatalogItem ID: {$catalogItem->id}"
-        );
-    }
+    // NOTE: $mp (MerchantItem) is optional - if not passed, merchant-specific fields will be null
 
     // Extract all display values (using localized names)
     // NO FALLBACK - if $mp is null, merchant-specific fields will be null

@@ -147,8 +147,8 @@
                                         // Use best_merchant_item from eager-loaded data
                                         $vCatalogMerchant = $vCatalogProdObj?->best_merchant_item;
 
-                                        $vCatalogProdUrl = $vCatalogMerchant && isset($cartItem['slug'])
-                                            ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_item_id' => $vCatalogMerchant->id])
+                                        $vCatalogProdUrl = !empty($cartItem['part_number'])
+                                            ? route('front.part-result', $cartItem['part_number'])
                                             : '#';
                                     @endphp
 

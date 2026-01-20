@@ -9,7 +9,6 @@
     'class' => '',
     'nameClass' => '',
     'skuClass' => 'text-muted small',
-    'useSearchRoute' => null // null = auto detect, true = force search route, false = force catalog-item route
 ])
 
 @php
@@ -60,45 +59,11 @@
     // PART_NUMBER display
     $displaySku = !empty($part_number) ? $part_number : '-';
 
-    // Determine which route to use
-    $shouldUseSearchRoute = $useSearchRoute;
-    if ($shouldUseSearchRoute === null) {
-        // Auto-detect: use search route unless we're in specific contexts
-        $currentRouteName = request()->route() ? request()->route()->getName() : '';
-        $currentPath = request()->path();
-
-        // Use search route (result/{part_number}) for admin pages EXCEPT purchases/invoices
-        $isAdminPage = str_starts_with($currentPath, 'admin/');
-        $isAdminPurchaseOrInvoice = $isAdminPage && (
-            str_contains($currentPath, '/purchase') ||
-            str_contains($currentPath, '/invoice')
-        );
-
-        // Keep catalog-item route for:
-        // 1. search-results-page and category pages (front.catalog)
-        // 2. merchant dashboard (all merchant pages)
-        // 3. admin purchases and invoices (merchant-specific pages)
-        // 4. cart, checkout, and purchase pages (user)
-        $keepCatalogItemRoute =
-            in_array($currentRouteName, ['search.result', 'front.catalog']) ||
-            str_starts_with($currentPath, 'merchant/') ||
-            $isAdminPurchaseOrInvoice ||
-            str_starts_with($currentPath, 'user/purchase') ||
-            str_contains($currentPath, '/cart') ||
-            str_contains($currentPath, '/checkout');
-
-        $shouldUseSearchRoute = !$keepCatalogItemRoute;
-    }
-
-    // Route generation
-    if ($shouldUseSearchRoute && !empty($part_number)) {
-        // Use search route: result/{part_number}
-        $catalogItemRoute = route('search.result', $part_number);
+    // Route generation - always use part-result route with part_number
+    if (!empty($part_number)) {
+        $catalogItemRoute = route('front.part-result', $part_number);
     } else {
-        // Use catalog item details route
-        $catalogItemRoute = !empty($slug) && $mpId
-            ? route('front.catalog-item', ['slug' => $slug, 'merchant_item_id' => $mpId])
-            : '#';
+        $catalogItemRoute = '#';
     }
 @endphp
 

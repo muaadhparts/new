@@ -22,11 +22,9 @@ Receives: $merchantItems (Collection of MerchantItem models)
         $catalogItemName = $actualCatalogItem->showName();
 
         // URL
-        $catalogItemUrl = route('front.catalog-item', [
-            'slug' => $actualCatalogItem->slug,
-            'merchant_id' => $merchantItem->user_id,
-            'merchant_item_id' => $merchantItem->id
-        ]);
+        $catalogItemUrl = $actualCatalogItem->part_number
+            ? route('front.part-result', $actualCatalogItem->part_number)
+            : '#';
 
         // Photo
         $mainPhoto = $actualCatalogItem->photo ?? null;

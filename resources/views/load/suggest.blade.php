@@ -6,18 +6,13 @@
 		$isMerchantItem = $cartItem instanceof \App\Models\MerchantItem;
 
 		if ($isMerchantItem) {
-			$merchantItemId = $cartItem->id;
-			$merchantId = $cartItem->user_id;
-			$catalogItemSlug = $cartItem->catalogItem->slug ?? $cartItem->slug;
+			$partNumber = $cartItem->catalogItem->part_number ?? $cartItem->part_number ?? null;
 		} else {
-			$mp = $cartItem->merchantItems()->where('status', 1)->orderBy('price')->first();
-			$merchantItemId = $mp->id ?? null;
-			$merchantId = $mp->user_id ?? null;
-			$catalogItemSlug = $cartItem->slug;
+			$partNumber = $cartItem->part_number;
 		}
 
-		$catalogItemUrl = $merchantItemId
-			? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $merchantItemId])
+		$catalogItemUrl = $partNumber
+			? route('front.part-result', $partNumber)
 			: 'javascript:;';
 	@endphp
 	<div class="docname">

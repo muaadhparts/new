@@ -368,13 +368,8 @@
               {{-- CATALOGITEM OTHER DETAILS SECTION ENDS --}}
 
               <div class="mt-2">
-                @php
-                    $detailMerchantUserId = request()->get('user', $catalogItem->user_id);
-                    $detailMerchantItem = $catalogItem->merchantItems()->where('user_id', $detailMerchantUserId)->where('status', 1)->first();
-                    $detailMerchantItemId = $detailMerchantItem->id ?? null;
-                @endphp
-                @if($detailMerchantItemId)
-                    <a class="view_more_btn" href="{{ route('front.catalog-item', ['slug' => $catalogItem->slug, 'merchant_item_id' => $detailMerchantItemId]) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
+                @if($catalogItem->part_number)
+                    <a class="view_more_btn" href="{{ route('front.part-result', $catalogItem->part_number) }}">{{__('Get More Details')}} <i class="fas fa-arrow-right"></i></a>
                 @endif
               </div>
 

@@ -81,6 +81,81 @@ class CatalogItem extends Model
         });
     }
 
+    /**
+     * Scope: CatalogItem-first query with aggregated offer data.
+     *
+     * Returns catalog_items that have active offers, with:
+     * - offers_count: number of active merchant_items
+     * - lowest_price: minimum price among offers
+     * - best_merchant_item loaded as relation
+     *
+     * This is the CORRECT approach for catalog pages (one card per CatalogItem).
+     */
+    public function scopeWithOffersData(Builder $query): Builder
+    {
+        // Subquery for counting active offers
+        $offersCountSubquery = MerchantItem::selectRaw('COUNT(*)')
+            ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+            ->where('merchant_items.status', 1)
+            ->whereExists(function ($q) {
+                $q->selectRaw(1)
+                    ->from('users')
+                    ->whereColumn('users.id', 'merchant_items.user_id')
+                    ->where('users.is_merchant', 2);
+            });
+
+        // Subquery for lowest price
+        $lowestPriceSubquery = MerchantItem::selectRaw('MIN(merchant_items.price)')
+            ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+            ->where('merchant_items.status', 1)
+            ->whereExists(function ($q) {
+                $q->selectRaw(1)
+                    ->from('users')
+                    ->whereColumn('users.id', 'merchant_items.user_id')
+                    ->where('users.is_merchant', 2);
+            });
+
+        return $query
+            ->selectRaw('catalog_items.*')
+            ->selectSub($offersCountSubquery, 'offers_count')
+            ->selectSub($lowestPriceSubquery, 'lowest_price')
+            ->whereExists(function ($q) {
+                // Only catalog_items that have at least one active offer
+                $q->selectRaw(1)
+                    ->from('merchant_items')
+                    ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+                    ->where('merchant_items.status', 1)
+                    ->whereExists(function ($q2) {
+                        $q2->selectRaw(1)
+                            ->from('users')
+                            ->whereColumn('users.id', 'merchant_items.user_id')
+                            ->where('users.is_merchant', 2);
+                    });
+            });
+    }
+
+    /**
+     * Scope: Load the best (lowest price) merchant item as eager-loaded relation.
+     * Must be used with withOffersData() for optimal performance.
+     */
+    public function scopeWithBestOffer(Builder $query): Builder
+    {
+        return $query->with(['merchantItems' => function ($q) {
+            $q->where('status', 1)
+                ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
+                ->with([
+                    'user:id,is_merchant,name,shop_name,shop_name_ar,email',
+                    'qualityBrand:id,name_en,name_ar,logo',
+                    'merchantBranch:id,warehouse_name,branch_name',
+                ])
+                ->orderByRaw('CASE WHEN stock > 0 THEN 0 ELSE 1 END')
+                ->orderBy('price', 'asc');
+        }])
+        ->with('fitments.brand')
+        ->withCount('catalogReviews')
+        ->withAvg('catalogReviews', 'rating');
+    }
+
     /* =========================================================================
      |  Relations
      | ========================================================================= */
@@ -730,23 +805,16 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get the catalog item URL with all required route parameters.
+     * Get the catalog item URL.
      *
-     * Uses bestMerchant() to determine merchant_id and merchant_item_id.
-     * Falls back to legacy route if no active merchant found.
+     * NEW: Uses part_number based URL (CatalogItem-first approach)
      *
      * @return string
      */
     public function getCatalogItemUrl(): string
     {
-        $merchant = $this->bestMerchant();
-
-        if ($merchant && $this->slug) {
-            return route('front.catalog-item', [
-                'slug' => $this->slug,
-                'merchant_id' => $merchant->user_id,
-                'merchant_item_id' => $merchant->id
-            ]);
+        if ($this->part_number) {
+            return route('front.part-result', $this->part_number);
         }
 
         return '#';

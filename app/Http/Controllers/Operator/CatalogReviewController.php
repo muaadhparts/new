@@ -21,14 +21,8 @@ class CatalogReviewController extends OperatorBaseController
 									$name = $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : __('N/A');
 
 									// Build link to catalog item
-									if ($data->merchantItem && $data->merchantItem->id && $data->catalogItem) {
-										$itemLink = route('front.catalog-item', [
-											'slug' => $data->catalogItem->slug,
-											'merchant_id' => $data->merchantItem->user_id,
-											'merchant_item_id' => $data->merchantItem->id
-										]);
-									} elseif ($data->catalogItem && $data->catalogItem->part_number) {
-										$itemLink = route('search.result', $data->catalogItem->part_number);
+									if ($data->catalogItem && $data->catalogItem->part_number) {
+										$itemLink = route('front.part-result', $data->catalogItem->part_number);
 									} else {
 										$itemLink = '#';
 									}

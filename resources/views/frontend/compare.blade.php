@@ -258,13 +258,9 @@
                         $merchantItem = $catalogItem['merchant_item'] ?? $catalogItem['merchant_item'] ?? null;
                         $catalogItemData = $catalogItem['item'];
 
-                        if ($merchantItem) {
-                            $compareCatalogItemUrl = $catalogItemData->slug
-                                ? route('front.catalog-item', ['slug' => $catalogItemData->slug, 'merchant_item_id' => $merchantItem->id])
-                                : '#';
-                        } else {
-                            $compareCatalogItemUrl = '#';
-                        }
+                        $compareCatalogItemUrl = $catalogItemData->part_number
+                            ? route('front.part-result', $catalogItemData->part_number)
+                            : '#';
 
                         $processedCatalogItems[$mpId] = [
                             'item' => $catalogItemData,

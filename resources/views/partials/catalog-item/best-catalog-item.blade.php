@@ -2,8 +2,8 @@
     // Use eager-loaded accessor (avoids N+1 query)
     $bestProdMerchant = $cartItem->best_merchant_item;
 
-    $bestProdUrl = $bestProdMerchant && $cartItem->slug
-        ? route('front.catalog-item', ['slug' => $cartItem->slug, 'merchant_item_id' => $bestProdMerchant->id])
+    $bestProdUrl = $cartItem->part_number
+        ? route('front.part-result', $cartItem->part_number)
         : '#';
 @endphp
 

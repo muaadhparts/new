@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Brand;
 use App\Models\Catalog;
+use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use App\Models\QualityBrand;
 use App\Models\NewCategory;
@@ -213,7 +214,8 @@ class CatalogItemFilterService
     }
 
     /**
-     * Build the base query for merchant items
+     * Build the base query for merchant items (LEGACY - kept for backward compatibility)
+     * @deprecated Use buildCatalogItemQuery() instead for catalog pages
      */
     public function buildBaseQuery(): Builder
     {
@@ -227,6 +229,279 @@ class CatalogItemFilterService
         $this->cardBuilder->applyMerchantItemEagerLoading($query);
 
         return $query;
+    }
+
+    /**
+     * Build CatalogItem-first query (NEW - one card per CatalogItem)
+     *
+     * Returns CatalogItem query with:
+     * - offers_count: number of active merchant_items
+     * - lowest_price: minimum price among offers
+     * - best merchant_item loaded for card display
+     */
+    public function buildCatalogItemQuery(): Builder
+    {
+        return CatalogItem::query()
+            ->withOffersData()
+            ->withBestOffer();
+    }
+
+    /**
+     * Apply fitment filter for CatalogItem query
+     */
+    public function applyCatalogItemFitmentFilters(Builder $query, $cat, $subcat, $childcat, $catalog = null): void
+    {
+        // No filters = show all
+        if (!$cat && !$subcat && !$childcat) {
+            return;
+        }
+
+        // Only Brand selected → filter via catalog_item_fitments
+        if ($cat && !$subcat && !$childcat) {
+            $query->whereHas('fitments', fn($f) => $f->where('brand_id', $cat->id));
+            return;
+        }
+
+        // Get catalog for dynamic table names
+        $catalogObj = $catalog ?? $subcat;
+        if (!$catalogObj || !($catalogObj instanceof Catalog)) {
+            return;
+        }
+
+        $catalogCode = $catalogObj->code;
+
+        // Only Catalog selected (no NewCategory)
+        if (!$childcat) {
+            $this->applyCatalogItemPartsTableFilter($query, $catalogCode, null);
+            return;
+        }
+
+        // NewCategory selected → get all descendants
+        $categoryIds = $this->getDescendantIds($childcat->id, $catalogObj->id);
+
+        if (empty($categoryIds)) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        $this->applyCatalogItemPartsTableFilter($query, $catalogCode, $categoryIds);
+    }
+
+    /**
+     * Apply parts table filter for CatalogItem query
+     */
+    protected function applyCatalogItemPartsTableFilter(Builder $query, string $catalogCode, ?array $categoryIds): void
+    {
+        // Validate catalog code
+        if (!preg_match('/^[A-Za-z0-9_]+$/', $catalogCode)) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        $partsTable = strtolower("parts_{$catalogCode}");
+        $sectionPartsTable = strtolower("section_parts_{$catalogCode}");
+
+        // Check tables exist
+        if (!Schema::hasTable($partsTable) || !Schema::hasTable($sectionPartsTable)) {
+            $query->whereRaw('1 = 0');
+            return;
+        }
+
+        $query->whereExists(function ($exists) use ($partsTable, $sectionPartsTable, $categoryIds) {
+            $exists->selectRaw(1)
+                ->from("{$partsTable} as p")
+                ->join("{$sectionPartsTable} as sp", 'sp.part_id', '=', 'p.id')
+                ->whereColumn('p.part_number', 'catalog_items.part_number');
+
+            if ($categoryIds !== null) {
+                $exists->whereIn('sp.category_id', $categoryIds);
+            }
+        });
+    }
+
+    /**
+     * Apply merchant filter for CatalogItem query
+     */
+    public function applyCatalogItemMerchantFilter(Builder $query, Request $request): void
+    {
+        $merchantFilter = $this->normalizeArrayInput($request->merchant);
+
+        if (empty($merchantFilter) && $request->filled('user')) {
+            $merchantFilter = [(int) $request->user];
+        }
+        if (empty($merchantFilter) && $request->filled('store')) {
+            $merchantFilter = [(int) $request->store];
+        }
+
+        if (!empty($merchantFilter)) {
+            $query->whereHas('merchantItems', function ($q) use ($merchantFilter) {
+                $q->where('status', 1)
+                    ->whereIn('user_id', $merchantFilter)
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
+            });
+        }
+    }
+
+    /**
+     * Apply branch filter for CatalogItem query
+     */
+    public function applyCatalogItemBranchFilter(Builder $query, Request $request): void
+    {
+        $branchFilter = $this->normalizeArrayInput($request->branch);
+        $merchantFilter = $this->normalizeArrayInput($request->merchant);
+
+        if (empty($merchantFilter) && $request->filled('user')) {
+            $merchantFilter = [(int) $request->user];
+        }
+        if (empty($merchantFilter) && $request->filled('store')) {
+            $merchantFilter = [(int) $request->store];
+        }
+
+        if (empty($branchFilter)) {
+            return;
+        }
+
+        if (empty($merchantFilter)) {
+            return;
+        }
+
+        $branchMerchantMap = $this->getBranchMerchantMapping($branchFilter);
+
+        if (empty($branchMerchantMap)) {
+            return;
+        }
+
+        $branchesByMerchant = [];
+        foreach ($branchFilter as $branchId) {
+            $branchId = (int) $branchId;
+            if (isset($branchMerchantMap[$branchId])) {
+                $merchantId = $branchMerchantMap[$branchId];
+                if (!isset($branchesByMerchant[$merchantId])) {
+                    $branchesByMerchant[$merchantId] = [];
+                }
+                $branchesByMerchant[$merchantId][] = $branchId;
+            }
+        }
+
+        $merchantsWithBranches = array_keys($branchesByMerchant);
+        $merchantsWithoutBranches = array_diff(array_map('intval', $merchantFilter), $merchantsWithBranches);
+
+        $query->whereHas('merchantItems', function ($q) use ($branchesByMerchant, $merchantsWithoutBranches) {
+            $q->where('status', 1)
+                ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
+                ->where(function ($subQ) use ($branchesByMerchant, $merchantsWithoutBranches) {
+                    foreach ($branchesByMerchant as $merchantId => $branches) {
+                        $subQ->orWhere(function ($innerQ) use ($merchantId, $branches) {
+                            $innerQ->where('user_id', $merchantId)
+                                ->whereIn('merchant_branch_id', $branches);
+                        });
+                    }
+
+                    if (!empty($merchantsWithoutBranches)) {
+                        $subQ->orWhereIn('user_id', $merchantsWithoutBranches);
+                    }
+                });
+        });
+    }
+
+    /**
+     * Apply quality brand filter for CatalogItem query
+     */
+    public function applyCatalogItemQualityBrandFilter(Builder $query, Request $request): void
+    {
+        $qualityBrand = $this->normalizeArrayInput($request->quality_brand);
+
+        if (!empty($qualityBrand)) {
+            $query->whereHas('merchantItems', function ($q) use ($qualityBrand) {
+                $q->where('status', 1)
+                    ->whereIn('quality_brand_id', $qualityBrand)
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
+            });
+        }
+    }
+
+    /**
+     * Apply price filter for CatalogItem query (uses lowest_price subquery)
+     */
+    public function applyCatalogItemPriceFilter(Builder $query, ?float $minPrice, ?float $maxPrice, float $currencyValue = 1): void
+    {
+        if ($minPrice) {
+            $query->having('lowest_price', '>=', $minPrice / $currencyValue);
+        }
+        if ($maxPrice) {
+            $query->having('lowest_price', '<=', $maxPrice / $currencyValue);
+        }
+    }
+
+    /**
+     * Apply search filter for CatalogItem query
+     */
+    public function applyCatalogItemSearchFilter(Builder $query, ?string $search): void
+    {
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('part_number', 'like', $search . '%');
+            });
+        }
+    }
+
+    /**
+     * Apply discount filter for CatalogItem query
+     */
+    public function applyCatalogItemDiscountFilter(Builder $query, bool $hasDiscount): void
+    {
+        if ($hasDiscount) {
+            $query->whereHas('merchantItems', function ($q) {
+                $q->where('status', 1)
+                    ->where('is_discount', 1)
+                    ->where('discount_date', '>=', date('Y-m-d'))
+                    ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
+            });
+        }
+    }
+
+    /**
+     * Apply sorting for CatalogItem query
+     */
+    public function applyCatalogItemSorting(Builder $query, ?string $sort): void
+    {
+        match ($sort) {
+            'date_desc' => $query->latest('catalog_items.id'),
+            'date_asc' => $query->oldest('catalog_items.id'),
+            'price_asc' => $query->orderBy('lowest_price', 'asc'),
+            'price_desc' => $query->orderBy('lowest_price', 'desc'),
+            'sku_asc' => $query->orderBy('catalog_items.part_number', 'asc'),
+            'sku_desc' => $query->orderBy('catalog_items.part_number', 'desc'),
+            default => $query->latest('catalog_items.id'),
+        };
+    }
+
+    /**
+     * Apply all filters for CatalogItem query (NEW)
+     */
+    public function applyCatalogItemFilters(
+        Builder $query,
+        Request $request,
+        $cat = null,
+        $subcat = null,
+        $childcat = null,
+        float $currencyValue = 1,
+        $catalog = null
+    ): void {
+        $this->applyCatalogItemFitmentFilters($query, $cat, $subcat, $childcat, $catalog);
+        $this->applyCatalogItemMerchantFilter($query, $request);
+        $this->applyCatalogItemBranchFilter($query, $request);
+        $this->applyCatalogItemQualityBrandFilter($query, $request);
+        $this->applyCatalogItemPriceFilter(
+            $query,
+            $request->filled('min') ? (float) $request->min : null,
+            $request->filled('max') ? (float) $request->max : null,
+            $currencyValue
+        );
+        $this->applyCatalogItemSearchFilter($query, $request->search);
+        $this->applyCatalogItemDiscountFilter($query, $request->has('type'));
+        $this->applyCatalogItemSorting($query, $request->sort);
     }
 
     /**
@@ -521,7 +796,8 @@ class CatalogItemFilterService
     }
 
     /**
-     * Execute full category query with pagination
+     * Execute full category query with pagination (LEGACY - MerchantItem-first)
+     * @deprecated Use getCatalogItemFirstResults() instead
      */
     public function getCatalogItemResults(
         Request $request,
@@ -533,14 +809,48 @@ class CatalogItemFilterService
         ?string $cat2Slug = null,
         ?string $cat3Slug = null
     ): array {
+        // REDIRECT TO NEW CatalogItem-first approach
+        return $this->getCatalogItemFirstResults(
+            $request,
+            $catSlug,
+            $subcatSlug,
+            $childcatSlug,
+            $perPage,
+            $currencyValue,
+            $cat2Slug,
+            $cat3Slug
+        );
+    }
+
+    /**
+     * Execute CatalogItem-first query with pagination (NEW - one card per CatalogItem)
+     *
+     * Returns CatalogItem models with:
+     * - offers_count: number of active merchant_items
+     * - lowest_price: minimum price among offers
+     * - best merchant_item loaded for display
+     */
+    public function getCatalogItemFirstResults(
+        Request $request,
+        ?string $catSlug = null,
+        ?string $subcatSlug = null,
+        ?string $childcatSlug = null,
+        int $perPage = 12,
+        float $currencyValue = 1,
+        ?string $cat2Slug = null,
+        ?string $cat3Slug = null
+    ): array {
         $sidebarData = $this->getFilterSidebarData();
         $hierarchy = $this->resolveCategoryHierarchy($catSlug, $subcatSlug, $childcatSlug, $cat2Slug, $cat3Slug);
-        $query = $this->buildBaseQuery();
+
+        // NEW: CatalogItem-first query
+        $query = $this->buildCatalogItemQuery();
 
         // Use deepest category for filtering
         $deepestCategory = $hierarchy['deepest'] ?? $hierarchy['childcat'];
 
-        $this->applyAllFilters(
+        // Apply CatalogItem-specific filters
+        $this->applyCatalogItemFilters(
             $query,
             $request,
             $hierarchy['cat'],
@@ -551,7 +861,9 @@ class CatalogItemFilterService
         );
 
         $paginator = $query->paginate($perPage)->withQueryString();
-        $cards = $this->cardBuilder->buildCardsFromPaginator($paginator);
+
+        // Build cards from CatalogItem models (not MerchantItem)
+        $cards = $this->cardBuilder->buildCardsFromCatalogItemPaginator($paginator);
 
         $filterSummary = $this->buildFilterSummary(
             $request,

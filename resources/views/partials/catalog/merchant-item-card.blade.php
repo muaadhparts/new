@@ -62,13 +62,9 @@
     $branch = $merchantItem->merchantBranch ?? null;
     $branchName = $branch?->warehouse_name;
 
-    // URL - use joined slug
-    $itemUrl = $slug
-        ? route('front.catalog-item', [
-            'slug' => $slug,
-            'merchant_id' => $merchantItem->user_id,
-            'merchant_item_id' => $merchantItem->id
-        ])
+    // URL - use part_number for part result page
+    $itemUrl = $part_number
+        ? route('front.part-result', $part_number)
         : '#';
 
     // Condition

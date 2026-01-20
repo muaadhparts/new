@@ -44,5 +44,3 @@ Route::prefix('catlogs')
             ->name('illustrations');
     });
 
-// Search Results (Controller-based)
-Route::get('result/{part_number}', [\App\Http\Controllers\Front\SearchResultsController::class, 'show'])->name('search.result');

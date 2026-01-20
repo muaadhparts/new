@@ -64,14 +64,9 @@
                                 <img src="{{ filter_var($catalogItem['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $catalogItem['item']['photo'] : ($catalogItem['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                                 <br>
                                  @php
-                                    $createViewProductUrl = '#';
-                                    if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
-                                        $createViewProductUrl = route('front.catalog-item', [
-                                            'slug' => $catalogItem['item']['slug'],
-                                            'merchant_id' => $catalogItem['user_id'],
-                                            'merchant_item_id' => $catalogItem['merchant_item_id']
-                                        ]);
-                                    }
+                                    $createViewProductUrl = !empty($catalogItem['item']['part_number'])
+                                        ? route('front.part-result', $catalogItem['item']['part_number'])
+                                        : '#';
                                  @endphp
                                 <a target="_blank" href="{{ $createViewProductUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
                               </td>

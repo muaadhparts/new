@@ -128,14 +128,8 @@
 
                                 @foreach ($item as $cartItem)
                                     @php
-                                        // ✅ N+1 FIX: Load catalog item with eager-loaded merchantItems
-                                        $catalogProdObj = \App\Models\CatalogItem::with(['merchantItems' => fn($q) => $q->where('status', 1)->with('user')->orderBy('price')])->find($cartItem['id']);
-
-                                        // Use best_merchant_item from eager-loaded data
-                                        $catalogMerchant = $catalogProdObj?->best_merchant_item;
-
-                                        $catalogProdUrl = $catalogMerchant && isset($cartItem['slug'])
-                                            ? route('front.catalog-item', ['slug' => $cartItem['slug'], 'merchant_item_id' => $catalogMerchant->id])
+                                        $catalogProdUrl = !empty($cartItem['part_number'])
+                                            ? route('front.part-result', $cartItem['part_number'])
                                             : '#';
                                     @endphp
 

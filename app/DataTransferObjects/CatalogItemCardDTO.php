@@ -114,7 +114,7 @@ class CatalogItemCardDTO
         $dto->inStock = $dto->stock > 0 || $dto->preordered;
         $dto->hasMerchant = $dto->merchantId > 0;
         $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
-        $dto->detailsUrl = self::buildDetailsUrl($dto->catalogItemSlug, $dto->merchantId, $dto->merchantItemId);
+        $dto->detailsUrl = self::buildDetailsUrl($dto->catalogItemSlug, $dto->merchantId, $dto->merchantItemId, $dto->part_number);
 
         // Favorites
         $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantItemId);
@@ -212,6 +212,125 @@ class CatalogItemCardDTO
         return $dto;
     }
 
+    /**
+     * Build DTO from CatalogItem with pre-computed offers data (NEW - CatalogItem-first)
+     *
+     * This is the CORRECT approach for catalog pages:
+     * - One card per CatalogItem
+     * - Shows lowest price from all offers
+     * - Shows offers_count for "X offers" button
+     * - Best merchant loaded for display (lowest price with stock)
+     *
+     * @param CatalogItem $catalogItem CatalogItem with offers_count and lowest_price attributes
+     * @param MerchantItem|null $bestMerchant The best (lowest price) merchant item
+     * @param Collection $favoriteCatalogItemIds
+     * @param Collection $favoriteMerchantIds
+     */
+    public static function fromCatalogItemFirst(
+        CatalogItem $catalogItem,
+        ?MerchantItem $bestMerchant,
+        Collection $favoriteCatalogItemIds,
+        Collection $favoriteMerchantIds
+    ): self {
+        $dto = new self();
+
+        // CatalogItem data (from catalog_items table)
+        $dto->catalogItemId = $catalogItem->id;
+        $dto->catalogItemName = $catalogItem->showName();
+        $dto->catalogItemSlug = $catalogItem->slug ?? '';
+        $dto->part_number = $catalogItem->part_number;
+        $dto->photo = self::resolvePhoto($catalogItem->photo);
+        $dto->catalogReviewsAvg = (float) ($catalogItem->catalog_reviews_avg_rating ?? 0);
+        $dto->catalogReviewsCount = (int) ($catalogItem->catalog_reviews_count ?? 0);
+
+        // Offers data (from subqueries)
+        $dto->offersCount = (int) ($catalogItem->offers_count ?? 1);
+        $dto->hasMultipleOffers = $dto->offersCount > 1;
+
+        // Vehicle Fitment Brands (from catalog_item_fitments)
+        self::setFitmentBrands($dto, $catalogItem);
+
+        // If we have a best merchant, use its data for display
+        if ($bestMerchant) {
+            $dto->merchantItemId = $bestMerchant->id;
+            $dto->merchantId = $bestMerchant->user_id;
+            $dto->price = (float) $bestMerchant->price;
+            $dto->priceFormatted = $bestMerchant->showPrice();
+            $dto->previousPrice = (float) ($bestMerchant->previous_price ?? 0);
+            $dto->previousPriceFormatted = $dto->previousPrice > 0
+                ? CatalogItem::convertPrice($dto->previousPrice)
+                : '';
+            $dto->stock = (int) ($bestMerchant->stock ?? 0);
+            $dto->preordered = (bool) $bestMerchant->preordered;
+            $dto->minQty = max(1, (int) ($bestMerchant->minimum_qty ?? 1));
+
+            // Computed values
+            $dto->inStock = $dto->stock > 0 || $dto->preordered;
+            $dto->hasMerchant = true;
+            $dto->offPercentage = self::calculateOffPercentage($dto->previousPrice, $dto->price);
+            $dto->detailsUrl = self::buildDetailsUrl($dto->catalogItemSlug, $dto->merchantId, $dto->merchantItemId, $dto->part_number);
+
+            // Favorites (based on merchant item)
+            $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantItemId);
+            $dto->favoriteUrl = route('merchant.favorite.add', $dto->merchantItemId);
+            $dto->compareUrl = route('merchant.compare.add', $dto->merchantItemId);
+
+            // Merchant info (from eager-loaded relation)
+            $dto->merchantName = $bestMerchant->user ? getLocalizedShopName($bestMerchant->user) : null;
+
+            // Branch
+            $dto->branchId = $bestMerchant->merchant_branch_id;
+            $dto->branchName = $bestMerchant->merchantBranch?->warehouse_name
+                ?? $bestMerchant->merchantBranch?->branch_name;
+
+            // Quality Brand
+            $dto->qualityBrandName = $bestMerchant->qualityBrand?->localized_name;
+            $dto->qualityBrandLogo = $bestMerchant->qualityBrand?->logo_url;
+
+            // item_type and affiliate_link (from merchant_items)
+            $dto->itemType = $bestMerchant->item_type ?? '';
+            $dto->affiliateLink = $bestMerchant->affiliate_link;
+        } else {
+            // No merchant - use lowest_price from subquery if available
+            $dto->merchantItemId = null;
+            $dto->merchantId = null;
+            $dto->price = (float) ($catalogItem->lowest_price ?? 0);
+            $dto->priceFormatted = $dto->price > 0
+                ? CatalogItem::convertPrice($dto->price)
+                : __('No offers');
+            $dto->previousPrice = 0;
+            $dto->previousPriceFormatted = '';
+            $dto->stock = 0;
+            $dto->preordered = false;
+            $dto->minQty = 1;
+
+            // Computed
+            $dto->inStock = false;
+            $dto->hasMerchant = false;
+            $dto->offPercentage = 0;
+            $dto->detailsUrl = '#';
+
+            // Favorites (catalog item level)
+            $dto->isInFavorites = $favoriteCatalogItemIds->contains($dto->catalogItemId);
+            $dto->favoriteUrl = '#';
+            $dto->compareUrl = '#';
+
+            // No merchant info
+            $dto->merchantName = null;
+            $dto->branchId = null;
+            $dto->branchName = null;
+            $dto->qualityBrandName = null;
+            $dto->qualityBrandLogo = null;
+            $dto->itemType = '';
+            $dto->affiliateLink = null;
+        }
+
+        // Stock display
+        self::setStockDisplay($dto);
+
+        return $dto;
+    }
+
     private static function resolvePhoto(?string $photo): string
     {
         if (!$photo) {
@@ -234,16 +353,24 @@ class CatalogItemCardDTO
         return (int) round((($previousPrice - $currentPrice) * 100) / $previousPrice);
     }
 
-    private static function buildDetailsUrl(string $slug, ?int $merchantId, ?int $merchantItemId): string
+    /**
+     * Build details URL for catalog item
+     *
+     * NEW: Uses part_number based URL (CatalogItem-first approach)
+     */
+    private static function buildDetailsUrl(string $slug, ?int $merchantId, ?int $merchantItemId, ?string $partNumber = null): string
     {
-        if (!$slug || !$merchantItemId) {
-            return '#';
+        // NEW: Use part_number based URL if available
+        if ($partNumber) {
+            return route('front.part-result', $partNumber);
         }
 
-        return route('front.catalog-item', [
-            'slug' => $slug,
-            'merchant_item_id' => $merchantItemId
-        ]);
+        // Fallback to slug-based URL (should not happen in normal flow)
+        if ($slug) {
+            return route('front.part-result', $slug);
+        }
+
+        return '#';
     }
 
     private static function setStockDisplay(self $dto): void

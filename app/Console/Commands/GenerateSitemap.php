@@ -107,12 +107,8 @@ class GenerateSitemap extends Command
             // Get the cheapest merchant item for the canonical URL
             $merchantItem = $item->merchantItems->first();
 
-            if ($merchantItem) {
-                $url = route('front.catalog-item', [
-                    'slug' => $item->slug,
-                    'merchant_id' => $merchantItem->user_id,
-                    'merchant_item_id' => $merchantItem->id
-                ]);
+            if ($item->part_number) {
+                $url = route('front.part-result', $item->part_number);
 
                 $sitemap->add(
                     Url::create($url)

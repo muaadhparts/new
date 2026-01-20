@@ -394,14 +394,9 @@
                                                 @if ($catalogItem['item']['user_id'] != 0)
                                                     {{-- ✅ URL يُحسب من بيانات الـ cart - لا query --}}
                                                     @php
-                                                        $merchantInvoiceProductUrl = '#';
-                                                        if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
-                                                            $merchantInvoiceProductUrl = route('front.catalog-item', [
-                                                                'slug' => $catalogItem['item']['slug'],
-                                                                'merchant_id' => $catalogItem['user_id'],
-                                                                'merchant_item_id' => $catalogItem['merchant_item_id']
-                                                            ]);
-                                                        }
+                                                        $merchantInvoiceProductUrl = !empty($catalogItem['item']['part_number'])
+                                                            ? route('front.part-result', $catalogItem['item']['part_number'])
+                                                            : '#';
                                                     @endphp
                                                     <span class="content catalogItem-name d-inline-block">
                                                         <a target="_blank" href="{{ $merchantInvoiceProductUrl }}">

@@ -114,14 +114,9 @@
                                                 $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
                                                     ? App\Models\User::find($catalogItem['item']['user_id'])
                                                     : null;
-                                                $invoiceProductUrl = '#';
-                                                if (isset($catalogItem['item']['slug']) && isset($catalogItem['user_id']) && isset($catalogItem['merchant_item_id'])) {
-                                                    $invoiceProductUrl = route('front.catalog-item', [
-                                                        'slug' => $catalogItem['item']['slug'],
-                                                        'merchant_id' => $catalogItem['user_id'],
-                                                        'merchant_item_id' => $catalogItem['merchant_item_id']
-                                                    ]);
-                                                }
+                                                $invoiceProductUrl = !empty($catalogItem['item']['part_number'])
+                                                    ? route('front.part-result', $catalogItem['item']['part_number'])
+                                                    : '#';
                                                 @endphp
                                                 @if(isset($user))
                                                 <a target="_blank"

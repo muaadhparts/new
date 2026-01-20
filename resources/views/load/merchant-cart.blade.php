@@ -14,7 +14,7 @@
             @foreach($cartItems as $key => $item)
                 @php
                     $domKey = str_replace([':', '#', '.', ' ', '/', '\\'], '_', (string)$key);
-                    $slug = $item['slug'] ?? '';
+                    $partNumber = $item['part_number'] ?? '';
                     $merchantId = (int) ($item['merchant_id'] ?? 0);
                     $merchantItemId = (int) ($item['merchant_item_id'] ?? 0);
                     $name = app()->getLocale() === 'ar' && !empty($item['name_ar']) ? $item['name_ar'] : ($item['name'] ?? '');
@@ -24,8 +24,8 @@
                     $discountPercent = (float) ($item['discount_percent'] ?? 0);
 
                     $photoUrl = $photo ? \Illuminate\Support\Facades\Storage::url($photo) : asset('assets/images/noimage.png');
-                    $itemUrl = ($slug && $merchantItemId)
-                        ? route('front.catalog-item', ['slug' => $slug, 'merchant_item_id' => $merchantItemId])
+                    $itemUrl = $partNumber
+                        ? route('front.part-result', $partNumber)
                         : '#';
                 @endphp
 

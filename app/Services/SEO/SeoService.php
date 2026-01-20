@@ -53,33 +53,14 @@ class SeoService
             return $this;
         }
 
-        // Choose canonical merchant based on strategy
-        $canonicalMerchant = match($strategy) {
-            'lowest_price' => $merchantItems->sortBy('price')->first(),
-            'highest_rating' => $merchantItems->sortByDesc(fn($m) => $m->user->rating ?? 0)->first(),
-            'in_stock' => $merchantItems->filter(fn($m) => $m->stock > 0 || is_null($m->stock))->sortBy('price')->first() ?? $merchantItems->first(),
-            default => $merchantItems->first(),
-        };
-
-        $this->canonical = route('front.catalog-item', [
-            'slug' => $catalogItem->slug,
-            'merchant_id' => $canonicalMerchant->user_id,
-            'merchant_item_id' => $canonicalMerchant->id
-        ]);
-
-        // Add alternate URLs for other merchants (helps Google understand variants)
-        foreach ($merchantItems as $merchant) {
-            if ($merchant->id !== $canonicalMerchant->id) {
-                $this->alternates[] = [
-                    'url' => route('front.catalog-item', [
-                        'slug' => $catalogItem->slug,
-                        'merchant_id' => $merchant->user_id,
-                        'merchant_item_id' => $merchant->id
-                    ]),
-                    'merchant' => $merchant->user->shop_name ?? $merchant->user->name
-                ];
-            }
+        // Set canonical URL - one page per part_number
+        if ($catalogItem->part_number) {
+            $this->canonical = route('front.part-result', $catalogItem->part_number);
+        } else {
+            $this->canonical = url()->current();
         }
+
+        // No alternates needed - one canonical URL per part number
 
         return $this;
     }

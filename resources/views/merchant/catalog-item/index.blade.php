@@ -156,9 +156,9 @@
                                             </svg>
                                         </a>
                                         @php
-                                            // Build catalog item URL using merchant item data
-                                            $merchantProdUrl = $merchantItem && $data->slug
-                                                ? route('front.catalog-item', ['slug' => $data->slug, 'merchant_item_id' => $merchantItem->id])
+                                            // Build catalog item URL using part number
+                                            $merchantProdUrl = $data->part_number
+                                                ? route('front.part-result', $data->part_number)
                                                 : '#';
                                         @endphp
                                         <a href="{{ $merchantProdUrl }}" target="_blank"

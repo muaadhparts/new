@@ -80,9 +80,10 @@
         $merchantUserId = $merchantItem->user_id ?? null;
         $catalogItemName = $actualCatalogItem->showName();
 
-        $catalogItemSlug = $isMerchantItem ? optional($actualCatalogItem)->slug : $catalogItem->slug;
-        $catalogItemUrl = $merchantItem && $catalogItemSlug
-            ? route('front.catalog-item', ['slug' => $catalogItemSlug, 'merchant_item_id' => $merchantItem->id])
+        // NEW: CatalogItem-first URL using part_number
+        $partNumber = $actualCatalogItem->part_number ?? null;
+        $catalogItemUrl = $partNumber
+            ? route('front.part-result', $partNumber)
             : '#';
 
         $mainPhoto = $actualCatalogItem->photo ?? null;

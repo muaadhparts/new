@@ -50,13 +50,9 @@ class IndexNewProducts extends Command
 
         $urls = [];
         foreach ($merchantItems as $item) {
-            if (!$item->catalogItem) continue;
+            if (!$item->catalogItem || !$item->catalogItem->part_number) continue;
 
-            $url = route('front.catalog-item', [
-                'slug' => $item->catalogItem->slug,
-                'merchant_id' => $item->user_id,
-                'merchant_item_id' => $item->id
-            ]);
+            $url = route('front.part-result', $item->catalogItem->part_number);
 
             $urls[] = $url;
         }

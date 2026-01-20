@@ -35,12 +35,10 @@ OR legacy: $catalogItem (CatalogItem model with bestMerchant loaded)
     $previousPrice = $mp->previous_price ?? null;
     $discountDate = $mp->discount_date ?? null;
 
-    // Build catalogItem URL with merchant context
-    $catalogItemUrl = route('front.catalog-item', [
-        'slug' => $actualProduct->slug,
-        'merchant_id' => $mp->user_id,
-        'merchant_item_id' => $mp->id
-    ]);
+    // Build catalogItem URL with part number
+    $catalogItemUrl = $actualProduct->part_number
+        ? route('front.part-result', $actualProduct->part_number)
+        : '#';
 
     // Brand info (from catalogItem)
     $brandName = $actualProduct->brand?->localized_name;
