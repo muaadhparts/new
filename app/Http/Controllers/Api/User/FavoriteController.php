@@ -25,26 +25,24 @@ class FavoriteController extends Controller
 
             $productsQuery = CatalogItem::status(1)->whereIn('id', $catalogItemIds);
 
-            if(!empty($request->sort))
-            {
-                $sort = $request->sort;
+            $sort = $request->sort ?? 'price_asc';
 
-                if($sort == "date_desc")
-                {
-                    $productsQuery->orderBy('id','desc');
+            $isArabic = app()->getLocale() === 'ar';
+
+            if ($sort === 'name_asc') {
+                if ($isArabic) {
+                    $productsQuery->orderByRaw("CASE WHEN label_ar IS NOT NULL AND label_ar != '' THEN 0 ELSE 1 END ASC")
+                                  ->orderByRaw("COALESCE(NULLIF(label_ar, ''), NULLIF(label_en, ''), name) ASC");
+                } else {
+                    $productsQuery->orderByRaw("CASE WHEN label_en IS NOT NULL AND label_en != '' THEN 0 ELSE 1 END ASC")
+                                  ->orderByRaw("COALESCE(NULLIF(label_en, ''), NULLIF(label_ar, ''), name) ASC");
                 }
-                else if($sort == "date_asc")
-                {
-                    $productsQuery->orderBy('id','asc');
-                }
-                else if($sort == "price_asc")
-                {
-                    $productsQuery->orderBy('price','asc');
-                }
-                else if($sort == "price_desc")
-                {
-                    $productsQuery->orderBy('price','desc');
-                }
+            } else {
+                match ($sort) {
+                    'price_desc' => $productsQuery->orderBy('price', 'desc'),
+                    'part_number' => $productsQuery->orderBy('part_number', 'asc'),
+                    default => $productsQuery->orderBy('price', 'asc'),
+                };
             }
 
             $prods = $productsQuery->get();

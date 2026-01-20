@@ -118,22 +118,28 @@ class MerchantController extends FrontBaseController
 
         // Sort results
         $prods = $prods->when($sort, function ($query, $sort) use ($merchant) {
-            if ($sort === 'date_desc') {
-                return $query->latest('catalog_items.id');
-            } elseif ($sort === 'date_asc') {
-                return $query->oldest('catalog_items.id');
-            } elseif ($sort === 'price_desc') {
-                // Sort by highest merchant price for this catalogItem (for current merchant)
-                return $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) desc', [$merchant->id]);
-            } elseif ($sort === 'price_asc') {
-                // Sort by lowest merchant price for this catalogItem (for current merchant)
-                return $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]);
+            $isArabic = app()->getLocale() === 'ar';
+
+            if ($sort === 'name_asc') {
+                if ($isArabic) {
+                    return $query->orderByRaw("CASE WHEN catalog_items.label_ar IS NOT NULL AND catalog_items.label_ar != '' THEN 0 ELSE 1 END ASC")
+                                 ->orderByRaw("COALESCE(NULLIF(catalog_items.label_ar, ''), NULLIF(catalog_items.label_en, ''), catalog_items.name) ASC");
+                } else {
+                    return $query->orderByRaw("CASE WHEN catalog_items.label_en IS NOT NULL AND catalog_items.label_en != '' THEN 0 ELSE 1 END ASC")
+                                 ->orderByRaw("COALESCE(NULLIF(catalog_items.label_en, ''), NULLIF(catalog_items.label_ar, ''), catalog_items.name) ASC");
+                }
             }
+
+            return match ($sort) {
+                'price_desc' => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) desc', [$merchant->id]),
+                'part_number' => $query->orderBy('catalog_items.part_number', 'asc'),
+                default => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]),
+            };
         });
 
-        // Default sort if not specified
+        // Default sort if not specified (price_asc)
         if (empty($sort)) {
-            $prods = $prods->latest('catalog_items.id');
+            $prods = $prods->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]);
         }
 
         // Load reviews

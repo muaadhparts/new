@@ -476,6 +476,8 @@
                                 <select class="nice-select" id="sortby" name="sort">
                                     <option value="price_asc" {{ $currentSort === 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
                                     <option value="price_desc" {{ $currentSort === 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
+                                    <option value="part_number" {{ $currentSort === 'part_number' ? 'selected' : '' }}>{{ __('Part Number') }}</option>
+                                    <option value="name_asc" {{ $currentSort === 'name_asc' ? 'selected' : '' }}>{{ __('Name A-Z') }}</option>
                                 </select>
                             </div>
                             <!-- list and grid view tab btns  start -->

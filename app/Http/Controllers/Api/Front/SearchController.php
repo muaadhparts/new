@@ -32,18 +32,16 @@ class SearchController extends Controller
                     return $query->where('price', '<=', $maxprice);
                 })
                 ->when($sort, function ($query, $sort) {
-                    if ($sort == 'date_desc') {
-                        return $query->orderBy('id', 'DESC');
-                    } elseif ($sort == 'date_asc') {
-                        return $query->orderBy('id', 'ASC');
-                    } elseif ($sort == 'price_desc') {
-                        return $query->orderBy('price', 'DESC');
-                    } elseif ($sort == 'price_asc') {
-                        return $query->orderBy('price', 'ASC');
-                    }
+                    return match ($sort) {
+                        'price_desc' => $query->orderBy('price', 'DESC'),
+                        'price_asc' => $query->orderBy('price', 'ASC'),
+                        'part_number' => $query->orderBy('catalog_item_id', 'ASC'),
+                        'name_asc' => $query->orderBy('catalog_item_id', 'ASC'),
+                        default => $query->orderBy('price', 'ASC'),
+                    };
                 })
                 ->when(empty($sort), function ($query) {
-                    return $query->orderBy('id', 'DESC');
+                    return $query->orderBy('price', 'ASC');
                 })
                 ->where('status', 1)
                 ->get();

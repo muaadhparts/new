@@ -53,12 +53,22 @@ class MerchantController extends Controller
             }
 
             // Apply sorting
-            if ($sort == 'date_desc') {
-                $query->orderBy('id', 'DESC');
-            } elseif ($sort == 'date_asc') {
-                $query->orderBy('id', 'ASC');
+            $isArabic = app()->getLocale() === 'ar';
+
+            if ($sort === 'name_asc') {
+                if ($isArabic) {
+                    $query->orderByRaw("CASE WHEN catalog_items.label_ar IS NOT NULL AND catalog_items.label_ar != '' THEN 0 ELSE 1 END ASC")
+                          ->orderByRaw("COALESCE(NULLIF(catalog_items.label_ar, ''), NULLIF(catalog_items.label_en, ''), catalog_items.name) ASC");
+                } else {
+                    $query->orderByRaw("CASE WHEN catalog_items.label_en IS NOT NULL AND catalog_items.label_en != '' THEN 0 ELSE 1 END ASC")
+                          ->orderByRaw("COALESCE(NULLIF(catalog_items.label_en, ''), NULLIF(catalog_items.label_ar, ''), catalog_items.name) ASC");
+                }
             } else {
-                $query->orderBy('id', 'DESC');
+                match ($sort) {
+                    'price_desc' => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) desc', [$merchant->id]),
+                    'part_number' => $query->orderBy('catalog_items.part_number', 'asc'),
+                    default => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]),
+                };
             }
 
             $prods = $query->get();

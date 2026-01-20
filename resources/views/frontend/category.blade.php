@@ -6,10 +6,10 @@
     <div class="catalogItems-header-right">
        <form class="woocommerce-ordering" method="get">
           <select name="sort" class="orderby short-item" aria-label="Shop purchase" id="sortby">
-             <option value="date_desc">{{ __('Latest CatalogItem') }}</option>
-             <option value="date_asc">{{ __('Oldest CatalogItem') }}</option>
              <option value="price_asc">{{ __('Lowest Price') }}</option>
              <option value="price_desc">{{ __('Highest Price') }}</option>
+             <option value="part_number">{{ __('Part Number') }}</option>
+             <option value="name_asc">{{ __('Name A-Z') }}</option>
           </select>
           @if($gs->item_page != null)
           <select id="pageby" name="pageby" class="short-itemby-no">

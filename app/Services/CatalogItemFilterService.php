@@ -576,8 +576,30 @@ class CatalogItemFilterService
         match ($sort) {
             'price_asc' => $query->orderBy('lowest_price', 'asc'),
             'price_desc' => $query->orderBy('lowest_price', 'desc'),
+            'part_number' => $query->orderBy('catalog_items.part_number', 'asc'),
+            'name_asc' => $this->applyNameSorting($query),
             default => $query->orderBy('lowest_price', 'asc'),
         };
+    }
+
+    /**
+     * Apply name sorting based on current locale
+     * Arabic: Show items with Arabic names first, then others
+     * English: Show items with English names first, then others
+     */
+    protected function applyNameSorting(Builder $query): void
+    {
+        $isArabic = app()->getLocale() === 'ar';
+
+        if ($isArabic) {
+            // Arabic: items with label_ar first, then sort alphabetically
+            $query->orderByRaw("CASE WHEN catalog_items.label_ar IS NOT NULL AND catalog_items.label_ar != '' THEN 0 ELSE 1 END ASC")
+                  ->orderByRaw("COALESCE(NULLIF(catalog_items.label_ar, ''), NULLIF(catalog_items.label_en, ''), catalog_items.name) ASC");
+        } else {
+            // English: items with label_en first, then sort alphabetically
+            $query->orderByRaw("CASE WHEN catalog_items.label_en IS NOT NULL AND catalog_items.label_en != '' THEN 0 ELSE 1 END ASC")
+                  ->orderByRaw("COALESCE(NULLIF(catalog_items.label_en, ''), NULLIF(catalog_items.label_ar, ''), catalog_items.name) ASC");
+        }
     }
 
     /**

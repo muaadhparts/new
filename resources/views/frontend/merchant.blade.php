@@ -150,6 +150,8 @@
                                 <select class="nice-select" id="sortby" name="sort">
                                     <option value="price_asc">{{ __('Lowest Price') }}</option>
                                     <option value="price_desc">{{ __('Highest Price') }}</option>
+                                    <option value="part_number">{{ __('Part Number') }}</option>
+                                    <option value="name_asc">{{ __('Name A-Z') }}</option>
                                 </select>
                             </div>
                             <!-- list and grid view tab btns  start -->
