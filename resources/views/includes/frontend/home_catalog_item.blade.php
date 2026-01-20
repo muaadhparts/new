@@ -161,22 +161,6 @@
                 </span>
             @endif
 
-            @if (!$inStock)
-                <span class="catalogItem-card__badge catalogItem-card__badge--stock">
-                    {{ __('Out of Stock') }}
-                </span>
-            @endif
-
-            @auth
-                <a href="javascript:;" class="catalogItem-card__favorite favorite {{ $isInFavorites ? 'active' : '' }}" data-href="{{ $favoriteUrl }}">
-                    <i class="{{ $isInFavorites ? 'fas' : 'far' }} fa-heart"></i>
-                </a>
-            @else
-                <a href="{{ route('user.login') }}" class="catalogItem-card__favorite">
-                    <i class="far fa-heart"></i>
-                </a>
-            @endauth
-
             <a href="{{ $catalogItemUrl }}" class="catalogItem-card__media-link">
                 <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="catalogItem-card__img"
                      loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
@@ -212,49 +196,7 @@
                         {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
                     </button>
                 @endif
-                @if($qualityBrandName)
-                    <span class="badge bg-info text-dark">
-                        @if($qualityBrandLogo)
-                            <img src="{{ $qualityBrandLogo }}" alt="" class="catalogItem-card__quality-logo me-1">
-                        @endif
-                        {{ $qualityBrandName }}
-                    </span>
-                @endif
-                @if($merchantName)
-                    <span class="badge bg-primary">
-                        <i class="fas fa-store me-1"></i>{{ $merchantName }}
-                    </span>
-                @endif
-                @if($branchName)
-                    <span class="badge bg-dark">
-                        <i class="fas fa-warehouse me-1"></i>{{ $branchName }}
-                    </span>
-                @endif
-                <span class="badge {{ $inStock ? 'bg-success' : 'bg-danger' }}">{{ $stockText }}</span>
-
-                {{-- Offers Button --}}
-                @if($hasMultipleOffers)
-                    <button type="button" class="catalog-offers-btn"
-                            data-catalog-item-id="{{ $catalogItemId }}"
-                            data-part-number="{{ $part_number }}">
-                        <i class="fas fa-tags"></i>
-                        <span class="offers-count">{{ $offersCount }}</span>
-                        @lang('offers')
-                    </button>
-                @endif
             </div>
-
-            {{-- Rating --}}
-            @if($ratingsCount > 0)
-                <div class="catalogItem-card__rating">
-                    <div class="catalogItem-card__rating-stars">
-                        @for($i = 1; $i <= 5; $i++)
-                            <i class="{{ $i <= round($ratingsAvg) ? 'fas' : 'far' }} fa-star"></i>
-                        @endfor
-                    </div>
-                    <span class="catalogItem-card__rating-count">({{ $ratingsCount }})</span>
-                </div>
-            @endif
 
             {{-- Price --}}
             <div class="catalogItem-card__price">
@@ -262,38 +204,16 @@
                 @if($previousPrice > 0 && $offPercentage > 0)
                     <span class="catalogItem-card__price-old">{{ $previousPriceFormatted }}</span>
                 @endif
-            </div>
 
-            {{-- Shipping Quote Button --}}
-            @if($merchantUserId)
-                <x-shipping-quote-button :merchant-user-id="$merchantUserId" :catalog-item-name="$catalogItemName" class="mt-2" />
-            @endif
-
-            {{-- Add to Cart --}}
-            @if($affiliateCatalogItemType !== 'affiliate')
-                @if($inStock && $hasMerchant && $merchantItemId)
-                    <button type="button" class="catalogItem-card__cart-btn m-cart-add"
+                {{-- Offers Button (always show) --}}
+                <button type="button" class="catalog-offers-btn"
                         data-catalog-item-id="{{ $catalogItemId }}"
-                        data-merchant-item-id="{{ $merchantItemId }}"
-                        data-merchant-user-id="{{ $merchantUserId }}"
-                        data-min-qty="{{ $minQty }}"
-                        data-stock="{{ $stockQty }}"
-                        data-preordered="{{ $preordered ? '1' : '0' }}">
-                        <i class="fas fa-cart-plus"></i>
-                        <span>@lang('Add to Cart')</span>
-                    </button>
-                @else
-                    <button type="button" class="catalogItem-card__cart-btn catalogItem-card__cart-btn--disabled" disabled>
-                        <i class="fas fa-times"></i>
-                        <span>@lang('Out of Stock')</span>
-                    </button>
-                @endif
-            @elseif($affiliateCatalogItemType === 'affiliate' && $affiliateLink)
-                <a href="{{ $affiliateLink }}" target="_blank" class="catalogItem-card__cart-btn">
-                    <i class="fas fa-external-link-alt"></i>
-                    <span>@lang('Buy Now')</span>
-                </a>
-            @endif
+                        data-part-number="{{ $part_number }}">
+                    <i class="fas fa-tags"></i>
+                    <span class="offers-count">{{ $offersCount }}</span>
+                    @lang('offers')
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -313,45 +233,10 @@
                 </span>
             @endif
 
-            @if (!$inStock)
-                <span class="catalogItem-card__badge catalogItem-card__badge--stock">
-                    {{ __('Out of Stock') }}
-                </span>
-            @endif
-
-            @auth
-                @if(isset($favorite) && $favorite && isset($favoriteId))
-                    {{-- Delete button for favorites page --}}
-                    <button type="button" class="catalogItem-card__delete removefavorite"
-                        data-href="{{ route('user-favorite-remove', $favoriteId) }}"
-                        name="@lang('Remove from Favorites')">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                @else
-                    <button type="button" class="catalogItem-card__favorite favorite {{ $isInFavorites ? 'active' : '' }}" data-href="{{ $favoriteUrl }}">
-                        <i class="{{ $isInFavorites ? 'fas' : 'far' }} fa-heart"></i>
-                    </button>
-                @endif
-            @else
-                <a href="{{ route('user.login') }}" class="catalogItem-card__favorite">
-                    <i class="far fa-heart"></i>
-                </a>
-            @endauth
-
             <a href="{{ $catalogItemUrl }}" class="catalogItem-card__media-link">
                 <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="catalogItem-card__img"
                      loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
             </a>
-
-            <div class="catalogItem-card__actions">
-                <button type="button" class="catalogItem-card__action compare_product"
-                    data-href="{{ $compareUrl }}" name="@lang('Compare')">
-                    <i class="fas fa-exchange-alt"></i>
-                </button>
-                <a href="{{ $catalogItemUrl }}" class="catalogItem-card__action" name="@lang('View')">
-                    <i class="far fa-eye"></i>
-                </a>
-            </div>
         </div>
 
         {{-- Content Section --}}
@@ -381,38 +266,6 @@
                         {{ __('Fits') }} {{ $fitmentCount }}
                     </button>
                 @endif
-                @if($qualityBrandName)
-                    <span class="catalogItem-card__quality">
-                        @if($qualityBrandLogo)
-                            <img src="{{ $qualityBrandLogo }}" alt="" class="catalogItem-card__quality-logo">
-                        @endif
-                        {{ $qualityBrandName }}
-                    </span>
-                @endif
-                @if($merchantName)
-                    <span class="catalogItem-card__merchant">
-                        <i class="fas fa-store"></i> {{ $merchantName }}
-                    </span>
-                @endif
-                @if($branchName)
-                    <span class="catalogItem-card__branch">
-                        <i class="fas fa-warehouse"></i> {{ $branchName }}
-                    </span>
-                @endif
-                <span class="catalogItem-card__stock {{ $inStock ? 'catalogItem-card__stock--in' : 'catalogItem-card__stock--out' }}">
-                    {{ $stockText }}
-                </span>
-
-                {{-- Offers Button --}}
-                @if($hasMultipleOffers)
-                    <button type="button" class="catalog-offers-btn"
-                            data-catalog-item-id="{{ $catalogItemId }}"
-                            data-part-number="{{ $part_number }}">
-                        <i class="fas fa-tags"></i>
-                        <span class="offers-count">{{ $offersCount }}</span>
-                        @lang('offers')
-                    </button>
-                @endif
             </div>
 
             {{-- Price --}}
@@ -423,43 +276,14 @@
                 @endif
             </div>
 
-            {{-- Rating --}}
-            <div class="catalogItem-card__rating">
-                <i class="fas fa-star"></i>
-                <span>{{ number_format($ratingsAvg, 1) }}</span>
-                <span class="catalogItem-card__rating-count">({{ $ratingsCount }})</span>
-            </div>
-
-            {{-- Shipping Quote Button --}}
-            @if($merchantUserId)
-                <x-shipping-quote-button :merchant-user-id="$merchantUserId" :catalog-item-name="$catalogItemName" class="mt-2" />
-            @endif
-
-            {{-- Add to Cart --}}
-            @if ($affiliateCatalogItemType !== 'affiliate')
-                @if ($inStock && $hasMerchant && $merchantItemId)
-                    <button type="button" class="catalogItem-card__cart-btn m-cart-add"
-                        data-merchant-item-id="{{ $merchantItemId }}"
-                        data-merchant-user-id="{{ $merchantUserId }}"
-                        data-catalog-item-id="{{ $catalogItemId }}"
-                        data-min-qty="{{ $minQty }}"
-                        data-stock="{{ $stockQty }}"
-                        data-preordered="{{ $preordered ? '1' : '0' }}">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span>@lang('Add to Cart')</span>
-                    </button>
-                @else
-                    <button type="button" class="catalogItem-card__cart-btn catalogItem-card__cart-btn--disabled" disabled>
-                        <i class="fas fa-ban"></i>
-                        <span>@lang('Out of Stock')</span>
-                    </button>
-                @endif
-            @elseif ($affiliateCatalogItemType === 'affiliate' && $affiliateLink)
-                <a href="{{ $affiliateLink }}" class="catalogItem-card__cart-btn" target="_blank">
-                    <i class="fas fa-external-link-alt"></i>
-                    <span>@lang('Buy Now')</span>
-                </a>
-            @endif
+            {{-- Offers Button (always show) --}}
+            <button type="button" class="catalog-offers-btn"
+                    data-catalog-item-id="{{ $catalogItemId }}"
+                    data-part-number="{{ $part_number }}">
+                <i class="fas fa-tags"></i>
+                <span class="offers-count">{{ $offersCount }}</span>
+                @lang('offers')
+            </button>
         </div>
     </div>
 </div>

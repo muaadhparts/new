@@ -574,13 +574,9 @@ class CatalogItemFilterService
     public function applyCatalogItemSorting(Builder $query, ?string $sort): void
     {
         match ($sort) {
-            'date_desc' => $query->latest('catalog_items.id'),
-            'date_asc' => $query->oldest('catalog_items.id'),
             'price_asc' => $query->orderBy('lowest_price', 'asc'),
             'price_desc' => $query->orderBy('lowest_price', 'desc'),
-            'sku_asc' => $query->orderBy('catalog_items.part_number', 'asc'),
-            'sku_desc' => $query->orderBy('catalog_items.part_number', 'desc'),
-            default => $query->latest('catalog_items.id'),
+            default => $query->orderBy('lowest_price', 'asc'),
         };
     }
 

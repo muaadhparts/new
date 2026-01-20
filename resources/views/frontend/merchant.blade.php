@@ -148,8 +148,6 @@
                                 <h5>@lang('Sort by:')</h5>
 
                                 <select class="nice-select" id="sortby" name="sort">
-                                    <option value="date_desc">{{ __('Latest CatalogItem') }}</option>
-                                    <option value="date_asc">{{ __('Oldest CatalogItem') }}</option>
                                     <option value="price_asc">{{ __('Lowest Price') }}</option>
                                     <option value="price_desc">{{ __('Highest Price') }}</option>
                                 </select>
@@ -475,7 +473,7 @@
                     const urlParams = new URLSearchParams(window.location.search);
 
                     // Update sort dropdown
-                    const sortVal = urlParams.get('sort') || 'date_desc';
+                    const sortVal = urlParams.get('sort') || 'price_asc';
                     $('#sortby').val(sortVal);
 
                     // Reset all filter checkboxes

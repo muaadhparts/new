@@ -174,6 +174,30 @@
                                                     <i class="fas fa-truck"></i>
                                                 </button>
 
+                                                {{-- Add to Favorites Button --}}
+                                                @auth
+                                                    <button type="button"
+                                                            class="catalog-btn catalog-btn-outline favorite"
+                                                            data-href="{{ route('user-favorite-add-merchant', $offer['merchant_item_id']) }}"
+                                                            title="@lang('Add to Favorites')">
+                                                        <i class="far fa-heart"></i>
+                                                    </button>
+                                                @else
+                                                    <a href="{{ route('user.login') }}"
+                                                       class="catalog-btn catalog-btn-outline"
+                                                       title="@lang('Add to Favorites')">
+                                                        <i class="far fa-heart"></i>
+                                                    </a>
+                                                @endauth
+
+                                                {{-- Compare Button --}}
+                                                <button type="button"
+                                                        class="catalog-btn catalog-btn-outline compare_product"
+                                                        data-href="{{ route('merchant.compare.add', $offer['merchant_item_id']) }}"
+                                                        title="@lang('Compare')">
+                                                    <i class="fas fa-exchange-alt"></i>
+                                                </button>
+
                                                 {{-- View Product Button --}}
                                                 <a href="{{ route('front.part-result', $catalog_item['part_number'] ?? '') }}"
                                                    class="catalog-btn catalog-btn-outline"

@@ -472,10 +472,8 @@
                             <div class="sort-wrapper">
                                 <h5>@lang('Sort by:')</h5>
 
-                                @php $currentSort = request('sort', 'date_desc'); @endphp
+                                @php $currentSort = request('sort', 'price_asc'); @endphp
                                 <select class="nice-select" id="sortby" name="sort">
-                                    <option value="date_desc" {{ $currentSort === 'date_desc' ? 'selected' : '' }}>{{ __('Latest CatalogItem') }}</option>
-                                    <option value="date_asc" {{ $currentSort === 'date_asc' ? 'selected' : '' }}>{{ __('Oldest CatalogItem') }}</option>
                                     <option value="price_asc" {{ $currentSort === 'price_asc' ? 'selected' : '' }}>{{ __('Lowest Price') }}</option>
                                     <option value="price_desc" {{ $currentSort === 'price_desc' ? 'selected' : '' }}>{{ __('Highest Price') }}</option>
                                 </select>
@@ -656,7 +654,7 @@
 @section('script')
     <script>
         // Global sort state (accessible from Category Selector script)
-        var categoryPageSort = '{{ request('sort', 'date_desc') }}';
+        var categoryPageSort = '{{ request('sort', 'price_asc') }}';
 
         (function($) {
             "use strict";
@@ -1109,7 +1107,7 @@
                     const urlParams = new URLSearchParams(window.location.search);
 
                     // Update sort dropdown and persistent global state
-                    const sortVal = urlParams.get('sort') || 'date_desc';
+                    const sortVal = urlParams.get('sort') || 'price_asc';
                     categoryPageSort = sortVal; // Update global persistent state
                     $('#sortby').val(sortVal);
 
