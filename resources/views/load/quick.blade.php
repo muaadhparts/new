@@ -500,12 +500,6 @@
             $($tselector).val(total);
         });
 
-        // ============================================
-        // DEPRECATED: #maddcrt and #mqaddcrt handlers
-        // Now handled by merchant-cart-unified.js via .m-cart-add class
-        // Buttons use: class="m-cart-add" with data-merchant-item-id, data-qty-input, data-redirect
-        // ============================================
-
     })(jQuery);
 
     </script>

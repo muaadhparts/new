@@ -482,31 +482,6 @@ window.selectCountryByName = function(countryName, countryId, stateId, cityId) {
     }
 }
 
-// DEPRECATED: Select country by ID (kept for compatibility)
-// Note: Now uses selectCountryByName since value is country name
-window.selectCountryById = function(countryId, stateId, cityId) {
-
-    let countryFound = false;
-    window.isMapSelection = true;
-
-    $('[name="country"], [name="customer_country"], #select_country, #country, #warehouse_country').find('option').each(function() {
-        const optionCountryId = $(this).attr('data'); // data attribute contains country ID
-        const optionValue = $(this).val(); // value is country name
-
-        if (optionCountryId && parseInt(optionCountryId) === parseInt(countryId)) {
-            // Found by ID, now use the country name
-            const countryName = optionValue;
-            window.selectCountryByName(countryName, countryId, stateId, cityId);
-            countryFound = true;
-            return false; // break loop
-        }
-    });
-
-    if (!countryFound) {
-        window.isMapSelection = false;
-        $('#mapModal').modal('hide');
-    }
-}
 
 // Select state by ID (called after states are loaded)
 window.selectStateById = function(stateId, cityId, reinitStateNiceSelect) {
@@ -575,12 +550,6 @@ window.selectStateById = function(stateId, cityId, reinitStateNiceSelect) {
     }
 }
 
-// DEPRECATED: Old polling-based function (kept for compatibility)
-window.waitAndSelectState = function(stateId, cityId) {
-    // Use new callback-based approach instead
-    window.selectStateById(stateId, cityId);
-}
-
 // Select city by ID (called after cities are loaded)
 window.selectCityById = function(cityId, reinitCityNiceSelect) {
     let cityFound = false;
@@ -632,17 +601,6 @@ window.selectCityById = function(cityId, reinitCityNiceSelect) {
         }
 
         // Still show success
-        window.isMapSelection = false;
-        window.showFinalSuccessMessage();
-    }
-}
-
-// DEPRECATED: Old polling-based function (kept for compatibility)
-window.waitAndSelectCity = function() {
-    // Use new callback-based approach instead
-    if (window.selectedLocationData && window.selectedLocationData.city) {
-        window.selectCityById(window.selectedLocationData.city.id, null);
-    } else {
         window.isMapSelection = false;
         window.showFinalSuccessMessage();
     }

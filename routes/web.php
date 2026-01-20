@@ -1684,8 +1684,3 @@ Route::group(['prefix' => 'tryoto'], function () {
         return response()->json($output);
     })->name('tryoto.test-api');
 });
-
-
-Route::post('the/muaadh/ocean/2441139', 'Front\FrontendController@subscription');
-Route::get('finalize', 'Front\FrontendController@finalize');
-

@@ -316,7 +316,7 @@ class CheckoutPriceService
      * ========================================================================
      * Returns all data needed for Step 2 display and session storage
      */
-    public function calculateStep2($merchantId, $step1Data, $shippingData, $packingId = null)
+    public function calculateStep2($merchantId, $step1Data, $shippingData)
     {
         // Get step1 values
         $catalogItemsTotal = $step1Data['catalog_items_total'] ?? 0;

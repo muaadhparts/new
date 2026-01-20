@@ -122,7 +122,6 @@ class CatalogItemController extends OperatorBaseController
                 $catalogItem = $mp->catalogItem;
                 if (!$catalogItem) return '';
 
-                // Note: is_catalog column removed (2026-01-20)
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
                     <div class="action-list">
                         <a href="' . route('operator-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
@@ -139,8 +138,6 @@ class CatalogItemController extends OperatorBaseController
     public function catalogdatatables()
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        // Note: is_catalog column removed (2026-01-20)
-        // Now all items with active merchant listings are catalog items
         $query = MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
             ->where('status', 1);
 
@@ -267,8 +264,7 @@ class CatalogItemController extends OperatorBaseController
     //*** GET Request
     public function create()
     {
-        // TODO: Removed - old category system
-        $cats = collect(); // Category::all();
+        $cats = collect();
         $sign = $this->curr;
         return view('operator.catalog-item.create.items', compact('cats', 'sign'));
     }
@@ -474,8 +470,7 @@ class CatalogItemController extends OperatorBaseController
     //*** GET Request
     public function edit($merchantItemId)
     {
-        // TODO: Removed - old category system
-        $cats = collect(); // Category::all();
+        $cats = collect();
         $merchantItem = MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])->findOrFail($merchantItemId);
         $data = $merchantItem->catalogItem;
         $sign = $this->curr;

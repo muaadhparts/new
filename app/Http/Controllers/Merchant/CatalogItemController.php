@@ -24,8 +24,6 @@ class CatalogItemController extends MerchantBaseController
         $user = $this->user;
 
         // Get CatalogItems that belong to this merchant via merchant_items
-        // Note: brand relationship removed from CatalogItem (2026-01-20)
-        // brand_id is now in merchant_items table
         $datas = CatalogItem::whereHas('merchantItems', function($query) use ($user) {
                 $query->where('user_id', $user->id)
                       ->where('item_type', 'normal');
@@ -73,7 +71,6 @@ class CatalogItemController extends MerchantBaseController
         }
 
         // Search for catalog item by PART_NUMBER
-        // Note: brand relationship removed from CatalogItem (2026-01-20)
         $catalogItem = CatalogItem::where('part_number', $part_number)->first();
 
         if (!$catalogItem) {
@@ -128,8 +125,6 @@ class CatalogItemController extends MerchantBaseController
         $user = $this->user;
 
         // Get catalog items that have active merchant listings
-        // Note: is_catalog column removed (2026-01-20) - old tree system
-        // Now all items with merchant listings are considered catalog items
         $datas = CatalogItem::whereHas('merchantItems', function($q) {
                 $q->where('item_type', 'normal')
                   ->where('status', 1);
@@ -152,8 +147,7 @@ class CatalogItemController extends MerchantBaseController
             }
         }
 
-        // TODO: Removed - old category system
-        $cats = collect(); // Category::all();
+        $cats = collect();
         $sign = $this->curr;
 
         if ($slug === 'items') {
@@ -176,7 +170,6 @@ class CatalogItemController extends MerchantBaseController
         }
 
         // Check if catalog item exists
-        // Note: is_catalog column removed (2026-01-20)
         $catalogItem = CatalogItem::findOrFail($catalog_item_id);
 
         // Check if merchant already has an offer for this catalog item
@@ -516,8 +509,7 @@ class CatalogItemController extends MerchantBaseController
     //*** GET Request CATALOG
     public function catalogedit($id)
     {
-        // TODO: Removed - old category system
-        $cats = collect(); // Category::all();
+        $cats = collect();
         $data = CatalogItem::findOrFail($id);
 
         $merchantItem = MerchantItem::where('catalog_item_id', $id)

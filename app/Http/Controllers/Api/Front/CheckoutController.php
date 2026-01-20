@@ -11,7 +11,6 @@ use App\Http\Resources\PurchaseDetailsResource;
 use App\Models\MerchantCart;
 use App\Models\Country;
 use App\Models\DiscountCode;
-use App\Models\MonetaryUnit;
 use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
@@ -72,7 +71,7 @@ class CheckoutController extends Controller
 
             $currency_code = $input['currency_code'] ?? null;
             if (!empty($currency_code)) {
-                $curr = MonetaryUnit::where('name', '=', $currency_code)->first();
+                $curr = monetaryUnit()->getByCode($currency_code);
                 if (empty($curr)) {
                     $curr = monetaryUnit()->getDefault();
                 }
@@ -425,7 +424,7 @@ class CheckoutController extends Controller
             $values = $values == "" ? '' : implode(',', $values);
 
             if (!empty($currency_code)) {
-                $curr = MonetaryUnit::where('name', '=', $currency_code)->first();
+                $curr = monetaryUnit()->getByCode($currency_code);
                 if (empty($curr)) {
                     $curr = monetaryUnit()->getDefault();
                 }

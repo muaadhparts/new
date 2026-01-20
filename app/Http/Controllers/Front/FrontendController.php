@@ -103,9 +103,8 @@ class FrontendController extends FrontBaseController
         // SECTION: Featured Categories (if enabled in theme)
         // ============================================================================
         if ($theme->show_categories) {
-            // TODO: Removed - old category system
             $data['featured_categories'] = Cache::remember('featured_categories_with_count', 3600, function () {
-                return collect(); // Category::withCount('catalogItems')->where('is_featured', 1)->get();
+                return collect();
             });
         }
 

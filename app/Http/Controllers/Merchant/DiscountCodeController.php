@@ -178,35 +178,9 @@ class DiscountCodeController extends MerchantBaseController
         //--- Redirect Section Ends
     }
 
-    //*** AJAX Request - Get Categories based on type
+    //*** AJAX Request - Get Categories based on type (stub - category system removed)
     public function getCategories(Request $request)
     {
-        $type = $request->type;
-        $userId = Auth::user()->id;
-
-        // جلب معرفات العناصر الخاصة بالتاجر
-        $merchantItemIds = \App\Models\MerchantItem::where('user_id', $userId)
-            ->where('status', 1)
-            ->pluck('catalog_item_id');
-
-        // جلب العناصر كـ Collection
-        $catalogItems = \App\Models\CatalogItem::whereIn('id', $merchantItemIds)->get();
-
-        // TODO: Removed - old category system
-        // if ($type == 'category') {
-        //     $categoryIds = $catalogItems->pluck('category_id')->unique()->filter();
-        //     $categories = Category::whereIn('id', $categoryIds)->where('status', 1)->get(['id', 'name']);
-        //     return response()->json($categories);
-        // } elseif ($type == 'sub_category') {
-        //     $subCategoryIds = $catalogItems->pluck('subcategory_id')->unique()->filter();
-        //     $subCategories = Subcategory::whereIn('id', $subCategoryIds)->where('status', 1)->get(['id', 'name']);
-        //     return response()->json($subCategories);
-        // } elseif ($type == 'child_category') {
-        //     $childCategoryIds = $catalogItems->pluck('childcategory_id')->unique()->filter();
-        //     $childCategories = Childcategory::whereIn('id', $childCategoryIds)->where('status', 1)->get(['id', 'name']);
-        //     return response()->json($childCategories);
-        // }
-
         return response()->json(collect());
     }
 }

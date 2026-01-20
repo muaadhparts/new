@@ -15,7 +15,6 @@ use App\Http\Resources\CatalogItemListResource;
 use App\Models\FeaturedPromo;
 use App\Models\Announcement;
 use App\Models\Publication;
-use App\Models\MonetaryUnit;
 use App\Models\HelpArticle;
 use App\Models\Muaadhsetting;
 use App\Models\Language;
@@ -140,7 +139,7 @@ class FrontendController extends Controller
     public function monetaryUnit($id)
     {
         try {
-            $monetaryUnit = MonetaryUnit::find($id);
+            $monetaryUnit = monetaryUnit()->getById((int) $id);
             if (!$monetaryUnit) {
                 return response()->json(['status' => true, 'data' => [], 'error' => ['message' => 'No Monetary Unit Found']]);
             }
@@ -153,7 +152,7 @@ class FrontendController extends Controller
     public function monetaryUnits()
     {
         try {
-            $monetaryUnits = MonetaryUnit::all();
+            $monetaryUnits = monetaryUnit()->getAll();
             return response()->json(['status' => true, 'data' => $monetaryUnits, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
