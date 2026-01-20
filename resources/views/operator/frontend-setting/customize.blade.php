@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 
@@ -41,43 +41,9 @@
               <div class="row justify-content-center">
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="featured_promo">{{ __('Arrival Section') }} *</label>
-                  <label class="switch">
-                    <input type="checkbox" name="featured_promo" value="1" {{ $data->featured_promo == 1 ? "checked" : "" }}>
-                    <span class="toggle-switch round"></span>
-                  </label>
-                </div>
-
-              </div>
-
-              <div class="row justify-content-center">
-
-                <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="category">{{ __('Featured CatalogItems') }} *</label>
+                  <label class="control-label" for="category">{{ __('Categories') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="category" value="1" {{ $data->category == 1 ? "checked" : "" }}>
-                    <span class="toggle-switch round"></span>
-                  </label>
-                </div>
-
-                <div class="col-lg-2"></div>
-                <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="deal_of_the_day">{{ __('Deal Of The Day') }} *</label>
-                  <label class="switch">
-                    <input type="checkbox" name="deal_of_the_day" value="1" {{ $data->deal_of_the_day == 1 ? "checked" : "" }}>
-                    <span class="toggle-switch round"></span>
-                  </label>
-                </div>
-
-              </div>
-
-              <div class="row justify-content-center">
-
-             
-                <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="top_big_trending">{{ __('Top Rated, Big Save & Trending') }} *</label>
-                  <label class="switch">
-                    <input type="checkbox" name="top_big_trending" value="1" {{ $data->top_big_trending == 1 ? "checked" : ""}}>
                     <span class="toggle-switch round"></span>
                   </label>
                 </div>
@@ -97,16 +63,6 @@
               <div class="row justify-content-center">
 
                 <div class="col-lg-4 d-flex justify-content-between">
-                  <label class="control-label" for="best_sellers">{{ __('Best Selling CatalogItem') }} *</label>
-                  <label class="switch">
-                    <input type="checkbox" name="best_sellers" value="1" {{ $data->best_sellers == 1 ? "checked" : "" }}>
-                    <span class="toggle-switch round"></span>
-                  </label>
-                </div>
-
-                <div class="col-lg-2"></div>
-
-                <div class="col-lg-4 d-flex justify-content-between">
                   <label class="control-label" for="blog">{{ __('Blogs') }} *</label>
                   <label class="switch">
                     <input type="checkbox" name="blog" value="1" {{ $data->blog == 1 ? "checked" : "" }}>
@@ -114,11 +70,7 @@
                   </label>
                 </div>
 
-              </div>
-
-            
-
-              <div class="row justify-content-center">
+                <div class="col-lg-2"></div>
 
                 <div class="col-lg-4 d-flex justify-content-between">
                   <label class="control-label" for="third_left_banner">{{ __('Newsletter') }} *</label>
@@ -128,13 +80,29 @@
                   </label>
                 </div>
 
-                <div class="col-lg-2"></div>
-                <div class="col-lg-4 d-flex justify-content-between">
-                 
-                </div>
               </div>
 
-      
+              <div class="row justify-content-center">
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="our_services">{{ __('Our Services') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="our_services" value="1" {{ $data->our_services == 1 ? "checked" : "" }}>
+                    <span class="toggle-switch round"></span>
+                  </label>
+                </div>
+
+                <div class="col-lg-2"></div>
+
+                <div class="col-lg-4 d-flex justify-content-between">
+                  <label class="control-label" for="top_brand">{{ __('Top Brand') }} *</label>
+                  <label class="switch">
+                    <input type="checkbox" name="top_brand" value="1" {{ $data->top_brand == 1 ? "checked" : "" }}>
+                    <span class="toggle-switch round"></span>
+                  </label>
+                </div>
+
+              </div>
 
               <div class="row">
                 <div class="col-12 text-center">

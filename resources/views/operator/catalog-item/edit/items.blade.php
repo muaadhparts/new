@@ -189,7 +189,7 @@
                                                     <li>
                                                         <input class="checkclick1" name="item_condition_check"
                                                             type="checkbox" id="conditionCheck" value="1"
-                                                            {{ $data->item_condition != 0 ? 'checked' : '' }}>
+                                                            {{ $merchantItem->item_condition != 0 ? 'checked' : '' }}>
                                                         <label
                                                             for="conditionCheck">{{ __('Allow CatalogItem Condition') }}</label>
                                                     </li>
@@ -197,7 +197,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="{{ $data->item_condition == 0 ? ' showbox' : '' }}">
+                                        <div class="{{ $merchantItem->item_condition == 0 ? ' showbox' : '' }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
@@ -207,10 +207,10 @@
                                                 <div class="col-lg-12">
                                                     <select name="item_condition">
                                                         <option value="2"
-                                                            {{ $data->item_condition == 2 ? 'selected' : '' }}>
+                                                            {{ $merchantItem->item_condition == 2 ? 'selected' : '' }}>
                                                             {{ __('New') }}</option>
                                                         <option value="1"
-                                                            {{ $data->item_condition == 1 ? 'selected' : '' }}>
+                                                            {{ $merchantItem->item_condition == 1 ? 'selected' : '' }}>
                                                             {{ __('Used') }}</option>
                                                     </select>
                                                 </div>
@@ -229,7 +229,7 @@
                                                     <li>
                                                         <input class="checkclick1" name="preordered_check"
                                                             type="checkbox" id="preorderedCheck" value="1"
-                                                            {{ $data->preordered != 0 ? 'checked' : '' }}>
+                                                            {{ $merchantItem->preordered != 0 ? 'checked' : '' }}>
                                                         <label
                                                             for="preorderedCheck">{{ __('Allow CatalogItem Preorder') }}</label>
                                                     </li>
@@ -237,7 +237,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="{{ $data->preordered == 0 ? ' showbox' : '' }}">
+                                        <div class="{{ $merchantItem->preordered == 0 ? ' showbox' : '' }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
@@ -247,10 +247,10 @@
                                                 <div class="col-lg-12">
                                                     <select name="preordered">
                                                         <option value="1"
-                                                            {{ $data->preordered == 1 ? 'selected' : '' }}>
+                                                            {{ $merchantItem->preordered == 1 ? 'selected' : '' }}>
                                                             {{ __('Sale') }}</option>
                                                         <option value="2"
-                                                            {{ $data->preordered == 2 ? 'selected' : '' }}>
+                                                            {{ $merchantItem->preordered == 2 ? 'selected' : '' }}>
                                                             {{ __('Preordered') }}</option>
                                                     </select>
                                                 </div>
@@ -268,14 +268,14 @@
                                                     <li>
                                                         <input class="checkclick1" name="minimum_qty_check"
                                                             type="checkbox" id="check111" value="1"
-                                                            {{ $data->minimum_qty != null ? 'checked' : '' }}>
+                                                            {{ $merchantItem->minimum_qty != null ? 'checked' : '' }}>
                                                         <label for="check111">{{ __('Allow Minimum Purchase Qty') }}</label>
                                                     </li>
                                                 </ul>
                                             </div>
                                         </div>
 
-                                        <div class="{{ $data->minimum_qty != null ? '' : ' showbox' }}">
+                                        <div class="{{ $merchantItem->minimum_qty != null ? '' : ' showbox' }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
@@ -285,7 +285,7 @@
                                                 <div class="col-lg-12">
                                                     <input type="number" class="form-control" min="1"
                                                         placeholder="{{ __('Minimum Purchase Qty') }}" name="minimum_qty"
-                                                        value="{{ $data->minimum_qty == null ? '' : $data->minimum_qty }}">
+                                                        value="{{ $merchantItem->minimum_qty == null ? '' : $merchantItem->minimum_qty }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -302,7 +302,7 @@
                                                     <li>
                                                         <input class="checkclick1" name="shipping_time_check"
                                                             type="checkbox" id="check1" value="1"
-                                                            {{ $data->ship != null ? 'checked' : '' }}>
+                                                            {{ $merchantItem->ship != null ? 'checked' : '' }}>
                                                         <label
                                                             for="check1">{{ __('Allow Estimated Shipping Time') }}</label>
                                                     </li>
@@ -311,7 +311,7 @@
                                         </div>
 
 
-                                        <div class="{{ $data->ship != null ? '' : ' showbox' }}">
+                                        <div class="{{ $merchantItem->ship != null ? '' : ' showbox' }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
@@ -322,7 +322,7 @@
                                                 <div class="col-lg-12">
                                                     <input type="text" class="form-control"
                                                         placeholder="{{ __('Estimated Shipping Time') }}" name="ship"
-                                                        value="{{ $data->ship == null ? '' : $data->ship }}">
+                                                        value="{{ $merchantItem->ship == null ? '' : $merchantItem->ship }}">
                                                 </div>
                                             </div>
                                         </div>
@@ -378,7 +378,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <input name="stock" type="number" class="form-control"
-                                                    placeholder="e.g 20" value="{{ $data->stock }}" min="0">
+                                                    placeholder="e.g 20" value="{{ $merchantItem->stock }}" min="0">
                                             </div>
                                         </div>
 
@@ -394,7 +394,7 @@
                                                     <li>
                                                         <input class="checkclick1" name="whole_check" type="checkbox"
                                                             id="whole_check" value="1"
-                                                            {{ !empty($data->whole_sell_qty) ? 'checked' : '' }}>
+                                                            {{ !empty($merchantItem->whole_sell_qty) ? 'checked' : '' }}>
                                                         <label
                                                             for="whole_check">{{ __('Allow CatalogItem Whole Sell') }}</label>
                                                     </li>
@@ -402,7 +402,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="{{ !empty($data->whole_sell_qty) ? '' : ' showbox' }}">
+                                        <div class="{{ !empty($merchantItem->whole_sell_qty) ? '' : ' showbox' }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
@@ -412,9 +412,9 @@
                                                 <div class="col-lg-12">
                                                     <div class="featured-keyword-area">
                                                         <div class="feature-tag-top-filds" id="whole-section">
-                                                            @if (!empty($data->whole_sell_qty))
+                                                            @if (!empty($merchantItem->whole_sell_qty))
 
-                                                                @foreach ($data->whole_sell_qty as $key => $data1)
+                                                                @foreach ($merchantItem->whole_sell_qty as $key => $data1)
                                                                     <div class="feature-area">
                                                                         <span class="remove whole-remove"><i
                                                                                 class="fas fa-times"></i></span>
@@ -425,7 +425,7 @@
                                                                                     class="form-control"
                                                                                     placeholder="{{ __('Enter Quantity') }}"
                                                                                     min="0"
-                                                                                    value="{{ $data->whole_sell_qty[$key] }}"
+                                                                                    value="{{ $merchantItem->whole_sell_qty[$key] }}"
                                                                                     required="">
                                                                             </div>
 
@@ -435,7 +435,7 @@
                                                                                     class="form-control"
                                                                                     placeholder="{{ __('Enter Discount Percentage') }}"
                                                                                     min="0"
-                                                                                    value="{{ $data->whole_sell_discount[$key] }}"
+                                                                                    value="{{ $merchantItem->whole_sell_discount[$key] }}"
                                                                                     required="">
                                                                             </div>
                                                                         </div>
@@ -484,7 +484,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <div class="text-editor">
-                                                    <textarea name="details" class="nic-edit">{{ $data->details }}</textarea>
+                                                    <textarea name="details" class="nic-edit">{{ $merchantItem->details }}</textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -499,7 +499,7 @@
                                             </div>
                                             <div class="col-lg-12">
                                                 <div class="text-editor">
-                                                    <textarea name="policy" class="nic-edit">{{ $data->policy }}</textarea>
+                                                    <textarea name="policy" class="nic-edit">{{ $merchantItem->policy }}</textarea>
                                                 </div>
                                             </div>
                                         </div>
@@ -602,7 +602,7 @@
                                             <div class="col-lg-12">
                                                 <input name="price" type="number" class="form-control"
                                                     placeholder="e.g 20" step="0.1" min="0"
-                                                    value="{{ round($data->price * $sign->value, 2) }}" required="">
+                                                    value="{{ round($merchantItem->price * $sign->value, 2) }}" required="">
                                             </div>
                                         </div>
 
@@ -616,7 +616,7 @@
                                             <div class="col-lg-12">
                                                 <input name="previous_price" step="0.1" type="number"
                                                     class="form-control" placeholder="e.g 20"
-                                                    value="{{ round($data->previous_price * $sign->value, 2) }}"
+                                                    value="{{ round($merchantItem->previous_price * $sign->value, 2) }}"
                                                     min="0">
                                             </div>
                                         </div>
@@ -647,10 +647,13 @@
                                                         <h4 class="name">{{ __('Feature Tags') }}</h4>
                                                     </div>
 
+                                                    @php
+                                                        $featuresArray = $merchantItem->features ? explode(',', $merchantItem->features) : [];
+                                                    @endphp
                                                     <div class="feature-tag-top-filds" id="feature-section">
-                                                        @if (!empty($data->features))
+                                                        @if (!empty($featuresArray))
 
-                                                            @foreach ($data->features as $key => $data1)
+                                                            @foreach ($featuresArray as $key => $featureItem)
                                                                 <div class="feature-area">
                                                                     <span class="remove feature-remove"><i
                                                                             class="fas fa-times"></i></span>
@@ -659,14 +662,14 @@
                                                                             <input type="text" name="features[]"
                                                                                 class="form-control"
                                                                                 placeholder="{{ __('Enter Your Keyword') }}"
-                                                                                value="{{ $data->features[$key] }}">
+                                                                                value="{{ $featureItem }}">
                                                                         </div>
 
                                                                         <div class="col-lg-6">
                                                                             <div
                                                                                 class="input-group colorpicker-component cp">
                                                                                 <input type="text" name="colors[]"
-                                                                                    value="{{ $data->colors[$key] }}"
+                                                                                    value="#000000"
                                                                                     class="form-control cp" />
                                                                                 <span
                                                                                     class="input-group-module"><i></i></span>

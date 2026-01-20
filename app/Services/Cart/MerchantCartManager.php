@@ -38,8 +38,8 @@ class MerchantCartManager
         int $qty = 1
     ): array {
         // ═══ التحقق من MerchantItem ═══
-        // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
-        $merchantItem = MerchantItem::with(['catalogItem', 'brand', 'user', 'qualityBrand', 'merchantBranch'])->find($merchantItemId);
+        // Brand data comes from catalogItem->fitments
+        $merchantItem = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand', 'merchantBranch'])->find($merchantItemId);
 
         if (!$merchantItem) {
             return $this->error(__('الصنف غير موجود'));
@@ -123,9 +123,11 @@ class MerchantCartManager
 
         $effectivePrice = $unitPrice;
 
-        // ═══ استخراج Brand و QualityBrand ═══
-        // brand_id moved from catalog_items to merchant_items (2026-01-20)
-        $brand = $merchantItem->brand;
+        // ═══ استخراج Brand (من fitments) و QualityBrand ═══
+        // Brand data comes from catalogItem->fitments
+        $fitments = $catalogItem->fitments ?? collect();
+        $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+        $firstBrand = $brands->first();
         $qualityBrand = $merchantItem->qualityBrand;
 
         $itemData = [
@@ -144,11 +146,11 @@ class MerchantCartManager
             'slug' => $catalogItem->slug ?: '',
             'part_number' => $catalogItem->part_number ?: '',
 
-            // Brand (OEM brand - نيسان، تويوتا...)
-            'brand_id' => $brand?->id,
-            'brand_name' => $brand?->name ?: '',
-            'brand_name_ar' => $brand?->name_ar ?: '',
-            'brand_logo' => $brand?->photo_url ?: '',
+            // Brand (OEM brand - from fitments)
+            'brand_id' => $firstBrand?->id,
+            'brand_name' => $firstBrand?->name ?: '',
+            'brand_name_ar' => $firstBrand?->name_ar ?: '',
+            'brand_logo' => $firstBrand?->photo_url ?: '',
 
             // Quality Brand (أصلي، بديل...)
             'quality_brand_id' => $qualityBrand?->id,

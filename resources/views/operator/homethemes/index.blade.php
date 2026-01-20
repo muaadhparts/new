@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 <div class="content-area">
@@ -50,12 +50,6 @@
                                     @if($theme->show_brands)<span class="badge bg-primary">Brands</span>@endif
                                     @if($theme->show_categories)<span class="badge bg-primary">Categories</span>@endif
                                     @if($theme->show_arrival)<span class="badge bg-primary">Arrival</span>@endif
-                                    @if($theme->show_featured_items)<span class="badge bg-primary">Featured</span>@endif
-                                    @if($theme->show_deal_of_day)<span class="badge bg-primary">Deal of Day</span>@endif
-                                    @if($theme->show_top_rated)<span class="badge bg-primary">Top Rated</span>@endif
-                                    @if($theme->show_big_save)<span class="badge bg-primary">Big Save</span>@endif
-                                    @if($theme->show_trending)<span class="badge bg-primary">Trending</span>@endif
-                                    @if($theme->show_best_sellers)<span class="badge bg-primary">Best Sellers</span>@endif
                                     @if($theme->show_blogs)<span class="badge bg-primary">Blogs</span>@endif
                                     @if($theme->show_newsletter)<span class="badge bg-primary">Newsletter</span>@endif
                                 </div>

@@ -1,1255 +1,195 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+> **Full Documentation:** See `docs/` folder for detailed guides and references.
 
 ---
 
-## CRITICAL: Theme & CSS Rules (READ FIRST)
+## GOLDEN RULES
 
-**Before modifying ANY UI/CSS/Blade file, you MUST follow these rules:**
+### 1. CatalogItem-First Display
+**CatalogItem is the SINGLE SOURCE for product cards.** One card per SKU, NOT per merchant offer.
 
-### FORBIDDEN - Will fail build:
-- Hardcoded HEX colors: #fff, #333, #006c35
-- Hardcoded RGB/RGBA: rgb(255,255,255), rgba(0,0,0,0.5)
-- Inline style colors: style="color: #333; background: #fff"
-- Adding CSS to style.css (FROZEN - legacy only)
+### 2. Multi-Merchant Context
+Every operation MUST have `merchant_id`. Missing merchant = FAIL immediately.
 
-### REQUIRED - Always use:
-- CSS Variables: var(--text-primary), var(--action-primary)
-- Design System classes: .m-btn, .m-card, .m-alert, .m-input
-- Utility classes: .m-bg-*, .m-text-*, .m-border-*
-- Add new CSS ONLY to: muaadh-system.css
+### 3. MonetaryUnit via Service Only
+All monetary operations MUST use `monetaryUnit()` helper or `MonetaryUnitService`.
 
-### CSS Files:
-- muaadh-system.css  -> Design System (ALL new styles here)
-- theme-colors.css   -> Theme variables (auto-generated)
-- rtl.css            -> RTL support
-- style.css          -> FROZEN legacy (do not modify)
+### 4. CSS via Design System Only
+All new CSS in `muaadh-system.css`. Use `m-*` prefix classes and CSS variables.
 
-### Build Commands:
-- `npm run lint:theme`  -> Check for color violations
-- `npm run build`       -> Lint + Build (fails on violations)
-- `npm run build:prod`  -> Lint + PurgeCSS + Build
+### 5. Migrations Only
+All database changes via Laravel migrations. `database/schema/` is READ-ONLY reference.
 
-**Quick Reference:**
+---
+
+## FORBIDDEN PATTERNS
+
+### CSS - Will Fail Build
 ```css
-/* WRONG */
+/* FORBIDDEN */
 color: #333;
 background: #006c35;
-border: 1px solid #ddd;
+style="color: #fff"
 
-/* CORRECT */
+/* REQUIRED */
 color: var(--text-primary);
 background: var(--action-primary);
-border: 1px solid var(--border-default);
+```
+- No hardcoded HEX/RGB colors
+- No inline style colors
+- No CSS in `style.css` (FROZEN)
+
+### Card Display - Architecture Violation
+```php
+// FORBIDDEN - MerchantItem as primary source for cards
+$data['featured'] = MerchantItem::where('featured', 1)->with('catalogItem')->get();
+$listings = MerchantItem::whereHas('catalogItem', ...)->paginate();
+
+// REQUIRED - CatalogItem first
+$data['featured'] = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))->get();
 ```
 
-**See:** `DESIGN_TOKENS_REFERENCE.md` for full token/class list.
-
----
-
-## CRITICAL: Shipping & Payment Ownership Logic
-
-### The Rule (MANDATORY)
-
-| `user_id` | `operator` | المعنى | English |
-|-----------|------------|--------|---------|
-| `0` | `0` | **موقف/معطّل** - لا يظهر لأحد | Disabled - not shown to anyone |
-| `0` | `merchant_id` | شحنة/بوابة المنصة مُفعّلة لتاجر معين | Platform-provided, enabled for specific merchant |
-| `merchant_id` | `0` | شحنة/بوابة خاصة بالتاجر (أضافها بنفسه) | Merchant's own (added by merchant) |
-
-### FORBIDDEN Combinations:
-
+### Shipping/Payment - Wrong Ownership Logic
 ```php
-// ❌ NEVER do this:
-user_id = merchant_id AND operator = merchant_id  // Redundant!
-user_id = merchant_id AND operator = other_merchant  // Invalid!
-
-// ❌ Old logic - REMOVED:
+// FORBIDDEN
 whereIn('user_id', [0, $merchantId])  // Doesn't check operator!
-```
+user_id = merchant_id AND operator = merchant_id  // Redundant
 
-### REQUIRED - Always use `forMerchant()` scope:
-
-```php
-// ✅ CORRECT - Getting shipping/payments for a merchant:
+// REQUIRED - Use scope
 $shipping = Shipping::forMerchant($merchantId)->get();
 $payments = MerchantPayment::forMerchant($merchantId)->get();
-
-// ✅ CORRECT - Operator managing platform resources:
-$platformShipping = Shipping::where('user_id', 0)->get();
-$platformPayments = MerchantPayment::where('user_id', 0)->get();
-
-// ✅ CORRECT - Merchant managing their own resources:
-$myShipping = Shipping::where('user_id', $merchantId)->get();
-$myPayments = MerchantPayment::where('user_id', $merchantId)->get();
 ```
 
-### How `forMerchant()` Scope Works:
-
+### MonetaryUnit - Direct Access
 ```php
-public function scopeForMerchant(Builder $query, int $merchantId): Builder
-{
-    return $query
-        ->where('status', 1)
-        ->where(function ($q) use ($merchantId) {
-            // 1. Merchant's own (user_id = merchantId)
-            $q->where('user_id', $merchantId)
-            // 2. OR Platform-provided for this merchant (user_id = 0 AND operator = merchantId)
-            ->orWhere(function ($q2) use ($merchantId) {
-                $q2->where('user_id', 0)
-                   ->where('operator', $merchantId);
-            });
-        })
-        ->orderByRaw('CASE WHEN user_id = ? THEN 0 ELSE 1 END', [$merchantId]);
-}
-```
-
-### COD (Cash on Delivery) Special Rule:
-
-**COD ownership follows SHIPPING ownership, NOT payment gateway table:**
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                    COD Ownership Logic                          │
-├────────────────────────┬────────────────────────────────────────┤
-│      Shipping Type     │           COD Owner                    │
-├────────────────────────┼────────────────────────────────────────┤
-│ Merchant's own         │ Merchant (payment_owner_id = merchant) │
-│ Platform-provided      │ Platform (payment_owner_id = 0)        │
-│ Courier (مندوب)        │ Platform (payment_owner_id = 0)        │
-└────────────────────────┴────────────────────────────────────────┘
-```
-
-**Code location:** `MerchantPurchaseCreator.php` lines 275-290
-
-```php
-if ($isCod) {
-    if ($isCourier) {
-        $paymentOwnerId = 0;  // Courier = Platform
-    } elseif ($isPlatformShipping || $shippingOwnerId === 0) {
-        $paymentOwnerId = 0;  // Platform shipping = Platform
-    } else {
-        $paymentOwnerId = $shippingOwnerId;  // Merchant shipping = Merchant
-    }
-}
-```
-
-**Important:** COD records in `merchant_payments` table are for configuration/display only. The actual ownership is determined at checkout based on shipping selection.
-
-### Applies To:
-
-- `shippings` table
-- `merchant_payments` table
-
----
-
-## CRITICAL: MonetaryUnit Architecture Lock
-
-**SINGLE SOURCE OF TRUTH: `MonetaryUnitService`**
-
-All monetary unit operations MUST go through the centralized service. NO exceptions.
-
-### FORBIDDEN - Architecture Violations:
-
-```php
-// ❌ NEVER do this anywhere in the codebase:
-
-// Direct model queries
+// FORBIDDEN
 MonetaryUnit::where('is_default', 1)->first();
-MonetaryUnit::find($id);
-MonetaryUnit::all();
-
-// Direct session access for monetary unit
-Session::get('monetary_unit');  // Use service instead
-Session::has('monetary_unit');
-Session::put('monetary_unit', $id);
-
-// Hardcoded monetary unit values
+Session::get('monetary_unit');
 $sign = '$';
-$value = 1;
-
-// Manual price formatting in Controllers/Views
 number_format($price, 2) . $curr->sign;
-$curr->sign . number_format($price, 2);
+
+// REQUIRED
+monetaryUnit()->getCurrent();
+monetaryUnit()->format($amount);
+monetaryUnit()->convertAndFormat($amount);
 ```
 
-### REQUIRED - Always use MonetaryUnitService:
-
+### Cart Data - Manual JSON
 ```php
-// ✅ CORRECT - Use the helper or service:
-
-// Get service instance
-$service = monetaryUnit();  // Global helper
-// OR
-$service = app(MonetaryUnitService::class);
-
-// Get current/default monetary unit
-$curr = monetaryUnit()->getCurrent();
-$default = monetaryUnit()->getDefault();
-$byCode = monetaryUnit()->getByCode('SAR');
-
-// Format prices
-monetaryUnit()->format($amount);           // Format with sign
-monetaryUnit()->convert($amount);          // Convert from base
-monetaryUnit()->convertAndFormat($amount); // Convert + format
-monetaryUnit()->formatBase($amount);       // Format in base monetary unit
-
-// Get monetary unit info
-monetaryUnit()->getSign();    // Current monetary unit sign
-monetaryUnit()->getValue();   // Current exchange rate
-monetaryUnit()->getCode();    // Current monetary unit code (SAR, USD, etc.)
-
-// For constants (in Services/Models only)
-MonetaryUnitService::BASE_MONETARY_UNIT;  // 'SAR'
-MonetaryUnitService::SESSION_KEY;         // 'monetary_unit'
-```
-
-### Who Can Access MonetaryUnit Model Directly?
-
-| Layer | Direct Access | Must Use Service |
-|-------|--------------|------------------|
-| `MonetaryUnitService` | ✅ Yes | - |
-| Other Services | ❌ No | ✅ `monetaryUnit()` |
-| Controllers | ❌ No | ✅ `monetaryUnit()` |
-| Views (Blade) | ❌ No | ✅ `$curr` (shared by BaseController) |
-| Helpers | ❌ No | ✅ `monetaryUnit()` |
-| Models | ❌ No | ✅ `monetaryUnit()` |
-
-### Base Controllers Share `$curr`
-
-All base controllers (Front, Merchant, User, Courier, TopUp) now share:
-```php
-$this->curr = monetaryUnit()->getCurrent();
-view()->share('curr', $this->curr);
-```
-
-Blade views should use `$curr` directly, NOT Session.
-
----
-
-## Project Overview
-
-MUAADH EPC is an AI-assisted OEM/Aftermarket auto parts catalog with callout-first search. Built with Laravel 10, Livewire 3, and Filament 3 admin panel.
-
-## Common Commands
-
-```bash
-# Development server
-npm run dev              # Start Vite dev server
-php artisan serve        # Start Laravel dev server
-
-# Build
-npm run build            # Production build
-
-# Cache management
-php artisan cache:clear
-php artisan config:clear
-php artisan view:clear
-php artisan route:clear
-
-# Stock management (vendor-specific inventory)
-php artisan stock:manage full-refresh --user_id=59 --margin=1.3 --branch=ATWJRY
-php artisan stock:full-refresh
-php artisan products:update-price
-
-# Nissan API token refresh
-php artisan nissan:refresh-token
-
-# Shipment status updates (Tryoto integration)
-php artisan shipments:update --limit=50
-
-# Tests
-php artisan test                    # Run all tests
-php artisan test --filter=TestName  # Run specific test
-./vendor/bin/phpunit tests/Unit     # Run unit tests only
-./vendor/bin/phpunit tests/Feature  # Run feature tests only
-```
-
-## Architecture
-
-### Catalog System (Multi-Merchant, Branch-First)
-- **CatalogItem**: Catalog-level item data (SKU, category, attributes, fitments)
-- **MerchantBranch**: Merchant warehouse/branch (location, coordinates, shipping origin)
-- **MerchantItem**: Merchant-specific listing (price, stock) - each row is one seller + branch
-- **Stock**: Raw inventory data from DBF files per branch/merchant
-- CatalogItems have fitments linking them to vehicle trees via `CatalogItemFitment`
-- Every MerchantItem MUST belong to a MerchantBranch (enforced by NOT NULL FK)
-
-### Key Models
-- `Purchase` - stores cart as JSON array, supports multiple merchants per purchase
-- `MerchantPurchase` - per-merchant breakdown of purchases
-- `MerchantBranch` - merchant warehouse/branch with location and shipping origin
-- `MerchantItem` - merchant-specific listing (always belongs to a branch)
-- `FavoriteSeller` - user favorites/wishlist
-- `CatalogReview` - product reviews
-- `ShipmentTracking` - Unified shipment tracking (API + Manual)
-- `Callout` - diagram callout data for parts lookup
-- `VinDecodedCache` - cached VIN decode results
-
-### Services (`app/Services/`)
-- `TryotoService` / `TryotoLocationService` - Shipping API integration
-- `ShippingCalculatorService` - Shipping cost calculations
-- `CheckoutPriceService` - Checkout pricing logic
-- `MerchantCartService` - Multi-merchant cart management
-- `CompatibilityService` / `AlternativeService` - CatalogItem alternatives and fitment data
-- `NissanTokenService` - Nissan parts API authentication
-- `GoogleMapsService` - Geocoding for address validation
-
-### Controllers Structure
-- `Admin/` - Admin panel controllers (purchases, catalog items, merchants, shipping)
-- `Front/` - Customer-facing controllers (catalog, cart, checkout, search)
-- `User/` - Authenticated user area (profile, purchases, favorites)
-- `Merchant/` - Merchant dashboard controllers
-- `Api/` - REST API endpoints (auth, catalog items, shipping)
-
-### Helpers (`app/Helpers/helper.php`)
-Global helper functions loaded via composer autoload:
-- `getLocalizedCatalogItemName()` - Returns AR/EN catalog item name based on locale
-- `favoriteCheck()` / `merchantFavoriteCheck()` - Favorite status helpers
-- `getMerchantDisplayName()` - Merchant display name with quality brand
-
-### Payment Gateways
-Multiple payment integrations: Stripe, PayPal, Razorpay, Authorize.net, Instamojo, Mercadopago, Mollie, MyFatoorah
-
-### Stock Import System
-DBF file import for inventory sync:
-- Config: `config/stock.php` - field mappings, encoding (CP1256)
-- Unique by: `fitem` + `fbranch`
-- Commands in `app/Console/Commands/` for download, import, aggregation
-- Stock updates stored in `merchant_stock_updates` table
-
-### Scheduled Tasks (Kernel.php)
-- Nissan token refresh: every 5 minutes
-- Stock full refresh: daily at 02:00
-- Shipment updates: every 30 minutes + twice daily comprehensive
-- Performance reports: weekly on Sunday
-- Telescope pruning: daily
-
-## Frontend
-
-### Views Structure
-- `resources/views/frontend/` - Customer storefront
-- `resources/views/admin/` - Admin panel views
-- `resources/views/vendor/` - Vendor dashboard
-- `resources/views/catalog/` - Catalog/callout views
-- Layout: `layouts.front3` (Livewire default)
-
-### Asset Build
-Using Vite with laravel-vite-plugin. Entry points:
-- `resources/css/app.css`
-- `resources/js/app.js`
-
-## API Routes
-
-### Web API endpoints (`routes/web.php`)
-- `/api/search/part` - Part number search
-- `/api/search/vin` - VIN decode/search
-- `/api/vehicle/suggestions` - Vehicle search autocomplete
-- `/modal/catalog-item/{key}` - Catalog item quick view modal
-
-### REST API (`routes/api.php`)
-- `/api/specs/*` - Specification filtering
-- `/api/catalog-item/alternatives/{sku}` - Catalog item alternatives
-- `/api/catalog-item/compatibility/{sku}` - Fitment data
-- `/api/shipping/tryoto/*` - Shipping options
-- `/api/user/*` - User authentication and profile
-- `/api/front/purchasetrack` - Purchase tracking
-
-## Database
-
-MySQL database with the following structure:
-
-### Key Tables (New Naming Convention)
-- `catalog_items` - Product catalog (SKU, name, attributes)
-- `merchant_items` - Merchant-specific listings (price, stock per branch) - FK to `merchant_branches`
-- `merchant_branches` - Merchant warehouses/branches (location, coordinates, shipping origin)
-- `purchases` - Customer orders/purchases
-- `merchant_purchases` - Per-merchant breakdown of purchases
-- `favorite_sellers` - User favorites/wishlist
-- `catalog_reviews` - Product reviews
-- `catalog_events` - Notifications/events
-
-### Folder Structure
-- `database/migrations/` - Laravel migrations (ALL changes here)
-- `database/schema/` - SQL exports for reference only (READ-ONLY)
-
-### Terminology (IMPORTANT)
-| Old Term | New Term |
-|----------|----------|
-| `order` | `purchase` |
-| `vendor` | `merchant` |
-| `product` | `catalog_item` / `item` |
-| `wishlist` | `favorite` |
-
-See "Database Schema & Migrations Rules" section for detailed guidelines.
-
-## Testing
-
-PHPUnit configured with separate Unit and Feature test suites. Test database uses array drivers for cache/session/mail during testing.
-
-## Design System & CSS Architecture (CRITICAL)
-
-The project uses a **Design System** with strict CSS organization. Read `DESIGN_SYSTEM_POLICY.md` for full details.
-
-### CSS File Structure & Load Order
-
-Files MUST be loaded in this exact order:
-
-```html
-1. bootstrap.min.css     <!-- Framework base -->
-2. External libraries    <!-- slick, nice-select, etc. -->
-3. style.css             <!-- Legacy styles (FROZEN - no new code) -->
-4. muaadh-system.css     <!-- Design System (ALL NEW STYLES HERE) -->
-5. rtl.css               <!-- RTL support (if Arabic) -->
-6. theme-colors.css      <!-- Admin Panel overrides (ALWAYS LAST) -->
-```
-
-Location: `public/assets/front/css/`
-
-### NEW Components: Use `m-` Prefix
-
-For ALL new CSS, use the Design System in `muaadh-system.css`:
-
-```html
-<!-- CORRECT - Design System -->
-<button class="m-btn m-btn--primary">Save</button>
-<button class="m-btn m-btn--danger">Delete</button>
-<button class="m-btn m-btn--success m-btn--lg">Approve</button>
-
-<span class="m-badge m-badge--paid">Paid</span>
-<span class="m-badge m-badge--pending">Pending</span>
-
-<div class="m-card">
-    <div class="m-card__header">Name</div>
-    <div class="m-card__body">Content</div>
-</div>
-```
-
-### Legacy Classes (Still Work, But Don't Add New)
-
-```html
-<!-- LEGACY - Still works, don't use for new code -->
-<button class="template-btn">Primary</button>
-<button class="btn btn-primary">Primary</button>
-<button class="muaadh-btn">Primary</button>
-```
-
-### Rules for CSS Changes
-
-**DO:**
-- Use `m-` prefix classes from `muaadh-system.css` for new components
-- Use semantic tokens: `var(--action-primary)`, `var(--action-danger)`
-- Add new components ONLY to `muaadh-system.css`
-- Clear cache after CSS changes: `php artisan cache:clear && php artisan view:clear`
-
-**DO NOT:**
-- NEVER add CSS to `style.css` (frozen legacy)
-- NEVER use hardcoded colors like `#c3002f`
-- NEVER use inline `style=""` for colors
-- NEVER load CSS after `theme-colors.css`
-- NEVER duplicate selectors
-
-### Variable Hierarchy
-
-```css
-/* Level 1: Theme (Admin Panel) */
---theme-primary: #7c3aed;
-
-/* Level 2: Semantic (Design System) */
---action-primary: var(--theme-primary);
---action-danger: var(--theme-danger);
-
-/* Level 3: Component */
---btn-primary-bg: var(--action-primary);
-```
-
-### Component Inventory
-
-| Class | Purpose | Color |
-|-------|---------|-------|
-| `.m-btn--primary` | Main action (Save) | `--action-primary` |
-| `.m-btn--danger` | Destructive (Delete) | `--action-danger` |
-| `.m-btn--success` | Positive (Approve) | `--action-success` |
-| `.m-btn--warning` | Caution (Edit) | `--action-warning` |
-| `.m-badge--paid` | Payment confirmed | green |
-| `.m-badge--pending` | Awaiting action | yellow |
-| `.m-badge--cancelled` | Cancelled | red |
-
-### Theme Builder
-
-Admin can change all colors from: **Admin Panel -> Settings -> Theme Builder**
-
-### Page Background Convention (FINAL)
-
-All frontend pages MUST follow this background system:
-
-```
-Level 1: PAGE WRAPPER (.m-page or .muaadh-page-wrapper)
-  - Full page background color
-
-  Level 2: SECTIONS (.m-page__section or .muaadh-section)
-    - Transparent by default (inherits from page)
-
-    Level 3: CARDS/CONTENT (.m-card, .m-content-box)
-      - White/elevated backgrounds for content areas
-```
-
-**New Pages (Preferred):**
-```html
-<div class="m-page m-page--gray">
-    <section class="m-page__section">
-        <div class="container">
-            <div class="m-card">Content</div>
-        </div>
-    </section>
-</div>
-```
-
-**Legacy Pages (Still Works):**
-```html
-<div class="gs-*-wrapper muaadh-section-gray">
-    <div class="container">Content</div>
-</div>
-```
-
-**Background Variants:**
-
-| Class | Description |
-|-------|-------------|
-| `.m-page--gray` / `.muaadh-section-gray` | Gray background (default for most pages) |
-| `.m-page--white` | White background (special pages) |
-| `.m-page--gradient` | Gradient background (landing pages) |
-
-**Rules:**
-- ALL content sections after breadcrumb MUST have gray background
-- Inner sections are transparent (inherit from parent wrapper)
-- Cards/content boxes use white background
-- Never add background directly to `<section>` - use wrapper class
-
-### New/Modified Page Checklist
-
-When creating a NEW page or modifying an EXISTING page, follow this checklist:
-
-1. Layout: @extends('layouts.front')
-2. Breadcrumb section with bg-class
-3. Main content wrapped with muaadh-section-gray
-4. No inline style="" for colors
-5. Use m-* classes for new components
-6. Cards use white background (m-card or bg-white)
-7. Clear cache after changes
-
-**Standard Page Template:**
-```blade
-@extends('layouts.front')
-
-@section('content')
-    {{-- 1. Breadcrumb Section --}}
-    <section class="gs-breadcrumb-section bg-class"
-        data-background="{{ $gs->breadcrumb_banner ? asset('assets/images/' . $gs->breadcrumb_banner) : asset('assets/images/noimage.png') }}">
-        <div class="container">
-            <div class="row justify-content-center content-wrapper">
-                <div class="col-12">
-                    <h2 class="breadcrumb-name">@lang('Page Name')</h2>
-                    <ul class="bread-menu">
-                        <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        <li><a href="#">@lang('Current Page')</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    {{-- 2. Main Content with Gray Background --}}
-    <div class="gs-page-wrapper muaadh-section-gray">
-        <div class="container py-4">
-            {{-- Your content here --}}
-            <div class="m-card">
-                <div class="m-card__body">
-                    Content goes here
-                </div>
-            </div>
-        </div>
-    </div>
-@endsection
-```
-
-**Quick Fix for Missing Background:**
-If a page is missing gray background, add `muaadh-section-gray` to the main wrapper:
-```blade
-{{-- Before --}}
-<div class="gs-something-wrapper">
-
-{{-- After --}}
-<div class="gs-something-wrapper muaadh-section-gray">
-```
-
-**After Any Page Change:**
-```bash
-php artisan view:clear && php artisan cache:clear
-```
-
-### Reference Documentation
-
-- Full policy: `DESIGN_SYSTEM_POLICY.md`
-- Theme guide: `THEME_SYSTEM_COMPLETE_GUIDE.md`
-
----
-
-## Table Rename Methodology
-
-For complete table rename instructions, see: **docs/standards/TABLE_RENAME_METHODOLOGY.md**
-
-**Usage**: When you need to rename a table, request:
-> "Rename table from [OLD_NAME] to [NEW_NAME] using the methodology in /docs/standards/TABLE_RENAME_METHODOLOGY.md"
-
-The methodology covers all 9 steps:
-1. Database Migration
-2. Model Updates
-3. Controller Updates
-4. Helper Function Updates
-5. Route Updates
-6. Session Key Updates
-7. View Updates
-8. JavaScript Updates
-9. Permission & Translation Updates
-
----
-
-## CRITICAL: Database Safety Rules
-
-### ABSOLUTELY FORBIDDEN (even if user requests it):
-- DROP DATABASE - delete database
-- DROP TABLE (with data) - delete table with data
-- TRUNCATE TABLE - empty table
-- DELETE FROM table (without WHERE) - delete all data
-
-**WARNING: Even if the user asks to delete the database or a table, DO NOT do it!**
-
-### REQUIRED - When renaming/replacing tables:
-1. Create the new table structure
-2. Migrate data from old table to new table
-3. Rename old table with `_old` suffix (e.g., coupons -> coupons_old)
-4. NEVER delete the _old table - keep it for safety/rollback
-
-**Example:**
-```sql
--- Step 1: Create new table
-CREATE TABLE discount_codes (...);
-
--- Step 2: Migrate data
-INSERT INTO discount_codes SELECT * FROM coupons;
-
--- Step 3: Rename old table (don't delete!)
-RENAME TABLE coupons TO coupons_old;
-
--- Step 4: Keep coupons_old forever for safety
-```
-
-**Why keep `_old` tables?**
-- Data recovery if something goes wrong
-- Reference for data migration verification
-- Audit trail for changes
-- Zero-risk approach to schema changes
-
----
-
-## CRITICAL: Database Schema & Migrations Rules
-
-### Folder Structure
-
-```
-database/
-├── migrations/     # ← ALL database changes go here (Laravel migrations)
-└── schema/         # ← REFERENCE ONLY (SQL exports for documentation)
-```
-
-### `database/schema/` - READ-ONLY REFERENCE
-
-⚠️ **This folder is for REFERENCE ONLY!**
-
-**DO NOT:**
-- Use schema files to create tables
-- Import SQL files into database
-- Modify schema files manually
-
-**DO:**
-- Read schema files to understand table structure
-- Reference column names, types, and indexes
-- Use for documentation purposes
-
-### `database/migrations/` - ALL CHANGES HERE
-
-**ALL database modifications MUST use Laravel migrations:**
-
-```bash
-# Add new table
-php artisan make:migration create_table_name_table
-
-# Add column to existing table
-php artisan make:migration add_column_to_table_name
-
-# Modify column
-php artisan make:migration modify_column_in_table_name
-
-# Run migrations
-php artisan migrate
-```
-
-### Migration Examples
-
-**Adding a new column:**
-```php
-Schema::table('purchases', function (Blueprint $table) {
-    $table->string('new_column')->nullable()->after('existing_column');
-});
-```
-
-**Creating a new table:**
-```php
-Schema::create('new_table', function (Blueprint $table) {
-    $table->id();
-    $table->string('name');
-    $table->timestamps();
-});
-```
-
-### Updating Schema Reference
-
-After significant database changes, re-export schemas for reference:
-
-```bash
-php artisan schema:dump
-# Or use custom export script
-```
-
----
-
-## CRITICAL: Multi-Merchant Architecture Governance
-
-### Core Principle
-This project operates as a **TRUE Multi-Merchant** system, NOT a superficial marketplace. Merchant context is MANDATORY at every layer.
-
-### Mandatory Rules
-
-1. **Merchant Context is Required Everywhere**
-   - Every operation MUST have a merchant_id
-   - Missing merchant = FAIL immediately (no fallback, no default)
-   - Any code without merchant context is a design flaw
-
-2. **Operator (Platform) Role**
-   - Operator is **supervisory only** - NO products, NO pricing, NO item ownership
-   - Operator provides DEFAULT payment/shipping/packaging when `user_id = 0`
-   - Operator transactions are tracked separately in accounting
-
-3. **Data Ownership**
-   - `catalog_items` = Pure catalog entity (NO prices, NO stock)
-   - `merchant_items` = ALL merchant-specific data (price, stock, status)
-   - Never mix catalog data with merchant data
-
-4. **Branch-First Architecture** (2026-01-18)
-   - **MerchantBranch**: Operational unit with location, contact, and shipping origin
-   - Every `merchant_item` MUST have a `merchant_branch_id` (NOT NULL, FK constraint)
-   - Same SKU can exist in multiple branches of the same merchant (different stock/price)
-   - Shipping quotes are calculated from the branch's coordinates
-   - Cart items include `branch_id` and `branch_name` for grouping
-
-   **Key Relationships:**
-   ```
-   User (Merchant)
-     └── MerchantBranch (has address, coordinates)
-           └── MerchantItem (price, stock for this branch)
-   ```
-
-   **Required Fields on MerchantItem:**
-   - `merchant_branch_id` - FK to `merchant_branches.id` (REQUIRED)
-
-   **Creating Merchant Items:**
-   - Branch selection is REQUIRED when creating offers
-   - Conflict check includes branch_id (same SKU + same merchant + same branch = conflict)
-
-### Accounting System
-
-This is a **ledger system**, not just display reports:
-
-```
-Price Source: merchant_items.price
-+ Platform Commission (variable per merchant)
-+ Tax (if applicable)
-+ Shipping (merchant's or platform's)
-= Total
-
-Money Flow:
-├── If merchant's payment gateway → funds to merchant balance
-├── If platform's payment gateway → platform holds, settles later
-└── Same logic for shipping companies
-```
-
-**Reports show:**
-- Total sales per merchant
-- Platform commission collected
-- Tax collected
-- Shipping revenue (whose gateway?)
-- Net payable to merchant
-
-**Invoice Rules:**
-- Merchant's payment method → Merchant's logo/identity
-- Platform's payment method → Platform's logo/identity
-- Invoice is a LEGAL document, not decoration
-
-### Couriers (Delivery)
-Couriers are part of the **financial chain**, not just logistics:
-- Commission tracking
-- Settlement cycles
-- Performance metrics tied to payments
-
----
-
-## CRITICAL: Terminology Enforcement
-
-### Forbidden Terms → Required Terms
-
-| FORBIDDEN (Old) | REQUIRED (New) | Notes |
-|-----------------|----------------|-------|
-| `vendor` | `merchant` | All code, variables, routes |
-| `product` | `catalog_item` | Or just `item` |
-| `order` | `purchase` | Tables, models, routes |
-| `riders` | `couriers` | Delivery personnel |
-| `admin` | `operator` | Platform owner role |
-| `category/subcategory/childcategory` | `NewCategory` (levels) | See tree structure below |
-
-### Code Cleanup Rules
-- Any file/function with old names → **rename immediately**
-- No fallbacks to old names
-- No compatibility shims
-- Deep fixes only, no surface patches
-
----
-
-## CRITICAL: Cart Data Handling Architecture (2026-01-09)
-
-### The Principle
-
-**Storage layer alone is responsible for any data transformation.**
-
-All other layers (business logic, controllers, views) work with cart as a structured logical entity only, without any knowledge about how it's stored or encoded.
-
-### What This Means
-
-| Layer | Responsibility | Example |
-|-------|----------------|---------|
-| **Model (Storage Layer)** | JSON encoding/decoding | `'cart' => 'array'` cast |
-| **Controllers** | Pass/read arrays directly | `$purchase->cart = $cartArray;` |
-| **Services** | Work with structured arrays | `$items = $purchase->getCartItems();` |
-| **Views** | Display data from model methods | `@foreach ($purchase->getCartItems() as $item)` |
-
-### FORBIDDEN (Will break architecture)
-
-```php
-// ❌ NEVER do this in controllers/services/views:
-$cart = json_encode($cartArray);  // DON'T encode
-$purchase->cart = $cart;          // Model cast handles this
-
-$items = json_decode($purchase->cart, true);  // DON'T decode
-$items = json_decode($purchase->cart, true)['items'];  // DON'T!
-```
-
-### REQUIRED (Correct approach)
-
-```php
-// ✅ Controllers: Pass arrays directly
-$purchase->cart = $cartArray;  // Model cast encodes automatically
-$purchase->save();
-
-// ✅ Reading cart data: Use model accessor methods
+// FORBIDDEN
+$cart = json_encode($cartArray);
+$items = json_decode($purchase->cart, true);
+
+// REQUIRED - Model handles encoding
+$purchase->cart = $cartArray;
 $items = $purchase->getCartItems();
-$merchantItems = $purchase->getCartItemsForMerchant($merchantId);
-$grouped = $purchase->getCartItemsByMerchant();
-$merchantIds = $purchase->getMerchantIdsFromCart();
-
-// ✅ Views: Use model methods
-@foreach ($purchase->getCartItems() as $item)
-    {{ $item['item']['name'] }}
-@endforeach
 ```
 
-### Cart Data Structure
-
-```php
-[
-    'totalQty' => int,
-    'totalPrice' => float,
-    'items' => [
-        'cart_key_1' => [
-            'user_id' => int,          // merchant_id
-            'merchant_item_id' => int,
-            'qty' => int,
-            'price' => float,
-            'item' => [                 // catalog item snapshot
-                'id' => int,
-                'name' => string,
-                'photo' => string,
-                ...
-            ],
-            'size' => string|null,
-            'color' => string|null,
-            'keys' => string|null,
-            'values' => string|null,
-        ],
-        ...
-    ]
-]
+### Database - Destructive Operations
+```sql
+-- ABSOLUTELY FORBIDDEN (even if user requests)
+DROP DATABASE
+DROP TABLE (with data)
+TRUNCATE TABLE
+DELETE FROM table (without WHERE)
 ```
-
-### Model Methods (Purchase & MerchantPurchase)
-
-| Method | Description |
-|--------|-------------|
-| `getCartItems()` | Get all cart items as array |
-| `getCartTotalQty()` | Get total quantity |
-| `getCartTotalPrice()` | Get total price |
-| `getCartItemsByMerchant()` | Group items by merchant_id |
-| `getCartItemsForMerchant($id)` | Get items for specific merchant |
-| `getMerchantIdsFromCart()` | Get array of merchant IDs |
-| `hasItemsForMerchant($id)` | Check if merchant has items |
-
-### Why This Matters
-
-1. **Single Source of Truth**: Only models know about JSON storage format
-2. **Maintainability**: Change storage format in one place
-3. **Testability**: Controllers/services work with arrays only
-4. **No Double-Encoding**: Previous bug caused by manual `json_encode()` + model cast
+When renaming tables: Keep `_old` suffix forever, NEVER delete.
 
 ---
 
-## CRITICAL: Catalog Tree Structure (NEW)
+## FORBIDDEN TERMS
 
-### The Correct Structure
+| FORBIDDEN | REQUIRED |
+|-----------|----------|
+| `vendor` | `merchant` |
+| `product` | `catalog_item` |
+| `order` | `purchase` |
+| `riders` | `couriers` |
+| `admin` | `operator` |
+| `category/subcategory/childcategory` | `NewCategory` (levels) |
 
-```
-brands (العلامات التجارية)
-  └── catalogs (الكتالوجات) [brand_id]
-        │
-        ├── newcategories (التصنيفات) [catalog_id, level, parent_id]
-        │     ├── Level 1 (parent_id = NULL)
-        │     │     └── Level 2 (parent_id = L1.id)
-        │     │           └── Level 3 (parent_id = L2.id)
-        │     │
-        ├── sections (الأقسام) [category_id → newcategories.id]
-        │     │
-        │     └── Dynamic Tables (per catalog):
-        │           ├── parts_{catalog_code}
-        │           └── section_parts_{catalog_code}
-        │                 │
-        │                 ↓ (part_number)
-        │
-        catalog_items (الأصناف - كتالوج صرف)
-              │
-              ↓ (catalog_item_id)
-        │
-        merchant_items (عروض التجار - كل شيء تجاري هنا)
-```
+---
 
-### Key Relationships
+## REMOVED FEATURES - DO NOT RECREATE
 
+### Permanently Deleted (2026-01-19/20)
 ```php
-// Brand → Catalogs
-Brand::hasMany(Catalog::class);
-Catalog::belongsTo(Brand::class);
+// FORBIDDEN - These features no longer exist
+Package::find($id);                    // Packaging system removed
+$item->item_type === 'digital';        // Digital products removed
+Route::get('catalog-items/import'...); // Bulk import removed
 
-// Catalog → Categories (3 levels)
-NewCategory::belongsTo(Catalog::class);
-NewCategory::belongsTo(NewCategory::class, 'parent_id'); // self-referencing
+// Homepage classification removed
+$merchantItem->featured;
+$merchantItem->top;
+$merchantItem->trending;
+$merchantItem->best;
+$merchantItem->is_discount;
+MerchantItem::where('featured', 1)->get();
+$theme->show_featured_items;
 
-// Section → Category
-Section::belongsTo(NewCategory::class, 'category_id');
-
-// Dynamic Parts Tables
-// parts_{code}.part_number ↔ catalog_items.part_number
-// section_parts_{code} links parts to sections
-
-// Catalog Item → Merchant Items
-CatalogItem::hasMany(MerchantItem::class);
-MerchantItem::belongsTo(CatalogItem::class);
-```
-
-### Service: NewCategoryTreeService
-
-Location: `app/Services/NewCategoryTreeService.php`
-
-Key methods:
-- `getDescendantIds()` - Recursive CTE for all child categories
-- `getPartsWithMerchantItems()` - Parts available for sale only
-- `buildCategoryTree()` - Sidebar navigation tree
-- `resolveCategoryHierarchy()` - URL slug resolution
-
-### Routes
-
-```php
-// New category tree route
-/catalog/{brand_slug}/{catalog_slug}/category/{cat1?}/{cat2?}/{cat3?}
-
-// Example:
-/catalog/nissan/Y62/category/engine/cooling/radiator
-```
-
-### FORBIDDEN Old Structure
-
-```
-❌ categories (old)
-❌ subcategories (old)
-❌ childcategories (old)
-❌ products (old - use catalog_items)
-❌ products.price (old - prices in merchant_items only)
+// CatalogItem wrong attributes
+$catalogItem->price;    // Use $merchantItem->price
+$catalogItem->stock;    // Use $merchantItem->stock
+$catalogItem->color;    // Use $merchantItem->color
+$catalogItem->features; // Doesn't exist
 ```
 
 ---
 
-## CRITICAL: Development Rules
+## DEVELOPMENT RULES
 
-### 1. No New Files Unless Necessary
-- Edit existing files/functions
-- Delete unused old files
-- No duplicate functionality
-
-### 2. No Logic in Views
-- All processing via API/Controllers/Services
-- Views are for display only
-- No queries in Blade files
-
-### 3. Centralized Processing
-- Shared logic goes in Services
-- No copy-paste across controllers
-- DRY principle strictly enforced
-
-### 4. Final Fixes Only
-- No half-fixes or temporary solutions
-- No surface patches
-- Deep, complete resolution required
-
-### 5. Clean Code
-- Remove unused code immediately
-- No commented-out legacy code
-- No fallback compatibility layers
-
-### 6. Legacy Cleanup
-When encountering old table/column names:
-```php
-// WRONG - Don't add fallback
-$product = Product::find($id); // ❌
-
-// RIGHT - Fix completely
-$catalogItem = CatalogItem::find($id); // ✓
-```
+1. **No New Files Unless Necessary** - Edit existing, delete unused
+2. **No Logic in Views** - Views for display only, no queries in Blade
+3. **Centralized Processing** - Shared logic in Services, DRY enforced
+4. **Final Fixes Only** - No half-fixes, no surface patches
+5. **Clean Code** - Remove unused code immediately, no fallback layers
 
 ---
 
-## Quick Reference: What Lives Where
+## QUICK REFERENCE
 
-| Data Type | Table | Notes |
-|-----------|-------|-------|
-| Item catalog info | `catalog_items` | SKU, name, photos, specs |
-| Item pricing/stock | `merchant_items` | Per-branch, all commercial data |
-| Merchant branches | `merchant_branches` | Warehouses, shipping origins |
-| Customer orders | `purchases` | Main order record |
-| Per-merchant breakdown | `merchant_purchases` | Split by merchant |
-| Categories | `newcategories` | 3-level hierarchy per catalog |
-| Parts data | `parts_{code}` | Dynamic per catalog |
-| User favorites | `favorite_sellers` | Wishlist |
-| Reviews | `catalog_reviews` | Product reviews |
+### Data Location
+| Data | Table |
+|------|-------|
+| Catalog info | `catalog_items` |
+| Pricing/stock | `merchant_items` |
+| Branches | `merchant_branches` |
+| Orders | `purchases` |
+| Per-merchant | `merchant_purchases` |
+
+### Common Commands
+```bash
+npm run build           # Build with lint
+php artisan migrate     # Run migrations
+php artisan cache:clear # Clear cache
+```
+
+### CSS Classes
+| Class | Purpose |
+|-------|---------|
+| `.m-btn--primary` | Main action |
+| `.m-btn--danger` | Destructive |
+| `.m-card` | Content card |
+| `.m-badge--*` | Status badges |
 
 ---
 
-## Column Renames (2026-01-08)
+## DOCUMENTATION INDEX
 
-### Renamed Columns
-
-| Table | Old Column | New Column |
-|-------|------------|------------|
-| `purchases` | `order_note` | `purchase_note` |
-| `purchases` | `riders` | `couriers` |
-| `delivery_couriers` | `order_amount` | `purchase_amount` |
-| `rewards` | `order_amount` | `purchase_amount` |
-| `users` | `admin_commission` | `operator_commission` |
-
-### Renamed Indexes & Constraints
-
-| Table | Old Name | New Name |
-|-------|----------|----------|
-| `catalog_item_clicks` | `product_clicks_merchant_product_id_index` | `catalog_item_clicks_merchant_item_id_index` |
-| `merchant_items` | `mi_product_type` | `mi_item_type` |
-| `merchant_credentials` | `vendor_service_key_env_unique` | `merchant_service_key_env_unique` |
-| `merchant_credentials` | `vendor_credentials_user_id_index` | `merchant_credentials_user_id_index` |
-| `merchant_credentials` | `vendor_credentials_service_name_index` | `merchant_credentials_service_name_index` |
-| `merchant_credentials` | `vendor_credentials_user_id_foreign` | `merchant_credentials_user_id_foreign` |
-| `merchant_stock_updates` | `vendor_stock_updates_user_id_index` | `merchant_stock_updates_user_id_index` |
-| `merchant_stock_updates` | `vendor_stock_updates_status_index` | `merchant_stock_updates_status_index` |
-| `merchant_stock_updates` | `vendor_stock_updates_update_type_index` | `merchant_stock_updates_update_type_index` |
-| `merchant_stock_updates` | `vendor_stock_updates_user_id_foreign` | `merchant_stock_updates_user_id_foreign` |
-
-### Migration Files
-
-```
-database/migrations/2026_01_08_100001_rename_legacy_columns_to_new_names.php
-database/migrations/2026_01_08_100002_rename_legacy_indexes_to_new_names.php
-```
-
-Run migrations: `php artisan migrate`
-
----
-
-## CRITICAL: Removed Features & Dead Code (2026-01-19)
-
-⚠️ **DO NOT recreate, reference, or add fallbacks for any of these removed features!**
-
-### 1. Package/Packaging System - COMPLETELY REMOVED
-
-The packaging feature has been **permanently deleted**. The system was built as if packaging never existed.
-
-**What was removed:**
-- `packages` table (dropped via migration)
-- `Package` model (`app/Models/Package.php`)
-- `PackageController` (Operator, Merchant, API)
-- `PackageResource`, `PackageDetailsResource`
-- All package views (`operator/package/`, `merchant/package/`)
-- All package routes
-- Sidebar navigation links for packages
-
-**Services cleaned (packing_cost = 0 always):**
-- `CheckoutPriceService`
-- `CheckoutDataService`
-- `MerchantPriceCalculator`
-- `MerchantCheckoutService`
-- `MerchantPurchaseCreator`
-
-**FORBIDDEN:**
-```php
-// ❌ NEVER do this:
-$package = Package::find($id);
-$packingCost = $purchase->packing_cost; // Always 0
-$data['package_id'] = $packageId;
-```
-
-### 2. Bulk Import Feature - COMPLETELY REMOVED
-
-Catalog item bulk import has been **permanently deleted** from both Operator and Merchant panels.
-
-**What was removed:**
-- `app/Http/Controllers/Operator/ImportController.php`
-- `app/Http/Controllers/Merchant/ImportController.php`
-- Import methods from `CatalogItemController` (both panels)
-- `resources/views/operator/catalog-item-import/` (entire folder)
-- `resources/views/merchant/catalog-item-import/` (entire folder)
-- All import routes from `web.php` and `api.php`
-- Sidebar navigation links for import
-
-**FORBIDDEN:**
-```php
-// ❌ NEVER recreate:
-Route::get('catalog-items/import', ...);
-class ImportController extends Controller { ... }
-```
-
-### 3. Digital Products - REMOVED
-
-The system only supports physical items. Digital product logic has been removed.
-
-**What was removed:**
-- `digital.blade.php` files
-- Digital product type logic
-- `item_type = 'digital'` checks
-
-**FORBIDDEN:**
-```php
-// ❌ NEVER do this:
-if ($item->item_type === 'digital') { ... }
-@include('merchant.catalog-item.edit.digital')
-```
-
-### 4. Removed Columns from `catalog_items`
-
-These columns were removed because they belong ONLY to `merchant_items`:
-
-| Removed Column | Reason |
-|----------------|--------|
-| `color` | Merchant-specific, use `merchant_items.color` |
-| `size` | Merchant-specific, use `merchant_items.size` |
-| `length` | Not needed, was never used |
-| `width` | Not needed, was never used |
-| `height` | Not needed, was never used |
-| `status` | Never existed in schema |
-| `policy` | Never existed in schema |
-| `features` | Never existed in schema |
-| `featured` | Never existed in schema |
-| `best` | Never existed in schema |
-| `top` | Never existed in schema |
-| `big` | Never existed in schema |
-| `trending` | Never existed in schema |
-| `whole_sell_qty` | Never existed in schema |
-| `whole_sell_discount` | Never existed in schema |
-
-**CatalogItem $fillable (correct):**
-```php
-protected $fillable = [
-    'brand_id', 'part_number', 'label_en', 'label_ar', 'attributes', 'name', 'slug',
-    'photo', 'thumbnail', 'weight', 'views', 'tags', 'is_meta', 'meta_tag',
-    'meta_description', 'youtube', 'measure', 'hot', 'latest', 'sale',
-    'is_catalog', 'catalog_id', 'cross_items',
-];
-```
-
-**FORBIDDEN:**
-```php
-// ❌ NEVER access these on CatalogItem:
-$catalogItem->color;      // Use $merchantItem->color
-$catalogItem->size;       // Use $merchantItem->size
-$catalogItem->price;      // Use $merchantItem->price
-$catalogItem->stock;      // Use $merchantItem->stock
-$catalogItem->features;   // Doesn't exist
-```
-
-### 5. Magic `__get` Fallback - REMOVED from CatalogItem
-
-The `__get` magic method that caused confusion between tables was removed. Code must now explicitly access the correct model.
-
-**FORBIDDEN:**
-```php
-// ❌ NEVER add implicit fallbacks:
-public function __get($key) {
-    if (!$this->getAttribute($key) && $this->merchantItem) {
-        return $this->merchantItem->$key;  // DON'T!
-    }
-}
-```
-
-**REQUIRED:**
-```php
-// ✅ Be explicit about which model:
-$price = $merchantItem->price;          // Merchant data
-$partNumber = $catalogItem->part_number; // Catalog data
-```
-
-### 6. Naming Changes
-
-| Old Name | New Name | Context |
-|----------|----------|---------|
-| `physical` | `items` | File names, CSS classes, routes |
-| `physical.blade.php` | `items.blade.php` | View files |
-| `physical-catalogItem-inputes-wrapper` | `items-catalogItem-inputes-wrapper` | CSS class |
-| `/physical` route | `/items` route | URL slugs |
-
-### Migrations for Removed Features
-
-```
-database/migrations/2026_01_18_xxxxxx_remove_color_size_from_catalog_items.php
-database/migrations/2026_01_18_203457_remove_dimensions_from_catalog_items.php
-database/migrations/2026_01_19_100000_drop_packages_table.php
-```
-
-### When You Encounter Dead Code References
-
-If you find code referencing removed features:
-1. **DELETE** the dead code completely
-2. **DO NOT** add fallbacks or compatibility layers
-3. **DO NOT** recreate the removed functionality
-4. Update related code to work without the removed feature
+| Topic | Location |
+|-------|----------|
+| Project Overview | `docs/architecture/project-overview.md` |
+| Catalog System | `docs/architecture/catalog-system.md` |
+| Multi-Merchant | `docs/architecture/multi-merchant.md` |
+| Cart Architecture | `docs/architecture/cart-architecture.md` |
+| CSS Design System | `docs/rules/css-design-system.md` |
+| Database Migrations | `docs/rules/database-migrations.md` |
+| Shipping/Payment | `docs/rules/shipping-payment.md` |
+| MonetaryUnit | `docs/rules/monetary-unit.md` |
+| API Routes | `docs/reference/api-routes.md` |
+| Table Reference | `docs/reference/table-reference.md` |
+| Column Renames | `docs/reference/column-renames.md` |
+| Removed Features | `docs/reference/removed-features.md` |
+| Table Rename Method | `docs/standards/TABLE_RENAME_METHODOLOGY.md` |

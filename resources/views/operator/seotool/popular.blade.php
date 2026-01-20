@@ -47,8 +47,13 @@
 														<td>
 															{{ $cartItem->catalogItem ? getLocalizedCatalogItemName($cartItem->catalogItem, 60) : __('N/A') }}
 														</td>
+                                                        @php
+                                                            $fitments = $cartItem->catalogItem?->fitments ?? collect();
+                                                            $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                                            $firstBrand = $brands->first();
+                                                        @endphp
                                                         <td>
-                                                            {{ $cartItem->catalogItem && $cartItem->catalogItem->brand ? getLocalizedBrandName($cartItem->catalogItem->brand) : __('N/A') }}
+                                                            {{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}
                                                         </td>
                                                         <td>
                                                             {{ $cartItem->merchantItem && $cartItem->merchantItem->qualityBrand ? getLocalizedQualityName($cartItem->merchantItem->qualityBrand) : __('N/A') }}
@@ -61,7 +66,7 @@
                                                             @endif
                                                         </td>
                                                         <td>
-                                                            {{ $cartItem->catalogItem && $cartItem->catalogItem->brand ? $cartItem->catalogItem->brand->localized_name : __('N/A') }}
+                                                            {{ $firstBrand ? $firstBrand->localized_name : __('N/A') }}
                                                         </td>
                                                         <td>{{ $catalogItem->count() }}</td>
                                                         </tr>

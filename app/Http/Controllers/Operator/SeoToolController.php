@@ -49,7 +49,7 @@ class SeoToolController extends OperatorBaseController
         $expDate = Carbon::now()->subDays($id);
 
         // Group by merchant_item_id for merchant-specific tracking
-        $items = CatalogItemClick::with(['catalogItem', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.brand'])
+        $items = CatalogItemClick::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])
             ->whereDate('date', '>', $expDate)
             ->get()
             ->groupBy(function ($item) {

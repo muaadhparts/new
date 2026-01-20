@@ -45,9 +45,7 @@ class HomePageThemeController extends OperatorBaseController
         // Handle checkbox fields
         $checkboxFields = [
             'show_hero_search', 'show_brands', 'show_categories',
-            'show_arrival', 'show_featured_items', 'show_deal_of_day',
-            'show_top_rated', 'show_big_save', 'show_trending',
-            'show_best_sellers', 'show_blogs', 'show_newsletter'
+            'show_arrival', 'show_blogs', 'show_newsletter'
         ];
 
         foreach ($checkboxFields as $field) {
@@ -95,9 +93,7 @@ class HomePageThemeController extends OperatorBaseController
         // Handle checkbox fields
         $checkboxFields = [
             'show_hero_search', 'show_brands', 'show_categories',
-            'show_arrival', 'show_featured_items', 'show_deal_of_day',
-            'show_top_rated', 'show_big_save', 'show_trending',
-            'show_best_sellers', 'show_blogs', 'show_newsletter'
+            'show_arrival', 'show_blogs', 'show_newsletter'
         ];
 
         foreach ($checkboxFields as $field) {

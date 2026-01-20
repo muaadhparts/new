@@ -49,7 +49,7 @@ class MerchantController extends MerchantBaseController
                 $q->where('user_id', $userId);
             })
             ->with([
-                'brand',
+                'fitments.brand',
                 'merchantItems' => function ($q) use ($userId) {
                     $q->where('user_id', $userId)->with('qualityBrand');
                 }

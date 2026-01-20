@@ -146,7 +146,7 @@ class MerchantController extends OperatorBaseController
     // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
     public function merchantItemsDatatables($id)
     {
-        $datas = MerchantItem::with(['catalogItem', 'qualityBrand', 'brand'])
+        $datas = MerchantItem::with(['catalogItem.fitments.brand', 'qualityBrand'])
             ->where('user_id', $id)
             ->latest('id');
 
@@ -165,8 +165,11 @@ class MerchantController extends OperatorBaseController
                 return $dt ? getLocalizedCatalogItemName($dt, 50) : __('N/A');
             })
             ->addColumn('brand', function (MerchantItem $data) {
-                // brand is now on merchant_items (2026-01-20)
-                return $data->brand ? getLocalizedBrandName($data->brand) : __('N/A');
+                // Brand from catalog item fitments (OEM brand)
+                $fitments = $data->catalogItem?->fitments ?? collect();
+                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                $firstBrand = $brands->first();
+                return $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A');
             })
             ->addColumn('quality_brand', function (MerchantItem $data) {
                 return $data->qualityBrand ? getLocalizedQualityName($data->qualityBrand) : __('N/A');

@@ -333,8 +333,13 @@
                         <tr>
                             <td><h6 class="td-name">@lang('Brand')</h6></td>
                             @foreach ($processedCatalogItems as $mpId => $catalogItem)
+                                @php
+                                    $fitments = $catalogItem['item']->fitments ?? collect();
+                                    $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                    $firstBrand = $brands->first();
+                                @endphp
                                 <td>
-                                    <span class="table-value">{{ $catalogItem['item']->brand ? getLocalizedBrandName($catalogItem['item']->brand) : __('N/A') }}</span>
+                                    <span class="table-value">{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</span>
                                 </td>
                             @endforeach
                         </tr>

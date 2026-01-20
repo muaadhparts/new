@@ -30,10 +30,15 @@
     // Extract all display values (using localized names)
     // NO FALLBACK - if $mp is null, merchant-specific fields will be null
     // NOTE: All relationships MUST be eager loaded by Controller before passing to view
-    // NOTE: brand_id moved from catalog_items to merchant_items (2026-01-20)
+    // NOTE: Brand comes from catalogItem->fitments->brand (OEM brand from fitments)
     $part_number = $catalogItem->part_number ?? null;
-    $brandName = $mp?->brand?->localized_name;  // brand is now on merchant_items
-    $brandLogo = $mp?->brand?->photo_url;
+
+    // Get brand from catalog item fitments
+    $fitments = $catalogItem->fitments ?? collect();
+    $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+    $firstBrand = $brands->first();
+    $brandName = $firstBrand?->localized_name;
+    $brandLogo = $firstBrand?->photo_url;
     $qualityBrand = $mp?->qualityBrand;
     $qualityBrandName = $qualityBrand?->localized_name;
     $qualityBrandLogo = $qualityBrand?->logo_url;

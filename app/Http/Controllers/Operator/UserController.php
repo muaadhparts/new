@@ -42,10 +42,7 @@ class UserController extends OperatorBaseController
                                     </a>' : '<a href="javascript:;">
                                     <i class="fas fa-users"></i> '.__("Merchant").'
                                     </a>';
-                                    return '<div class="action-list">
-                                            <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#modal1" class="topup" data-href="' . route('operator-user-top-up',$data->id) . '" >
-                                            <i class="fas fa-dollar-sign"></i> '.__("Manage Top Up").'
-                                            </a>'
+                                    return '<div class="action-list">'
                                             .$merchant.
                                             '<a href="' . route('operator-user-show',$data->id) . '" >
                                             <i class="fas fa-eye"></i> '.__("Details").'

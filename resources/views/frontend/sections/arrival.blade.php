@@ -32,9 +32,12 @@ Receives: $merchantItems (Collection of MerchantItem models)
             ? (filter_var($mainPhoto, FILTER_VALIDATE_URL) ? $mainPhoto : Storage::url($mainPhoto))
             : $defaultImage;
 
-        // Brand info (from catalog item)
-        $brandName = $actualCatalogItem->brand?->localized_name;
-        $brandLogo = $actualCatalogItem->brand?->photo_url;
+        // Brand info (from catalog item fitments - OEM brand)
+        $fitments = $actualCatalogItem->fitments ?? collect();
+        $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+        $firstBrand = $brands->first();
+        $brandName = $firstBrand?->localized_name;
+        $brandLogo = $firstBrand?->photo_url;
 
         // Quality Brand info (from merchant item)
         $qualityBrandName = $merchantItem->qualityBrand?->localized_name;

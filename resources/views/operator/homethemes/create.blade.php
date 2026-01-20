@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 <div class="content-area">
@@ -128,60 +128,6 @@
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Featured CatalogItems') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_featured_items" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Deal of the Day') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_deal_of_day" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Top Rated') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_top_rated" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Big Save') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_big_save" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Trending') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_trending" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <label class="control-label">{{ __('Best Sellers') }}</label>
-                                                <label class="switch">
-                                                    <input type="checkbox" name="show_best_sellers" value="1" checked>
-                                                    <span class="toggle-switch round"></span>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <div class="d-flex justify-content-between align-items-center">
                                                 <label class="control-label">{{ __('Blogs') }}</label>
                                                 <label class="switch">
                                                     <input type="checkbox" name="show_blogs" value="1" checked>
@@ -202,56 +148,32 @@
                                 </div>
                             </div>
 
-                            {{-- Section Purchase --}}
+                            {{-- Section Order --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-name">{{ __('Sections Purchase') }}</h3>
+                                    <h3 class="panel-name">{{ __('Sections Order') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Brands Purchase') }}</label>
+                                            <label class="control-label">{{ __('Brands Order') }}</label>
                                             <input type="number" class="form-control" name="order_brands" value="2" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Categories Purchase') }}</label>
+                                            <label class="control-label">{{ __('Categories Order') }}</label>
                                             <input type="number" class="form-control" name="order_categories" value="3" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Arrival Purchase') }}</label>
+                                            <label class="control-label">{{ __('Arrival Order') }}</label>
                                             <input type="number" class="form-control" name="order_arrival" value="4" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Featured CatalogItems Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_featured_items" value="5" min="1">
+                                            <label class="control-label">{{ __('Blogs Order') }}</label>
+                                            <input type="number" class="form-control" name="order_blogs" value="5" min="1">
                                         </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Deal of Day Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_deal_of_day" value="6" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Top Rated Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_top_rated" value="7" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Big Save Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_big_save" value="8" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Trending Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_trending" value="9" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Best Sellers Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_best_sellers" value="10" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Blogs Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_blogs" value="11" min="1">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Newsletter Purchase') }}</label>
-                                            <input type="number" class="form-control" name="order_newsletter" value="12" min="1">
+                                            <label class="control-label">{{ __('Newsletter Order') }}</label>
+                                            <input type="number" class="form-control" name="order_newsletter" value="6" min="1">
                                         </div>
                                     </div>
                                 </div>
@@ -273,30 +195,6 @@
                                             <input type="text" class="form-control" name="name_categories" placeholder="{{ __('Shop by Category') }}">
                                         </div>
                                         <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Featured CatalogItems Name') }}</label>
-                                            <input type="text" class="form-control" name="name_featured_items" placeholder="{{ __('Featured CatalogItems') }}">
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Deal of Day Name') }}</label>
-                                            <input type="text" class="form-control" name="name_deal_of_day" placeholder="{{ __('Deal of the Day') }}">
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Top Rated Name') }}</label>
-                                            <input type="text" class="form-control" name="name_top_rated" placeholder="{{ __('Top Rated CatalogItems') }}">
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Big Save Name') }}</label>
-                                            <input type="text" class="form-control" name="name_big_save" placeholder="{{ __('Big Save CatalogItems') }}">
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Trending Name') }}</label>
-                                            <input type="text" class="form-control" name="name_trending" placeholder="{{ __('Trending CatalogItems') }}">
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
-                                            <label class="control-label">{{ __('Best Sellers Name') }}</label>
-                                            <input type="text" class="form-control" name="name_best_sellers" placeholder="{{ __('Best Selling CatalogItems') }}">
-                                        </div>
-                                        <div class="col-lg-4 col-md-6 mb-3">
                                             <label class="control-label">{{ __('Blogs Name') }}</label>
                                             <input type="text" class="form-control" name="name_blogs" placeholder="{{ __('From Our Blog') }}">
                                         </div>
@@ -304,33 +202,13 @@
                                 </div>
                             </div>
 
-                            {{-- CatalogItem Counts --}}
+                            {{-- Content Counts --}}
                             <div class="panel panel-default mb-4">
                                 <div class="panel-heading">
-                                    <h3 class="panel-name">{{ __('CatalogItem Counts Per Section') }}</h3>
+                                    <h3 class="panel-name">{{ __('Content Counts Per Section') }}</h3>
                                 </div>
                                 <div class="panel-body">
                                     <div class="row">
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Featured CatalogItems') }}</label>
-                                            <input type="number" class="form-control" name="count_featured_items" value="8" min="1" max="24">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Top Rated') }}</label>
-                                            <input type="number" class="form-control" name="count_top_rated" value="6" min="1" max="24">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Big Save') }}</label>
-                                            <input type="number" class="form-control" name="count_big_save" value="6" min="1" max="24">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Trending') }}</label>
-                                            <input type="number" class="form-control" name="count_trending" value="6" min="1" max="24">
-                                        </div>
-                                        <div class="col-lg-3 col-md-4 mb-3">
-                                            <label class="control-label">{{ __('Best Sellers') }}</label>
-                                            <input type="number" class="form-control" name="count_best_sellers" value="8" min="1" max="24">
-                                        </div>
                                         <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Blogs') }}</label>
                                             <input type="number" class="form-control" name="count_blogs" value="3" min="1" max="12">

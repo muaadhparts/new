@@ -364,35 +364,6 @@
 
     // EDIT OPERATION END
 
-    // FEATURE OPERATION
-
-    $(document).on("click", ".feature", function () {
-      if (admin_loader == 1) {
-        $(".submit-loader").show();
-      }
-      $("#modal2")
-        .find(".modal-name")
-        .html($("#headerdata").val() + " Highlight");
-      $("#modal2 .modal-content .modal-body")
-        .html("")
-        .load($(this).attr("data-href"), function (response, status, xhr) {
-          if (status == "success") {
-            if (admin_loader == 1) {
-              $(".submit-loader").hide();
-            }
-
-            var dateToday = new Date();
-            $("#discount_date").datepicker({
-              changeMonth: true,
-              changeYear: true,
-              minDate: dateToday,
-            });
-          }
-        });
-    });
-
-    // EDIT OPERATION END
-
     // SHOW OPERATION
 
     $(document).on("click", ".view", function () {

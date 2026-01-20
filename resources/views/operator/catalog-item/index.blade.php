@@ -52,33 +52,6 @@
 
 
 
-    {{-- HIGHLIGHT MODAL --}}
-
-    <div class="modal fade" id="modal2" tabindex="-1" role="dialog" aria-labelledby="modal2" aria-hidden="true">
-
-
-        <div class="modal-dialog highlight" role="document">
-            <div class="modal-content">
-                <div class="submit-loader">
-                    <img src="{{ asset('assets/images/' . $gs->admin_loader) }}" alt="">
-                </div>
-                <div class="modal-header">
-                    <h5 class="modal-name"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        
-                    </button>
-                </div>
-                <div class="modal-body">
-
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('Close') }}</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {{-- HIGHLIGHT ENDS --}}
 
     {{-- CATALOG MODAL --}}
 

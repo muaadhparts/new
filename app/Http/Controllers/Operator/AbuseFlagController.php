@@ -12,7 +12,7 @@ class AbuseFlagController extends OperatorBaseController
 	// Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
 	public function datatables()
 	{
-		$datas = AbuseFlag::with(['catalogItem', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.brand', 'user'])
+		$datas = AbuseFlag::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'user'])
 			->latest('id')
 			->get();
 
@@ -31,8 +31,11 @@ class AbuseFlagController extends OperatorBaseController
 				return $item;
 			})
 			->addColumn('brand', function (AbuseFlag $data) {
-				// brand is now on merchant_items (2026-01-20)
-				return $data->merchantItem && $data->merchantItem->brand ? getLocalizedBrandName($data->merchantItem->brand) : __('N/A');
+				// Brand from catalog item fitments (OEM brand)
+				$fitments = $data->catalogItem?->fitments ?? collect();
+				$brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+				$firstBrand = $brands->first();
+				return $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A');
 			})
 			->addColumn('quality_brand', function (AbuseFlag $data) {
 				return $data->merchantItem && $data->merchantItem->qualityBrand
@@ -71,8 +74,8 @@ class AbuseFlagController extends OperatorBaseController
 	//*** GET Request
 	public function show($id)
 	{
-		// brand is now on merchant_items (2026-01-20)
-		$data = AbuseFlag::with(['catalogItem', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.brand'])->findOrFail($id);
+		// Brand from catalog item fitments
+		$data = AbuseFlag::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])->findOrFail($id);
 		return view('operator.abuse-flag.show', compact('data'));
 	}
 

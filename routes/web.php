@@ -340,8 +340,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/catalog-items/delete/{id}', 'Operator\CatalogItemController@destroy')->name('operator-catalog-item-delete');
 
         Route::get('/catalog-items/catalog/{id1}/{id2}', 'Operator\CatalogItemController@catalog')->name('operator-catalog-item-catalog');
-        Route::get('/catalog-items/feature/{id}', 'Operator\CatalogItemController@feature')->name('operator-catalog-item-feature');
-        Route::post('/catalog-items/feature/{id}', 'Operator\CatalogItemController@featuresubmit')->name('operator-catalog-item-feature.store');
         Route::get('/catalog-items/status/{id1}/{id2}', 'Operator\CatalogItemController@status')->name('operator-catalog-item-status');
         Route::get('/merchant-items/status/{id}/{status}', 'Operator\CatalogItemController@merchantItemStatus')->name('operator-merchant-item-status');
         Route::get('/catalog-items/settings', 'Operator\CatalogItemController@catalogItemSettings')->name('operator-gs-catalog-item-settings');
@@ -661,7 +659,6 @@ Route::prefix('operator')->group(function () {
         //------------ OPERATORPAGE SETTINGS SECTION ------------
 
         Route::get('/frontend-setting/customize', 'Operator\FrontendSettingController@customize')->name('operator-fs-customize');
-        Route::get('/frontend-setting/best-seller', 'Operator\FrontendSettingController@best_seller')->name('operator-fs-best-seller');
     });
 
     //------------ OPERATORHOME PAGE SETTINGS SECTION ENDS ------------
@@ -696,40 +693,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/page/banner', 'Operator\FrontendSettingController@page_banner')->name('operator-fs-page-banner');
         Route::get('/right/banner', 'Operator\FrontendSettingController@right_banner')->name('operator-fs-right-banner');
         Route::get('/menu/links', 'Operator\FrontendSettingController@menu_links')->name('operator-fs-menu-links');
-        Route::get('/deal/of/day', 'Operator\FrontendSettingController@deal')->name('operator-fs-deal');
-        Route::post('/deal/of/day/toggle', 'Operator\FrontendSettingController@toggleDeal')->name('operator-fs-deal-toggle');
-        Route::get('/deal/of/day/search', 'Operator\FrontendSettingController@searchDealCatalogItems')->name('operator-fs-deal-search');
-        Route::get('/deal/of/day/merchants', 'Operator\FrontendSettingController@getCatalogItemMerchants')->name('operator-fs-deal-merchants');
-
-        // Best Sellers Management
-        Route::get('/best-sellers', 'Operator\FrontendSettingController@bestSellers')->name('operator-fs-best-sellers');
-        Route::post('/best-sellers/toggle', 'Operator\FrontendSettingController@toggleBestSellers')->name('operator-fs-best-sellers-toggle');
-        Route::get('/best-sellers/search', 'Operator\FrontendSettingController@searchBestSellersCatalogItems')->name('operator-fs-best-sellers-search');
-        Route::get('/best-sellers/merchants', 'Operator\FrontendSettingController@getBestSellersMerchants')->name('operator-fs-best-sellers-merchants');
-
-        // Top Rated Management
-        Route::get('/top-rated', 'Operator\FrontendSettingController@topRated')->name('operator-fs-top-rated');
-        Route::post('/top-rated/toggle', 'Operator\FrontendSettingController@toggleTopRated')->name('operator-fs-top-rated-toggle');
-        Route::get('/top-rated/search', 'Operator\FrontendSettingController@searchTopRated')->name('operator-fs-top-rated-search');
-        Route::get('/top-rated/merchants', 'Operator\FrontendSettingController@getTopRatedMerchants')->name('operator-fs-top-rated-merchants');
-
-        // Big Save Management
-        Route::get('/big-save', 'Operator\FrontendSettingController@bigSave')->name('operator-fs-big-save');
-        Route::post('/big-save/toggle', 'Operator\FrontendSettingController@toggleBigSave')->name('operator-fs-big-save-toggle');
-        Route::get('/big-save/search', 'Operator\FrontendSettingController@searchBigSave')->name('operator-fs-big-save-search');
-        Route::get('/big-save/merchants', 'Operator\FrontendSettingController@getBigSaveMerchants')->name('operator-fs-big-save-merchants');
-
-        // Trending Management
-        Route::get('/trending', 'Operator\FrontendSettingController@trending')->name('operator-fs-trending');
-        Route::post('/trending/toggle', 'Operator\FrontendSettingController@toggleTrending')->name('operator-fs-trending-toggle');
-        Route::get('/trending/search', 'Operator\FrontendSettingController@searchTrending')->name('operator-fs-trending-search');
-        Route::get('/trending/merchants', 'Operator\FrontendSettingController@getTrendingMerchants')->name('operator-fs-trending-merchants');
-
-        // Featured CatalogItems Management
-        Route::get('/featured', 'Operator\FrontendSettingController@featured')->name('operator-fs-featured');
-        Route::post('/featured/toggle', 'Operator\FrontendSettingController@toggleFeatured')->name('operator-fs-featured-toggle');
-        Route::get('/featured/search', 'Operator\FrontendSettingController@searchFeatured')->name('operator-fs-featured-search');
-        Route::get('/featured/merchants', 'Operator\FrontendSettingController@getFeaturedMerchants')->name('operator-fs-featured-merchants');
         //------------ OPERATORPAGE SECTION ENDS------------
 
         Route::get('/frontend-setting/contact', 'Operator\FrontendSettingController@contact')->name('operator-fs-contact');

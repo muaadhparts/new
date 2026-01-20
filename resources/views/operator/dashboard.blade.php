@@ -241,7 +241,12 @@
                                             <tr>
                                             <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
                                             <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
-                                            <td>{{ $data->catalogItem && $data->catalogItem->brand ? $data->catalogItem->brand->localized_name : 'N/A' }}</td>
+                                            @php
+                                                $fitments = $data->catalogItem?->fitments ?? collect();
+                                                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                                $firstBrand = $brands->first();
+                                            @endphp
+                                            <td>{{ $firstBrand ? $firstBrand->localized_name : 'N/A' }}</td>
                                                 <td>{{ $data->catalogItem->type ?? 'N/A' }}</td>
 
                                                 <td> {{ $data->showPrice() }} </td>
@@ -288,7 +293,12 @@
                                                     <tr>
                                                     <td><img src="{{filter_var($data->catalogItem->photo ?? '', FILTER_VALIDATE_URL) ? $data->catalogItem->photo : ($data->catalogItem->photo ?? null ? \Illuminate\Support\Facades\Storage::url($data->catalogItem->photo) : asset('assets/images/noimage.png'))}}"></td>
                                                     <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 50) : 'N/A' }}</td>
-                                                    <td>{{ $data->catalogItem && $data->catalogItem->brand ? $data->catalogItem->brand->localized_name : 'N/A' }}</td>
+                                                    @php
+                                                        $fitments2 = $data->catalogItem?->fitments ?? collect();
+                                                        $brands2 = $fitments2->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                                        $firstBrand2 = $brands2->first();
+                                                    @endphp
+                                                    <td>{{ $firstBrand2 ? $firstBrand2->localized_name : 'N/A' }}</td>
                                                         <td>{{ $data->catalogItem->type ?? 'N/A' }}</td>
                                                         <td> {{ $data->showPrice() }} </td>
                                                         <td>

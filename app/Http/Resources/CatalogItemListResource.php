@@ -38,8 +38,6 @@ class CatalogItemListResource extends JsonResource
             'rating' =>  $this->catalogReviews()->avg('rating') > 0 ? (string) round($this->catalogReviews()->avg('rating'), 2) : (string) round(0.00, 2),
             'current_price' => $currentPrice,
             'previous_price' => $previousPrice,
-            // is_discount and discount_date are on merchant_items, not catalog_items
-            'sale_end_date' => $this->when($mp && $mp->is_discount == 1, $mp->discount_date ?? null),
 
             // Add merchant context for API consumers
             'merchant' => $mp ? [

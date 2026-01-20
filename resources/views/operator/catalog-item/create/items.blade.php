@@ -59,22 +59,17 @@
                                             </div>
                                         </div>
 
-                                        {{-- Brand (العلامة التجارية) --}}
+                                        {{-- Vehicle Brands Note --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('Brand') }} ({{ __('Trademark') }})</h4>
+                                                    <h4 class="heading">{{ __('Vehicle Brands') }} ({{ __('Fits These Vehicles') }})</h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <select name="brand_id" class="form-control">
-                                                    <option value="">{{ __('Select Brand') }}</option>
-                                                    @foreach (\App\Models\Brand::all() as $brand)
-                                                        <option value="{{ $brand->id }}">
-                                                            {{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
+                                                <div class="alert alert-info">
+                                                    <small>{{ __('Vehicle compatibility (brands/fitment) is set automatically via the parts database. You can manage fitments after creating the catalog item.') }}</small>
+                                                </div>
                                             </div>
                                         </div>
 

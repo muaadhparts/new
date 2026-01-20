@@ -191,8 +191,13 @@
                                             </div>
                                         </td>
                                         <td>
+                                            @php
+                                                $fitments = $data->fitments ?? collect();
+                                                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                                $firstBrand = $brands->first();
+                                            @endphp
                                             <span class="content">
-                                                {{ $data->brand ? getLocalizedBrandName($data->brand) : __('N/A') }}
+                                                {{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}
                                             </span>
                                         </td>
                                         <td>

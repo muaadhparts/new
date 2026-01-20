@@ -25,8 +25,8 @@ class CatalogItemController extends OperatorBaseController
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
         // item_type is now on merchant_items, not catalog_items
-        // Note: brand is now on merchant_items (2026-01-20)
-        $query = MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
+        // Brand data comes from catalogItem->fitments
+        $query = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand'])
             ->where('item_type', 'normal');
 
         if ($request->type == 'deactive') {
@@ -126,7 +126,6 @@ class CatalogItemController extends OperatorBaseController
                     <div class="action-list">
                         <a href="' . route('operator-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
                         <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
-                        <a data-href="' . route('operator-catalog-item-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
                         <a href="javascript:;" data-href="' . route('operator-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete CatalogItem") . '</a>
                     </div></div>';
             })
@@ -138,7 +137,8 @@ class CatalogItemController extends OperatorBaseController
     public function catalogdatatables()
     {
         // الاستعلام على السجلات التجارية مباشرة - كل سجل تجاري = صف مستقل
-        $query = MerchantItem::with(['catalogItem', 'user', 'qualityBrand', 'brand'])
+        // Brand data comes from catalogItem->fitments
+        $query = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand'])
             ->where('status', 1);
 
         $datas = $query->latest('id');
@@ -233,7 +233,6 @@ class CatalogItemController extends OperatorBaseController
                     <div class="action-list">
                         <a href="' . route('operator-catalog-item-edit', $mp->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
                         <a href="javascript" class="set-gallery" data-bs-toggle="modal" data-bs-target="#setgallery"><input type="hidden" value="' . $catalogItem->id . '"><i class="fas fa-eye"></i> ' . __("View Gallery") . '</a>
-                        <a data-href="' . route('operator-catalog-item-feature', $catalogItem->id) . '" class="feature" data-bs-toggle="modal" data-bs-target="#modal2"> <i class="fas fa-star"></i> ' . __("Highlight") . '</a>
                         <a href="javascript:;" data-href="' . route('operator-catalog-item-catalog', ['id1' => $catalogItem->id, 'id2' => 0]) . '" data-bs-toggle="modal" data-bs-target="#catalog-modal"><i class="fas fa-trash-alt"></i> ' . __("Remove Catalog") . '</a>
                     </div></div>';
             })
@@ -380,11 +379,15 @@ class CatalogItemController extends OperatorBaseController
             }
         }
 
-        if (in_array(null, $request->features)) {
-            $input['features'] = null;
-        } else {
-            $input['features'] = implode(',', str_replace(',', ' ', $request->features));
+        // Features now go to merchant_items, not catalog_items
+        $merchantFeatures = null;
+        if (!empty($request->features) && !in_array(null, $request->features)) {
+            $merchantFeatures = implode(',', str_replace(',', ' ', $request->features));
         }
+
+        // Details and Policy now go to merchant_items
+        $merchantDetails = $request->input('details');
+        $merchantPolicy = $request->input('policy');
 
         if (!empty($request->tags)) {
             $input['tags'] = implode(',', $request->tags);
@@ -399,7 +402,18 @@ class CatalogItemController extends OperatorBaseController
         $qualityBrandId = $request->input('quality_brand_id') ?: null;
 
         // Remove merchant-specific fields from catalog item table input
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id'], $input['quality_brand_id'], $input['merchant_id']);
+        unset(
+            $input['price'],
+            $input['previous_price'],
+            $input['stock'],
+            $input['user_id'],
+            $input['quality_brand_id'],
+            $input['merchant_id'],
+            $input['details'],
+            $input['policy'],
+            $input['features'],
+            $input['colors']
+        );
         if ($request->cross_items) {
             $input['cross_items'] = implode(',', $request->cross_items);
         }
@@ -418,6 +432,14 @@ class CatalogItemController extends OperatorBaseController
 
         // Create merchant_item entry for the merchant
         if ($merchantId > 0) {
+            // Process checkbox-dependent values
+            $itemCondition = $request->item_condition_check == "" ? 0 : ($request->input('item_condition') ?? 0);
+            $preordered = $request->preordered_check == "" ? 0 : ($request->input('preordered') ?? 0);
+            $minimumQty = $request->minimum_qty_check == "" ? null : $request->input('minimum_qty');
+            $shipTime = $request->shipping_time_check == "" ? null : $request->input('ship');
+            $wholeSellQty = !empty($request->whole_sell_qty) && $request->whole_check ? implode(',', $request->whole_sell_qty) : null;
+            $wholeSellDiscount = !empty($request->whole_sell_discount) && $request->whole_check ? implode(',', $request->whole_sell_discount) : null;
+
             MerchantItem::create([
                 'catalog_item_id' => $data->id,
                 'user_id' => $merchantId,
@@ -425,11 +447,15 @@ class CatalogItemController extends OperatorBaseController
                 'price' => $basePrice,
                 'previous_price' => $basePreviousPrice,
                 'stock' => (int) $request->input('stock', 0),
-                'minimum_qty' => $request->input('minimum_qty') ?: null,
-                'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
-                'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
-                'ship' => $request->input('ship') ?: null,
-                'item_condition' => $request->input('item_condition') ?? 0,
+                'minimum_qty' => $minimumQty,
+                'whole_sell_qty' => $wholeSellQty,
+                'whole_sell_discount' => $wholeSellDiscount,
+                'ship' => $shipTime,
+                'item_condition' => $itemCondition,
+                'preordered' => $preordered,
+                'details' => $merchantDetails,
+                'policy' => $merchantPolicy,
+                'features' => $merchantFeatures,
                 'status' => 1
             ]);
         }
@@ -504,22 +530,15 @@ class CatalogItemController extends OperatorBaseController
         }
         //--- Validation Section Ends
 
-        // Check Condition
-        if ($request->item_condition_check == "") {
-            $input['item_condition'] = 0;
-        }
+        // Prepare merchant-specific values before processing
+        $itemCondition = $request->item_condition_check == "" ? 0 : ($request->input('item_condition') ?? 0);
+        $preordered = $request->preordered_check == "" ? 0 : ($request->input('preordered') ?? 0);
+        $minimumQty = $request->minimum_qty_check == "" ? null : $request->input('minimum_qty');
+        $shipTime = $request->shipping_time_check == "" ? null : $request->input('ship');
+        $wholeSellQty = !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null;
+        $wholeSellDiscount = !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null;
 
-        // Check Preorderd
-        if ($request->preordered_check == "") {
-            $input['preordered'] = 0;
-        }
-
-        // Check Minimum Qty
-        if ($request->minimum_qty_check == "") {
-            $input['minimum_qty'] = null;
-        }
-
-        // Check Measure
+        // Check Measure (this stays on CatalogItem)
         if ($request->measure_check == "") {
             $input['measure'] = null;
         }
@@ -556,8 +575,39 @@ class CatalogItemController extends OperatorBaseController
         $basePrice = isset($input['price']) ? ($input['price'] / $sign->value) : 0;
         $basePreviousPrice = isset($input['previous_price']) ? ($input['previous_price'] / $sign->value) : null;
 
-        // Remove legacy fields from catalog item table
-        unset($input['price'], $input['previous_price'], $input['stock'], $input['user_id']);
+        // Prepare merchant-specific text fields
+        $details = $request->input('details');
+        $policy = $request->input('policy');
+        $features = null;
+        if (!empty($request->features) && !in_array(null, $request->features)) {
+            $features = implode(',', str_replace(',', ' ', $request->features));
+        }
+
+        // Remove merchant-specific fields from catalog item table
+        // These fields belong ONLY to merchant_items table
+        unset(
+            $input['price'],
+            $input['previous_price'],
+            $input['stock'],
+            $input['user_id'],
+            $input['merchant_id'],
+            $input['quality_brand_id'],
+            $input['item_condition'],
+            $input['preordered'],
+            $input['minimum_qty'],
+            $input['ship'],
+            $input['whole_sell_qty'],
+            $input['whole_sell_discount'],
+            $input['item_condition_check'],
+            $input['preordered_check'],
+            $input['minimum_qty_check'],
+            $input['shipping_time_check'],
+            $input['whole_check'],
+            $input['details'],
+            $input['policy'],
+            $input['features'],
+            $input['colors']
+        );
 
         // store filtering attributes for physical catalog item
         // Old category attribute system removed - categories now linked via TreeCategories
@@ -582,69 +632,20 @@ class CatalogItemController extends OperatorBaseController
             'price' => $basePrice,
             'previous_price' => $basePreviousPrice,
             'stock' => $request->input('stock') !== null ? (int) $request->input('stock') : null,
-            'minimum_qty' => $request->input('minimum_qty') ?: null,
-            'whole_sell_qty' => !empty($request->whole_sell_qty) ? implode(',', $request->whole_sell_qty) : null,
-            'whole_sell_discount' => !empty($request->whole_sell_discount) ? implode(',', $request->whole_sell_discount) : null,
-            'ship' => $request->input('ship') ?: null,
-            'item_condition' => $request->input('item_condition') ?? 0,
+            'minimum_qty' => $minimumQty,
+            'whole_sell_qty' => $wholeSellQty,
+            'whole_sell_discount' => $wholeSellDiscount,
+            'ship' => $shipTime,
+            'item_condition' => $itemCondition,
+            'preordered' => $preordered,
+            'details' => $details,
+            'policy' => $policy,
+            'features' => $features,
         ]);
         //-- Logic Section Ends
 
         //--- Redirect Section
         $msg = __("CatalogItem Updated Successfully.") . '<a href="' . route('operator-catalog-item-index') . '">' . __("View CatalogItem Lists.") . '</a>';
-        return response()->json($msg);
-        //--- Redirect Section Ends
-    }
-
-    //*** GET Request
-    public function feature($id)
-    {
-        $data = CatalogItem::findOrFail($id);
-        return view('operator.catalog-item.highlight', compact('data'));
-    }
-
-    //*** POST Request
-    public function featuresubmit(Request $request, $id)
-    {
-        //-- Logic Section
-        $data = CatalogItem::findOrFail($id);
-        $input = $request->all();
-        if ($request->featured == "") {
-            $input['featured'] = 0;
-        }
-        if ($request->hot == "") {
-            $input['hot'] = 0;
-        }
-        if ($request->best == "") {
-            $input['best'] = 0;
-        }
-        if ($request->top == "") {
-            $input['top'] = 0;
-        }
-        if ($request->latest == "") {
-            $input['latest'] = 0;
-        }
-        if ($request->big == "") {
-            $input['big'] = 0;
-        }
-        if ($request->trending == "") {
-            $input['trending'] = 0;
-        }
-        if ($request->sale == "") {
-            $input['sale'] = 0;
-        }
-        if ($request->is_discount == "") {
-            $input['is_discount'] = 0;
-            $input['discount_date'] = null;
-        } else {
-            $input['discount_date'] = \Carbon\Carbon::parse($input['discount_date'])->format('Y-m-d');
-        }
-
-        $data->update($input);
-        //-- Logic Section Ends
-
-        //--- Redirect Section
-        $msg = __('Highlight Updated Successfully.');
         return response()->json($msg);
         //--- Redirect Section Ends
     }

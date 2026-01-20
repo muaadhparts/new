@@ -206,27 +206,6 @@
             });
 
 
-	// TOP-UP OPERATION
-
-		$(document).on('click','.topup',function(){
-		if(admin_loader == 1)
-		{
-		$('.submit-loader').show();
-		}
-		$('#modal1').find('.modal-name').html('Manage Top Up');
-		$('#modal1 .modal-content .modal-body').html('').load($(this).attr('data-href'),function(response, status, xhr){
-			if(status == "success")
-			{
-				if(admin_loader == 1)
-				{
-					$('.submit-loader').hide();
-				}
-			}
-			});
-		});
-
-
-	// TOP-UP OPERATION END
 
 
 	// MERCHANT OPERATION

@@ -275,26 +275,6 @@
         <li>
             <a href="{{ route('operator-home-page-index') }}"><span>{{ __('Home Pages') }}</span></a>
         </li>
-
-        <li>
-            <a href="{{ route('operator-fs-deal') }}"><span>{{ __('Deal of the day') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-fs-best-sellers') }}"><span>{{ __('Best Sellers') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-fs-top-rated') }}"><span>{{ __('Top Rated') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-fs-big-save') }}"><span>{{ __('Big Save') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-fs-trending') }}"><span>{{ __('Trending') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-fs-featured') }}"><span>{{ __('Featured CatalogItems') }}</span></a>
-        </li>
-
         <li>
             <a href="{{ route('operator-brand-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>

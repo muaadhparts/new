@@ -85,7 +85,12 @@
                                     </div>
                                 </td>
 
-                                <td><span class="content">{{ $data->brand ? getLocalizedBrandName($data->brand) : __('N/A') }}</span></td>
+                                @php
+                                    $fitments = $data->fitments ?? collect();
+                                    $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                    $firstBrand = $brands->first();
+                                @endphp
+                                <td><span class="content">{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</span></td>
                                 <td><span class="content">{{ $merchantItem && $merchantItem->qualityBrand ? $merchantItem->qualityBrand->display_name : __('N/A') }}</span></td>
                                 <td><span class="content">{{ $data->type }}</span></td>
                                 <td>
