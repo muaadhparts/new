@@ -3,6 +3,19 @@
 {{-- Uses catalog-unified.css for styling --}}
 {{-- Integrates with illustrated.js navigation system --}}
 
+@php
+    // Helper function to resolve photo URL
+    $resolvePhoto = function($photo) {
+        if (!$photo) {
+            return asset('assets/images/noimage.png');
+        }
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            return $photo;
+        }
+        return \Illuminate\Support\Facades\Storage::url($photo);
+    };
+@endphp
+
 <div class="catalog-modal-content ill-alt">
     @if($alternatives && $alternatives->count() > 0)
         {{-- Header --}}
@@ -20,6 +33,7 @@
                 <table class="table table-hover align-middle catalog-table">
                     <thead>
                         <tr>
+                            <th style="width: 70px;">@lang('Photo')</th>
                             <th>@lang('Part Number')</th>
                             <th>@lang('Name')</th>
                             <th class="text-end">@lang('Price')</th>
@@ -30,9 +44,16 @@
                         @foreach($alternatives as $catalogItem)
                             <tr>
                                 <td>
+                                    <img src="{{ $resolvePhoto($catalogItem->photo) }}"
+                                         alt="{{ $catalogItem->part_number }}"
+                                         class="catalog-offers-thumb"
+                                         style="width: 50px; height: 50px; object-fit: contain;"
+                                         loading="lazy">
+                                </td>
+                                <td>
                                     <code class="fw-bold text-dark">{{ $catalogItem->part_number }}</code>
                                 </td>
-                                <td class="text-truncate" style="max-width: 250px;">
+                                <td class="text-truncate" style="max-width: 200px;">
                                     {{ $catalogItem->localized_name }}
                                 </td>
                                 <td class="text-end">
@@ -68,12 +89,21 @@
             @foreach($alternatives as $catalogItem)
                 <div class="catalog-card card-available">
                     <div class="catalog-card-header">
-                        <code class="fw-bold">{{ $catalogItem->part_number }}</code>
-                        @if($catalogItem->offers_count > 0)
-                            <span class="catalog-badge catalog-badge-success">
-                                {{ $catalogItem->offers_count }} @lang('offers')
-                            </span>
-                        @endif
+                        <div class="d-flex align-items-center gap-2">
+                            <img src="{{ $resolvePhoto($catalogItem->photo) }}"
+                                 alt="{{ $catalogItem->part_number }}"
+                                 class="catalog-offers-thumb"
+                                 style="width: 40px; height: 40px; object-fit: contain;"
+                                 loading="lazy">
+                            <div>
+                                <code class="fw-bold">{{ $catalogItem->part_number }}</code>
+                                @if($catalogItem->offers_count > 0)
+                                    <span class="catalog-badge catalog-badge-success ms-1">
+                                        {{ $catalogItem->offers_count }} @lang('offers')
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
 
                     <div class="catalog-card-body">
