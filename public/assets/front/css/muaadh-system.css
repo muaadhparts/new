@@ -7769,6 +7769,21 @@ select option {
 }
 
 /* ============================================================================
+   VEHICLE SEARCH RESULT CARDS
+   ============================================================================ */
+
+/* Hover effect for search result cards */
+.hover-shadow:hover {
+    box-shadow: var(--theme-shadow, 0 4px 12px rgba(0,0,0,0.1)) !important;
+    transform: translateY(-1px);
+    transition: all 0.2s ease;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* ============================================================================
    ILLUSTRATION ZOOM CONTAINER - Clean Override
    ============================================================================ */
 

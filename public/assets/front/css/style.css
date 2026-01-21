@@ -15292,67 +15292,6 @@ ul.tagit li.tagit-choice .tagit-close {
     background: var(--muaadh-light);
 }
 
-/* Results Modal */
-.vehicle-search-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.6);
-    z-index: 1050;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(3px);
-}
-
-.vehicle-search-modal-content {
-    background: var(--muaadh-white);
-    border-radius: var(--muaadh-radius-lg);
-    max-width: 800px;
-    max-height: 80vh;
-    width: 95%;
-    overflow: hidden;
-    box-shadow: var(--muaadh-shadow-xl);
-}
-
-/* Result Card */
-.vehicle-search-result-card {
-    background: var(--muaadh-white);
-    border: 1px solid var(--muaadh-border);
-    border-radius: var(--muaadh-radius);
-    padding: 1rem;
-    margin-bottom: 0.75rem;
-    transition: all 0.2s ease;
-    cursor: pointer;
-}
-
-.vehicle-search-result-card:hover {
-    border-color: var(--muaadh-dark);
-    box-shadow: var(--muaadh-shadow);
-}
-
-.vehicle-search-result-card .result-badges {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 0.5rem;
-}
-
-.vehicle-search-result-card .result-name {
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin-bottom: 0.25rem;
-    color: var(--muaadh-text);
-}
-
-.vehicle-search-result-card .result-applicability {
-    font-size: 0.85rem;
-    color: var(--muaadh-text-muted);
-}
-
 /* ============================================================================
    B37 — QUANTITY CONTROL
    ============================================================================ */

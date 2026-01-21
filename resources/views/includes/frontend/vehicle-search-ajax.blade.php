@@ -71,30 +71,27 @@
         <p>{{ __('ui.searching_by_number') }}</p>
     </div>
 
-    {{-- Results Modal --}}
-    <div class="vehicle-search-modal d-none" id="vehicleResultsModal{{ $uniqueId }}">
-        <div class="vehicle-search-modal-content">
-            <div class="catalog-section-header muaadh-catalog-header-primary">
-                <h5>
-                    <i class="fas fa-list-ul"></i>
+</div>
+
+{{-- Results Modal - Bootstrap Modal (outside wrapper for proper z-index) --}}
+<div class="modal fade" id="vehicleResultsModal{{ $uniqueId }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content shadow-lg rounded-0 rounded-md-3 border-0">
+            {{-- Header --}}
+            <div class="modal-header bg-primary text-white border-0 py-2 py-md-3">
+                <h5 class="modal-title fs-6 fs-md-5 mb-0">
+                    <i class="fas fa-search me-2"></i>
                     {{ __('ui.select_matching_callout') }}
                     <span class="badge bg-white text-primary ms-2 results-count">0</span>
                 </h5>
-                <button type="button" class="btn-close btn-close-white" id="closeResultsModal{{ $uniqueId }}"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="catalog-modal-content muaadh-catalog-modal-body">
-                <div class="catalog-cards" id="resultsContainer{{ $uniqueId }}"></div>
-            </div>
-            <div class="catalog-section-header muaadh-catalog-header-footer">
-                <span></span>
-                <button class="catalog-btn catalog-btn-outline" id="closeResultsBtn{{ $uniqueId }}">
-                    <i class="fas fa-times"></i>
-                    {{ __('ui.close') }}
-                </button>
+            {{-- Body --}}
+            <div class="modal-body p-0 bg-light">
+                <div class="p-3" id="resultsContainer{{ $uniqueId }}"></div>
             </div>
         </div>
     </div>
-
 </div>
 
 @push('scripts')
@@ -116,8 +113,8 @@
     const typeLabelBtn = document.getElementById('typeLabel' + uniqueId);
     const searchIcon = document.getElementById('searchIcon' + uniqueId);
     const searchHelp = document.getElementById('searchHelp' + uniqueId);
-    const closeModalBtn = document.getElementById('closeResultsModal' + uniqueId);
-    const closeResultsBtn = document.getElementById('closeResultsBtn' + uniqueId);
+    // Bootstrap Modal instance
+    let resultsModalInstance = null;
 
     // Storage key for search type preference
     const SEARCH_TYPE_KEY = 'vehicleSearchType';
@@ -256,33 +253,35 @@
 
     function showResultsModal(results) {
         resultsContainer.innerHTML = '';
-        wrapper.querySelector('.results-count').textContent = results.length;
+        resultsModal.querySelector('.results-count').textContent = results.length;
 
         results.forEach(function(result) {
             const card = document.createElement('div');
-            card.className = 'vehicle-search-result-card';
+            card.className = 'card mb-2 border hover-shadow cursor-pointer';
             card.innerHTML = `
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="result-badges">
-                        <span class="catalog-badge catalog-badge-light">
-                            <i class="fas fa-tag me-1"></i>
-                            ${escapeHtml(result.callout)}
-                        </span>
-                        <span class="catalog-badge catalog-badge-secondary">
-                            {{ __("ui.qty") }}: ${result.qty || '—'}
-                        </span>
-                        ${result.category_code ? `<span class="catalog-badge muaadh-catalog-badge-info">
-                            <i class="fas fa-folder me-1"></i>
-                            ${escapeHtml(result.category_code)}
-                        </span>` : ''}
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="d-flex flex-wrap gap-1">
+                            <span class="badge bg-primary">
+                                <i class="fas fa-tag me-1"></i>${escapeHtml(result.callout)}
+                            </span>
+                            <span class="badge bg-secondary">
+                                {{ __("ui.qty") }}: ${result.qty || '—'}
+                            </span>
+                            ${result.category_code ? `<span class="badge bg-info">
+                                <i class="fas fa-folder me-1"></i>${escapeHtml(result.category_code)}
+                            </span>` : ''}
+                            ${(result.cat_begin || result.cat_end) ? `<span class="badge bg-warning text-dark">
+                                <i class="fas fa-calendar-alt me-1"></i>${result.cat_begin || '?'} - ${result.cat_end || '?'}
+                            </span>` : ''}
+                        </div>
+                        ${result.url ? `<a href="${result.url}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-arrow-right"></i>
+                        </a>` : ''}
                     </div>
-                    ${result.url ? `<a href="${result.url}" class="catalog-btn catalog-btn-primary btn-sm">
-                        <i class="fas fa-arrow-right me-1"></i>
-                        <span class="d-none d-md-inline">{{ __("ui.open") }}</span>
-                    </a>` : ''}
+                    <h6 class="mb-1">${escapeHtml(getLocalizedLabel(result))}</h6>
+                    ${result.applicability ? `<small class="text-muted">${escapeHtml(result.applicability)}</small>` : ''}
                 </div>
-                <div class="result-name">${escapeHtml(getLocalizedLabel(result))}</div>
-                ${result.applicability ? `<div class="result-applicability">${escapeHtml(result.applicability)}</div>` : ''}
             `;
 
             if (result.url) {
@@ -296,11 +295,17 @@
             resultsContainer.appendChild(card);
         });
 
-        resultsModal.classList.remove('d-none');
+        // Show Bootstrap Modal
+        if (!resultsModalInstance) {
+            resultsModalInstance = new bootstrap.Modal(resultsModal);
+        }
+        resultsModalInstance.show();
     }
 
     function hideResultsModal() {
-        resultsModal.classList.add('d-none');
+        if (resultsModalInstance) {
+            resultsModalInstance.hide();
+        }
     }
 
     function showError(message) {
@@ -355,14 +360,6 @@
         searchTimeout = setTimeout(fetchSuggestions, 300);
     });
 
-    closeModalBtn.addEventListener('click', hideResultsModal);
-    closeResultsBtn.addEventListener('click', hideResultsModal);
-
-    resultsModal.addEventListener('click', function(e) {
-        if (e.target === resultsModal) {
-            hideResultsModal();
-        }
-    });
 
     document.addEventListener('click', function(e) {
         if (!wrapper.contains(e.target)) {
