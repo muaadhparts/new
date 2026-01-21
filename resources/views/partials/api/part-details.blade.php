@@ -88,7 +88,7 @@
                             <th class="text-center">@lang('Match')</th>
                             <th class="text-center">@lang('Extensions')</th>
                             <th class="text-center">@lang('Period')</th>
-                            <th class="text-center">@lang('Alternatives')</th>
+                            <th class="text-center">@lang('Offers')</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -151,11 +151,19 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
+                                    @php
+                                        $offersCount = $part['offers_count'] ?? 0;
+                                    @endphp
                                     @if($partNumber)
                                         <a href="javascript:;"
-                                           class="small text-decoration-underline alt-link"
+                                           class="catalog-btn catalog-btn-outline catalog-btn-sm alt-link"
                                            data-part_number="{{ $partNumber }}">
-                                            @lang('View Alternatives')
+                                            <i class="fas fa-tags"></i>
+                                            @if($offersCount > 0)
+                                                {{ $offersCount }} @lang('offers')
+                                            @else
+                                                @lang('No offers')
+                                            @endif
                                         </a>
                                     @endif
                                 </td>
@@ -265,14 +273,27 @@
 
                     {{-- Footer --}}
                     <div class="catalog-modal-card__footer">
-                        <div></div>
+                        @php
+                            $offersCount = $part['offers_count'] ?? 0;
+                        @endphp
+                        <div class="catalog-modal-card__price">
+                            @if($offersCount > 0)
+                                <span class="catalog-badge catalog-badge-success">
+                                    {{ $offersCount }} @lang('offers')
+                                </span>
+                            @else
+                                <span class="catalog-badge catalog-badge-secondary">
+                                    @lang('No offers')
+                                </span>
+                            @endif
+                        </div>
                         <div class="catalog-modal-card__actions">
                             @if($partNumber)
                                 <button type="button"
                                         class="catalog-btn catalog-btn-primary alt-link"
                                         data-part_number="{{ $partNumber }}">
-                                    <i class="fas fa-exchange-alt"></i>
-                                    @lang('Alternatives')
+                                    <i class="fas fa-tags"></i>
+                                    @lang('View Offers')
                                 </button>
                             @endif
                         </div>

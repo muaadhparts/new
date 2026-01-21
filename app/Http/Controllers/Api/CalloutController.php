@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\NewCategory;
 use App\Models\Illustration;
 use App\Models\Section;
+use App\Models\CatalogItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -209,6 +210,9 @@ class CalloutController extends Controller
         $offset = ($page - 1) * $perPage;
         $paginatedParts = array_slice($matchedParts, $offset, $perPage);
 
+        // ✅ إضافة عدد العروض لكل قطعة
+        $paginatedParts = $this->appendOffersCount($paginatedParts);
+
         $elapsed = (int) round((microtime(true) - $t0) * 1000);
 
         return response()->json([
@@ -225,6 +229,100 @@ class CalloutController extends Controller
             ],
             'rawResults' => $paginatedParts,
         ]);
+    }
+
+    /**
+     * ✅ إضافة عدد العروض لكل قطعة (القطعة + بدائلها)
+     * يحسب إجمالي العروض من: الصنف نفسه + كل البدائل في نفس المجموعة
+     */
+    protected function appendOffersCount(array $parts): array
+    {
+        if (empty($parts)) return [];
+
+        // جمع أرقام القطع
+        $partNumbers = array_filter(array_column($parts, 'part_number'));
+        if (empty($partNumbers)) return $parts;
+
+        // 1. جلب group_id لكل part_number من sku_alternatives
+        $groupMap = DB::table('sku_alternatives')
+            ->whereIn('part_number', $partNumbers)
+            ->pluck('group_id', 'part_number')
+            ->toArray();
+
+        // 2. جلب كل group_ids الفريدة
+        $groupIds = array_unique(array_filter(array_values($groupMap)));
+
+        // 3. جلب كل part_numbers في كل group (الصنف + كل بدائله)
+        $groupPartNumbers = [];
+        if (!empty($groupIds)) {
+            $allGroupParts = DB::table('sku_alternatives')
+                ->whereIn('group_id', $groupIds)
+                ->select('group_id', 'part_number')
+                ->get();
+
+            foreach ($allGroupParts as $row) {
+                $groupPartNumbers[$row->group_id][] = $row->part_number;
+            }
+        }
+
+        // 4. تجميع كل أرقام القطع المطلوبة (الأصلية + البدائل)
+        $allRelatedPartNumbers = $partNumbers;
+        foreach ($groupPartNumbers as $groupParts) {
+            $allRelatedPartNumbers = array_merge($allRelatedPartNumbers, $groupParts);
+        }
+        $allRelatedPartNumbers = array_unique($allRelatedPartNumbers);
+
+        // 5. جلب catalog_item_ids لكل part_number
+        $catalogItemMap = DB::table('catalog_items')
+            ->whereIn('part_number', $allRelatedPartNumbers)
+            ->pluck('id', 'part_number')
+            ->toArray();
+
+        // 6. جلب عدد العروض النشطة لكل catalog_item_id
+        $catalogItemIds = array_values($catalogItemMap);
+        $offersCountMap = [];
+        if (!empty($catalogItemIds)) {
+            $offersCountMap = DB::table('merchant_items')
+                ->whereIn('catalog_item_id', $catalogItemIds)
+                ->where('status', 1)
+                ->groupBy('catalog_item_id')
+                ->select('catalog_item_id', DB::raw('COUNT(*) as cnt'))
+                ->pluck('cnt', 'catalog_item_id')
+                ->toArray();
+        }
+
+        // 7. حساب إجمالي العروض لكل part_number
+        // إذا كان له group → جمع عروض كل الأصناف في المجموعة
+        // إذا لم يكن له group → جمع عروضه فقط
+        $totalOffersMap = [];
+        foreach ($partNumbers as $pn) {
+            $groupId = $groupMap[$pn] ?? null;
+
+            // القطع المرتبطة: كل المجموعة إذا وجدت، وإلا القطعة نفسها
+            if ($groupId && isset($groupPartNumbers[$groupId])) {
+                $relatedParts = $groupPartNumbers[$groupId];
+            } else {
+                $relatedParts = [$pn];
+            }
+
+            // جمع عروض كل القطع المرتبطة
+            $totalOffers = 0;
+            foreach ($relatedParts as $relatedPn) {
+                $catalogItemId = $catalogItemMap[$relatedPn] ?? null;
+                if ($catalogItemId) {
+                    $totalOffers += $offersCountMap[$catalogItemId] ?? 0;
+                }
+            }
+            $totalOffersMap[$pn] = $totalOffers;
+        }
+
+        // 8. دمج عدد العروض مع القطع
+        foreach ($parts as &$part) {
+            $pn = $part['part_number'] ?? '';
+            $part['offers_count'] = $totalOffersMap[$pn] ?? 0;
+        }
+
+        return $parts;
     }
 
     /**
