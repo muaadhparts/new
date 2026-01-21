@@ -7417,6 +7417,203 @@ select option {
     color: var(--text-muted, #6b7280);
 }
 
+/* =============================================
+   SPECS MODAL - Flow-based Custom Select
+   ============================================= */
+
+/* Modal Content - NO overflow hidden */
+.specs-modal-content {
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}
+
+/* Modal Body - ONLY scrollable element */
+.specs-modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(90vh - 130px); /* header ~56px + footer ~74px */
+    padding: 1rem;
+}
+
+/* Modal Footer - Always visible */
+.specs-modal-footer {
+    flex-shrink: 0;
+    border-top: 1px solid var(--border-light, #e5e7eb);
+}
+
+/* Custom scrollbar for modal body */
+.specs-modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.specs-modal-body::-webkit-scrollbar-track {
+    background: var(--surface-sunken, #f3f4f6);
+}
+
+.specs-modal-body::-webkit-scrollbar-thumb {
+    background: var(--border-default, #d1d5db);
+    border-radius: 3px;
+}
+
+/* ----- Flow-based Custom Select ----- */
+.specs-select {
+    width: 100%;
+}
+
+.specs-select__trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--text-primary, #111827);
+    background-color: var(--surface-default, #fff);
+    border: 1px solid var(--border-default, #d1d5db);
+    border-radius: var(--radius-md, 6px);
+    cursor: pointer;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    text-align: start;
+}
+
+.specs-select__trigger:hover:not(:disabled) {
+    border-color: var(--theme-primary, #006c35);
+}
+
+.specs-select__trigger:focus {
+    outline: none;
+    border-color: var(--theme-primary, #006c35);
+    box-shadow: 0 0 0 3px rgba(0, 108, 53, 0.15);
+}
+
+.specs-select__trigger:disabled {
+    background-color: var(--surface-sunken, #f3f4f6);
+    color: var(--text-muted, #6b7280);
+    cursor: not-allowed;
+}
+
+.specs-select__text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-inline-end: 8px;
+}
+
+.specs-select__arrow {
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+}
+
+/* List - Flow-based, NO position absolute */
+.specs-select__list {
+    display: none;
+    margin-top: 4px;
+    max-height: 180px;
+    overflow-y: auto;
+    background: var(--surface-default, #fff);
+    border: 1px solid var(--border-default, #d1d5db);
+    border-radius: var(--radius-md, 6px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.specs-select--open .specs-select__list {
+    display: block;
+}
+
+/* Scrollbar for list */
+.specs-select__list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.specs-select__list::-webkit-scrollbar-track {
+    background: var(--surface-sunken, #f3f4f6);
+}
+
+.specs-select__list::-webkit-scrollbar-thumb {
+    background: var(--border-default, #d1d5db);
+    border-radius: 3px;
+}
+
+/* List Items */
+.specs-select__item {
+    padding: 10px 12px;
+    font-size: 0.875rem;
+    color: var(--text-primary, #111827);
+    cursor: pointer;
+    transition: background-color 0.1s ease;
+    border-bottom: 1px solid var(--border-light, #f3f4f6);
+}
+
+.specs-select__item:last-child {
+    border-bottom: none;
+}
+
+.specs-select__item:hover {
+    background: var(--surface-sunken, #f3f4f6);
+}
+
+.specs-select__item--active {
+    background: var(--action-primary-light, rgba(0, 108, 53, 0.1));
+    color: var(--theme-primary, #006c35);
+    font-weight: 500;
+}
+
+.specs-select__item--active:hover {
+    background: var(--action-primary-light, rgba(0, 108, 53, 0.15));
+}
+
+/* Readonly state */
+.specs-select--readonly .specs-select__trigger {
+    background-color: var(--surface-sunken, #f3f4f6);
+    color: var(--text-muted, #6b7280);
+    cursor: not-allowed;
+}
+
+/* Mobile adjustments */
+@media (max-width: 576px) {
+    .specs-modal-body {
+        max-height: calc(85vh - 130px);
+    }
+
+    .specs-select__list {
+        max-height: 150px;
+    }
+
+    .specs-select__item {
+        padding: 12px;
+    }
+}
+
+/* Specs Badge Styles */
+.catalog-specs-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.625rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-inline-start: 6px;
+    vertical-align: middle;
+}
+
+.catalog-specs-badge-vin {
+    background: var(--action-info-light, rgba(59, 130, 246, 0.15));
+    color: var(--action-info, #3b82f6);
+}
+
+.catalog-specs-badge-set {
+    background: var(--action-success-light, rgba(16, 185, 129, 0.15));
+    color: var(--action-success, #10b981);
+}
+
 /* ----- Unified Button Styles ----- */
 .catalog-btn {
     display: inline-flex;
