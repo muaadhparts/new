@@ -145,28 +145,26 @@
                             $fitments = $catalogItemForFitment?->fitments ?? collect();
                             $fitmentBrands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
                             $fitmentCount = $fitmentBrands->count();
-                            $fitmentBrandsJson = $fitmentBrands->map(fn($b) => ['id' => $b->id, 'name' => $b->localized_name, 'logo' => $b->photo_url, 'slug' => $b->slug])->toArray();
                         @endphp
                         @if($fitmentCount > 0)
                             <tr>
                                 <td class="catalog-info-label"><i class="fas fa-car"></i> @lang('Vehicle Compatibility')</td>
                                 <td class="catalog-info-value">
-                                    @if($fitmentCount === 1)
-                                        <span class="badge bg-secondary">
-                                            @if($fitmentBrands->first()->photo_url)
-                                                <img src="{{ $fitmentBrands->first()->photo_url }}" alt="" class="me-1" style="height: 16px;">
-                                            @endif
+                                    <button type="button" class="fitment-details-btn btn btn-sm btn-outline-secondary"
+                                            data-catalog-item-id="{{ $catalogItemForFitment->id }}"
+                                            data-part-number="{{ $catalogItemForFitment->part_number }}">
+                                        @if($fitmentCount === 1 && $fitmentBrands->first()->photo_url)
+                                            <img src="{{ $fitmentBrands->first()->photo_url }}" alt="" style="height: 16px;" class="me-1">
+                                        @else
+                                            <i class="fas fa-car me-1"></i>
+                                        @endif
+                                        @if($fitmentCount === 1)
                                             {{ getLocalizedBrandName($fitmentBrands->first()) }}
-                                        </span>
-                                    @else
-                                        <button type="button" class="fitment-brands-btn"
-                                                data-brands="{{ json_encode($fitmentBrandsJson) }}"
-                                                data-part-number="{{ $catalogItemForFitment->part_number }}">
-                                            <i class="fas fa-car"></i>
+                                        @else
                                             {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
-                                            <i class="fas fa-chevron-right ms-1"></i>
-                                        </button>
-                                    @endif
+                                        @endif
+                                        <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                                    </button>
                                 </td>
                             </tr>
                         @endif

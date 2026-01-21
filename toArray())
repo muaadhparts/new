@@ -17,6 +17,6 @@
   [90m    Psy\Exception\ParseErrorException::fromParseError(Object(PhpParser\Error))[39m
 
   [33m2   [39m[39;1mvendor\psy\psysh\src\CodeCleaner.php[39;22m:[39;1m240[39;22m
-  [90m    Psy\CodeCleaner::parse("<?php print_r(DB::table('sku_alternatives')-;
+  [90m    Psy\CodeCleaner::parse("<?php print_r(DB::table('catalog_item_fitments')-;
 ")[39m
 

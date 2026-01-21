@@ -214,6 +214,7 @@
     {{-- Global Map Picker Modal - Available on all pages --}}
     @include('components.global-map-picker-modal')
     <x-fitment-brands-modal />
+    <x-fitment-details-modal />
     <x-catalog-offers-modal />
 
     {{-- Cookie Consent Banner & Scripts (GDPR/CCPA Compliance) --}}

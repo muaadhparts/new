@@ -10,20 +10,21 @@
                     <h2 class="breadcrumb-name">{{ $part_number }}</h2>
                     <ul class="bread-menu">
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
-                        @if(count($fitmentBrands) === 1)
+                        @if(count($fitmentBrands) > 0)
                             <li>
-                                @if($fitmentBrands[0]['logo'])
-                                    <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="breadcrumb-brand-logo" style="height: 20px; margin-right: 5px;">
-                                @endif
-                                {{ $fitmentBrands[0]['name'] }}
-                            </li>
-                        @elseif(count($fitmentBrands) > 1)
-                            <li>
-                                <button type="button" class="fitment-brands-btn btn btn-sm btn-outline-light"
-                                        data-brands="{{ json_encode($fitmentBrands) }}"
+                                <button type="button" class="fitment-details-btn btn btn-sm btn-outline-light"
+                                        data-catalog-item-id="{{ $catalogItem->id }}"
                                         data-part-number="{{ $part_number }}">
-                                    <i class="fas fa-car"></i>
-                                    @lang('Fits') {{ count($fitmentBrands) }} @lang('brands')
+                                    @if(count($fitmentBrands) === 1 && $fitmentBrands[0]['logo'])
+                                        <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" style="height: 18px; margin-inline-end: 4px;">
+                                    @else
+                                        <i class="fas fa-car"></i>
+                                    @endif
+                                    @if(count($fitmentBrands) === 1)
+                                        {{ $fitmentBrands[0]['name'] }}
+                                    @else
+                                        @lang('Fits') {{ count($fitmentBrands) }} @lang('brands')
+                                    @endif
                                 </button>
                             </li>
                         @endif
@@ -93,15 +94,21 @@
                             {{-- Fitment Brands --}}
                             @if(count($fitmentBrands) > 0)
                                 <div class="part-result-fitment">
-                                    <small class="text-muted">@lang('Fits'):</small>
-                                    @foreach($fitmentBrands as $brand)
-                                        <span class="badge bg-light text-dark border">
-                                            @if($brand['logo'])
-                                                <img src="{{ $brand['logo'] }}" alt="" style="height: 14px;" class="me-1">
+                                    <button type="button" class="fitment-details-btn btn btn-sm btn-outline-primary"
+                                            data-catalog-item-id="{{ $catalogItem->id }}"
+                                            data-part-number="{{ $part_number }}">
+                                        <i class="fas fa-car me-1"></i>
+                                        @lang('Fits'):
+                                        @if(count($fitmentBrands) === 1)
+                                            @if($fitmentBrands[0]['logo'])
+                                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" style="height: 16px;" class="mx-1">
                                             @endif
-                                            {{ $brand['name'] }}
-                                        </span>
-                                    @endforeach
+                                            {{ $fitmentBrands[0]['name'] }}
+                                        @else
+                                            {{ count($fitmentBrands) }} @lang('brands')
+                                        @endif
+                                        <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                                    </button>
                                 </div>
                             @endif
                         </div>

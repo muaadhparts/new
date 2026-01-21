@@ -181,19 +181,19 @@
                     </span>
                 @endif
                 {{-- Vehicle Fitment Brands --}}
-                @if($hasSingleBrand && isset($fitmentBrands[0]))
-                    <span class="badge bg-secondary">
-                        @if($fitmentBrands[0]['logo'])
-                            <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo me-1">
-                        @endif
-                        {{ $fitmentBrands[0]['name'] }}
-                    </span>
-                @elseif($fitsMultipleBrands)
-                    <button type="button" class="fitment-brands-btn"
-                            data-brands="{{ json_encode($fitmentBrands) }}"
+                @if($fitmentCount > 0)
+                    <button type="button" class="fitment-details-btn badge bg-secondary border-0"
+                            data-catalog-item-id="{{ $catalogItemId }}"
                             data-part-number="{{ $part_number }}">
-                        <i class="fas fa-car"></i>
-                        {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
+                        @if($hasSingleBrand && isset($fitmentBrands[0]))
+                            @if($fitmentBrands[0]['logo'])
+                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo me-1">
+                            @endif
+                            {{ $fitmentBrands[0]['name'] }}
+                        @else
+                            <i class="fas fa-car me-1"></i>
+                            {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
+                        @endif
                     </button>
                 @endif
             </div>
@@ -251,19 +251,20 @@
                     <span class="catalogItem-card__sku">{{ $part_number }}</span>
                 @endif
                 {{-- Vehicle Fitment Brands --}}
-                @if($hasSingleBrand && isset($fitmentBrands[0]))
-                    <span class="catalogItem-card__brand">
-                        @if($fitmentBrands[0]['logo'])
-                            <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo">
+                @if($fitmentCount > 0)
+                    <button type="button" class="fitment-details-btn catalogItem-card__brand"
+                            data-catalog-item-id="{{ $catalogItemId }}"
+                            data-part-number="{{ $part_number }}"
+                            style="border: none; background: none; cursor: pointer;">
+                        @if($hasSingleBrand && isset($fitmentBrands[0]))
+                            @if($fitmentBrands[0]['logo'])
+                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo">
+                            @endif
+                            {{ $fitmentBrands[0]['name'] }}
+                        @else
+                            <i class="fas fa-car"></i>
+                            {{ __('Fits') }} {{ $fitmentCount }}
                         @endif
-                        {{ $fitmentBrands[0]['name'] }}
-                    </span>
-                @elseif($fitsMultipleBrands)
-                    <button type="button" class="fitment-brands-btn"
-                            data-brands="{{ json_encode($fitmentBrands) }}"
-                            data-part-number="{{ $part_number }}">
-                        <i class="fas fa-car"></i>
-                        {{ __('Fits') }} {{ $fitmentCount }}
                     </button>
                 @endif
             </div>

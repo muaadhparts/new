@@ -67,6 +67,7 @@ Route::prefix('modal')->name('modal.')->group(function () {
     Route::get('/offers/{catalogItemId}', [CatalogItemDetailsController::class, 'offersFragment'])->name('offers');
     Route::get('/offers-by-part/{part_number}', [CatalogItemDetailsController::class, 'offersByPartNumber'])->name('offers-by-part');
     Route::get('/catalog-item/{key}',          [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item');
+    Route::get('/fitment/{catalogItemId}', [\App\Http\Controllers\Api\CatalogItemApiController::class, 'getFitmentDetails'])->name('fitment');
 });
 
 // ✅ API Routes with Rate Limiting

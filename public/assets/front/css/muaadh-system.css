@@ -6527,6 +6527,129 @@ select option {
 }
 
 /* ============================================================================
+   SECTION: FITMENT DETAILS MODAL
+   ============================================================================
+   Brand tabs and vehicle compatibility table
+   ============================================================================ */
+
+/* ----- Brand Tabs ----- */
+.fitment-brand-tabs {
+    padding: 0 0 12px 0;
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.fitment-brand-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: var(--radius-md, 8px);
+    background: var(--surface-card, #fff);
+    color: var(--text-secondary, #6b7280);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.fitment-brand-tab:hover {
+    border-color: var(--action-primary, #7c3aed);
+    color: var(--action-primary, #7c3aed);
+}
+
+.fitment-brand-tab.active {
+    background: var(--action-primary, #7c3aed);
+    border-color: var(--action-primary, #7c3aed);
+    color: var(--text-on-primary, #fff);
+}
+
+.fitment-brand-tab-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+}
+
+.fitment-brand-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--surface-sunken, #f3f4f6);
+    color: var(--text-muted, #6b7280);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.fitment-brand-tab.active .fitment-brand-tab-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--text-on-primary, #fff);
+}
+
+/* ----- Brand Panels ----- */
+.fitment-brand-panel {
+    display: none;
+}
+
+.fitment-brand-panel.active {
+    display: block;
+}
+
+/* ----- Fitment Table ----- */
+.fitment-table {
+    font-size: 0.875rem;
+}
+
+.fitment-table thead th {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-secondary, #6b7280);
+    background: var(--surface-elevated, #f9fafb);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+    padding: 10px 12px;
+}
+
+.fitment-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.fitment-table tbody tr:hover {
+    background: var(--surface-elevated, #f9fafb);
+}
+
+/* ----- Mobile Responsive ----- */
+@media (max-width: 576px) {
+    .fitment-brand-tab {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .fitment-brand-tab-logo {
+        width: 16px;
+        height: 16px;
+    }
+
+    .fitment-table {
+        font-size: 0.8rem;
+    }
+
+    .fitment-table thead th {
+        font-size: 0.7rem;
+        padding: 8px;
+    }
+
+    .fitment-table tbody td {
+        padding: 8px;
+    }
+}
+
+/* ============================================================================
    SECTION: SEARCH RESULTS CARD
    ============================================================================
    Card component for search results page
@@ -7018,6 +7141,44 @@ select option {
 .catalog-badge-secondary {
     background: var(--surface-sunken, #f3f4f6);
     color: var(--text-secondary, #4b5563);
+}
+
+.catalog-badge-light {
+    background: var(--surface-elevated, #f9fafb);
+    color: var(--text-muted, #6b7280);
+    border: 1px solid var(--border-light, #e5e7eb);
+}
+
+.catalog-badge-primary {
+    background: var(--action-primary-muted, rgba(124, 58, 237, 0.1));
+    color: var(--action-primary, #7c3aed);
+}
+
+.catalog-badge-danger {
+    background: var(--action-danger-light, rgba(239, 68, 68, 0.1));
+    color: var(--action-danger, #ef4444);
+}
+
+/* ----- Empty State ----- */
+.catalog-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted, #6b7280);
+}
+
+.catalog-empty i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+    opacity: 0.5;
+}
+
+.catalog-empty p {
+    margin: 0;
+    font-size: 0.9375rem;
 }
 
 /* ----- Mobile Cards Layout ----- */
