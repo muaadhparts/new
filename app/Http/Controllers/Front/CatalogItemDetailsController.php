@@ -66,18 +66,6 @@ class CatalogItemDetailsController extends FrontBaseController
     }
 
     /**
-     * Vehicle compatibility fragment
-     *
-     * @param string $key Part number
-     * @return \Illuminate\Http\Response
-     */
-    public function compatibilityFragment(string $key)
-    {
-        $part_number = $key;
-        return response()->view('partials.compatibility', compact('part_number'));
-    }
-
-    /**
      * Alternative parts fragment
      *
      * @param string $key Part number

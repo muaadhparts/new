@@ -261,17 +261,12 @@
                       </a>`;
 
       const subsList = normListFromAny(p.substitutions ?? p.alternatives ?? p.alt ?? p.subs, 'subs');
-      const fitsList = normListFromAny(p.fits ?? p.compatible ?? p.vehicles ?? p.fitVehicles, 'fits');
 
       const subsMore = p.part_number
         ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline alt-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>`
         : '';
-      const fitsMore = p.part_number
-        ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline fits-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>`
-        : '';
 
       const subsCell = `${renderBadges(subsList)}${subsMore}`;
-      const fitsCell = `${renderBadges(fitsList)}${fitsMore}`;
 
       return `<tr class="${mv.length?'':'table-secondary'}">
         <td class="text-center">${partLink}</td>
@@ -281,7 +276,6 @@
         <td class="text-center">${match}</td>
         <td class="text-center">${exts}</td>
         <td class="text-center">${periodCell}</td>
-        <td class="text-center">${fitsCell}</td>
         <td class="text-center">${subsCell}</td>
       </tr>`;
     }).join('');
@@ -299,7 +293,6 @@
               <th>${escapeHtml(t('columns.match'))}</th>
               <th>${escapeHtml(t('columns.extensions'))}</th>
               <th>${escapeHtml(t('columns.period'))}</th>
-              <th>${escapeHtml(t('columns.fits'))}</th>
               <th>${escapeHtml(t('columns.substitutions'))}</th>
             </tr>
           </thead>
@@ -325,9 +318,7 @@
                           🔢 ${escapeHtml(p.part_number||'')}</a>`;
 
           const subsList = normListFromAny(p.substitutions ?? p.alternatives ?? p.alt ?? p.subs, 'subs');
-          const fitsList = normListFromAny(p.fits ?? p.compatible ?? p.vehicles ?? p.fitVehicles, 'fits');
           const subsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline alt-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>` : '';
-          const fitsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline fits-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.fits'))}</a></div>` : '';
 
           return `<div class="card shadow-sm mb-3"><div class="card-body text-center">
               <h6 class="card-name">${partLink}</h6>
@@ -337,8 +328,6 @@
               <p><strong>${escapeHtml(t('labels.match'))}:</strong> ${match}</p>
               <p><strong>${escapeHtml(t('labels.extensions'))}:</strong> ${exts}</p>
               <p><strong>${escapeHtml(t('labels.period'))}:</strong> ${periodBadge}</p>
-              <p><strong>${escapeHtml(t('columns.fits'))}:</strong> ${renderBadges(fitsList)}</p>
-              ${fitsMore}
               <p><strong>${escapeHtml(t('columns.substitutions'))}:</strong> ${renderBadges(subsList)}</p>
               ${subsMore}
           </div></div>`;
@@ -617,13 +606,16 @@
     return fetch('/api/catalog-item/alternatives/' + encodeURIComponent(part_number) + '/html')
       .then(res => res.json())
       .then(data => {
-        if (data.count && data.count > 0) {
-          // Has alternatives → show alternatives modal
+        if (data.count && data.count > 1) {
+          // Multiple alternatives → show alternatives modal
           const base = window.ILL_ROUTES?.alternative || '/modal/alternative/';
           const name = t('catalog.alternative_modal.name');
           return loadIntoModal(base + encodeURIComponent(part_number), name);
+        } else if (data.count === 1 && data.single_part_number) {
+          // Single alternative → go directly to offers for that alternative
+          return openOffersByPartNumber(data.single_part_number);
         } else {
-          // No alternatives → go directly to offers
+          // No alternatives → go directly to offers for original part
           return openOffersByPartNumber(part_number);
         }
       })
@@ -637,12 +629,6 @@
     const url = '/modal/offers-by-part/' + encodeURIComponent(partNumber);
     const name = t('catalog.offers_modal.name') + ' ' + (partNumber || '');
     return loadIntoModal(url, name);
-  }
-
-  function openCompatibilityInline(part_number) {
-    const base = window.ILL_ROUTES?.compatibility || '/modal/compatibility/';
-    const name = t('catalog.compatibility_modal.name');
-    return loadIntoModal(base + encodeURIComponent(part_number), name);
   }
 
   function openOffersInline(catalogItemId, partNumber) {
@@ -691,12 +677,6 @@
     $(document).off('click.ill_alt').on('click.ill_alt', '.alt-link', function (e) {
       e.preventDefault();
       openAlternativeInline($(this).data('part_number'));
-    });
-
-    /* Compatibility/Fits link */
-    $(document).off('click.ill_fits').on('click.ill_fits', '.fits-link', function (e) {
-      e.preventDefault();
-      openCompatibilityInline($(this).data('part_number'));
     });
 
     /* Offers button in alternatives */

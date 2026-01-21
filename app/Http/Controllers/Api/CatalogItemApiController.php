@@ -6,20 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\MerchantItem;
 use App\Models\SkuAlternative;
 use App\Services\AlternativeService;
-use App\Services\CompatibilityService;
 use Illuminate\Http\Request;
 
 class CatalogItemApiController extends Controller
 {
     protected AlternativeService $alternativeService;
-    protected CompatibilityService $compatibilityService;
 
-    public function __construct(
-        AlternativeService $alternativeService,
-        CompatibilityService $compatibilityService
-    ) {
+    public function __construct(AlternativeService $alternativeService)
+    {
         $this->alternativeService = $alternativeService;
-        $this->compatibilityService = $compatibilityService;
     }
 
     /**
@@ -99,21 +94,6 @@ class CatalogItemApiController extends Controller
     }
 
     /**
-     * Get compatibility (catalogs) for a PART_NUMBER
-     */
-    public function getCompatibility(Request $request, string $part_number)
-    {
-        $results = $this->compatibilityService->getCompatibleCatalogs($part_number);
-
-        return response()->json([
-            'success' => true,
-            'part_number' => $part_number,
-            'catalogs' => $results,
-            'count' => count($results),
-        ]);
-    }
-
-    /**
      * Render alternatives partial HTML
      */
     public function getAlternativesHtml(Request $request, string $part_number)
@@ -132,33 +112,18 @@ class CatalogItemApiController extends Controller
             'part_number' => $part_number,
         ])->render();
 
-        return response()->json([
+        $response = [
             'success' => true,
             'html' => $html,
             'count' => $alternatives->count(),
-        ]);
-    }
+        ];
 
-    /**
-     * Render compatibility partial HTML
-     */
-    public function getCompatibilityHtml(Request $request, string $part_number)
-    {
-        $displayMode = $request->get('display_mode', 'tabs');
-        $results = $this->compatibilityService->getCompatibleCatalogs($part_number);
+        // If only one alternative, return its part_number for direct navigation
+        if ($alternatives->count() === 1) {
+            $single = $alternatives->first();
+            $response['single_part_number'] = $single->catalogItem->part_number ?? $single->part_number ?? null;
+        }
 
-        $viewName = $displayMode === 'tabs'
-            ? 'partials.api.compatibility-tabs'
-            : 'partials.api.compatibility';
-
-        $html = view($viewName, [
-            'results' => $results,
-            'part_number' => $part_number,
-        ])->render();
-
-        return response()->json([
-            'success' => true,
-            'html' => $html,
-        ]);
+        return response()->json($response);
     }
 }

@@ -32,10 +32,6 @@ Route::prefix('catalog-item')->middleware(['web'])->group(function () {
     Route::get('/alternatives/{part_number}', [CatalogItemApiController::class, 'getAlternatives'])->name('api.catalog-item.alternatives');
     Route::get('/alternatives/{part_number}/related', [CatalogItemApiController::class, 'getAlternativeRelatedCatalogItems'])->name('api.catalog-item.alternatives.related');
     Route::get('/alternatives/{part_number}/html', [CatalogItemApiController::class, 'getAlternativesHtml'])->name('api.catalog-item.alternatives.html');
-
-    // Compatibility
-    Route::get('/compatibility/{part_number}', [CatalogItemApiController::class, 'getCompatibility'])->name('api.catalog-item.compatibility');
-    Route::get('/compatibility/{part_number}/html', [CatalogItemApiController::class, 'getCompatibilityHtml'])->name('api.catalog-item.compatibility.html');
 });
 // --------------------- CATALOG ITEM API ROUTES END ---------------------
 

@@ -140,7 +140,6 @@ window.i18n = {
 };
 
 window.ILL_ROUTES = {
-  alternative:  "{{ route('modal.alternative',  ['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, ''),
-  compatibility:"{{ route('modal.compatibility',['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, '')
+  alternative: "{{ route('modal.alternative', ['key' => 'PART_NUMBER']) }}".replace(/PART_NUMBER$/, '')
 };
 </script>
