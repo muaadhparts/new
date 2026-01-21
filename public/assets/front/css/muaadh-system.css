@@ -6655,22 +6655,85 @@ select option {
     margin-bottom: 0;
 }
 
-/* Featured Card - Original Part */
-.catalog-modal-card.card-featured {
-    border: 2px solid var(--action-primary, #7c3aed);
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(124, 58, 237, 0.08) 100%);
-    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+/* Original Part - Compact Featured Row */
+.catalog-original-part {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.04) 0%, rgba(124, 58, 237, 0.08) 100%);
+    border: 1px solid var(--action-primary, #7c3aed);
+    border-radius: 8px;
+    padding: 10px 14px;
 }
 
-.catalog-modal-card.card-featured .catalog-modal-card__header {
-    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0.12) 100%);
-    border-bottom-color: var(--action-primary, #7c3aed);
+.catalog-original-part__inner {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-.catalog-modal-card.card-featured .catalog-modal-card__number {
-    color: var(--action-primary, #7c3aed);
+.catalog-original-part__photo {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid var(--border-light, #e5e7eb);
+    flex-shrink: 0;
+}
+
+.catalog-original-part__info {
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.catalog-original-part__number {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
+    color: var(--action-primary, #7c3aed);
+    font-family: monospace;
+}
+
+.catalog-original-part__name {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #6b7280);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.catalog-original-part__meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.catalog-original-part__price {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary, #111827);
+}
+
+.catalog-badge-sm {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+}
+
+@media (max-width: 576px) {
+    .catalog-original-part__inner {
+        gap: 8px;
+    }
+    .catalog-original-part__photo {
+        width: 32px;
+        height: 32px;
+    }
+    .catalog-original-part__name {
+        max-width: 120px;
+    }
+    .catalog-original-part__info {
+        min-width: 100px;
+    }
 }
 
 /* Card Header */

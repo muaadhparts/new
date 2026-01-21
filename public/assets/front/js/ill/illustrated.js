@@ -423,6 +423,35 @@
 
     /* Note: Quantity controls handled globally by qty-control.js (delegated events) */
 
+    /* Sort offers - silent update (only for #modal context) */
+    $(document).off('change.ill_sort').on('change.ill_sort', '#api-callout-body #offersSort', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const $select = $(this);
+      const sort = $select.val();
+      const catalogItemId = $select.data('catalog-item-id');
+      if (!catalogItemId) return;
+
+      // Fade content while loading
+      const $content = $select.closest('.catalog-offers-content');
+      $content.css({ opacity: 0.5, pointerEvents: 'none' });
+
+      $.get('/modal/offers/' + catalogItemId, { sort: sort, _t: Date.now() })
+        .done(function(html) {
+          const body = modalBodyEl();
+          if (body) {
+            body.innerHTML = html;
+            afterInject(body);
+            const cv = currentView();
+            if (cv) cv.html = html;
+          }
+        })
+        .fail(function() {
+          $content.css({ opacity: 1, pointerEvents: 'auto' });
+        });
+    });
+
     /* Pagination - ✅ Updated to use server-rendered HTML */
     $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
       e.preventDefault();

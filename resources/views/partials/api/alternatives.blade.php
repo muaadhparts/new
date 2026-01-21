@@ -32,60 +32,34 @@
 
 <div class="catalog-modal-content ill-alt">
     @if($originalPart || $otherAlternatives->count() > 0)
-        {{-- Original Part Section --}}
+        {{-- Original Part - Compact Featured Row --}}
         @if($originalPart)
-            <div class="catalog-section-header">
-                <h5>
-                    <i class="fas fa-cube"></i>
-                    @lang('Part Details')
-                </h5>
-            </div>
-
-            {{-- Original Part Card - Featured Style --}}
-            <div class="catalog-modal-card card-featured mb-4">
-                <div class="catalog-modal-card__header">
-                    <div class="catalog-modal-card__part-info">
-                        <img src="{{ $resolvePhoto($originalPart->photo) }}"
-                             alt="{{ $originalPart->part_number }}"
-                             class="catalog-modal-card__photo"
-                             loading="lazy">
-                        <span class="catalog-modal-card__number">{{ $originalPart->part_number }}</span>
+            <div class="catalog-original-part mb-3">
+                <div class="catalog-original-part__inner">
+                    <img src="{{ $resolvePhoto($originalPart->photo) }}"
+                         alt="{{ $originalPart->part_number }}"
+                         class="catalog-original-part__photo"
+                         loading="lazy">
+                    <div class="catalog-original-part__info">
+                        <span class="catalog-original-part__number">{{ $originalPart->part_number }}</span>
+                        <span class="catalog-original-part__name">{{ $originalPart->localized_name }}</span>
                     </div>
-                    <div class="catalog-modal-card__badges">
-                        <span class="catalog-badge catalog-badge-primary">
-                            <i class="fas fa-star"></i> @lang('Original')
-                        </span>
-                        @if($originalPart->offers_count > 0)
-                            <span class="catalog-badge catalog-badge-success">
-                                {{ $originalPart->offers_count }} @lang('offers')
-                            </span>
-                        @endif
-                    </div>
-                </div>
-
-                <div class="catalog-modal-card__body">
-                    <div class="catalog-card-name">{{ $originalPart->localized_name }}</div>
-                </div>
-
-                <div class="catalog-modal-card__footer">
-                    <div class="catalog-modal-card__price">
+                    <div class="catalog-original-part__meta">
                         @if($originalPart->lowest_price_formatted)
-                            <span class="catalog-modal-card__price-from">@lang('From')</span>
-                            <span class="catalog-modal-card__price-value">{{ $originalPart->lowest_price_formatted }}</span>
-                        @else
-                            <span class="text-muted">-</span>
+                            <span class="catalog-original-part__price">{{ $originalPart->lowest_price_formatted }}</span>
+                        @endif
+                        @if($originalPart->offers_count > 0)
+                            <span class="catalog-badge catalog-badge-success catalog-badge-sm">{{ $originalPart->offers_count }}</span>
                         @endif
                     </div>
-                    <div class="catalog-modal-card__actions">
-                        <button type="button"
-                                class="catalog-btn catalog-btn-primary alt-offers-btn"
-                                data-catalog-item-id="{{ $originalPart->id }}"
-                                data-part-number="{{ $originalPart->part_number }}"
-                                data-name="{{ $originalPart->localized_name }}">
-                            <i class="fas fa-tags"></i>
-                            @lang('View Offers')
-                        </button>
-                    </div>
+                    <button type="button"
+                            class="catalog-btn catalog-btn-primary catalog-btn-sm alt-offers-btn"
+                            data-catalog-item-id="{{ $originalPart->id }}"
+                            data-part-number="{{ $originalPart->part_number }}"
+                            data-name="{{ $originalPart->localized_name }}">
+                        <i class="fas fa-tags"></i>
+                        @lang('Offers')
+                    </button>
                 </div>
             </div>
         @endif
