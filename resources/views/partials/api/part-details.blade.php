@@ -152,15 +152,26 @@
                                 </td>
                                 <td class="text-center">
                                     @php
-                                        $offersCount = $part['offers_count'] ?? 0;
+                                        $selfOffers = $part['self_offers'] ?? 0;
+                                        $altOffers = $part['alt_offers'] ?? 0;
+                                        $totalOffers = $selfOffers + $altOffers;
                                     @endphp
                                     @if($partNumber)
                                         <a href="javascript:;"
                                            class="catalog-btn catalog-btn-outline catalog-btn-sm alt-link"
                                            data-part_number="{{ $partNumber }}">
                                             <i class="fas fa-tags"></i>
-                                            @if($offersCount > 0)
-                                                {{ $offersCount }} @lang('offers')
+                                            @if($totalOffers > 0)
+                                                @if($selfOffers > 0 && $altOffers > 0)
+                                                    {{-- عروض للصنف + عروض بديلة --}}
+                                                    {{ $selfOffers }} @lang('offers') + {{ $altOffers }} @lang('alt')
+                                                @elseif($selfOffers > 0)
+                                                    {{-- عروض للصنف فقط --}}
+                                                    {{ $selfOffers }} @lang('offers')
+                                                @else
+                                                    {{-- عروض بديلة فقط --}}
+                                                    {{ $altOffers }} @lang('alt offers')
+                                                @endif
                                             @else
                                                 @lang('No offers')
                                             @endif
@@ -274,13 +285,28 @@
                     {{-- Footer --}}
                     <div class="catalog-modal-card__footer">
                         @php
-                            $offersCount = $part['offers_count'] ?? 0;
+                            $selfOffers = $part['self_offers'] ?? 0;
+                            $altOffers = $part['alt_offers'] ?? 0;
+                            $totalOffers = $selfOffers + $altOffers;
                         @endphp
                         <div class="catalog-modal-card__price">
-                            @if($offersCount > 0)
-                                <span class="catalog-badge catalog-badge-success">
-                                    {{ $offersCount }} @lang('offers')
-                                </span>
+                            @if($totalOffers > 0)
+                                @if($selfOffers > 0 && $altOffers > 0)
+                                    <span class="catalog-badge catalog-badge-success">
+                                        {{ $selfOffers }} @lang('offers')
+                                    </span>
+                                    <span class="catalog-badge catalog-badge-info">
+                                        + {{ $altOffers }} @lang('alt')
+                                    </span>
+                                @elseif($selfOffers > 0)
+                                    <span class="catalog-badge catalog-badge-success">
+                                        {{ $selfOffers }} @lang('offers')
+                                    </span>
+                                @else
+                                    <span class="catalog-badge catalog-badge-info">
+                                        {{ $altOffers }} @lang('alt offers')
+                                    </span>
+                                @endif
                             @else
                                 <span class="catalog-badge catalog-badge-secondary">
                                     @lang('No offers')

@@ -232,8 +232,11 @@ class CalloutController extends Controller
     }
 
     /**
-     * ✅ إضافة عدد العروض لكل قطعة (القطعة + بدائلها)
-     * يحسب إجمالي العروض من: الصنف نفسه + كل البدائل في نفس المجموعة
+     * ✅ إضافة عدد العروض لكل قطعة (القطعة + بدائلها) مع التفريق بينهما
+     * يحسب:
+     * - self_offers: عروض الصنف نفسه
+     * - alt_offers: عروض البدائل
+     * - offers_count: الإجمالي
      */
     protected function appendOffersCount(array $parts): array
     {
@@ -291,35 +294,43 @@ class CalloutController extends Controller
                 ->toArray();
         }
 
-        // 7. حساب إجمالي العروض لكل part_number
-        // إذا كان له group → جمع عروض كل الأصناف في المجموعة
-        // إذا لم يكن له group → جمع عروضه فقط
-        $totalOffersMap = [];
+        // 7. حساب العروض لكل part_number مع التفريق بين عروضه وعروض بدائله
+        $offersDataMap = [];
         foreach ($partNumbers as $pn) {
             $groupId = $groupMap[$pn] ?? null;
 
-            // القطع المرتبطة: كل المجموعة إذا وجدت، وإلا القطعة نفسها
-            if ($groupId && isset($groupPartNumbers[$groupId])) {
-                $relatedParts = $groupPartNumbers[$groupId];
-            } else {
-                $relatedParts = [$pn];
-            }
+            // عروض الصنف نفسه
+            $selfCatalogItemId = $catalogItemMap[$pn] ?? null;
+            $selfOffers = $selfCatalogItemId ? ($offersCountMap[$selfCatalogItemId] ?? 0) : 0;
 
-            // جمع عروض كل القطع المرتبطة
-            $totalOffers = 0;
-            foreach ($relatedParts as $relatedPn) {
-                $catalogItemId = $catalogItemMap[$relatedPn] ?? null;
-                if ($catalogItemId) {
-                    $totalOffers += $offersCountMap[$catalogItemId] ?? 0;
+            // عروض البدائل
+            $altOffers = 0;
+            if ($groupId && isset($groupPartNumbers[$groupId])) {
+                foreach ($groupPartNumbers[$groupId] as $relatedPn) {
+                    // استثناء الصنف نفسه
+                    if ($relatedPn === $pn) continue;
+
+                    $relatedCatalogItemId = $catalogItemMap[$relatedPn] ?? null;
+                    if ($relatedCatalogItemId) {
+                        $altOffers += $offersCountMap[$relatedCatalogItemId] ?? 0;
+                    }
                 }
             }
-            $totalOffersMap[$pn] = $totalOffers;
+
+            $offersDataMap[$pn] = [
+                'self_offers' => $selfOffers,
+                'alt_offers' => $altOffers,
+                'total' => $selfOffers + $altOffers,
+            ];
         }
 
         // 8. دمج عدد العروض مع القطع
         foreach ($parts as &$part) {
             $pn = $part['part_number'] ?? '';
-            $part['offers_count'] = $totalOffersMap[$pn] ?? 0;
+            $data = $offersDataMap[$pn] ?? ['self_offers' => 0, 'alt_offers' => 0, 'total' => 0];
+            $part['self_offers'] = $data['self_offers'];
+            $part['alt_offers'] = $data['alt_offers'];
+            $part['offers_count'] = $data['total'];
         }
 
         return $parts;
