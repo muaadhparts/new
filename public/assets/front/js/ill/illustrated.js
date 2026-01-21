@@ -569,7 +569,8 @@
       zoom_MAX: 300,
       zoom_OUT_TO_FIT: true,
       pan_LIMIT_BOUNDARY: false,
-      pan_BUTTONS_SHOW: true,
+      zoom_BUTTONS_SHOW: false,  // Hide zoom buttons
+      pan_BUTTONS_SHOW: false,   // Hide pan buttons
       pan_REVERSE: false,
       touch_DRAG: true,
       mouse_DRAG: true,
