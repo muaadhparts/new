@@ -73,8 +73,24 @@
     };
 @endphp
 
-<div class="catalog-modal-content ill-parts">
+<div class="catalog-offers-content ill-parts">
     @if(!empty($catalogItems) && count($catalogItems) > 0)
+        {{-- Header with summary --}}
+        <div class="catalog-offers-header">
+            <div class="catalog-offers-summary d-flex align-items-center gap-2 flex-wrap">
+                <span class="catalog-badge catalog-badge-primary">
+                    <i class="fas fa-cogs"></i>
+                    {{ count($catalogItems) }} @lang('parts')
+                </span>
+                @if(!empty($pagination['total']) && $pagination['total'] > count($catalogItems))
+                    <span class="catalog-badge catalog-badge-secondary">
+                        <i class="fas fa-list"></i>
+                        {{ $pagination['total'] }} @lang('total')
+                    </span>
+                @endif
+            </div>
+        </div>
+
         {{-- Desktop Table --}}
         <div class="d-none d-md-block">
             <div class="table-responsive">
@@ -88,7 +104,8 @@
                             <th class="text-center">@lang('Fits')</th>
                             <th class="text-center">@lang('Match')</th>
                             <th class="text-center">@lang('Extensions')</th>
-                            <th class="text-center">@lang('Period')</th>
+                            <th class="text-center">@lang('From')</th>
+                            <th class="text-center">@lang('To')</th>
                             <th class="text-center">@lang('Offers')</th>
                         </tr>
                     </thead>
@@ -103,7 +120,8 @@
                                 if (is_string($matchValues)) {
                                     $matchValues = array_filter(array_map('trim', explode(',', $matchValues)));
                                 }
-                                $period = $formatPeriod($part['part_begin'] ?? null, $part['part_end'] ?? null);
+                                $periodFrom = $formatYearMonth($part['part_begin'] ?? null);
+                                $periodTo = $formatYearMonth($part['part_end'] ?? null);
                                 $extensions = $renderExtensions($part['extensions'] ?? []);
                                 $isGeneric = empty($matchValues);
                             @endphp
@@ -169,11 +187,13 @@
                                     @endif
                                 </td>
                                 <td class="text-center">
-                                    @if($period)
-                                        <span class="catalog-period-badge">
-                                            <i class="fas fa-calendar-alt"></i>
-                                            {{ $period }}
-                                        </span>
+                                    @if($periodFrom)
+                                        <span class="text-muted small">{{ $periodFrom }}</span>
+                                    @endif
+                                </td>
+                                <td class="text-center">
+                                    @if($periodTo)
+                                        <span class="text-muted small">{{ $periodTo }}</span>
                                     @endif
                                 </td>
                                 <td class="text-center">
@@ -226,7 +246,8 @@
                     if (is_string($matchValues)) {
                         $matchValues = array_filter(array_map('trim', explode(',', $matchValues)));
                     }
-                    $period = $formatPeriod($part['part_begin'] ?? null, $part['part_end'] ?? null);
+                    $periodFrom = $formatYearMonth($part['part_begin'] ?? null);
+                    $periodTo = $formatYearMonth($part['part_end'] ?? null);
                     $extensions = $renderExtensions($part['extensions'] ?? []);
                     $isGeneric = empty($matchValues);
                 @endphp
@@ -316,13 +337,17 @@
                         @endif
 
                         {{-- Period --}}
-                        @if($period)
+                        @if($periodFrom || $periodTo)
                             <div class="catalog-part-row">
                                 <span class="catalog-part-row__label">@lang('Period')</span>
                                 <span class="catalog-part-row__value">
-                                    <span class="catalog-period-badge">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        {{ $period }}
+                                    <span class="d-flex align-items-center gap-2 text-muted small">
+                                        @if($periodFrom)
+                                            <span>@lang('From'): {{ $periodFrom }}</span>
+                                        @endif
+                                        @if($periodTo)
+                                            <span>@lang('To'): {{ $periodTo }}</span>
+                                        @endif
                                     </span>
                                 </span>
                             </div>
@@ -439,9 +464,9 @@
 
     @else
         {{-- No Results --}}
-        <div class="text-center p-5 text-muted">
-            <i class="bi bi-search display-6 d-block mb-3"></i>
-            <div class="fw-bold">@lang('No parts found for this callout')</div>
+        <div class="catalog-empty">
+            <i class="fas fa-cogs"></i>
+            <p>@lang('No parts found for this callout')</p>
         </div>
     @endif
 </div>
