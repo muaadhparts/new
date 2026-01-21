@@ -576,14 +576,14 @@ class GeocodingController extends Controller
      * Get tax info and formatted address from coordinates.
      * Used in Step 1 to calculate tax after map location selection.
      *
-     * IMPORTANT: merchant_id is REQUIRED - no global cart operations
+     * IMPORTANT: branch_id is REQUIRED - no global cart operations
      */
     public function getTaxFromCoordinates(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            'merchant_id' => 'required|integer|min:1',
+            'branch_id' => 'required|integer|min:1',
             'locale' => 'nullable|string|in:ar,en',
         ]);
 
