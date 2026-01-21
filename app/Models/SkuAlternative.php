@@ -17,8 +17,6 @@ use Illuminate\Support\Facades\DB;
  * البدائل مرتبطة عبر group_id:
  * - كل الأصناف بنفس group_id هي بدائل لبعضها البعض
  * - إذا A في group_id=100 و B في group_id=100، فـ A بديل لـ B و B بديل لـ A
- *
- * ملاحظة: جدول sku_alternative_item هو Legacy ولا يُستخدم
  */
 class SkuAlternative extends Model
 {

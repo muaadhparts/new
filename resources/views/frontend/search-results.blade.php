@@ -24,38 +24,19 @@
     <div class="gs-page-wrapper muaadh-section-gray">
         <div class="container py-4">
 
-            {{-- Search Info Header --}}
-            <div class="m-card mb-4">
-                <div class="m-card__body">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                        <div>
-                            <h4 class="mb-1">
-                                <i class="fas fa-search me-2 text-primary"></i>
-                                @lang('Search Results')
-                            </h4>
-                            @if($query)
-                                <p class="text-muted mb-0">
-                                    @lang('Showing results for'): <strong>"{{ $query }}"</strong>
-                                    <span class="badge bg-primary ms-2">{{ $count }} @lang('items')</span>
-                                </p>
-                            @endif
-                        </div>
-
-                        {{-- Search Box --}}
-                        <div class="search-box-mini">
-                            <form action="{{ route('front.search-results') }}" method="GET" class="d-flex gap-2">
-                                <input type="text" name="q" value="{{ $query }}"
-                                       class="form-control"
-                                       placeholder="@lang('Enter part number or name')"
-                                       style="min-width: 250px;">
-                                <button type="submit" class="m-btn m-btn--primary">
-                                    <i class="fas fa-search"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
+            {{-- Search Box --}}
+            <div class="mb-4">
+                @include('includes.frontend.search-part-ajax', ['uniqueId' => 'searchResults', 'initialValue' => $query])
             </div>
+
+            {{-- Results Info --}}
+            @if($query)
+                <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="text-muted">@lang('Showing results for'):</span>
+                    <strong>"{{ $query }}"</strong>
+                    <span class="badge bg-primary">{{ $count }} @lang('items')</span>
+                </div>
+            @endif
 
             @if($count > 0)
                 {{-- Search Results Section --}}

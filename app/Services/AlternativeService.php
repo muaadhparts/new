@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * خدمة موحدة لإدارة البدائل
  *
- * تستخدم جدول sku_alternatives فقط مع group_id
- * جدول sku_alternative_item هو Legacy ولا يُستخدم
+ * تستخدم جدول sku_alternatives مع group_id
  *
  * الهيكل:
  * - كل الأصناف بنفس group_id هي بدائل لبعضها البعض

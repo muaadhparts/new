@@ -135,9 +135,15 @@
         </div>
 
     @else
-        <div class="catalog-empty">
-            <i class="fas fa-box-open"></i>
-            <p>@lang('labels.no_alternatives')</p>
+        <div class="catalog-section-header">
+            <h5>
+                <i class="fas fa-exchange-alt"></i>
+                @lang('Alternatives')
+            </h5>
+        </div>
+        <div class="text-center py-4">
+            <i class="fas fa-exchange-alt fa-2x text-muted mb-2 d-block"></i>
+            <p class="text-muted mb-0">@lang('No alternatives available for this part')</p>
         </div>
     @endif
 </div>

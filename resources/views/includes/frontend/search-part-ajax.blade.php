@@ -12,6 +12,7 @@
                 placeholder="{{ __('Enter part number or name') }}"
                 id="partInput{{ $uniqueId ?? 'default' }}"
                 autocomplete="off"
+                value="{{ $initialValue ?? '' }}"
             >
             <button class="muaadh-search-btn part-search-btn" type="button" id="partSearchBtn{{ $uniqueId ?? 'default' }}">
                 <i class="fas fa-search me-2 search-icon"></i>

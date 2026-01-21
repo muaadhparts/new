@@ -14817,6 +14817,7 @@ div[id*='zoom_container'] .landmarks .lable div {
 
 .muaadh-search-container {
     position: relative;
+    z-index: 100;
 }
 
 /* --- Search Input Group --- */

@@ -10,8 +10,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * AlternativeController - إدارة البدائل
  *
- * يستخدم جدول sku_alternatives مع group_id فقط
- * جدول sku_alternative_item هو Legacy ولا يُستخدم
+ * يستخدم جدول sku_alternatives مع group_id
  *
  * - البحث عن صنف
  * - عرض بدائله (كل الأصناف بنفس group_id)

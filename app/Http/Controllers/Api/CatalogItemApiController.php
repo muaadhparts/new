@@ -115,11 +115,18 @@ class CatalogItemApiController extends Controller
 
     /**
      * Render alternatives partial HTML
+     * إذا القطعة ما لها بدائل، نعرض القطعة نفسها حتى يقدر المستخدم يشوف العروض
      */
     public function getAlternativesHtml(Request $request, string $part_number)
     {
         $includeSelf = $request->boolean('include_self', false);
-        $alternatives = $this->alternativeService->getAlternatives($part_number, $includeSelf);
+
+        // جلب البدائل مع إرجاع القطعة نفسها إذا ما لها بدائل
+        $alternatives = $this->alternativeService->getAlternatives(
+            $part_number,
+            includeSelf: $includeSelf,
+            returnSelfIfNoAlternatives: true
+        );
 
         $html = view('partials.api.alternatives', [
             'alternatives' => $alternatives,

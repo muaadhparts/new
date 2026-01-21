@@ -66,14 +66,23 @@ class SearchResultsController extends FrontBaseController
             });
 
             // Get alternatives for the first result using AlternativeService
-            // returnSelfIfNoAlternatives = true لإظهار الصنف نفسه إذا لم يكن له بدائل
             if ($catalogItems->isNotEmpty()) {
                 $firstItem = $catalogItems->first();
+
+                // جمع part_numbers الموجودة في Results لاستثنائها من Alternatives
+                $resultPartNumbers = $catalogItems->pluck('part_number')->toArray();
+
+                // جلب البدائل (بدون الصنف نفسه)
                 $alternativeItems = $this->alternativeService->getAlternatives(
                     $firstItem->part_number,
                     includeSelf: false,
-                    returnSelfIfNoAlternatives: true
+                    returnSelfIfNoAlternatives: false
                 );
+
+                // استثناء الأصناف الموجودة مسبقاً في Results
+                $alternativeItems = $alternativeItems->filter(function ($item) use ($resultPartNumbers) {
+                    return !in_array($item->part_number, $resultPartNumbers);
+                });
 
                 $alternativeCards = $alternativeItems->map(function ($catalogItem) use ($favoriteCatalogItemIds, $favoriteMerchantIds) {
                     $bestMerchant = $this->getBestMerchant($catalogItem->id);

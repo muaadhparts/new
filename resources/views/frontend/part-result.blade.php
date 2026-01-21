@@ -152,16 +152,18 @@
             @endif
 
             {{-- Alternatives Section --}}
-            @if(isset($alternatives) && $alternatives->isNotEmpty())
-                <div class="m-card mt-4">
-                    <div class="m-card__header">
-                        <h5 class="m-card__title mb-0">
-                            <i class="fas fa-exchange-alt me-2"></i>
-                            @lang('Alternatives')
+            <div class="m-card mt-4">
+                <div class="m-card__header">
+                    <h5 class="m-card__title mb-0">
+                        <i class="fas fa-exchange-alt me-2"></i>
+                        @lang('Alternatives')
+                        @if(isset($alternatives) && $alternatives->isNotEmpty())
                             <span class="badge bg-secondary ms-2">{{ $alternatives->count() }}</span>
-                        </h5>
-                    </div>
-                    <div class="m-card__body">
+                        @endif
+                    </h5>
+                </div>
+                <div class="m-card__body">
+                    @if(isset($alternatives) && $alternatives->isNotEmpty())
                         <div class="table-responsive">
                             <table class="table table-hover align-middle">
                                 <thead class="table-light">
@@ -217,9 +219,14 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
+                    @else
+                        <div class="text-center py-4">
+                            <i class="fas fa-exchange-alt fa-2x text-muted mb-2"></i>
+                            <p class="text-muted mb-0">@lang('No alternatives available for this part')</p>
+                        </div>
+                    @endif
                 </div>
-            @endif
+            </div>
 
         </div>
     </div>
