@@ -151,6 +151,76 @@
                 </div>
             @endif
 
+            {{-- Alternatives Section --}}
+            @if(isset($alternatives) && $alternatives->isNotEmpty())
+                <div class="m-card mt-4">
+                    <div class="m-card__header">
+                        <h5 class="m-card__title mb-0">
+                            <i class="fas fa-exchange-alt me-2"></i>
+                            @lang('Alternatives')
+                            <span class="badge bg-secondary ms-2">{{ $alternatives->count() }}</span>
+                        </h5>
+                    </div>
+                    <div class="m-card__body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 60px;">@lang('Image')</th>
+                                        <th>@lang('Part Number')</th>
+                                        <th>@lang('Name')</th>
+                                        <th class="text-center">@lang('Offers')</th>
+                                        <th class="text-end">@lang('Lowest Price')</th>
+                                        <th style="width: 100px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($alternatives as $alt)
+                                        <tr>
+                                            <td>
+                                                @php
+                                                    $altPhoto = $alt->photo
+                                                        ? (filter_var($alt->photo, FILTER_VALIDATE_URL) ? $alt->photo : \Storage::url($alt->photo))
+                                                        : asset('assets/images/noimage.png');
+                                                @endphp
+                                                <img src="{{ $altPhoto }}" alt="{{ $alt->part_number }}"
+                                                     class="img-fluid rounded" style="max-width: 50px; max-height: 50px; object-fit: contain;">
+                                            </td>
+                                            <td>
+                                                <strong>{{ $alt->part_number }}</strong>
+                                            </td>
+                                            <td>
+                                                {{ $alt->showName() ?? '-' }}
+                                            </td>
+                                            <td class="text-center">
+                                                @if($alt->offers_count > 0)
+                                                    <span class="badge bg-success">{{ $alt->offers_count }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">0</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">
+                                                @if($alt->lowest_price_formatted)
+                                                    <strong class="text-success">{{ $alt->lowest_price_formatted }}</strong>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td class="text-end">
+                                                <a href="{{ route('front.part-result', $alt->part_number) }}"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
         </div>
     </div>
 @endsection

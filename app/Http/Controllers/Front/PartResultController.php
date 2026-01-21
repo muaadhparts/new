@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Models\CatalogItem;
+use App\Services\AlternativeService;
 use App\Services\CatalogItemOffersService;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,8 @@ use Illuminate\Http\Request;
 class PartResultController extends FrontBaseController
 {
     public function __construct(
-        private CatalogItemOffersService $offersService
+        private CatalogItemOffersService $offersService,
+        private AlternativeService $alternativeService
     ) {
         parent::__construct();
     }
@@ -65,11 +67,19 @@ class PartResultController extends FrontBaseController
                 ->toArray();
         }
 
+        // Get alternatives using group_id
+        $alternatives = $this->alternativeService->getAlternatives(
+            $part_number,
+            includeSelf: false,
+            returnSelfIfNoAlternatives: false
+        );
+
         $viewData = [
             'catalogItem' => $catalogItem,
             'part_number' => $part_number,
             'offersData' => $offersData,
             'fitmentBrands' => $fitmentBrands,
+            'alternatives' => $alternatives,
             'currentSort' => $sort,
             'gs' => $this->gs,
         ];
