@@ -612,6 +612,7 @@
         // Callbacks
         on_IMAGE_LOAD: function() {
           addLandmarks().then(() => {
+            initHighlightObserver();
             autoOpen();
           }).catch(err => {
             console.error('addLandmarks failed:', err);
@@ -695,10 +696,22 @@
 
   // Track currently highlighted callout from search
   let currentSearchedCallout = null;
+  let $currentHighlightedEl = null;
 
   function highlightSearchedCallout(calloutKey) {
-    // Remove previous highlight
-    $('.callout-label.callout-searched').removeClass('callout-searched');
+    // Guard: skip if same callout already highlighted
+    if (calloutKey && calloutKey === currentSearchedCallout && $currentHighlightedEl && $currentHighlightedEl.length) {
+      return;
+    }
+
+    // Remove previous highlight (direct reference, no DOM query)
+    if ($currentHighlightedEl && $currentHighlightedEl.length) {
+      $currentHighlightedEl.removeClass('callout-searched');
+    }
+
+    // Reset tracking
+    currentSearchedCallout = null;
+    $currentHighlightedEl = null;
 
     // Find and highlight the new one
     if (calloutKey) {
@@ -706,13 +719,56 @@
       if ($callout.length) {
         $callout.addClass('callout-searched');
         currentSearchedCallout = calloutKey;
+        $currentHighlightedEl = $callout;
       }
     }
   }
 
   function clearSearchedHighlight() {
-    $('.callout-label.callout-searched').removeClass('callout-searched');
+    if ($currentHighlightedEl && $currentHighlightedEl.length) {
+      $currentHighlightedEl.removeClass('callout-searched');
+    }
     currentSearchedCallout = null;
+    $currentHighlightedEl = null;
+  }
+
+  // Re-apply highlight after zoom library redraws landmarks (if needed)
+  function reapplyHighlightAfterZoom() {
+    if (currentSearchedCallout) {
+      const $callout = $(`.callout-label[data-callout-key="${currentSearchedCallout}"]`);
+      if ($callout.length && !$callout.hasClass('callout-searched')) {
+        $callout.addClass('callout-searched');
+        $currentHighlightedEl = $callout;
+      }
+    }
+  }
+
+  // MutationObserver to detect if landmarks are recreated and reapply highlight
+  function initHighlightObserver() {
+    const landmarks = document.querySelector('.landmarks');
+    if (!landmarks || !window.MutationObserver) return;
+
+    const observer = new MutationObserver((mutations) => {
+      // Only act if we have a highlight to preserve
+      if (!currentSearchedCallout) return;
+
+      // Check if our highlighted element was removed or class was stripped
+      let needsReapply = false;
+      for (const mutation of mutations) {
+        if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
+          needsReapply = true;
+          break;
+        }
+      }
+
+      if (needsReapply) {
+        // Debounce to avoid multiple rapid calls
+        clearTimeout(window.__highlightReapplyTimer);
+        window.__highlightReapplyTimer = setTimeout(reapplyHighlightAfterZoom, 100);
+      }
+    });
+
+    observer.observe(landmarks, { childList: true, subtree: true });
   }
 
   /* ========================= Boot ========================= */
