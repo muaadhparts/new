@@ -77,8 +77,7 @@ function openCatalogOffersModal(catalogItemId, partNumber, sort = 'price_asc') {
     .then(html => {
         modalBody.innerHTML = html;
 
-        // Initialize quantity controls
-        initializeQtyControls(modalBody);
+        // Note: Qty controls handled globally by qty-control.js (delegated events)
 
         // Initialize cart buttons
         if (typeof initCartButtons === 'function') {
@@ -129,8 +128,7 @@ function reloadOffersWithSort(sort) {
     .then(html => {
         modalBody.innerHTML = html;
 
-        // Initialize quantity controls
-        initializeQtyControls(modalBody);
+        // Note: Qty controls handled globally by qty-control.js (delegated events)
 
         // Initialize cart buttons
         if (typeof initCartButtons === 'function') {
@@ -144,45 +142,6 @@ function reloadOffersWithSort(sort) {
             offersContent.style.opacity = '1';
             offersContent.style.pointerEvents = 'auto';
         }
-    });
-}
-
-/**
- * Initialize quantity controls for dynamically loaded content
- */
-function initializeQtyControls(container) {
-    // Plus buttons
-    container.querySelectorAll('.qty-plus').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const targetId = this.dataset.target;
-            const input = document.getElementById('qty_' + targetId);
-            if (!input) return;
-
-            const stock = parseInt(this.dataset.stock) || 999;
-            const preordered = parseInt(this.dataset.preordered) || 0;
-            const maxQty = preordered ? 999 : stock;
-            let val = parseInt(input.value) || 1;
-
-            if (val < maxQty) {
-                input.value = val + 1;
-            }
-        });
-    });
-
-    // Minus buttons
-    container.querySelectorAll('.qty-minus').forEach(btn => {
-        btn.addEventListener('click', function() {
-            const targetId = this.dataset.target;
-            const input = document.getElementById('qty_' + targetId);
-            if (!input) return;
-
-            const minQty = parseInt(this.dataset.min) || 1;
-            let val = parseInt(input.value) || 1;
-
-            if (val > minQty) {
-                input.value = val - 1;
-            }
-        });
     });
 }
 

@@ -691,49 +691,7 @@
       openOffersInline(catalogItemId, partNumber);
     });
 
-    /* Quantity controls for offers */
-    $(document).off('click.qty_plus').on('click.qty_plus', '.qty-plus', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const $btn = $(this);
-      const $container = $btn.closest('.catalog-qty-control, .qty-control');
-      const $input = $container.find('.catalog-qty-input, .qty-input');
-      if (!$input.length) return;
-
-      const stock = parseInt($btn.data('stock')) || 999;
-      const preordered = parseInt($btn.data('preordered')) || 0;
-      const current = parseInt($input.val()) || 1;
-
-      if (stock > 0 && current >= stock && preordered == 0) {
-        if (window.toastr) {
-          toastr.warning(t('messages.stock_limit') + ': ' + stock);
-        }
-        return;
-      }
-      $input.val(current + 1);
-    });
-
-    $(document).off('click.qty_minus').on('click.qty_minus', '.qty-minus', function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-
-      const $btn = $(this);
-      const $container = $btn.closest('.catalog-qty-control, .qty-control');
-      const $input = $container.find('.catalog-qty-input, .qty-input');
-      if (!$input.length) return;
-
-      const minQty = parseInt($btn.data('min')) || 1;
-      const current = parseInt($input.val()) || 1;
-
-      if (current <= minQty) {
-        if (window.toastr) {
-          toastr.warning(t('messages.min_qty') + ' ' + minQty);
-        }
-        return;
-      }
-      $input.val(current - 1);
-    });
+    /* Note: Quantity controls handled globally by qty-control.js (delegated events) */
 
     /* Pagination */
     $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
