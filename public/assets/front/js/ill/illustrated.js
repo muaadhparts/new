@@ -23,55 +23,6 @@
       .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
   }
 
-  function localizedPartName(p) {
-    const en = p.part_label_en || '', ar = p.part_label_ar || '';
-    return getLocale() === 'ar' ? (ar || en || '—') : (en || ar || '—');
-  }
-
-  function formatYearMonth(s) {
-    if (s == null) return '';
-    const raw = String(s).trim(); if (!raw) return '';
-    const d = raw.replace(/[^0-9]/g,'');
-    if (d.length >= 6) {
-      const y = d.slice(0,4), m = d.slice(4,6);
-      if (/^(19|20)\d{2}$/.test(y) && /^([0][1-9]|1[0-2])$/.test(m)) return `${y}-${m}`;
-    }
-    if (d.length === 4) return d;
-    return raw;
-  }
-  function formatPeriodRange(b, e) {
-    const from = formatYearMonth(b), to = formatYearMonth(e);
-    return [from, to].filter(Boolean).join(' → ');
-  }
-
-  function renderExtensions(ext) {
-    if (!ext) return '';
-    if (typeof ext === 'string') {
-      try { const obj = JSON.parse(ext); return renderExtensions(obj); } catch {}
-      return '';
-    }
-    if (typeof ext === 'object' && !Array.isArray(ext)) {
-      const keys = Object.keys(ext); if (!keys.length) return '';
-      return keys.map(k => {
-        const label = t(`ext.${k}`);
-        const val = (ext[k] == null) ? '' : String(ext[k]);
-        if (!val) return '';
-        return `<span class="badge bg-light text-dark me-1">${escapeHtml(label)}: ${escapeHtml(val)}</span>`;
-      }).filter(Boolean).join(' ');
-    }
-    if (Array.isArray(ext)) {
-      if (!ext.length) return '';
-      return ext.map(it => {
-        const k = (it && (it.extension_key || it.key)) ? String(it.extension_key || it.key) : '';
-        const v = (it && (it.extension_value || it.value)) ? String(it.extension_value || it.value) : '';
-        if (!k && !v) return '';
-        const label = t(`ext.${k}`);
-        return v ? `<span class="badge bg-light text-dark me-1">${escapeHtml(label)}: ${escapeHtml(v)}</span>` : '';
-      }).filter(Boolean).join(' ');
-    }
-    return '';
-  }
-
   /* ========================= Context from Blade ========================= */
   const ctx = window.catalogContext || {};
   const sectionId   = ctx.sectionId   || null;
@@ -307,55 +258,6 @@
     } catch (err) {
       if (err.name === 'AbortError') {
         throw new Error('Metadata request timeout');
-      }
-      throw err;
-    }
-  }
-
-  async function fetchCalloutData(calloutKey, page = 1, perPage = 50, retryCount = 0) {
-    const MAX_RETRIES = 3;
-    const FETCH_TIMEOUT = 90000;
-
-    if (!sectionId || !categoryId || !catalogCode) {
-      throw new Error('Context data not loaded');
-    }
-
-    const params = new URLSearchParams({
-      section_id   : sectionId,
-      category_id  : categoryId,
-      catalog_code : catalogCode,
-      callout      : calloutKey,
-      page         : page,
-      per_page     : perPage,
-    });
-
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-
-      const res = await fetch(`/api/callouts?${params.toString()}`, {
-        headers: { 'Accept': 'application/json' },
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-
-      if (!res.ok) {
-        if (retryCount < MAX_RETRIES && res.status >= 500) {
-          await new Promise(resolve => setTimeout(resolve, 1000));
-          return fetchCalloutData(calloutKey, page, perPage, retryCount + 1);
-        }
-        throw new Error(`API error ${res.status}`);
-      }
-
-      return await res.json();
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        if (retryCount < MAX_RETRIES) {
-          await new Promise(resolve => setTimeout(resolve, 3000));
-          return fetchCalloutData(calloutKey, page, perPage, retryCount + 1);
-        }
-        throw new Error('Server response too slow');
       }
       throw err;
     }

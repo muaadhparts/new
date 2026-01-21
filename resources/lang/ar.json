@@ -3902,7 +3902,34 @@
     "Try adjusting your filters to find what you are looking for.": "جرب تعديل الفلاتر للعثور على ما تبحث عنه.",
     "Offers for": "عروض لـ",
     "Model": "الموديل",
-    "Select Model": "اختر الموديل"
+    "Select Model": "اختر الموديل",
+
+    "Offers": "العروض",
+    "alt": "بديلة",
+    "alt offers": "عروض بديلة",
+    "No offers": "لا عروض",
+    "View Offers": "عرض العروض",
+    "View Alternatives": "عرض البدائل",
+    "Alternatives": "البدائل",
+    "items": "عناصر",
+    "Part Number": "رقم القطعة",
+    "Callout": "الرمز",
+    "Qty": "الكمية",
+    "Name": "الاسم",
+    "Match": "المطابقة",
+    "Extensions": "الامتدادات",
+    "Period": "الفترة",
+    "Photo": "الصورة",
+    "Price": "السعر",
+    "Action": "الإجراء",
+    "From": "من",
+    "Generic": "عام",
+    "No parts found for this callout": "لم يتم العثور على قطع لهذا الرمز",
+    "Showing": "عرض",
+    "of": "من",
+    "Previous": "السابق",
+    "Next": "التالي",
+    "No alternatives available for this part": "لا توجد بدائل متاحة لهذه القطعة"
 }
 
 

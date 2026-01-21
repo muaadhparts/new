@@ -2107,8 +2107,34 @@
     "Please allow location access in your browser settings, or search for your address manually.": "Please allow location access in your browser settings, or search for your address manually.",
     "Please search for your address manually.": "Please search for your address manually.",
     "Please try again or search for your address manually.": "Please try again or search for your address manually.",
-    "Location accuracy is low. Please verify or search for your address.": "Location accuracy is low. Please verify or search for your address."
+    "Location accuracy is low. Please verify or search for your address.": "Location accuracy is low. Please verify or search for your address.",
 
+    "Offers": "Offers",
+    "alt": "alt",
+    "alt offers": "alt offers",
+    "No offers": "No offers",
+    "View Offers": "View Offers",
+    "View Alternatives": "View Alternatives",
+    "Alternatives": "Alternatives",
+    "items": "items",
+    "Part Number": "Part Number",
+    "Callout": "Callout",
+    "Qty": "Qty",
+    "Name": "Name",
+    "Match": "Match",
+    "Extensions": "Extensions",
+    "Period": "Period",
+    "Photo": "Photo",
+    "Price": "Price",
+    "Action": "Action",
+    "From": "From",
+    "Generic": "Generic",
+    "No parts found for this callout": "No parts found for this callout",
+    "Showing": "Showing",
+    "of": "of",
+    "Previous": "Previous",
+    "Next": "Next",
+    "No alternatives available for this part": "No alternatives available for this part"
 }
 
 
