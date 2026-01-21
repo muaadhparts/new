@@ -568,38 +568,46 @@
       const finalHeight = Math.min(calculatedHeight, maxHeight);
 
       $img.smoothZoom({
+        // Container
         width: '100%',
         height: finalHeight,
-        responsive: true,
         container: 'zoom_container',
+        responsive: true,
         responsive_maintain_ratio: true,
-        max_WIDTH: '',
-        max_HEIGHT: '',
-        zoom_SINGLE_STEP: false,
-        animation_SMOOTHNESS: 3,
-        animation_SPEED_ZOOM: 3,
-        animation_SPEED_PAN: 3,
-        initial_POSITION: '',
-        initial_ZOOM: '',
+
+        // Zoom settings
         zoom_MIN: '',
         zoom_MAX: 300,
         zoom_OUT_TO_FIT: true,
+
+        // Pan settings
         pan_LIMIT_BOUNDARY: true,
+        pan_REVERSE: false,
+
+        // Controls - all hidden
         zoom_BUTTONS_SHOW: false,
         pan_BUTTONS_SHOW: false,
-        pan_REVERSE: false,
+
+        // Interaction
         touch_DRAG: true,
         mouse_DRAG: true,
-        button_SIZE: 20,
-        button_SIZE_TOUCH_DEVICE: 18,
-        button_AUTO_HIDE: true,
-        button_AUTO_HIDE_DELAY: 2,
-        button_ALIGN: 'top right',
         mouse_DOUBLE_CLICK: true,
         mouse_WHEEL: true,
         mouse_WHEEL_CURSOR_POS: true,
+
+        // Animation
+        animation_SMOOTHNESS: 3,
+        animation_SPEED_ZOOM: 3,
+        animation_SPEED_PAN: 3,
+
+        // Performance
         use_3D_Transform: true,
+
+        // Appearance
         border_TRANSPARENCY: 0,
+        background_COLOR: '#f8f9fa',
+
+        // Callbacks
         on_IMAGE_LOAD: function() {
           addLandmarks().then(() => {
             autoOpen();

@@ -12198,56 +12198,8 @@ ul.tagit li.tagit-choice .tagit-close {
 }
 
 /* ============================================================================
-   B24 — ILLUSTRATIONS / ZOOM CONTAINER
+   B24 — LOADING SKELETONS
    ============================================================================ */
-
-/* Landmarks Styles */
-#zoom_container .landmarks {
-    position: absolute;
-    z-index: 10;
-    top: 0;
-    left: 0;
-}
-
-#zoom_container .landmarks .item {
-    position: absolute;
-    text-align: center;
-    display: none;
-}
-
-.hovered {
-    border: 2px solid var(--theme-primary) !important;
-    background-color: var(--theme-primary-light) !important;
-}
-
-div[id*='zoom_container'] .landmarks .lable div {
-    z-index: 19999;
-    text-align: center;
-    vertical-align: middle;
-    border: 2px solid var(--muaadh-primary);
-    background-color: transparent;
-    display: table-cell;
-    cursor: pointer;
-    padding-left: 4px !important;
-    padding-right: 4px !important;
-    position: absolute;
-    border-radius: 999px;
-    font: bold 15px tahoma, arial, verdana, sans-serif;
-}
-
-/* Callout Labels */
-.callout-label,
-.correct-callout,
-.bbdover {
-    cursor: pointer !important;
-    -webkit-tap-highlight-color: rgba(var(--theme-primary-rgb), 0.2);
-}
-
-.callout-label:hover .bbdover,
-.bbdover:hover {
-    background-color: rgba(var(--theme-primary-rgb), 0.3) !important;
-    opacity: 1 !important;
-}
 
 /* Loading Skeletons */
 .inner-card {
@@ -12276,60 +12228,6 @@ div[id*='zoom_container'] .landmarks .lable div {
 @keyframes muaadh-pulse {
     50% {
         opacity: .2;
-    }
-}
-
-/* Illustrations Mobile Responsive */
-@media (max-width: 768px) {
-    .smoothZoom_controls {
-        transform: scale(0.6) !important;
-        transform-origin: top right !important;
-    }
-
-    .smoothZoom_controls a {
-        width: 24px !important;
-        height: 24px !important;
-        font-size: 16px !important;
-        line-height: 24px !important;
-    }
-
-    .vehicle-search-wrapper,
-    .container,
-    main {
-        transform: none !important;
-        zoom: 1 !important;
-    }
-
-    #zoom_container {
-        margin: 0 auto !important;
-        padding: 0 !important;
-        border: 0 !important;
-        transform: none !important;
-    }
-
-    #zoom_container img#image {
-        display: block;
-        margin: 0;
-    }
-
-    .callout-label {
-        cursor: pointer !important;
-        -webkit-tap-highlight-color: rgba(var(--theme-primary-rgb), 0.3);
-    }
-
-    .bbdover {
-        cursor: pointer !important;
-        min-width: 40px !important;
-        min-height: 40px !important;
-    }
-
-    .card-body .catalogItems-view,
-    .card-body .view-options__body {
-        padding: 0 !important;
-    }
-
-    .catalogItems-view__options {
-        margin: 0 !important;
     }
 }
 
@@ -15270,43 +15168,6 @@ div[id*='zoom_container'] .landmarks .lable div {
     .muaadh-vin-result-arrow {
         display: none;
     }
-}
-
-/* ============================================================================
-   B35 — ILLUSTRATED PAGE (Zoom Container)
-   ============================================================================ */
-
-#zoom_container .landmarks {
-    position: absolute;
-    z-index: 10;
-    top: 0;
-    left: 0;
-}
-
-#zoom_container .landmarks .item {
-    position: absolute;
-    text-align: center;
-    display: none;
-}
-
-.hovered {
-    border: 2px solid var(--muaadh-primary) !important;
-    background-color: var(--muaadh-info-light) !important;
-}
-
-div[id*='zoom_container'] .landmarks .lable div {
-    z-index: 19999;
-    text-align: center;
-    vertical-align: middle;
-    border: 2px solid var(--muaadh-dark);
-    background-color: transparent;
-    display: table-cell;
-    cursor: pointer;
-    padding-left: 4px !important;
-    padding-right: 4px !important;
-    position: absolute;
-    border-radius: 999px;
-    font: bold 15px tahoma, arial, verdana, sans-serif;
 }
 
 /* Skeleton Loading */

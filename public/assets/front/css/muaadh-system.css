@@ -7769,20 +7769,69 @@ select option {
 }
 
 /* ============================================================================
-   ILLUSTRATION ZOOM - Touch Fix
+   ILLUSTRATION ZOOM CONTAINER - Clean Override
    ============================================================================ */
 
-/* Fix vertical drag on mobile when zoomed */
+/* Base zoom container */
 #zoom_container {
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
+    overflow: hidden;
+    background: var(--theme-bg-light, #f8f9fa);
 }
 
-#zoom_container img {
+#zoom_container img#image {
     touch-action: none;
     -webkit-user-drag: none;
     user-drag: none;
+}
+
+/* Landmarks container */
+#zoom_container .landmarks {
+    position: absolute;
+    z-index: 10;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+#zoom_container .landmarks .item {
+    pointer-events: auto;
+}
+
+/* Callout hover effect - unified */
+.bbdover.hovered,
+.callout-label:hover .bbdover,
+.bbdover:hover {
+    background-color: rgba(var(--theme-primary-rgb, 0, 108, 53), 0.25) !important;
+    border-radius: 4px;
+    opacity: 1 !important;
+}
+
+/* Hide zoom controls (already hidden via JS, but ensure CSS backup) */
+.smooth_zoom_preloader > div[style*="z-index: 20"],
+.smoothZoom_controls {
+    display: none !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 767px) {
+    #zoom_container {
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Larger touch targets on mobile */
+    .bbdover {
+        min-width: 36px !important;
+        min-height: 36px !important;
+    }
+
+    .catalogItems-view,
+    .view-options__body {
+        padding: 0 !important;
+    }
 }
 
 /* ============================================================================
