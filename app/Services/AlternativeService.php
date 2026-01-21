@@ -87,6 +87,7 @@ class AlternativeService
             ->select([
                 'merchant_items.catalog_item_id',
                 DB::raw('MIN(merchant_items.price) as lowest_price'),
+                DB::raw('MAX(merchant_items.price) as highest_price'),
                 DB::raw('COUNT(*) as offers_count'),
             ])
             ->get()
@@ -96,8 +97,12 @@ class AlternativeService
         $result = $catalogItems->map(function ($catalogItem) use ($offersStats) {
             $stats = $offersStats->get($catalogItem->id);
             $catalogItem->lowest_price = $stats?->lowest_price ?? null;
+            $catalogItem->highest_price = $stats?->highest_price ?? null;
             $catalogItem->lowest_price_formatted = $stats?->lowest_price
                 ? \App\Models\CatalogItem::convertPrice($stats->lowest_price)
+                : null;
+            $catalogItem->highest_price_formatted = $stats?->highest_price
+                ? \App\Models\CatalogItem::convertPrice($stats->highest_price)
                 : null;
             $catalogItem->offers_count = $stats?->offers_count ?? 0;
             return $catalogItem;
@@ -132,12 +137,16 @@ class AlternativeService
             ->where('merchant_items.catalog_item_id', $catalogItemId)
             ->where('merchant_items.status', 1)
             ->where('merchant_items.price', '>', 0)
-            ->selectRaw('MIN(merchant_items.price) as lowest_price, COUNT(*) as offers_count')
+            ->selectRaw('MIN(merchant_items.price) as lowest_price, MAX(merchant_items.price) as highest_price, COUNT(*) as offers_count')
             ->first();
 
         $catalogItem->lowest_price = $stats?->lowest_price ?? null;
+        $catalogItem->highest_price = $stats?->highest_price ?? null;
         $catalogItem->lowest_price_formatted = $stats?->lowest_price
             ? \App\Models\CatalogItem::convertPrice($stats->lowest_price)
+            : null;
+        $catalogItem->highest_price_formatted = $stats?->highest_price
+            ? \App\Models\CatalogItem::convertPrice($stats->highest_price)
             : null;
         $catalogItem->offers_count = $stats?->offers_count ?? 0;
 

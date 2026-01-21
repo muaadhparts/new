@@ -30,9 +30,9 @@
     }
 @endphp
 
-<div class="catalog-modal-content ill-alt">
+<div class="catalog-offers-content ill-alt">
     @if($originalPart || $otherAlternatives->count() > 0)
-        {{-- Original Part - Compact Featured Row --}}
+        {{-- Original Part Card --}}
         @if($originalPart)
             <div class="catalog-original-part mb-3">
                 <div class="catalog-original-part__inner">
@@ -46,7 +46,14 @@
                     </div>
                     <div class="catalog-original-part__meta">
                         @if($originalPart->lowest_price_formatted)
-                            <span class="catalog-original-part__price">{{ $originalPart->lowest_price_formatted }}</span>
+                            <span class="catalog-original-part__price">
+                                <small class="text-muted">@lang('From')</small>
+                                <strong class="text-success">{{ $originalPart->lowest_price_formatted }}</strong>
+                                @if($originalPart->highest_price_formatted && $originalPart->lowest_price != $originalPart->highest_price)
+                                    <small class="text-muted">@lang('To')</small>
+                                    <strong class="text-danger">{{ $originalPart->highest_price_formatted }}</strong>
+                                @endif
+                            </span>
                         @endif
                         @if($originalPart->offers_count > 0)
                             <span class="catalog-badge catalog-badge-success catalog-badge-sm">{{ $originalPart->offers_count }}</span>
@@ -74,102 +81,36 @@
                 <span class="catalog-badge catalog-badge-secondary">{{ $otherAlternatives->count() }} @lang('items')</span>
             </div>
 
-        {{-- Desktop Table --}}
-        <div class="d-none d-md-block">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle catalog-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 70px;">@lang('Photo')</th>
-                            <th>@lang('Part Number')</th>
-                            <th>@lang('Name')</th>
-                            <th class="text-end">@lang('Price')</th>
-                            <th class="text-center" style="width: 120px;">@lang('Action')</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($otherAlternatives as $catalogItem)
-                            <tr>
-                                <td>
-                                    <img src="{{ $resolvePhoto($catalogItem->photo) }}"
-                                         alt="{{ $catalogItem->part_number }}"
-                                         class="catalog-modal-card__photo"
-                                         loading="lazy">
-                                </td>
-                                <td>
-                                    <span class="catalog-modal-card__number">{{ $catalogItem->part_number }}</span>
-                                </td>
-                                <td class="text-truncate" style="max-width: 200px;">
-                                    {{ $catalogItem->localized_name }}
-                                </td>
-                                <td class="text-end">
-                                    @if($catalogItem->lowest_price_formatted)
-                                        <div class="catalog-modal-card__price">
-                                            <span class="catalog-modal-card__price-from">@lang('From')</span>
-                                            <span class="catalog-modal-card__price-value">{{ $catalogItem->lowest_price_formatted }}</span>
-                                        </div>
-                                        <small class="text-muted">{{ $catalogItem->offers_count }} @lang('offers')</small>
-                                    @else
-                                        <span class="text-muted">-</span>
-                                    @endif
-                                </td>
-                                <td class="text-center">
-                                    <button type="button"
-                                            class="catalog-btn catalog-btn-primary catalog-btn-sm alt-offers-btn"
-                                            data-catalog-item-id="{{ $catalogItem->id }}"
-                                            data-part-number="{{ $catalogItem->part_number }}"
-                                            data-name="{{ $catalogItem->localized_name }}">
-                                        <i class="fas fa-tags"></i>
-                                        @lang('Offers')
-                                    </button>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        {{-- Mobile Cards - Using unified catalog-modal-card classes --}}
-        <div class="d-block d-md-none">
-            @foreach($otherAlternatives as $catalogItem)
-                <div class="catalog-modal-card {{ $catalogItem->offers_count > 0 ? 'card-available' : '' }}">
-                    {{-- Header --}}
-                    <div class="catalog-modal-card__header">
-                        <div class="catalog-modal-card__part-info">
+            {{-- Alternatives Cards (Same style as original part) --}}
+            <div class="catalog-alternatives-list">
+                @foreach($otherAlternatives as $catalogItem)
+                    <div class="catalog-original-part {{ $catalogItem->offers_count > 0 ? '' : 'catalog-original-part--no-offers' }}">
+                        <div class="catalog-original-part__inner">
                             <img src="{{ $resolvePhoto($catalogItem->photo) }}"
                                  alt="{{ $catalogItem->part_number }}"
-                                 class="catalog-modal-card__photo"
+                                 class="catalog-original-part__photo"
                                  loading="lazy">
-                            <span class="catalog-modal-card__number">{{ $catalogItem->part_number }}</span>
-                        </div>
-                        <div class="catalog-modal-card__badges">
-                            @if($catalogItem->offers_count > 0)
-                                <span class="catalog-badge catalog-badge-success">
-                                    {{ $catalogItem->offers_count }} @lang('offers')
-                                </span>
-                            @endif
-                        </div>
-                    </div>
-
-                    {{-- Body --}}
-                    <div class="catalog-modal-card__body">
-                        <div class="catalog-card-name">{{ $catalogItem->localized_name }}</div>
-                    </div>
-
-                    {{-- Footer --}}
-                    <div class="catalog-modal-card__footer">
-                        <div class="catalog-modal-card__price">
-                            @if($catalogItem->lowest_price_formatted)
-                                <span class="catalog-modal-card__price-from">@lang('From')</span>
-                                <span class="catalog-modal-card__price-value">{{ $catalogItem->lowest_price_formatted }}</span>
-                            @else
-                                <span class="text-muted">-</span>
-                            @endif
-                        </div>
-                        <div class="catalog-modal-card__actions">
+                            <div class="catalog-original-part__info">
+                                <span class="catalog-original-part__number">{{ $catalogItem->part_number }}</span>
+                                <span class="catalog-original-part__name">{{ $catalogItem->localized_name }}</span>
+                            </div>
+                            <div class="catalog-original-part__meta">
+                                @if($catalogItem->lowest_price_formatted)
+                                    <span class="catalog-original-part__price">
+                                        <small class="text-muted">@lang('From')</small>
+                                        <strong class="text-success">{{ $catalogItem->lowest_price_formatted }}</strong>
+                                        @if($catalogItem->highest_price_formatted && $catalogItem->lowest_price != $catalogItem->highest_price)
+                                            <small class="text-muted">@lang('To')</small>
+                                            <strong class="text-danger">{{ $catalogItem->highest_price_formatted }}</strong>
+                                        @endif
+                                    </span>
+                                @endif
+                                @if($catalogItem->offers_count > 0)
+                                    <span class="catalog-badge catalog-badge-success catalog-badge-sm">{{ $catalogItem->offers_count }}</span>
+                                @endif
+                            </div>
                             <button type="button"
-                                    class="catalog-btn catalog-btn-primary alt-offers-btn"
+                                    class="catalog-btn catalog-btn-primary catalog-btn-sm alt-offers-btn"
                                     data-catalog-item-id="{{ $catalogItem->id }}"
                                     data-part-number="{{ $catalogItem->part_number }}"
                                     data-name="{{ $catalogItem->localized_name }}">
@@ -178,22 +119,15 @@
                             </button>
                         </div>
                     </div>
-                </div>
-            @endforeach
-        </div>
-        @endif {{-- End of otherAlternatives check --}}
+                @endforeach
+            </div>
+        @endif
 
     @else
         {{-- No original part and no alternatives --}}
-        <div class="catalog-section-header">
-            <h5>
-                <i class="fas fa-exchange-alt"></i>
-                @lang('Alternatives')
-            </h5>
-        </div>
-        <div class="text-center py-4">
-            <i class="fas fa-exchange-alt fa-2x text-muted mb-2 d-block"></i>
-            <p class="text-muted mb-0">@lang('No alternatives available for this part')</p>
+        <div class="catalog-empty">
+            <i class="fas fa-exchange-alt"></i>
+            <p>@lang('No alternatives available for this part')</p>
         </div>
     @endif
 </div>

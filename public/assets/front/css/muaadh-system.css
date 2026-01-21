@@ -132,6 +132,268 @@
 }
 
 /* ============================================================================
+   MOBILE TYPOGRAPHY & SPACING OVERRIDES
+   ============================================================================
+   Smaller, more elegant sizing for mobile devices
+   ============================================================================ */
+@media (max-width: 767.98px) {
+    :root {
+        /* Reduce typography scale for mobile */
+        --text-xs: 0.7rem;    /* 11px */
+        --text-sm: 0.8rem;    /* 13px */
+        --text-base: 0.875rem; /* 14px */
+        --text-lg: 0.95rem;   /* 15px */
+        --text-xl: 1.1rem;    /* 17px */
+        --text-2xl: 1.25rem;  /* 20px */
+        --text-3xl: 1.5rem;   /* 24px */
+        --text-4xl: 1.875rem; /* 30px */
+
+        /* Reduce spacing scale for mobile */
+        --space-4: 0.875rem;  /* 14px instead of 16px */
+        --space-5: 1rem;      /* 16px instead of 20px */
+        --space-6: 1.25rem;   /* 20px instead of 24px */
+        --space-8: 1.5rem;    /* 24px instead of 32px */
+    }
+
+    /* Global mobile font size reduction */
+    body {
+        font-size: 0.875rem;
+    }
+
+    /* Tables in modals */
+    .catalog-table th {
+        font-size: 0.65rem;
+        padding: 8px 4px;
+    }
+
+    .catalog-table td {
+        font-size: 0.75rem;
+        padding: 8px 4px;
+    }
+
+    /* Modal cards */
+    .catalog-modal-card {
+        padding: 10px;
+    }
+
+    .catalog-modal-card__header {
+        padding: 8px 10px;
+    }
+
+    .catalog-modal-card__body {
+        padding: 8px 10px;
+    }
+
+    .catalog-modal-card__footer {
+        padding: 8px 10px;
+    }
+
+    /* Badges */
+    .catalog-badge {
+        font-size: 0.7rem;
+        padding: 3px 6px;
+    }
+
+    .catalog-badge-sm {
+        font-size: 0.6rem;
+        padding: 2px 5px;
+    }
+
+    /* Original part cards (alternatives) */
+    .catalog-original-part {
+        padding: 8px 10px;
+    }
+
+    .catalog-original-part__photo {
+        width: 28px;
+        height: 28px;
+    }
+
+    .catalog-original-part__number {
+        font-size: 0.8rem;
+    }
+
+    .catalog-original-part__name {
+        font-size: 0.7rem;
+        max-width: 100px;
+    }
+
+    .catalog-original-part__price {
+        font-size: 0.75rem;
+    }
+
+    /* Section headers */
+    .catalog-section-header h5 {
+        font-size: 0.9rem;
+    }
+
+    /* Buttons */
+    .catalog-btn {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        min-height: 32px;
+    }
+
+    .catalog-btn-sm {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+        min-height: 28px;
+    }
+
+    /* Part rows */
+    .catalog-part-row__label {
+        font-size: 0.7rem;
+    }
+
+    .catalog-part-row__value {
+        font-size: 0.75rem;
+    }
+
+    /* Match badges */
+    .catalog-match-badge {
+        font-size: 0.65rem;
+        padding: 2px 5px;
+    }
+
+    /* Extension badges */
+    .catalog-ext-badge {
+        font-size: 0.65rem;
+        padding: 2px 5px;
+    }
+
+    /* Offers header */
+    .catalog-offers-header {
+        padding: 10px;
+    }
+
+    .catalog-offers-title {
+        font-size: 0.9rem;
+    }
+
+    .catalog-offers-thumb {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Fitment modal */
+    .fitment-brand-tab {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+    }
+
+    .fitment-brand-tab-logo {
+        width: 18px;
+        height: 18px;
+    }
+
+    .fitment-table th {
+        font-size: 0.65rem;
+        padding: 6px 4px;
+    }
+
+    .fitment-table td {
+        font-size: 0.7rem;
+        padding: 6px 4px;
+    }
+
+    /* Pagination */
+    .catalog-pagination {
+        font-size: 0.75rem;
+    }
+
+    .catalog-pagination__link {
+        padding: 4px 8px;
+        font-size: 0.7rem;
+    }
+
+    /* M-System Buttons */
+    .m-btn {
+        font-size: 0.8rem;
+        min-height: 36px;
+        padding: 0 12px;
+    }
+
+    .m-btn--sm {
+        font-size: 0.7rem;
+        min-height: 28px;
+        padding: 0 8px;
+    }
+
+    /* M-System Cards */
+    .m-card {
+        border-radius: 8px;
+    }
+
+    .m-card__header {
+        padding: 12px;
+    }
+
+    .m-card__body {
+        padding: 12px;
+    }
+
+    .m-card__footer {
+        padding: 10px 12px;
+    }
+
+    .m-card__title {
+        font-size: 0.95rem;
+    }
+
+    /* Cart items */
+    .m-cart__item {
+        padding: 10px;
+    }
+
+    .m-cart__item-name {
+        font-size: 0.8rem;
+    }
+
+    .m-cart__item-meta {
+        font-size: 0.7rem;
+    }
+
+    .m-cart__item-price,
+    .m-cart__item-total {
+        font-size: 0.85rem;
+    }
+
+    /* Form controls */
+    .form-control,
+    .form-select {
+        font-size: 0.875rem;
+        padding: 8px 12px;
+    }
+
+    /* Headings */
+    h1, .h1 { font-size: 1.5rem; }
+    h2, .h2 { font-size: 1.25rem; }
+    h3, .h3 { font-size: 1.1rem; }
+    h4, .h4 { font-size: 1rem; }
+    h5, .h5 { font-size: 0.9rem; }
+    h6, .h6 { font-size: 0.8rem; }
+
+    /* Modal headers */
+    .modal-header {
+        padding: 10px 15px;
+    }
+
+    .modal-title {
+        font-size: 1rem;
+    }
+
+    .modal-body {
+        padding: 10px;
+    }
+
+    /* Alerts */
+    .alert {
+        font-size: 0.8rem;
+        padding: 10px 12px;
+    }
+}
+
+/* ============================================================================
    SECTION 2: BASE BUTTON COMPONENT
    ============================================================================ */
 
@@ -6931,6 +7193,27 @@ select option {
     }
 }
 
+/* Alternatives List */
+.catalog-alternatives-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.catalog-alternatives-list .catalog-original-part {
+    background: var(--surface-default, #fff);
+    border-color: var(--border-default, #d1d5db);
+}
+
+.catalog-alternatives-list .catalog-original-part:hover {
+    border-color: var(--action-primary, #7c3aed);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.02) 0%, rgba(124, 58, 237, 0.04) 100%);
+}
+
+.catalog-original-part--no-offers {
+    opacity: 0.6;
+}
+
 /* Card Header */
 .catalog-modal-card__header {
     display: flex;
@@ -7330,6 +7613,17 @@ select option {
     margin-bottom: 0;
 }
 
+/* No-wrap table - columns auto-size based on content */
+.catalog-table.table-nowrap {
+    width: auto;
+    min-width: 100%;
+}
+
+.catalog-table.table-nowrap th,
+.catalog-table.table-nowrap td {
+    white-space: nowrap;
+}
+
 .catalog-table th {
     background: var(--surface-elevated, #f9fafb);
     font-size: 0.75rem;
@@ -7338,13 +7632,13 @@ select option {
     letter-spacing: 0.02em;
     color: var(--text-secondary, #4b5563);
     border-bottom: 2px solid var(--border-light, #e5e7eb);
-    padding: 12px 8px;
+    padding: 10px 6px;
 }
 
 .catalog-table td {
-    padding: 12px 8px;
+    padding: 10px 6px;
     vertical-align: middle;
-    font-size: 0.875rem;
+    font-size: 0.85rem;
 }
 
 .catalog-table tbody tr {

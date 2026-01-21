@@ -94,19 +94,19 @@
         {{-- Desktop Table --}}
         <div class="d-none d-md-block">
             <div class="table-responsive">
-                <table class="table table-hover align-middle catalog-table">
+                <table class="table table-hover align-middle catalog-table table-nowrap">
                     <thead>
                         <tr>
-                            <th class="text-center">@lang('Part Number')</th>
-                            <th class="text-center">@lang('Callout')</th>
-                            <th class="text-center">@lang('Qty')</th>
-                            <th class="text-center">@lang('Name')</th>
-                            <th class="text-center">@lang('Fits')</th>
-                            <th class="text-center">@lang('Match')</th>
-                            <th class="text-center">@lang('Extensions')</th>
-                            <th class="text-center">@lang('From')</th>
-                            <th class="text-center">@lang('To')</th>
-                            <th class="text-center">@lang('Offers')</th>
+                            <th class="text-center text-nowrap">@lang('Part Number')</th>
+                            <th class="text-center text-nowrap">@lang('Callout')</th>
+                            <th class="text-center text-nowrap">@lang('Qty')</th>
+                            <th class="text-center text-nowrap">@lang('Name')</th>
+                            <th class="text-center text-nowrap">@lang('Fits')</th>
+                            <th class="text-center text-nowrap">@lang('Match')</th>
+                            <th class="text-center text-nowrap">@lang('Extensions')</th>
+                            <th class="text-center text-nowrap">@lang('From')</th>
+                            <th class="text-center text-nowrap">@lang('To')</th>
+                            <th class="text-center text-nowrap">@lang('Offers')</th>
                         </tr>
                     </thead>
                     <tbody>
