@@ -405,8 +405,8 @@ document.addEventListener('DOMContentLoaded', function() {
                            || labelEl?.childNodes[0]?.textContent?.trim()
                            || key;
 
-            const selectedItem = select.querySelector('.specs-select__item--active');
-            const valueText = selectedItem?.textContent?.trim() || input.value;
+            // Use value_id from hidden input
+            const valueText = input.value;
 
             const isVin = select.classList.contains('specs-select--readonly')
                        || labelEl?.querySelector('.catalog-specs-badge-vin');
