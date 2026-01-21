@@ -612,11 +612,17 @@
         // Callbacks
         on_IMAGE_LOAD: function() {
           addLandmarks().then(() => {
-            initHighlightObserver();
             autoOpen();
           }).catch(err => {
             console.error('addLandmarks failed:', err);
           });
+        },
+
+        // Reapply highlight during zoom/pan if landmarks are redrawn
+        on_ZOOM_PAN_UPDATE: function(data, isAnimating) {
+          if (currentSearchedCallout) {
+            reapplyHighlightAfterZoom();
+          }
         }
       });
     };
@@ -732,43 +738,21 @@
     $currentHighlightedEl = null;
   }
 
-  // Re-apply highlight after zoom library redraws landmarks (if needed)
+  // Re-apply highlight if class was lost (called by zoom library callback)
   function reapplyHighlightAfterZoom() {
-    if (currentSearchedCallout) {
-      const $callout = $(`.callout-label[data-callout-key="${currentSearchedCallout}"]`);
-      if ($callout.length && !$callout.hasClass('callout-searched')) {
-        $callout.addClass('callout-searched');
-        $currentHighlightedEl = $callout;
-      }
+    if (!currentSearchedCallout) return;
+
+    // Check if element still has the class
+    if ($currentHighlightedEl && $currentHighlightedEl.length && $currentHighlightedEl.hasClass('callout-searched')) {
+      return; // Already has class, no action needed
     }
-  }
 
-  // MutationObserver to detect if landmarks are recreated and reapply highlight
-  function initHighlightObserver() {
-    const landmarks = document.querySelector('.landmarks');
-    if (!landmarks || !window.MutationObserver) return;
-
-    const observer = new MutationObserver((mutations) => {
-      // Only act if we have a highlight to preserve
-      if (!currentSearchedCallout) return;
-
-      // Check if our highlighted element was removed or class was stripped
-      let needsReapply = false;
-      for (const mutation of mutations) {
-        if (mutation.type === 'childList' && mutation.removedNodes.length > 0) {
-          needsReapply = true;
-          break;
-        }
-      }
-
-      if (needsReapply) {
-        // Debounce to avoid multiple rapid calls
-        clearTimeout(window.__highlightReapplyTimer);
-        window.__highlightReapplyTimer = setTimeout(reapplyHighlightAfterZoom, 100);
-      }
-    });
-
-    observer.observe(landmarks, { childList: true, subtree: true });
+    // Try to find and re-highlight
+    const $callout = $(`.callout-label[data-callout-key="${currentSearchedCallout}"]`);
+    if ($callout.length) {
+      $callout.addClass('callout-searched');
+      $currentHighlightedEl = $callout;
+    }
   }
 
   /* ========================= Boot ========================= */
