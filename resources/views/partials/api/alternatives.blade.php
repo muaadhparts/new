@@ -14,18 +14,91 @@
         }
         return \Illuminate\Support\Facades\Storage::url($photo);
     };
+
+    // Separate original part from alternatives
+    $originalPart = null;
+    $otherAlternatives = collect();
+
+    if ($alternatives && $alternatives->count() > 0) {
+        foreach ($alternatives as $item) {
+            if ($item->part_number === $part_number) {
+                $originalPart = $item;
+            } else {
+                $otherAlternatives->push($item);
+            }
+        }
+    }
 @endphp
 
 <div class="catalog-modal-content ill-alt">
-    @if($alternatives && $alternatives->count() > 0)
-        {{-- Header --}}
-        <div class="catalog-section-header">
-            <h5>
-                <i class="fas fa-exchange-alt"></i>
-                @lang('Alternatives')
-            </h5>
-            <span class="catalog-badge catalog-badge-secondary">{{ $alternatives->count() }} @lang('items')</span>
-        </div>
+    @if($originalPart || $otherAlternatives->count() > 0)
+        {{-- Original Part Section --}}
+        @if($originalPart)
+            <div class="catalog-section-header">
+                <h5>
+                    <i class="fas fa-cube"></i>
+                    @lang('Part Details')
+                </h5>
+            </div>
+
+            {{-- Original Part Card - Featured Style --}}
+            <div class="catalog-modal-card card-featured mb-4">
+                <div class="catalog-modal-card__header">
+                    <div class="catalog-modal-card__part-info">
+                        <img src="{{ $resolvePhoto($originalPart->photo) }}"
+                             alt="{{ $originalPart->part_number }}"
+                             class="catalog-modal-card__photo"
+                             loading="lazy">
+                        <span class="catalog-modal-card__number">{{ $originalPart->part_number }}</span>
+                    </div>
+                    <div class="catalog-modal-card__badges">
+                        <span class="catalog-badge catalog-badge-primary">
+                            <i class="fas fa-star"></i> @lang('Original')
+                        </span>
+                        @if($originalPart->offers_count > 0)
+                            <span class="catalog-badge catalog-badge-success">
+                                {{ $originalPart->offers_count }} @lang('offers')
+                            </span>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="catalog-modal-card__body">
+                    <div class="catalog-card-name">{{ $originalPart->localized_name }}</div>
+                </div>
+
+                <div class="catalog-modal-card__footer">
+                    <div class="catalog-modal-card__price">
+                        @if($originalPart->lowest_price_formatted)
+                            <span class="catalog-modal-card__price-from">@lang('From')</span>
+                            <span class="catalog-modal-card__price-value">{{ $originalPart->lowest_price_formatted }}</span>
+                        @else
+                            <span class="text-muted">-</span>
+                        @endif
+                    </div>
+                    <div class="catalog-modal-card__actions">
+                        <button type="button"
+                                class="catalog-btn catalog-btn-primary alt-offers-btn"
+                                data-catalog-item-id="{{ $originalPart->id }}"
+                                data-part-number="{{ $originalPart->part_number }}"
+                                data-name="{{ $originalPart->localized_name }}">
+                            <i class="fas fa-tags"></i>
+                            @lang('View Offers')
+                        </button>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Alternatives Section --}}
+        @if($otherAlternatives->count() > 0)
+            <div class="catalog-section-header">
+                <h5>
+                    <i class="fas fa-exchange-alt"></i>
+                    @lang('Alternatives')
+                </h5>
+                <span class="catalog-badge catalog-badge-secondary">{{ $otherAlternatives->count() }} @lang('items')</span>
+            </div>
 
         {{-- Desktop Table --}}
         <div class="d-none d-md-block">
@@ -41,7 +114,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($alternatives as $catalogItem)
+                        @foreach($otherAlternatives as $catalogItem)
                             <tr>
                                 <td>
                                     <img src="{{ $resolvePhoto($catalogItem->photo) }}"
@@ -85,7 +158,7 @@
 
         {{-- Mobile Cards - Using unified catalog-modal-card classes --}}
         <div class="d-block d-md-none">
-            @foreach($alternatives as $catalogItem)
+            @foreach($otherAlternatives as $catalogItem)
                 <div class="catalog-modal-card {{ $catalogItem->offers_count > 0 ? 'card-available' : '' }}">
                     {{-- Header --}}
                     <div class="catalog-modal-card__header">
@@ -134,8 +207,10 @@
                 </div>
             @endforeach
         </div>
+        @endif {{-- End of otherAlternatives check --}}
 
     @else
+        {{-- No original part and no alternatives --}}
         <div class="catalog-section-header">
             <h5>
                 <i class="fas fa-exchange-alt"></i>

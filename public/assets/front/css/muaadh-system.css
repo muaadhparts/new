@@ -6655,6 +6655,24 @@ select option {
     margin-bottom: 0;
 }
 
+/* Featured Card - Original Part */
+.catalog-modal-card.card-featured {
+    border: 2px solid var(--action-primary, #7c3aed);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.03) 0%, rgba(124, 58, 237, 0.08) 100%);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+}
+
+.catalog-modal-card.card-featured .catalog-modal-card__header {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08) 0%, rgba(124, 58, 237, 0.12) 100%);
+    border-bottom-color: var(--action-primary, #7c3aed);
+}
+
+.catalog-modal-card.card-featured .catalog-modal-card__number {
+    color: var(--action-primary, #7c3aed);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
 /* Card Header */
 .catalog-modal-card__header {
     display: flex;
