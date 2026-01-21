@@ -344,14 +344,19 @@
               {{-- Vehicle Fitment Brands (from catalog_item_fitments) --}}
               @if($quickBrandCount > 0)
               <div class="catalogItem-id">
-                {{ __('Fits:') }}
-                <button type="button" class="fitment-details-btn btn btn-link p-0 text-decoration-none"
+                <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
                         data-catalog-item-id="{{ $catalogItem->id }}"
                         data-part-number="{{ $catalogItem->part_number }}">
-                    @if($quickBrandCount === 1)
-                        {{ Str::ucfirst(getLocalizedBrandName($quickBrands->first())) }}
+                    @if($quickBrandCount === 1 && $quickBrands->first()->photo_url)
+                        <img src="{{ $quickBrands->first()->photo_url }}" alt="" class="catalog-btn__logo">
                     @else
-                        <i class="fas fa-car"></i> {{ $quickBrandCount }} {{ __('brands') }}
+                        <i class="fas fa-car"></i>
+                    @endif
+                    @if($quickBrandCount === 1)
+                        <span>{{ Str::ucfirst(getLocalizedBrandName($quickBrands->first())) }}</span>
+                    @else
+                        <span>{{ __('Fits') }}</span>
+                        <span class="catalog-badge catalog-badge-sm">{{ $quickBrandCount }}</span>
                     @endif
                 </button>
               </div>

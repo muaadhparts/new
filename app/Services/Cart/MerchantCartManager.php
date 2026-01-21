@@ -146,11 +146,19 @@ class MerchantCartManager
             'slug' => $catalogItem->slug ?: '',
             'part_number' => $catalogItem->part_number ?: '',
 
-            // Brand (OEM brand - from fitments)
+            // Brand (OEM brand - from fitments) - first brand for compatibility
             'brand_id' => $firstBrand?->id,
             'brand_name' => $firstBrand?->name ?: '',
             'brand_name_ar' => $firstBrand?->name_ar ?: '',
             'brand_logo' => $firstBrand?->photo_url ?: '',
+
+            // All fitment brands (for fitment button display)
+            'fitment_brands' => $brands->map(fn($b) => [
+                'id' => $b->id,
+                'name' => $b->localized_name ?? $b->name,
+                'logo' => $b->photo_url,
+            ])->values()->toArray(),
+            'fitment_count' => $brands->count(),
 
             // Quality Brand (أصلي، بديل...)
             'quality_brand_id' => $qualityBrand?->id,

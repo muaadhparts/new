@@ -61,6 +61,13 @@
     $size = $item['size'] ?? null;
     $color = $item['color'] ?? null;
 
+    // Catalog Item ID (for fitment)
+    $catalogItemId = (int) ($item['catalog_item_id'] ?? 0);
+
+    // Fitment brands (all brands this part fits)
+    $fitmentBrands = $item['fitment_brands'] ?? [];
+    $fitmentCount = (int) ($item['fitment_count'] ?? count($fitmentBrands));
+
     // Item URL
     $itemUrl = $partNumber
         ? route('front.part-result', $partNumber)
@@ -125,6 +132,25 @@
                     @endif
                     <span>{{ $qualityBrandName }}</span>
                 </span>
+            @endif
+            {{-- Fitment Button --}}
+            @if($catalogItemId > 0 && $fitmentCount > 0)
+                <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
+                        data-catalog-item-id="{{ $catalogItemId }}"
+                        data-part-number="{{ $partNumber }}"
+                        title="@lang('Vehicle Compatibility')">
+                    @if($fitmentCount === 1 && !empty($fitmentBrands[0]['logo']))
+                        <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
+                    @else
+                        <i class="fas fa-car"></i>
+                    @endif
+                    @if($fitmentCount === 1)
+                        <span>{{ $fitmentBrands[0]['name'] }}</span>
+                    @else
+                        <span>@lang('Fits')</span>
+                        <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
+                    @endif
+                </button>
             @endif
         </div>
 

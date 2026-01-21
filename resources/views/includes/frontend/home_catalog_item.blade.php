@@ -182,17 +182,20 @@
                 @endif
                 {{-- Vehicle Fitment Brands --}}
                 @if($fitmentCount > 0)
-                    <button type="button" class="fitment-details-btn badge bg-secondary border-0"
+                    <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
                             data-catalog-item-id="{{ $catalogItemId }}"
                             data-part-number="{{ $part_number }}">
                         @if($hasSingleBrand && isset($fitmentBrands[0]))
                             @if($fitmentBrands[0]['logo'])
-                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo me-1">
+                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
+                            @else
+                                <i class="fas fa-car"></i>
                             @endif
-                            {{ $fitmentBrands[0]['name'] }}
+                            <span>{{ $fitmentBrands[0]['name'] }}</span>
                         @else
-                            <i class="fas fa-car me-1"></i>
-                            {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
+                            <i class="fas fa-car"></i>
+                            <span>{{ __('Fits') }}</span>
+                            <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
                         @endif
                     </button>
                 @endif
@@ -252,18 +255,20 @@
                 @endif
                 {{-- Vehicle Fitment Brands --}}
                 @if($fitmentCount > 0)
-                    <button type="button" class="fitment-details-btn catalogItem-card__brand"
+                    <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
                             data-catalog-item-id="{{ $catalogItemId }}"
-                            data-part-number="{{ $part_number }}"
-                            style="border: none; background: none; cursor: pointer;">
+                            data-part-number="{{ $part_number }}">
                         @if($hasSingleBrand && isset($fitmentBrands[0]))
                             @if($fitmentBrands[0]['logo'])
-                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalogItem-card__brand-logo">
+                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
+                            @else
+                                <i class="fas fa-car"></i>
                             @endif
-                            {{ $fitmentBrands[0]['name'] }}
+                            <span>{{ $fitmentBrands[0]['name'] }}</span>
                         @else
                             <i class="fas fa-car"></i>
-                            {{ __('Fits') }} {{ $fitmentCount }}
+                            <span>{{ __('Fits') }}</span>
+                            <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
                         @endif
                     </button>
                 @endif

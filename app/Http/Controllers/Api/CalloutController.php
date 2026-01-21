@@ -324,16 +324,102 @@ class CalloutController extends Controller
             ];
         }
 
-        // 8. دمج عدد العروض مع القطع
+        // 8. جلب fitment brands لكل catalog_item
+        $fitmentBrandsMap = $this->fetchFitmentBrands($catalogItemIds);
+
+        // 9. دمج عدد العروض و catalog_item_id و fitment brands مع القطع
         foreach ($parts as &$part) {
             $pn = $part['part_number'] ?? '';
             $data = $offersDataMap[$pn] ?? ['self_offers' => 0, 'alt_offers' => 0, 'total' => 0];
             $part['self_offers'] = $data['self_offers'];
             $part['alt_offers'] = $data['alt_offers'];
             $part['offers_count'] = $data['total'];
+
+            $catalogItemId = $catalogItemMap[$pn] ?? null;
+            $part['catalog_item_id'] = $catalogItemId;
+
+            // Fitment brands
+            $fitmentBrands = $catalogItemId ? ($fitmentBrandsMap[$catalogItemId] ?? []) : [];
+            $part['fitment_brands'] = $fitmentBrands;
+            $part['fitment_count'] = count($fitmentBrands);
         }
 
         return $parts;
+    }
+
+    /**
+     * ✅ جلب fitment brands لمجموعة من catalog_item_ids
+     * يرجع map: catalog_item_id => [brands array]
+     */
+    protected function fetchFitmentBrands(array $catalogItemIds): array
+    {
+        if (empty($catalogItemIds)) return [];
+
+        $locale = app()->getLocale();
+        $isArabic = str_starts_with($locale, 'ar');
+
+        // جلب fitments مع brands
+        $fitments = DB::table('catalog_item_fitments as cif')
+            ->join('brands as b', 'b.id', '=', 'cif.brand_id')
+            ->whereIn('cif.catalog_item_id', $catalogItemIds)
+            ->select(
+                'cif.catalog_item_id',
+                'b.id as brand_id',
+                'b.name as brand_name_en',
+                'b.name_ar as brand_name_ar',
+                'b.slug as brand_slug',
+                'b.photo as brand_photo'
+            )
+            ->get();
+
+        // تجميع حسب catalog_item_id
+        $result = [];
+        foreach ($fitments as $row) {
+            $catalogItemId = $row->catalog_item_id;
+            $brandId = $row->brand_id;
+
+            if (!isset($result[$catalogItemId])) {
+                $result[$catalogItemId] = [];
+            }
+
+            // تجنب التكرار
+            $exists = false;
+            foreach ($result[$catalogItemId] as $existing) {
+                if ($existing['id'] == $brandId) {
+                    $exists = true;
+                    break;
+                }
+            }
+
+            if (!$exists) {
+                $brandName = $isArabic
+                    ? ($row->brand_name_ar ?: $row->brand_name_en)
+                    : ($row->brand_name_en ?: $row->brand_name_ar);
+
+                // Build logo URL matching Brand model's photo_url accessor
+                $logo = null;
+                if ($row->brand_photo) {
+                    if (filter_var($row->brand_photo, FILTER_VALIDATE_URL)) {
+                        $logo = $row->brand_photo;
+                    } elseif (file_exists(public_path('assets/images/brand/' . $row->brand_photo))) {
+                        $logo = asset('assets/images/brand/' . $row->brand_photo);
+                    } elseif (\Storage::disk('public')->exists('brands/' . $row->brand_photo)) {
+                        $logo = \Storage::url('brands/' . $row->brand_photo);
+                    } else {
+                        $logo = asset('assets/images/brand/' . $row->brand_photo);
+                    }
+                }
+
+                $result[$catalogItemId][] = [
+                    'id' => $brandId,
+                    'name' => $brandName ?: 'Unknown',
+                    'slug' => $row->brand_slug,
+                    'logo' => $logo,
+                ];
+            }
+        }
+
+        return $result;
     }
 
     /**

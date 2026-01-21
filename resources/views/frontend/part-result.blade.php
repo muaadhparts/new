@@ -12,18 +12,19 @@
                         <li><a href="{{ route('front.index') }}">@lang('Home')</a></li>
                         @if(count($fitmentBrands) > 0)
                             <li>
-                                <button type="button" class="fitment-details-btn btn btn-sm btn-outline-light"
+                                <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
                                         data-catalog-item-id="{{ $catalogItem->id }}"
                                         data-part-number="{{ $part_number }}">
                                     @if(count($fitmentBrands) === 1 && $fitmentBrands[0]['logo'])
-                                        <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" style="height: 18px; margin-inline-end: 4px;">
+                                        <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
                                     @else
                                         <i class="fas fa-car"></i>
                                     @endif
                                     @if(count($fitmentBrands) === 1)
-                                        {{ $fitmentBrands[0]['name'] }}
+                                        <span>{{ $fitmentBrands[0]['name'] }}</span>
                                     @else
-                                        @lang('Fits') {{ count($fitmentBrands) }} @lang('brands')
+                                        <span>@lang('Fits')</span>
+                                        <span class="catalog-badge catalog-badge-sm">{{ count($fitmentBrands) }}</span>
                                     @endif
                                 </button>
                             </li>
@@ -94,20 +95,20 @@
                             {{-- Fitment Brands --}}
                             @if(count($fitmentBrands) > 0)
                                 <div class="part-result-fitment">
-                                    <button type="button" class="fitment-details-btn btn btn-sm btn-outline-primary"
+                                    <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
                                             data-catalog-item-id="{{ $catalogItem->id }}"
                                             data-part-number="{{ $part_number }}">
-                                        <i class="fas fa-car me-1"></i>
-                                        @lang('Fits'):
-                                        @if(count($fitmentBrands) === 1)
-                                            @if($fitmentBrands[0]['logo'])
-                                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" style="height: 16px;" class="mx-1">
-                                            @endif
-                                            {{ $fitmentBrands[0]['name'] }}
+                                        @if(count($fitmentBrands) === 1 && $fitmentBrands[0]['logo'])
+                                            <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
                                         @else
-                                            {{ count($fitmentBrands) }} @lang('brands')
+                                            <i class="fas fa-car"></i>
                                         @endif
-                                        <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
+                                        @if(count($fitmentBrands) === 1)
+                                            <span>{{ $fitmentBrands[0]['name'] }}</span>
+                                        @else
+                                            <span>@lang('Fits')</span>
+                                            <span class="catalog-badge catalog-badge-sm">{{ count($fitmentBrands) }}</span>
+                                        @endif
                                     </button>
                                 </div>
                             @endif

@@ -6499,6 +6499,78 @@ select option {
     color: var(--action-primary, #7c3aed);
 }
 
+/* ----- Fitment Button (for card) ----- */
+.catalog-fitment-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    background: var(--surface-elevated, #f9fafb);
+    color: var(--text-secondary, #4b5563);
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: var(--radius-md, 6px);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.catalog-fitment-btn:hover {
+    background: var(--action-info, #3b82f6);
+    border-color: var(--action-info, #3b82f6);
+    color: var(--text-on-primary, #fff);
+}
+
+.catalog-fitment-btn i {
+    font-size: 0.75rem;
+    color: var(--action-info, #3b82f6);
+}
+
+.catalog-fitment-btn:hover i {
+    color: var(--text-on-primary, #fff);
+}
+
+.catalog-fitment-btn__logo {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 2px;
+}
+
+.catalog-fitment-btn__count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    background: var(--action-info, #3b82f6);
+    color: var(--text-on-primary, #fff);
+    border-radius: 9px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.catalog-fitment-btn:hover .catalog-fitment-btn__count {
+    background: var(--text-on-primary, #fff);
+    color: var(--action-info, #3b82f6);
+}
+
+/* Small variant for tables */
+.catalog-fitment-btn--sm {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+}
+
+.catalog-fitment-btn--sm i {
+    font-size: 0.65rem;
+}
+
+.catalog-fitment-btn--sm .catalog-fitment-btn__logo {
+    width: 14px;
+    height: 14px;
+}
+
 /* ----- Mobile Responsive ----- */
 @media (max-width: 767px) {
     .catalog-offers-branch {
@@ -7104,6 +7176,18 @@ select option {
 .catalog-btn-outline:hover {
     background: var(--action-primary, #7c3aed);
     color: var(--text-on-primary, #fff);
+}
+
+.catalog-btn__logo {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    border-radius: 2px;
+}
+
+.catalog-btn-sm .catalog-btn__logo {
+    width: 14px;
+    height: 14px;
 }
 
 .catalog-btn-sm {

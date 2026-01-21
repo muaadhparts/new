@@ -150,20 +150,20 @@
                             <tr>
                                 <td class="catalog-info-label"><i class="fas fa-car"></i> @lang('Vehicle Compatibility')</td>
                                 <td class="catalog-info-value">
-                                    <button type="button" class="fitment-details-btn btn btn-sm btn-outline-secondary"
+                                    <button type="button" class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
                                             data-catalog-item-id="{{ $catalogItemForFitment->id }}"
                                             data-part-number="{{ $catalogItemForFitment->part_number }}">
                                         @if($fitmentCount === 1 && $fitmentBrands->first()->photo_url)
-                                            <img src="{{ $fitmentBrands->first()->photo_url }}" alt="" style="height: 16px;" class="me-1">
+                                            <img src="{{ $fitmentBrands->first()->photo_url }}" alt="" class="catalog-btn__logo">
                                         @else
-                                            <i class="fas fa-car me-1"></i>
+                                            <i class="fas fa-car"></i>
                                         @endif
                                         @if($fitmentCount === 1)
-                                            {{ getLocalizedBrandName($fitmentBrands->first()) }}
+                                            <span>{{ getLocalizedBrandName($fitmentBrands->first()) }}</span>
                                         @else
-                                            {{ __('Fits') }} {{ $fitmentCount }} {{ __('brands') }}
+                                            <span>{{ __('Fits') }}</span>
+                                            <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
                                         @endif
-                                        <i class="fas fa-chevron-right ms-1" style="font-size: 0.7rem;"></i>
                                     </button>
                                 </td>
                             </tr>

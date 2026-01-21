@@ -85,6 +85,7 @@
                             <th class="text-center">@lang('Callout')</th>
                             <th class="text-center">@lang('Qty')</th>
                             <th class="text-center">@lang('Name')</th>
+                            <th class="text-center">@lang('Fits')</th>
                             <th class="text-center">@lang('Match')</th>
                             <th class="text-center">@lang('Extensions')</th>
                             <th class="text-center">@lang('Period')</th>
@@ -106,6 +107,11 @@
                                 $extensions = $renderExtensions($part['extensions'] ?? []);
                                 $isGeneric = empty($matchValues);
                             @endphp
+                            @php
+                                $catalogItemId = $part['catalog_item_id'] ?? null;
+                                $fitmentBrands = $part['fitment_brands'] ?? [];
+                                $fitmentCount = count($fitmentBrands);
+                            @endphp
                             <tr class="{{ $isGeneric ? 'is-generic' : '' }}">
                                 <td class="text-center">
                                     <a href="javascript:;"
@@ -117,6 +123,26 @@
                                 <td class="text-center">{{ $callout }}</td>
                                 <td class="text-center">{{ $qty }}</td>
                                 <td class="text-center">{{ $name }}</td>
+                                <td class="text-center">
+                                    @if($catalogItemId && $fitmentCount > 0)
+                                        <button type="button"
+                                                class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn"
+                                                data-catalog-item-id="{{ $catalogItemId }}"
+                                                data-part-number="{{ $partNumber }}">
+                                            @if($fitmentCount === 1 && !empty($fitmentBrands[0]['logo']))
+                                                <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
+                                            @else
+                                                <i class="fas fa-car"></i>
+                                            @endif
+                                            @if($fitmentCount === 1)
+                                                <span>{{ $fitmentBrands[0]['name'] }}</span>
+                                            @else
+                                                <span>@lang('Fits')</span>
+                                                <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
+                                            @endif
+                                        </button>
+                                    @endif
+                                </td>
                                 <td class="text-center">
                                     @if(!empty($matchValues))
                                         <div class="catalog-match-badges justify-content-center">
@@ -193,6 +219,9 @@
                     $qty = isset($part['part_qty']) && trim((string)$part['part_qty']) !== '' ? $part['part_qty'] : '';
                     $callout = isset($part['part_callout']) && trim((string)$part['part_callout']) !== '' ? $part['part_callout'] : '';
                     $partNumber = $part['part_number'] ?? '';
+                    $catalogItemId = $part['catalog_item_id'] ?? null;
+                    $fitmentBrands = $part['fitment_brands'] ?? [];
+                    $fitmentCount = count($fitmentBrands);
                     $matchValues = $part['match_values'] ?? [];
                     if (is_string($matchValues)) {
                         $matchValues = array_filter(array_map('trim', explode(',', $matchValues)));
@@ -210,6 +239,24 @@
                                data-part_number="{{ $partNumber }}">
                                 {{ $partNumber }}
                             </a>
+                            @if($catalogItemId && $fitmentCount > 0)
+                                <button type="button"
+                                        class="catalog-btn catalog-btn-outline catalog-btn-sm fitment-details-btn ms-2"
+                                        data-catalog-item-id="{{ $catalogItemId }}"
+                                        data-part-number="{{ $partNumber }}">
+                                    @if($fitmentCount === 1 && !empty($fitmentBrands[0]['logo']))
+                                        <img src="{{ $fitmentBrands[0]['logo'] }}" alt="" class="catalog-btn__logo">
+                                    @else
+                                        <i class="fas fa-car"></i>
+                                    @endif
+                                    @if($fitmentCount === 1)
+                                        <span>{{ $fitmentBrands[0]['name'] }}</span>
+                                    @else
+                                        <span>@lang('Fits')</span>
+                                        <span class="catalog-badge catalog-badge-sm">{{ $fitmentCount }}</span>
+                                    @endif
+                                </button>
+                            @endif
                         </div>
                         <div class="catalog-modal-card__badges">
                             @if($callout)
