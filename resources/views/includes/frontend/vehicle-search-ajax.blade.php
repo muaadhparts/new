@@ -183,6 +183,10 @@
             }
 
             if (data.single && data.redirect_url) {
+                // Store callout info in sessionStorage
+                if (data.callout_info) {
+                    sessionStorage.setItem('autoOpenCallout', JSON.stringify(data.callout_info));
+                }
                 window.location.href = data.redirect_url;
                 return;
             }
@@ -275,9 +279,9 @@
                                 <i class="fas fa-calendar-alt me-1"></i>${result.cat_begin || '?'} - ${result.cat_end || '?'}
                             </span>` : ''}
                         </div>
-                        ${result.url ? `<a href="${result.url}" class="btn btn-sm btn-primary">
+                        ${result.url ? `<button type="button" class="btn btn-sm btn-primary result-go-btn" data-url="${result.url.split('?')[0]}" data-callout="${escapeHtml(result.callout)}" data-section="${result.section_id || ''}" data-category="${result.category_id || ''}" data-catcode="${escapeHtml(result.category_code || '')}">
                             <i class="fas fa-arrow-right"></i>
-                        </a>` : ''}
+                        </button>` : ''}
                     </div>
                     <h6 class="mb-1">${escapeHtml(getLocalizedLabel(result))}</h6>
                     ${result.applicability ? `<small class="text-muted">${escapeHtml(result.applicability)}</small>` : ''}
@@ -287,12 +291,35 @@
             if (result.url) {
                 card.addEventListener('click', function(e) {
                     if (e.target.tagName !== 'A' && !e.target.closest('a')) {
-                        window.location.href = result.url;
+                        // Store callout intent in sessionStorage
+                        sessionStorage.setItem('autoOpenCallout', JSON.stringify({
+                            callout: result.callout,
+                            section_id: result.section_id,
+                            category_id: result.category_id,
+                            category_code: result.category_code
+                        }));
+                        // Navigate to clean URL (remove query params)
+                        const cleanUrl = result.url.split('?')[0];
+                        window.location.href = cleanUrl;
                     }
                 });
             }
 
             resultsContainer.appendChild(card);
+        });
+
+        // Handle button clicks (event delegation)
+        resultsContainer.querySelectorAll('.result-go-btn').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sessionStorage.setItem('autoOpenCallout', JSON.stringify({
+                    callout: btn.dataset.callout,
+                    section_id: btn.dataset.section,
+                    category_id: btn.dataset.category,
+                    category_code: btn.dataset.catcode
+                }));
+                window.location.href = btn.dataset.url;
+            });
         });
 
         // Show Bootstrap Modal

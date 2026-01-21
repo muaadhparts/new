@@ -140,25 +140,26 @@ class VehicleSearchApiController extends Controller
             if ($count === 1) {
                 $opt = $calloutOptions[0];
                 if (!empty($opt['key1']) && !empty($opt['key2']) && !empty($opt['key3'])) {
-                    $redirectUrl = route('illustrations', [
-                        'brand'         => $catalog->brand->name,
-                        'catalog'       => $catalog->code,
-                        'key1'          => $opt['key1'],
-                        'key2'          => $opt['key2'],
-                        'key3'          => $opt['key3'],
-                        'vin'           => session('vin'),
-                        'callout'       => $opt['callout'],
-                        'auto_open'     => 1,
-                        'section_id'    => $opt['section_id'],
-                        'category_code' => $opt['category_code'],
-                        'catalog_code'  => $catalog->code,
-                        'category_id'   => $opt['category_id'] ?? null,
+                    // Return clean URL + callout info for sessionStorage approach
+                    $cleanUrl = route('illustrations', [
+                        'brand'   => $catalog->brand->name,
+                        'catalog' => $catalog->code,
+                        'key1'    => $opt['key1'],
+                        'key2'    => $opt['key2'],
+                        'key3'    => $opt['key3'],
+                        'vin'     => session('vin'),
                     ]);
 
                     return response()->json([
                         'success' => true,
                         'single' => true,
-                        'redirect_url' => $redirectUrl
+                        'redirect_url' => $cleanUrl,
+                        'callout_info' => [
+                            'callout'       => $opt['callout'],
+                            'section_id'    => $opt['section_id'],
+                            'category_id'   => $opt['category_id'] ?? null,
+                            'category_code' => $opt['category_code'],
+                        ]
                     ]);
                 }
             }

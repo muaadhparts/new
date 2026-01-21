@@ -623,9 +623,24 @@
 
   function autoOpen() {
     if (window.__ill_autoOpened) return;
-    const calloutKey = qs('callout');
-    const autoFlag = qs('auto_open');
-    if (!(calloutKey && (autoFlag === '1' || autoFlag === 'true'))) return;
+
+    // Read from sessionStorage (clean approach)
+    const stored = sessionStorage.getItem('autoOpenCallout');
+    if (!stored) return;
+
+    let calloutData;
+    try {
+      calloutData = JSON.parse(stored);
+    } catch (e) {
+      sessionStorage.removeItem('autoOpenCallout');
+      return;
+    }
+
+    const calloutKey = calloutData.callout;
+    if (!calloutKey) {
+      sessionStorage.removeItem('autoOpenCallout');
+      return;
+    }
 
     if (!metadataLoaded) {
       const maxRetries = 10;
@@ -633,6 +648,7 @@
 
       if (currentRetry >= maxRetries) {
         window.__ill_autoOpened = true;
+        sessionStorage.removeItem('autoOpenCallout');
         return;
       }
 
@@ -646,6 +662,10 @@
 
     window.__ill_autoOpened = true;
     window.__ill_autoOpenRetries = 0;
+
+    // Clear sessionStorage
+    sessionStorage.removeItem('autoOpenCallout');
+
     const found = byKey[calloutKey];
 
     if (found && String(found.callout_type || '').toLowerCase() === 'section') {
@@ -653,16 +673,6 @@
     } else {
       openCallout(calloutKey);
     }
-
-    // Clean URL after auto-open (remove query params)
-    cleanUrlAfterAutoOpen();
-  }
-
-  function cleanUrlAfterAutoOpen() {
-    // Get current URL without query params
-    const baseUrl = window.location.origin + window.location.pathname;
-    // Replace state without reloading
-    window.history.replaceState({}, document.title, baseUrl);
   }
 
   /* ========================= Boot ========================= */
