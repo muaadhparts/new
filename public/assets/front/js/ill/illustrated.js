@@ -653,6 +653,16 @@
     } else {
       openCallout(calloutKey);
     }
+
+    // Clean URL after auto-open (remove query params)
+    cleanUrlAfterAutoOpen();
+  }
+
+  function cleanUrlAfterAutoOpen() {
+    // Get current URL without query params
+    const baseUrl = window.location.origin + window.location.pathname;
+    // Replace state without reloading
+    window.history.replaceState({}, document.title, baseUrl);
   }
 
   /* ========================= Boot ========================= */
