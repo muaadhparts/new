@@ -656,6 +656,16 @@ Route::prefix('operator')->group(function () {
 
         //------------ OPERATORBRAND SECTION ENDS ------------
 
+        //------------ OPERATOR ALTERNATIVES SECTION ------------
+
+        Route::get('/alternatives', 'Operator\AlternativeController@index')->name('operator-alternative-index');
+        Route::get('/alternatives/search', 'Operator\AlternativeController@search')->name('operator-alternative-search');
+        Route::get('/alternatives/stats', 'Operator\AlternativeController@stats')->name('operator-alternative-stats');
+        Route::post('/alternatives/add', 'Operator\AlternativeController@addAlternative')->name('operator-alternative-add');
+        Route::post('/alternatives/remove', 'Operator\AlternativeController@removeAlternative')->name('operator-alternative-remove');
+
+        //------------ OPERATOR ALTERNATIVES SECTION ENDS ------------
+
         //------------ OPERATORPAGE SETTINGS SECTION ------------
 
         Route::get('/frontend-setting/customize', 'Operator\FrontendSettingController@customize')->name('operator-fs-customize');

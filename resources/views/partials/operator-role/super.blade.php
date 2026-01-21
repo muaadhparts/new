@@ -121,6 +121,20 @@
 </li>
 
 <li>
+    <a href="#alternatives" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="fas fa-exchange-alt"></i>{{ __('Alternatives') }}
+    </a>
+    <ul class="collapse list-unstyled" id="alternatives" data-bs-parent="#accordion">
+        <li>
+            <a href="{{ route('operator-alternative-index') }}"><span>{{ __('Manage Alternatives') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('operator-alternative-stats') }}"><span>{{ __('Statistics') }}</span></a>
+        </li>
+    </ul>
+</li>
+
+<li>
     <a href="{{ route('operator-discount-code-index') }}" class=" wave-effect"><i
             class="fas fa-percentage"></i>{{ __('Set
                                 Discount Codes') }}</a>

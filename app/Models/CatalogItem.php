@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\MonetaryUnit;
 use App\Models\MerchantItem;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\Session;
 
 class CatalogItem extends Model
 {
+    use HasFactory;
     protected $table = 'catalog_items';
 
     /**

@@ -10,19 +10,27 @@ use Illuminate\Support\Facades\DB;
 /**
  * خدمة موحدة لإدارة البدائل
  *
- * ✅ محسّن: استخدام JOIN بدلاً من whereHas + تقليل N+1 queries
+ * تستخدم جدول sku_alternatives فقط مع group_id
+ * جدول sku_alternative_item هو Legacy ولا يُستخدم
+ *
+ * الهيكل:
+ * - كل الأصناف بنفس group_id هي بدائل لبعضها البعض
+ * - إذا A في group_id=100 و B في group_id=100، فـ A بديل لـ B و B بديل لـ A
  */
 class AlternativeService
 {
     /**
      * جلب البدائل لـ PART_NUMBER معين
-     * يجلب البدائل من sku_alternatives مجمعة حسب catalog_item مع أقل سعر
+     * يجلب البدائل من sku_alternatives باستخدام group_id
      *
+     * @param string $part_number رقم القطعة
+     * @param bool $includeSelf تضمين الصنف نفسه في النتائج
+     * @param bool $returnSelfIfNoAlternatives إرجاع الصنف نفسه إذا لم يكن له بدائل
      * @return Collection of catalog items with lowest_price and offers_count
      */
-    public function getAlternatives(string $part_number, bool $includeSelf = false): Collection
+    public function getAlternatives(string $part_number, bool $includeSelf = false, bool $returnSelfIfNoAlternatives = false): Collection
     {
-        // ✅ استعلام واحد لجلب المنتج و group_id
+        // جلب catalog_item_id و group_id
         $baseData = DB::table('catalog_items as p')
             ->leftJoin('sku_alternatives as sa', 'sa.part_number', '=', 'p.part_number')
             ->where('p.part_number', $part_number)
@@ -36,23 +44,35 @@ class AlternativeService
         $catalogItemId = $baseData->catalog_item_id;
         $groupId = $baseData->group_id;
 
+        // إذا لم يكن له group_id
         if (!$groupId) {
+            if ($returnSelfIfNoAlternatives) {
+                return $this->getSelfAsAlternative($catalogItemId);
+            }
             return collect();
         }
 
-        // جلب catalog_item_ids للبدائل
-        $alternativeCatalogItemIds = DB::table('sku_alternatives as sa')
+        // جلب كل الأصناف في نفس المجموعة
+        $query = DB::table('sku_alternatives as sa')
             ->join('catalog_items as p', 'p.part_number', '=', 'sa.part_number')
-            ->where('sa.group_id', $groupId)
-            ->when(!$includeSelf, fn($q) => $q->where('sa.part_number', '<>', $part_number))
-            ->pluck('p.id')
-            ->toArray();
+            ->where('sa.group_id', $groupId);
 
+        // استثناء الصنف نفسه إذا لم يُطلب تضمينه
+        if (!$includeSelf) {
+            $query->where('sa.part_number', '<>', $part_number);
+        }
+
+        $alternativeCatalogItemIds = $query->pluck('p.id')->toArray();
+
+        // إذا لم يوجد بدائل
         if (empty($alternativeCatalogItemIds)) {
+            if ($returnSelfIfNoAlternatives) {
+                return $this->getSelfAsAlternative($catalogItemId);
+            }
             return collect();
         }
 
-        // جلب catalog_items مع أقل سعر وعدد العروض
+        // جلب catalog_items مع العلاقات
         $catalogItems = \App\Models\CatalogItem::whereIn('id', $alternativeCatalogItemIds)
             ->with(['fitments.brand'])
             ->get();
@@ -74,7 +94,7 @@ class AlternativeService
             ->keyBy('catalog_item_id');
 
         // دمج البيانات
-        return $catalogItems->map(function ($catalogItem) use ($offersStats) {
+        $result = $catalogItems->map(function ($catalogItem) use ($offersStats) {
             $stats = $offersStats->get($catalogItem->id);
             $catalogItem->lowest_price = $stats?->lowest_price ?? null;
             $catalogItem->lowest_price_formatted = $stats?->lowest_price
@@ -82,15 +102,55 @@ class AlternativeService
                 : null;
             $catalogItem->offers_count = $stats?->offers_count ?? 0;
             return $catalogItem;
-        })->filter(fn($item) => $item->offers_count > 0) // فقط القطع التي لها عروض
+        })->filter(fn($item) => $item->offers_count > 0)
           ->sortBy('lowest_price')
           ->values();
+
+        // إذا لم يوجد بدائل لها عروض، أرجع الصنف نفسه
+        if ($result->isEmpty() && $returnSelfIfNoAlternatives) {
+            return $this->getSelfAsAlternative($catalogItemId);
+        }
+
+        return $result;
+    }
+
+    /**
+     * إرجاع الصنف نفسه كبديل (عندما لا يوجد بدائل أخرى)
+     */
+    protected function getSelfAsAlternative(int $catalogItemId): Collection
+    {
+        $catalogItem = \App\Models\CatalogItem::with(['fitments.brand'])
+            ->find($catalogItemId);
+
+        if (!$catalogItem) {
+            return collect();
+        }
+
+        // جلب إحصائيات العروض للصنف
+        $stats = MerchantItem::query()
+            ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
+            ->where('u.is_merchant', 2)
+            ->where('merchant_items.catalog_item_id', $catalogItemId)
+            ->where('merchant_items.status', 1)
+            ->where('merchant_items.price', '>', 0)
+            ->selectRaw('MIN(merchant_items.price) as lowest_price, COUNT(*) as offers_count')
+            ->first();
+
+        $catalogItem->lowest_price = $stats?->lowest_price ?? null;
+        $catalogItem->lowest_price_formatted = $stats?->lowest_price
+            ? \App\Models\CatalogItem::convertPrice($stats->lowest_price)
+            : null;
+        $catalogItem->offers_count = $stats?->offers_count ?? 0;
+
+        if ($catalogItem->offers_count > 0) {
+            return collect([$catalogItem]);
+        }
+
+        return collect();
     }
 
     /**
      * جلب جميع العروض لنفس المنتج (variants من شركات مختلفة)
-     *
-     * ✅ محسّن: استخدام JOIN بدلاً من whereHas
      */
     protected function fetchSameCatalogItemVariants(int $catalogItemId, bool $includeSelf): Collection
     {
@@ -101,7 +161,7 @@ class AlternativeService
             ->where('merchant_items.catalog_item_id', $catalogItemId)
             ->with([
                 'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo'),
-                'catalogItem.fitments.brand',  // Vehicle brand from fitments
+                'catalogItem.fitments.brand',
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
@@ -122,14 +182,11 @@ class AlternativeService
 
     /**
      * جلب عروض البائعين للمنتجات
-     *
-     * ✅ محسّن: استخدام JOIN بدلاً من whereHas المتعددة
      */
     protected function fetchMerchantItems(array $skus): Collection
     {
         if (empty($skus)) return collect();
 
-        // ✅ جلب catalog_item_ids أولاً
         $catalogItemIds = DB::table('catalog_items')
             ->whereIn('part_number', $skus)
             ->pluck('id')
@@ -144,7 +201,7 @@ class AlternativeService
             ->where('merchant_items.status', 1)
             ->with([
                 'catalogItem' => fn($q) => $q->select('id', 'part_number', 'slug', 'label_en', 'label_ar', 'photo'),
-                'catalogItem.fitments.brand',  // Vehicle brand from fitments
+                'catalogItem.fitments.brand',
                 'user:id,is_merchant,name,shop_name,shop_name_ar',
                 'qualityBrand:id,name_en,name_ar,logo',
             ])
@@ -167,22 +224,17 @@ class AlternativeService
 
     /**
      * ترتيب العروض حسب الأولوية
-     * ✅ محسّن: تبسيط المنطق
      */
     protected function sortByPriority(Collection $listings): Collection
     {
         return $listings->sortBy([
-            // أولاً: المتوفر (stock > 0 && price > 0)
             fn($mp) => ($mp->stock > 0 && $mp->price > 0) ? 0 : 1,
-            // ثانياً: السعر الأقل
             fn($mp) => (float) $mp->price,
         ])->values();
     }
 
     /**
      * التحقق من وجود بدائل
-     *
-     * ✅ محسّن: استعلام مباشر مع limit
      */
     public function hasAlternatives(string $part_number): bool
     {
@@ -194,14 +246,11 @@ class AlternativeService
 
         return SkuAlternative::where('group_id', $groupId)
             ->where('part_number', '<>', $part_number)
-            ->limit(1)
             ->exists();
     }
 
     /**
      * عدد البدائل المتاحة
-     *
-     * ✅ محسّن: استخدام value بدلاً من first
      */
     public function countAlternatives(string $part_number): int
     {
@@ -218,8 +267,6 @@ class AlternativeService
 
     /**
      * جلب SKUs البديلة فقط (بدون بيانات المنتجات)
-     *
-     * ✅ محسّن: استخدام value
      */
     public function getAlternativeSkus(string $part_number): array
     {

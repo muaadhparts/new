@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\MerchantItem;
 
 class QualityBrand extends Model
 {
+    use HasFactory;
     // Table follows Laravel convention: QualityBrand -> quality_brands
     protected $table = 'quality_brands';
 
