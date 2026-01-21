@@ -113,6 +113,36 @@ class CatalogItemDetailsController extends FrontBaseController
     }
 
     /**
+     * Get offers by part number (for parts without alternatives)
+     *
+     * @param string $part_number
+     * @param CatalogItemOffersService $offersService
+     * @return \Illuminate\Http\Response
+     */
+    public function offersByPartNumber(string $part_number, CatalogItemOffersService $offersService)
+    {
+        $catalogItem = \App\Models\CatalogItem::where('part_number', $part_number)->first();
+
+        if (!$catalogItem) {
+            return response()->view('partials.catalog-item-offers', [
+                'catalogItem' => null,
+                'groupedOffers' => collect(),
+                'totalOffers' => 0,
+                'message' => __('Part not found'),
+            ]);
+        }
+
+        $sort = request()->input('sort', 'price_asc');
+        $data = $offersService->getGroupedOffers($catalogItem->id, $sort);
+
+        if (request()->wantsJson() || request()->has('json')) {
+            return response()->json($data);
+        }
+
+        return response()->view('partials.catalog-item-offers', $data);
+    }
+
+    /**
      * Report abuse for a catalog item
      *
      * @param Request $request

@@ -610,9 +610,33 @@
 
   /* ========================= Inline Sub-Views ========================= */
   function openAlternativeInline(part_number) {
-    const base = window.ILL_ROUTES?.alternative || '/modal/alternative/';
-    const name = t('catalog.alternative_modal.name');
-    return loadIntoModal(base + encodeURIComponent(part_number), name);
+    const body = modalBodyEl();
+    if (body) body.innerHTML = renderSpinner();
+
+    // Check if part has alternatives first
+    return fetch('/api/catalog-item/alternatives/' + encodeURIComponent(part_number) + '/html')
+      .then(res => res.json())
+      .then(data => {
+        if (data.count && data.count > 0) {
+          // Has alternatives → show alternatives modal
+          const base = window.ILL_ROUTES?.alternative || '/modal/alternative/';
+          const name = t('catalog.alternative_modal.name');
+          return loadIntoModal(base + encodeURIComponent(part_number), name);
+        } else {
+          // No alternatives → go directly to offers
+          return openOffersByPartNumber(part_number);
+        }
+      })
+      .catch(() => {
+        // On error, try to show offers
+        return openOffersByPartNumber(part_number);
+      });
+  }
+
+  function openOffersByPartNumber(partNumber) {
+    const url = '/modal/offers-by-part/' + encodeURIComponent(partNumber);
+    const name = t('catalog.offers_modal.name') + ' ' + (partNumber || '');
+    return loadIntoModal(url, name);
   }
 
   function openCompatibilityInline(part_number) {

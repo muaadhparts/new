@@ -66,6 +66,7 @@ Route::prefix('modal')->name('modal.')->group(function () {
     Route::get('/alternative/{key}',      [CatalogItemDetailsController::class, 'alternativeFragment'])->name('alternative');
     Route::get('/quickview/{id}',         [CatalogItemDetailsController::class, 'quickFragment'])->name('quickview');
     Route::get('/offers/{catalogItemId}', [CatalogItemDetailsController::class, 'offersFragment'])->name('offers');
+    Route::get('/offers-by-part/{part_number}', [CatalogItemDetailsController::class, 'offersByPartNumber'])->name('offers-by-part');
     Route::get('/catalog-item/{key}',          [CatalogItemDetailsController::class, 'catalogItemFragment'])->name('catalog-item');
 });
 

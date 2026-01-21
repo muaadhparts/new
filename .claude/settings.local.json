@@ -74,7 +74,8 @@
       "Bash(Select-String \"catalog_id\" -Context 3,3)",
       "Bash(more:*)",
       "Bash(test:*)",
-      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\")"
+      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\")",
+      "Bash(npm run build:*)"
     ]
   }
 }
