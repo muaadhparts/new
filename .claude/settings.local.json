@@ -73,7 +73,8 @@
       "Bash(Get-Content \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\storage\\\\logs\\\\laravel.log\" -Tail 200)",
       "Bash(Select-String \"catalog_id\" -Context 3,3)",
       "Bash(more:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\")"
     ]
   }
 }

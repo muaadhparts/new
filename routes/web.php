@@ -1410,6 +1410,10 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/item/compare/remove/{merchantItemId}', 'Front\CompareController@removecompare')->name('catalog-item.compare.remove');
     // COMPARE SECTION ENDS
 
+    // SEARCH RESULTS PAGE - Shows catalog items matching search query
+    // Displays cards with offers button and alternatives (like tree view)
+    Route::get('/search', 'Front\SearchResultsController@index')->name('front.search-results');
+
     // PART RESULT PAGE - Shows all offers for a part number
     // NEW: CatalogItem-first approach (one page per part_number, not per merchant_item)
     Route::get('/result/{part_number}', 'Front\PartResultController@show')->name('front.part-result');

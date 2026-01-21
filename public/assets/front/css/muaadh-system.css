@@ -6527,6 +6527,83 @@ select option {
 }
 
 /* ============================================================================
+   SECTION: SEARCH RESULTS CARD
+   ============================================================================
+   Card component for search results page
+   ============================================================================ */
+
+.search-result-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.12));
+}
+
+.search-result-card__name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.4;
+    margin: 0;
+}
+
+.search-result-card__name a {
+    color: var(--text-primary);
+    transition: color 0.2s ease;
+}
+
+.search-result-card__name a:hover {
+    color: var(--action-primary);
+}
+
+.search-result-card__sku .badge {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.search-result-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.search-result-card__actions .m-btn {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+}
+
+/* Alternatives Button Styling */
+.alternatives-btn {
+    border-color: var(--border-medium);
+    color: var(--text-secondary);
+}
+
+.alternatives-btn:hover {
+    background: var(--surface-secondary);
+    border-color: var(--action-primary);
+    color: var(--action-primary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 575px) {
+    .search-result-card .d-flex {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .search-result-card__image {
+        margin-bottom: 1rem;
+    }
+
+    .search-result-card__actions {
+        justify-content: center;
+    }
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 

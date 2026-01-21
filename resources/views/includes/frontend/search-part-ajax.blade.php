@@ -57,11 +57,9 @@
         }
 
         if (!autoSearch) {
-            // عند الضغط على البحث، اذهب لصفحة النتائج مباشرة
-            if (currentResults.length > 0) {
-                window.location.href = '{{ url("result") }}/' + encodeURIComponent(currentResults[0].part_number);
-                return;
-            }
+            // عند الضغط على البحث، اذهب لصفحة نتائج البحث الجديدة
+            window.location.href = '{{ route("front.search-results") }}?q=' + encodeURIComponent(query);
+            return;
         }
 
         setLoading(true);
@@ -111,7 +109,8 @@
             `;
 
             item.addEventListener('click', function() {
-                window.location.href = '{{ url("result") }}/' + encodeURIComponent(result.part_number);
+                // الذهاب لصفحة نتائج البحث الجديدة مع رقم القطعة
+                window.location.href = '{{ route("front.search-results") }}?q=' + encodeURIComponent(result.part_number);
             });
 
             suggestionsList.appendChild(item);
