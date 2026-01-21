@@ -116,12 +116,27 @@
     // Bootstrap Modal instance
     let resultsModalInstance = null;
 
-    // Storage key for search type preference
+    // Storage keys
     const SEARCH_TYPE_KEY = 'vehicleSearchType';
+    const LAST_SEARCH_KEY = 'vehicleLastSearch_' + catalogCode; // Per catalog
 
     // Get saved search type from localStorage or default to 'number'
     let searchType = localStorage.getItem(SEARCH_TYPE_KEY) || 'number';
     let searchTimeout = null;
+    let searchAbortController = null; // For cancelling pending searches
+
+    // Restore last search query (only for number search)
+    const lastSearch = localStorage.getItem(LAST_SEARCH_KEY);
+    if (lastSearch) {
+        try {
+            const { query, type } = JSON.parse(lastSearch);
+            // Only restore if it was a number search
+            if (query && type === 'number') {
+                input.value = query;
+                searchType = type;
+            }
+        } catch (e) {}
+    }
 
     function setSearchType(type, clearInput = false) {
         // If changing type, clear the input
@@ -151,8 +166,19 @@
     typeNumberBtn.addEventListener('click', () => setSearchType('number', true));
     typeLabelBtn.addEventListener('click', () => setSearchType('label', true));
 
+    // Track if search was triggered from suggestion selection
+    let searchFromSuggestion = false;
+
     function doSearch() {
         const query = input.value.trim();
+
+        // For label search, only allow search from suggestions
+        if (searchType === 'label' && !searchFromSuggestion) {
+            showError('{{ __("Please select from suggestions") }}');
+            return;
+        }
+        searchFromSuggestion = false; // Reset flag
+
         const minLength = searchType === 'number' ? 5 : 2;
 
         if (query.length < minLength) {
@@ -166,12 +192,19 @@
         hideSuggestions();
         setLoading(true);
 
+        // Cancel any pending search
+        if (searchAbortController) {
+            searchAbortController.abort();
+        }
+        searchAbortController = new AbortController();
+
         fetch('{{ route("api.vehicle.search") }}?query=' + encodeURIComponent(query) + '&catalog=' + encodeURIComponent(catalogCode) + '&type=' + searchType, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest'
-            }
+            },
+            signal: searchAbortController.signal
         })
         .then(response => response.json())
         .then(data => {
@@ -180,6 +213,14 @@
             if (!data.success) {
                 showError(data.message || '{{ __("No results found") }}');
                 return;
+            }
+
+            // Save successful search (only for number search)
+            if (searchType === 'number') {
+                localStorage.setItem(LAST_SEARCH_KEY, JSON.stringify({
+                    query: query,
+                    type: searchType
+                }));
             }
 
             if (data.single && data.redirect_url) {
@@ -198,6 +239,9 @@
             }
         })
         .catch(error => {
+            // Ignore aborted requests
+            if (error.name === 'AbortError') return;
+
             setLoading(false);
             showError('{{ __("An error occurred. Please try again.") }}');
             console.error('Vehicle Search Error:', error);
@@ -233,16 +277,19 @@
         });
     }
 
+    let suggestionIndex = -1;
+
     function showSuggestions(results) {
         suggestionsDropdown.innerHTML = '';
-        results.slice(0, 20).forEach(function(suggestion) {
+        suggestionIndex = -1;
+
+        results.slice(0, 20).forEach(function(suggestion, index) {
             const item = document.createElement('div');
             item.className = 'vehicle-search-suggestion-item';
+            item.setAttribute('data-index', index);
             item.innerHTML = '<i class="fas fa-search text-primary me-2"></i>' + escapeHtml(suggestion);
             item.addEventListener('click', function() {
-                input.value = suggestion;
-                hideSuggestions();
-                doSearch();
+                selectSuggestion(suggestion);
             });
             suggestionsDropdown.appendChild(item);
         });
@@ -250,18 +297,39 @@
         suggestionsDropdown.parentElement.classList.add('suggestions-open');
     }
 
+    function selectSuggestion(suggestion) {
+        input.value = suggestion;
+        hideSuggestions();
+        searchFromSuggestion = true;
+        doSearch();
+    }
+
+    function highlightSuggestion(index) {
+        const items = suggestionsDropdown.querySelectorAll('.vehicle-search-suggestion-item');
+        items.forEach((item, i) => {
+            item.classList.toggle('active', i === index);
+        });
+        if (items[index]) {
+            items[index].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
     function hideSuggestions() {
         suggestionsDropdown.classList.add('d-none');
         suggestionsDropdown.parentElement.classList.remove('suggestions-open');
+        suggestionIndex = -1;
     }
 
     function showResultsModal(results) {
         resultsContainer.innerHTML = '';
         resultsModal.querySelector('.results-count').textContent = results.length;
 
-        results.forEach(function(result) {
+        results.forEach(function(result, index) {
             const card = document.createElement('div');
-            card.className = 'card mb-2 border hover-shadow cursor-pointer';
+            card.className = 'card mb-2 border hover-shadow cursor-pointer result-card';
+            card.setAttribute('tabindex', '0');
+            card.setAttribute('role', 'button');
+            card.setAttribute('data-index', index);
             card.innerHTML = `
                 <div class="card-body p-3">
                     <div class="d-flex justify-content-between align-items-start mb-2">
@@ -290,18 +358,19 @@
 
             if (result.url) {
                 card.addEventListener('click', function(e) {
-                    if (e.target.tagName !== 'A' && !e.target.closest('a')) {
-                        // Store callout intent in sessionStorage
-                        sessionStorage.setItem('autoOpenCallout', JSON.stringify({
-                            callout: result.callout,
-                            section_id: result.section_id,
-                            category_id: result.category_id,
-                            category_code: result.category_code
-                        }));
-                        // Navigate to clean URL (remove query params)
-                        const cleanUrl = result.url.split('?')[0];
-                        window.location.href = cleanUrl;
-                    }
+                    // Skip if clicked on the go button (it has its own handler)
+                    if (e.target.closest('.result-go-btn')) return;
+
+                    // Store callout intent in sessionStorage
+                    sessionStorage.setItem('autoOpenCallout', JSON.stringify({
+                        callout: result.callout,
+                        section_id: result.section_id,
+                        category_id: result.category_id,
+                        category_code: result.category_code
+                    }));
+                    // Navigate to clean URL (remove query params)
+                    const cleanUrl = result.url.split('?')[0];
+                    window.location.href = cleanUrl;
                 });
             }
 
@@ -327,7 +396,66 @@
             resultsModalInstance = new bootstrap.Modal(resultsModal);
         }
         resultsModalInstance.show();
+
+        // Focus first card after modal is shown
+        resultsModal.addEventListener('shown.bs.modal', function onShown() {
+            const firstCard = resultsContainer.querySelector('.result-card');
+            if (firstCard) firstCard.focus();
+            resultsModal.removeEventListener('shown.bs.modal', onShown);
+        }, { once: true });
     }
+
+    // Keyboard navigation for results
+    let currentFocusIndex = -1;
+
+    function handleResultsKeyboard(e) {
+        const cards = resultsContainer.querySelectorAll('.result-card');
+        if (!cards.length) return;
+
+        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            const direction = e.key === 'ArrowDown' ? 1 : -1;
+            currentFocusIndex = Math.max(0, Math.min(cards.length - 1, currentFocusIndex + direction));
+            cards[currentFocusIndex].focus();
+            cards[currentFocusIndex].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        } else if (e.key === 'Enter' && document.activeElement.classList.contains('result-card')) {
+            e.preventDefault();
+            document.activeElement.click();
+        }
+    }
+
+    resultsModal.addEventListener('keydown', handleResultsKeyboard);
+
+    // Reset focus index when modal opens
+    resultsModal.addEventListener('show.bs.modal', function() {
+        currentFocusIndex = 0;
+    });
+
+    // Focus trap - cycle through focusable elements
+    resultsModal.addEventListener('keydown', function(e) {
+        if (e.key !== 'Tab') return;
+
+        const focusableElements = resultsModal.querySelectorAll(
+            '.result-card, .btn-close, .result-go-btn, button:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        );
+        if (!focusableElements.length) return;
+
+        const firstEl = focusableElements[0];
+        const lastEl = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey && document.activeElement === firstEl) {
+            e.preventDefault();
+            lastEl.focus();
+        } else if (!e.shiftKey && document.activeElement === lastEl) {
+            e.preventDefault();
+            firstEl.focus();
+        }
+    });
+
+    // Return focus to search input when modal closes
+    resultsModal.addEventListener('hidden.bs.modal', function() {
+        input.focus();
+    });
 
     function hideResultsModal() {
         if (resultsModalInstance) {
@@ -375,10 +503,29 @@
 
     searchBtn.addEventListener('click', doSearch);
 
-    input.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
+    input.addEventListener('keydown', function(e) {
+        const items = suggestionsDropdown.querySelectorAll('.vehicle-search-suggestion-item');
+        const isOpen = !suggestionsDropdown.classList.contains('d-none');
+
+        if (e.key === 'ArrowDown' && isOpen && items.length) {
             e.preventDefault();
-            doSearch();
+            suggestionIndex = Math.min(suggestionIndex + 1, items.length - 1);
+            highlightSuggestion(suggestionIndex);
+        } else if (e.key === 'ArrowUp' && isOpen && items.length) {
+            e.preventDefault();
+            suggestionIndex = Math.max(suggestionIndex - 1, 0);
+            highlightSuggestion(suggestionIndex);
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (isOpen && suggestionIndex >= 0 && items[suggestionIndex]) {
+                // Select highlighted suggestion
+                const text = items[suggestionIndex].textContent.trim();
+                selectSuggestion(text);
+            } else {
+                doSearch();
+            }
+        } else if (e.key === 'Escape' && isOpen) {
+            hideSuggestions();
         }
     });
 

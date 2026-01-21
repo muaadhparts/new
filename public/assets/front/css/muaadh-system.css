@@ -7779,6 +7779,28 @@ select option {
     transition: all 0.2s ease;
 }
 
+/* Focus state for keyboard navigation */
+.result-card:focus {
+    outline: 2px solid var(--theme-primary, #006c35);
+    outline-offset: 2px;
+    box-shadow: var(--theme-shadow, 0 4px 12px rgba(0,0,0,0.1)) !important;
+}
+
+.result-card:focus-visible {
+    outline: 2px solid var(--theme-primary, #006c35);
+    outline-offset: 2px;
+}
+
+/* Active/highlighted suggestion item (keyboard navigation) */
+.vehicle-search-suggestion-item.active {
+    background: var(--theme-primary, #006c35);
+    color: #fff;
+}
+
+.vehicle-search-suggestion-item.active i {
+    color: #fff !important;
+}
+
 .cursor-pointer {
     cursor: pointer;
 }

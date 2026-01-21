@@ -618,12 +618,18 @@
           });
         },
 
-        // Reapply highlight during zoom/pan if landmarks are redrawn
-        on_ZOOM_PAN_UPDATE: function(data, isAnimating) {
-          if (currentSearchedCallout) {
+        // Reapply highlight during zoom/pan if landmarks are redrawn (throttled)
+        on_ZOOM_PAN_UPDATE: (function() {
+          let lastCheck = 0;
+          const THROTTLE_MS = 200; // Check at most every 200ms
+          return function(data, isAnimating) {
+            if (!currentSearchedCallout) return;
+            const now = Date.now();
+            if (now - lastCheck < THROTTLE_MS) return;
+            lastCheck = now;
             reapplyHighlightAfterZoom();
-          }
-        }
+          };
+        })()
       });
     };
 
