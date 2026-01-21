@@ -198,198 +198,31 @@
       .finally(() => setBackVisible());
   }
 
-  /* ========================= Parts Table Renderer ========================= */
-  function renderProducts(catalogItems, pagination = null){
-    if(!Array.isArray(catalogItems)||catalogItems.length===0){
-      const noData=t('messages.no_matches');
-      return `<div class="text-center p-5 text-muted"><i class="bi bi-search display-6"></i><div class="mt-3 fw-bold">${escapeHtml(noData)}</div></div>`;
+  /* ========================= Parts HTML Loader (Server-Rendered) ========================= */
+  /**
+   * Fetch server-rendered HTML for part details
+   * Replaces the old renderProducts() JS function
+   */
+  function loadPartDetailsHtml(calloutKey, page = 1) {
+    if (!sectionId || !categoryId || !catalogCode) {
+      return Promise.reject(new Error('Context data not loaded'));
     }
 
-    const splitToList = (s)=> String(s||'').split(/[,\n;|]+/).map(v=>v.trim()).filter(Boolean);
+    const params = new URLSearchParams({
+      section_id: sectionId,
+      category_id: categoryId,
+      catalog_code: catalogCode,
+      callout: calloutKey,
+      page: page,
+    });
 
-    function normListFromAny(input, kind){
-      if(input==null) return [];
-      if(Array.isArray(input)){
-        return input.map(it=>{
-          if(it==null) return '';
-          if(typeof it==='string') return it.trim();
-          if(kind==='subs'){
-            const cand = it.part_number ?? it.number ?? it.code ?? it.alt ?? it.key ?? '';
-            return String(cand).trim();
-          }else{
-            const model  = it.model ?? it.name ?? it.vehicle ?? '';
-            const year   = it.year ?? it.years ?? it.model_year ?? '';
-            const engine = it.engine ?? it.engine_code ?? '';
-            const trim   = it.trim ?? '';
-            const label = [model,year,engine,trim].map(x=>String(x||'').trim()).filter(Boolean).join(' ');
-            return (label || String(it.code ?? it.id ?? '').trim());
-          }
-        }).filter(Boolean);
-      }
-      if(typeof input==='object'){
-        return Object.values(input).map(v=>String(v||'').trim()).filter(Boolean);
-      }
-      if(typeof input==='string'){
-        return splitToList(input);
-      }
-      return [];
-    }
-
-    const renderBadges = (arr)=> arr.length
-      ? `<div class="d-flex flex-wrap gap-1">${arr.map(v=>`<span class="badge bg-light text-dark">${escapeHtml(v)}</span>`).join('')}</div>`
-      : '';
-
-    const rows=catalogItems.map(p=>{
-      const name=localizedPartName(p);
-      const qty = (p.part_qty != null && String(p.part_qty).trim() !== '') ? escapeHtml(p.part_qty) : '';
-      const mv = Array.isArray(p.match_values)
-        ? p.match_values
-        : (typeof p.match_values==='string' ? p.match_values.split(',').map(s=>s.trim()).filter(Boolean) : []);
-      const match = mv.length
-        ? `<small>${mv.map(v=>escapeHtml(v)).join(', ')}</small>`
-        : `<span class="badge bg-light text-dark">${escapeHtml(t('values.generic'))}</span>`;
-
-      const period = formatPeriodRange(p.part_begin, p.part_end);
-      const periodCell = period ? `<span class="badge bg-light text-dark">${period}</span>` : '';
-      const callout = (p.part_callout != null && String(p.part_callout).trim() !== '') ? escapeHtml(p.part_callout) : '';
-      const exts = renderExtensions(p.extensions);
-
-      // Part number link - opens alternatives modal
-      const partLink=`<a href="javascript:;" class="text-decoration-none text-primary fw-bold part-link"
-                         data-part_number="${escapeHtml(p.part_number||'')}">
-                         ${escapeHtml(p.part_number||'')}
-                      </a>`;
-
-      const subsList = normListFromAny(p.substitutions ?? p.alternatives ?? p.alt ?? p.subs, 'subs');
-
-      const subsMore = p.part_number
-        ? `<div class="mt-1"><a href="javascript:;" class="small text-decoration-underline alt-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>`
-        : '';
-
-      const subsCell = `${renderBadges(subsList)}${subsMore}`;
-
-      return `<tr class="${mv.length?'':'table-secondary'}">
-        <td class="text-center">${partLink}</td>
-        <td class="text-center">${callout}</td>
-        <td class="text-center">${qty}</td>
-        <td class="text-center">${escapeHtml(name)}</td>
-        <td class="text-center">${match}</td>
-        <td class="text-center">${exts}</td>
-        <td class="text-center">${periodCell}</td>
-        <td class="text-center">${subsCell}</td>
-      </tr>`;
-    }).join('');
-
-    // Desktop table
-    const desktop = `
-      <div class="d-none d-md-block">
-        <table class="table table-hover text-center align-middle">
-          <thead class="table-light">
-            <tr>
-              <th>${escapeHtml(t('columns.number'))}</th>
-              <th>${escapeHtml(t('columns.callout'))}</th>
-              <th>${escapeHtml(t('columns.qty'))}</th>
-              <th>${escapeHtml(t('columns.name'))}</th>
-              <th>${escapeHtml(t('columns.match'))}</th>
-              <th>${escapeHtml(t('columns.extensions'))}</th>
-              <th>${escapeHtml(t('columns.period'))}</th>
-              <th>${escapeHtml(t('columns.substitutions'))}</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>`;
-
-    // Mobile cards
-    const mobile = `
-      <div class="d-block d-md-none">
-        ${catalogItems.map(p=>{
-          const name=localizedPartName(p);
-          const qty=(p.part_qty != null && String(p.part_qty).trim() !== '') ? escapeHtml(p.part_qty) : '';
-          const mv=Array.isArray(p.match_values)?p.match_values:(typeof p.match_values==='string'?p.match_values.split(',').map(s=>s.trim()).filter(Boolean):[]);
-          const match=mv.length?` ${mv.map(v=>escapeHtml(v)).join(', ')}`:`<span class="badge bg-light text-dark">${escapeHtml(t('values.generic'))}</span>`;
-          const period=formatPeriodRange(p.part_begin,p.part_end);
-          const periodBadge = period ? `<span class="badge bg-light text-dark">${period}</span>` : '';
-          const callout=(p.part_callout != null && String(p.part_callout).trim() !== '') ? escapeHtml(p.part_callout) : '';
-          const exts=renderExtensions(p.extensions);
-
-          const partLink=`<a href="javascript:;" class="text-decoration-none text-primary part-link"
-                          data-part_number="${escapeHtml(p.part_number||'')}">
-                          🔢 ${escapeHtml(p.part_number||'')}</a>`;
-
-          const subsList = normListFromAny(p.substitutions ?? p.alternatives ?? p.alt ?? p.subs, 'subs');
-          const subsMore = p.part_number ? `<div class="mt-2"><a href="javascript:;" class="small text-decoration-underline alt-link" data-part_number="${escapeHtml(p.part_number||'')}">${escapeHtml(t('labels.substitutions'))}</a></div>` : '';
-
-          return `<div class="card shadow-sm mb-3"><div class="card-body text-center">
-              <h6 class="card-name">${partLink}</h6>
-              <p><strong>${escapeHtml(t('labels.callout'))}:</strong> ${callout}</p>
-              <p><strong>${escapeHtml(t('labels.qty'))}:</strong> ${qty}</p>
-              <p><strong>${escapeHtml(t('labels.name'))}:</strong> ${escapeHtml(name)}</p>
-              <p><strong>${escapeHtml(t('labels.match'))}:</strong> ${match}</p>
-              <p><strong>${escapeHtml(t('labels.extensions'))}:</strong> ${exts}</p>
-              <p><strong>${escapeHtml(t('labels.period'))}:</strong> ${periodBadge}</p>
-              <p><strong>${escapeHtml(t('columns.substitutions'))}:</strong> ${renderBadges(subsList)}</p>
-              ${subsMore}
-          </div></div>`;
-        }).join('')}
-      </div>`;
-
-    // Pagination
-    let paginationHtml = '';
-    if (pagination && pagination.last_page > 1) {
-      const { current_page, last_page, total, from, to } = pagination;
-      const showingText = t('pagination.showing') || 'Showing';
-      const ofText = t('pagination.of') || 'of';
-      const previousText = t('pagination.previous') || 'Previous';
-      const nextText = t('pagination.next') || 'Next';
-
-      paginationHtml = `
-        <div class="d-flex justify-content-between align-items-center mt-4 px-3">
-          <div class="text-muted small">
-            ${escapeHtml(showingText)} ${from}-${to} ${escapeHtml(ofText)} ${total}
-          </div>
-          <nav aria-label="Page navigation">
-            <ul class="pagination pagination-sm mb-0">
-              ${current_page > 1 ? `
-                <li class="page-item">
-                  <a class="page-link pagination-link" href="javascript:;" data-page="${current_page - 1}">
-                    ${escapeHtml(previousText)}
-                  </a>
-                </li>
-              ` : ''}
-              ${Array.from({ length: Math.min(5, last_page) }, (_, i) => {
-                let pageNum;
-                if (last_page <= 5) {
-                  pageNum = i + 1;
-                } else if (current_page <= 3) {
-                  pageNum = i + 1;
-                } else if (current_page >= last_page - 2) {
-                  pageNum = last_page - 4 + i;
-                } else {
-                  pageNum = current_page - 2 + i;
-                }
-                return `
-                  <li class="page-item ${pageNum === current_page ? 'active' : ''}">
-                    <a class="page-link pagination-link" href="javascript:;" data-page="${pageNum}">
-                      ${pageNum}
-                    </a>
-                  </li>
-                `;
-              }).join('')}
-              ${current_page < last_page ? `
-                <li class="page-item">
-                  <a class="page-link pagination-link" href="javascript:;" data-page="${current_page + 1}">
-                    ${escapeHtml(nextText)}
-                  </a>
-                </li>
-              ` : ''}
-            </ul>
-          </nav>
-        </div>
-      `;
-    }
-
-    return desktop + mobile + paginationHtml;
+    return fetch('/api/callouts/html?' + params.toString(), {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.text();
+      });
   }
 
   /* ========================= API ========================= */
@@ -571,25 +404,16 @@
     stack.length = 0;
     setBackVisible();
 
-    fetchCalloutData(key).then(data=>{
+    // ✅ Use server-rendered HTML instead of JS rendering
+    loadPartDetailsHtml(key).then(html => {
       const body = modalBodyEl(); if (!body) return;
-      if (!data.ok){
-        const msg = t('messages.api_error');
-        body.innerHTML = `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(data.error||'')}</div>`;
-        setBackVisible();
-        return;
-      }
-      const prods = data.catalogItems || [];
-      const pagination = data.pagination || null;
-
-      const html = renderProducts(prods, pagination);
       body.innerHTML = html;
       afterInject(body);
       body.scrollTop = 0;
 
-      pushView({ name: nameRoot, html, calloutKey: key, pagination });
+      pushView({ name: nameRoot, html, calloutKey: key });
       setBackVisible();
-    }).catch(err=>{
+    }).catch(err => {
       const body = modalBodyEl(); if (!body) return;
       const msg  = t('messages.load_failed');
       body.innerHTML = `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(err?.message||String(err))}</div>`;
@@ -697,7 +521,7 @@
 
     /* Note: Quantity controls handled globally by qty-control.js (delegated events) */
 
-    /* Pagination */
+    /* Pagination - ✅ Updated to use server-rendered HTML */
     $(document).off('click.ill_pagination').on('click.ill_pagination', '.pagination-link', function (e) {
       e.preventDefault();
       const page = parseInt($(this).data('page'), 10);
@@ -709,24 +533,14 @@
       const body = modalBodyEl();
       if (body) body.innerHTML = renderSpinner();
 
-      fetchCalloutData(cv.calloutKey, page).then(data => {
+      // ✅ Use server-rendered HTML instead of JS rendering
+      loadPartDetailsHtml(cv.calloutKey, page).then(html => {
         const body = modalBodyEl(); if (!body) return;
-        if (!data.ok) {
-          const msg = t('messages.api_error');
-          body.innerHTML = `<div class="alert alert-danger">${escapeHtml(msg)}: ${escapeHtml(data.error||'')}</div>`;
-          return;
-        }
-
-        const prods = data.catalogItems || [];
-        const pagination = data.pagination || null;
-        const html = renderProducts(prods, pagination);
-
         body.innerHTML = html;
         afterInject(body);
         body.scrollTop = 0;
 
         cv.html = html;
-        cv.pagination = pagination;
       }).catch(err => {
         const body = modalBodyEl(); if (!body) return;
         const msg = t('messages.load_failed');

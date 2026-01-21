@@ -6604,6 +6604,551 @@ select option {
 }
 
 /* ============================================================================
+   CATALOG MODAL UNIFIED CARDS
+   ============================================================================
+   Unified card system for Part Details, Alternatives, and Offers modals.
+   Same design, same experience across all three views.
+   ============================================================================ */
+
+/* ----- Section Header ----- */
+.catalog-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface-elevated, #f9fafb);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+    margin-bottom: 16px;
+    border-radius: var(--radius-md, 8px) var(--radius-md, 8px) 0 0;
+}
+
+.catalog-section-header h5 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.catalog-section-header h5 i {
+    color: var(--action-primary, #7c3aed);
+}
+
+/* ----- Unified Modal Card ----- */
+.catalog-modal-card {
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    background: var(--surface-card, #fff);
+    margin-bottom: 12px;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.catalog-modal-card:hover {
+    border-color: var(--action-primary, #7c3aed);
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.1);
+}
+
+.catalog-modal-card:last-child {
+    margin-bottom: 0;
+}
+
+/* Card Header */
+.catalog-modal-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface-elevated, #f9fafb);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+    gap: 12px;
+}
+
+.catalog-modal-card__part-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+    flex: 1;
+}
+
+.catalog-modal-card__photo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: var(--radius-sm, 4px);
+    border: 1px solid var(--border-light, #e5e7eb);
+    background: var(--surface-card, #fff);
+    flex-shrink: 0;
+}
+
+.catalog-modal-card__number {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    color: var(--action-primary, #7c3aed);
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.catalog-modal-card__number:hover {
+    color: var(--action-primary-hover, #6d28d9);
+    text-decoration: underline;
+}
+
+.catalog-modal-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: flex-end;
+}
+
+/* Card Body */
+.catalog-modal-card__body {
+    padding: 16px;
+}
+
+/* Card Footer */
+.catalog-modal-card__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface-elevated, #f9fafb);
+    border-top: 1px solid var(--border-light, #e5e7eb);
+    gap: 12px;
+}
+
+.catalog-modal-card__price {
+    display: flex;
+    flex-direction: column;
+}
+
+.catalog-modal-card__price-from {
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+}
+
+.catalog-modal-card__price-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--action-success, #10b981);
+}
+
+.catalog-modal-card__actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* ----- Specs Grid ----- */
+.catalog-specs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+}
+
+.catalog-specs-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.catalog-specs-label {
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.catalog-specs-value {
+    font-size: 0.875rem;
+    color: var(--text-primary, #111827);
+    font-weight: 500;
+}
+
+/* ----- Part Info Row ----- */
+.catalog-part-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+}
+
+.catalog-part-row:not(:last-child) {
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.catalog-part-row__label {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #6b7280);
+    font-weight: 500;
+    min-width: 80px;
+}
+
+.catalog-part-row__value {
+    font-size: 0.875rem;
+    color: var(--text-primary, #111827);
+    flex: 1;
+}
+
+/* ----- Period Badge ----- */
+.catalog-period-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: var(--action-info-light, rgba(59, 130, 246, 0.1));
+    color: var(--action-info, #3b82f6);
+    border-radius: var(--radius-full, 9999px);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.catalog-period-badge i {
+    font-size: 0.6875rem;
+}
+
+/* ----- Match Values Badges ----- */
+.catalog-match-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.catalog-match-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    background: var(--surface-sunken, #f3f4f6);
+    color: var(--text-secondary, #4b5563);
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.catalog-match-badge--generic {
+    background: var(--action-success-light, rgba(16, 185, 129, 0.1));
+    color: var(--action-success, #10b981);
+}
+
+/* ----- Extensions Badges ----- */
+.catalog-ext-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.catalog-ext-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    background: var(--action-warning-light, rgba(245, 158, 11, 0.1));
+    color: var(--action-warning-hover, #d97706);
+    border-radius: var(--radius-sm, 4px);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.catalog-ext-badge__key {
+    color: var(--text-muted, #6b7280);
+}
+
+/* ----- Unified Button Styles ----- */
+.catalog-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 16px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: var(--radius-md, 8px);
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.catalog-btn:hover {
+    text-decoration: none;
+}
+
+.catalog-btn-primary {
+    background: var(--action-primary, #7c3aed);
+    color: var(--text-on-primary, #fff);
+    border-color: var(--action-primary, #7c3aed);
+}
+
+.catalog-btn-primary:hover {
+    background: var(--action-primary-hover, #6d28d9);
+    border-color: var(--action-primary-hover, #6d28d9);
+    color: var(--text-on-primary, #fff);
+}
+
+.catalog-btn-outline {
+    background: transparent;
+    color: var(--action-primary, #7c3aed);
+    border-color: var(--action-primary, #7c3aed);
+}
+
+.catalog-btn-outline:hover {
+    background: var(--action-primary, #7c3aed);
+    color: var(--text-on-primary, #fff);
+}
+
+.catalog-btn-sm {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+}
+
+/* ----- Unified Badge Styles ----- */
+.catalog-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: var(--radius-full, 9999px);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.catalog-badge-success {
+    background: var(--action-success-light, rgba(16, 185, 129, 0.1));
+    color: var(--action-success, #10b981);
+}
+
+.catalog-badge-warning {
+    background: var(--action-warning-light, rgba(245, 158, 11, 0.1));
+    color: var(--action-warning-hover, #d97706);
+}
+
+.catalog-badge-info {
+    background: var(--action-info-light, rgba(59, 130, 246, 0.1));
+    color: var(--action-info, #3b82f6);
+}
+
+.catalog-badge-secondary {
+    background: var(--surface-sunken, #f3f4f6);
+    color: var(--text-secondary, #4b5563);
+}
+
+/* ----- Mobile Cards Layout ----- */
+.catalog-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.catalog-card {
+    border: 1px solid var(--border-light, #e5e7eb);
+    border-radius: var(--radius-lg, 12px);
+    background: var(--surface-card, #fff);
+    overflow: hidden;
+}
+
+.catalog-card-header {
+    padding: 12px;
+    background: var(--surface-elevated, #f9fafb);
+    border-bottom: 1px solid var(--border-light, #e5e7eb);
+}
+
+.catalog-card-body {
+    padding: 12px;
+}
+
+.catalog-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    background: var(--surface-elevated, #f9fafb);
+    border-top: 1px solid var(--border-light, #e5e7eb);
+    gap: 12px;
+}
+
+.catalog-card-name {
+    font-size: 0.875rem;
+    color: var(--text-primary, #111827);
+    margin-bottom: 8px;
+}
+
+.catalog-card-price {
+    display: flex;
+    flex-direction: column;
+}
+
+.catalog-card-actions {
+    display: flex;
+    gap: 8px;
+}
+
+/* Card Availability States */
+.card-available {
+    border-left: 3px solid var(--action-success, #10b981);
+}
+
+.card-unavailable {
+    opacity: 0.7;
+    border-left: 3px solid var(--text-muted, #9ca3af);
+}
+
+/* ----- Desktop Table Styles ----- */
+.catalog-table {
+    margin-bottom: 0;
+}
+
+.catalog-table th {
+    background: var(--surface-elevated, #f9fafb);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--text-secondary, #4b5563);
+    border-bottom: 2px solid var(--border-light, #e5e7eb);
+    padding: 12px 8px;
+}
+
+.catalog-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+    font-size: 0.875rem;
+}
+
+.catalog-table tbody tr {
+    transition: background-color 0.15s ease;
+}
+
+.catalog-table tbody tr:hover {
+    background: var(--surface-elevated, #f9fafb);
+}
+
+.catalog-table tbody tr.is-generic {
+    background: var(--action-success-light, rgba(16, 185, 129, 0.05));
+}
+
+.catalog-table .part-link {
+    font-family: 'Roboto Mono', monospace;
+    font-weight: 600;
+    color: var(--action-primary, #7c3aed);
+}
+
+.catalog-table .part-link:hover {
+    text-decoration: underline;
+}
+
+/* ----- Pagination for Modal ----- */
+.catalog-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border-top: 1px solid var(--border-light, #e5e7eb);
+    background: var(--surface-elevated, #f9fafb);
+    margin-top: 16px;
+    border-radius: 0 0 var(--radius-md, 8px) var(--radius-md, 8px);
+}
+
+.catalog-pagination__info {
+    font-size: 0.8125rem;
+    color: var(--text-muted, #6b7280);
+}
+
+.catalog-pagination__nav {
+    display: flex;
+    gap: 4px;
+}
+
+.catalog-pagination__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm, 4px);
+    border: 1px solid var(--border-light, #e5e7eb);
+    background: var(--surface-card, #fff);
+    color: var(--text-primary, #111827);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-decoration: none;
+}
+
+.catalog-pagination__link:hover {
+    border-color: var(--action-primary, #7c3aed);
+    color: var(--action-primary, #7c3aed);
+    text-decoration: none;
+}
+
+.catalog-pagination__link.is-active {
+    background: var(--action-primary, #7c3aed);
+    border-color: var(--action-primary, #7c3aed);
+    color: var(--text-on-primary, #fff);
+}
+
+.catalog-pagination__link.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ----- Mobile Responsive ----- */
+@media (max-width: 767px) {
+    .catalog-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .catalog-modal-card__header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .catalog-modal-card__badges {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .catalog-modal-card__footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .catalog-modal-card__actions {
+        justify-content: stretch;
+    }
+
+    .catalog-modal-card__actions .catalog-btn {
+        flex: 1;
+        justify-content: center;
+    }
+
+    .catalog-specs-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .catalog-pagination {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .catalog-pagination__nav {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 

@@ -696,5 +696,29 @@ class CalloutController extends Controller
 
         return $results;
     }
+
+    /**
+     * ✅ إرجاع HTML للقطع (Server-side rendering)
+     * يستخدم من JS بدلاً من renderProducts()
+     */
+    public function showHtml(Request $request)
+    {
+        // استخدام نفس منطق show() للحصول على البيانات
+        $jsonResponse = $this->show($request);
+        $data = $jsonResponse->getData(true);
+
+        if (!($data['ok'] ?? false)) {
+            return view('partials.api.part-details', [
+                'catalogItems' => [],
+                'pagination' => null,
+                'error' => $data['error'] ?? 'Unknown error',
+            ]);
+        }
+
+        return view('partials.api.part-details', [
+            'catalogItems' => $data['catalogItems'] ?? [],
+            'pagination' => $data['pagination'] ?? null,
+        ]);
+    }
 }
 

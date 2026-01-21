@@ -72,6 +72,7 @@ Route::prefix('modal')->name('modal.')->group(function () {
 // ✅ API Routes with Rate Limiting
 Route::prefix('api')->middleware(['web', 'throttle:120,1'])->group(function () {
     Route::get('/callouts', [CalloutController::class, 'show'])->name('api.callouts.show');
+    Route::get('/callouts/html', [CalloutController::class, 'showHtml'])->name('api.callouts.html');
     Route::get('/callouts/metadata', [CalloutController::class, 'metadata'])->name('api.callouts.metadata');
 });
 

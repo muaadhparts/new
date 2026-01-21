@@ -1,6 +1,6 @@
 {{-- resources/views/partials/api/alternatives.blade.php --}}
 {{-- Simplified alternatives list with offers button --}}
-{{-- Uses catalog-unified.css for styling --}}
+{{-- Uses unified catalog-modal CSS classes from muaadh-system.css --}}
 {{-- Integrates with illustrated.js navigation system --}}
 
 @php
@@ -24,7 +24,7 @@
                 <i class="fas fa-exchange-alt"></i>
                 @lang('Alternatives')
             </h5>
-            <span class="badge bg-secondary">{{ $alternatives->count() }} @lang('items')</span>
+            <span class="catalog-badge catalog-badge-secondary">{{ $alternatives->count() }} @lang('items')</span>
         </div>
 
         {{-- Desktop Table --}}
@@ -46,21 +46,20 @@
                                 <td>
                                     <img src="{{ $resolvePhoto($catalogItem->photo) }}"
                                          alt="{{ $catalogItem->part_number }}"
-                                         class="catalog-offers-thumb"
-                                         style="width: 50px; height: 50px; object-fit: contain;"
+                                         class="catalog-modal-card__photo"
                                          loading="lazy">
                                 </td>
                                 <td>
-                                    <code class="fw-bold text-dark">{{ $catalogItem->part_number }}</code>
+                                    <span class="catalog-modal-card__number">{{ $catalogItem->part_number }}</span>
                                 </td>
                                 <td class="text-truncate" style="max-width: 200px;">
                                     {{ $catalogItem->localized_name }}
                                 </td>
                                 <td class="text-end">
                                     @if($catalogItem->lowest_price_formatted)
-                                        <div>
-                                            <small class="text-muted">@lang('From')</small>
-                                            <span class="fw-bold text-success">{{ $catalogItem->lowest_price_formatted }}</span>
+                                        <div class="catalog-modal-card__price">
+                                            <span class="catalog-modal-card__price-from">@lang('From')</span>
+                                            <span class="catalog-modal-card__price-value">{{ $catalogItem->lowest_price_formatted }}</span>
                                         </div>
                                         <small class="text-muted">{{ $catalogItem->offers_count }} @lang('offers')</small>
                                     @else
@@ -69,11 +68,11 @@
                                 </td>
                                 <td class="text-center">
                                     <button type="button"
-                                            class="btn btn-primary btn-sm alt-offers-btn"
+                                            class="catalog-btn catalog-btn-primary catalog-btn-sm alt-offers-btn"
                                             data-catalog-item-id="{{ $catalogItem->id }}"
                                             data-part-number="{{ $catalogItem->part_number }}"
                                             data-name="{{ $catalogItem->localized_name }}">
-                                        <i class="fas fa-tags me-1"></i>
+                                        <i class="fas fa-tags"></i>
                                         @lang('Offers')
                                     </button>
                                 </td>
@@ -84,42 +83,44 @@
             </div>
         </div>
 
-        {{-- Mobile Cards --}}
-        <div class="d-block d-md-none catalog-cards">
+        {{-- Mobile Cards - Using unified catalog-modal-card classes --}}
+        <div class="d-block d-md-none">
             @foreach($alternatives as $catalogItem)
-                <div class="catalog-card card-available">
-                    <div class="catalog-card-header">
-                        <div class="d-flex align-items-center gap-2">
+                <div class="catalog-modal-card {{ $catalogItem->offers_count > 0 ? 'card-available' : '' }}">
+                    {{-- Header --}}
+                    <div class="catalog-modal-card__header">
+                        <div class="catalog-modal-card__part-info">
                             <img src="{{ $resolvePhoto($catalogItem->photo) }}"
                                  alt="{{ $catalogItem->part_number }}"
-                                 class="catalog-offers-thumb"
-                                 style="width: 40px; height: 40px; object-fit: contain;"
+                                 class="catalog-modal-card__photo"
                                  loading="lazy">
-                            <div>
-                                <code class="fw-bold">{{ $catalogItem->part_number }}</code>
-                                @if($catalogItem->offers_count > 0)
-                                    <span class="catalog-badge catalog-badge-success ms-1">
-                                        {{ $catalogItem->offers_count }} @lang('offers')
-                                    </span>
-                                @endif
-                            </div>
+                            <span class="catalog-modal-card__number">{{ $catalogItem->part_number }}</span>
+                        </div>
+                        <div class="catalog-modal-card__badges">
+                            @if($catalogItem->offers_count > 0)
+                                <span class="catalog-badge catalog-badge-success">
+                                    {{ $catalogItem->offers_count }} @lang('offers')
+                                </span>
+                            @endif
                         </div>
                     </div>
 
-                    <div class="catalog-card-body">
+                    {{-- Body --}}
+                    <div class="catalog-modal-card__body">
                         <div class="catalog-card-name">{{ $catalogItem->localized_name }}</div>
                     </div>
 
-                    <div class="catalog-card-footer">
-                        <div class="catalog-card-price">
+                    {{-- Footer --}}
+                    <div class="catalog-modal-card__footer">
+                        <div class="catalog-modal-card__price">
                             @if($catalogItem->lowest_price_formatted)
-                                <small class="text-muted">@lang('From')</small>
-                                <span class="text-success fw-bold">{{ $catalogItem->lowest_price_formatted }}</span>
+                                <span class="catalog-modal-card__price-from">@lang('From')</span>
+                                <span class="catalog-modal-card__price-value">{{ $catalogItem->lowest_price_formatted }}</span>
                             @else
                                 <span class="text-muted">-</span>
                             @endif
                         </div>
-                        <div class="catalog-card-actions">
+                        <div class="catalog-modal-card__actions">
                             <button type="button"
                                     class="catalog-btn catalog-btn-primary alt-offers-btn"
                                     data-catalog-item-id="{{ $catalogItem->id }}"
