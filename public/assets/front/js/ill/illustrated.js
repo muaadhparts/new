@@ -551,47 +551,66 @@
     const $img = $('#image');
     if (!$img.length) return;
 
-    $img.smoothZoom({
-      width: '100%',
-      height: 600,
-      responsive: true,
-      container: 'zoom_container',
-      responsive_maintain_ratio: true,
-      max_WIDTH: '',
-      max_HEIGHT: '',
-      zoom_SINGLE_STEP: false,
-      animation_SMOOTHNESS: 3,
-      animation_SPEED_ZOOM: 3,
-      animation_SPEED_PAN: 3,
-      initial_POSITION: '',
-      initial_ZOOM: '',
-      zoom_MIN: '',
-      zoom_MAX: 300,
-      zoom_OUT_TO_FIT: true,
-      pan_LIMIT_BOUNDARY: false,
-      zoom_BUTTONS_SHOW: false,  // Hide zoom buttons
-      pan_BUTTONS_SHOW: false,   // Hide pan buttons
-      pan_REVERSE: false,
-      touch_DRAG: true,
-      mouse_DRAG: true,
-      button_SIZE: 20,
-      button_SIZE_TOUCH_DEVICE: 18,
-      button_AUTO_HIDE: true,
-      button_AUTO_HIDE_DELAY: 2,
-      button_ALIGN: 'top right',
-      mouse_DOUBLE_CLICK: true,
-      mouse_WHEEL: true,
-      mouse_WHEEL_CURSOR_POS: true,
-      use_3D_Transform: true,
-      border_TRANSPARENCY: 0,
-      on_IMAGE_LOAD: function() {
-        addLandmarks().then(() => {
-          autoOpen();
-        }).catch(err => {
-          console.error('addLandmarks failed:', err);
-        });
-      }
-    });
+    // Load image first to get natural dimensions
+    const img = new Image();
+    img.onload = function() {
+      const naturalWidth = img.naturalWidth;
+      const naturalHeight = img.naturalHeight;
+      const containerWidth = $('#zoom_container').width() || $img.parent().width() || 800;
+
+      // Calculate height based on image aspect ratio
+      const aspectRatio = naturalHeight / naturalWidth;
+      const calculatedHeight = Math.round(containerWidth * aspectRatio);
+
+      // Limit max height on desktop, allow natural on mobile
+      const isMobile = window.innerWidth < 768;
+      const maxHeight = isMobile ? window.innerHeight * 0.7 : 700;
+      const finalHeight = Math.min(calculatedHeight, maxHeight);
+
+      $img.smoothZoom({
+        width: '100%',
+        height: finalHeight,
+        responsive: true,
+        container: 'zoom_container',
+        responsive_maintain_ratio: true,
+        max_WIDTH: '',
+        max_HEIGHT: '',
+        zoom_SINGLE_STEP: false,
+        animation_SMOOTHNESS: 3,
+        animation_SPEED_ZOOM: 3,
+        animation_SPEED_PAN: 3,
+        initial_POSITION: '',
+        initial_ZOOM: '',
+        zoom_MIN: '',
+        zoom_MAX: 300,
+        zoom_OUT_TO_FIT: true,
+        pan_LIMIT_BOUNDARY: true,
+        zoom_BUTTONS_SHOW: false,
+        pan_BUTTONS_SHOW: false,
+        pan_REVERSE: false,
+        touch_DRAG: true,
+        mouse_DRAG: true,
+        button_SIZE: 20,
+        button_SIZE_TOUCH_DEVICE: 18,
+        button_AUTO_HIDE: true,
+        button_AUTO_HIDE_DELAY: 2,
+        button_ALIGN: 'top right',
+        mouse_DOUBLE_CLICK: true,
+        mouse_WHEEL: true,
+        mouse_WHEEL_CURSOR_POS: true,
+        use_3D_Transform: true,
+        border_TRANSPARENCY: 0,
+        on_IMAGE_LOAD: function() {
+          addLandmarks().then(() => {
+            autoOpen();
+          }).catch(err => {
+            console.error('addLandmarks failed:', err);
+          });
+        }
+      });
+    };
+
+    img.src = $img.attr('src');
   }
 
   function autoOpen() {

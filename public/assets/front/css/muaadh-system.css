@@ -7769,6 +7769,23 @@ select option {
 }
 
 /* ============================================================================
+   ILLUSTRATION ZOOM - Touch Fix
+   ============================================================================ */
+
+/* Fix vertical drag on mobile when zoomed */
+#zoom_container {
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+#zoom_container img {
+    touch-action: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+}
+
+/* ============================================================================
    END OF COMPREHENSIVE DESIGN TOKENS
    ============================================================================ */
 
