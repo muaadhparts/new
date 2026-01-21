@@ -386,6 +386,8 @@
         return;
       }
       if (key) {
+        // Move highlight to clicked callout (replaces search highlight)
+        highlightSearchedCallout(key);
         openCallout(key);
       }
     });
@@ -668,11 +670,49 @@
 
     const found = byKey[calloutKey];
 
+    // Highlight the searched callout with red
+    highlightSearchedCallout(calloutKey);
+
+    // Scroll page to image area (so user sees the image after closing modal)
+    scrollToImageArea();
+
     if (found && String(found.callout_type || '').toLowerCase() === 'section') {
       goToSection(calloutKey);
     } else {
       openCallout(calloutKey);
     }
+  }
+
+  function scrollToImageArea() {
+    const zoomContainer = document.getElementById('zoom_container');
+    if (zoomContainer) {
+      // Scroll with offset to show some context above the image
+      const rect = zoomContainer.getBoundingClientRect();
+      const scrollTop = window.pageYOffset + rect.top - 100; // 100px offset from top
+      window.scrollTo({ top: Math.max(0, scrollTop), behavior: 'smooth' });
+    }
+  }
+
+  // Track currently highlighted callout from search
+  let currentSearchedCallout = null;
+
+  function highlightSearchedCallout(calloutKey) {
+    // Remove previous highlight
+    $('.callout-label.callout-searched').removeClass('callout-searched');
+
+    // Find and highlight the new one
+    if (calloutKey) {
+      const $callout = $(`.callout-label[data-callout-key="${calloutKey}"]`);
+      if ($callout.length) {
+        $callout.addClass('callout-searched');
+        currentSearchedCallout = calloutKey;
+      }
+    }
+  }
+
+  function clearSearchedHighlight() {
+    $('.callout-label.callout-searched').removeClass('callout-searched');
+    currentSearchedCallout = null;
   }
 
   /* ========================= Boot ========================= */
