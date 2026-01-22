@@ -42,7 +42,7 @@
                     <br>
                     @lang('You can then set your own price, stock, and other offer details.')
                 </p>
-                <a href="{{ route('merchant-catalog-item-add') }}" class="btn btn-primary btn-lg">
+                <a href="{{ route('merchant-catalog-item-create', 'items') }}" class="btn btn-primary btn-lg">
                     <i class="fas fa-plus me-2"></i>@lang('Add CatalogItem by PART_NUMBER')
                 </a>
             </div>
@@ -53,7 +53,7 @@
 <script>
     // Auto redirect after 3 seconds
     setTimeout(function() {
-        window.location.href = "{{ route('merchant-catalog-item-add') }}";
+        window.location.href = "{{ route('merchant-catalog-item-create', 'items') }}";
     }, 3000);
 </script>
 @endsection

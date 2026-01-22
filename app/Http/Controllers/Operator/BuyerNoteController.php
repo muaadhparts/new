@@ -12,7 +12,7 @@ class BuyerNoteController extends OperatorBaseController
 	// Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
 	public function datatables()
 	{
-		$datas = BuyerNote::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'user'])
+		$datas = BuyerNote::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.merchantBranch', 'user'])
 			->latest('id')
 			->get();
 
@@ -73,7 +73,7 @@ class BuyerNoteController extends OperatorBaseController
 	public function show($id)
 	{
 		// Brand from catalog item fitments
-		$data = BuyerNote::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])->findOrFail($id);
+		$data = BuyerNote::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.merchantBranch'])->findOrFail($id);
 		return view('operator.buyer-note.show', compact('data'));
 	}
 

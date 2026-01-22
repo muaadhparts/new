@@ -17,22 +17,18 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
-        // Get CatalogItems that belong to this merchant via merchant_items
-        $datas = CatalogItem::whereHas('merchantItems', function($query) use ($user) {
-                $query->where('user_id', $user->id)
-                      ->where('item_type', 'normal');
-            })
+        // MerchantItem is the primary entity - merchant manages their offers
+        $merchantItems = MerchantItem::where('user_id', $user->id)
+            ->where('item_type', 'normal')
             ->with([
-                'merchantItems' => function($query) use ($user) {
-                    $query->where('user_id', $user->id)
-                          ->with(['qualityBrand', 'user']);
-                },
-                'fitments.brand'
+                'catalogItem.fitments.brand',
+                'qualityBrand',
+                'merchantBranch',
             ])
             ->latest('id')
             ->paginate(10);
 
-        return view('merchant.catalog-item.index', compact('datas'));
+        return view('merchant.catalog-item.index', compact('merchantItems'));
     }
 
     //*** GET Request - Create form
@@ -120,21 +116,6 @@ class CatalogItemController extends MerchantBaseController
         ]);
     }
 
-    public function catalogs()
-    {
-        $user = $this->user;
-
-        // Get catalog items that have active merchant listings
-        $datas = CatalogItem::whereHas('merchantItems', function($q) {
-                $q->where('item_type', 'normal')
-                  ->where('status', 1);
-            })
-            ->latest('id')
-            ->get();
-
-        return view('merchant.catalog-item.catalogs', compact('datas', 'user'));
-    }
-
     //*** GET Request
     public function status($id1, $id2)
     {
@@ -153,17 +134,11 @@ class CatalogItemController extends MerchantBaseController
     public function store(Request $request)
     {
         $user = $this->user;
-        $package = $user->membershipPlans()->latest('id')->first();
-        $prods = $user->merchantItems()->count();
 
         if (Muaadhsetting::find(1)->verify_item == 1) {
             if (!$user->isTrustBadgeTrusted()) {
                 return back()->with('unsuccess', __('You must complete your trust badge first.'));
             }
-        }
-
-        if (!($prods < $package->allowed_items || $package->allowed_items == 0)) {
-            return back()->with('unsuccess', __('You Can\'t Add More Items.'));
         }
 
         $rules = [

@@ -31,11 +31,12 @@
 												<table id="muaadhtable" class="table table-hover dt-responsive" cellspacing="0" width="100%">
 													<thead>
 														<tr>
+									                        <th>{{ __('Part Number') }}</th>
 									                        <th>{{ __('Name') }}</th>
 									                        <th>{{ __('Brand') }}</th>
 									                        <th>{{ __('Quality Brand') }}</th>
 									                        <th>{{ __('Merchant') }}</th>
-									                        <th>{{ __('Category') }}</th>
+									                        <th>{{ __('Branch') }}</th>
 									                        <th>{{ __('Clicks') }}</th>
 														</tr>
 													</thead>
@@ -44,20 +45,15 @@
                                                 @foreach($productss as $catalogItem)
                     								@foreach($catalogItem as $cartItem)
                                                         <tr>
-														<td>
-															{{ $cartItem->catalogItem ? getLocalizedCatalogItemName($cartItem->catalogItem, 60) : __('N/A') }}
-														</td>
+                                                        <td><code>{{ $cartItem->catalogItem?->part_number ?? __('N/A') }}</code></td>
+														<td>{{ $cartItem->catalogItem ? getLocalizedCatalogItemName($cartItem->catalogItem, 60) : __('N/A') }}</td>
                                                         @php
                                                             $fitments = $cartItem->catalogItem?->fitments ?? collect();
                                                             $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
                                                             $firstBrand = $brands->first();
                                                         @endphp
-                                                        <td>
-                                                            {{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}
-                                                        </td>
-                                                        <td>
-                                                            {{ $cartItem->merchantItem && $cartItem->merchantItem->qualityBrand ? getLocalizedQualityName($cartItem->merchantItem->qualityBrand) : __('N/A') }}
-                                                        </td>
+                                                        <td>{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</td>
+                                                        <td>{{ $cartItem->merchantItem && $cartItem->merchantItem->qualityBrand ? getLocalizedQualityName($cartItem->merchantItem->qualityBrand) : __('N/A') }}</td>
                                                         <td>
                                                             @if($cartItem->merchantItem && $cartItem->merchantItem->user)
                                                                 {{ $cartItem->merchantItem->user->shop_name ?: $cartItem->merchantItem->user->name }}
@@ -65,9 +61,7 @@
                                                                 {{ __('N/A') }}
                                                             @endif
                                                         </td>
-                                                        <td>
-                                                            {{ $firstBrand ? $firstBrand->localized_name : __('N/A') }}
-                                                        </td>
+                                                        <td>{{ $cartItem->merchantItem && $cartItem->merchantItem->merchantBranch ? $cartItem->merchantItem->merchantBranch->warehouse_name : __('N/A') }}</td>
                                                         <td>{{ $catalogItem->count() }}</td>
                                                         </tr>
                                                         @break

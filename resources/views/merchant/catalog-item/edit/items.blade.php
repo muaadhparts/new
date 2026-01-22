@@ -1,28 +1,5 @@
 @extends('layouts.merchant')
 
-@section('css')
-<style>
-    .catalog-item-info {
-        background: var(--bg-light, #f8f9fa);
-        border-radius: 8px;
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    .catalog-item-info img {
-        max-height: 120px;
-        border-radius: 8px;
-    }
-    .info-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        background: var(--bg-secondary, #e9ecef);
-        border-radius: 4px;
-        font-size: 13px;
-        margin-right: 8px;
-    }
-</style>
-@endsection
-
 @section('content')
     <div class="gs-merchant-outlet">
         <!-- breadcrumb start -->
@@ -59,32 +36,34 @@
         <!-- breadcrumb end -->
 
         <!-- Form start -->
-        <form class="row gy-3 gy-lg-4" id="merchantItemForm" action="{{ route('merchant-catalog-item-update', $merchantItem->id) }}" method="POST">
+        <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="merchantItemForm" action="{{ route('merchant-catalog-item-update', $merchantItem->id) }}" method="POST">
             @csrf
 
             <!-- Main Form -->
-            <div class="col-12 col-lg-8">
+            <div class="col-12 col-lg-8 items-catalogItem-inputes-wrapper show">
                 <div class="form-group">
                     <!-- Catalog Item Info (Read-only) -->
-                    <div class="catalog-item-info">
-                        <div class="d-flex gap-3 align-items-start">
-                            @php
-                                $photoUrl = asset('assets/images/noimage.png');
-                                if ($data->photo) {
-                                    if (filter_var($data->photo, FILTER_VALIDATE_URL)) {
-                                        $photoUrl = $data->photo;
-                                    } else {
-                                        $photoUrl = \Illuminate\Support\Facades\Storage::url($data->photo);
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex gap-3 align-items-start">
+                                @php
+                                    $photoUrl = asset('assets/images/noimage.png');
+                                    if ($data->photo) {
+                                        if (filter_var($data->photo, FILTER_VALIDATE_URL)) {
+                                            $photoUrl = $data->photo;
+                                        } else {
+                                            $photoUrl = \Illuminate\Support\Facades\Storage::url($data->photo);
+                                        }
                                     }
-                                }
-                            @endphp
-                            <img src="{{ $photoUrl }}" alt="{{ $data->name }}">
-                            <div>
-                                <h6 class="mb-1">{{ $data->name }}</h6>
-                                <p class="mb-2 text-muted"><strong>@lang('Part Number'):</strong> {{ $data->part_number }}</p>
+                                @endphp
+                                <img src="{{ $photoUrl }}" alt="{{ $data->name }}" class="rounded" width="100">
                                 <div>
-                                    <span class="info-badge"><strong>@lang('ID'):</strong> {{ $merchantItem->id }}</span>
-                                    <span class="info-badge"><strong>@lang('Created'):</strong> {{ $merchantItem->created_at->format('Y-m-d') }}</span>
+                                    <h6 class="mb-1">{{ $data->name }}</h6>
+                                    <p class="mb-2 text-muted"><strong>@lang('Part Number'):</strong> {{ $data->part_number }}</p>
+                                    <div>
+                                        <span class="badge bg-secondary me-1">@lang('ID'): {{ $merchantItem->id }}</span>
+                                        <span class="badge bg-secondary">@lang('Created'): {{ $merchantItem->created_at->format('Y-m-d') }}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -294,7 +273,7 @@
                         </div>
 
                         <!-- Affiliate Link -->
-                        <div class="input-label-wrapper" id="affiliate_link_wrapper" style="{{ $merchantItem->item_type == 'affiliate' ? '' : 'display: none;' }}">
+                        <div class="input-label-wrapper {{ $merchantItem->item_type == 'affiliate' ? '' : 'hidden' }}" id="affiliate_link_wrapper">
                             <label>@lang('Affiliate Link') <span class="text-danger">*</span></label>
                             <input type="url" class="form-control" name="affiliate_link" value="{{ $merchantItem->affiliate_link }}" placeholder="@lang('Enter Affiliate URL')">
                         </div>
@@ -343,13 +322,13 @@
                 });
             });
 
-            // Item type toggle (affiliate link visibility)
+            // Item type toggle
             $('#item_type').on('change', function() {
                 if ($(this).val() === 'affiliate') {
-                    $('#affiliate_link_wrapper').show();
+                    $('#affiliate_link_wrapper').removeClass('hidden').show();
                     $('#affiliate_link_wrapper input').prop('required', true);
                 } else {
-                    $('#affiliate_link_wrapper').hide();
+                    $('#affiliate_link_wrapper').addClass('hidden').hide();
                     $('#affiliate_link_wrapper input').prop('required', false);
                 }
             });
@@ -380,7 +359,6 @@
 
             // Form submit handler
             $('#merchantItemForm').on('submit', function(e) {
-                // Sync nicEdit content
                 var editors = document.getElementsByClassName('nic-edit');
                 for (var i = 0; i < editors.length; i++) {
                     var editorInstance = nicEditors.findEditor(editors[i].id);

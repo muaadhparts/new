@@ -7,9 +7,9 @@
             <div class="d-flex gap-4  flex-wrap align-items-center custom-gap-sm-2">
                 <h4 class="text-capitalize">@lang('All CatalogItems')</h4>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('merchant-catalog-item-add') }}"
+                    <a href="{{ route('merchant-catalog-item-create', 'items') }}"
                         class="template-btn md-btn black-btn data-table-btn">
-                        <i class="fas fa-plus"></i> @lang('Add New CatalogItem')
+                        <i class="fas fa-plus"></i> @lang('Add Merchant Item')
                     </a>
                     @if(auth()->id() === 1)
                     <a href="{{ route('merchant-stock-management') }}"
@@ -54,9 +54,11 @@
                         <tr>
 
                             <th>{{ __('Image') }}</th>
+                            <th>{{ __('Part Number') }}</th>
                             <th>{{ __('Name') }}</th>
                             <th>{{ __('Brand') }}</th>
                             <th>{{ __('Quality Brand') }}</th>
+                            <th>{{ __('Branch') }}</th>
                             <th>{{ __('Type') }}</th>
                             <th>{{ __('Stock') }}</th>
                             <th>{{ __('Price') }}</th>
@@ -65,134 +67,86 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($datas as $data)
+                        @forelse ($merchantItems as $item)
                             @php
-                                // $data is CatalogItem model, get the merchant's item
-                                $merchantItem = $data->merchantItems->first();
+                                $catalogItem = $item->catalogItem;
+                                $fitments = $catalogItem?->fitments ?? collect();
+                                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                $firstBrand = $brands->first();
                             @endphp
                             <tr>
-
-
                                 <td class="text-start">
                                     <div class="catalogItem-name">
-                                        <img src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
-                                            alt="Image" class="img-thumbnail" style="width:80px">
+                                        @php
+                                            $photo = $catalogItem?->photo;
+                                            $photoUrl = $photo
+                                                ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
+                                                : asset('assets/images/noimage.png');
+                                        @endphp
+                                        <img src="{{ $photoUrl }}" alt="Image" class="img-thumbnail" style="width:80px">
                                     </div>
                                 </td>
+                                <td><span class="content"><code>{{ $catalogItem?->part_number ?? __('N/A') }}</code></span></td>
                                 <td class="text-start">
                                     <div class="catalogItem-name">
                                         <span class="content">
-                                            {{ getLocalizedCatalogItemName($data, 50) }}
+                                            {{ $catalogItem ? getLocalizedCatalogItemName($catalogItem, 50) : __('N/A') }}
                                         </span>
                                     </div>
                                 </td>
-
-                                @php
-                                    $fitments = $data->fitments ?? collect();
-                                    $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                    $firstBrand = $brands->first();
-                                @endphp
                                 <td><span class="content">{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</span></td>
-                                <td><span class="content">{{ $merchantItem && $merchantItem->qualityBrand ? $merchantItem->qualityBrand->display_name : __('N/A') }}</span></td>
-                                <td><span class="content">{{ $data->type }}</span></td>
+                                <td><span class="content">{{ $item->qualityBrand?->display_name ?? __('N/A') }}</span></td>
+                                <td><span class="content">{{ $item->merchantBranch?->warehouse_name ?? __('N/A') }}</span></td>
+                                <td><span class="content">{{ ucfirst($item->item_type) }}</span></td>
                                 <td>
                                     <span class="content">
-                                        @php
-                                            $stock = $merchantItem ? $merchantItem->stock : null;
-                                            if ($stock === null || $stock === '') {
-                                                echo __('Unlimited');
-                                            } elseif ($stock == 0) {
-                                                echo '<span class="text-danger">' . __('Out Of Stock') . '</span>';
-                                            } else {
-                                                echo $stock;
-                                            }
-                                        @endphp
+                                        @if($item->stock === null || $item->stock === '')
+                                            {{ __('Unlimited') }}
+                                        @elseif($item->stock == 0)
+                                            <span class="text-danger">{{ __('Out Of Stock') }}</span>
+                                        @else
+                                            {{ $item->stock }}
+                                        @endif
                                     </span>
                                 </td>
-                                <td><span class="content">{{ $merchantItem ? \App\Models\CatalogItem::convertPrice($merchantItem->price) : $data->showPrice() }}</span></td>
-
+                                <td><span class="content">{{ \App\Models\CatalogItem::convertPrice($item->price) }}</span></td>
                                 <td>
-                                    @php
-                                        // $merchantItem should always exist because we filter by whereHas('merchantItems')
-                                        // But just in case, we skip if not found
-                                        if (!$merchantItem) {
-                                            continue;
-                                        }
-                                        $active = ($merchantItem->status == 1) ? 'selected' : '';
-                                        $deactivated = ($merchantItem->status == 0) ? 'selected' : '';
-                                        $activeClass = ($merchantItem->status == 1) ? 'active' : 'deactive';
-                                        $merchantItemId = $merchantItem->id;
-                                    @endphp
                                     <div class="status position-relative">
                                         <div class="dropdown-container">
-                                            <select class="form-control nice-select form__control {{ $activeClass }}"
+                                            <select class="form-control nice-select form__control {{ $item->status == 1 ? 'active' : 'deactive' }}"
                                                 id="item_status">
-                                                <option
-                                                    value="{{ route('merchant-catalog-item-status', ['id1' => $merchantItemId, 'id2' => 1]) }}"
-                                                    {{ $active }}> {{ __('Activated') }}
-                                                </option>
-                                                <option
-                                                    value="{{ route('merchant-catalog-item-status', ['id1' => $merchantItemId, 'id2' => 0]) }}"
-                                                    {{ $deactivated }}> {{ __('Deactivated') }}
-                                                </option>
+                                                <option value="{{ route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 1]) }}"
+                                                    {{ $item->status == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
+                                                <option value="{{ route('merchant-catalog-item-status', ['id1' => $item->id, 'id2' => 0]) }}"
+                                                    {{ $item->status == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
                                             </select>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
                                     <div class="table-icon-btns-wrapper">
-                                        <a href="{{ route('merchant-catalog-item-edit', $merchantItemId) }}" class="view-btn edit-btn">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none">
+                                        <a href="{{ route('merchant-catalog-item-edit', $item->id) }}" class="view-btn edit-btn">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
                                                 <g clip-path="url(#clip0_910_50031)">
-                                                    <path
-                                                        d="M18.9999 12.0469C18.447 12.0469 18 12.495 18 13.0469V21.0469C18 21.5979 17.5519 22.0469 17.0001 22.0469H3C2.44794 22.0469 2.00006 21.5979 2.00006 21.0469V7.04688C2.00006 6.49591 2.44794 6.04694 3 6.04694H11.0001C11.553 6.04694 12 5.59888 12 5.047C12 4.49493 11.553 4.04688 11.0001 4.04688H3C1.34601 4.04688 0 5.39288 0 7.04688V21.0469C0 22.7009 1.34601 24.0469 3 24.0469H17.0001C18.6541 24.0469 20.0001 22.7009 20.0001 21.0469V13.0469C20.0001 12.4939 19.5529 12.0469 18.9999 12.0469Z"
-                                                        fill="white" />
-                                                    <path
-                                                        d="M9.37515 11.1346C9.3052 11.2046 9.25815 11.2936 9.23819 11.3895L8.53122 14.9257C8.49826 15.0895 8.55026 15.2585 8.66818 15.3776C8.76321 15.4726 8.8912 15.5235 9.02231 15.5235C9.05417 15.5235 9.08731 15.5206 9.12027 15.5136L12.6553 14.8066C12.7533 14.7865 12.8423 14.7396 12.9113 14.6695L20.8233 6.75751L17.2882 3.22266L9.37515 11.1346Z"
-                                                        fill="white" />
-                                                    <path
-                                                        d="M23.2686 0.778152C22.2937 -0.196884 20.7076 -0.196884 19.7335 0.778152L18.3496 2.16206L21.8846 5.6971L23.2686 4.313C23.7406 3.84206 24.0006 3.214 24.0006 2.54604C24.0006 1.87807 23.7406 1.25002 23.2686 0.778152Z"
-                                                        fill="white" />
+                                                    <path d="M18.9999 12.0469C18.447 12.0469 18 12.495 18 13.0469V21.0469C18 21.5979 17.5519 22.0469 17.0001 22.0469H3C2.44794 22.0469 2.00006 21.5979 2.00006 21.0469V7.04688C2.00006 6.49591 2.44794 6.04694 3 6.04694H11.0001C11.553 6.04694 12 5.59888 12 5.047C12 4.49493 11.553 4.04688 11.0001 4.04688H3C1.34601 4.04688 0 5.39288 0 7.04688V21.0469C0 22.7009 1.34601 24.0469 3 24.0469H17.0001C18.6541 24.0469 20.0001 22.7009 20.0001 21.0469V13.0469C20.0001 12.4939 19.5529 12.0469 18.9999 12.0469Z" fill="white" />
+                                                    <path d="M9.37515 11.1346C9.3052 11.2046 9.25815 11.2936 9.23819 11.3895L8.53122 14.9257C8.49826 15.0895 8.55026 15.2585 8.66818 15.3776C8.76321 15.4726 8.8912 15.5235 9.02231 15.5235C9.05417 15.5235 9.08731 15.5206 9.12027 15.5136L12.6553 14.8066C12.7533 14.7865 12.8423 14.7396 12.9113 14.6695L20.8233 6.75751L17.2882 3.22266L9.37515 11.1346Z" fill="white" />
+                                                    <path d="M23.2686 0.778152C22.2937 -0.196884 20.7076 -0.196884 19.7335 0.778152L18.3496 2.16206L21.8846 5.6971L23.2686 4.313C23.7406 3.84206 24.0006 3.214 24.0006 2.54604C24.0006 1.87807 23.7406 1.25002 23.2686 0.778152Z" fill="white" />
                                                 </g>
-                                                <defs>
-                                                    <clipPath id="clip0_910_50031">
-                                                        <rect width="24" height="24" fill="white" />
-                                                    </clipPath>
-                                                </defs>
+                                                <defs><clipPath id="clip0_910_50031"><rect width="24" height="24" fill="white" /></clipPath></defs>
                                             </svg>
                                         </a>
-                                        @php
-                                            // Build catalog item URL using part number
-                                            $merchantProdUrl = $data->part_number
-                                                ? route('front.part-result', $data->part_number)
-                                                : '#';
-                                        @endphp
-                                        <a href="{{ $merchantProdUrl }}" target="_blank"
-                                            class="view-btn">
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
+                                        <a href="{{ $catalogItem?->part_number ? route('front.part-result', $catalogItem->part_number) : '#' }}" target="_blank" class="view-btn">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_548_165891)">
-                                                    <path
-                                                        d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
-                                                        fill="white" />
+                                                    <path d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z" fill="white" />
                                                 </g>
-                                                <defs>
-                                                    <clipPath id="clip0_548_165891">
-                                                        <rect width="24" height="24" fill="white" />
-                                                    </clipPath>
-                                                </defs>
+                                                <defs><clipPath id="clip0_548_165891"><rect width="24" height="24" fill="white" /></clipPath></defs>
                                             </svg>
                                         </a>
-                                        <a data-href="{{ route('merchant-catalog-item-delete', $merchantItemId) }}" href="javascript:;"
-                                            class="view-btn delete-btn delete_button" data-bs-toggle="modal"
-                                            data-bs-target="#confirm-detete-modal">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                                viewBox="0 0 24 24" fill="none">
-                                                <path
-                                                    d="M16 6V5.2C16 4.0799 16 3.51984 15.782 3.09202C15.5903 2.71569 15.2843 2.40973 14.908 2.21799C14.4802 2 13.9201 2 12.8 2H11.2C10.0799 2 9.51984 2 9.09202 2.21799C8.71569 2.40973 8.40973 2.71569 8.21799 3.09202C8 3.51984 8 4.0799 8 5.2V6M10 11.5V16.5M14 11.5V16.5M3 6H21M19 6V17.2C19 18.8802 19 19.7202 18.673 20.362C18.3854 20.9265 17.9265 21.3854 17.362 21.673C16.7202 22 15.8802 22 14.2 22H9.8C8.11984 22 7.27976 22 6.63803 21.673C6.07354 21.3854 5.6146 20.9265 5.32698 20.362C5 19.7202 5 18.8802 5 17.2V6"
-                                                    stroke="white" stroke-width="2" stroke-linecap="round"
-                                                    stroke-linejoin="round" />
+                                        <a data-href="{{ route('merchant-catalog-item-delete', $item->id) }}" href="javascript:;"
+                                            class="view-btn delete-btn delete_button" data-bs-toggle="modal" data-bs-target="#confirm-detete-modal">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                                <path d="M16 6V5.2C16 4.0799 16 3.51984 15.782 3.09202C15.5903 2.71569 15.2843 2.40973 14.908 2.21799C14.4802 2 13.9201 2 12.8 2H11.2C10.0799 2 9.51984 2 9.09202 2.21799C8.71569 2.40973 8.40973 2.71569 8.21799 3.09202C8 3.51984 8 4.0799 8 5.2V6M10 11.5V16.5M14 11.5V16.5M3 6H21M19 6V17.2C19 18.8802 19 19.7202 18.673 20.362C18.3854 20.9265 17.9265 21.3854 17.362 21.673C16.7202 22 15.8802 22 14.2 22H9.8C8.11984 22 7.27976 22 6.63803 21.673C6.07354 21.3854 5.6146 20.9265 5.32698 20.362C5 19.7202 5 18.8802 5 17.2V6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                             </svg>
                                         </a>
                                     </div>
@@ -200,14 +154,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="text-center">@lang('No CatalogItems Found')</td>
+                                <td colspan="11" class="text-center">@lang('No Merchant Items Found')</td>
                             </tr>
                         @endforelse
-
                     </tbody>
                 </table>
             </div>
-            {{ $datas->links() }}
+            {{ $merchantItems->links() }}
         </div>
     </div>
 @endsection

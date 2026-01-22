@@ -303,8 +303,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/catalog-items/datatables', 'Operator\CatalogItemController@datatables')->name('operator-catalog-item-datatables');
         Route::get('/catalog-items', 'Operator\CatalogItemController@index')->name('operator-catalog-item-index');
         Route::get('/catalog-items/deactive', 'Operator\CatalogItemController@deactive')->name('operator-catalog-item-deactive');
-        Route::get('/catalog-items/catalogs/datatables', 'Operator\CatalogItemController@catalogdatatables')->name('operator-catalog-item-catalog-datatables');
-        Route::get('/catalog-items/catalogs/', 'Operator\CatalogItemController@catalogItemsCatalog')->name('operator-catalog-item-catalog-index');
 
         // CREATE SECTION
         Route::get('/catalog-items/{slug}/create', 'Operator\CatalogItemController@create')->name('operator-catalog-item-create');
@@ -644,9 +642,6 @@ Route::prefix('operator')->group(function () {
 
         //------------ OPERATOR ALTERNATIVES SECTION ENDS ------------
 
-        //------------ OPERATORPAGE SETTINGS SECTION ------------
-
-        Route::get('/frontend-setting/customize', 'Operator\FrontendSettingController@customize')->name('operator-fs-customize');
     });
 
     //------------ OPERATORHOME PAGE SETTINGS SECTION ENDS ------------
@@ -680,7 +675,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/static-content/footer/{id1}/{id2}', 'Operator\StaticContentController@footer')->name('operator-static-content-footer');
         Route::get('/page/banner', 'Operator\FrontendSettingController@page_banner')->name('operator-fs-page-banner');
         Route::get('/right/banner', 'Operator\FrontendSettingController@right_banner')->name('operator-fs-right-banner');
-        Route::get('/menu/links', 'Operator\FrontendSettingController@menu_links')->name('operator-fs-menu-links');
         //------------ OPERATORPAGE SECTION ENDS------------
 
         Route::get('/frontend-setting/contact', 'Operator\FrontendSettingController@contact')->name('operator-fs-contact');
@@ -863,8 +857,6 @@ Route::prefix('operator')->group(function () {
     // Note: Status and Feature routes are now in the ADMIN CATALOG ITEM SECTION above
 
     Route::post('/frontend-setting/update/all', 'Operator\FrontendSettingController@update')->name('operator-fs-update');
-    Route::post('/frontend-setting/update/home', 'Operator\FrontendSettingController@homeupdate')->name('operator-fs-homeupdate');
-    Route::post('/frontend-setting/menu-update', 'Operator\FrontendSettingController@menuupdate')->name('operator-fs-menuupdate');
 
     // ------------ GLOBAL ENDS ----------------------
 
@@ -979,7 +971,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/catalog-items/search-item', 'Merchant\CatalogItemController@searchItem')->name('merchant-catalog-item-search-item');
             Route::get('/catalog-items/{slug}/create', 'Merchant\CatalogItemController@create')->name('merchant-catalog-item-create');
             Route::post('/catalog-items/store', 'Merchant\CatalogItemController@store')->name('merchant-catalog-item-store');
-            Route::get('/catalog-items/catalogs', 'Merchant\CatalogItemController@catalogs')->name('merchant-catalog-item-catalogs');
 
             // EDIT SECTION
             Route::get('/catalog-items/edit/{merchantItemId}', 'Merchant\CatalogItemController@edit')->name('merchant-catalog-item-edit');

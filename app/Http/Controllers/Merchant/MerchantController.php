@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Models\Muaadhsetting;
 use App\Models\CatalogItem;
+use App\Models\MerchantItem;
 use App\Models\MerchantPurchase;
 use App\Models\TrustBadge;
 use Illuminate\Http\Request;
@@ -43,18 +44,18 @@ class MerchantController extends MerchantBaseController
             $data['sales'] = implode(',', $sales);
 
             // ============================================================
-            // Catalog items (limited to 5)
+            // Merchant items (limited to 5) - MerchantItem is primary entity
             // ============================================================
-            $data['catalogItems'] = CatalogItem::whereHas('merchantItems', function ($q) use ($userId) {
-                $q->where('user_id', $userId);
-            })
-            ->with([
-                'fitments.brand',
-                'merchantItems' => function ($q) use ($userId) {
-                    $q->where('user_id', $userId)->with('qualityBrand');
-                }
-            ])
-            ->latest('catalog_items.id')->take(5)->get();
+            $data['merchantItems'] = MerchantItem::where('user_id', $userId)
+                ->where('item_type', 'normal')
+                ->with([
+                    'catalogItem.fitments.brand',
+                    'qualityBrand',
+                    'merchantBranch',
+                ])
+                ->latest('id')
+                ->take(5)
+                ->get();
 
             // Recent purchases (limited to 10)
             $data['recentMerchantPurchases'] = MerchantPurchase::where('user_id', $userId)

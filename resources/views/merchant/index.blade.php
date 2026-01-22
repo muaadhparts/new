@@ -160,10 +160,14 @@
                                         <span class="header-name text-center">@lang('Image')</span>
                                     </th>
                                     <th>
-                                        <span class="header-name">@lang('CatalogItem Name')</span>
+                                        <span class="header-name">@lang('Part Number')</span>
+                                    </th>
+                                    <th>
+                                        <span class="header-name">@lang('Name')</span>
                                     </th>
                                     <th><span class="header-name">@lang('Brand')</span></th>
                                     <th><span class="header-name">@lang('Quality Brand')</span></th>
+                                    <th><span class="header-name">@lang('Branch')</span></th>
                                     <th><span class="header-name">@lang('Price')</span></th>
                                     <th class="text-center">
                                         <span class="header-name">@lang('Details')</span>
@@ -171,69 +175,59 @@
                                 </tr>
                             </thead>
                             <tbody>
-
-                                @forelse ($catalogItems as $data)
+                                @forelse ($merchantItems as $item)
                                     @php
-                                        $merchantItem = $data->merchantItems->first();
+                                        $catalogItem = $item->catalogItem;
+                                        $fitments = $catalogItem?->fitments ?? collect();
+                                        $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+                                        $firstBrand = $brands->first();
+                                        $photo = $catalogItem?->photo;
+                                        $photoUrl = $photo
+                                            ? (filter_var($photo, FILTER_VALIDATE_URL) ? $photo : \Illuminate\Support\Facades\Storage::url($photo))
+                                            : asset('assets/images/noimage.png');
                                     @endphp
-                                    <!-- table data row 1 start  -->
                                     <tr>
                                         <td>
-                                            <img class="table-img"
-                                                src="{{ filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png')) }}"
-                                                alt="">
+                                            <img class="table-img" src="{{ $photoUrl }}" alt="">
+                                        </td>
+                                        <td>
+                                            <span class="content"><code>{{ $catalogItem?->part_number ?? __('N/A') }}</code></span>
                                         </td>
                                         <td class="text-start">
                                             <div class="catalogItem-name">
                                                 <span class="content">
-                                                    {{ getLocalizedCatalogItemName($data, 50) }}
+                                                    {{ $catalogItem ? getLocalizedCatalogItemName($catalogItem, 50) : __('N/A') }}
                                                 </span>
                                             </div>
                                         </td>
                                         <td>
-                                            @php
-                                                $fitments = $data->fitments ?? collect();
-                                                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                                $firstBrand = $brands->first();
-                                            @endphp
-                                            <span class="content">
-                                                {{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}
-                                            </span>
+                                            <span class="content">{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</span>
                                         </td>
                                         <td>
-                                            <span class="content">
-                                                {{ $merchantItem && $merchantItem->qualityBrand ? getLocalizedQualityName($merchantItem->qualityBrand) : __('N/A') }}
-                                            </span>
+                                            <span class="content">{{ $item->qualityBrand ? getLocalizedQualityName($item->qualityBrand) : __('N/A') }}</span>
                                         </td>
                                         <td>
-                                            <span class="content">
-                                                {{ $merchantItem ? \App\Models\CatalogItem::convertPrice($merchantItem->price) : $data->showPrice() }}
-                                            </span>
+                                            <span class="content">{{ $item->merchantBranch?->warehouse_name ?? __('N/A') }}</span>
+                                        </td>
+                                        <td>
+                                            <span class="content">{{ \App\Models\CatalogItem::convertPrice($item->price) }}</span>
                                         </td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ route('merchant-catalog-item-edit', $merchantItem ? $merchantItem->id : $data->id) }}" class="view-btn">
-                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                        xmlns="http://www.w3.org/2000/svg">
+                                                <a href="{{ route('merchant-catalog-item-edit', $item->id) }}" class="view-btn">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                         <g clip-path="url(#clip0_548_165892)">
-                                                            <path
-                                                                d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z"
-                                                                fill="white" />
+                                                            <path d="M12 4.84668C7.41454 4.84668 3.25621 7.35543 0.187788 11.4303C-0.0625959 11.7641 -0.0625959 12.2305 0.187788 12.5644C3.25621 16.6442 7.41454 19.1529 12 19.1529C16.5855 19.1529 20.7438 16.6442 23.8122 12.5693C24.0626 12.2354 24.0626 11.769 23.8122 11.4352C20.7438 7.35543 16.5855 4.84668 12 4.84668ZM12.3289 17.0369C9.28506 17.2284 6.7714 14.7196 6.96287 11.6709C7.11998 9.1572 9.15741 7.11977 11.6711 6.96267C14.7149 6.7712 17.2286 9.27994 17.0371 12.3287C16.8751 14.8375 14.8377 16.8749 12.3289 17.0369ZM12.1767 14.7098C10.537 14.8129 9.18196 13.4628 9.28997 11.8231C9.37343 10.468 10.4732 9.37322 11.8282 9.28485C13.4679 9.18175 14.823 10.5319 14.7149 12.1716C14.6266 13.5316 13.5268 14.6264 12.1767 14.7098Z" fill="white" />
                                                         </g>
-                                                        <defs>
-                                                            <clipPath id="clip0_548_165892">
-                                                                <rect width="24" height="24" fill="white" />
-                                                            </clipPath>
-                                                        </defs>
+                                                        <defs><clipPath id="clip0_548_165892"><rect width="24" height="24" fill="white" /></clipPath></defs>
                                                     </svg>
                                                 </a>
                                             </div>
                                         </td>
                                     </tr>
-                                    <!-- table data row 1 end  -->
                                 @empty
                                     <tr>
-                                        <td colspan="6" class="text-center">@lang('No CatalogItems Found')</td>
+                                        <td colspan="8" class="text-center">@lang('No Merchant Items Found')</td>
                                     </tr>
                                 @endforelse
                             </tbody>

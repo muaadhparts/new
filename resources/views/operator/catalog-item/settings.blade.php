@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 
@@ -76,207 +76,54 @@
 
                             <hr>
 
-                            <h4 class="text-center">{{ __('CATEGORY PAGE SECTION') }}</h4>
-      
-                            <hr>
+                            <h4 class="text-center">{{ __('PAGINATION SETTINGS') }}</h4>
 
+                            <hr>
 
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display CatalogItems Per Page') }} *
+                                        <h4 class="heading">{{ __('Category Page Items Per Page') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display CatalogItems Per Page') }}" name="page_count"
-                                        value="{{ $gs->page_count }}" required="" min="0">
+                                        placeholder="{{ __('Category Page Items Per Page') }}" name="page_count"
+                                        value="{{ $gs->page_count }}" required="" min="1">
                                 </div>
                             </div>
-
-                            <hr>
-
-                            <h4 class="text-center">{{ __('MERCHANT PAGE SECTION') }}</h4>
-
-                            <hr>
-
 
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Display CatalogItems Per Page') }} *
+                                        <h4 class="heading">{{ __('Favorites Page Items Per Page') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <input type="number" class="form-control"
-                                        placeholder="{{ __('Display CatalogItems Per Page') }}" name="merchant_page_count"
-                                        value="{{ $gs->merchant_page_count }}" required="" min="0">
-                                </div>
-                            </div>
-
-
-                            <hr>
-
-                            <h4 class="text-center">{{ __('CATALOGITEM DETAILS PAGE SECTION') }}</h4>
-      
-                            <hr>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-3">
-                                    <div class="left-area">
-                                        <h4 class="heading">
-                                            {{ __('Display Contact Seller') }}
-                                        </h4>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="action-list">
-                                        <select
-                                            class="process select droplinks {{ $gs->is_contact_seller == 1 ? 'drop-success' : 'drop-danger' }}">
-                                            <option data-val="1" value="{{route('operator-gs-status',['is_contact_seller',1])}}"
-                                                {{ $gs->is_contact_seller == 1 ? 'selected' : '' }}>{{ __('Activated') }}
-                                            </option>
-                                            <option data-val="0" value="{{route('operator-gs-status',['is_contact_seller',0])}}"
-                                                {{ $gs->is_contact_seller == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-
-
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-3">
-                                    <div class="left-area">
-                                        <h4 class="heading">{{ __('Display CatalogItem By Seller') }} *
-                                        </h4>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <input type="number" class="form-control"
-                                        placeholder="{{ __('Display CatalogItems Per Page') }}" name="seller_item_count"
-                                        value="{{ $gs->seller_item_count }}" required="" min="0">
-                                </div>
-                            </div>
-
-
-                            <hr>
-                            <h4 class="text-center">{{ __('MERCHANT CATALOGITEM CREATE ENABLE & DISABLE') }}</h4>
-      
-                            <hr>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-3">
-                                    <div class="left-area">
-                                        <h4 class="heading">
-                                            {{ __('Merchant CatalogItems') }}
-                                        </h4>
-                                    </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="action-list">
-                                        <select
-                                            class="process select droplinks {{ $gs->physical == 1 ? 'drop-success' : 'drop-danger' }}">
-                                            <option data-val="1" value="{{route('operator-gs-status',['physical',1])}}"
-                                                {{ $gs->physical == 1 ? 'selected' : '' }}>{{ __('Activated') }}
-                                            </option>
-                                            <option data-val="0" value="{{route('operator-gs-status',['physical',0])}}"
-                                                {{ $gs->physical == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                        placeholder="{{ __('Favorites Page Items Per Page') }}" name="favorite_count"
+                                        value="{{ $gs->favorite_count }}" required="" min="1">
                                 </div>
                             </div>
 
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
                                     <div class="left-area">
-                                        <h4 class="heading">
-                                            {{ __('Merchant Affiliate CatalogItems') }}
+                                        <h4 class="heading">{{ __('Page Size Options') }} *
                                         </h4>
+                                        <p class="sub-heading">{{ __('Options shown in catalog page dropdown') }}</p>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <div class="action-list">
-                                        <select
-                                            class="process select droplinks {{ $gs->affilite == 1 ? 'drop-success' : 'drop-danger' }}">
-                                            <option data-val="1" value="{{route('operator-gs-status',['affilite',1])}}"
-                                                {{ $gs->affilite == 1 ? 'selected' : '' }}>{{ __('Activated') }}
-                                            </option>
-                                            <option data-val="0" value="{{route('operator-gs-status',['affilite',0])}}"
-                                                {{ $gs->affilite == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}
-                                            </option>
-                                        </select>
-                                    </div>
+                                    <ul id="item_page" class="myTags">
+                                        @foreach (explode(',',$gs->item_page) as $element)
+                                          <li>{{ $element }}</li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             </div>
-
-
-
-
-                            <hr>
-
-                            <h4 class="text-center">{{ __('FAVORITES PAGE SECTION') }}</h4>
-      
-                            <hr>
-
-
-                                <div class="row justify-content-center">
-                                    <div class="col-lg-3">
-                                        <div class="left-area">
-                                            <h4 class="heading">{{ __('Display CatalogItems Per Page') }} *
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <input type="number" class="form-control"
-                                            placeholder="{{ __('Display CatalogItems Per Page') }}" name="favorite_count"
-                                            value="{{ $gs->favorite_count }}" required="" min="0">
-                                    </div>
-                                </div>
-                                <div class="row justify-content-center">
-                                    <div class="col-lg-3">
-                                        <div class="left-area">
-                                            <h4 class="heading">{{ __('View Favorites CatalogItem Per Page') }} *
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <ul id="favorite_page" class="myTags">
-                                            @foreach (explode(',',$gs->favorite_page) as $element)
-                                              <li>{{  $element }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
-
-
-
-
-                                <hr>
-
-                                <h4 class="text-center">{{ __('CATALOG & FILTER SECTION') }}</h4>
-          
-                                <hr>
-
-                                <div class="row justify-content-center">
-                                    <div class="col-lg-3">
-                                        <div class="left-area">
-                                            <h4 class="heading">{{ __('View CatalogItem Per Page') }} *
-                                            </h4>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6">
-                                        <ul id="item_page" class="myTags">
-                                            @foreach (explode(',',$gs->item_page) as $element)
-                                              <li>{{  $element }}</li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-                                </div>
 
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
@@ -301,27 +148,16 @@
 
 @section('scripts')
 
-{{-- TAGIT --}}
-
 <script type="text/javascript">
-
 (function($) {
-		"use strict";
+    "use strict";
 
-          $("#item_page").tagit({
-            fieldName: "item_page[]",
-            allowSpaces: true
-          });
-          $("#favorite_page").tagit({
-            fieldName: "favorite_page[]",
-            allowSpaces: true 
-          });
+    $("#item_page").tagit({
+        fieldName: "item_page[]",
+        allowSpaces: true
+    });
 
 })(jQuery);
-
 </script>
 
-{{-- TAGIT ENDS--}}
-
 @endsection
-

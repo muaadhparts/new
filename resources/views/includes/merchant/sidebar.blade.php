@@ -94,8 +94,6 @@
                 </li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems') || request()->is('merchant/catalogItems/edit/*') ? 'active' : '' }}"
                         href="{{ route('merchant-catalog-item-index') }}">@lang('All CatalogItem')</a></li>
-                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/catalogItems/catalogs') || request()->is('merchant/catalogItems/catalog/*') ? 'active' : '' }}"
-                        href="{{ route('merchant-catalog-item-catalogs') }}">@lang('CatalogItem Catalogs')</a></li>
                 @if(auth()->id() === 1)
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/stock/*') ? 'active' : '' }}"
                         href="{{ route('merchant-stock-management') }}">

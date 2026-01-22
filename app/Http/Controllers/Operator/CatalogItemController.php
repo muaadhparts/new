@@ -16,7 +16,7 @@ class CatalogItemController extends OperatorBaseController
      */
     public function datatables(Request $request)
     {
-        $query = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand'])
+        $query = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand', 'merchantBranch'])
             ->where('item_type', 'normal');
 
         if ($request->type == 'deactive') {
@@ -43,6 +43,9 @@ class CatalogItemController extends OperatorBaseController
                     : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
                 return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
             })
+            ->addColumn('part_number', function (MerchantItem $mp) {
+                return '<code>' . ($mp->catalogItem?->part_number ?? __('N/A')) . '</code>';
+            })
             ->addColumn('name', function (MerchantItem $mp) {
                 $catalogItem = $mp->catalogItem;
                 if (!$catalogItem) return __('N/A');
@@ -52,10 +55,9 @@ class CatalogItemController extends OperatorBaseController
                     : '#';
 
                 $displayName = getLocalizedCatalogItemName($catalogItem);
-                $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';
-                $condition = $mp->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
+                $condition = $mp->item_condition == 1 ? ' <span class="badge badge-warning">' . __('Used') . '</span>' : '';
 
-                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
+                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $condition;
             })
             ->addColumn('brand', function (MerchantItem $mp) {
                 $fitments = $mp->catalogItem?->fitments ?? collect();
@@ -72,6 +74,9 @@ class CatalogItemController extends OperatorBaseController
                 if (!$mp->user) return __('N/A');
                 $shopName = $mp->user->shop_name ?: $mp->user->name;
                 return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
+            })
+            ->addColumn('branch', function (MerchantItem $mp) {
+                return $mp->merchantBranch?->warehouse_name ?? __('N/A');
             })
             ->addColumn('price', function (MerchantItem $mp) {
                 $priceWithCommission = $mp->merchantSizePrice();
@@ -104,106 +109,8 @@ class CatalogItemController extends OperatorBaseController
                         <a href="javascript:;" data-href="' . route('operator-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete CatalogItem") . '</a>
                     </div></div>';
             })
-            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant'])
+            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant', 'part_number'])
             ->toJson();
-    }
-
-    /**
-     * Datatables for catalog items listing
-     */
-    public function catalogdatatables()
-    {
-        $query = MerchantItem::with(['catalogItem.fitments.brand', 'user', 'qualityBrand'])
-            ->where('status', 1);
-
-        $datas = $query->latest('id');
-
-        return Datatables::of($datas)
-            ->filterColumn('name', function ($query, $keyword) {
-                $query->whereHas('catalogItem', function($q) use ($keyword) {
-                    $q->where('name', 'like', "%{$keyword}%")
-                      ->orWhere('part_number', 'like', "%{$keyword}%")
-                      ->orWhere('label_ar', 'like', "%{$keyword}%")
-                      ->orWhere('label_en', 'like', "%{$keyword}%");
-                });
-            })
-            ->addColumn('photo', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                if (!$catalogItem) return '<img src="' . asset('assets/images/noimage.png') . '" class="img-thumbnail" style="width:80px">';
-
-                $photo = filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
-                    ? $catalogItem->photo
-                    : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
-                return '<img src="' . $photo . '" alt="Image" class="img-thumbnail" style="width:80px">';
-            })
-            ->addColumn('name', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                if (!$catalogItem) return __('N/A');
-
-                $prodLink = $catalogItem->part_number
-                    ? route('front.part-result', $catalogItem->part_number)
-                    : '#';
-
-                $displayName = getLocalizedCatalogItemName($catalogItem);
-                $part_number = $catalogItem->part_number ? '<br><small class="text-muted">' . __('PART_NUMBER') . ': ' . $catalogItem->part_number . '</small>' : '';
-                $condition = $mp->item_condition == 1 ? '<span class="badge badge-warning">' . __('Used') . '</span>' : '';
-
-                return '<a href="' . $prodLink . '" target="_blank">' . $displayName . '</a>' . $part_number . ' ' . $condition;
-            })
-            ->addColumn('brand', function (MerchantItem $mp) {
-                $fitments = $mp->catalogItem?->fitments ?? collect();
-                $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                $count = $brands->count();
-                if ($count === 0) return __('N/A');
-                if ($count === 1) return getLocalizedBrandName($brands->first());
-                return __('Fits') . ' ' . $count . ' ' . __('brands');
-            })
-            ->addColumn('quality_brand', function (MerchantItem $mp) {
-                return $mp->qualityBrand ? getLocalizedQualityName($mp->qualityBrand) : __('N/A');
-            })
-            ->addColumn('merchant', function (MerchantItem $mp) {
-                if (!$mp->user) return __('N/A');
-                $shopName = $mp->user->shop_name ?: $mp->user->name;
-                return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
-            })
-            ->addColumn('price', function (MerchantItem $mp) {
-                $priceWithCommission = $mp->merchantSizePrice();
-                return \PriceHelper::showAdminCurrencyPrice($priceWithCommission * $this->curr->value);
-            })
-            ->addColumn('stock', function (MerchantItem $mp) {
-                if ($mp->stock === null) return __('Unlimited');
-                if ((int) $mp->stock === 0) return '<span class="text-danger">' . __('Out Of Stock') . '</span>';
-                return $mp->stock;
-            })
-            ->addColumn('status', function (MerchantItem $mp) {
-                $class = $mp->status == 1 ? 'drop-success' : 'drop-danger';
-                $s = $mp->status == 1 ? 'selected' : '';
-                $ns = $mp->status == 0 ? 'selected' : '';
-
-                return '<div class="action-list">
-                    <select class="process select droplinks ' . $class . '">
-                        <option data-val="1" value="' . route('operator-merchant-item-status', ['id' => $mp->id, 'status' => 1]) . '" ' . $s . '>' . __("Activated") . '</option>
-                        <option data-val="0" value="' . route('operator-merchant-item-status', ['id' => $mp->id, 'status' => 0]) . '" ' . $ns . '>' . __("Deactivated") . '</option>
-                    </select>
-                </div>';
-            })
-            ->addColumn('action', function (MerchantItem $mp) {
-                $catalogItem = $mp->catalogItem;
-                if (!$catalogItem) return '';
-
-                return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button>
-                    <div class="action-list">
-                        <a href="' . route('operator-catalog-item-edit', $catalogItem->id) . '"><i class="fas fa-edit"></i> ' . __("Edit CatalogItem") . '</a>
-                        <a href="javascript:;" data-href="' . route('operator-catalog-item-delete', $catalogItem->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete CatalogItem") . '</a>
-                    </div></div>';
-            })
-            ->rawColumns(['name', 'stock', 'status', 'action', 'photo', 'merchant'])
-            ->toJson();
-    }
-
-    public function catalogItemsCatalog()
-    {
-        return view('operator.catalog-item.catalog');
     }
 
     public function index()
@@ -445,19 +352,12 @@ class CatalogItemController extends OperatorBaseController
      */
     public function settingUpdate(Request $request)
     {
-        $input = $request->all();
         $data = \App\Models\Muaadhsetting::findOrFail(1);
 
-        if (!empty($request->catalog_item_page)) {
-            $input['item_page'] = implode(',', $request->catalog_item_page);
-        } else {
-            $input['item_page'] = null;
-        }
+        $input = $request->only(['wholesell', 'page_count', 'favorite_count']);
 
-        if (!empty($request->favorite_page)) {
-            $input['favorite_page'] = implode(',', $request->favorite_page);
-        } else {
-            $input['favorite_page'] = null;
+        if (!empty($request->item_page)) {
+            $input['item_page'] = implode(',', $request->item_page);
         }
 
         cache()->forget('muaadhsettings');

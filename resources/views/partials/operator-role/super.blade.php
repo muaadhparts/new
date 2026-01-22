@@ -133,10 +133,6 @@
             <a href="{{ route('operator-catalog-item-deactive') }}"><span>{{ __('Deactivated CatalogItem') }}</span></a>
         </li>
         <li>
-            <a href="{{ route('operator-catalog-item-catalog-index') }}"><span>{{ __('CatalogItem Catalogs') }}</span></a>
-        </li>
-
-        <li>
             <a href="{{ route('operator-gs-catalog-item-settings') }}"><span>{{ __('CatalogItem Settings') }}</span></a>
         </li>
     </ul>
@@ -329,9 +325,6 @@
         <li>
             <a href="{{ route('operator-brand-index') }}"><span>{{ __('Brands') }}</span></a>
         </li>
-        <li>
-            <a href="{{ route('operator-fs-customize') }}"><span>{{ __('Home Page Customization') }}</span></a>
-        </li>
     </ul>
 </li>
 
@@ -348,10 +341,6 @@
         </li>
         <li>
             <a href="{{ route('operator-static-content-index') }}"><span>{{ __('Other Pages') }}</span></a>
-        </li>
-
-        <li>
-            <a href="{{ route('operator-fs-menu-links') }}"><span>{{ __('Customize Menu Links') }}</span></a>
         </li>
     </ul>
 </li>

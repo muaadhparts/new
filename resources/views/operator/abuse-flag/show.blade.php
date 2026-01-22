@@ -36,7 +36,11 @@
                                     <div class="table-responsive show-table">
                                         <table class="table">
                                             <tr>
-                                                <th>{{ __('CatalogItem') }}</th>
+                                                <th>{{ __('Part Number') }}</th>
+                                                <td><code>{{ $data->catalogItem?->part_number ?? __('N/A') }}</code></td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ __('Name') }}</th>
                                                 <td>{{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem) : __('N/A') }}</td>
                                             </tr>
                                             <tr>
@@ -56,6 +60,10 @@
                                             <tr>
                                                 <th>{{ __('Quality Brand') }}</th>
                                                 <td>{{ $data->merchantItem->qualityBrand ? getLocalizedQualityName($data->merchantItem->qualityBrand) : __('N/A') }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>{{ __('Branch') }}</th>
+                                                <td>{{ $data->merchantItem->merchantBranch ? $data->merchantItem->merchantBranch->warehouse_name : __('N/A') }}</td>
                                             </tr>
                                             @endif
                                         </table>

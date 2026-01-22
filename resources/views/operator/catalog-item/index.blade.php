@@ -32,10 +32,12 @@
                                 <thead>
                                     <tr>
                                         <th>{{ __('Image') }}</th>
+                                        <th>{{ __('Part Number') }}</th>
                                         <th>{{ __('Name') }}</th>
                                         <th>{{ __('Brand') }}</th>
                                         <th>{{ __('Quality Brand') }}</th>
                                         <th>{{ __('Merchant') }}</th>
+                                        <th>{{ __('Branch') }}</th>
                                         <th>{{ __('Stock') }}</th>
                                         <th>{{ __('Price') }}</th>
                                         <th>{{ __('Status') }}</th>
@@ -134,45 +136,17 @@
                 serverSide: true,
                 ajax: '{{ route('operator-catalog-item-datatables') }}?type=all',
                 columns: [
-					{
-                        data: 'photo',
-                        name: 'photo'
-                    },
-					{
-                        data: 'name',
-                        name: 'name'
-                    },
-                    {
-                        data: 'brand',
-                        name: 'brand'
-                    },
-                    {
-                        data: 'quality_brand',
-                        name: 'quality_brand'
-                    },
-                    {
-                        data: 'merchant',
-                        name: 'merchant'
-                    },
-                    {
-                        data: 'stock',
-                        name: 'stock'
-                    },
-                    {
-                        data: 'price',
-                        name: 'price'
-                    },
-                    {
-                        data: 'status',
-                        searchable: false,
-                        orderable: false
-                    },
-                    {
-                        data: 'action',
-                        searchable: false,
-                        orderable: false
-                    }
-
+					{ data: 'photo', name: 'photo' },
+					{ data: 'part_number', name: 'part_number' },
+					{ data: 'name', name: 'name' },
+                    { data: 'brand', name: 'brand' },
+                    { data: 'quality_brand', name: 'quality_brand' },
+                    { data: 'merchant', name: 'merchant' },
+                    { data: 'branch', name: 'branch' },
+                    { data: 'stock', name: 'stock' },
+                    { data: 'price', name: 'price' },
+                    { data: 'status', searchable: false, orderable: false },
+                    { data: 'action', searchable: false, orderable: false }
                 ],
                 language: {
                     processing: '<img src="{{ asset('assets/images/' . $gs->admin_loader) }}">'

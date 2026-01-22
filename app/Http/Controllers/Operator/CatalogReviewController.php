@@ -12,7 +12,7 @@ class CatalogReviewController extends OperatorBaseController
 	    // Note: brand_id moved from catalog_items to merchant_items (2026-01-20)
 	    public function datatables()
 	    {
-	         $datas = CatalogReview::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'user'])
+	         $datas = CatalogReview::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.merchantBranch', 'user'])
 	         	->latest('id')
 	         	->get();
 
@@ -75,7 +75,7 @@ class CatalogReviewController extends OperatorBaseController
 	    public function show($id)
 	    {
 	        // Brand from catalog item fitments
-	        $data = CatalogReview::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand'])->findOrFail($id);
+	        $data = CatalogReview::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.merchantBranch'])->findOrFail($id);
 	        return view('operator.catalog-review.show',compact('data'));
 	    }
 
