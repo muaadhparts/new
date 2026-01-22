@@ -21,11 +21,6 @@ class Kernel extends ConsoleKernel
                 ->withoutOverlapping()
                 ->appendOutputTo(storage_path('logs/reservations-release.log'));
 
-        // تحديث كامل للتويجري (بائع واحد user_id=59): تنزيل + استيراد + تجميع + تحديث يومياً الساعة 2:00 صباحاً
-        $schedule->command('stock:manage full-refresh --user_id=59 --margin=1.3 --branch=ATWJRY')
-                ->dailyAt('02:00')
-                ->withoutOverlapping();
-
         // ✅ Tryoto: تحديث حالة الشحنات النشطة كل 30 دقيقة
         $schedule->command('shipments:update --limit=50')
                 ->everyThirtyMinutes()

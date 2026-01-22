@@ -6,10 +6,12 @@
         <div class="gs-merchant-breadcrumb has-mb">
             <div class="d-flex gap-4 flex-wrap align-items-center custom-gap-sm-2">
                 <h4 class="text-capitalize">@lang('CatalogItem Catalogs')</h4>
+                @if(auth()->id() === 1)
                 <a href="{{ route('merchant-stock-management') }}"
                     class="template-btn md-btn primary-btn">
                     <i class="fas fa-boxes"></i> إدارة المخزون
                 </a>
+                @endif
             </div>
             <ul class="breadcrumb-menu">
                 <li>

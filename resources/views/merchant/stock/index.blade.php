@@ -7,23 +7,11 @@
             <div class="d-flex gap-4 flex-wrap align-items-center custom-gap-sm-2">
                 <h4 class="text-capitalize">إدارة المخزون</h4>
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{{ route('merchant-stock-upload-form') }}" class="template-btn md-btn black-btn">
-                        <i class="fas fa-upload"></i> رفع ملف المخزون
-                    </a>
                     <a href="{{ route('merchant-stock-export') }}" class="template-btn md-btn primary-btn">
                         <i class="fas fa-download"></i> تصدير المخزون الحالي
                     </a>
-                    <a href="{{ route('merchant-stock-template') }}" class="template-btn md-btn secondary-btn">
-                        <i class="fas fa-file-csv"></i> تحميل نموذج CSV
-                    </a>
-                    <form action="{{ route('merchant-stock-auto-update') }}" method="POST" style="display: inline;">
-                        @csrf
-                        <button type="submit" class="template-btn md-btn success-btn" onclick="return confirm('هل أنت متأكد من تحديث المخزون تلقائياً؟')">
-                            <i class="fas fa-sync"></i> تحديث تلقائي
-                        </button>
-                    </form>
                     <button type="button" class="template-btn md-btn btn-warning" data-bs-toggle="modal" data-bs-target="#fullRefreshModal">
-                        <i class="fas fa-sync-alt"></i> تحديث كامل من المصدر
+                        <i class="fas fa-sync-alt"></i> تحديث المخزون من الملفات
                     </button>
                 </div>
             </div>
@@ -59,29 +47,43 @@
             </div>
         @endif
 
-        <!-- Information Card -->
+        <!-- Branch Information Card -->
         <div class="card mb-4">
             <div class="card-body">
-                <h5 class="card-name">معلومات حول إدارة المخزون</h5>
-                <div class="row">
-                    <div class="col-md-6">
-                        <h6>التحديث اليدوي:</h6>
-                        <p>قم برفع ملف CSV يحتوي على معلومات المخزون (PART_NUMBER, اسم المنتج, الكمية, السعر)</p>
-                        <ul>
-                            <li>صيغة الملف المقبولة: CSV, TXT, XLSX, XLS</li>
-                            <li>الحد الأقصى لحجم الملف: 10 ميجابايت</li>
-                            <li>تنسيق البيانات: PART_NUMBER, CatalogItem Name, Stock, Price, Previous Price</li>
-                        </ul>
-                    </div>
-                    <div class="col-md-6">
-                        <h6>التحديث التلقائي:</h6>
-                        <p>يقوم بتحديث المخزون تلقائياً من قاعدة البيانات الرئيسية (stock_all)</p>
-                        <ul>
-                            <li>يتم المطابقة بناءً على PART_NUMBER المنتج</li>
-                            <li>يتم تحديث الكميات المتاحة فقط</li>
-                            <li>سريع وآمن</li>
-                        </ul>
-                    </div>
+                <h5 class="card-name">الفروع والملفات</h5>
+                <p class="text-muted mb-3">كل فرع يتم تحديثه من ملف منفصل على S3:</p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>الفرع</th>
+                                <th>كود المستودع</th>
+                                <th>اسم الملف</th>
+                                <th>الموقع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($branches as $branch)
+                            <tr>
+                                <td>{{ $branch->branch_name }}</td>
+                                <td><code>{{ $branch->warehouse_name }}</code></td>
+                                <td><code>twa{{ str_pad(substr($branch->warehouse_name, -2), 2, '0', STR_PAD_LEFT) }}.csv</code></td>
+                                <td>{{ $branch->getCityName() ?? 'غير محدد' }}</td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>آلية التحديث:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>يتم تحميل ملفات CSV (twa01-twa05) من S3</li>
+                        <li>يتم مطابقة رقم القطعة (item_code) مع جدول التربيط (catalog_item_code_mappings)</li>
+                        <li>يتم تحديث السعر والكمية في جدول merchant_items لكل فرع</li>
+                        <li>القطع غير الموجودة في الملفات يتم تصفير كميتها وتعطيلها</li>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -94,7 +96,6 @@
                         <tr>
                             <th>رقم التحديث</th>
                             <th>نوع التحديث</th>
-                            <th>اسم الملف</th>
                             <th>الحالة</th>
                             <th>التقدم</th>
                             <th>التاريخ</th>
@@ -134,7 +135,7 @@
                 <form id="fullRefreshForm">
                     @csrf
                     <div class="modal-header">
-                        <h5 class="modal-name" id="fullRefreshModalLabel">تحديث كامل من المصدر البعيد</h5>
+                        <h5 class="modal-name" id="fullRefreshModalLabel">تحديث المخزون من ملفات الفروع</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" id="closeModalBtn"></button>
                     </div>
                     <div class="modal-body">
@@ -144,22 +145,10 @@
                                 <i class="fas fa-info-circle"></i>
                                 <strong>ملاحظة:</strong> هذه العملية ستقوم بـ:
                                 <ul class="mb-0 mt-2">
-                                    <li>تحميل ملفات المخزون من المصدر البعيد</li>
-                                    <li>استيراد البيانات إلى قاعدة البيانات</li>
-                                    <li>تحديث المخزون والأسعار لمنتجاتك</li>
+                                    <li>تحميل ملفات CSV المخزون (twa01-twa05) من S3</li>
+                                    <li>تحديث المخزون والأسعار لكل فرع بناءً على الملف الخاص به</li>
+                                    <li>تصفير وتعطيل القطع غير الموجودة في الملفات</li>
                                 </ul>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="branch" class="form-label">الفرع (Branch Code)</label>
-                                <input type="text" class="form-control" id="branch" name="branch" value="ATWJRY" required>
-                                <div class="form-text">كود الفرع الذي تريد التحديث منه</div>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="margin" class="form-label">هامش الربح (Margin)</label>
-                                <input type="number" class="form-control" id="margin" name="margin" value="1.3" step="0.1" min="1.0" required>
-                                <div class="form-text">مثال: 1.3 = زيادة 30% على السعر الأساسي</div>
                             </div>
 
                             <div class="alert alert-warning">
@@ -221,7 +210,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" id="cancelBtn">إلغاء</button>
                         <button type="submit" class="btn btn-warning" id="submitBtn">
-                            <i class="fas fa-sync-alt"></i> بدء التحديث الكامل
+                            <i class="fas fa-sync-alt"></i> بدء التحديث
                         </button>
                         <button type="button" class="btn btn-primary" id="doneBtn" style="display: none;" data-bs-dismiss="modal">
                             <i class="fas fa-check"></i> تم
@@ -243,13 +232,12 @@
             columns: [
                 {data: 'id', name: 'id'},
                 {data: 'update_type', name: 'update_type'},
-                {data: 'file_name', name: 'file_name', defaultContent: 'N/A'},
                 {data: 'status', name: 'status'},
                 {data: 'progress', name: 'progress', orderable: false, searchable: false},
                 {data: 'created_at', name: 'created_at'},
                 {data: 'action', name: 'action', orderable: false, searchable: false}
             ],
-            purchase: [[0, 'desc']],
+            order: [[0, 'desc']],
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.10.24/i18n/Arabic.json'
             }
@@ -311,20 +299,10 @@
         // Handle form submission
         $('#fullRefreshForm').on('submit', function(e) {
             e.preventDefault();
-
-            const margin = $('#margin').val();
-            const branch = $('#branch').val();
-
-            // Validation
-            if (!margin || !branch) {
-                showNotification('يرجى ملء جميع الحقول', 'error');
-                return;
-            }
-
-            startFullRefresh(margin, branch);
+            startFullRefresh();
         });
 
-        function startFullRefresh(margin, branch) {
+        function startFullRefresh() {
             // Hide form, show progress
             $('#formSection').hide();
             $('#progressSection').show();
@@ -339,9 +317,7 @@
                 url: '{{ route('merchant-stock-full-refresh') }}',
                 method: 'POST',
                 data: {
-                    _token: $('input[name="_token"]').val(),
-                    margin: margin,
-                    branch: branch
+                    _token: $('input[name="_token"]').val()
                 },
                 timeout: 30000, // 30 seconds timeout for initialization
                 success: function(response) {
@@ -351,7 +327,7 @@
                         updateProgressBar(10, response.message);
 
                         // Step 2: Start processing
-                        startProcessing(margin, branch);
+                        startProcessing();
                     } else {
                         showError('فشل في بدء العملية: ' + (response.message || 'خطأ غير معروف'));
                     }
@@ -362,17 +338,15 @@
             });
         }
 
-        function startProcessing(margin, branch) {
-            updateProgressBar(15, 'جاري معالجة البيانات...');
+        function startProcessing() {
+            updateProgressBar(15, 'جاري تحميل الملفات ومعالجة البيانات...');
 
             $.ajax({
                 url: '{{ route('merchant-stock-process-full-refresh') }}',
                 method: 'POST',
                 data: {
                     _token: $('input[name="_token"]').val(),
-                    update_id: currentUpdateId,
-                    margin: margin,
-                    branch: branch
+                    update_id: currentUpdateId
                 },
                 timeout: 600000, // 10 minutes timeout
                 success: function(response) {

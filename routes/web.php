@@ -27,32 +27,6 @@ Route::prefix('api/vehicle')->group(function () {
     Route::get('/search', [VehicleSearchApiController::class, 'search'])->name('api.vehicle.search');
 });
 
-// Secure stock refresh endpoint - Token via Authorization header
-Route::post('/api/stock/refresh', function (\Illuminate\Http\Request $request) {
-    // Get token from Authorization header (Bearer token)
-    $token = $request->bearerToken();
-
-    // Validate token
-    if (!$token || $token !== env('REFRESH_TOKEN')) {
-        return response()->json(['error' => 'Unauthorized'], 403);
-    }
-
-    $output = [];
-
-    // تنزيل + استيراد + تجميع + تحديث مخزون وأسعار لبائع واحد (59) على فرع ATWJRY
-    Artisan::call('stock:manage', [
-        'action'    => 'full-refresh',
-        '--user_id' => $request->input('user_id', 59),
-        '--margin'  => $request->input('margin', 1.3),
-        '--branch'  => $request->input('branch', 'ATWJRY'),
-    ]);
-    $output[] = Artisan::output();
-
-    return response()->json([
-        'status' => 'success',
-        'output' => $output
-    ]);
-})->middleware('throttle:5,1')->name('api.stock.refresh'); // Rate limit: 5 requests per minute
 
 // Quick checkout - redirect to cart
 Route::get('/checkout/quick', function() {
@@ -1026,18 +1000,14 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT CATALOG ITEM SECTION ENDS------------
 
-            //------------ STOCK MANAGEMENT SECTION ------------
+            //------------ STOCK MANAGEMENT SECTION (Merchant #1 only) ------------
             Route::get('/stock/management', 'Merchant\StockManagementController@index')->name('merchant-stock-management');
             Route::get('/stock/datatables', 'Merchant\StockManagementController@datatables')->name('merchant-stock-datatables');
             Route::get('/stock/export', 'Merchant\StockManagementController@export')->name('merchant-stock-export');
-            Route::get('/stock/upload-form', 'Merchant\StockManagementController@uploadForm')->name('merchant-stock-upload-form');
-            Route::post('/stock/upload', 'Merchant\StockManagementController@upload')->name('merchant-stock-upload');
             Route::get('/stock/download/{id}', 'Merchant\StockManagementController@download')->name('merchant-stock-download');
-            Route::post('/stock/auto-update', 'Merchant\StockManagementController@triggerAutoUpdate')->name('merchant-stock-auto-update');
             Route::post('/stock/full-refresh', 'Merchant\StockManagementController@triggerFullRefresh')->name('merchant-stock-full-refresh');
             Route::post('/stock/process-full-refresh', 'Merchant\StockManagementController@processFullRefresh')->name('merchant-stock-process-full-refresh');
             Route::get('/stock/progress/{id}', 'Merchant\StockManagementController@getUpdateProgress')->name('merchant-stock-progress');
-            Route::get('/stock/template', 'Merchant\StockManagementController@downloadTemplate')->name('merchant-stock-template');
             //------------ STOCK MANAGEMENT SECTION ENDS ------------
 
             //------------ MERCHANT PHOTO SECTION ------------

@@ -11,10 +11,12 @@
                         class="template-btn md-btn black-btn data-table-btn">
                         <i class="fas fa-plus"></i> @lang('Add New CatalogItem')
                     </a>
+                    @if(auth()->id() === 1)
                     <a href="{{ route('merchant-stock-management') }}"
                         class="template-btn md-btn primary-btn data-table-btn">
                         <i class="fas fa-boxes"></i> @lang('Stock Management')
                     </a>
+                    @endif
                 </div>
             </div>
             <ul class="breadcrumb-menu">
