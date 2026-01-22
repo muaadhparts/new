@@ -25,20 +25,6 @@
               <div class="row">
                 <div class="col-lg-12">
 
-                <div class="heading-area">
-                  <h4 class="name">
-                    {{ __('Multiple Shipping') }} :
-                  </h4>
-                                  <div class="action-list">
-                                      <select class="process select droplinks {{ $gs->multiple_shipping == 1 ? 'drop-success' : 'drop-danger' }}">
-                                        <option data-val="1" value="{{route('operator-gs-status',['multiple_shipping',1])}}" {{ $gs->multiple_shipping == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-                                        <option data-val="0" value="{{route('operator-gs-status',['multiple_shipping',0])}}" {{ $gs->multiple_shipping == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
-                                      </select>
-                                    </div>
-                </div>
-
-
-
                   <div class="mr-table allproduct">
 
                         @include('alerts.operator.form-success')  

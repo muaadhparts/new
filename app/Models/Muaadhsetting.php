@@ -68,7 +68,6 @@ class Muaadhsetting extends Model
         // ==================================
         // SHIPPING SETTINGS
         // ==================================
-        'multiple_shipping',
         'merchant_ship_info',
 
         // ==================================

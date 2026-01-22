@@ -70,8 +70,6 @@ class PriceHelper
                 }
             }
 
-            $gs = DB::table('muaadhsettings')->first();
-
             $totalAmount = (float) $cart->totalPrice;
 
             // الضريبة
@@ -83,40 +81,7 @@ class PriceHelper
                 $totalAmount += $tax_amount;
             }
 
-            // شحن مفرد
-            if ((int)$gs->multiple_shipping === 0) {
-                $merchant_shipping_ids = [];
-
-                foreach ($merchant_ids as $merchant_id) {
-                    $merchant_shipping_ids[$merchant_id] = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0) ? (int)$input['shipping_id'] : null;
-                }
-
-                $shipping = (!empty($input['shipping_id']) && (int)$input['shipping_id'] !== 0)
-                    ? Shipping::find((int)$input['shipping_id']) : null;
-
-                $shipping_cost = $shipping ? (float)$shipping->price : 0.0;
-
-                $totalAmount += $shipping_cost;
-
-                // كود الخصم
-                if (!empty($input['discount_code_id'])) {
-                    $totalAmount -= (float)($input['discount_amount'] ?? 0);
-                }
-
-                return [
-                    'total_amount'        => $totalAmount,
-                    'shipping'            => $shipping,
-                    'packeing'            => null, // Packing removed
-                    'tax'                 => $tax_amount,
-                    'merchant_shipping_ids' => @json_encode($merchant_shipping_ids),
-                    'merchant_packing_ids'  => @json_encode([]), // Packing removed
-                    'merchant_ids'          => @json_encode($merchant_ids),
-                    'success'             => true,
-                ];
-            }
-
-            // شحن متعدد
-            // 1) الشحن
+            // الشحن (كل تاجر/فرع له شحنه الخاص)
             $shipping_cost = 0.0;
 
             // إن كانت الخطوة 2 أعطتنا الإجمالي مباشرةً نستخدمه (الأدق)
@@ -199,10 +164,6 @@ class PriceHelper
                 }
             }
 
-            $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-                return DB::table('muaadhsettings')->first();
-            });
-
             $totalAmount = (float) ($input['total'] ?? 0);
 
             // الضريبة - States removed, tax only from Country now
@@ -212,16 +173,7 @@ class PriceHelper
                 $totalAmount += $tax_amount;
             }
 
-            // شحن مفرد
-            if ((int)$gs->multiple_shipping === 0) {
-                $shipping = Shipping::findOrFail((int)$input['shipping_id']);
-                $totalAmount += (float)$shipping->price; // Packing removed
-
-                // ملاحظة: نحافظ على نفس سلوكك السابق (قسمة) لعدم كسر بقية المنطق
-                return round($totalAmount / $currValue, 2);
-            }
-
-            // شحن متعدد
+            // الشحن (كل تاجر/فرع له شحنه الخاص)
             $shipping_cost  = 0.0;
 
             // شحن

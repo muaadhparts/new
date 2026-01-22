@@ -99,45 +99,23 @@ class CheckoutController extends Controller
                 return redirect()->back()->with('unsuccess', $purchaseCalculate['message']);
             }
 
-            if ($gs->multiple_shipping == 0) {
-                $purchaseTotal          = $purchaseCalculate['total_amount'];
-                $shipping            = $purchaseCalculate['shipping'];
-                $packeing            = $purchaseCalculate['packeing'];
-                $merchant_shipping_ids = $purchaseCalculate['merchant_shipping_ids'];
-                $merchant_packing_ids  = $purchaseCalculate['merchant_packing_ids'];
-                $merchant_ids          = $purchaseCalculate['merchant_ids'];
+            // الشحن (كل تاجر/فرع له شحنه الخاص)
+            $purchaseTotal          = $purchaseCalculate['total_amount'];
+            $merchant_shipping_ids = $purchaseCalculate['merchant_shipping_ids'];
+            $merchant_packing_ids  = $purchaseCalculate['merchant_packing_ids'];
+            $merchant_ids          = $purchaseCalculate['merchant_ids'];
+            $shipping_cost       = $purchaseCalculate['shipping_cost'] ?? 0;
 
-                $input['shipping_name']     = @$shipping->name;
-                $input['merchant_shipping_id'] = @$shipping->id;
-                $input['packing_name']      = @$packeing->name;
-                $input['merchant_packing_id']  = @$packeing->id;
-                $input['shipping_cost']      = @$shipping->price ?? 0;
-                $input['packing_cost']       = @$packeing->price ?? 0;
-                $input['merchant_shipping_ids']= $merchant_shipping_ids;
-                $input['merchant_packing_ids'] = $merchant_packing_ids;
-                $input['merchant_ids']         = $merchant_ids;
-            } else {
-                // multi shipping
-                $purchaseTotal          = $purchaseCalculate['total_amount'];
-                $shipping            = $purchaseCalculate['shipping'];
-                $packeing            = $purchaseCalculate['packeing'];
-                $merchant_shipping_ids = $purchaseCalculate['merchant_shipping_ids'];
-                $merchant_packing_ids  = $purchaseCalculate['merchant_packing_ids'];
-                $merchant_ids          = $purchaseCalculate['merchant_ids'];
-                $shipping_cost       = $purchaseCalculate['shipping_cost'];
-                $packing_cost        = $purchaseCalculate['packing_cost'];
-
-                $input['shipping_name']     = $merchant_shipping_ids;
-                $input['merchant_shipping_id'] = $merchant_shipping_ids;
-                $input['packing_name']      = $merchant_packing_ids;
-                $input['merchant_packing_id']  = $merchant_packing_ids;
-                $input['shipping_cost']      = $shipping_cost;
-                $input['packing_cost']       = $packing_cost;
-                $input['merchant_shipping_ids']= $merchant_shipping_ids;
-                $input['merchant_packing_ids'] = $merchant_packing_ids;
-                $input['merchant_ids']         = $merchant_ids;
-                unset($input['shipping'], $input['packeging']);
-            }
+            $input['shipping_name']     = $merchant_shipping_ids;
+            $input['merchant_shipping_id'] = $merchant_shipping_ids;
+            $input['packing_name']      = $merchant_packing_ids;
+            $input['merchant_packing_id']  = $merchant_packing_ids;
+            $input['shipping_cost']      = $shipping_cost;
+            $input['packing_cost']       = 0; // Packing removed
+            $input['merchant_shipping_ids']= $merchant_shipping_ids;
+            $input['merchant_packing_ids'] = $merchant_packing_ids;
+            $input['merchant_ids']         = $merchant_ids;
+            unset($input['shipping'], $input['packeging']);
 
             // إنشاء الطلب (Purchase)
             $purchase = new Purchase;

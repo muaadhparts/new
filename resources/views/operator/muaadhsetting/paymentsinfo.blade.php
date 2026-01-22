@@ -161,23 +161,6 @@
                                 <div class="row justify-content-center">
                                   <div class="col-lg-4">
                                     <div class="left-area">
-                                        <h4 class="heading">{{ __('Multiple Shipping') }} *
-                                          </h4>
-                                    </div>
-                                  </div>
-        
-                                  <div class="col-lg-6">
-                                    <label class="switch">
-                                      <input type="checkbox" name="multiple_shipping" value="1" {{ $gs->multiple_shipping == 1 ? "checked":"" }}>
-                                      <span class="toggle-switch round"></span>
-                                    </label>
-                                  </div>
-                                  </div>
-        
-        
-                                <div class="row justify-content-center">
-                                  <div class="col-lg-4">
-                                    <div class="left-area">
                                         <h4 class="heading">{{ __('Shipping Information For Merchant') }} *
                                           </h4>
                                     </div>
