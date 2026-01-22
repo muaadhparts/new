@@ -201,9 +201,9 @@
 
 
 
-        <li class="has-sub-menu {{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement') ? 'active' : '' }}">
+        <li class="has-sub-menu {{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement*') || request()->is('merchant/monthly-ledger*') || request()->is('merchant/payouts') ? 'active' : '' }}">
             <a href="#merchant-collapse-financial"
-                class="{{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement') ? '' : 'collapsed' }}"
+                class="{{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement*') || request()->is('merchant/monthly-ledger*') || request()->is('merchant/payouts') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapse-financial">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
@@ -222,14 +222,18 @@
                 <span class="label">@lang('Financial')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/total/earning') || request()->is('merchant/tax-report') || request()->is('merchant/statement*') || request()->is('merchant/monthly-ledger*') || request()->is('merchant/payouts') ? 'show' : '' }}"
                 id="merchant-collapse-financial">
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/total/earning') ? 'active' : '' }}"
                         href="{{ route('merchant.income') }}">@lang('Financial Dashboard')</a></li>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/monthly-ledger*') ? 'active' : '' }}"
+                        href="{{ route('merchant.monthly-ledger') }}">@lang('Monthly Ledger')</a></li>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/statement*') ? 'active' : '' }}"
+                        href="{{ route('merchant.statement') }}">@lang('Account Statement')</a></li>
+                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/payouts') ? 'active' : '' }}"
+                        href="{{ route('merchant.payouts') }}">@lang('Payouts')</a></li>
                 <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/tax-report') ? 'active' : '' }}"
                         href="{{ route('merchant.tax-report') }}">@lang('Tax Report')</a></li>
-                <li><a class="sidebar-sub-menu-item {{ request()->is('merchant/statement') ? 'active' : '' }}"
-                        href="{{ route('merchant.statement') }}">@lang('Account Statement')</a></li>
             </ul>
         </li>
         <li class="{{ request()->is('merchant/profile') ? 'active' : '' }}">

@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 // MerchantCart removed - operator cart methods need rewrite
 use App\Models\Country;
 use App\Models\MonetaryUnit;
-use App\Models\MerchantCommission;
 use App\Models\Purchase;
 use App\Models\FrontendSetting;
 use App\Models\CatalogItem;
@@ -54,10 +53,7 @@ class PurchaseCreateController extends OperatorBaseController
                 if (!$catalogItem) return __('N/A');
 
                 // Price from merchant_items with commission (per-merchant)
-                $price = (float) $mi->price;
-                $commission = MerchantCommission::getOrCreateForMerchant($mi->user_id);
-                $base = $commission->getPriceWithCommission($price);
-                $finalPrice = $base * $this->curr->value;
+                $finalPrice = $mi->merchantSizePrice() * $this->curr->value;
 
                 $photoUrl = filter_var($catalogItem->photo, FILTER_VALIDATE_URL)
                     ? $catalogItem->photo

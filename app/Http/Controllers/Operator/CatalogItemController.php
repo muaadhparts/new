@@ -8,7 +8,6 @@ use App\Models\MonetaryUnit;
 use App\Models\MerchantPhoto;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
-use App\Models\MerchantCommission;
 use Datatables;
 use DB;
 use Illuminate\Http\Request;
@@ -85,20 +84,9 @@ class CatalogItemController extends OperatorBaseController
                 return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
             })
             ->addColumn('price', function (MerchantItem $mp) {
-                $price = (float) $mp->price;
-
-                // استخدام عمولة التاجر الخاصة بدلاً من العمولة العامة
-                $commission = MerchantCommission::where('user_id', $mp->user_id)
-                    ->where('is_active', true)
-                    ->first();
-
-                if ($commission) {
-                    $base = $commission->getPriceWithCommission($price);
-                } else {
-                    $base = $price; // لا عمولة إذا لم يتم تعيينها
-                }
-
-                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
+                // استخدام merchantSizePrice() للحصول على السعر مع العمولة
+                $priceWithCommission = $mp->merchantSizePrice();
+                return \PriceHelper::showAdminCurrencyPrice($priceWithCommission * $this->curr->value);
             })
             ->addColumn('stock', function (MerchantItem $mp) {
                 if ($mp->stock === null) return __('Unlimited');
@@ -193,20 +181,9 @@ class CatalogItemController extends OperatorBaseController
                 return '<span name="' . $mp->user->name . '">' . $shopName . '</span>';
             })
             ->addColumn('price', function (MerchantItem $mp) {
-                $price = (float) $mp->price;
-
-                // استخدام عمولة التاجر الخاصة بدلاً من العمولة العامة
-                $commission = MerchantCommission::where('user_id', $mp->user_id)
-                    ->where('is_active', true)
-                    ->first();
-
-                if ($commission) {
-                    $base = $commission->getPriceWithCommission($price);
-                } else {
-                    $base = $price; // لا عمولة إذا لم يتم تعيينها
-                }
-
-                return \PriceHelper::showAdminCurrencyPrice($base * $this->curr->value);
+                // استخدام merchantSizePrice() للحصول على السعر مع العمولة
+                $priceWithCommission = $mp->merchantSizePrice();
+                return \PriceHelper::showAdminCurrencyPrice($priceWithCommission * $this->curr->value);
             })
             ->addColumn('stock', function (MerchantItem $mp) {
                 if ($mp->stock === null) return __('Unlimited');

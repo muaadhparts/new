@@ -98,7 +98,8 @@
                             <th>نوع التحديث</th>
                             <th>الحالة</th>
                             <th>التقدم</th>
-                            <th>التاريخ</th>
+                            <th>تاريخ البدء</th>
+                            <th>تاريخ الاكتمال</th>
                             <th>الإجراءات</th>
                         </tr>
                     </thead>
@@ -235,6 +236,7 @@
                 {data: 'status', name: 'status'},
                 {data: 'progress', name: 'progress', orderable: false, searchable: false},
                 {data: 'created_at', name: 'created_at'},
+                {data: 'completed_at', name: 'completed_at', orderable: false},
                 {data: 'action', name: 'action', orderable: false, searchable: false}
             ],
             order: [[0, 'desc']],

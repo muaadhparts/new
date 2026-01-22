@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
-use App\Models\MerchantCommission;
 use App\Models\MerchantItem;
 use App\Models\Muaadhsetting;
 use App\Models\MembershipPlan;
@@ -150,8 +149,6 @@ class MerchantController extends OperatorBaseController
             ->where('user_id', $id)
             ->latest('id');
 
-        $commission = MerchantCommission::getOrCreateForMerchant($id);
-
         return Datatables::of($datas)
             ->addColumn('mp_id', function (MerchantItem $data) {
                 $dt = $data->catalogItem;
@@ -188,10 +185,9 @@ class MerchantController extends OperatorBaseController
                 }
                 return $stck;
             })
-            ->addColumn('price', function (MerchantItem $data) use ($commission) {
-                $price = (float) $data->price;
-                $finalPrice = $commission->getPriceWithCommission($price);
-                return \PriceHelper::showAdminCurrencyPrice($finalPrice);
+            ->addColumn('price', function (MerchantItem $data) {
+                // استخدام merchantSizePrice() للحصول على السعر مع العمولة
+                return \PriceHelper::showAdminCurrencyPrice($data->merchantSizePrice());
             })
             ->addColumn('status', function (MerchantItem $data) {
                 $class = $data->status == 1 ? 'drop-success' : 'drop-danger';

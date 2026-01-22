@@ -77,9 +77,9 @@ class CatalogItemOffersService
         // Group by Quality Brand → Merchant → Branch
         $groupedOffers = $this->groupOffers($merchantItems, $sort);
 
-        // Get lowest and highest prices
-        $lowestPrice = $merchantItems->min('price') ?? 0;
-        $highestPrice = $merchantItems->max('price') ?? 0;
+        // Get lowest and highest prices WITH commission
+        $lowestPrice = $merchantItems->min(fn($mi) => $mi->merchantSizePrice()) ?? 0;
+        $highestPrice = $merchantItems->max(fn($mi) => $mi->merchantSizePrice()) ?? 0;
 
         return [
             'catalog_item' => $this->formatCatalogItem($catalogItem),
@@ -265,12 +265,13 @@ class CatalogItemOffersService
             $grouped[$qualityKey]['merchants'][$merchantKey]['offers_count']++;
             $grouped[$qualityKey]['offers_count']++;
 
-            // Track lowest and highest price per quality
-            if ($grouped[$qualityKey]['lowest_price'] === null || $mi->price < $grouped[$qualityKey]['lowest_price']) {
-                $grouped[$qualityKey]['lowest_price'] = (float) $mi->price;
+            // Track lowest and highest price per quality (WITH commission)
+            $priceWithCommission = $mi->merchantSizePrice();
+            if ($grouped[$qualityKey]['lowest_price'] === null || $priceWithCommission < $grouped[$qualityKey]['lowest_price']) {
+                $grouped[$qualityKey]['lowest_price'] = (float) $priceWithCommission;
             }
-            if ($grouped[$qualityKey]['highest_price'] === null || $mi->price > $grouped[$qualityKey]['highest_price']) {
-                $grouped[$qualityKey]['highest_price'] = (float) $mi->price;
+            if ($grouped[$qualityKey]['highest_price'] === null || $priceWithCommission > $grouped[$qualityKey]['highest_price']) {
+                $grouped[$qualityKey]['highest_price'] = (float) $priceWithCommission;
             }
         }
 

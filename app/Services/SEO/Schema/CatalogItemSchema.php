@@ -95,7 +95,7 @@ class CatalogItemSchema extends SchemaBuilder
             '@type' => 'Offer',
             'url' => $url,
             'priceCurrency' => $this->currency,
-            'price' => number_format($this->merchant->price, 2, '.', ''),
+            'price' => number_format($this->merchant->merchantSizePrice(), 2, '.', ''),
             'availability' => $this->getAvailability(),
             'itemCondition' => 'https://schema.org/NewCondition',
             'priceValidUntil' => Carbon::now()->addYear()->format('Y-m-d'),

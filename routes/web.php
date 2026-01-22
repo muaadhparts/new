@@ -1125,6 +1125,10 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('total/earning', "Merchant\IncomeController@index")->name('merchant.income');
             Route::get('tax-report', "Merchant\IncomeController@taxReport")->name('merchant.tax-report');
             Route::get('statement', "Merchant\IncomeController@statement")->name('merchant.statement');
+            Route::get('statement/pdf', "Merchant\IncomeController@statementPdf")->name('merchant.statement.pdf');
+            Route::get('monthly-ledger', "Merchant\IncomeController@monthlyLedger")->name('merchant.monthly-ledger');
+            Route::get('monthly-ledger/pdf', "Merchant\IncomeController@monthlyLedgerPdf")->name('merchant.monthly-ledger.pdf');
+            Route::get('payouts', "Merchant\IncomeController@payouts")->name('merchant.payouts');
 
         });
     });

@@ -29,6 +29,9 @@
                         <div class="col-md-4">
                             <button type="submit" class="btn btn-primary">@lang('Filter')</button>
                             <a href="{{ route('merchant.statement') }}" class="btn btn-secondary">@lang('Reset')</a>
+                            <a href="{{ route('merchant.statement.pdf', ['start_date' => $start_date, 'end_date' => $end_date]) }}" class="btn btn-success">
+                                <i class="fas fa-file-pdf"></i> @lang('Export PDF')
+                            </a>
                         </div>
                     </div>
                 </form>

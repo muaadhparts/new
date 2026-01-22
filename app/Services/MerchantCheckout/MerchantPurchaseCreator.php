@@ -227,10 +227,15 @@ class MerchantPurchaseCreator
         array $totals,
         array $paymentData
     ): MerchantPurchase {
-        $merchant = User::find($merchantId);
-        $commissionRate = $merchant->operator_commission ?? 0;
+        // === حساب العمولة من MerchantCommission (المصدر الموحد) ===
+        $commission = \App\Models\MerchantCommission::getOrCreateForMerchant($merchantId);
         $grossPrice = $totals['items_total'];
-        $commissionAmount = ($grossPrice * $commissionRate) / 100;
+
+        // العمولة = ثابت + (نسبة مئوية * السعر)
+        $commissionAmount = $commission->is_active
+            ? $commission->calculateCommission($grossPrice)
+            : 0;
+
         $netAmount = $grossPrice - $commissionAmount - $totals['tax_amount'];
 
         // Determine payment method (cod vs online)

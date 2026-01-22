@@ -70,7 +70,7 @@ class FavoriteController extends UserBaseController
 
             if ($effectiveMerchantItem) {
                 $favoriteItem->effective_merchant_item = $effectiveMerchantItem;
-                $favoriteItem->effective_price = $effectiveMerchantItem->price;
+                $favoriteItem->effective_price = $effectiveMerchantItem->merchantSizePrice();
                 $favoriteItem->effective_merchant = $effectiveMerchantItem->user;
             }
 

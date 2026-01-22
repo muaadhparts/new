@@ -76,35 +76,51 @@ class AlternativeService
             ->with(['fitments.brand'])
             ->get();
 
-        // جلب إحصائيات العروض لكل catalog_item
-        $offersStats = MerchantItem::query()
+        // جلب MerchantItems لحساب الأسعار مع العمولة
+        $merchantItems = MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
             ->whereIn('merchant_items.catalog_item_id', $alternativeCatalogItemIds)
             ->where('merchant_items.status', 1)
             ->where('merchant_items.price', '>', 0)
-            ->groupBy('merchant_items.catalog_item_id')
-            ->select([
-                'merchant_items.catalog_item_id',
-                DB::raw('MIN(merchant_items.price) as lowest_price'),
-                DB::raw('MAX(merchant_items.price) as highest_price'),
-                DB::raw('COUNT(*) as offers_count'),
-            ])
-            ->get()
-            ->keyBy('catalog_item_id');
+            ->select('merchant_items.*')
+            ->get();
+
+        // حساب إحصائيات العروض مع العمولة لكل catalog_item
+        $offersStats = [];
+        foreach ($merchantItems as $mi) {
+            $catalogItemId = $mi->catalog_item_id;
+            $priceWithCommission = $mi->merchantSizePrice();
+
+            if (!isset($offersStats[$catalogItemId])) {
+                $offersStats[$catalogItemId] = [
+                    'lowest_price' => $priceWithCommission,
+                    'highest_price' => $priceWithCommission,
+                    'offers_count' => 1,
+                ];
+            } else {
+                $offersStats[$catalogItemId]['offers_count']++;
+                if ($priceWithCommission < $offersStats[$catalogItemId]['lowest_price']) {
+                    $offersStats[$catalogItemId]['lowest_price'] = $priceWithCommission;
+                }
+                if ($priceWithCommission > $offersStats[$catalogItemId]['highest_price']) {
+                    $offersStats[$catalogItemId]['highest_price'] = $priceWithCommission;
+                }
+            }
+        }
 
         // دمج البيانات
         $result = $catalogItems->map(function ($catalogItem) use ($offersStats) {
-            $stats = $offersStats->get($catalogItem->id);
-            $catalogItem->lowest_price = $stats?->lowest_price ?? null;
-            $catalogItem->highest_price = $stats?->highest_price ?? null;
-            $catalogItem->lowest_price_formatted = $stats?->lowest_price
-                ? \App\Models\CatalogItem::convertPrice($stats->lowest_price)
+            $stats = $offersStats[$catalogItem->id] ?? null;
+            $catalogItem->lowest_price = $stats['lowest_price'] ?? null;
+            $catalogItem->highest_price = $stats['highest_price'] ?? null;
+            $catalogItem->lowest_price_formatted = $stats
+                ? \App\Models\CatalogItem::convertPrice($stats['lowest_price'])
                 : null;
-            $catalogItem->highest_price_formatted = $stats?->highest_price
-                ? \App\Models\CatalogItem::convertPrice($stats->highest_price)
+            $catalogItem->highest_price_formatted = $stats
+                ? \App\Models\CatalogItem::convertPrice($stats['highest_price'])
                 : null;
-            $catalogItem->offers_count = $stats?->offers_count ?? 0;
+            $catalogItem->offers_count = $stats['offers_count'] ?? 0;
             return $catalogItem;
         })->filter(fn($item) => $item->offers_count > 0)
           ->sortBy('lowest_price')
@@ -130,31 +146,44 @@ class AlternativeService
             return collect();
         }
 
-        // جلب إحصائيات العروض للصنف
-        $stats = MerchantItem::query()
+        // جلب MerchantItems لحساب الأسعار مع العمولة
+        $merchantItems = MerchantItem::query()
             ->join('users as u', 'u.id', '=', 'merchant_items.user_id')
             ->where('u.is_merchant', 2)
             ->where('merchant_items.catalog_item_id', $catalogItemId)
             ->where('merchant_items.status', 1)
             ->where('merchant_items.price', '>', 0)
-            ->selectRaw('MIN(merchant_items.price) as lowest_price, MAX(merchant_items.price) as highest_price, COUNT(*) as offers_count')
-            ->first();
+            ->select('merchant_items.*')
+            ->get();
 
-        $catalogItem->lowest_price = $stats?->lowest_price ?? null;
-        $catalogItem->highest_price = $stats?->highest_price ?? null;
-        $catalogItem->lowest_price_formatted = $stats?->lowest_price
-            ? \App\Models\CatalogItem::convertPrice($stats->lowest_price)
-            : null;
-        $catalogItem->highest_price_formatted = $stats?->highest_price
-            ? \App\Models\CatalogItem::convertPrice($stats->highest_price)
-            : null;
-        $catalogItem->offers_count = $stats?->offers_count ?? 0;
-
-        if ($catalogItem->offers_count > 0) {
-            return collect([$catalogItem]);
+        if ($merchantItems->isEmpty()) {
+            return collect();
         }
 
-        return collect();
+        // حساب الأسعار مع العمولة
+        $lowestPrice = null;
+        $highestPrice = null;
+        foreach ($merchantItems as $mi) {
+            $priceWithCommission = $mi->merchantSizePrice();
+            if ($lowestPrice === null || $priceWithCommission < $lowestPrice) {
+                $lowestPrice = $priceWithCommission;
+            }
+            if ($highestPrice === null || $priceWithCommission > $highestPrice) {
+                $highestPrice = $priceWithCommission;
+            }
+        }
+
+        $catalogItem->lowest_price = $lowestPrice;
+        $catalogItem->highest_price = $highestPrice;
+        $catalogItem->lowest_price_formatted = $lowestPrice
+            ? \App\Models\CatalogItem::convertPrice($lowestPrice)
+            : null;
+        $catalogItem->highest_price_formatted = $highestPrice
+            ? \App\Models\CatalogItem::convertPrice($highestPrice)
+            : null;
+        $catalogItem->offers_count = $merchantItems->count();
+
+        return collect([$catalogItem]);
     }
 
     /**

@@ -105,7 +105,7 @@ class SeoService
             'og:name' => $catalogItem->name,
             'og:description' => $catalogItem->meta_description ?? \Str::limit(strip_tags($catalogItem->description ?? ''), 200),
             'og:image' => $this->getProductImage($catalogItem),
-            'product:price:amount' => $merchantItem->price,
+            'product:price:amount' => $merchantItem->merchantSizePrice(),
             'product:price:currency' => $currency,
             'product:availability' => ($merchantItem->stock > 0 || is_null($merchantItem->stock)) ? 'in stock' : 'out of stock',
         ]);

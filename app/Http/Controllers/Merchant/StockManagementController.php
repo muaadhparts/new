@@ -105,6 +105,9 @@ class StockManagementController extends Controller
             ->editColumn('created_at', function ($update) {
                 return $update->created_at->format('Y-m-d H:i:s');
             })
+            ->addColumn('completed_at', function ($update) {
+                return $update->completed_at ? $update->completed_at->format('Y-m-d H:i:s') : '-';
+            })
             ->addColumn('progress', function ($update) {
                 if ($update->total_rows > 0) {
                     $percentage = round(($update->updated_rows / $update->total_rows) * 100, 2);
@@ -501,7 +504,7 @@ class StockManagementController extends Controller
             }
 
             $mapping = $mappings[$itemCode];
-            $price = $row['cost_price'] * 1.3;
+            $price = $row['cost_price']; // السعر مباشرة بدون هامش
 
             $batchData[] = [
                 'catalog_item_id' => $mapping['catalog_item_id'],
