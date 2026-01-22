@@ -214,16 +214,24 @@
                     <a href="{{ route('operator.accounts.settlements') }}" class="btn btn-outline-primary me-2">
                         <i class="fas fa-list me-1"></i> {{ __('All Settlements') }}
                     </a>
+                    <a href="{{ route('operator.accounts.shipping-companies') }}" class="btn btn-outline-warning me-2">
+                        <i class="fas fa-truck me-1"></i> {{ __('Shipping Companies') }}
+                    </a>
                     <div class="btn-group me-2">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <i class="fas fa-chart-bar me-1"></i> {{ __('Reports') }}
                         </button>
                         <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.platform') }}"><i class="fas fa-chart-line me-1"></i> {{ __('Platform Revenue') }}</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.receivables') }}">{{ __('Receivables Report') }}</a></li>
                             <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.payables') }}">{{ __('Payables Report') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.receivables-payables') }}">{{ __('Receivables/Payables') }}</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.shipping') }}">{{ __('Shipping Companies Report') }}</a></li>
-                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.payment') }}">{{ __('Payment Companies Report') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.merchants-summary') }}">{{ __('Merchants Summary') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.couriers') }}">{{ __('Couriers Report') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.shipping-companies') }}">{{ __('Shipping Report') }}</a></li>
+                            <li><a class="dropdown-item" href="{{ route('operator.accounts.reports.tax') }}">{{ __('Tax Report') }}</a></li>
                         </ul>
                     </div>
                 </div>

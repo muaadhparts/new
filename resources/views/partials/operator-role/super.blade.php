@@ -60,21 +60,58 @@
 </li>
 
 <li>
-    <a href="#settlement-menu" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="fas fa-file-invoice-dollar"></i>{{ __('Settlements') }}
+    <a href="#accounts-menu" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
+        <i class="fas fa-file-invoice-dollar"></i>{{ __('Accounting System') }}
     </a>
-    <ul class="collapse list-unstyled" id="settlement-menu" data-bs-parent="#accordion">
+    <ul class="collapse list-unstyled" id="accounts-menu" data-bs-parent="#accordion">
+        {{-- Dashboard --}}
         <li>
-            <a href="{{ route('operator.accounts.settlements') }}"> {{ __('Settlement Dashboard') }}</a>
+            <a href="{{ route('operator.accounts.index') }}"><i class="fas fa-tachometer-alt me-1"></i> {{ __('Accounts Dashboard') }}</a>
+        </li>
+
+        {{-- Parties --}}
+        <li class="menu-divider"><small class="text-muted px-3">{{ __('Accounts') }}</small></li>
+        <li>
+            <a href="{{ route('operator.accounts.merchants') }}"><i class="fas fa-store me-1"></i> {{ __('Merchant Accounts') }}</a>
         </li>
         <li>
-            <a href="{{ route('operator.accounts.merchants') }}"> {{ __('Merchant Accounts') }}</a>
+            <a href="{{ route('operator.accounts.couriers') }}"><i class="fas fa-motorcycle me-1"></i> {{ __('Courier Accounts') }}</a>
         </li>
         <li>
-            <a href="{{ route('operator.accounts.couriers') }}"> {{ __('Courier Accounts') }}</a>
+            <a href="{{ route('operator.accounts.shipping-companies') }}"><i class="fas fa-truck me-1"></i> {{ __('Shipping Companies') }}</a>
         </li>
         <li>
-            <a href="{{ route('operator.accounts.reports.platform') }}"> {{ __('Revenue Report') }}</a>
+            <a href="{{ route('operator.accounts.payment') }}"><i class="fas fa-credit-card me-1"></i> {{ __('Payment Providers') }}</a>
+        </li>
+
+        {{-- Settlements --}}
+        <li class="menu-divider"><small class="text-muted px-3">{{ __('Settlements') }}</small></li>
+        <li>
+            <a href="{{ route('operator.accounts.settlements') }}"><i class="fas fa-money-check me-1"></i> {{ __('All Settlements') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.accounts.settlements.create') }}"><i class="fas fa-plus me-1"></i> {{ __('New Settlement') }}</a>
+        </li>
+
+        {{-- Reports --}}
+        <li class="menu-divider"><small class="text-muted px-3">{{ __('Reports') }}</small></li>
+        <li>
+            <a href="{{ route('operator.accounts.reports.platform') }}"><i class="fas fa-chart-line me-1"></i> {{ __('Platform Revenue') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.accounts.reports.merchants-summary') }}"><i class="fas fa-users me-1"></i> {{ __('Merchants Summary') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.accounts.reports.couriers') }}"><i class="fas fa-biking me-1"></i> {{ __('Couriers Report') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.accounts.reports.shipping-companies') }}"><i class="fas fa-shipping-fast me-1"></i> {{ __('Shipping Report') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.accounts.reports.tax') }}"><i class="fas fa-receipt me-1"></i> {{ __('Tax Report') }}</a>
+        </li>
+        <li>
+            <a href="{{ route('operator.accounts.reports.receivables-payables') }}"><i class="fas fa-balance-scale me-1"></i> {{ __('Receivables/Payables') }}</a>
         </li>
     </ul>
 </li>

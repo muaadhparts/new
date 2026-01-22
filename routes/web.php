@@ -285,6 +285,11 @@ Route::prefix('operator')->group(function () {
 
         // كشف حساب التاجر
         Route::get('/merchant-statement/{merchantId}', 'Operator\AccountLedgerController@merchantStatement')->name('operator.accounts.merchant-statement');
+
+        // شركات الشحن - كشف حساب مفصل
+        Route::get('/shipping-companies', 'Operator\AccountLedgerController@shippingCompanyList')->name('operator.accounts.shipping-companies');
+        Route::get('/shipping-company/{providerCode}/statement', 'Operator\AccountLedgerController@shippingCompanyStatement')->name('operator.accounts.shipping-company.statement');
+        Route::get('/shipping-company/{providerCode}/statement/pdf', 'Operator\AccountLedgerController@shippingCompanyStatementPdf')->name('operator.accounts.shipping-company.statement.pdf');
     });
     // ========================== END ACCOUNTING LEDGER SYSTEM ==========================//
 

@@ -123,8 +123,8 @@
                                 <span class="badge bg-secondary">{{ $data['shipment_count'] }}</span>
                             </td>
                             <td>
-                                <a href="{{ route('operator.accounts.party.statement', $data['company']->id) }}"
-                                   class="btn btn-sm btn-outline-primary" name="{{ __('View Statement') }}">
+                                <a href="{{ route('operator.accounts.shipping-company.statement', $data['company']->code ?? $data['company']->id) }}"
+                                   class="btn btn-sm btn-outline-primary" title="{{ __('View Statement') }}">
                                     <i class="fas fa-file-invoice"></i>
                                 </a>
                             </td>

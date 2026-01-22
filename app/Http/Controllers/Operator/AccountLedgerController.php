@@ -738,4 +738,293 @@ class AccountLedgerController extends OperatorBaseController
             'currency' => $currency,
         ]);
     }
+
+    // ═══════════════════════════════════════════════════════════════
+    // SHIPPING COMPANY STATEMENT - كشف حساب شركة الشحن المفصل
+    // ═══════════════════════════════════════════════════════════════
+
+    /**
+     * كشف حساب شركة شحن مفصل (ديناميكي من delivery_provider)
+     *
+     * يعرض:
+     * - جميع الشحنات مع المبالغ
+     * - COD المحصل
+     * - من له ومن عليه (للمنصة أو للتاجر)
+     * - تاريخ التسويات
+     */
+    public function shippingCompanyStatement(Request $request, string $providerCode)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now();
+        $currency = monetaryUnit()->getDefault();
+
+        // === جلب جميع الشحنات لهذه الشركة ===
+        $query = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)
+            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->with(['purchase', 'merchant', 'settlementBatch']);
+
+        $purchases = $query->orderBy('created_at', 'desc')->get();
+
+        // === حساب الملخصات ===
+        // إجمالي الشحنات
+        $totalShipments = $purchases->count();
+
+        // إجمالي رسوم الشحن
+        $totalShippingFees = $purchases->sum('shipping_cost');
+
+        // إجمالي COD المحصل (الطلبات المسلمة)
+        $totalCodCollected = $purchases
+            ->where('collection_status', 'collected')
+            ->sum('cod_amount');
+
+        // المبالغ المستحقة للمنصة من شركة الشحن
+        $owesToPlatform = $purchases->sum('shipping_company_owes_platform');
+
+        // المبالغ المستحقة للتاجر من شركة الشحن
+        $owesToMerchant = $purchases->sum('shipping_company_owes_merchant');
+
+        // المبالغ المعلقة (لم تُسوى بعد)
+        $pendingPurchases = $purchases->where('settlement_status', '!=', 'settled');
+        $pendingToPlatform = $pendingPurchases->sum('shipping_company_owes_platform');
+        $pendingToMerchant = $pendingPurchases->sum('shipping_company_owes_merchant');
+
+        // المبالغ المسواة
+        $settledPurchases = $purchases->where('settlement_status', 'settled');
+        $settledToPlatform = $purchases->sum('shipping_company_owes_platform') - $pendingToPlatform;
+        $settledToMerchant = $purchases->sum('shipping_company_owes_merchant') - $pendingToMerchant;
+
+        // === بناء كشف الحساب المفصل ===
+        $statement = [];
+        $runningBalance = 0;
+
+        foreach ($purchases->sortBy('created_at') as $mp) {
+            // تحديد نوع المعاملة
+            $debit = 0;  // ما يدفعه شركة الشحن
+            $credit = 0; // ما تستحقه شركة الشحن
+
+            // رسوم الشحن المستحقة للشركة (credit)
+            $credit = (float) $mp->shipping_cost;
+
+            // COD المحصل يجب تسليمه (debit)
+            if ($mp->collection_status === 'collected' && $mp->cod_amount > 0) {
+                $debit = (float) $mp->cod_amount;
+            }
+
+            $balance = $credit - $debit;
+            $runningBalance += $balance;
+
+            $statement[] = [
+                'date' => $mp->created_at,
+                'purchase_number' => $mp->purchase_number,
+                'description' => $this->getShipmentDescription($mp),
+                'merchant_name' => $mp->merchant->name ?? '-',
+                'shipping_fee' => $credit,
+                'cod_collected' => $mp->collection_status === 'collected' ? $mp->cod_amount : 0,
+                'owes_platform' => (float) $mp->shipping_company_owes_platform,
+                'owes_merchant' => (float) $mp->shipping_company_owes_merchant,
+                'credit' => $credit,
+                'debit' => $debit,
+                'balance' => $runningBalance,
+                'settlement_status' => $mp->settlement_status,
+                'collection_status' => $mp->collection_status,
+                'delivery_status' => $mp->purchase->delivery_status ?? 'unknown',
+            ];
+        }
+
+        // === جلب اسم الشركة ===
+        $companyName = $this->getShippingCompanyName($providerCode);
+
+        // === إحصائيات إضافية ===
+        $statusBreakdown = [
+            'delivered' => $purchases->where('purchase.delivery_status', 'delivered')->count(),
+            'in_transit' => $purchases->whereIn('purchase.delivery_status', ['shipped', 'in_transit'])->count(),
+            'returned' => $purchases->where('purchase.delivery_status', 'returned')->count(),
+            'failed' => $purchases->where('purchase.delivery_status', 'failed')->count(),
+        ];
+
+        return view('operator.accounts.shipping-company-statement', [
+            'providerCode' => $providerCode,
+            'companyName' => $companyName,
+            'statement' => $statement,
+            'currency' => $currency,
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+
+            // Summary
+            'totalShipments' => $totalShipments,
+            'totalShippingFees' => $totalShippingFees,
+            'totalCodCollected' => $totalCodCollected,
+            'owesToPlatform' => $owesToPlatform,
+            'owesToMerchant' => $owesToMerchant,
+            'pendingToPlatform' => $pendingToPlatform,
+            'pendingToMerchant' => $pendingToMerchant,
+            'settledToPlatform' => $settledToPlatform,
+            'settledToMerchant' => $settledToMerchant,
+            'netBalance' => $totalShippingFees - $totalCodCollected,
+            'statusBreakdown' => $statusBreakdown,
+        ]);
+    }
+
+    /**
+     * تصدير كشف حساب شركة الشحن PDF
+     */
+    public function shippingCompanyStatementPdf(Request $request, string $providerCode)
+    {
+        $startDate = $request->start_date ? Carbon::parse($request->start_date) : Carbon::now()->startOfMonth();
+        $endDate = $request->end_date ? Carbon::parse($request->end_date) : Carbon::now();
+        $currency = monetaryUnit()->getDefault();
+
+        // نفس منطق shippingCompanyStatement
+        $purchases = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)
+            ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
+            ->with(['purchase', 'merchant'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $totalShipments = $purchases->count();
+        $totalShippingFees = $purchases->sum('shipping_cost');
+        $totalCodCollected = $purchases->where('collection_status', 'collected')->sum('cod_amount');
+        $owesToPlatform = $purchases->sum('shipping_company_owes_platform');
+        $owesToMerchant = $purchases->sum('shipping_company_owes_merchant');
+        $pendingPurchases = $purchases->where('settlement_status', '!=', 'settled');
+        $pendingToPlatform = $pendingPurchases->sum('shipping_company_owes_platform');
+        $pendingToMerchant = $pendingPurchases->sum('shipping_company_owes_merchant');
+
+        $statement = [];
+        $runningBalance = 0;
+
+        foreach ($purchases->sortBy('created_at') as $mp) {
+            $credit = (float) $mp->shipping_cost;
+            $debit = ($mp->collection_status === 'collected' && $mp->cod_amount > 0) ? (float) $mp->cod_amount : 0;
+            $runningBalance += ($credit - $debit);
+
+            $statement[] = [
+                'date' => $mp->created_at,
+                'purchase_number' => $mp->purchase_number,
+                'merchant_name' => $mp->merchant->name ?? '-',
+                'shipping_fee' => $credit,
+                'cod_collected' => $mp->collection_status === 'collected' ? $mp->cod_amount : 0,
+                'owes_platform' => (float) $mp->shipping_company_owes_platform,
+                'owes_merchant' => (float) $mp->shipping_company_owes_merchant,
+                'balance' => $runningBalance,
+                'settlement_status' => $mp->settlement_status,
+            ];
+        }
+
+        $companyName = $this->getShippingCompanyName($providerCode);
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.shipping-company-statement', [
+            'providerCode' => $providerCode,
+            'companyName' => $companyName,
+            'statement' => $statement,
+            'currency' => $currency,
+            'startDate' => $startDate->format('Y-m-d'),
+            'endDate' => $endDate->format('Y-m-d'),
+            'totalShipments' => $totalShipments,
+            'totalShippingFees' => $totalShippingFees,
+            'totalCodCollected' => $totalCodCollected,
+            'owesToPlatform' => $owesToPlatform,
+            'owesToMerchant' => $owesToMerchant,
+            'pendingToPlatform' => $pendingToPlatform,
+            'pendingToMerchant' => $pendingToMerchant,
+            'netBalance' => $totalShippingFees - $totalCodCollected,
+            'generatedAt' => now()->format('Y-m-d H:i'),
+        ]);
+
+        $pdf->setPaper('a4', 'landscape');
+
+        return $pdf->download("shipping-statement-{$providerCode}-{$startDate->format('Ymd')}-{$endDate->format('Ymd')}.pdf");
+    }
+
+    /**
+     * قائمة شركات الشحن الديناميكية (من delivery_provider)
+     */
+    public function shippingCompanyList(Request $request)
+    {
+        $currency = monetaryUnit()->getDefault();
+
+        // جلب جميع شركات الشحن الفريدة من الطلبات
+        $providers = \App\Models\MerchantPurchase::whereNotNull('delivery_provider')
+            ->where('delivery_provider', '!=', '')
+            ->select('delivery_provider')
+            ->distinct()
+            ->pluck('delivery_provider');
+
+        $companies = [];
+        foreach ($providers as $providerCode) {
+            $purchases = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)->get();
+
+            $companies[] = [
+                'code' => $providerCode,
+                'name' => $this->getShippingCompanyName($providerCode),
+                'shipment_count' => $purchases->count(),
+                'total_shipping_fees' => $purchases->sum('shipping_cost'),
+                'total_cod_collected' => $purchases->where('collection_status', 'collected')->sum('cod_amount'),
+                'owes_platform' => $purchases->sum('shipping_company_owes_platform'),
+                'owes_merchant' => $purchases->sum('shipping_company_owes_merchant'),
+                'pending_count' => $purchases->where('settlement_status', '!=', 'settled')->count(),
+            ];
+        }
+
+        // ترتيب حسب عدد الشحنات
+        usort($companies, fn($a, $b) => $b['shipment_count'] <=> $a['shipment_count']);
+
+        return view('operator.accounts.shipping-company-list', [
+            'companies' => $companies,
+            'currency' => $currency,
+        ]);
+    }
+
+    /**
+     * Helper: وصف الشحنة
+     */
+    protected function getShipmentDescription(\App\Models\MerchantPurchase $mp): string
+    {
+        $status = $mp->purchase->delivery_status ?? 'unknown';
+        $statusLabels = [
+            'pending' => __('Pending'),
+            'shipped' => __('Shipped'),
+            'in_transit' => __('In Transit'),
+            'delivered' => __('Delivered'),
+            'returned' => __('Returned'),
+            'failed' => __('Failed'),
+        ];
+
+        $label = $statusLabels[$status] ?? $status;
+
+        if ($mp->collection_status === 'collected') {
+            $label .= ' - ' . __('COD Collected');
+        }
+
+        return $label;
+    }
+
+    /**
+     * Helper: اسم شركة الشحن
+     */
+    protected function getShippingCompanyName(string $providerCode): string
+    {
+        // محاولة جلب الاسم من AccountParty
+        $party = AccountParty::where('party_type', AccountParty::TYPE_SHIPPING_PROVIDER)
+            ->where('code', $providerCode)
+            ->first();
+
+        if ($party) {
+            return $party->name;
+        }
+
+        // أسماء افتراضية للشركات المعروفة
+        $knownProviders = [
+            'aramex' => 'Aramex',
+            'smsa' => 'SMSA Express',
+            'dhl' => 'DHL',
+            'fedex' => 'FedEx',
+            'ups' => 'UPS',
+            'naqel' => 'Naqel Express',
+            'zajil' => 'Zajil Express',
+            'local_courier' => __('Local Courier'),
+        ];
+
+        return $knownProviders[strtolower($providerCode)] ?? ucfirst($providerCode);
+    }
 }
