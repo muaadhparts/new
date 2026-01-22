@@ -40,7 +40,7 @@ class ForgotController extends Controller
             $user->update($input);
             $subject = "Reset Password Request";
             $msg = "Your New Password is : " . $autopass;
-            if ($gs->is_smtp == 1) {
+            if ($gs->mail_driver) {
                 $data = [
                     'to' => $request->email,
                     'subject' => $subject,

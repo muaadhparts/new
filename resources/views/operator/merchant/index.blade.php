@@ -51,7 +51,6 @@
 									<th>{{ __("Store Name") }}</th>
 									<th>{{ __("Merchant Email") }}</th>
 									<th>{{ __("Shop Number") }}</th>
-									<th>{{ __("Pending Commission") }}</th>
 									<th>{{ __("Status") }}</th>
 									<th>{{ __("Options") }}</th>
 								</tr>
@@ -227,7 +226,6 @@
                         { data: 'shop_name', name: 'shop_name' },
                         { data: 'email', name: 'email' },
                         { data: 'shop_number', name: 'shop_number' },
-                        { data: 'operator_commission', name: 'operator_commission' },
                         { data: 'status', searchable: false, orderable: false},
             			{ data: 'action', searchable: false, orderable: false }
                      ],
@@ -243,25 +241,6 @@
 
 
 	})(jQuery);			
-
-</script>
-
-
-<script type="text/javascript">
-	(function($) {
-		"use strict";
-
-	$(document).on('click','.merchant_commission',function(){
-		let status = confirm('Are you sure to release the commission?');
-		if(status){
-			return true;
-		}else{
-			return false;
-		}
-	})
-
-
-})(jQuery);
 
 </script>
 

@@ -78,7 +78,7 @@ class TicketDisputeController extends Controller
             $to = FrontendSetting::find(1)->contact_email;
             $from = $user->email;
             $msg = "Email: " . $from . "\nMessage: " . $request->message;
-            if ($gs->is_smtp == 1) {
+            if ($gs->mail_driver) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,

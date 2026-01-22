@@ -31,16 +31,10 @@ class MerchantController extends OperatorBaseController
                 '<option value="' . route('operator-merchant-st', ['id1' => $data->id, 'id2' => 2]) . '" ' . $s . '>' . __("Activated") . '</option>' .
                 '<option value="' . route('operator-merchant-st', ['id1' => $data->id, 'id2' => 1]) . '" ' . $ns . '>' . __("Deactivated") . '</option></select></div>';
             })
-            ->editColumn('operator_commission', function (User $data) {
-                $collect = $data->operator_commission > 0 ? '<a href="' . route('operator-merchant-commission-collect', $data->id) . '" class="btn btn-primary btn-sm">Collect</a>' : '';
-                $url = '<div class="action-list"><p class="mx-3 d-inline-block">' . \PriceHelper::showAdminCurrencyPrice($data->operator_commission) . '</p>
-                ' . $collect . '</div>';
-                return $url;
-            })
             ->addColumn('action', function (User $data) {
                 return '<div class="godropdown"><button class="go-dropdown-toggle"> ' . __("Actions") . '<i class="fas fa-chevron-down"></i></button><div class="action-list"><a href="' . route('operator-merchant-secret', $data->id) . '" > <i class="fas fa-user"></i> ' . __("Secret Login") . '</a><a href="' . route('operator-merchant-show', $data->id) . '" > <i class="fas fa-eye"></i> ' . __("Details") . '</a><a data-href="' . route('operator-merchant-edit', $data->id) . '" class="edit" data-bs-toggle="modal" data-bs-target="#modal1"> <i class="fas fa-edit"></i> ' . __("Edit") . '</a><a href="javascript:;" class="send" data-email="' . $data->email . '" data-bs-toggle="modal" data-bs-target="#merchantform"><i class="fas fa-envelope"></i> ' . __("Send Email") . '</a><a href="javascript:;" data-href="' . route('operator-merchant-delete', $data->id) . '" data-bs-toggle="modal" data-bs-target="#confirm-delete" class="delete"><i class="fas fa-trash-alt"></i> ' . __("Delete") . '</a></div></div>';
             })
-            ->rawColumns(['status', 'action', 'operator_commission'])
+            ->rawColumns(['status', 'action'])
             ->toJson(); //--- Returning Json Data To Client Side
     }
 
@@ -88,7 +82,7 @@ class MerchantController extends OperatorBaseController
         $user = User::findOrFail($id);
         $user->trustBadges()->create(['admin_warning' => 1, 'warning_reason' => $request->details]);
 
-        if ($settings->is_smtp == 1) {
+        if ($settings->mail_driver) {
             $data = [
                 'to' => $user->email,
                 'type' => "trust_badge_request",
@@ -359,7 +353,7 @@ class MerchantController extends OperatorBaseController
         $userPlan->details = $plan->details;
         $userPlan->status = 1;
         $userPlan->save();
-        if ($settings->is_smtp == 1) {
+        if ($settings->mail_driver) {
             $data = [
                 'to' => $user->email,
                 'type' => "merchant_trusted",
@@ -380,15 +374,4 @@ class MerchantController extends OperatorBaseController
         return response()->json($msg);
     }
 
-    public function commissionCollect($id)
-    {
-        $user = User::findOrFail($id);
-        if (!$user) {
-            return redirect()->back()->with('unsuccess', 'Merchant not found!');
-        } else {
-            $user->operator_commission = 0;
-            $user->update();
-            return redirect()->back()->with('success', 'Commission collected successfully!');
-        }
-    }
 }

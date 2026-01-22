@@ -391,7 +391,7 @@ class FrontendController extends Controller
             $phone = $request->phone;
             $from = $request->email;
             $msg = "Name: " . $name . "\nEmail: " . $from . "\nPhone: " . $request->phone . "\nMessage: " . $request->message;
-            if ($gs->is_smtp) {
+            if ($gs->mail_driver) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,

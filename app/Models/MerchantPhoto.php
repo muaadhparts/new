@@ -126,7 +126,12 @@ class MerchantPhoto extends Model
             return $this->photo;
         }
 
-        // Return from assets folder
+        // New format: photos stored on DO Spaces with path like "merchant-photos/{id}/filename.ext"
+        if (str_contains($this->photo, '/')) {
+            return \Storage::disk('do')->url($this->photo);
+        }
+
+        // Old format: just filename stored in local assets folder
         return asset('assets/images/merchant-photos/' . $this->photo);
     }
 }

@@ -65,7 +65,7 @@ class AuthController extends Controller
         $subject = 'Verify your email address.';
         $msg = "Dear Customer,<br> We noticed that you need to verify your email address. <a href=" . url('user/register/verify/' . $token) . ">Simply click here to verify. </a>";
         //Sending Email To Customer
-        if ($gs->is_smtp == 1) {
+        if ($gs->mail_driver) {
           $data = [
             'to' => $to,
             'subject' => $subject,
@@ -267,7 +267,7 @@ class AuthController extends Controller
       $user->reset_token = $token;
       $user->update();
 
-      if ($gs->is_smtp == 1) {
+      if ($gs->mail_driver) {
         $data = [
           'to' => $request->email,
           'subject' => $subject,

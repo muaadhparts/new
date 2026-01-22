@@ -61,24 +61,6 @@
       
       
                               <div class="tab-pane fade show active" id="nav-setting" role="tabpanel" aria-labelledby="nav-setting-tab">
-                                <div class="row justify-content-center">
-                                  <div class="col-lg-4">
-                                    <div class="left-area">
-                                      <h4 class="heading">
-                                          {{ __('Guest Checkout') }}
-                                      </h4>
-                                    </div>
-                                  </div>
-                                  <div class="col-lg-6">
-                                      <div class="action-list">
-                                          <select class="process select droplinks {{ $gs->guest_checkout == 1 ? 'drop-success' : 'drop-danger' }}">
-                                            <option data-val="1" value="{{route('operator-gs-status',['guest_checkout',1])}}" {{ $gs->guest_checkout == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-                                            <option data-val="0" value="{{route('operator-gs-status',['guest_checkout',0])}}" {{ $gs->guest_checkout == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
-                                          </select>
-                                        </div>
-                                  </div>
-                                </div>
-          
                                   <div class="row justify-content-center">
                                     <div class="col-lg-4">
                                       <div class="left-area">

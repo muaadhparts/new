@@ -324,7 +324,7 @@ class FrontendController extends FrontBaseController
         $phone = $request->phone;
         $from = $request->email;
         $msg = "Name: " . $name . "\nEmail: " . $from . "\nPhone: " . $phone . "\nMessage: " . $request->text;
-        if ($gs->is_smtp) {
+        if ($gs->mail_driver) {
             $data = [
                 'to' => $to,
                 'subject' => $subject,
@@ -403,7 +403,7 @@ class FrontendController extends FrontBaseController
             $days = $secs / 86400;
             if ($days <= 5) {
                 if ($user->mail_sent == 1) {
-                    if ($settings->is_smtp == 1) {
+                    if ($settings->mail_driver) {
                         $data = [
                             'to' => $user->email,
                             'type' => "subscription_warning",

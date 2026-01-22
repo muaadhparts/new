@@ -24,7 +24,7 @@ class MuaadhMailer
 
         $this->mail = new PHPMailer(true);
 
-        if ($this->gs->is_smtp == 1) {
+        if ($this->gs->mail_driver) {
 
             $this->mail->isSMTP();                          // Send using SMTP
             $this->mail->Host       = $this->gs->mail_host;       // Set the SMTP server to send through

@@ -32,25 +32,6 @@
 
                         @include('alerts.operator.form-both')  
 
-                        <div class="row justify-content-center">
-                            <div class="col-lg-3">
-                              <div class="left-area">
-                                <h4 class="heading">
-                                    {{ __('SMTP') }}
-                                </h4>
-                              </div>
-                            </div>
-                            <div class="col-lg-6">
-                                <div class="action-list">
-                                    <select class="process select droplinks {{ $gs->is_smtp == 1 ? 'drop-success' : 'drop-danger' }}">
-                                      <option data-val="1" value="{{route('operator-gs-status',['is_smtp',1])}}" {{ $gs->is_smtp == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-                                      <option data-val="0" value="{{route('operator-gs-status',['is_smtp',0])}}" {{ $gs->is_smtp == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
-                                    </select>
-                                  </div>
-                            </div>
-                          </div>
-                       
-
                           <div class="row justify-content-center">
                             <div class="col-lg-3">
                               <div class="left-area">

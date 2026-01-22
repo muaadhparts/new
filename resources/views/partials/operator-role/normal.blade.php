@@ -90,6 +90,12 @@
         <li>
             <a href="{{ route('operator-gs-catalog-item-settings') }}"><span>{{ __('CatalogItem Settings') }}</span></a>
         </li>
+        <li>
+            <a href="{{ route('operator-catalog-item-images') }}"><span>{{ __('CatalogItem Images') }}</span></a>
+        </li>
+        <li>
+            <a href="{{ route('operator-merchant-item-images') }}"><span>{{ __('Merchant Item Images') }}</span></a>
+        </li>
     </ul>
 </li>
 

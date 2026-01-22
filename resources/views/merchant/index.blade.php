@@ -127,22 +127,6 @@
                     </div>
                 </div>
             </div>
-            <div class="col">
-                <div class="merchant-panel-info-card pending-commision">
-                    <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_4.svg" alt="">
-                    <div class="name-and-value-wrapper">
-                        <p class="name">@lang('Pending Commision')</p>
-                        @php
-                            $totalPrice = $user->merchantPurchases->where('status', 'completed')->sum(function ($merchantPurchase) {
-                                return $merchantPurchase->price * $merchantPurchase->qty;
-                            });
-                        @endphp
-                        <h3 class="value">{{$curr->sign}}<span
-                                class="counter">{{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($user->operator_commission) }}</span>
-                        </h3>
-                    </div>
-                </div>
-            </div>
         </div>
         <!-- Info cards area end -->
 

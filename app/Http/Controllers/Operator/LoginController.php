@@ -71,7 +71,7 @@ class LoginController extends Controller
 
       $subject = "Reset Password Request";
       $msg = "Please click this link : ".'<a href="'.route('operator.change.token',$token).'">'.route('operator.change.token',$token).'</a>'.' to change your password.';
-      if($gs->is_smtp == 1)
+      if ($gs->mail_driver)
       {
           $data = [
                   'to' => $request->email,

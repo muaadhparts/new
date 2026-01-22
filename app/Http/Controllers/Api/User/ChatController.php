@@ -58,7 +58,7 @@ class ChatController extends Controller
             $name = $user->name;
             $from = $user->email;
             $msg = "Name: " . $name . "\nEmail: " . $from . "\nMessage: " . $request->message;
-            if ($gs->is_smtp) {
+            if ($gs->mail_driver) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,

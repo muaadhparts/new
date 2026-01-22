@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
 
@@ -39,46 +39,14 @@
 
                             <div class="row justify-content-center">
                                 <div class="col-lg-3">
-                                  <div class="left-area">
-                                    <h4 class="heading">
-                                        {{ __('Disqus') }}
-                                    </h4>
-                                  </div>
-                                </div>
-                                <div class="col-lg-6">
-                                    <div class="action-list">
-                                        <select class="process select droplinks {{ $gs->is_disqus == 1 ? 'drop-success' : 'drop-danger' }}">
-                                          <option data-val="1" value="{{route('operator-gs-status',['is_disqus',1])}}" {{ $gs->is_disqus == 1 ? 'selected' : '' }}>{{ __('Activated') }}</option>
-                                          <option data-val="0" value="{{route('operator-gs-status',['is_disqus',0])}}" {{ $gs->is_disqus == 0 ? 'selected' : '' }}>{{ __('Deactivated') }}</option>
-                                        </select>
-                                      </div>
-                                </div>
-                              </div>
-                              <div class="row justify-content-center">
-                                  <div class="col-lg-3">
-                                    <div class="left-area">
-                                      <h4 class="heading">
-                                          {{ __('Disqus Website Short Name') }} *
-                                      </h4>
-                                    </div>
-                                  </div>
-                                  <div class="col-lg-6">
-                                      <div class="tawk-area">
-                                        <textarea class="form-control" name="disqus">{{$gs->disqus}}</textarea>
-                                      </div>
-                                  </div>
-                                </div>
-
-                            <div class="row justify-content-center">
-                                <div class="col-lg-3">
                                     <div class="left-area">
                                         <h4 class="heading">{{ __('Display Posts Per Page') }} *
                                         </h4>
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
-                                    <input type="number" class="form-control" placeholder="{{ __('Display Posts Per Page') }}" name="post_count" 
-                                    value="{{ $gs->post_count }}" required="" min="0">
+                                    <input type="number" class="form-control" placeholder="{{ __('Display Posts Per Page') }}" name="page_count"
+                                    value="{{ $gs->page_count }}" required="" min="0">
                                 </div>
                             </div>
 

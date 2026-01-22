@@ -320,6 +320,23 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchant-items/status/{id}/{status}', 'Operator\CatalogItemController@merchantItemStatus')->name('operator-merchant-item-status');
         Route::get('/catalog-items/settings', 'Operator\CatalogItemController@catalogItemSettings')->name('operator-gs-catalog-item-settings');
         Route::post('/catalog-items/settings/update', 'Operator\CatalogItemController@settingUpdate')->name('operator-gs-catalog-item-settings-update');
+
+        // CATALOG ITEM IMAGES SECTION
+        Route::get('/catalog-items/images', 'Operator\CatalogItemImageController@index')->name('operator-catalog-item-images');
+        Route::get('/catalog-items/images/autocomplete', 'Operator\CatalogItemImageController@autocomplete')->name('operator-catalog-item-images-autocomplete');
+        Route::get('/catalog-items/images/{id}', 'Operator\CatalogItemImageController@show')->name('operator-catalog-item-images-show');
+        Route::post('/catalog-items/images/{id}', 'Operator\CatalogItemImageController@update')->name('operator-catalog-item-images-update');
+
+        // MERCHANT ITEM IMAGES SECTION
+        Route::get('/merchant-items/images', 'Operator\MerchantItemImageController@index')->name('operator-merchant-item-images');
+        Route::get('/merchant-items/images/autocomplete', 'Operator\MerchantItemImageController@autocomplete')->name('operator-merchant-item-images-autocomplete');
+        Route::get('/merchant-items/images/merchants', 'Operator\MerchantItemImageController@getMerchants')->name('operator-merchant-item-images-merchants');
+        Route::get('/merchant-items/images/branches', 'Operator\MerchantItemImageController@getBranches')->name('operator-merchant-item-images-branches');
+        Route::get('/merchant-items/images/quality-brands', 'Operator\MerchantItemImageController@getQualityBrands')->name('operator-merchant-item-images-quality-brands');
+        Route::get('/merchant-items/images/photos/{merchant_item_id}', 'Operator\MerchantItemImageController@getPhotos')->name('operator-merchant-item-images-photos');
+        Route::post('/merchant-items/images/store', 'Operator\MerchantItemImageController@store')->name('operator-merchant-item-images-store');
+        Route::delete('/merchant-items/images/{id}', 'Operator\MerchantItemImageController@destroy')->name('operator-merchant-item-images-delete');
+        Route::post('/merchant-items/images/order', 'Operator\MerchantItemImageController@updateOrder')->name('operator-merchant-item-images-order');
     });
 
     //------------ OPERATORCATALOG ITEM SECTION ENDS------------
@@ -463,7 +480,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchant/color', 'Operator\MuaadhSettingController@merchant_color')->name('operator-merchant-color');
         Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
         Route::delete('/merchants/delete/{id}', 'Operator\MerchantController@destroy')->name('operator-merchant-delete');
-        Route::get('/merchant/commission/collect/{id}', 'Operator\MerchantController@commissionCollect')->name('operator-merchant-commission-collect');
         // Subscription routes removed - system now uses verification instead
         // Route::get('/merchant/{id}/add-subscription', 'Operator\MerchantController@addMembershipPlan')->name('operator-merchant-add-subs');
         // Route::post('/merchant/{id}/add-subscription', 'Operator\MerchantController@addMembershipPlanStore')->name('operator-merchant-add-subs-store');
@@ -1001,6 +1017,15 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/merchant-photo/delete', 'Merchant\MerchantPhotoController@destroy')->name('merchant-merchant-photo-delete');
 
             //------------ MERCHANT PHOTO SECTION ENDS------------
+
+            //------------ MERCHANT MY ITEM IMAGES SECTION ------------
+            Route::get('/my-items/images', 'Merchant\MyItemImageController@index')->name('merchant-my-item-images');
+            Route::get('/my-items/images/datatables', 'Merchant\MyItemImageController@datatables')->name('merchant-my-item-images-datatables');
+            Route::get('/my-items/images/{id}', 'Merchant\MyItemImageController@show')->name('merchant-my-item-images-show');
+            Route::post('/my-items/images', 'Merchant\MyItemImageController@store')->name('merchant-my-item-images-store');
+            Route::post('/my-items/images/{id}', 'Merchant\MyItemImageController@update')->name('merchant-my-item-images-update');
+            Route::delete('/my-items/images/{id}', 'Merchant\MyItemImageController@destroy')->name('merchant-my-item-images-delete');
+            //------------ MERCHANT MY ITEM IMAGES SECTION ENDS------------
 
             //------------ MERCHANT SHIPPING ------------
 

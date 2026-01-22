@@ -156,7 +156,7 @@ class PurchaseController extends OperatorBaseController
     public function emailsub(Request $request)
     {
         $gs = Muaadhsetting::findOrFail(1);
-        if ($gs->is_smtp == 1) {
+        if ($gs->mail_driver) {
             $data = [
                 'to' => $request->to,
                 'subject' => $request->subject,

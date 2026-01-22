@@ -295,7 +295,7 @@ class CheckoutController extends Controller
                     }
 
                     $gs = Muaadhsetting::find(1);
-                    if ($gs->is_smtp == 1) {
+                    if ($gs->mail_driver) {
                         $maildata = [
                             'to'      => $purchase->customer_email,
                             'subject' => 'Your purchase ' . $purchase->purchase_number . ' is Confirmed!',
@@ -319,7 +319,7 @@ class CheckoutController extends Controller
                     // // dd('mp stock restored'); // اختباري
 
                     $gs = Muaadhsetting::find(1);
-                    if ($gs->is_smtp == 1) {
+                    if ($gs->mail_driver) {
                         $maildata = [
                             'to'      => $purchase->customer_email,
                             'subject' => 'Your purchase ' . $purchase->purchase_number . ' is Declined!',

@@ -55,7 +55,7 @@ class CommsBlueprintController extends OperatorBaseController
         //Sending Email To Users
         foreach($users as $user)
         {
-            if($config->is_smtp == 1)
+            if ($config->mail_driver)
             {
                 $data = [
                     'to' => $user->email,
@@ -88,7 +88,7 @@ class CommsBlueprintController extends OperatorBaseController
         // Sending Email To Merchants
         foreach($users as $user)
         {
-            if($config->is_smtp == 1)
+            if ($config->mail_driver)
             {
                 $data = [
                     'to' => $user->email,
