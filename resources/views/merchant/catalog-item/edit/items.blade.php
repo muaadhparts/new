@@ -1,19 +1,37 @@
 @extends('layouts.merchant')
+
 @section('css')
-    <link href="{{ asset('assets/operator/css/jquery.Jcrop.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/operator/css/Jcrop-style.css') }}" rel="stylesheet" />
+<style>
+    .catalog-item-info {
+        background: var(--bg-light, #f8f9fa);
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    .catalog-item-info img {
+        max-height: 120px;
+        border-radius: 8px;
+    }
+    .info-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        background: var(--bg-secondary, #e9ecef);
+        border-radius: 4px;
+        font-size: 13px;
+        margin-right: 8px;
+    }
+</style>
 @endsection
 
 @section('content')
     <div class="gs-merchant-outlet">
-        <!-- breadcrumb start  -->
+        <!-- breadcrumb start -->
         <div class="gs-merchant-breadcrumb has-mb">
-
-            <div class="gs-topup-name d-flex align-items-center gap-4">
+            <div class="gs-topup-name ms-0 d-flex align-items-center gap-4">
                 <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>
-                <h4>@lang('Edit CatalogItem')</h4>
+                <h4>@lang('Edit Merchant Item')</h4>
             </div>
 
             <ul class="breadcrumb-menu">
@@ -28,581 +46,349 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">
-                        @lang('Dashboard')
-                    </a>
+                    <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">@lang('Dashboard')</a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('CatalogItems') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize">@lang('My Items')</a>
                 </li>
                 <li>
-                    <a href="#" class="text-capitalize"> @lang('Edit CatalogItem') </a>
+                    <a href="#" class="text-capitalize">@lang('Edit Merchant Item')</a>
                 </li>
             </ul>
         </div>
         <!-- breadcrumb end -->
 
-        <!-- add catalogItem form start  -->
-        <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="myForm" action="{{ route('merchant-catalog-item-update', $data->id) }}"
-            method="POST" enctype="multipart/form-data">
+        <!-- Form start -->
+        <form class="row gy-3 gy-lg-4" id="merchantItemForm" action="{{ route('merchant-catalog-item-update', $merchantItem->id) }}" method="POST">
             @csrf
-            <!-- inputes of catalog item start  -->
-            <div class="col-12 col-lg-8 items-catalogItem-inputes-wrapper show">
+
+            <!-- Main Form -->
+            <div class="col-12 col-lg-8">
                 <div class="form-group">
-                    <!-- CatalogItem Name -->
+                    <!-- Catalog Item Info (Read-only) -->
+                    <div class="catalog-item-info">
+                        <div class="d-flex gap-3 align-items-start">
+                            @php
+                                $photoUrl = asset('assets/images/noimage.png');
+                                if ($data->photo) {
+                                    if (filter_var($data->photo, FILTER_VALIDATE_URL)) {
+                                        $photoUrl = $data->photo;
+                                    } else {
+                                        $photoUrl = \Illuminate\Support\Facades\Storage::url($data->photo);
+                                    }
+                                }
+                            @endphp
+                            <img src="{{ $photoUrl }}" alt="{{ $data->name }}">
+                            <div>
+                                <h6 class="mb-1">{{ $data->name }}</h6>
+                                <p class="mb-2 text-muted"><strong>@lang('Part Number'):</strong> {{ $data->part_number }}</p>
+                                <div>
+                                    <span class="info-badge"><strong>@lang('ID'):</strong> {{ $merchantItem->id }}</span>
+                                    <span class="info-badge"><strong>@lang('Created'):</strong> {{ $merchantItem->created_at->format('Y-m-d') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Merchant Branch -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Name* (In Any Language)')</label>
-                        <input type="text" class="form-control" name="name" placeholder="@lang('Enter CatalogItem Name') "
-                            value="{{ $data->name }}">
-                    </div>
-                    <!-- CatalogItem Part Number -->
-                    <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Part Number*')</label>
-                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter CatalogItem Part Number')"
-                            value="{{ $data->part_number }}">
-                    </div>
-                    {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
-
-
-
-
-
-
-
-
-
-
-
-                    <!-- Allow CatalogItem Condition Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_child-category" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_child-category">
-                        <input type="checkbox" id="allow-catalogItem-condition"
-                            {{ $data->item_condition != 0 ? 'checked' : '' }} name="item_condition_check"
-                            value="1">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-condition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-catalogItem-condition">@lang('Allow CatalogItem
-                                                                                                                                                                                                                                                                                                                            Condition')</label>
-                    </div>
-                    <!-- Child Category -->
-                    <div class="input-label-wrapper collapse {{ $data->item_condition != 0 ? 'show' : '' }}"
-                        id="show_child-category">
-                        <label for="child-category-select">@lang('CatalogItem Condition*')</label>
+                        <label>@lang('Branch / Warehouse') <span class="text-danger">*</span></label>
                         <div class="dropdown-container">
-                            <select id="child-category-select" class="form-control nice-select form__control"
-                                name="item_condition">
-                                <option value="2">{{ __('New') }}</option>
-                                <option value="1">{{ __('Used') }}</option>
-                                <!-- Add more options here if needed -->
+                            <select class="form-control nice-select form__control" name="merchant_branch_id" required>
+                                <option value="">@lang('Select Branch')</option>
+                                @foreach(\App\Models\MerchantBranch::where('user_id', auth()->id())->where('status', 1)->get() as $branch)
+                                    <option value="{{ $branch->id }}" {{ $merchantItem->merchant_branch_id == $branch->id ? 'selected' : '' }}>
+                                        {{ $branch->warehouse_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <small class="text-muted">@lang('Branch where this item will be shipped from')</small>
+                    </div>
+
+                    <!-- Quality Brand -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Quality Brand') <span class="text-danger">*</span></label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control" name="quality_brand_id" required>
+                                <option value="">@lang('Select Quality Brand')</option>
+                                @foreach(\App\Models\QualityBrand::where('is_active', 1)->get() as $qb)
+                                    <option value="{{ $qb->id }}" {{ $merchantItem->quality_brand_id == $qb->id ? 'selected' : '' }}>
+                                        {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
 
-
-
-                    <!-- Allow CatalogItem Preorder Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_product-preorder" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_product-preorder">
-                        <input type="checkbox" id="allow-catalogItem-preorder" {{ $data->preordered != 0 ? 'checked' : '' }}
-                            name="preordered_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-preorder">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Item Condition -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_item-condition">
+                        <input type="checkbox" id="allow-item-condition" name="item_condition_check" value="1"
+                            {{ $merchantItem->item_condition != 0 ? 'checked' : '' }}>
+                        <label class="icon-label check-box-label" for="allow-item-condition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-catalogItem-preorder">@lang('Allow CatalogItem
-                                                                                                                                                                                                                                                                                                                            Preorder')</label>
+                        <label class="check-box-label" for="allow-item-condition">@lang('Allow Item Condition')</label>
                     </div>
-                    <!-- CatalogItem Preorder -->
-                    <div class="input-label-wrapper collapse  {{ $data->preordered != 0 ? 'show' : '' }}"
-                        id="show_product-preorder">
-                        <label for="catalogItem-preorder-select">@lang('CatalogItem Preorder*')</label>
+                    <div class="input-label-wrapper collapse {{ $merchantItem->item_condition != 0 ? 'show' : '' }}" id="show_item-condition">
+                        <label>@lang('Item Condition')</label>
                         <div class="dropdown-container">
-                            <select id="catalogItem-preorder-select" class="form-control nice-select form__control"
-                                name="preordered">
-                                <option value="1">{{ __('Sale') }}</option>
-                                <option value="2">{{ __('Preordered') }}</option>
-                                <!-- Add more options here if needed -->
+                            <select class="form-control nice-select form__control" name="item_condition">
+                                <option value="2" {{ $merchantItem->item_condition == 2 ? 'selected' : '' }}>@lang('New')</option>
+                                <option value="1" {{ $merchantItem->item_condition == 1 ? 'selected' : '' }}>@lang('Used')</option>
                             </select>
                         </div>
                     </div>
 
-
-
-
-
-                    <!-- Allow Minimum Purchase Qty Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_minimum-purchase" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_minimum-purchase">
-                        <input type="checkbox" {{ $data->minimum_qty != null ? 'checked' : '' }} id="allow-minimum-purchase"
-                            name="minimum_qty_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-minimum-purchase">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Preorder -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_preorder">
+                        <input type="checkbox" id="allow-preorder" name="preordered_check" value="1"
+                            {{ $merchantItem->preordered != 0 ? 'checked' : '' }}>
+                        <label class="icon-label check-box-label" for="allow-preorder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-minimum-purchase">@lang('Allow Minimum Purchase
-                                                                                                                                                                                                                                                                                                                            Qty')</label>
+                        <label class="check-box-label" for="allow-preorder">@lang('Allow Preorder')</label>
                     </div>
-                    <!-- CatalogItem Minimum Purchase Qty -->
-                    <div class="input-label-wrapper collapse {{ $data->minimum_qty != null ? 'show' : '' }}"
-                        id="show_minimum-purchase">
-                        <label>@lang('CatalogItem Minimum Purchase Qty*')</label>
-                        <input type="text" class="form-control" name="minimum_qty" placeholder="@lang('Minimum Purchase Qty') "
-                            value="{{ $data->minimum_qty }}">
+                    <div class="input-label-wrapper collapse {{ $merchantItem->preordered != 0 ? 'show' : '' }}" id="show_preorder">
+                        <label>@lang('Preorder Status')</label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control" name="preordered">
+                                <option value="0" {{ $merchantItem->preordered == 0 ? 'selected' : '' }}>@lang('Available for Sale')</option>
+                                <option value="1" {{ $merchantItem->preordered == 1 ? 'selected' : '' }}>@lang('Preorder Only')</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Allow Estimated Shipping Time Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_estimated-shipping-time" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_estimated-shipping-time">
-                        <input type="checkbox" id="allow-estimated-shipping-time" name="shipping_time_check"
-                            value="1" {{ $data->ship != null ? 'checked' : '' }}>
-                        <label class="icon-label check-box-label" for="allow-estimated-shipping-time">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Minimum Quantity -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_minimum-qty">
+                        <input type="checkbox" id="allow-minimum-qty" name="minimum_qty_check" value="1"
+                            {{ $merchantItem->minimum_qty != null ? 'checked' : '' }}>
+                        <label class="icon-label check-box-label" for="allow-minimum-qty">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-estimated-shipping-time">@lang('Allow Estimated
-                                                                                                                                                                                                                                                                                                                            Shipping Time')</label>
+                        <label class="check-box-label" for="allow-minimum-qty">@lang('Allow Minimum Purchase Qty')</label>
                     </div>
-                    <!-- Estimated Shipping Time -->
-                    <div class="input-label-wrapper collapse {{ $data->ship != null ? 'show' : '' }}"
-                        id="show_estimated-shipping-time">
-                        <label>@lang('Estimated Shipping Time*')</label>
-                        <input type="text" class="form-control" name="ship" placeholder=" @lang('Estimated Shipping Time')"
-                            value="{{ $data->ship == null ? '' : $data->ship }}">
+                    <div class="input-label-wrapper collapse {{ $merchantItem->minimum_qty != null ? 'show' : '' }}" id="show_minimum-qty">
+                        <label>@lang('Minimum Purchase Quantity')</label>
+                        <input type="number" class="form-control" name="minimum_qty" min="1" value="{{ $merchantItem->minimum_qty }}" placeholder="@lang('Enter Minimum Quantity')">
                     </div>
 
-
-                    <!-- Allow CatalogItem Whole Sell Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_product-whole-sell" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_product-whole-sell">
-                        <input type="checkbox" {{ !empty($data->whole_sell_qty) ? 'checked' : '' }} name="whole_check"
-                            id="allow-catalogItem-whole-sell">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-whole-sell">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Shipping Time -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_shipping-time">
+                        <input type="checkbox" id="allow-shipping-time" name="shipping_time_check" value="1"
+                            {{ $merchantItem->ship != null ? 'checked' : '' }}>
+                        <label class="icon-label check-box-label" for="allow-shipping-time">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-catalogItem-whole-sell">@lang('Allow CatalogItem Whole
-                                                                                                                                                                                                                                                                                                                            Sell')</label>
+                        <label class="check-box-label" for="allow-shipping-time">@lang('Allow Estimated Shipping Time')</label>
                     </div>
-                    <!-- CatalogItem Whole Sell -->
-                    <div class="input-label-wrapper collapse {{ !empty($data->whole_sell_qty) ? 'show' : '' }}"
-                        id="show_product-whole-sell">
-                        <label>@lang('Allow CatalogItem Whole Sell')</label>
+                    <div class="input-label-wrapper collapse {{ $merchantItem->ship != null ? 'show' : '' }}" id="show_shipping-time">
+                        <label>@lang('Estimated Shipping Time')</label>
+                        <input type="text" class="form-control" name="ship" value="{{ $merchantItem->ship }}" placeholder="@lang('e.g., 2-3 days')">
+                    </div>
 
-                        <div class="d-flex flex-column g-4 gap-4" id="whole-section">
-                            @if (!empty($data->whole_sell_qty))
-
-                                @foreach ($data->whole_sell_qty as $key => $data1)
-                                    <div class="row row-cols-1 row-cols-md-2 gy-4 postion-relative">
+                    <!-- Wholesale -->
+                    @php
+                        $hasWholesale = !empty($merchantItem->whole_sell_qty);
+                        $wholesaleQty = $hasWholesale ? (is_array($merchantItem->whole_sell_qty) ? $merchantItem->whole_sell_qty : explode(',', $merchantItem->whole_sell_qty)) : [];
+                        $wholesaleDiscount = !empty($merchantItem->whole_sell_discount) ? (is_array($merchantItem->whole_sell_discount) ? $merchantItem->whole_sell_discount : explode(',', $merchantItem->whole_sell_discount)) : [];
+                    @endphp
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_wholesale">
+                        <input type="checkbox" name="whole_check" id="allow-wholesale" value="1" {{ $hasWholesale ? 'checked' : '' }}>
+                        <label class="icon-label check-box-label" for="allow-wholesale">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </label>
+                        <label class="check-box-label" for="allow-wholesale">@lang('Allow Wholesale')</label>
+                    </div>
+                    <div class="input-label-wrapper collapse {{ $hasWholesale ? 'show' : '' }}" id="show_wholesale">
+                        <label>@lang('Wholesale Settings')</label>
+                        <div class="d-flex flex-column g-4 gap-4" id="wholesale-section">
+                            @if($hasWholesale && count($wholesaleQty) > 0)
+                                @foreach($wholesaleQty as $key => $qty)
+                                    <div class="row row-cols-1 row-cols-md-2 gy-4 position-relative">
                                         <div class="col">
-                                            <input type="text" class="form-control" name="whole_sell_qty[]"
-                                                placeholder="@lang('Enter Quantity') "
-                                                value="{{ $data->whole_sell_qty[$key] }}">
+                                            <input type="number" class="form-control" name="whole_sell_qty[]" value="{{ $qty }}" placeholder="@lang('Enter Quantity')">
                                         </div>
                                         <div class="col position-relative">
-                                            <input type="text" class="form-control" name="whole_sell_discount[]"
-                                                placeholder="@lang('Enter Discount Percentage') "
-                                                value="{{ $data->whole_sell_discount[$key] }}">
-                                            <button type="button"
-                                                class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_whole_sell right-1"><i
-                                                    class="fa-solid fa-xmark"></i></button>
+                                            <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" value="{{ $wholesaleDiscount[$key] ?? '' }}" placeholder="@lang('Discount Percentage')">
+                                            <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_wholesale right-1">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
                                         </div>
-
                                     </div>
                                 @endforeach
                             @else
-                                <div class="row row-cols-1 row-cols-md-2 gy-4 postion-relative">
+                                <div class="row row-cols-1 row-cols-md-2 gy-4 position-relative">
                                     <div class="col">
-                                        <input type="text" class="form-control" name="whole_sell_qty[]"
-                                            placeholder="@lang('Enter Quantity') ">
+                                        <input type="number" class="form-control" name="whole_sell_qty[]" placeholder="@lang('Enter Quantity')">
                                     </div>
                                     <div class="col position-relative">
-                                        <input type="text" class="form-control" name="whole_sell_discount[]"
-                                            placeholder="@lang('Enter Discount Percentage') ">
-                                        <button type="button"
-                                            class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_whole_sell right-1"><i
-                                                class="fa-solid fa-xmark"></i></button>
+                                        <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" placeholder="@lang('Discount Percentage')">
+                                        <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_wholesale right-1">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
                                     </div>
-
                                 </div>
                             @endif
                         </div>
-
                         <div class="col-12 col-md-12 d-flex justify-content-end mt-4">
-                            <button class="template-btn outline-btn" id="whole-btn"
-                                type="button">+@lang('Add More
-                                                                                                                                                                                                                                                                                                                                                                                                                                Field')</button>
+                            <button class="template-btn outline-btn" id="add-wholesale-btn" type="button">+ @lang('Add More')</button>
                         </div>
-
                     </div>
 
-
-
+                    <!-- Stock -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Stock')</label>
-                        <input type="number" class="form-control" name="stock" value="{{ $data->stock }}"
-                            placeholder="@lang('Enter CatalogItem Stock') ">
+                        <label>@lang('Stock Quantity') <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" name="stock" min="0" value="{{ $merchantItem->stock }}" placeholder="@lang('Enter Stock Quantity')" required>
                     </div>
 
-
-
-
-                    <!-- CatalogItem Description -->
+                    <!-- Details -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Description*')</label>
-                        <textarea class="form-control  nic-edit" id="details" name="details">{{ $data->details }}</textarea>
+                        <label>@lang('Item Details')</label>
+                        <textarea class="form-control w-100 nic-edit" id="details" name="details" rows="6">{{ $merchantItem->details }}</textarea>
                     </div>
 
-                    <!-- CatalogItem Buy/Return Policy -->
+                    <!-- Policy -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Buy/Return Policy*')</label>
-                        <textarea class="form-control w-100 nic-edit" id="policy" name="policy">{{ $data->policy }}</textarea>
-                    </div>
-                    <!-- Allow CatalogItem SEO Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_product-seo" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_product-seo">
-                        <input type="checkbox" id="allow-catalogItem-seo" name="seo_check" value="1"
-                            {{ is_array($data->meta_tag) ? 'checked' : '' }}>
-                        <label class="icon-label check-box-label" for="allow-catalogItem-seo">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-catalogItem-seo">@lang('Allow CatalogItem SEO')</label>
-                    </div>
-
-
-                    <div class="input-label-wrapper collapse row gy-4 {{ is_array($data->meta_tag) ? 'show' : '' }}"
-                        id="show_product-seo">
-                        <!-- Meta Tags  -->
-                        <div class="col-12">
-                            <label>@lang('Meta Tags *')</label>
-                            <input type="text" class="myTags" id="metatags" name="meta_tag"
-                                value="{{ is_array($data->meta_tag) ? implode(',', $data->meta_tag) : '' }}"
-                                placeholder="">
-
-                        </div>
-                        <!-- Meta Description  -->
-                        <div class="col-12">
-                            <label>@lang('Meta Description *')</label>
-                            <textarea class="form-control w-100" placeholder="@lang('Meta Description')" name="meta_description" rows="6">{{ $data->meta_description }}</textarea>
-                        </div>
+                        <label>@lang('Buy/Return Policy')</label>
+                        <textarea class="form-control w-100 nic-edit" id="policy" name="policy" rows="6">{{ $merchantItem->policy }}</textarea>
                     </div>
                 </div>
             </div>
 
-            <!-- form sidebar start  -->
+            <!-- Sidebar -->
             <div class="col-12 col-lg-4">
                 <div class="add-catalogItem-form-sidebar">
                     <div class="form-group">
-                        <!-- Feature Image  -->
+                        <!-- Price -->
                         <div class="input-label-wrapper">
-                            <label>@lang('Feature Image *')</label>
-                            <div class="w-100">
-                                <div class="overlayed-img-wrapper">
-                                    <div class="span4 cropme text-center d-flex justify-content-center align-items-center"
-                                        id="landscape"
-                                        class="m-upload-zone">
-                                        <a href="javascript:;" id="crop-image" class="btn btn-primary"
-                                            style="">
-                                            <i class="icofont-upload-alt"></i>
-                                            @lang('Upload Image Here')
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <input type="hidden" id="feature_photo" name="photo" value="{{ $data->photo }}">
-                            </div>
+                            <label>@lang('Price') <span class="text-danger">*</span> ({{ $sign->name }})</label>
+                            <input type="number" step="0.01" class="form-control" name="price" value="{{ round($merchantItem->price * $sign->value, 2) }}" placeholder="@lang('Enter Price')" required>
                         </div>
-                        <!-- CatalogItem Gallery Images  -->
+
+                        <!-- Previous Price -->
                         <div class="input-label-wrapper">
-                            <label for="gallery_upload">@lang('CatalogItem Gallery Images *')</label>
-
-                            <div class="w-100">
-                                <label for="gallery_upload">
-                                    <div class="template-btn black-btn" type="button">+ @lang('Set Gallery')</div>
-                                </label>
-                            </div>
-
-
-
-                            <input type="file" class="d-none" name="gallery[]" multiple id="gallery_upload">
-
-
-
-                            <div class="row" id="view_gallery">
-                                @foreach ($data->merchantPhotos as $gallery)
-                                    <div class="col-6  col-sm-3 col-lg-6 col col-xxl-4  mt-2">
-                                        <div class="position-relative img-wh-80">
-                                            <img class="img-wh-80 rounded-4  object-fit-cover"
-                                                src="{{ asset('assets/images/merchant-photos/' . $gallery->photo) }}"
-                                                alt="">
-                                            <button type="button"
-                                                class="gallery-extra-remove-btn position-abs-center remove_gallery"><i
-                                                    class="fa-solid fa-xmark"></i></button>
-                                        </div>
-                                    </div>
-                                @endforeach
-
-                            </div>
+                            <label>@lang('Previous Price') ({{ $sign->name }}) <small class="text-muted">@lang('Optional')</small></label>
+                            <input type="number" step="0.01" class="form-control" name="previous_price" value="{{ $merchantItem->previous_price ? round($merchantItem->previous_price * $sign->value, 2) : '' }}" placeholder="@lang('Enter Previous Price')">
                         </div>
-                        <!-- CatalogItem Current Price -->
 
+                        <!-- Item Type -->
                         <div class="input-label-wrapper">
-                            <label>@lang('CatalogItem Current Price') ({{ $curr->name }})</label>
-                            <input type="text" class="form-control" name="price"
-                                placeholder="{{ round($data->price * $sign->value, 2) }}">
-                        </div>
-                        <!-- CatalogItem Discount Price -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('CatalogItem Discount Price* (Optional)')</label>
-                            <input type="text" class="form-control" name="previous_price"
-                                placeholder="{{ round($data->previous_price * $sign->value, 2) }}">
-                        </div>
-                        <!-- YouTube Video URL-->
-                        <div class="input-label-wrapper">
-                            <label>@lang('YouTube Video URL* (Optional)')</label>
-                            <input type="text" class="form-control" name="youtube" placeholder="@lang('Enter YouTube Video URL')"
-                                value="{{ $data->youtube }}">
-                        </div>
-                        <!-- Feature Tags -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('Feature Tags')</label>
-                            <div id="feature-section">
-                                @if ($data->features != '' && count($data->features) > 0)
-                                    @foreach ($data->features as $key => $data1)
-                                        <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
-                                            <div class="col feature-tag-color-input-wrapper">
-                                                <input type="text" class="form-control" name="features[]"
-                                                    placeholder="@lang('Enter Your Keyword')"
-                                                    value="{{ $data->features[$key] }}">
-                                            </div>
-                                            <div class="col feature-tag-keyword-input-wrapper">
-                                                <div class="w-100  position-relative">
-                                                    <input type="text" class="form-control"
-                                                        placeholder="{{ $data->colors[$key] }}">
-                                                    <input class="h-100 position-absolute top-0 end-0 color-input"
-                                                        type="color" id="favcolor_2" name="colors[]"
-                                                        value="{{ $data->colors[$key] }}">
-                                                    <button type="button"
-                                                        class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
-                                                            class="fa-solid fa-xmark"></i></button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    @endforeach
-                                @else
-                                    <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
-                                        <div class="col feature-tag-color-input-wrapper">
-                                            <input type="text" class="form-control" name="features[]"
-                                                placeholder="@lang('Enter Your Keyword')">
-                                        </div>
-                                        <div class="col feature-tag-keyword-input-wrapper">
-                                            <div class="w-100  position-relative">
-                                                <input type="text" class="form-control" placeholder="#000000 ">
-                                                <input class="h-100 position-absolute top-0 end-0 color-input"
-                                                    type="color" id="favcolor_2" name="colors[]" value="#000000">
-                                                <button type="button"
-                                                    class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
-                                                        class="fa-solid fa-xmark"></i></button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                            <div class="col-12 col-sm-12 mt-4">
-                                <div class="d-flex justify-content-end">
-                                    <button class="template-btn black-btn px-20" id="feature-btn"
-                                        type="button">+@lang('Add
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        More Field')</button>
-                                </div>
+                            <label>@lang('Item Type')</label>
+                            <div class="dropdown-container">
+                                <select id="item_type" class="form-control nice-select form__control" name="item_type">
+                                    <option value="normal" {{ $merchantItem->item_type == 'normal' ? 'selected' : '' }}>@lang('Normal')</option>
+                                    <option value="affiliate" {{ $merchantItem->item_type == 'affiliate' ? 'selected' : '' }}>@lang('Affiliate')</option>
+                                </select>
                             </div>
                         </div>
 
-
-                        <!-- Tags -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('Tags') *</label>
-                            <input type="text" class="form-control" name="tags" id="tags"
-                                name="catalogItem-tags" placeholder="@lang('Enter YouTube Video URL')"
-                                value="{{ is_array($data->tags) ? implode(',', $data->tags) : '' }}">
+                        <!-- Affiliate Link -->
+                        <div class="input-label-wrapper" id="affiliate_link_wrapper" style="{{ $merchantItem->item_type == 'affiliate' ? '' : 'display: none;' }}">
+                            <label>@lang('Affiliate Link') <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" name="affiliate_link" value="{{ $merchantItem->affiliate_link }}" placeholder="@lang('Enter Affiliate URL')">
                         </div>
-                        <!-- Create CatalogItem Button  -->
-                        <button class="template-btn w-100 px-20" type="submit">@lang('Update CatalogItem')</button>
+
+                        <!-- Status -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Status')</label>
+                            <div class="dropdown-container">
+                                <select class="form-control nice-select form__control" name="status">
+                                    <option value="1" {{ $merchantItem->status == 1 ? 'selected' : '' }}>@lang('Active')</option>
+                                    <option value="0" {{ $merchantItem->status == 0 ? 'selected' : '' }}>@lang('Inactive')</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Info Note -->
+                        <div class="alert alert-info mt-3">
+                            <strong>@lang('Note'):</strong>
+                            <p class="mb-0 small">@lang('This form edits your merchant offer for this catalog item. You can update pricing, stock, and other details.')</p>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button class="template-btn w-100 px-20" type="submit">@lang('Update Merchant Item')</button>
                     </div>
                 </div>
             </div>
-            <!-- form sidebar end  -->
         </form>
-        <!-- add catalogItem form end -->
-
+        <!-- Form end -->
     </div>
 @endsection
 
 @section('script')
     <script src="{{ asset('assets/operator/js/nicEdit.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/jquery.Jcrop.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/jquery.SimpleCropper.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/select2.js') }}"></script>
-
 
     <script>
         (function($) {
             "use strict";
 
+            // Initialize nicEdit
             document.addEventListener("DOMContentLoaded", function() {
                 bkLib.onDomLoaded(function() {
-                    // Initialize nicEditor for each class or ID as required
                     var editors = document.getElementsByClassName("nic-edit");
                     for (var i = 0; i < editors.length; i++) {
                         new nicEditor().panelInstance(editors[i]);
                     }
                 });
-
             });
 
-
-            $('.cropme').simpleCropper();
-
-
-            $(document).on('click', "#whole-btn", function() {
-                $("#whole-section").append(
-                    `  <div class="row row-cols-1 row-cols-md-2 gy-4 postion-relative">
-                                <div class="col">
-                                    <input type="text" class="form-control" name="whole_sell_qty[]"
-                                        placeholder="@lang('Enter Quantity') ">
-                                </div>
-                                <div class="col position-relative">
-                                    <input type="text" class="form-control" name="whole_sell_discount[]"
-                                        placeholder="@lang('Enter Discount Percentage') ">
-                                    <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_whole_sell right-1"><i
-                                            class="fa-solid fa-xmark"></i></button>
-                                </div>
-
-                            </div>`
-                );
-            });
-
-
-            $(document).on('click', ".remove_whole_sell", function() {
-                if ($('.remove_whole_sell').length > 1) {
-                    $(this).parent().parent().remove();
+            // Item type toggle (affiliate link visibility)
+            $('#item_type').on('change', function() {
+                if ($(this).val() === 'affiliate') {
+                    $('#affiliate_link_wrapper').show();
+                    $('#affiliate_link_wrapper input').prop('required', true);
+                } else {
+                    $('#affiliate_link_wrapper').hide();
+                    $('#affiliate_link_wrapper input').prop('required', false);
                 }
             });
 
-
-            $(document).on("change", "#gallery_upload", function() {
-
-                var file = $(this)[0].files;
-                var file_length = file.length;
-                for (let i = 0; i < file_length; i++) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#view_gallery').append(`<div class="col-6  col-sm-3 col-lg-6 col col-xxl-4  mt-2">
-                        <div class="position-relative img-wh-80">
-                                    <img class="img-wh-80 rounded-4  object-fit-cover"  src="${e.target.result}" alt="">
-                                    <button class="gallery-extra-remove-btn position-abs-center remove_gallery"><i class="fa-solid fa-xmark"></i></button>
-                                     </div>
-                                </div>`);
-                    }
-                    reader.readAsDataURL(this.files[i]);
-                }
-
+            // Add wholesale row
+            $(document).on('click', '#add-wholesale-btn', function() {
+                $('#wholesale-section').append(`
+                    <div class="row row-cols-1 row-cols-md-2 gy-4 position-relative">
+                        <div class="col">
+                            <input type="number" class="form-control" name="whole_sell_qty[]" placeholder="@lang('Enter Quantity')">
+                        </div>
+                        <div class="col position-relative">
+                            <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" placeholder="@lang('Discount Percentage')">
+                            <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_wholesale right-1">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                `);
             });
 
-            $(document).on('click', '.remove_gallery', function() {
-                $(this).parent().parent().remove();
-            });
-
-            $(document).on('click', "#feature-btn", function() {
-
-                $("#feature-section").append(
-                    `    <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
-                                    <div class="col feature-tag-color-input-wrapper">
-                                        <input type="text" class="form-control" name="features[]"
-                                            placeholder="@lang('Enter Your Keyword')">
-                                    </div>
-                                    <div class="col feature-tag-keyword-input-wrapper">
-                                        <div class="w-100  position-relative">
-                                            <input type="text" class="form-control" placeholder="#000000 ">
-                                            <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
-                                                id="favcolor_2" name="colors[]" value="#000000">
-                                            <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
-                                                    class="fa-solid fa-xmark"></i></button>
-                                        </div>
-                                    </div>
-                                </div>`
-                );
-            });
-
-            $(document).on('click', ".remove_feature", function() {
-                if ($('.remove_feature').length > 1) {
-                    $(this).parent().parent().parent().remove();
+            // Remove wholesale row
+            $(document).on('click', '.remove_wholesale', function() {
+                if ($('.remove_wholesale').length > 1) {
+                    $(this).closest('.row').remove();
                 }
             });
 
-
-            $('#myForm').on('submit', function(e) {
-                // Prevent form from submitting immediately
-                e.preventDefault();
-
+            // Form submit handler
+            $('#merchantItemForm').on('submit', function(e) {
+                // Sync nicEdit content
                 var editors = document.getElementsByClassName('nic-edit');
                 for (var i = 0; i < editors.length; i++) {
-                    var editorInstance = nicEditors.findEditor(editors[i].id); // Find the nicEditor instance
+                    var editorInstance = nicEditors.findEditor(editors[i].id);
                     if (editorInstance) {
-                        editors[i].value = editorInstance
-                            .getContent(); // Update the textarea value with the nicEditor content
+                        editors[i].value = editorInstance.getContent();
                     }
                 }
-
-                // Clear previous hidden inputs
-                $('.dynamic-input').remove();
-
-                // Iterate through checkboxes
-                $('.attr-checkbox').each(function() {
-                    var checkbox = $(this);
-                    var priceInputId = "#" + checkbox.attr('id') + "_price";
-                    var priceInput = $(priceInputId);
-
-                    if (checkbox.prop('checked')) {
-                        var priceValue = priceInput.val().length > 0 ? priceInput.val() : "0.00";
-                        var inputName = priceInput.data('name');
-
-                        // Create hidden input and append to form
-                        $('<input>').attr({
-                            type: 'hidden',
-                            name: inputName,
-                            value: priceValue,
-                            class: 'dynamic-input'
-                        }).appendTo('#myForm');
-                    }
-                });
-
-                // Submit the form
-                this.submit();
             });
-
-
-
-
 
         })(jQuery);
     </script>

@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
     <div class="content-area">
@@ -15,17 +15,13 @@
                             <a href="{{ route('operator-catalog-item-index') }}">{{ __('Catalog Items') }} </a>
                         </li>
                         <li>
-                            <a href="javascript:;">{{ __('Physical CatalogItem') }}</a>
-                        </li>
-                        <li>
                             <a href="javascript:;">{{ __('Edit') }}</a>
                         </li>
                     </ul>
                 </div>
             </div>
         </div>
-        <form id="muaadhform" action="{{ route('operator-catalog-item-update', $merchantItem->id) }}" method="POST"
-            enctype="multipart/form-data">
+        <form id="muaadhform" action="{{ route('operator-catalog-item-update', $data->id) }}" method="POST">
             {{ csrf_field() }}
             @include('alerts.operator.form-both')
             <div class="row">
@@ -39,72 +35,7 @@
                                             style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                                         </div>
 
-                                        {{-- Merchant Selection --}}
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Merchant') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select name="merchant_id" required="">
-                                                    <option value="">{{ __('Select Merchant') }}</option>
-                                                    @foreach ($merchants as $merchant)
-                                                        <option value="{{ $merchant->id }}"
-                                                            {{ $merchantItem->user_id == $merchant->id ? 'selected' : '' }}>
-                                                            {{ $merchant->shop_name ?: $merchant->name }} ({{ $merchant->email }})
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        {{-- Vehicle Brands (from catalog_item_fitments - read only) --}}
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Vehicle Brands') }} ({{ __('Fits These Vehicles') }})</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                @php
-                                                    $fitmentBrands = $merchantItem->catalogItem?->fitments?->map(fn($f) => $f->brand)->filter()->unique('id');
-                                                @endphp
-                                                @if($fitmentBrands && $fitmentBrands->count() > 0)
-                                                    <div class="d-flex flex-wrap gap-2">
-                                                        @foreach($fitmentBrands as $brand)
-                                                            <span class="badge badge-primary">
-                                                                {{ $brand->name }} {{ $brand->name_ar ? '- ' . $brand->name_ar : '' }}
-                                                            </span>
-                                                        @endforeach
-                                                    </div>
-                                                @else
-                                                    <span class="text-muted">{{ __('No vehicle fitment data') }}</span>
-                                                @endif
-                                                <small class="text-muted d-block mt-1">{{ __('Vehicle compatibility is set at catalog level, not per merchant') }}</small>
-                                            </div>
-                                        </div>
-
-                                        {{-- Quality Brand (جودة التصنيع) --}}
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select name="quality_brand_id" class="form-control">
-                                                    <option value="">{{ __('Select Quality Brand') }}</option>
-                                                    @foreach ($qualityBrands as $qb)
-                                                        <option value="{{ $qb->id }}"
-                                                            {{ $merchantItem->quality_brand_id == $qb->id ? 'selected' : '' }}>
-                                                            {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
+                                        {{-- CatalogItem Name --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
@@ -147,363 +78,93 @@
                                             </div>
                                         </div>
 
+                                        {{-- Part Number --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('CatalogItem Part_Number') }}* </h4>
+                                                    <h4 class="heading">{{ __('CatalogItem Part Number') }}* </h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
                                                 <input type="text" class="form-control"
-                                                    placeholder="{{ __('Enter CatalogItem Part_Number') }}" name="part_number"
+                                                    placeholder="{{ __('Enter CatalogItem Part Number') }}" name="part_number"
                                                     required="" value="{{ $data->part_number }}">
                                             </div>
                                         </div>
 
-                                        {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
-
-                                        <div class="{{ !empty($data->size) ? ' showbox' : '' }}" id="stckprod">
-                                            <div class="row">
-
-                                                <div class="col-lg-12">
-                                                    <div class="checkbox-wrapper">
-                                                        <input type="checkbox" name="measure_check" class="checkclick1"
-                                                            id="allowProductMeasurement" value="1"
-                                                            {{ $data->measure == null ? '' : 'checked' }}>
-                                                        <label
-                                                            for="allowProductMeasurement">{{ __('Allow CatalogItem Measurement') }}</label>
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-
+                                        {{-- Weight --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-
+                                                    <h4 class="heading">{{ __('Weight') }}</h4>
+                                                    <p class="sub-heading">{{ __('(In KG - Optional)') }}</p>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="item_condition_check"
-                                                            type="checkbox" id="conditionCheck" value="1"
-                                                            {{ $merchantItem->item_condition != 0 ? 'checked' : '' }}>
-                                                        <label
-                                                            for="conditionCheck">{{ __('Allow CatalogItem Condition') }}</label>
-                                                    </li>
+                                                <input type="number" class="form-control" step="0.01" min="0"
+                                                    placeholder="{{ __('e.g 1.5') }}" name="weight" value="{{ $data->weight ?? '1.00' }}">
+                                            </div>
+                                        </div>
+
+                                        {{-- Measurement --}}
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('CatalogItem Measurement') }}</h4>
+                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <select id="product_measure" class="form-control">
+                                                    <option value="" {{ $data->measure == null ? 'selected' : '' }}>{{ __('None') }}</option>
+                                                    <option value="Gram" {{ $data->measure == 'Gram' ? 'selected' : '' }}>{{ __('Gram') }}</option>
+                                                    <option value="Kilogram" {{ $data->measure == 'Kilogram' ? 'selected' : '' }}>{{ __('Kilogram') }}</option>
+                                                    <option value="Litre" {{ $data->measure == 'Litre' ? 'selected' : '' }}>{{ __('Litre') }}</option>
+                                                    <option value="Pound" {{ $data->measure == 'Pound' ? 'selected' : '' }}>{{ __('Pound') }}</option>
+                                                    <option value="Custom" {{ $data->measure && !in_array($data->measure, ['Gram', 'Kilogram', 'Litre', 'Pound']) ? 'selected' : '' }}>{{ __('Custom') }}</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-6 {{ $data->measure && !in_array($data->measure, ['Gram', 'Kilogram', 'Litre', 'Pound', null]) ? '' : 'hidden' }}" id="measure">
+                                                <input name="measure" type="text" id="measurement"
+                                                    class="form-control" placeholder="{{ __('Enter Unit') }}"
+                                                    value="{{ $data->measure }}">
+                                            </div>
+                                        </div>
+
+                                        {{-- Youtube Video URL --}}
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Youtube Video URL') }}</h4>
+                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <input name="youtube" type="text" class="form-control"
+                                                    placeholder="{{ __('Enter Youtube Video URL') }}" value="{{ $data->youtube }}">
+                                            </div>
+                                        </div>
+
+                                        {{-- Tags --}}
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Tags') }}</h4>
+                                                    <p class="sub-heading">{{ __('(Optional - For Search)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul id="tags" class="myTags">
+                                                    @if (!empty($data->tags))
+                                                        @foreach ($data->tags as $element)
+                                                            <li>{{ $element }}</li>
+                                                        @endforeach
+                                                    @endif
                                                 </ul>
                                             </div>
                                         </div>
 
-                                        <div class="{{ $merchantItem->item_condition == 0 ? ' showbox' : '' }}">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Condition') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select name="item_condition">
-                                                        <option value="2"
-                                                            {{ $merchantItem->item_condition == 2 ? 'selected' : '' }}>
-                                                            {{ __('New') }}</option>
-                                                        <option value="1"
-                                                            {{ $merchantItem->item_condition == 1 ? 'selected' : '' }}>
-                                                            {{ __('Used') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="preordered_check"
-                                                            type="checkbox" id="preorderedCheck" value="1"
-                                                            {{ $merchantItem->preordered != 0 ? 'checked' : '' }}>
-                                                        <label
-                                                            for="preorderedCheck">{{ __('Allow CatalogItem Preorder') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="{{ $merchantItem->preordered == 0 ? ' showbox' : '' }}">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Preorder') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select name="preordered">
-                                                        <option value="1"
-                                                            {{ $merchantItem->preordered == 1 ? 'selected' : '' }}>
-                                                            {{ __('Sale') }}</option>
-                                                        <option value="2"
-                                                            {{ $merchantItem->preordered == 2 ? 'selected' : '' }}>
-                                                            {{ __('Preordered') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="minimum_qty_check"
-                                                            type="checkbox" id="check111" value="1"
-                                                            {{ $merchantItem->minimum_qty != null ? 'checked' : '' }}>
-                                                        <label for="check111">{{ __('Allow Minimum Purchase Qty') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="{{ $merchantItem->minimum_qty != null ? '' : ' showbox' }}">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Minimum Purchase Qty') }}* </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <input type="number" class="form-control" min="1"
-                                                        placeholder="{{ __('Minimum Purchase Qty') }}" name="minimum_qty"
-                                                        value="{{ $merchantItem->minimum_qty == null ? '' : $merchantItem->minimum_qty }}">
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="shipping_time_check"
-                                                            type="checkbox" id="check1" value="1"
-                                                            {{ $merchantItem->ship != null ? 'checked' : '' }}>
-                                                        <label
-                                                            for="check1">{{ __('Allow Estimated Shipping Time') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="{{ $merchantItem->ship != null ? '' : ' showbox' }}">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Estimated Shipping Time') }}*
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <input type="text" class="form-control"
-                                                        placeholder="{{ __('Estimated Shipping Time') }}" name="ship"
-                                                        value="{{ $merchantItem->ship == null ? '' : $merchantItem->ship }}">
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="{{ $data->measure == null ? 'showbox' : '' }}">
-                                            <div class="row">
-                                                <div class="col-lg-6">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Measurement') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-6">
-                                                    <select id="product_measure">
-                                                        <option value=""
-                                                            {{ $data->measure == null ? 'selected' : '' }}>
-                                                            {{ __('None') }}</option>
-                                                        <option value="Gram"
-                                                            {{ $data->measure == 'Gram' ? 'selected' : '' }}>
-                                                            {{ __('Gram') }}</option>
-                                                        <option value="Kilogram"
-                                                            {{ $data->measure == 'Kilogram' ? 'selected' : '' }}>
-                                                            {{ __('Kilogram') }}</option>
-                                                        <option value="Litre"
-                                                            {{ $data->measure == 'Litre' ? 'selected' : '' }}>
-                                                            {{ __('Litre') }}</option>
-                                                        <option value="Pound"
-                                                            {{ $data->measure == 'Pound' ? 'selected' : '' }}>
-                                                            {{ __('Pound') }}</option>
-                                                        <option value="Custom"
-                                                            {{ in_array($data->measure, explode(',', 'Gram,Kilogram,Litre,Pound')) ? '' : 'selected' }}>
-                                                            {{ __('Custom') }}</option>
-                                                    </select>
-                                                </div>
-                                                {{-- <div class="col-lg-1"></div> --}}
-                                                <div class="col-lg-6 {{ in_array($data->measure, explode(',', 'Gram,Kilogram,Litre,Pound')) ? 'hidden' : '' }}"
-                                                    id="measure">
-                                                    <input name="measure" type="text" id="measurement"
-                                                        class="form-control" placeholder="Enter Unit"
-                                                        value="{{ $data->measure }}">
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('CatalogItem Stock') }}*</h4>
-                                                    <p class="sub-heading">
-                                                        {{ __('(Leave Empty will Show Always Available)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="stock" type="number" class="form-control"
-                                                    placeholder="e.g 20" value="{{ $merchantItem->stock }}" min="0">
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="whole_check" type="checkbox"
-                                                            id="whole_check" value="1"
-                                                            {{ !empty($merchantItem->whole_sell_qty) ? 'checked' : '' }}>
-                                                        <label
-                                                            for="whole_check">{{ __('Allow CatalogItem Whole Sell') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="{{ !empty($merchantItem->whole_sell_qty) ? '' : ' showbox' }}">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <div class="featured-keyword-area">
-                                                        <div class="feature-tag-top-filds" id="whole-section">
-                                                            @if (!empty($merchantItem->whole_sell_qty))
-
-                                                                @foreach ($merchantItem->whole_sell_qty as $key => $data1)
-                                                                    <div class="feature-area">
-                                                                        <span class="remove whole-remove"><i
-                                                                                class="fas fa-times"></i></span>
-                                                                        <div class="row">
-                                                                            <div class="col-lg-6">
-                                                                                <input type="number"
-                                                                                    name="whole_sell_qty[]"
-                                                                                    class="form-control"
-                                                                                    placeholder="{{ __('Enter Quantity') }}"
-                                                                                    min="0"
-                                                                                    value="{{ $merchantItem->whole_sell_qty[$key] }}"
-                                                                                    required="">
-                                                                            </div>
-
-                                                                            <div class="col-lg-6">
-                                                                                <input type="number"
-                                                                                    name="whole_sell_discount[]"
-                                                                                    class="form-control"
-                                                                                    placeholder="{{ __('Enter Discount Percentage') }}"
-                                                                                    min="0"
-                                                                                    value="{{ $merchantItem->whole_sell_discount[$key] }}"
-                                                                                    required="">
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                @endforeach
-                                                            @else
-                                                                <div class="feature-area">
-                                                                    <span class="remove whole-remove"><i
-                                                                            class="fas fa-times"></i></span>
-                                                                    <div class="row">
-                                                                        <div class="col-lg-6">
-                                                                            <input type="number" name="whole_sell_qty[]"
-                                                                                class="form-control"
-                                                                                placeholder="{{ __('Enter Quantity') }}"
-                                                                                min="0">
-                                                                        </div>
-
-                                                                        <div class="col-lg-6">
-                                                                            <input type="number"
-                                                                                name="whole_sell_discount[]"
-                                                                                class="form-control"
-                                                                                placeholder="{{ __('Enter Discount Percentage') }}"
-                                                                                min="0" />
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-
-                                                            @endif
-                                                        </div>
-
-                                                        <a href="javascript:;" id="whole-btn" class="add-fild-btn"><i
-                                                                class="icofont-plus"></i> {{ __('Add More Field') }}</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Description') }}*
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="text-editor">
-                                                    <textarea name="details" class="nic-edit">{{ $merchantItem->details }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Buy/Return Policy') }}*
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="text-editor">
-                                                    <textarea name="policy" class="nic-edit">{{ $merchantItem->policy }}</textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-
+                                        {{-- SEO Section --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="checkbox-wrapper">
@@ -515,15 +176,11 @@
                                             </div>
                                         </div>
 
-                                        <div
-                                            class="{{ $data->meta_tag == null && strip_tags($data->meta_description) == null
-                                                ? "
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    										showbox"
-                                                : '' }}">
+                                        <div class="{{ $data->meta_tag == null && strip_tags($data->meta_description) == null ? 'showbox' : '' }}">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('Meta Tags') }} *</h4>
+                                                        <h4 class="heading">{{ __('Meta Tags') }}</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -540,16 +197,22 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">
-                                                            {{ __('Meta Description') }} *
-                                                        </h4>
+                                                        <h4 class="heading">{{ __('Meta Description') }}</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
                                                     <div class="text-editor">
-                                                        <textarea name="meta_description" class="form-control" placeholder="{{ __('Details') }}">{{ $data->meta_description }}</textarea>
+                                                        <textarea name="meta_description" class="form-control" placeholder="{{ __('Meta Description') }}">{{ $data->meta_description }}</textarea>
                                                     </div>
                                                 </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Submit Button --}}
+                                        <div class="row text-center mt-4">
+                                            <div class="col-12">
+                                                <button class="btn btn-primary btn-lg"
+                                                    type="submit">{{ __('Update CatalogItem') }}</button>
                                             </div>
                                         </div>
 
@@ -559,177 +222,42 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Sidebar Info --}}
                 <div class="col-lg-4">
                     <div class="add-catalogItem-content">
                         <div class="row">
                             <div class="col-lg-12">
                                 <div class="catalogItem-description">
                                     <div class="body-area">
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Feature Image') }} *</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="panel panel-body">
-                                                    <div class="span4 cropme text-center" id="landscape"
-                                                        class="m-upload-zone">
-                                                        <a href="javascript:;" id="crop-image"
-                                                            class="d-inline-block btn btn-primary">
-                                                            <i class="icofont-upload-alt"></i>
-                                                            {{ __('Upload Image Here') }}
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
+                                        <div class="alert alert-info">
+                                            <h5><i class="fas fa-info-circle"></i> {{ __('Note') }}</h5>
+                                            <p>{{ __('This form edits the catalog item card only.') }}</p>
+                                            <p>{{ __('Pricing, stock, and merchant-specific details are managed separately by merchants through their own panel.') }}</p>
                                         </div>
 
-                                        <input type="hidden" id="feature_photo" name="photo"
-                                            value="{{ $data->photo }}" accept="image/*">
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Current Price') }}*
-                                                    </h4>
-                                                    <p class="sub-heading">
-                                                        ({{ __('In') }} {{ $sign->name }})
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="price" type="number" class="form-control"
-                                                    placeholder="e.g 20" step="0.1" min="0"
-                                                    value="{{ round($merchantItem->price * $sign->value, 2) }}" required="">
-                                            </div>
+                                        <div class="alert alert-secondary mt-3">
+                                            <h6>{{ __('Catalog Item Fields:') }}</h6>
+                                            <ul class="mb-0">
+                                                <li>{{ __('Name (Required)') }}</li>
+                                                <li>{{ __('Part Number (Required)') }}</li>
+                                                <li>{{ __('Labels (EN/AR)') }}</li>
+                                                <li>{{ __('Weight') }}</li>
+                                                <li>{{ __('Measurement Unit') }}</li>
+                                                <li>{{ __('Youtube URL') }}</li>
+                                                <li>{{ __('Tags & SEO') }}</li>
+                                            </ul>
                                         </div>
 
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('CatalogItem Discount Price') }}*</h4>
-                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="previous_price" step="0.1" type="number"
-                                                    class="form-control" placeholder="e.g 20"
-                                                    value="{{ round($merchantItem->previous_price * $sign->value, 2) }}"
-                                                    min="0">
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Youtube Video URL') }}*</h4>
-                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="youtube" type="text" class="form-control"
-                                                    placeholder="Enter Youtube Video URL" value="{{ $data->youtube }}">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="featured-keyword-area">
-                                                    <div class="left-area">
-                                                        <h4 class="name">{{ __('Feature Tags') }}</h4>
-                                                    </div>
-
-                                                    @php
-                                                        $featuresArray = $merchantItem->features ? explode(',', $merchantItem->features) : [];
-                                                    @endphp
-                                                    <div class="feature-tag-top-filds" id="feature-section">
-                                                        @if (!empty($featuresArray))
-
-                                                            @foreach ($featuresArray as $key => $featureItem)
-                                                                <div class="feature-area">
-                                                                    <span class="remove feature-remove"><i
-                                                                            class="fas fa-times"></i></span>
-                                                                    <div class="row">
-                                                                        <div class="col-lg-6">
-                                                                            <input type="text" name="features[]"
-                                                                                class="form-control"
-                                                                                placeholder="{{ __('Enter Your Keyword') }}"
-                                                                                value="{{ $featureItem }}">
-                                                                        </div>
-
-                                                                        <div class="col-lg-6">
-                                                                            <div
-                                                                                class="input-group colorpicker-component cp">
-                                                                                <input type="text" name="colors[]"
-                                                                                    value="#000000"
-                                                                                    class="form-control cp" />
-                                                                                <span
-                                                                                    class="input-group-module"><i></i></span>
-                                                                            </div>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endforeach
-                                                        @else
-                                                            <div class="feature-area">
-                                                                <span class="remove feature-remove"><i
-                                                                        class="fas fa-times"></i></span>
-                                                                <div class="row">
-                                                                    <div class="col-lg-6">
-                                                                        <input type="text" name="features[]"
-                                                                            class="form-control"
-                                                                            placeholder="{{ __('Enter Your Keyword') }}">
-                                                                    </div>
-
-                                                                    <div class="col-lg-6">
-                                                                        <div class="input-group colorpicker-component cp">
-                                                                            <input type="text" name="colors[]"
-                                                                                value="#000000" class="form-control cp" />
-                                                                            <span class="input-group-module"><i></i></span>
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-
-                                                        @endif
-                                                    </div>
-
-                                                    <a href="javascript:;" id="feature-btn" class="add-fild-btn"><i
-                                                            class="icofont-plus"></i> {{ __('Add More Field') }}</a>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Tags') }} *</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul id="tags" class="myTags">
-                                                    @if (!empty($data->tags))
-                                                        @foreach ($data->tags as $element)
-                                                            <li>{{ $element }}</li>
-                                                        @endforeach
-                                                    @endif
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="row text-center">
-                                            <div class="col-6 offset-3">
-                                                <button class="btn btn-primary"
-                                                    type="submit">{{ __('Save') }}</button>
-                                            </div>
+                                        {{-- Catalog Item Stats --}}
+                                        <div class="alert alert-light mt-3">
+                                            <h6>{{ __('Item Info:') }}</h6>
+                                            <ul class="mb-0 list-unstyled">
+                                                <li><strong>{{ __('ID') }}:</strong> {{ $data->id }}</li>
+                                                <li><strong>{{ __('Views') }}:</strong> {{ $data->views }}</li>
+                                                <li><strong>{{ __('Created') }}:</strong> {{ $data->created_at ? $data->created_at->format('Y-m-d') : '-' }}</li>
+                                                <li><strong>{{ __('Updated') }}:</strong> {{ $data->updated_at ? $data->updated_at->format('Y-m-d') : '-' }}</li>
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>
@@ -737,113 +265,12 @@
                         </div>
                     </div>
                 </div>
+            </div>
         </form>
     </div>
 
 @endsection
 
 @section('scripts')
-    <script type="text/javascript">
-        $('.cp').colorpicker();
-    </script>
-
-    <script src="{{ asset('assets/operator/js/jquery.Jcrop.js') }}"></script>
-
-    <script src="{{ asset('assets/operator/js/jquery.SimpleCropper.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/select2.js') }}"></script>
-
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-
-            $('.cropme').simpleCropper();
-
-            $(document).ready(function() {
-                $('.select2').select2({
-                    placeholder: "Select Catalog Items",
-                    maximumSelectionLength: 4,
-                });
-            });
-
-        })(jQuery);
-    </script>
-
-
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-
-            $(document).ready(function() {
-
-                let html =
-                    `<img src="{{ empty($data->photo) ? asset('assets/images/noimage.png') : (filter_var($data->photo, FILTER_VALIDATE_URL) ? $data->photo : ($data->photo ? \Illuminate\Support\Facades\Storage::url($data->photo) : asset('assets/images/noimage.png'))) }}" alt="">`;
-                $(".span4.cropme").html(html);
-
-                $.ajaxSetup({
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    }
-                });
-
-            });
-
-
-            $('.ok').on('click', function() {
-
-                setTimeout(
-                    function() {
-
-
-                        var img = $('#feature_photo').val();
-
-                        $.ajax({
-                            url: "{{ route('operator-catalog-item-upload-update', $data->id) }}",
-                            type: "POST",
-                            data: {
-                                "image": img
-                            },
-                            success: function(data) {
-                                if (data.status) {
-                                    $('#feature_photo').val(data.file_name);
-                                }
-                                if ((data.errors)) {
-                                    for (var error in data.errors) {
-                                        $.notify(data.errors[error], "danger");
-                                    }
-                                }
-                            }
-                        });
-
-                    }, 1000);
-
-
-
-            });
-
-        })(jQuery);
-    </script>
-
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-
-            $('#imageSource').on('change', function() {
-                var file = this.value;
-                if (file == "file") {
-                    $('#f-file').show();
-                    $('#f-link').hide();
-                }
-                if (file == "link") {
-                    $('#f-file').hide();
-                    $('#f-link').show();
-                }
-            });
-
-
-
-        })(jQuery);
-    </script>
-
-
     @include('partials.operator.catalogItem.catalogItem-scripts')
 @endsection

@@ -302,7 +302,6 @@ Route::prefix('operator')->group(function () {
     Route::group(['middleware' => 'permissions:catalog_items'], function () {
         Route::get('/catalog-items/datatables', 'Operator\CatalogItemController@datatables')->name('operator-catalog-item-datatables');
         Route::get('/catalog-items', 'Operator\CatalogItemController@index')->name('operator-catalog-item-index');
-        Route::post('/catalog-items/upload/update/{id}', 'Operator\CatalogItemController@uploadUpdate')->name('operator-catalog-item-upload-update');
         Route::get('/catalog-items/deactive', 'Operator\CatalogItemController@deactive')->name('operator-catalog-item-deactive');
         Route::get('/catalog-items/catalogs/datatables', 'Operator\CatalogItemController@catalogdatatables')->name('operator-catalog-item-catalog-datatables');
         Route::get('/catalog-items/catalogs/', 'Operator\CatalogItemController@catalogItemsCatalog')->name('operator-catalog-item-catalog-index');
@@ -310,17 +309,15 @@ Route::prefix('operator')->group(function () {
         // CREATE SECTION
         Route::get('/catalog-items/{slug}/create', 'Operator\CatalogItemController@create')->name('operator-catalog-item-create');
         Route::post('/catalog-items/store', 'Operator\CatalogItemController@store')->name('operator-catalog-item-store');
-        Route::get('/getspecs', 'Operator\CatalogItemController@getSpecs')->name('operator-catalog-item-getspecs');
-        Route::get('/get/crosscatalogitem/{catid}', 'Operator\CatalogItemController@getCrossCatalogItem');
 
         // EDIT SECTION
-        Route::get('/catalog-items/edit/{merchantItemId}', 'Operator\CatalogItemController@edit')->name('operator-catalog-item-edit');
-        Route::post('/catalog-items/edit/{merchantItemId}', 'Operator\CatalogItemController@update')->name('operator-catalog-item-update');
+        Route::get('/catalog-items/edit/{catalogItemId}', 'Operator\CatalogItemController@edit')->name('operator-catalog-item-edit');
+        Route::post('/catalog-items/edit/{catalogItemId}', 'Operator\CatalogItemController@update')->name('operator-catalog-item-update');
 
         // DELETE SECTION
         Route::delete('/catalog-items/delete/{id}', 'Operator\CatalogItemController@destroy')->name('operator-catalog-item-delete');
 
-        Route::get('/catalog-items/catalog/{id1}/{id2}', 'Operator\CatalogItemController@catalog')->name('operator-catalog-item-catalog');
+        // STATUS & SETTINGS
         Route::get('/catalog-items/status/{id1}/{id2}', 'Operator\CatalogItemController@status')->name('operator-catalog-item-status');
         Route::get('/merchant-items/status/{id}/{status}', 'Operator\CatalogItemController@merchantItemStatus')->name('operator-merchant-item-status');
         Route::get('/catalog-items/settings', 'Operator\CatalogItemController@catalogItemSettings')->name('operator-gs-catalog-item-settings');
@@ -977,25 +974,16 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             Route::get('/catalog-items/datatables', 'Merchant\CatalogItemController@datatables')->name('merchant-catalog-item-datatables');
             Route::get('/catalog-items', 'Merchant\CatalogItemController@index')->name('merchant-catalog-item-index');
-            Route::post('/catalog-items/upload/update/{id}', 'Merchant\CatalogItemController@uploadUpdate')->name('merchant-catalog-item-upload-update');
 
             // CREATE SECTION
-            Route::get('/catalog-items/add', 'Merchant\CatalogItemController@add')->name('merchant-catalog-item-add');
-            Route::get('/catalog-items/search-part_number', 'Merchant\CatalogItemController@searchSku')->name('merchant-catalog-item-search-part_number');
-            Route::post('/catalog-items/store-offer', 'Merchant\CatalogItemController@storeOffer')->name('merchant-catalog-item-store-offer');
-            Route::put('/catalog-items/update-offer/{merchantItemId}', 'Merchant\CatalogItemController@updateOffer')->name('merchant-catalog-item-update-offer');
+            Route::get('/catalog-items/search-item', 'Merchant\CatalogItemController@searchItem')->name('merchant-catalog-item-search-item');
             Route::get('/catalog-items/{slug}/create', 'Merchant\CatalogItemController@create')->name('merchant-catalog-item-create');
             Route::post('/catalog-items/store', 'Merchant\CatalogItemController@store')->name('merchant-catalog-item-store');
-            Route::get('/getspecs', 'Merchant\CatalogItemController@getSpecs')->name('merchant-catalog-item-getspecs');
-            Route::get('/catalog-items/catalog/datatables', 'Merchant\CatalogItemController@catalogdatatables')->name('merchant-catalog-item-catalog-datatables');
             Route::get('/catalog-items/catalogs', 'Merchant\CatalogItemController@catalogs')->name('merchant-catalog-item-catalogs');
-            Route::get('/catalog-items/create-offer/{catalog_item_id}', 'Merchant\CatalogItemController@createOffer')->name('merchant-catalog-item-create-offer');
 
             // EDIT SECTION
             Route::get('/catalog-items/edit/{merchantItemId}', 'Merchant\CatalogItemController@edit')->name('merchant-catalog-item-edit');
             Route::post('/catalog-items/edit/{merchantItemId}', 'Merchant\CatalogItemController@update')->name('merchant-catalog-item-update');
-            Route::get('/catalog-items/catalog/{id}', 'Merchant\CatalogItemController@catalogedit')->name('merchant-catalog-item-catalog-edit');
-            Route::post('/catalog-items/catalog/{id}', 'Merchant\CatalogItemController@catalogupdate')->name('merchant-catalog-item-catalog-update');
 
             // STATUS SECTION
             Route::get('/catalog-items/status/{id1}/{id2}', 'Merchant\CatalogItemController@status')->name('merchant-catalog-item-status');

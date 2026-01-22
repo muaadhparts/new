@@ -1,18 +1,18 @@
 @extends('layouts.merchant')
+
 @section('css')
-    <link href="{{ asset('assets/operator/css/jquery.Jcrop.css') }}" rel="stylesheet" />
-    <link href="{{ asset('assets/operator/css/Jcrop-style.css') }}" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 @endsection
 
 @section('content')
     <div class="gs-merchant-outlet">
-        <!-- breadcrumb start  -->
+        <!-- breadcrumb start -->
         <div class="gs-merchant-breadcrumb has-mb">
             <div class="gs-topup-name ms-0 d-flex align-items-center gap-4">
                 <a href="{{ route('merchant-catalog-item-index') }}" class="back-btn">
                     <i class="fa-solid fa-arrow-left-long"></i>
                 </a>
-                <h4>@lang('Add CatalogItem')</h4>
+                <h4>@lang('Add Merchant Item')</h4>
             </div>
 
             <ul class="breadcrumb-menu">
@@ -27,475 +27,388 @@
                     </a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">
-                        @lang('Dashboard')
-                    </a>
+                    <a href="{{ route('merchant.dashboard') }}" class="text-capitalize">@lang('Dashboard')</a>
                 </li>
                 <li>
-                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize"> @lang('CatalogItems') </a>
+                    <a href="{{ route('merchant-catalog-item-index') }}" class="text-capitalize">@lang('My Items')</a>
                 </li>
                 <li>
-                    <a href="#" class="text-capitalize"> @lang('Add CatalogItem') </a>
+                    <a href="#" class="text-capitalize">@lang('Add Merchant Item')</a>
                 </li>
             </ul>
         </div>
         <!-- breadcrumb end -->
 
-        <!-- add catalogItem form start  -->
-        <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="myForm" action="{{ route('merchant-catalog-item-store') }}"
-            method="POST" enctype="multipart/form-data">
+        <!-- Form start -->
+        <form class="row gy-3 gy-lg-4 add-catalogItem-form" id="merchantItemForm" action="{{ route('merchant-catalog-item-store') }}" method="POST">
             @csrf
-            <!-- inputes of catalog item start  -->
+
+            <!-- Main Form -->
             <div class="col-12 col-lg-8 items-catalogItem-inputes-wrapper show">
                 <div class="form-group">
-                    <!-- CatalogItem Name -->
+                    <!-- Select Catalog Item -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Name* (In Any Language)')</label>
-                        <input type="text" class="form-control" name="name" placeholder="@lang('Enter CatalogItem Name') ">
+                        <label>@lang('Select Catalog Item') <span class="text-danger">*</span></label>
+                        <small class="text-muted d-block mb-2">@lang('Search by part number to find the catalog item')</small>
+                        <select id="catalog_item_select" class="form-control select2-search" required>
+                            <option value="">@lang('Search by Part Number...')</option>
+                        </select>
+                        <input type="hidden" id="selected_catalog_item_id" name="catalog_item_id" value="">
                     </div>
-                    <!-- CatalogItem Part Number -->
-                    <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Part Number*')</label>
-                        <input type="text" class="form-control" name="part_number" placeholder="@lang('Enter CatalogItem Part Number')"
-                            value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
-                    </div>
-                    {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
 
-                    <!-- Allow CatalogItem Condition Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_child-category" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_child-category">
-                        <input type="checkbox" id="allow-catalogItem-condition" name="item_condition_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-condition">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-catalogItem-condition">@lang('Allow CatalogItem Condition')</label>
+                    <!-- Catalog Item Preview -->
+                    <div id="catalogItemPreview" class="card mb-3 hidden">
+                        <div class="card-body">
+                            <div class="d-flex gap-3 align-items-start">
+                                <img id="previewImage" src="{{ asset('assets/images/noimage.png') }}" alt="" class="rounded" width="100">
+                                <div>
+                                    <h6 id="previewName" class="mb-1">-</h6>
+                                    <p class="mb-0 text-muted"><strong>@lang('Part Number'):</strong> <span id="previewPartNumber">-</span></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Child Category -->
-                    <div class="input-label-wrapper collapse" id="show_child-category">
-                        <label for="child-category-select">@lang('CatalogItem Condition*')</label>
+
+                    <!-- Merchant Branch -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Branch / Warehouse') <span class="text-danger">*</span></label>
                         <div class="dropdown-container">
-                            <select id="child-category-select" class="form-control nice-select form__control"
-                                name="item_condition">
-                                <option value="2">{{ __('New') }}</option>
-                                <option value="1">{{ __('Used') }}</option>
-                                <!-- Add more options here if needed -->
+                            <select class="form-control nice-select form__control" name="merchant_branch_id" required>
+                                <option value="">@lang('Select Branch')</option>
+                                @foreach(\App\Models\MerchantBranch::where('user_id', auth()->id())->where('status', 1)->get() as $branch)
+                                    <option value="{{ $branch->id }}">{{ $branch->warehouse_name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <small class="text-muted">@lang('Branch where this item will be shipped from')</small>
+                    </div>
+
+                    <!-- Quality Brand -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Quality Brand') <span class="text-danger">*</span></label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control" name="quality_brand_id" required>
+                                <option value="">@lang('Select Quality Brand')</option>
+                                @foreach(\App\Models\QualityBrand::where('is_active', 1)->get() as $qb)
+                                    <option value="{{ $qb->id }}">{{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}</option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
 
-
-
-                    <!-- Allow CatalogItem Preorder Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_product-preorder" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_product-preorder">
-                        <input type="checkbox" id="allow-catalogItem-preorder" name="preordered_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-preorder">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Item Condition -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_item-condition">
+                        <input type="checkbox" id="allow-item-condition" name="item_condition_check" value="1">
+                        <label class="icon-label check-box-label" for="allow-item-condition">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-catalogItem-preorder">@lang('Allow CatalogItem Preorder')</label>
+                        <label class="check-box-label" for="allow-item-condition">@lang('Allow Item Condition')</label>
                     </div>
-                    <!-- CatalogItem Preorder -->
-                    <div class="input-label-wrapper collapse" id="show_product-preorder">
-                        <label for="catalogItem-preorder-select">@lang('CatalogItem Preorder*')</label>
+                    <div class="input-label-wrapper collapse" id="show_item-condition">
+                        <label>@lang('Item Condition')</label>
                         <div class="dropdown-container">
-                            <select id="catalogItem-preorder-select" class="form-control nice-select form__control"
-                                name="preordered">
-                                <option value="1">{{ __('Sale') }}</option>
-                                <option value="2">{{ __('Preordered') }}</option>
-                                <!-- Add more options here if needed -->
+                            <select class="form-control nice-select form__control" name="item_condition">
+                                <option value="2">@lang('New')</option>
+                                <option value="1">@lang('Used')</option>
                             </select>
                         </div>
                     </div>
 
-
-
-
-
-                    <!-- Allow Minimum Purchase Qty Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_minimum-purchase" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_minimum-purchase">
-                        <input type="checkbox" id="allow-minimum-purchase" name="minimum_qty_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-minimum-purchase">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Preorder -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_preorder">
+                        <input type="checkbox" id="allow-preorder" name="preordered_check" value="1">
+                        <label class="icon-label check-box-label" for="allow-preorder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-minimum-purchase">@lang('Allow Minimum Purchase Qty')</label>
+                        <label class="check-box-label" for="allow-preorder">@lang('Allow Preorder')</label>
                     </div>
-                    <!-- CatalogItem Minimum Purchase Qty -->
-                    <div class="input-label-wrapper collapse" id="show_minimum-purchase">
-                        <label>@lang('CatalogItem Minimum Purchase Qty*')</label>
-                        <input type="text" class="form-control" name="minimum_qty" placeholder="@lang('Minimum Purchase Qty ')">
-                    </div>
-                    <!-- Allow Estimated Shipping Time Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_estimated-shipping-time" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_estimated-shipping-time">
-                        <input type="checkbox" id="allow-estimated-shipping-time" name="shipping_time_check"
-                            value="1">
-                        <label class="icon-label check-box-label" for="allow-estimated-shipping-time">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-estimated-shipping-time">@lang('Allow Estimated Shipping Time')</label>
-                    </div>
-                    <!-- Estimated Shipping Time -->
-                    <div class="input-label-wrapper collapse" id="show_estimated-shipping-time">
-                        <label>@lang('Estimated Shipping Time*')</label>
-                        <input type="text" class="form-control" name="ship" placeholder=" @lang('Estimated Shipping Time') ">
+                    <div class="input-label-wrapper collapse" id="show_preorder">
+                        <label>@lang('Preorder Status')</label>
+                        <div class="dropdown-container">
+                            <select class="form-control nice-select form__control" name="preordered">
+                                <option value="0">@lang('Available for Sale')</option>
+                                <option value="1">@lang('Preorder Only')</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <!-- Allow CatalogItem Whole Sell Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_product-whole-sell" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_product-whole-sell">
-                        <input type="checkbox" name="whole_check" id="allow-catalogItem-whole-sell">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-whole-sell">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                    <!-- Minimum Quantity -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_minimum-qty">
+                        <input type="checkbox" id="allow-minimum-qty" name="minimum_qty_check" value="1">
+                        <label class="icon-label check-box-label" for="allow-minimum-qty">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </label>
-                        <label class="check-box-label" for="allow-catalogItem-whole-sell">@lang('Allow CatalogItem Whole Sell')</label>
+                        <label class="check-box-label" for="allow-minimum-qty">@lang('Allow Minimum Purchase Qty')</label>
                     </div>
-                    <!-- CatalogItem Whole Sell -->
-                    <div class="input-label-wrapper collapse" id="show_product-whole-sell">
-                        <label>@lang('Allow CatalogItem Whole Sell')</label>
+                    <div class="input-label-wrapper collapse" id="show_minimum-qty">
+                        <label>@lang('Minimum Purchase Quantity')</label>
+                        <input type="number" class="form-control" name="minimum_qty" min="1" placeholder="@lang('Enter Minimum Quantity')">
+                    </div>
 
-                        <div class="d-flex flex-column g-4 gap-4" id="whole-section">
-                            <div class="row row-cols-1 row-cols-md-2 gy-4 postion-relative">
+                    <!-- Shipping Time -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_shipping-time">
+                        <input type="checkbox" id="allow-shipping-time" name="shipping_time_check" value="1">
+                        <label class="icon-label check-box-label" for="allow-shipping-time">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </label>
+                        <label class="check-box-label" for="allow-shipping-time">@lang('Allow Estimated Shipping Time')</label>
+                    </div>
+                    <div class="input-label-wrapper collapse" id="show_shipping-time">
+                        <label>@lang('Estimated Shipping Time')</label>
+                        <input type="text" class="form-control" name="ship" placeholder="@lang('e.g., 2-3 days')">
+                    </div>
+
+                    <!-- Wholesale -->
+                    <div class="gs-checkbox-wrapper" data-bs-toggle="collapse" data-bs-target="#show_wholesale">
+                        <input type="checkbox" name="whole_check" id="allow-wholesale" value="1">
+                        <label class="icon-label check-box-label" for="allow-wholesale">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12" fill="none">
+                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        </label>
+                        <label class="check-box-label" for="allow-wholesale">@lang('Allow Wholesale')</label>
+                    </div>
+                    <div class="input-label-wrapper collapse" id="show_wholesale">
+                        <label>@lang('Wholesale Settings')</label>
+                        <div class="d-flex flex-column g-4 gap-4" id="wholesale-section">
+                            <div class="row row-cols-1 row-cols-md-2 gy-4 position-relative">
                                 <div class="col">
-                                    <input type="text" class="form-control" name="whole_sell_qty[]"
-                                        placeholder="@lang('Enter Quantity') ">
+                                    <input type="number" class="form-control" name="whole_sell_qty[]" placeholder="@lang('Enter Quantity')">
                                 </div>
                                 <div class="col position-relative">
-                                    <input type="text" class="form-control" name="whole_sell_discount[]"
-                                        placeholder="@lang('Enter Discount Percentage') ">
-                                    <button type="button"
-                                        class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_whole_sell right-1"><i
-                                            class="fa-solid fa-xmark"></i></button>
+                                    <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" placeholder="@lang('Discount Percentage')">
+                                    <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_wholesale right-1">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
                                 </div>
-
                             </div>
-
                         </div>
-
                         <div class="col-12 col-md-12 d-flex justify-content-end mt-4">
-                            <button class="template-btn outline-btn" id="whole-btn"
-                                type="button">+@lang('Add More Field')</button>
+                            <button class="template-btn outline-btn" id="add-wholesale-btn" type="button">+ @lang('Add More')</button>
                         </div>
-
                     </div>
 
-
-
-
-
+                    <!-- Stock -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Stock')</label>
-                        <input type="number" class="form-control" name="stock" placeholder="@lang('Enter CatalogItem Stock') ">
+                        <label>@lang('Stock Quantity') <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" name="stock" min="0" placeholder="@lang('Enter Stock Quantity')" required>
                     </div>
 
+                    <!-- Details -->
+                    <div class="input-label-wrapper">
+                        <label>@lang('Item Details')</label>
+                        <textarea class="form-control w-100 nic-edit" id="details" name="details" rows="6"></textarea>
+                    </div>
 
-                    <!-- CatalogItem Description -->
+                    <!-- Policy -->
                     <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Description*')</label>
-                        <textarea style="width: 100%;" class="form-control w-100 nic-edit" id="details" name="details" rows="6"></textarea>
-                    </div>
-                    <!-- CatalogItem Buy/Return Policy -->
-                    <div class="input-label-wrapper">
-                        <label>@lang('CatalogItem Buy/Return Policy*')</label>
-                        <textarea class="form-control w-100 nic-edit" name="policy" id="policy" rows="6"></textarea>
-                    </div>
-                    <!-- Allow CatalogItem SEO Checkbox -->
-                    <div class="gs-checkbox-wrapper" aria-controls="show_product-seo" role="region"
-                        data-bs-toggle="collapse" data-bs-target="#show_product-seo">
-                        <input type="checkbox" id="allow-catalogItem-seo" name="seo_check" value="1">
-                        <label class="icon-label check-box-label" for="allow-catalogItem-seo">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"
-                                fill="none">
-                                <path d="M10 3L4.5 8.5L2 6" stroke="#EE1243" stroke-width="1.6666" stroke-linecap="round"
-                                    stroke-linejoin="round" />
-                            </svg>
-                        </label>
-                        <label class="check-box-label" for="allow-catalogItem-seo">@lang('Allow CatalogItem SEO')</label>
-                    </div>
-                    <div class="input-label-wrapper collapse row gy-4" id="show_product-seo">
-                        <!-- Meta Tags  -->
-                        <div class="col-12">
-                            <label>@lang('Meta Tags *')</label>
-                            <input type="text" class="myTags" id="metatags" name="meta_tag"
-                                placeholder="@lang('Clothing, Bag, Shopping, Online') ">
-                        </div>
-                        <!-- Meta Description  -->
-                        <div class="col-12">
-                            <label>@lang('Meta Description *')</label>
-                            <textarea class="form-control w-100" placeholder="@lang('Meta Description')" name="meta_description" rows="6"></textarea>
-                        </div>
+                        <label>@lang('Buy/Return Policy')</label>
+                        <textarea class="form-control w-100 nic-edit" id="policy" name="policy" rows="6"></textarea>
                     </div>
                 </div>
             </div>
 
-
-            <!-- form sidebar start  -->
+            <!-- Sidebar -->
             <div class="col-12 col-lg-4">
                 <div class="add-catalogItem-form-sidebar">
                     <div class="form-group">
-                        <!-- Feature Image  -->
+                        <!-- Price -->
                         <div class="input-label-wrapper">
-                            <label>@lang('Feature Image *')</label>
-                            <div class="w-100">
-                                <div class="overlayed-img-wrapper">
-                                    <div class="span4 cropme text-center d-flex justify-content-center align-items-center"
-                                        id="landscape"
-                                        class="m-upload-zone">
-                                        <a href="javascript:;" id="crop-image" class="btn btn-primary"
-                                            style="">
-                                            <i class="icofont-upload-alt"></i>
-                                            @lang('Upload Image Here')
-                                        </a>
-                                    </div>
-                                </div>
+                            <label>@lang('Price') <span class="text-danger">*</span> ({{ $sign->name }})</label>
+                            <input type="number" step="0.01" class="form-control" name="price" placeholder="@lang('Enter Price')" required>
+                        </div>
 
-                                <input type="hidden" id="feature_photo" name="photo" value="">
+                        <!-- Previous Price -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Previous Price') ({{ $sign->name }}) <small class="text-muted">@lang('Optional')</small></label>
+                            <input type="number" step="0.01" class="form-control" name="previous_price" placeholder="@lang('Enter Previous Price')">
+                        </div>
+
+                        <!-- Item Type -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Item Type')</label>
+                            <div class="dropdown-container">
+                                <select id="item_type" class="form-control nice-select form__control" name="item_type">
+                                    <option value="normal">@lang('Normal')</option>
+                                    <option value="affiliate">@lang('Affiliate')</option>
+                                </select>
                             </div>
                         </div>
-                        <!-- CatalogItem Gallery Images  -->
-                        <div class="input-label-wrapper">
-                            <label for="gallery_upload">@lang('CatalogItem Gallery Images *')</label>
 
-                            <div class="w-100">
-                                <label for="gallery_upload">
-                                    <div class="template-btn black-btn" type="button">+ @lang('Set Gallery')</div>
-                                </label>
-                            </div>
-
-                            <input type="file" class="d-none" name="gallery[]" multiple id="gallery_upload">
-
-                            <div class="row " id="view_gallery">
-
-                            </div>
+                        <!-- Affiliate Link -->
+                        <div class="input-label-wrapper hidden" id="affiliate_link_wrapper">
+                            <label>@lang('Affiliate Link') <span class="text-danger">*</span></label>
+                            <input type="url" class="form-control" name="affiliate_link" placeholder="@lang('Enter Affiliate URL')">
                         </div>
-                        <!-- CatalogItem Current Price -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('CatalogItem Current Price') ({{ $curr->name }})</label>
-                            <input type="text" class="form-control" name="price" placeholder="e.g 20">
-                        </div>
-                        <!-- CatalogItem Discount Price -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('CatalogItem Discount Price* (Optional)')</label>
-                            <input type="text" class="form-control" name="previous_price" placeholder="e.g 20">
-                        </div>
-                        <!-- YouTube Video URL-->
-                        <div class="input-label-wrapper">
-                            <label>@lang('YouTube Video URL (Optional)')</label>
-                            <input type="url" class="form-control" name="youtube" placeholder="@lang('Enter YouTube Video URL')">
-                        </div>
-                        <!-- Feature Tags -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('Feature Tags')</label>
-                            <div id="feature-section">
-                                <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
-                                    <div class="col feature-tag-color-input-wrapper">
-                                        <input type="text" class="form-control" name="features[]"
-                                            placeholder="@lang('Enter Your Keyword')">
-                                    </div>
-                                    <div class="col feature-tag-keyword-input-wrapper">
-                                        <div class="w-100  position-relative">
-                                            <input type="text" class="form-control" placeholder="#000000 ">
-                                            <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
-                                                id="favcolor_2" name="colors[]" value="#000000">
-                                            <button type="button"
-                                                class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
-                                                    class="fa-solid fa-xmark"></i></button>
-                                        </div>
-                                    </div>
-                                </div>
 
-                            </div>
-                            <div class="col-12 col-sm-12 mt-4">
-                                <div class="d-flex justify-content-end">
-                                    <button class="template-btn black-btn px-20" id="feature-btn"
-                                        type="button">+@lang('Add More Field')</button>
-                                </div>
+                        <!-- Status -->
+                        <div class="input-label-wrapper">
+                            <label>@lang('Status')</label>
+                            <div class="dropdown-container">
+                                <select class="form-control nice-select form__control" name="status">
+                                    <option value="1">@lang('Active')</option>
+                                    <option value="0">@lang('Inactive')</option>
+                                </select>
                             </div>
                         </div>
-                        <!-- Tags -->
-                        <div class="input-label-wrapper">
-                            <label>@lang('Tags')</label>
-                            <input type="text" class="form-control" id="tags" name="catalogItem-tags"
-                                placeholder="@lang('Enter YouTube Video URL')">
+
+                        <!-- Info Note -->
+                        <div class="alert alert-info mt-3">
+                            <strong>@lang('Note'):</strong>
+                            <p class="mb-0 small">@lang('This form creates your merchant offer for an existing catalog item. Select a catalog item by part number, then add your pricing and stock details.')</p>
                         </div>
-                        <!-- Create CatalogItem Button  -->
-                        <button class="template-btn w-100 px-20" type="submit">@lang('Create CatalogItem')</button>
+
+                        <!-- Submit Button -->
+                        <button class="template-btn w-100 px-20" type="submit" id="submitBtn" disabled>@lang('Create Merchant Item')</button>
                     </div>
                 </div>
             </div>
-            <!-- form sidebar end  -->
         </form>
-        <!-- add catalogItem form end -->
-
+        <!-- Form end -->
     </div>
 @endsection
 
 @section('script')
     <script src="{{ asset('assets/operator/js/nicEdit.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/jquery.Jcrop.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/jquery.SimpleCropper.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/select2.js') }}"></script>
-
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <script>
         (function($) {
             "use strict";
 
+            // Initialize nicEdit
             document.addEventListener("DOMContentLoaded", function() {
                 bkLib.onDomLoaded(function() {
-                    // Initialize nicEditor for each class or ID as required
                     var editors = document.getElementsByClassName("nic-edit");
                     for (var i = 0; i < editors.length; i++) {
                         new nicEditor().panelInstance(editors[i]);
                     }
                 });
-
             });
 
-
-            $('.cropme').simpleCropper();
-
-
-            $(document).on('click', "#whole-btn", function() {
-                $("#whole-section").append(
-                    `  <div class="row row-cols-1 row-cols-md-2 gy-4 postion-relative">
-                                <div class="col">
-                                    <input type="text" class="form-control" name="whole_sell_qty[]"
-                                        placeholder="@lang('Enter Quantity') ">
-                                </div>
-                                <div class="col position-relative">
-                                    <input type="text" class="form-control" name="whole_sell_discount[]"
-                                        placeholder="@lang('Enter Discount Percentage') ">
-                                    <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_whole_sell right-1"><i
-                                            class="fa-solid fa-xmark"></i></button>
-                                </div>
-
-                            </div>`
-                );
-            });
-
-
-            $(document).on('click', ".remove_whole_sell", function() {
-                if ($('.remove_whole_sell').length > 1) {
-                    $(this).parent().parent().remove();
+            // Initialize Select2 for catalog item search
+            $('#catalog_item_select').select2({
+                placeholder: '@lang("Search by Part Number...")',
+                allowClear: true,
+                minimumInputLength: 3,
+                ajax: {
+                    url: '{{ route("merchant-catalog-item-search-item") }}',
+                    dataType: 'json',
+                    delay: 300,
+                    data: function(params) {
+                        return { part_number: params.term };
+                    },
+                    processResults: function(data) {
+                        if (data.success && !data.already_exists) {
+                            return {
+                                results: [{
+                                    id: data.catalog_item.id,
+                                    text: data.catalog_item.part_number + ' - ' + data.catalog_item.name,
+                                    item: data.catalog_item
+                                }]
+                            };
+                        } else if (data.success && data.already_exists) {
+                            return {
+                                results: [{
+                                    id: 'exists',
+                                    text: '@lang("You already have an offer for this item")',
+                                    disabled: true
+                                }]
+                            };
+                        } else {
+                            return {
+                                results: [{
+                                    id: 'not_found',
+                                    text: data.message || '@lang("No catalog item found")',
+                                    disabled: true
+                                }]
+                            };
+                        }
+                    },
+                    cache: true
                 }
             });
 
-
-            $(document).on("change", "#gallery_upload", function() {
-
-                var file = $(this)[0].files;
-                var file_length = file.length;
-                for (let i = 0; i < file_length; i++) {
-                    var reader = new FileReader();
-                    reader.onload = function(e) {
-                        $('#view_gallery').append(`<div class="col-6  col-sm-3 col-lg-6 col col-xxl-4  mt-2">
-                        <div class="position-relative img-wh-80">
-                                    <img class="img-wh-80 rounded-4  object-fit-cover"  src="${e.target.result}" alt="">
-                                    <button class="gallery-extra-remove-btn position-abs-center remove_gallery"><i class="fa-solid fa-xmark"></i></button>
-                                     </div>
-                                </div>`);
-                    }
-                    reader.readAsDataURL(this.files[i]);
-                }
-
-            });
-
-            $(document).on('click', '.remove_gallery', function() {
-                $(this).parent().parent().remove();
-            });
-
-            $(document).on('click', "#feature-btn", function() {
-
-                $("#feature-section").append(
-                    `    <div class="row row-cols-1 row-cols-sm-2 gy-4 mb-3">
-                                    <div class="col feature-tag-color-input-wrapper">
-                                        <input type="text" class="form-control" name="features[]"
-                                            placeholder="@lang('Enter Your Keyword')">
-                                    </div>
-                                    <div class="col feature-tag-keyword-input-wrapper">
-                                        <div class="w-100  position-relative">
-                                            <input type="text" class="form-control" placeholder="#000000 ">
-                                            <input class="h-100 position-absolute top-0 end-0 color-input" type="color"
-                                                id="favcolor_2" name="colors[]" value="#000000">
-                                            <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_feature"><i
-                                                    class="fa-solid fa-xmark"></i></button>
-                                        </div>
-                                    </div>
-                                </div>`
-                );
-            });
-
-            $(document).on('click', ".remove_feature", function() {
-                if ($('.remove_feature').length > 1) {
-                    $(this).parent().parent().parent().remove();
+            // Handle catalog item selection
+            $('#catalog_item_select').on('select2:select', function(e) {
+                var data = e.params.data;
+                if (data.id && data.id !== 'exists' && data.id !== 'not_found') {
+                    var item = data.item;
+                    $('#selected_catalog_item_id').val(item.id);
+                    $('#previewName').text(item.name);
+                    $('#previewPartNumber').text(item.part_number);
+                    $('#previewImage').attr('src', item.photo || '{{ asset("assets/images/noimage.png") }}');
+                    $('#catalogItemPreview').removeClass('hidden').show();
+                    $('#submitBtn').prop('disabled', false);
                 }
             });
 
+            // Handle catalog item clear
+            $('#catalog_item_select').on('select2:clear', function() {
+                $('#selected_catalog_item_id').val('');
+                $('#catalogItemPreview').addClass('hidden').hide();
+                $('#submitBtn').prop('disabled', true);
+            });
 
-            $('#myForm').on('submit', function(e) {
-                // Prevent form from submitting immediately
-                e.preventDefault();
+            // Item type toggle
+            $('#item_type').on('change', function() {
+                if ($(this).val() === 'affiliate') {
+                    $('#affiliate_link_wrapper').removeClass('hidden').show();
+                    $('#affiliate_link_wrapper input').prop('required', true);
+                } else {
+                    $('#affiliate_link_wrapper').addClass('hidden').hide();
+                    $('#affiliate_link_wrapper input').prop('required', false).val('');
+                }
+            });
 
+            // Add wholesale row
+            $(document).on('click', '#add-wholesale-btn', function() {
+                $('#wholesale-section').append(`
+                    <div class="row row-cols-1 row-cols-md-2 gy-4 position-relative">
+                        <div class="col">
+                            <input type="number" class="form-control" name="whole_sell_qty[]" placeholder="@lang('Enter Quantity')">
+                        </div>
+                        <div class="col position-relative">
+                            <input type="number" step="0.01" class="form-control" name="whole_sell_discount[]" placeholder="@lang('Discount Percentage')">
+                            <button type="button" class="gallery-extra-remove-btn feature-extra-tags-remove-btn remove_wholesale right-1">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                    </div>
+                `);
+            });
+
+            // Remove wholesale row
+            $(document).on('click', '.remove_wholesale', function() {
+                if ($('.remove_wholesale').length > 1) {
+                    $(this).closest('.row').remove();
+                }
+            });
+
+            // Form submit handler
+            $('#merchantItemForm').on('submit', function(e) {
                 var editors = document.getElementsByClassName('nic-edit');
                 for (var i = 0; i < editors.length; i++) {
-                    var editorInstance = nicEditors.findEditor(editors[i].id); // Find the nicEditor instance
+                    var editorInstance = nicEditors.findEditor(editors[i].id);
                     if (editorInstance) {
-                        editors[i].value = editorInstance
-                            .getContent(); // Update the textarea value with the nicEditor content
+                        editors[i].value = editorInstance.getContent();
                     }
                 }
 
-                // Clear previous hidden inputs
-                $('.dynamic-input').remove();
-
-                // Iterate through checkboxes
-                $('.attr-checkbox').each(function() {
-                    var checkbox = $(this);
-                    var priceInputId = "#" + checkbox.attr('id') + "_price";
-                    var priceInput = $(priceInputId);
-
-                    if (checkbox.prop('checked')) {
-                        var priceValue = priceInput.val().length > 0 ? priceInput.val() : "0.00";
-                        var inputName = priceInput.data('name');
-
-                        // Create hidden input and append to form
-                        $('<input>').attr({
-                            type: 'hidden',
-                            name: inputName,
-                            value: priceValue,
-                            class: 'dynamic-input'
-                        }).appendTo('#myForm');
-                    }
-                });
-
-                // Submit the form
-                this.submit();
+                if (!$('#selected_catalog_item_id').val()) {
+                    e.preventDefault();
+                    alert('@lang("Please select a catalog item first")');
+                    return false;
+                }
             });
-
-
-
-
 
         })(jQuery);
     </script>

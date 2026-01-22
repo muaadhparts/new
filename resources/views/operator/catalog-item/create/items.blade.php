@@ -1,4 +1,4 @@
-﻿@extends('layouts.operator')
+@extends('layouts.operator')
 
 @section('content')
     <div class="content-area">
@@ -25,7 +25,7 @@
                 </div>
             </div>
         </div>
-        <form id="muaadhform" action="{{ route('operator-catalog-item-store') }}" method="POST" enctype="multipart/form-data">
+        <form id="muaadhform" action="{{ route('operator-catalog-item-store') }}" method="POST">
             {{ csrf_field() }}
             @include('alerts.operator.form-both')
             <div class="row">
@@ -39,59 +39,7 @@
                                             style="background: url({{ asset('assets/images/' . $gs->admin_loader) }}) no-repeat scroll center center rgba(45, 45, 45, 0.5);">
                                         </div>
 
-
-                                        {{-- Merchant Selection --}}
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Merchant') }}*</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select id="merchant_id" name="user_id" required="" class="select2">
-                                                    <option value="">{{ __('Select Merchant') }}</option>
-                                                    @foreach (\App\Models\User::where('is_merchant', 2)->where('ban', 0)->orderBy('shop_name')->get() as $merchant)
-                                                        <option value="{{ $merchant->id }}">
-                                                            {{ $merchant->shop_name ?: $merchant->name }} ({{ $merchant->email }})
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
-                                        {{-- Vehicle Brands Note --}}
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Vehicle Brands') }} ({{ __('Fits These Vehicles') }})</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="alert alert-info">
-                                                    <small>{{ __('Vehicle compatibility (brands/fitment) is set automatically via the parts database. You can manage fitments after creating the catalog item.') }}</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {{-- Quality Brand (جودة التصنيع) --}}
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Quality Brand') }} ({{ __('Manufacturing Quality') }})</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <select name="quality_brand_id" class="form-control">
-                                                    <option value="">{{ __('Select Quality Brand') }}</option>
-                                                    @foreach (\App\Models\QualityBrand::all() as $qb)
-                                                        <option value="{{ $qb->id }}">
-                                                            {{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }} {{ $qb->country ? '(' . $qb->country . ')' : '' }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </div>
-                                        </div>
-
+                                        {{-- CatalogItem Name --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
@@ -134,338 +82,103 @@
                                             </div>
                                         </div>
 
+                                        {{-- Part Number --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-                                                    <h4 class="heading">{{ __('CatalogItem Part_Number') }}* </h4>
+                                                    <h4 class="heading">{{ __('CatalogItem Part Number') }}* </h4>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
                                                 <input type="text" class="form-control"
-                                                    placeholder="{{ __('Enter CatalogItem Part_Number') }}" name="part_number"
+                                                    placeholder="{{ __('Enter CatalogItem Part Number') }}" name="part_number"
                                                     required=""
                                                     value="{{ Str::random(3) . substr(time(), 6, 8) . Str::random(3) }}">
                                             </div>
                                         </div>
 
-
-                                        {{-- Old category system removed - Categories are now linked via parts tables (TreeCategories) --}}
-                                        {{-- Catalog items are connected to categories through: parts_{code} -> section_parts_{code} -> sections -> newcategories --}}
-
-
-
+                                        {{-- Weight --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="left-area">
-
+                                                    <h4 class="heading">{{ __('Weight') }}</h4>
+                                                    <p class="sub-heading">{{ __('(In KG - Optional)') }}</p>
                                                 </div>
                                             </div>
                                             <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="item_condition_check"
-                                                            type="checkbox" id="item_condition_check" value="1">
-                                                        <label
-                                                            for="item_condition_check">{{ __('Allow CatalogItem Condition') }}</label>
-                                                    </li>
+                                                <input type="number" class="form-control" step="0.01" min="0"
+                                                    placeholder="{{ __('e.g 1.5') }}" name="weight" value="1.00">
+                                            </div>
+                                        </div>
+
+                                        {{-- Measurement --}}
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('CatalogItem Measurement') }}</h4>
+                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6">
+                                                <select id="product_measure" class="form-control">
+                                                    <option value="">{{ __('None') }}</option>
+                                                    <option value="Gram">{{ __('Gram') }}</option>
+                                                    <option value="Kilogram">{{ __('Kilogram') }}</option>
+                                                    <option value="Litre">{{ __('Litre') }}</option>
+                                                    <option value="Pound">{{ __('Pound') }}</option>
+                                                    <option value="Custom">{{ __('Custom') }}</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-lg-6 hidden" id="measure">
+                                                <input name="measure" type="text" id="measurement"
+                                                    class="form-control" placeholder="{{ __('Enter Unit') }}">
+                                            </div>
+                                        </div>
+
+                                        {{-- Youtube Video URL --}}
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Youtube Video URL') }}</h4>
+                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <input name="youtube" type="text" class="form-control"
+                                                    placeholder="{{ __('Enter Youtube Video URL') }}">
+                                            </div>
+                                        </div>
+
+                                        {{-- Tags --}}
+                                        <div class="row">
+                                            <div class="col-lg-12">
+                                                <div class="left-area">
+                                                    <h4 class="heading">{{ __('Tags') }}</h4>
+                                                    <p class="sub-heading">{{ __('(Optional - For Search)') }}</p>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-12">
+                                                <ul id="tags" class="myTags">
                                                 </ul>
                                             </div>
                                         </div>
 
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Condition') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select name="item_condition">
-                                                        <option value="2">{{ __('New') }}</option>
-                                                        <option value="1">{{ __('Used') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="preordered_check"
-                                                            type="checkbox" id="preorderedCheck" value="1">
-                                                        <label
-                                                            for="preorderedCheck">{{ __('Allow CatalogItem Preorder') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Preorder') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select name="preordered">
-                                                        <option value="1">{{ __('Sale') }}</option>
-                                                        <option value="2">{{ __('Preordered') }}</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="minimum_qty_check"
-                                                            type="checkbox" id="check111" value="1">
-                                                        <label for="check111">{{ __('Allow Minimum Purchase Qty') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Minimum Purchase Qty') }}* </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <input type="number" class="form-control" min="1"
-                                                        placeholder="{{ __('Minimum Purchase Qty') }}" name="minimum_qty">
-                                                </div>
-                                            </div>
-
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="shipping_time_check"
-                                                            type="checkbox" id="check1" value="1">
-                                                        <label
-                                                            for="check1">{{ __('Allow Estimated Shipping Time') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Estimated Shipping Time') }}*
-                                                        </h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <input type="text" class="form-control"
-                                                        placeholder="{{ __('Estimated Shipping Time') }}" name="ship">
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-
-
-
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="whole_check" type="checkbox"
-                                                            id="whole_check" value="1">
-                                                        <label
-                                                            for="whole_check">{{ __('Allow CatalogItem Whole Sell') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-12">
-                                                    <div class="left-area">
-
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <div class="featured-keyword-area">
-                                                        <div class="feature-tag-top-filds" id="whole-section">
-                                                            <div class="feature-area">
-                                                                <span class="remove whole-remove"><i
-                                                                        class="fas fa-times"></i></span>
-                                                                <div class="row">
-                                                                    <div class="col-lg-6">
-                                                                        <input type="number" name="whole_sell_qty[]"
-                                                                            class="form-control"
-                                                                            placeholder="{{ __('Enter Quantity') }}"
-                                                                            min="0">
-                                                                    </div>
-
-                                                                    <div class="col-lg-6">
-                                                                        <input type="number" name="whole_sell_discount[]"
-                                                                            class="form-control"
-                                                                            placeholder="{{ __('Enter Discount Percentage') }}"
-                                                                            min="0" />
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-
-                                                        <a href="javascript:;" id="whole-btn" class="add-fild-btn"><i
-                                                                class="icofont-plus"></i> {{ __('Add More Field') }}</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul class="list">
-                                                    <li>
-                                                        <input class="checkclick1" name="measure_check" type="checkbox"
-                                                            id="measure_check" value="1">
-                                                        <label
-                                                            for="measure_check">{{ __('Allow CatalogItem Measurement') }}</label>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="showbox">
-                                            <div class="row">
-                                                <div class="col-lg-6">
-                                                    <div class="left-area">
-                                                        <h4 class="heading">{{ __('CatalogItem Measurement') }}*</h4>
-                                                    </div>
-                                                </div>
-                                                <div class="col-lg-12">
-                                                    <select id="product_measure">
-                                                        <option value="">{{ __('None') }}</option>
-                                                        <option value="Gram">{{ __('Gram') }}</option>
-                                                        <option value="Kilogram">{{ __('Kilogram') }}</option>
-                                                        <option value="Litre">{{ __('Litre') }}</option>
-                                                        <option value="Pound">{{ __('Pound') }}</option>
-                                                        <option value="Custom">{{ __('Custom') }}</option>
-                                                    </select>
-                                                </div>
-                                                {{-- <div class="col-lg-1"></div> --}}
-                                                <div class="col-lg-12 hidden" id="measure">
-                                                    <input name="measure" type="text" id="measurement"
-                                                        class="form-control" placeholder="{{ __('Enter Unit') }}">
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('CatalogItem Stock') }}*</h4>
-                                                    <p class="sub-heading">
-                                                        {{ __('(Leave Empty will Show Always Available)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="stock" type="number" class="form-control"
-                                                    placeholder="e.g 20" value="" min="0">
-                                            </div>
-                                        </div>
-
-
-
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Description') }}*
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="text-editor">
-                                                    <textarea class="nic-edit" name="details"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Buy/Return Policy') }}*
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="text-editor">
-                                                    <textarea class="nic-edit" name="policy"></textarea>
-                                                </div>
-                                            </div>
-                                        </div>
-
+                                        {{-- SEO Section --}}
                                         <div class="row">
                                             <div class="col-lg-12">
                                                 <div class="checkbox-wrapper">
                                                     <input type="checkbox" name="seo_check" value="1"
-                                                        class="checkclick" id="allowProductSEO" value="1">
+                                                        class="checkclick" id="allowProductSEO">
                                                     <label for="allowProductSEO">{{ __('Allow CatalogItem SEO') }}</label>
                                                 </div>
                                             </div>
                                         </div>
 
-
-
                                         <div class="showbox">
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">{{ __('Meta Tags') }} *</h4>
+                                                        <h4 class="heading">{{ __('Meta Tags') }}</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -477,9 +190,7 @@
                                             <div class="row">
                                                 <div class="col-lg-12">
                                                     <div class="left-area">
-                                                        <h4 class="heading">
-                                                            {{ __('Meta Description') }} *
-                                                        </h4>
+                                                        <h4 class="heading">{{ __('Meta Description') }}</h4>
                                                     </div>
                                                 </div>
                                                 <div class="col-lg-12">
@@ -490,156 +201,10 @@
                                             </div>
                                         </div>
 
-
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-lg-4">
-                    <div class="add-catalogItem-content">
-                        <div class="row">
-                            <div class="col-lg-12">
-                                <div class="catalogItem-description">
-                                    <div class="body-area">
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Feature Image') }} *</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="panel panel-body">
-                                                    <div class="span4 cropme text-center m-upload-zone" id="landscape">
-                                                        <a href="javascript:;" id="crop-image" class="btn btn-primary"
-                                                            style="">
-                                                            <i class="icofont-upload-alt"></i>
-                                                            {{ __('Upload Image Here') }}
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <input type="hidden" id="feature_photo" name="photo" value="">
-                                        <input type="file" name="gallery[]" class="hidden" id="uploadgallery"
-                                            accept="image/*" multiple>
-                                        <div class="row mb-4">
-                                            <div class="col-lg-12 mb-2">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Gallery Images') }} *
-                                                    </h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <a href="#" class="set-gallery" data-bs-toggle="modal"
-                                                    data-bs-target="#setgallery">
-                                                    <i class="icofont-plus"></i> {{ __('Set Gallery') }}
-                                                </a>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">
-                                                        {{ __('CatalogItem Current Price') }}*
-                                                    </h4>
-                                                    <p class="sub-heading">
-                                                        ({{ __('In') }} {{ $sign->name }})
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="price" type="number" class="form-control"
-                                                    placeholder="{{ __('e.g 20') }}" step="0.1" required=""
-                                                    min="0">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('CatalogItem Discount Price') }}*</h4>
-                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="previous_price" step="0.1" type="number"
-                                                    class="form-control" placeholder="{{ __('e.g 20') }}"
-                                                    min="0">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Youtube Video URL') }}*</h4>
-                                                    <p class="sub-heading">{{ __('(Optional)') }}</p>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <input name="youtube" type="text" class="form-control"
-                                                    placeholder="{{ __('Enter Youtube Video URL') }}">
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <div class="featured-keyword-area">
-                                                    <div class="heading-area">
-                                                        <h4 class="name">{{ __('Feature Tags') }}</h4>
-                                                    </div>
-
-                                                    <div class="feature-tag-top-filds" id="feature-section">
-                                                        <div class="feature-area">
-                                                            <span class="remove feature-remove"><i
-                                                                    class="fas fa-times"></i></span>
-                                                            <div class="row">
-                                                                <div class="col-lg-6">
-                                                                    <input type="text" name="features[]"
-                                                                        class="form-control"
-                                                                        placeholder="{{ __('Enter Your Keyword') }}">
-                                                                </div>
-
-                                                                <div class="col-lg-6">
-                                                                    <div class="input-group colorpicker-component cp">
-                                                                        <input type="text" name="colors[]"
-                                                                            value="#000000" class="form-control cp" />
-                                                                        <span class="input-group-module"><i></i></span>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <a href="javascript:;" id="feature-btn" class="add-fild-btn"><i
-                                                            class="icofont-plus"></i> {{ __('Add More Field') }}</a>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-lg-12">
-                                                <div class="left-area">
-                                                    <h4 class="heading">{{ __('Tags') }} *</h4>
-                                                </div>
-                                            </div>
-                                            <div class="col-lg-12">
-                                                <ul id="tags" class="myTags">
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        <div class="row text-center">
-                                            <div class="col-6 offset-3">
-                                                <button class="btn btn-primary"
+                                        {{-- Submit Button --}}
+                                        <div class="row text-center mt-4">
+                                            <div class="col-12">
+                                                <button class="btn btn-primary btn-lg"
                                                     type="submit">{{ __('Create CatalogItem') }}</button>
                                             </div>
                                         </div>
@@ -650,122 +215,44 @@
                         </div>
                     </div>
                 </div>
+
+                {{-- Sidebar Info --}}
+                <div class="col-lg-4">
+                    <div class="add-catalogItem-content">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="catalogItem-description">
+                                    <div class="body-area">
+                                        <div class="alert alert-info">
+                                            <h5><i class="fas fa-info-circle"></i> {{ __('Note') }}</h5>
+                                            <p>{{ __('This form creates a catalog item card only.') }}</p>
+                                            <p>{{ __('Pricing, stock, and merchant-specific details are managed separately by merchants through their own panel.') }}</p>
+                                        </div>
+
+                                        <div class="alert alert-secondary mt-3">
+                                            <h6>{{ __('Catalog Item Fields:') }}</h6>
+                                            <ul class="mb-0">
+                                                <li>{{ __('Name (Required)') }}</li>
+                                                <li>{{ __('Part Number (Required)') }}</li>
+                                                <li>{{ __('Labels (EN/AR)') }}</li>
+                                                <li>{{ __('Weight') }}</li>
+                                                <li>{{ __('Measurement Unit') }}</li>
+                                                <li>{{ __('Youtube URL') }}</li>
+                                                <li>{{ __('Tags & SEO') }}</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </form>
     </div>
 
-    <div class="modal fade" id="setgallery" tabindex="-1" role="dialog" aria-labelledby="setgallery"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered  modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-name" id="exampleModalCenterName">{{ __('Image Gallery') }}</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="top-area">
-                        <div class="row">
-                            <div class="col-sm-6 text-right">
-                                <div class="upload-img-btn">
-                                    <label for="image-upload" id="prod_gallery"><i
-                                            class="icofont-upload-alt"></i>{{ __('Upload File') }}</label>
-                                </div>
-                            </div>
-                            <div class="col-sm-6">
-                                <a href="javascript:;" class="upload-done" data-bs-dismiss="modal"> <i
-                                        class="fas fa-check"></i> {{ __('Done') }}</a>
-                            </div>
-                            <div class="col-sm-12 text-center">(
-                                <small>{{ __('You can upload multiple Images.') }}</small> )
-                            </div>
-                        </div>
-                    </div>
-                    <div class="gallery-images">
-                        <div class="selected-image">
-                            <div class="row">
-
-
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 @endsection
 
 @section('scripts')
-    <script src="{{ asset('assets/operator/js/jquery.Jcrop.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/jquery.SimpleCropper.js') }}"></script>
-    <script src="{{ asset('assets/operator/js/select2.js') }}"></script>
-
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-
-
-            $(document).ready(function() {
-                $('.select2').select2({
-                    placeholder: "Select Products",
-                    maximumSelectionLength: 4,
-                });
-            });
-
-            // Gallery Section Insert
-
-            $(document).on('click', '.remove-img', function() {
-                var id = $(this).find('input[type=hidden]').val();
-                $('#galval' + id).remove();
-                $(this).parent().parent().remove();
-            });
-
-            $(document).on('click', '#prod_gallery', function() {
-                $('#uploadgallery').click();
-                $('.selected-image .row').html('');
-                $('#muaadhform').find('.removegal').val(0);
-            });
-
-
-            $("#uploadgallery").change(function() {
-                var total_file = document.getElementById("uploadgallery").files.length;
-                for (var i = 0; i < total_file; i++) {
-                    $('.selected-image .row').append('<div class="col-sm-6">' +
-                        '<div class="img gallery-img">' +
-                        '<span class="remove-img"><i class="fas fa-times"></i>' +
-                        '<input type="hidden" value="' + i + '">' +
-                        '</span>' +
-                        '<a href="' + URL.createObjectURL(event.target.files[i]) + '" target="_blank">' +
-                        '<img src="' + URL.createObjectURL(event.target.files[i]) +
-                        '" alt="gallery image">' +
-                        '</a>' +
-                        '</div>' +
-                        '</div> '
-                    );
-                    $('#muaadhform').append('<input type="hidden" name="galval[]" id="galval' + i +
-                        '" class="removegal" value="' + i + '">')
-                }
-
-            });
-
-            // Gallery Section Insert Ends
-
-        })(jQuery);
-    </script>
-
-    <script type="text/javascript">
-        (function($) {
-            "use strict";
-
-            $(document).ready(function() {
-                $('.cp').colorpicker();
-                $('.cropme').simpleCropper();
-            });
-
-        })(jQuery);
-    </script>
-
-
     @include('partials.operator.catalogItem.catalogItem-scripts')
 @endsection
