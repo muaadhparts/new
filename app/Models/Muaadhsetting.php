@@ -75,7 +75,6 @@ class Muaadhsetting extends Model
         // MERCHANT SETTINGS
         // ==================================
         'reg_merchant',
-        'merchant_color',
         'merchant_page_count',
 
         // ==================================
@@ -134,11 +133,6 @@ class Muaadhsetting extends Model
         // ==================================
         'is_debug',
         'is_cookie',
-
-        // ==================================
-        // DEALS
-        // ==================================
-        'deal_background',
 
         // ==================================
         // TRACKING

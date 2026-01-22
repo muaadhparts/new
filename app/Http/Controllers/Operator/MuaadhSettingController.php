@@ -94,12 +94,6 @@ class MuaadhSettingController extends OperatorBaseController
         return view('operator.muaadhsetting.maintain');
     }
 
-    // Merchant color settings page
-    public function merchant_color()
-    {
-        return view('operator.muaadhsetting.merchant_color');
-    }
-
     public function user_image()
     {
         return view('operator.muaadhsetting.user_image');
@@ -130,13 +124,8 @@ class MuaadhSettingController extends OperatorBaseController
                 $data->upload($name, $file, $data->favicon);
                 $input['favicon'] = $name;
             }
-            if ($file = $request->file('deal_background')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->favicon);
-                $input['deal_background'] = $name;
-            }
-
             // breadcrumb_banner upload removed - using modern minimal design
+            // deal_background upload removed - deal feature removed
             if ($file = $request->file('loader')) {
                 $name = \PriceHelper::ImageCreateName($file);
                 $data->upload($name, $file, $data->loader);

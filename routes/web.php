@@ -477,7 +477,6 @@ Route::prefix('operator')->group(function () {
         Route::get('/merchant/request-trust-badge/{id}', 'Operator\MerchantController@requestTrustBadge')->name('operator-merchant-request-trust-badge');
         Route::post('/merchant/request-trust-badge/{id}', 'Operator\MerchantController@requestTrustBadgeSubmit')->name('operator-merchant-request-trust-badge-submit');
 
-        Route::get('/merchant/color', 'Operator\MuaadhSettingController@merchant_color')->name('operator-merchant-color');
         Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
         Route::delete('/merchants/delete/{id}', 'Operator\MerchantController@destroy')->name('operator-merchant-delete');
         // Subscription routes removed - system now uses verification instead
