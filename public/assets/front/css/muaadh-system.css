@@ -7579,6 +7579,7 @@ select option {
 @media (max-width: 576px) {
     .specs-modal-body {
         max-height: calc(85vh - 130px);
+        padding: 0.75rem;
     }
 
     .specs-select__list {
@@ -7586,7 +7587,120 @@ select option {
     }
 
     .specs-select__item {
-        padding: 12px;
+        padding: 10px;
+        font-size: 0.8125rem;
+    }
+
+    .specs-select__trigger {
+        padding: 6px 10px;
+        font-size: 0.8125rem;
+    }
+
+    .specs-select__text {
+        font-size: 0.8125rem;
+    }
+
+    .specs-modal-content .modal-header {
+        padding: 0.75rem 1rem;
+    }
+
+    .specs-modal-content .modal-header h5 {
+        font-size: 1rem;
+    }
+
+    .specs-modal-content .modal-footer {
+        padding: 0.5rem 0.75rem;
+    }
+
+    .specs-modal-content .form-label {
+        font-size: 0.8125rem;
+        margin-bottom: 0.35rem;
+    }
+
+    /* Specs button - smaller on mobile */
+    .specs-btn-mobile {
+        padding: 0.35rem 0.65rem;
+        font-size: 0.75rem;
+    }
+
+    .specs-btn-mobile .badge {
+        font-size: 0.6rem;
+        padding: 0.2em 0.45em;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+    .specs-modal-body {
+        padding: 0.5rem;
+    }
+
+    .specs-select__item {
+        padding: 8px 10px;
+        font-size: 0.75rem;
+    }
+
+    .specs-select__trigger {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+
+    .specs-modal-content .form-label {
+        font-size: 0.75rem;
+    }
+
+    .catalog-specs-badge {
+        font-size: 0.5rem;
+        padding: 1px 4px;
+    }
+}
+
+/* Chips bar - smaller on mobile */
+@media (max-width: 576px) {
+    .catalog-chips-bar {
+        padding: 0.4rem 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .catalog-chips-header {
+        gap: 0.25rem;
+        margin-bottom: 0.35rem;
+    }
+
+    .catalog-chips-name {
+        font-size: 0.7rem;
+    }
+
+    .catalog-chips-name i {
+        font-size: 0.65rem;
+    }
+
+    .catalog-chips-count {
+        font-size: 0.6rem;
+        padding: 0.05rem 0.3rem;
+    }
+
+    .catalog-chips-container {
+        gap: 0.3rem;
+    }
+
+    .catalog-chip {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.65rem;
+    }
+
+    .catalog-chip-label {
+        font-size: 0.6rem;
+    }
+
+    .catalog-chip-value {
+        font-size: 0.6rem;
+    }
+
+    .catalog-chip-source {
+        font-size: 0.5rem;
+        padding: 0.02rem 0.2rem;
+        margin-left: 0.2rem;
     }
 }
 

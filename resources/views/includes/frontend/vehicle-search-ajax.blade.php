@@ -113,17 +113,28 @@
     const typeLabelBtn = document.getElementById('typeLabel' + uniqueId);
     const searchIcon = document.getElementById('searchIcon' + uniqueId);
     const searchHelp = document.getElementById('searchHelp' + uniqueId);
-    // Bootstrap Modal instance
+
+    // Validate critical elements exist
+    if (!input || !searchBtn || !typeNumberBtn || !typeLabelBtn) {
+        console.error('Vehicle Search: Required elements not found for uniqueId:', uniqueId);
+        return;
+    }
+
+    // ========== ALL VARIABLES MUST BE DECLARED HERE ==========
+    // (Before any function that might use them)
+    let suggestionIndex = -1;
     let resultsModalInstance = null;
+    let searchTimeout = null;
+    let searchAbortController = null;
+    let searchFromSuggestion = false;
+    let currentFocusIndex = -1;
 
     // Storage keys
     const SEARCH_TYPE_KEY = 'vehicleSearchType';
-    const LAST_SEARCH_KEY = 'vehicleLastSearch_' + catalogCode; // Per catalog
+    const LAST_SEARCH_KEY = 'vehicleLastSearch_' + catalogCode;
 
     // Get saved search type from localStorage or default to 'number'
     let searchType = localStorage.getItem(SEARCH_TYPE_KEY) || 'number';
-    let searchTimeout = null;
-    let searchAbortController = null; // For cancelling pending searches
 
     // Restore last search query (only for number search)
     const lastSearch = localStorage.getItem(LAST_SEARCH_KEY);
@@ -165,9 +176,6 @@
     // Click handlers - clear input when switching types
     typeNumberBtn.addEventListener('click', () => setSearchType('number', true));
     typeLabelBtn.addEventListener('click', () => setSearchType('label', true));
-
-    // Track if search was triggered from suggestion selection
-    let searchFromSuggestion = false;
 
     function doSearch() {
         const query = input.value.trim();
@@ -276,8 +284,6 @@
             console.error('Suggestions Error:', error);
         });
     }
-
-    let suggestionIndex = -1;
 
     function showSuggestions(results) {
         suggestionsDropdown.innerHTML = '';
@@ -406,8 +412,6 @@
     }
 
     // Keyboard navigation for results
-    let currentFocusIndex = -1;
-
     function handleResultsKeyboard(e) {
         const cards = resultsContainer.querySelectorAll('.result-card');
         if (!cards.length) return;

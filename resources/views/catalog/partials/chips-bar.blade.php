@@ -16,7 +16,7 @@
             <div class="catalog-chips-header">
                 <strong class="catalog-chips-name">
                     <i class="fas {{ $hasVinSource ? 'fa-car' : 'fa-filter' }}"></i>
-                    {{ $hasVinSource ? __('ui.vin_specs') : __('ui.selected_specs') }}
+                    {{ $hasVinSource ? __('catalog.vin_specs') : __('catalog.selected_specs') }}
                 </strong>
                 <span class="catalog-chips-count">{{ count($chips) }}</span>
             </div>
@@ -28,9 +28,9 @@
                         <span class="catalog-chip-value">{{ $chip['value'] }}</span>
                         @if(!empty($chip['source']))
                             @if($chip['source'] === 'vin')
-                                <span class="catalog-chip-source catalog-chip-source-vin">VIN</span>
+                                <span class="catalog-chip-source catalog-chip-source-vin">{{ __('catalog.vin') }}</span>
                             @else
-                                <span class="catalog-chip-source catalog-chip-source-manual">MANUAL</span>
+                                <span class="catalog-chip-source catalog-chip-source-manual">{{ __('catalog.manual') }}</span>
                             @endif
                         @endif
                     </span>

@@ -23,11 +23,11 @@
 @endphp
 
 <button type="button"
-        class="btn btn-primary position-relative"
+        class="btn btn-primary position-relative specs-btn-mobile"
         data-bs-toggle="modal"
         data-bs-target="#specsModal">
     <i class="fas fa-filter me-1"></i>
-    {{ __('Specifications') }}
+    {{ __('catalog.specifications') }}
 
     @if($selectedCount > 0)
         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-success">
@@ -45,9 +45,9 @@
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="specsModalLabel">
                     <i class="fas fa-cog me-2"></i>
-                    {{ __('Specifications') }}
+                    {{ __('catalog.specifications') }}
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="{{ __('catalog.close') }}"></button>
             </div>
 
             {{-- Body - Only scrollable element --}}
@@ -57,7 +57,7 @@
                 @if($isVinMode)
                     <div class="alert alert-info mb-3">
                         <i class="fas fa-car me-1"></i>
-                        <strong>VIN Mode</strong> - {{ __('Values are read-only') }}
+                        <strong>{{ __('catalog.vin_mode') }}</strong> - {{ __('catalog.values_readonly') }}
                     </div>
                 @endif
 
@@ -70,7 +70,7 @@
                         <div class="mb-3">
                             <label class="form-label">
                                 <i class="fas fa-calendar-alt me-1 text-muted"></i>
-                                {{ __('Build Date') }}
+                                {{ __('catalog.build_date') }}
                                 @if(($filters['year']['readonly'] ?? false) || ($filters['month']['readonly'] ?? false))
                                     <span class="catalog-specs-badge catalog-specs-badge-vin">VIN</span>
                                 @endif
@@ -81,7 +81,7 @@
                                     @php
                                         $monthReadonly = $filters['month']['readonly'] ?? false;
                                         $monthSelected = $filters['month']['selected'] ?? '';
-                                        $monthLabel = __('Month');
+                                        $monthLabel = __('catalog.month');
                                         foreach($filters['month']['items'] as $item) {
                                             if ($item['value_id'] == $monthSelected) {
                                                 $monthLabel = $item['label'];
@@ -99,7 +99,7 @@
                                             @if(!$monthReadonly)
                                                 <div class="specs-select__list">
                                                     <div class="specs-select__item {{ empty($monthSelected) ? 'specs-select__item--active' : '' }}" data-value="">
-                                                        {{ __('Month') }}
+                                                        {{ __('catalog.month') }}
                                                     </div>
                                                     @foreach($filters['month']['items'] as $item)
                                                         <div class="specs-select__item {{ $monthSelected == $item['value_id'] ? 'specs-select__item--active' : '' }}"
@@ -118,7 +118,7 @@
                                     @php
                                         $yearReadonly = $filters['year']['readonly'] ?? false;
                                         $yearSelected = $filters['year']['selected'] ?? '';
-                                        $yearLabel = __('Year');
+                                        $yearLabel = __('catalog.year');
                                         foreach($filters['year']['items'] as $item) {
                                             if ($item['value_id'] == $yearSelected) {
                                                 $yearLabel = $item['label'];
@@ -136,7 +136,7 @@
                                             @if(!$yearReadonly)
                                                 <div class="specs-select__list">
                                                     <div class="specs-select__item {{ empty($yearSelected) ? 'specs-select__item--active' : '' }}" data-value="">
-                                                        {{ __('Year') }}
+                                                        {{ __('catalog.year') }}
                                                     </div>
                                                     @foreach($filters['year']['items'] as $item)
                                                         <div class="specs-select__item {{ $yearSelected == $item['value_id'] ? 'specs-select__item--active' : '' }}"
@@ -161,7 +161,7 @@
                                 $isReadonly = $filter['readonly'] ?? false;
                                 $currentValue = $filter['selected'] ?? '';
                                 $hasValue = !empty($currentValue);
-                                $displayLabel = '-- ' . __('Select') . ' --';
+                                $displayLabel = '-- ' . __('catalog.select') . ' --';
                                 foreach($filter['items'] as $item) {
                                     if ($item['value_id'] == $currentValue) {
                                         $displayLabel = $item['label'];
@@ -189,7 +189,7 @@
                                     @if(!$isReadonly)
                                         <div class="specs-select__list">
                                             <div class="specs-select__item {{ empty($currentValue) ? 'specs-select__item--active' : '' }}" data-value="">
-                                                -- {{ __('Select') }} --
+                                                -- {{ __('catalog.select') }} --
                                             </div>
                                             @foreach($filter['items'] as $item)
                                                 <div class="specs-select__item {{ $currentValue == $item['value_id'] ? 'specs-select__item--active' : '' }}"
@@ -207,7 +207,7 @@
                     @if(empty($filters))
                         <div class="alert alert-warning">
                             <i class="fas fa-exclamation-triangle me-1"></i>
-                            {{ __('No specifications available') }}
+                            {{ __('catalog.no_specifications') }}
                         </div>
                     @endif
                 </form>
@@ -216,18 +216,18 @@
             {{-- Footer Actions - Always visible --}}
             <div class="modal-footer specs-modal-footer">
                 @if(!$isVinMode)
-                    <button type="button" class="btn btn-outline-secondary" id="btnClearSpecs">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="btnClearSpecs">
                         <i class="fas fa-times me-1"></i>
-                        {{ __('Clear All') }}
+                        {{ __('catalog.clear_all') }}
                     </button>
-                    <button type="button" class="btn btn-success" id="btnApplySpecs">
+                    <button type="button" class="btn btn-success btn-sm" id="btnApplySpecs">
                         <i class="fas fa-check me-1"></i>
-                        {{ __('Apply Filters') }}
+                        {{ __('catalog.apply_filters') }}
                     </button>
                 @else
                     <div class="text-muted small">
                         <i class="fas fa-lock me-1"></i>
-                        {{ __('Filters locked (VIN mode)') }}
+                        {{ __('catalog.filters_locked_vin') }}
                     </div>
                 @endif
             </div>
@@ -251,7 +251,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const selects = modalEl.querySelectorAll('.specs-select:not(.specs-select--readonly)');
 
     function closeAllSelects() {
+        if (!selects || !selects.length) return;
         selects.forEach(sel => {
+            if (!sel) return;
             sel.classList.remove('specs-select--open');
             const arrow = sel.querySelector('.specs-select__arrow');
             if (arrow) arrow.style.transform = '';
@@ -336,10 +338,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Close on click outside
+    // Close on click outside - wrapped in try-catch to prevent blocking other handlers
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.specs-select')) {
-            closeAllSelects();
+        try {
+            if (!e.target.closest('.specs-select')) {
+                closeAllSelects();
+            }
+        } catch (err) {
+            console.error('specs-modal click handler error:', err);
         }
     });
 
@@ -428,7 +434,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const hasVin = chips.some(c => c.source === 'vin');
         const icon = hasVin ? 'fa-car' : 'fa-filter';
-        const title = hasVin ? '{{ __("ui.vin_specs") }}' : '{{ __("ui.selected_specs") }}';
+        const title = hasVin ? '{{ __("catalog.vin_specs") }}' : '{{ __("catalog.selected_specs") }}';
+        const vinText = '{{ __("catalog.vin") }}';
+        const manualText = '{{ __("catalog.manual") }}';
 
         let html = `
             <div class="catalog-chips-bar">
@@ -444,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         chips.forEach(chip => {
             const sourceClass = chip.source === 'vin' ? 'catalog-chip-source-vin' : 'catalog-chip-source-manual';
-            const sourceText = chip.source === 'vin' ? 'VIN' : 'MANUAL';
+            const sourceText = chip.source === 'vin' ? vinText : manualText;
 
             html += `
                 <span class="catalog-chip" data-key="${chip.key}">
@@ -503,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnApply) {
         btnApply.addEventListener('click', async function() {
             btnApply.disabled = true;
-            btnApply.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> {{ __("Saving...") }}';
+            btnApply.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> {{ __("catalog.saving") }}';
 
             try {
                 const formData = new FormData(form);
@@ -552,7 +560,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error saving filters');
             } finally {
                 btnApply.disabled = false;
-                btnApply.innerHTML = '<i class="fas fa-check me-1"></i> {{ __("Apply Filters") }}';
+                btnApply.innerHTML = '<i class="fas fa-check me-1"></i> {{ __("catalog.apply_filters") }}';
             }
         });
     }
@@ -561,7 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnClear) {
         btnClear.addEventListener('click', async function() {
             btnClear.disabled = true;
-            btnClear.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> {{ __("Clearing...") }}';
+            btnClear.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> {{ __("catalog.clearing") }}';
 
             try {
                 const catalogCode = document.querySelector('input[name="catalog_code"]').value;
@@ -616,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error clearing filters');
             } finally {
                 btnClear.disabled = false;
-                btnClear.innerHTML = '<i class="fas fa-times me-1"></i> {{ __("Clear All") }}';
+                btnClear.innerHTML = '<i class="fas fa-times me-1"></i> {{ __("catalog.clear_all") }}';
             }
         });
     }
