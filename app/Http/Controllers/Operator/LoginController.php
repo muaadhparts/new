@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
-use App\Models\Muaadhsetting;
 use App\Models\Operator;
 use Illuminate\Support\Facades\Hash;
 
@@ -58,7 +57,7 @@ class LoginController extends Controller
 
     public function forgot(Request $request)
     {
-      $gs = Muaadhsetting::findOrFail(1);
+      $ps = platformSettings();
       $input =  $request->all();
       if (Operator::where('email', '=', $request->email)->count() > 0) {
       // user found
@@ -71,7 +70,7 @@ class LoginController extends Controller
 
       $subject = "Reset Password Request";
       $msg = "Please click this link : ".'<a href="'.route('operator.change.token',$token).'">'.route('operator.change.token',$token).'</a>'.' to change your password.';
-      if ($gs->mail_driver)
+      if ($ps->get('mail_driver'))
       {
           $data = [
                   'to' => $request->email,
@@ -84,7 +83,7 @@ class LoginController extends Controller
       }
       else
       {
-          $headers = "From: ".$gs->from_name."<".$gs->from_email.">";
+          $headers = "From: ".$ps->get('from_name')."<".$ps->get('from_email').">";
           mail($request->email,$subject,$msg,$headers);
       }
       return response()->json('Verification Link Sent Successfully!. Please Check your email.');

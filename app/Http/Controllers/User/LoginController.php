@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\Muaadhsetting;
 use App\Models\User;
 use Auth;
 use Exception;
@@ -47,12 +46,12 @@ class LoginController extends FrontBaseController
         $user->otp = $otp;
         $user->save();
 
-        $gs = Muaadhsetting::first();
+        $ps = platformSettings();
 
         try {
 
-            $vonageKey = $gs->vonage_key;
-            $vonageSecret = $gs->vonage_secret;
+            $vonageKey = $ps->get('vonage_key');
+            $vonageSecret = $ps->get('vonage_secret');
 
             // Set the retrieved values into the config dynamically
             config([
@@ -60,7 +59,7 @@ class LoginController extends FrontBaseController
                 'vonage.api_secret' => $vonageSecret,
             ]);
 
-            $text = new \Vonage\SMS\Message\SMS($user->phone, $gs->from_number, 'Your OTP : ' . $otp);
+            $text = new \Vonage\SMS\Message\SMS($user->phone, $ps->get('from_number'), 'Your OTP : ' . $otp);
             Vonage::sms()->send($text);
 
             return redirect(route("user.opt.login.view"));

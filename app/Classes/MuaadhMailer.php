@@ -4,8 +4,7 @@ namespace App\Classes;
 
 use App\{
     Models\Purchase,
-    Models\CommsBlueprint,
-    Models\Muaadhsetting
+    Models\CommsBlueprint
 };
 use Barryvdh\DomPDF\Facade\Pdf;
 use PHPMailer\PHPMailer\PHPMailer;
@@ -16,23 +15,23 @@ class MuaadhMailer
 {
 
     public $mail;
-    public $gs;
+    protected $settings;
 
     public function __construct()
     {
-        $this->gs = Muaadhsetting::findOrFail(1);
+        $this->settings = platformSettings();
 
         $this->mail = new PHPMailer(true);
 
-        if ($this->gs->mail_driver) {
+        if ($this->settings->get('mail_driver')) {
 
             $this->mail->isSMTP();                          // Send using SMTP
-            $this->mail->Host       = $this->gs->mail_host;       // Set the SMTP server to send through
+            $this->mail->Host       = $this->settings->get('mail_host');       // Set the SMTP server to send through
             $this->mail->SMTPAuth   = true;                 // Enable SMTP authentication
-            $this->mail->Username   = $this->gs->mail_user;   // SMTP username
-            $this->mail->Password   = $this->gs->mail_pass;   // SMTP password
-            $this->mail->SMTPSecure = $this->gs->mail_encryption;      // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
-            $this->mail->Port       = $this->gs->mail_port;
+            $this->mail->Username   = $this->settings->get('mail_user');   // SMTP username
+            $this->mail->Password   = $this->settings->get('mail_pass');   // SMTP password
+            $this->mail->SMTPSecure = $this->settings->get('mail_encryption');      // Enable TLS encryption; `PHPMailer::ENCRYPTION_SMTPS` encouraged
+            $this->mail->Port       = $this->settings->get('mail_port');
         }
     }
 
@@ -60,7 +59,7 @@ class MuaadhMailer
             $body = preg_replace("/{admin_name}/", $mailData['aname'], $body);
             $body = preg_replace("/{admin_email}/", $mailData['aemail'], $body);
             $body = preg_replace("/{order_number}/", $mailData['onumber'], $body);
-            $body = preg_replace("/{website_name}/", $this->gs->site_name, $body);
+            $body = preg_replace("/{website_name}/", $this->settings->get('site_name'), $body);
 
 
             $dir = public_path('assets/temp_files');
@@ -73,7 +72,7 @@ class MuaadhMailer
             $pdf = PDF::loadView('pdf.purchase', compact('purchase', 'cart'))->save($fileName);
 
             //Recipients
-            $this->mail->setFrom($this->gs->from_email, $this->gs->from_name);
+            $this->mail->setFrom($this->settings->get('from_email'), $this->settings->get('from_name'));
             $this->mail->addAddress($mailData['to']);     // Add a recipient
 
             // Attachments
@@ -118,10 +117,10 @@ class MuaadhMailer
             $body = preg_replace("/{admin_name}/", $mailData['aname'], $body);
             $body = preg_replace("/{admin_email}/", $mailData['aemail'], $body);
             $body = preg_replace("/{order_number}/", $mailData['onumber'], $body);
-            $body = preg_replace("/{website_name}/", $this->gs->site_name, $body);
+            $body = preg_replace("/{website_name}/", $this->settings->get('site_name'), $body);
 
             //Recipients
-            $this->mail->setFrom($this->gs->from_email, $this->gs->from_name);
+            $this->mail->setFrom($this->settings->get('from_email'), $this->settings->get('from_name'));
             $this->mail->addAddress($mailData['to']);     // Add a recipient
 
             // Content
@@ -144,7 +143,7 @@ class MuaadhMailer
         try {
 
             //Recipients
-            $this->mail->setFrom($this->gs->from_email, $this->gs->from_name);
+            $this->mail->setFrom($this->settings->get('from_email'), $this->settings->get('from_name'));
             $this->mail->addAddress($mailData['to']);     // Add a recipient
 
             // Content

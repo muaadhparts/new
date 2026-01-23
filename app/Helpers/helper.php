@@ -414,3 +414,58 @@ if (! function_exists('formatPrice')) {
         return monetaryUnit()->format($amount);
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PlatformSettings Helpers - UNIFIED SETTINGS SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════
+// IMPORTANT: $gs is BANNED. Use these helpers instead.
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get PlatformSettingsService instance (SINGLE SOURCE OF TRUTH)
+ *
+ * This is the main entry point for all platform settings.
+ * DO NOT use $gs, Muaadhsetting, or any legacy access.
+ *
+ * Usage:
+ *   platformSettings()->logo           // Get logo
+ *   platformSettings()->site_name      // Get site name
+ *   platformSettings()->get('key')     // Get any setting by key
+ *
+ * @return \App\Services\PlatformSettingsService
+ */
+if (! function_exists('platformSettings')) {
+    function platformSettings(): \App\Services\PlatformSettingsService
+    {
+        return app(\App\Services\PlatformSettingsService::class);
+    }
+}
+
+/**
+ * Get a specific platform setting value
+ *
+ * @param string $key Setting key (e.g., 'logo', 'site_name', 'is_maintain')
+ * @param mixed $default Default value if not found
+ * @return mixed
+ */
+if (! function_exists('setting')) {
+    function setting(string $key, $default = null)
+    {
+        return platformSettings()->get($key, $default);
+    }
+}
+
+/**
+ * Get a setting from a specific group
+ *
+ * @param string $group Group name (e.g., 'branding', 'mail', 'features')
+ * @param string $key Setting key within the group
+ * @param mixed $default Default value if not found
+ * @return mixed
+ */
+if (! function_exists('groupSetting')) {
+    function groupSetting(string $group, string $key, $default = null)
+    {
+        return \App\Models\PlatformSetting::get($group, $key, $default);
+    }
+}

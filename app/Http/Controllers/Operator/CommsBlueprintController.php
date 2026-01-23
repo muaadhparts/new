@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Operator;
 use App\{
     Classes\MuaadhMailer,
     Models\CommsBlueprint,
-    Models\Muaadhsetting,
     Models\User
 };
 use Illuminate\Http\Request;
@@ -42,20 +41,19 @@ class CommsBlueprintController extends OperatorBaseController
 
     public function groupemail()
     {
-        $config = Muaadhsetting::findOrFail(1);
-        return view('operator.comms-blueprint.group',compact('config'));
+        return view('operator.comms-blueprint.group');
     }
 
     public function groupemailpost(Request $request)
     {
-        $config = Muaadhsetting::findOrFail(1);
+        $ps = platformSettings();
         if($request->type == 0)
         {
         $users = User::all();
         //Sending Email To Users
         foreach($users as $user)
         {
-            if ($config->mail_driver)
+            if ($ps->get('mail_driver'))
             {
                 $data = [
                     'to' => $user->email,
@@ -71,7 +69,7 @@ class CommsBlueprintController extends OperatorBaseController
                $to = $user->email;
                $subject = $request->subject;
                $msg = $request->body;
-                $headers = "From: ".$config->from_name."<".$config->from_email.">";
+                $headers = "From: ".$ps->get('from_name')."<".$ps->get('from_email').">";
                mail($to,$subject,$msg,$headers);
             }
         }
@@ -88,7 +86,7 @@ class CommsBlueprintController extends OperatorBaseController
         // Sending Email To Merchants
         foreach($users as $user)
         {
-            if ($config->mail_driver)
+            if ($ps->get('mail_driver'))
             {
                 $data = [
                     'to' => $user->email,
@@ -104,7 +102,7 @@ class CommsBlueprintController extends OperatorBaseController
                $to = $user->email;
                $subject = $request->subject;
                $msg = $request->body;
-                $headers = "From: ".$config->from_name."<".$config->from_email.">";
+                $headers = "From: ".$ps->get('from_name')."<".$ps->get('from_email').">";
                mail($to,$subject,$msg,$headers);
             }
         }

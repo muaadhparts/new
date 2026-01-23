@@ -7,7 +7,6 @@ use App\Models\ReferralCommission;
 // MerchantCart removed - use MerchantCartManager for customer cart
 use App\Models\DeliveryCourier;
 use App\Models\MerchantCommission;
-use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use App\Models\PurchaseTimeline;
 use App\Models\CatalogItem;
@@ -159,8 +158,8 @@ class PurchaseController extends OperatorBaseController
 
     public function emailsub(Request $request)
     {
-        $gs = Muaadhsetting::findOrFail(1);
-        if ($gs->mail_driver) {
+        $ps = platformSettings();
+        if ($ps->get('mail_driver')) {
             $data = [
                 'to' => $request->to,
                 'subject' => $request->subject,
@@ -171,7 +170,7 @@ class PurchaseController extends OperatorBaseController
             $mailer->sendCustomMail($data);
         } else {
             $data = 0;
-            $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+            $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
             $mail = mail($request->to, $request->subject, $request->message, $headers);
             if ($mail) {
                 $data = 1;

@@ -7,7 +7,6 @@ use App\Services\MerchantCheckout\MerchantCheckoutService;
 use App\Services\MerchantCheckout\MerchantPurchaseCreator;
 use App\Services\MerchantCheckout\MerchantSessionManager;
 use App\Services\Cart\MerchantCartManager;
-use App\Models\Muaadhsetting;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -100,7 +99,7 @@ class CheckoutMerchantController extends Controller
             'cart' => $result['data']['cart'] ?? [],
             'googleMapsApiKey' => $googleMapsApiKey,
             'curr' => $curr,
-            'gs' => \DB::table('muaadhsettings')->first(),
+            'gs' => platformSettings(),
         ]);
     }
 
@@ -175,7 +174,7 @@ class CheckoutMerchantController extends Controller
             'shipping_providers' => $result['data']['shipping_options'] ?? [],
             'couriers' => $result['data']['courier_options'] ?? [],
             'curr' => $curr,
-            'gs' => \DB::table('muaadhsettings')->first(),
+            'gs' => platformSettings(),
         ]);
     }
 
@@ -323,7 +322,7 @@ class CheckoutMerchantController extends Controller
             'address' => $result['data']['address'] ?? [],
             'payment_methods' => $result['data']['payment_methods'] ?? [],
             'curr' => $curr,
-            'gs' => \DB::table('muaadhsettings')->first(),
+            'gs' => platformSettings(),
         ]);
     }
 
@@ -417,7 +416,7 @@ class CheckoutMerchantController extends Controller
             'purchase' => $purchase,
             'has_more_branches' => $hasMoreBranches,
             'error_message' => $errorMessage,
-            'gs' => \DB::table('muaadhsettings')->first(),
+            'gs' => platformSettings(),
         ]);
     }
 

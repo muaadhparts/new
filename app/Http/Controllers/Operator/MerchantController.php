@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
 use App\Models\MerchantItem;
-use App\Models\Muaadhsetting;
 use App\Models\User;
 use App\Models\Withdraw;
 use Auth;
@@ -76,11 +75,11 @@ class MerchantController extends OperatorBaseController
     //*** POST Request
     public function requestTrustBadgeSubmit(Request $request, $id)
     {
-        $settings = Muaadhsetting::find(1);
+        $ps = platformSettings();
         $user = User::findOrFail($id);
         $user->trustBadges()->create(['admin_warning' => 1, 'warning_reason' => $request->details]);
 
-        if ($settings->mail_driver) {
+        if ($ps->get('mail_driver')) {
             $data = [
                 'to' => $user->email,
                 'type' => "trust_badge_request",
@@ -93,7 +92,7 @@ class MerchantController extends OperatorBaseController
             $mailer = new MuaadhMailer();
             $mailer->sendAutoMail($data);
         } else {
-            $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";
+            $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
             mail($user->email, 'Request for verification.', 'You are requested verify your account. Please send us photo of your passport.Thank You.', $headers);
         }
 

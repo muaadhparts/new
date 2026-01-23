@@ -67,8 +67,7 @@ class PurchaseHelper
 
         $affilate_users = null;
         $i = 0;
-        $gs = \App\Models\Muaadhsetting::find(1);
-        $percentage = $gs->affilate_charge / 100;
+        $percentage = setting('affilate_charge', 0) / 100;
 
         foreach ($cartItems as $key => $cartItem) {
             // NEW FORMAT ONLY - No fallbacks
@@ -161,8 +160,6 @@ class PurchaseHelper
     public static function merchant_purchase_check($cart, $purchase, $checkoutData = [])
     {
         try {
-            $gs = \App\Models\Muaadhsetting::find(1);
-
             // Group cart items by merchant
             // FAIL-FAST: Required fields must exist
             $merchantGroups = [];

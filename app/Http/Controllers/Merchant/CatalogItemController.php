@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Muaadhsetting;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use App\Models\MerchantBranch;
@@ -36,7 +35,7 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
-        if (Muaadhsetting::find(1)->verify_item == 1) {
+        if (setting('verify_item') == 1) {
             if (!$user->isTrustBadgeTrusted()) {
                 Session::flash('unsuccess', __('You must complete your trust badge first.'));
                 return redirect()->route('merchant-trust-badge');
@@ -135,7 +134,7 @@ class CatalogItemController extends MerchantBaseController
     {
         $user = $this->user;
 
-        if (Muaadhsetting::find(1)->verify_item == 1) {
+        if (setting('verify_item') == 1) {
             if (!$user->isTrustBadgeTrusted()) {
                 return back()->with('unsuccess', __('You must complete your trust badge first.'));
             }

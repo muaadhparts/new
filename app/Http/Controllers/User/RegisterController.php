@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\Muaadhsetting;
 use App\Models\CatalogEvent;
 use App\Models\User;
 use Auth;
@@ -21,8 +20,7 @@ class RegisterController extends FrontBaseController
     }
     public function showMerchantRegisterForm()
     {
-        $gs = Muaadhsetting::findOrFail(1);
-        if ($gs->reg_merchant == 1) {
+        if (setting('reg_merchant') == 1) {
             return view('frontend.merchant-register');
         } else {
             return back()->with('unsuccess', 'Merchant Registration is currently disabled by Admin. Please try again later.');
@@ -75,12 +73,13 @@ class RegisterController extends FrontBaseController
         }
 
         $user->fill($input)->save();
-        if ($gs->is_verification_email == 1) {
+        $ps = platformSettings();
+        if ($ps->get('is_verification_email') == 1) {
             $to = $request->email;
             $subject = 'Verify your email address.';
             $msg = "Dear Customer,<br> We noticed that you need to verify your email address. <a href=" . url('user/register/verify/' . $token) . ">Simply click here to verify. </a>";
             //Sending Email To Customer
-            if ($gs->mail_driver) {
+            if ($ps->get('mail_driver')) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,
@@ -90,7 +89,7 @@ class RegisterController extends FrontBaseController
                 $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
-                $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+                $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
                 mail($to, $subject, $msg, $headers);
             }
             return response()->json('We need to verify your email address. We have sent an email to ' . $to . ' to verify your email address. Please click link in that email to continue.');
@@ -109,9 +108,7 @@ class RegisterController extends FrontBaseController
 
     public function token($token)
     {
-        $gs = Muaadhsetting::findOrFail(1);
-
-        if ($gs->is_verification_email == 1) {
+        if (setting('is_verification_email') == 1) {
             $user = User::where('verification_link', '=', $token)->first();
             if (isset($user)) {
                 $user->email_verified = 'Yes';

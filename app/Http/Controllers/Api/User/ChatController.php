@@ -7,7 +7,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\ChatEntryResource;
 use App\Http\Resources\ChatThreadResource;
 use App\Models\ChatThread;
-use App\Models\Muaadhsetting;
 use App\Models\ChatEntry;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,13 +51,13 @@ class ChatController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Email not found."]]);
             }
 
-            $gs = Muaadhsetting::find(1);
+            $ps = platformSettings();
             $subject = $request->subject;
             $to = $merchant->email;
             $name = $user->name;
             $from = $user->email;
             $msg = "Name: " . $name . "\nEmail: " . $from . "\nMessage: " . $request->message;
-            if ($gs->mail_driver) {
+            if ($ps->get('mail_driver')) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,
@@ -68,7 +67,7 @@ class ChatController extends Controller
                 $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
-                $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+                $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
                 mail($to, $subject, $msg, $headers);
             }
 

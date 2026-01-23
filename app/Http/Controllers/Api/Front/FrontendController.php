@@ -19,7 +19,6 @@ use App\Models\CatalogItem;
 use App\Models\User;
 use DB;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Validator;
 
 class FrontendController extends Controller
@@ -262,9 +261,7 @@ class FrontendController extends Controller
 
     public function settings(Request $request)
     {
-    
         try {
-
             $rules = [
                 'name' => 'required',
             ];
@@ -275,14 +272,20 @@ class FrontendController extends Controller
             }
 
             $name = $request->name;
-            $checkSettings = in_array($name, ['muaadhsettings', 'frontend_settings', 'connect_configs']);
+
+            // Map legacy names to new system
+            if ($name === 'muaadhsettings' || $name === 'connect_configs') {
+                // Return platform settings as unified settings
+                $setting = platformSettings()->all();
+                return response()->json(['status' => true, 'data' => $setting, 'error' => []]);
+            }
+
+            $checkSettings = in_array($name, ['frontend_settings']);
             if (!$checkSettings) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "This setting doesn't exists."]]);
             }
 
             $setting = DB::table($name)->first();
-//            dd($setting);
-            Log::debug('mm',['status' => true, 'data' => $setting, 'error' => []]);
             return response()->json(['status' => true, 'data' => $setting, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
@@ -341,17 +344,17 @@ class FrontendController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
             }
 
-            $gs = Muaadhsetting::find(1);
+            $ps = platformSettings();
 
             // Login Section
-            $ps = DB::table('frontend_settings')->where('id', '=', 1)->first();
+            $frontendSettings = DB::table('frontend_settings')->where('id', '=', 1)->first();
             $subject = "Email From Of " . $request->name;
-            $to = $ps->contact_email;
+            $to = $frontendSettings->contact_email;
             $name = $request->name;
             $phone = $request->phone;
             $from = $request->email;
             $msg = "Name: " . $name . "\nEmail: " . $from . "\nPhone: " . $request->phone . "\nMessage: " . $request->message;
-            if ($gs->mail_driver) {
+            if ($ps->get('mail_driver')) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,

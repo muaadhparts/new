@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Auth\Courier;
 use App\{
 	Models\Courier,
 	Classes\MuaadhMailer,
-	Models\Muaadhsetting,
 	Http\Controllers\Controller
 };
 use Illuminate\Http\Request;
@@ -17,12 +16,7 @@ class RegisterController extends Controller
 
 	public function register(Request $request)
 	{
-
-
-		$gs = Muaadhsetting::findOrFail(1);
-
-
-		// if ($gs->is_capcha == 1) {
+		// if (setting('is_capcha') == 1) {
 		// 	$request->validate(
 		// 		[
 		// 			'g-recaptcha-response' => 'required|captcha',
@@ -48,7 +42,7 @@ class RegisterController extends Controller
 		$input['email_token'] = $token;
 		$courier->fill($input)->save();
 
-		if ($gs->is_verification_email == 1) {
+		if (setting('is_verification_email') == 1) {
 			$to = $request->email;
 			$subject = 'Verify your email address.';
 			$msg = "Dear Courier,<br>We noticed that you need to verify your email address.<br>Simply click the link below to verify. <a href=" . url('courier/register/verify/' . $token) . ">" . url('courier/register/verify/' . $token) . "</a>";
@@ -89,9 +83,7 @@ class RegisterController extends Controller
 
 	public function token($token)
 	{
-		$gs = Muaadhsetting::findOrFail(1);
-
-		if ($gs->is_verification_email == 1) {
+		if (setting('is_verification_email') == 1) {
 			$courier = Courier::where('email_token', '=', $token)->first();
 			if (isset($courier)) {
 				$courier->email_verify = 'Yes';

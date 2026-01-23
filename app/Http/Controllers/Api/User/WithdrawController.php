@@ -7,8 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\WithdrawDetailsResource;
 
 use App\Http\Resources\WithdrawResource;
-use App\Models\Muaadhsetting;
-use App\Models\User;use App\Models\Withdraw;
+use App\Models\User;
+use App\Models\Withdraw;
 use Auth;
 
 use Illuminate\Http\Request;
@@ -143,15 +143,15 @@ class WithdrawController extends Controller
             $user = auth()->user();
             $from = User::findOrFail($user->id);
             $curr = monetaryUnit()->getDefault();
-            $withdrawcharge = Muaadhsetting::findOrFail(1);
-            $charge = $withdrawcharge->withdraw_fee;
+            $ps = platformSettings();
+            $charge = $ps->get('withdraw_fee', 0);
 
             if ($request->amount > 0) {
 
                 $amount = $request->amount;
 
                 if ($from->affilate_income >= $amount) {
-                    $fee = (($withdrawcharge->withdraw_charge / 100) * $amount) + $charge;
+                    $fee = (($ps->get('withdraw_charge', 0) / 100) * $amount) + $charge;
                     $finalamount = $amount - $fee;
                     if ($from->affilate_income >= $finalamount) {
                         $finalamount = number_format((float) $finalamount, 2, '.', '');

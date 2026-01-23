@@ -8,7 +8,6 @@ use App\Http\Resources\TicketDisputeMessageResource;
 use App\Http\Resources\TicketDisputeResource;
 use App\Models\SupportThread;
 use App\Models\SupportMessage;
-use App\Models\Muaadhsetting;
 use App\Models\CatalogEvent;
 use App\Models\Purchase;
 use App\Models\FrontendSetting;
@@ -73,12 +72,12 @@ class TicketDisputeController extends Controller
             }
 
             $user = auth()->user();
-            $gs = Muaadhsetting::find(1);
+            $ps = platformSettings();
             $subject = $request->subject;
             $to = FrontendSetting::find(1)->contact_email;
             $from = $user->email;
             $msg = "Email: " . $from . "\nMessage: " . $request->message;
-            if ($gs->mail_driver) {
+            if ($ps->get('mail_driver')) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,
@@ -88,7 +87,7 @@ class TicketDisputeController extends Controller
                 $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
-                $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+                $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
                 mail($to, $subject, $msg, $headers);
             }
 

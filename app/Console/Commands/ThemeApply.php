@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Muaadhsetting;
+use App\Models\PlatformSetting;
 use Illuminate\Console\Command;
 
 class ThemeApply extends Command
@@ -174,17 +174,13 @@ class ThemeApply extends Command
 
         $this->info("Applying theme preset: {$presetName}");
 
-        // Get current settings
-        $gs = Muaadhsetting::findOrFail(1);
-
-        // Apply preset values
+        // Apply preset values to platform_settings
         $preset = $this->presets[$presetName];
         foreach ($preset as $key => $value) {
-            $gs->{$key} = $value;
+            PlatformSetting::set('theme', $key, $value);
         }
 
-        $gs->save();
-        cache()->forget('muaadhsettings');
+        cache()->forget('platform_settings_context');
 
         $this->info("Preset applied to database.");
 

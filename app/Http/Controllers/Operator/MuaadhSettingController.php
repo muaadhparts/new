@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\Muaadhsetting;
+use App\Models\PlatformSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 use Validator;
 
@@ -26,12 +27,9 @@ class MuaadhSettingController extends OperatorBaseController
 
     public function updateTheme(Request $request)
     {
-        $data = Muaadhsetting::findOrFail(1);
-        $data->theme = $request->theme;
-        $data->update();
-        cache()->forget('muaadhsettings');
+        PlatformSetting::set('theme', 'theme', $request->theme);
+        cache()->forget('platform_settings_context');
         return back()->with('success','Home Updated Successfully');
-
     }
 
     private function setEnv($key, $value, $prev)
@@ -111,84 +109,49 @@ class MuaadhSettingController extends OperatorBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        else {
-            $input = $request->all();
-            $data = Muaadhsetting::findOrFail(1);
-            if ($file = $request->file('logo')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->logo);
-                $input['logo'] = $name;
-            }
-            if ($file = $request->file('favicon')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->favicon);
-                $input['favicon'] = $name;
-            }
-            // breadcrumb_banner upload removed - using modern minimal design
-            // deal_background upload removed - deal feature removed
-            if ($file = $request->file('loader')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->loader);
-                $input['loader'] = $name;
-            }
-            if ($file = $request->file('admin_loader')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->admin_loader);
-                $input['admin_loader'] = $name;
-            }
-            if ($file = $request->file('affilate_banner')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->affilate_banner);
-                $input['affilate_banner'] = $name;
-            }
-            if ($file = $request->file('error_banner_404')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->error_banner_404);
-                $input['error_banner_404'] = $name;
-            }
-            if ($file = $request->file('error_banner_500')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->error_banner_500);
-                $input['error_banner_500'] = $name;
-            }
-            if ($file = $request->file('popup_background')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->popup_background);
-                $input['popup_background'] = $name;
-            }
-            if ($file = $request->file('invoice_logo')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->invoice_logo);
-                $input['invoice_logo'] = $name;
-            }
-            if ($file = $request->file('user_image')) {
-                $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->user_image);
-                $input['user_image'] = $name;
-            }
+        $input = $request->except(['_token', '_method']);
+        $ps = platformSettings();
 
-            if ($file = $request->file('footer_logo')) {
+        // Handle file uploads
+        $fileFields = ['logo', 'favicon', 'loader', 'admin_loader', 'affilate_banner',
+                       'error_banner_404', 'error_banner_500', 'popup_background',
+                       'invoice_logo', 'user_image', 'footer_logo'];
+
+        foreach ($fileFields as $field) {
+            if ($file = $request->file($field)) {
                 $name = \PriceHelper::ImageCreateName($file);
-                $data->upload($name, $file, $data->footer_logo);
-                $input['footer_logo'] = $name;
+                // Delete old file if exists
+                $oldFile = $ps->get($field);
+                if ($oldFile && file_exists(public_path('assets/images/' . $oldFile))) {
+                    @unlink(public_path('assets/images/' . $oldFile));
+                }
+                // Upload new file
+                $file->move(public_path('assets/images'), $name);
+                $input[$field] = $name;
             }
-
-            if ($request->capcha_secret_key) {
-                $this->setEnv('NOCAPTCHA_SECRET', $request->capcha_secret_key, env('NOCAPTCHA_SECRET'));
-            }
-            if ($request->capcha_site_key) {
-                $this->setEnv('NOCAPTCHA_SITEKEY', $request->capcha_site_key, env('NOCAPTCHA_SITEKEY'));
-            }
-
-            cache()->forget('muaadhsettings');
-            $data->update($input);
-            //--- Logic Section Ends
-
-            //--- Redirect Section
-            $msg = __('Data Updated Successfully.');
-            return response()->json($msg);
-            //--- Redirect Section Ends
         }
+
+        if ($request->capcha_secret_key) {
+            $this->setEnv('NOCAPTCHA_SECRET', $request->capcha_secret_key, env('NOCAPTCHA_SECRET'));
+        }
+        if ($request->capcha_site_key) {
+            $this->setEnv('NOCAPTCHA_SITEKEY', $request->capcha_site_key, env('NOCAPTCHA_SITEKEY'));
+        }
+
+        // Save all settings to platform_settings
+        foreach ($input as $key => $value) {
+            if (!is_null($value) && !in_array($key, ['capcha_secret_key', 'capcha_site_key'])) {
+                PlatformSetting::set('general', $key, $value);
+            }
+        }
+
+        cache()->forget('platform_settings_context');
+        //--- Logic Section Ends
+
+        //--- Redirect Section
+        $msg = __('Data Updated Successfully.');
+        return response()->json($msg);
+        //--- Redirect Section Ends
     }
 
     public function generalupdatepayment(Request $request)
@@ -202,46 +165,53 @@ class MuaadhSettingController extends OperatorBaseController
         //--- Validation Section Ends
 
         //--- Logic Section
-        else {
-            $input = $request->all();
-            $data = Muaadhsetting::findOrFail(1);
-            $prev = $data->molly_key;
+        $input = $request->except(['_token', '_method']);
 
-            if ($request->instamojo_sandbox == "") {
-                $input['instamojo_sandbox'] = 0;
-            }
-
-            if ($request->paypal_mode == "") {
-                $input['paypal_mode'] = 'live';
-            } else {
-                $input['paypal_mode'] = 'sandbox';
-            }
-
-            if ($request->paytm_mode == "") {
-                $input['paytm_mode'] = 'live';
-            } else {
-                $input['paytm_mode'] = 'sandbox';
-            }
-            $data->update($input);
-
-            cache()->forget('muaadhsettings');
-
-            // Set Molly ENV
-
-            //--- Logic Section Ends
-
-            //--- Redirect Section
-            $msg = __(__('Data Updated Successfully.'));
-            return response()->json($msg);
-            //--- Redirect Section Ends
+        if ($request->instamojo_sandbox == "") {
+            $input['instamojo_sandbox'] = 0;
         }
+
+        if ($request->paypal_mode == "") {
+            $input['paypal_mode'] = 'live';
+        } else {
+            $input['paypal_mode'] = 'sandbox';
+        }
+
+        if ($request->paytm_mode == "") {
+            $input['paytm_mode'] = 'live';
+        } else {
+            $input['paytm_mode'] = 'sandbox';
+        }
+
+        // Save all payment settings to platform_settings
+        foreach ($input as $key => $value) {
+            if (!is_null($value)) {
+                PlatformSetting::set('payment', $key, $value);
+            }
+        }
+
+        cache()->forget('platform_settings_context');
+
+        //--- Logic Section Ends
+
+        //--- Redirect Section
+        $msg = __('Data Updated Successfully.');
+        return response()->json($msg);
+        //--- Redirect Section Ends
     }
 
     public function generalMailUpdate(Request $request)
     {
-        $input = $request->all();
-        $maildata = Muaadhsetting::findOrFail(1);
-        $maildata->update($input);
+        $input = $request->except(['_token', '_method']);
+
+        // Save all mail settings to platform_settings
+        foreach ($input as $key => $value) {
+            if (!is_null($value)) {
+                PlatformSetting::set('mail', $key, $value);
+            }
+        }
+
+        cache()->forget('platform_settings_context');
         //--- Redirect Section
         $msg = 'Mail Data Updated Successfully.';
         return response()->json($msg);
@@ -251,23 +221,23 @@ class MuaadhSettingController extends OperatorBaseController
     // Status Change Method -> GET Request
     public function status($field, $value)
     {
+        $ps = platformSettings();
         $prev = '';
-        $data = Muaadhsetting::findOrFail(1);
         if ($field == 'is_debug') {
-            $prev = $data->is_debug == 1 ? 'true' : 'false';
+            $prev = $ps->get('is_debug') == 1 ? 'true' : 'false');
         }
-        $data[$field] = $value;
-        $data->update();
+
+        PlatformSetting::set('general', $field, $value);
+
         if ($field == 'is_debug') {
-            $now = $data->is_debug == 1 ? 'true' : 'false';
+            $now = $value == 1 ? 'true' : 'false');
             $this->setEnv('APP_DEBUG', $now, $prev);
         }
-        cache()->forget('muaadhsettings');
+        cache()->forget('platform_settings_context');
         //--- Redirect Section
         $msg = __('Status Updated Successfully.');
         return response()->json($msg);
         //--- Redirect Section Ends
-
     }
 
     public function homepage()
@@ -293,264 +263,211 @@ class MuaadhSettingController extends OperatorBaseController
      */
     public function updateThemeColors(Request $request)
     {
-        $data = Muaadhsetting::findOrFail(1);
+        // Define all theme settings with their defaults
+        $themeDefaults = [
+            // PRIMARY COLORS
+            'theme_primary' => '#c3002f',
+            'theme_primary_hover' => '#a00025',
+            'theme_primary_dark' => '#8a0020',
+            'theme_primary_light' => '#fef2f4',
 
-        // ==================================
-        // PRIMARY COLORS
-        // ==================================
-        $data->theme_primary = $request->theme_primary ?? '#c3002f';
-        $data->theme_primary_hover = $request->theme_primary_hover ?? '#a00025';
-        $data->theme_primary_dark = $request->theme_primary_dark ?? '#8a0020';
-        $data->theme_primary_light = $request->theme_primary_light ?? '#fef2f4';
+            // SECONDARY COLORS
+            'theme_secondary' => '#1f0300',
+            'theme_secondary_hover' => '#351c1a',
+            'theme_secondary_light' => '#4c3533',
 
-        // ==================================
-        // SECONDARY COLORS
-        // ==================================
-        $data->theme_secondary = $request->theme_secondary ?? '#1f0300';
-        $data->theme_secondary_hover = $request->theme_secondary_hover ?? '#351c1a';
-        $data->theme_secondary_light = $request->theme_secondary_light ?? '#4c3533';
+            // TEXT COLORS
+            'theme_text_primary' => '#1f0300',
+            'theme_text_secondary' => '#4c3533',
+            'theme_text_muted' => '#796866',
+            'theme_text_light' => '#9a8e8c',
 
-        // ==================================
-        // TEXT COLORS
-        // ==================================
-        $data->theme_text_primary = $request->theme_text_primary ?? '#1f0300';
-        $data->theme_text_secondary = $request->theme_text_secondary ?? '#4c3533';
-        $data->theme_text_muted = $request->theme_text_muted ?? '#796866';
-        $data->theme_text_light = $request->theme_text_light ?? '#9a8e8c';
+            // BACKGROUND COLORS
+            'theme_bg_body' => '#ffffff',
+            'theme_bg_light' => '#f8f7f7',
+            'theme_bg_gray' => '#e9e6e6',
+            'theme_bg_dark' => '#030712',
 
-        // ==================================
-        // BACKGROUND COLORS
-        // ==================================
-        $data->theme_bg_body = $request->theme_bg_body ?? '#ffffff';
-        $data->theme_bg_light = $request->theme_bg_light ?? '#f8f7f7';
-        $data->theme_bg_gray = $request->theme_bg_gray ?? '#e9e6e6';
-        $data->theme_bg_dark = $request->theme_bg_dark ?? '#030712';
+            // STATUS COLORS
+            'theme_success' => '#27be69',
+            'theme_warning' => '#fac03c',
+            'theme_danger' => '#f2415a',
+            'theme_info' => '#0ea5e9',
 
-        // ==================================
-        // STATUS COLORS
-        // ==================================
-        $data->theme_success = $request->theme_success ?? '#27be69';
-        $data->theme_warning = $request->theme_warning ?? '#fac03c';
-        $data->theme_danger = $request->theme_danger ?? '#f2415a';
-        $data->theme_info = $request->theme_info ?? '#0ea5e9';
+            // BORDER COLORS
+            'theme_border' => '#d9d4d4',
+            'theme_border_light' => '#e9e6e6',
+            'theme_border_dark' => '#c7c0bf',
 
-        // ==================================
-        // BORDER COLORS
-        // ==================================
-        $data->theme_border = $request->theme_border ?? '#d9d4d4';
-        $data->theme_border_light = $request->theme_border_light ?? '#e9e6e6';
-        $data->theme_border_dark = $request->theme_border_dark ?? '#c7c0bf';
+            // HEADER & FOOTER COLORS
+            'theme_header_bg' => '#ffffff',
+            'theme_footer_bg' => '#030712',
+            'theme_footer_text' => '#ffffff',
+            'theme_footer_link_hover' => '#c3002f',
 
-        // ==================================
-        // HEADER & FOOTER COLORS
-        // ==================================
-        $data->theme_header_bg = $request->theme_header_bg ?? '#ffffff';
-        $data->theme_footer_bg = $request->theme_footer_bg ?? '#030712';
-        $data->theme_footer_text = $request->theme_footer_text ?? '#ffffff';
-        $data->theme_footer_link_hover = $request->theme_footer_link_hover ?? '#c3002f';
+            // TYPOGRAPHY
+            'theme_font_primary' => 'Poppins',
+            'theme_font_heading' => 'Saira',
+            'theme_font_size_base' => '16px',
+            'theme_font_size_sm' => '14px',
+            'theme_font_size_lg' => '18px',
+            'theme_line_height' => '1.5',
 
-        // ==================================
-        // TYPOGRAPHY
-        // ==================================
-        $data->theme_font_primary = $request->theme_font_primary ?? 'Poppins';
-        $data->theme_font_heading = $request->theme_font_heading ?? 'Saira';
-        $data->theme_font_size_base = $request->theme_font_size_base ?? '16px';
-        $data->theme_font_size_sm = $request->theme_font_size_sm ?? '14px';
-        $data->theme_font_size_lg = $request->theme_font_size_lg ?? '18px';
-        $data->theme_line_height = $request->theme_line_height ?? '1.5';
+            // BORDER RADIUS
+            'theme_radius_xs' => '3px',
+            'theme_radius_sm' => '4px',
+            'theme_radius' => '8px',
+            'theme_radius_lg' => '12px',
+            'theme_radius_xl' => '16px',
+            'theme_radius_pill' => '50px',
 
-        // ==================================
-        // BORDER RADIUS
-        // ==================================
-        $data->theme_radius_xs = $request->theme_radius_xs ?? '3px';
-        $data->theme_radius_sm = $request->theme_radius_sm ?? '4px';
-        $data->theme_radius = $request->theme_radius ?? '8px';
-        $data->theme_radius_lg = $request->theme_radius_lg ?? '12px';
-        $data->theme_radius_xl = $request->theme_radius_xl ?? '16px';
-        $data->theme_radius_pill = $request->theme_radius_pill ?? '50px';
+            // SHADOWS
+            'theme_shadow_xs' => '0 1px 2px rgba(0,0,0,0.04)',
+            'theme_shadow_sm' => '0 1px 3px rgba(0,0,0,0.06)',
+            'theme_shadow' => '0 2px 8px rgba(0,0,0,0.1)',
+            'theme_shadow_lg' => '0 4px 16px rgba(0,0,0,0.15)',
+            'theme_shadow_xl' => '0 8px 30px rgba(0,0,0,0.2)',
 
-        // ==================================
-        // SHADOWS
-        // ==================================
-        $data->theme_shadow_xs = $request->theme_shadow_xs ?? '0 1px 2px rgba(0,0,0,0.04)';
-        $data->theme_shadow_sm = $request->theme_shadow_sm ?? '0 1px 3px rgba(0,0,0,0.06)';
-        $data->theme_shadow = $request->theme_shadow ?? '0 2px 8px rgba(0,0,0,0.1)';
-        $data->theme_shadow_lg = $request->theme_shadow_lg ?? '0 4px 16px rgba(0,0,0,0.15)';
-        $data->theme_shadow_xl = $request->theme_shadow_xl ?? '0 8px 30px rgba(0,0,0,0.2)';
+            // SPACING
+            'theme_spacing_xs' => '4px',
+            'theme_spacing_sm' => '8px',
+            'theme_spacing' => '16px',
+            'theme_spacing_lg' => '24px',
+            'theme_spacing_xl' => '32px',
 
-        // ==================================
-        // SPACING
-        // ==================================
-        $data->theme_spacing_xs = $request->theme_spacing_xs ?? '4px';
-        $data->theme_spacing_sm = $request->theme_spacing_sm ?? '8px';
-        $data->theme_spacing = $request->theme_spacing ?? '16px';
-        $data->theme_spacing_lg = $request->theme_spacing_lg ?? '24px';
-        $data->theme_spacing_xl = $request->theme_spacing_xl ?? '32px';
+            // BUTTONS
+            'theme_btn_padding_x' => '24px',
+            'theme_btn_padding_y' => '12px',
+            'theme_btn_font_size' => '14px',
+            'theme_btn_font_weight' => '600',
+            'theme_btn_radius' => '8px',
+            'theme_btn_shadow' => 'none',
 
-        // ==================================
-        // BUTTONS
-        // ==================================
-        $data->theme_btn_padding_x = $request->theme_btn_padding_x ?? '24px';
-        $data->theme_btn_padding_y = $request->theme_btn_padding_y ?? '12px';
-        $data->theme_btn_font_size = $request->theme_btn_font_size ?? '14px';
-        $data->theme_btn_font_weight = $request->theme_btn_font_weight ?? '600';
-        $data->theme_btn_radius = $request->theme_btn_radius ?? '8px';
-        $data->theme_btn_shadow = $request->theme_btn_shadow ?? 'none';
+            // CARDS
+            'theme_card_bg' => '#ffffff',
+            'theme_card_border' => '#e9e6e6',
+            'theme_card_radius' => '12px',
+            'theme_card_shadow' => '0 2px 8px rgba(0,0,0,0.08)',
+            'theme_card_hover_shadow' => '0 4px 16px rgba(0,0,0,0.12)',
+            'theme_card_padding' => '20px',
 
-        // ==================================
-        // CARDS
-        // ==================================
-        $data->theme_card_bg = $request->theme_card_bg ?? '#ffffff';
-        $data->theme_card_border = $request->theme_card_border ?? '#e9e6e6';
-        $data->theme_card_radius = $request->theme_card_radius ?? '12px';
-        $data->theme_card_shadow = $request->theme_card_shadow ?? '0 2px 8px rgba(0,0,0,0.08)';
-        $data->theme_card_hover_shadow = $request->theme_card_hover_shadow ?? '0 4px 16px rgba(0,0,0,0.12)';
-        $data->theme_card_padding = $request->theme_card_padding ?? '20px';
+            // HEADER
+            'theme_header_height' => '80px',
+            'theme_header_shadow' => '0 2px 10px rgba(0,0,0,0.1)',
+            'theme_header_text' => '#1f0300',
+            'theme_nav_link_color' => '#1f0300',
+            'theme_nav_link_hover' => '#c3002f',
+            'theme_nav_font_size' => '15px',
+            'theme_nav_font_weight' => '500',
 
-        // ==================================
-        // HEADER
-        // ==================================
-        $data->theme_header_height = $request->theme_header_height ?? '80px';
-        $data->theme_header_shadow = $request->theme_header_shadow ?? '0 2px 10px rgba(0,0,0,0.1)';
-        $data->theme_header_text = $request->theme_header_text ?? '#1f0300';
-        $data->theme_nav_link_color = $request->theme_nav_link_color ?? '#1f0300';
-        $data->theme_nav_link_hover = $request->theme_nav_link_hover ?? '#c3002f';
-        $data->theme_nav_font_size = $request->theme_nav_font_size ?? '15px';
-        $data->theme_nav_font_weight = $request->theme_nav_font_weight ?? '500';
+            // FOOTER
+            'theme_footer_padding' => '60px',
+            'theme_footer_text_muted' => '#d9d4d4',
+            'theme_footer_link' => '#ffffff',
+            'theme_footer_border' => '#374151',
 
-        // ==================================
-        // FOOTER (Extended)
-        // ==================================
-        $data->theme_footer_padding = $request->theme_footer_padding ?? '60px';
-        $data->theme_footer_text_muted = $request->theme_footer_text_muted ?? '#d9d4d4';
-        $data->theme_footer_link = $request->theme_footer_link ?? '#ffffff';
-        $data->theme_footer_border = $request->theme_footer_border ?? '#374151';
+            // ITEM CARDS
+            'theme_item_name_size' => '14px',
+            'theme_item_name_weight' => '500',
+            'theme_item_price_size' => '16px',
+            'theme_item_price_weight' => '700',
+            'theme_item_card_radius' => '12px',
+            'theme_item_img_radius' => '8px',
+            'theme_item_hover_scale' => '1.02',
 
-        // ==================================
-        // ITEM CARDS
-        // ==================================
-        $data->theme_item_name_size = $request->theme_item_name_size ?? '14px';
-        $data->theme_item_name_weight = $request->theme_item_name_weight ?? '500';
-        $data->theme_item_price_size = $request->theme_item_price_size ?? '16px';
-        $data->theme_item_price_weight = $request->theme_item_price_weight ?? '700';
-        $data->theme_item_card_radius = $request->theme_item_card_radius ?? '12px';
-        $data->theme_item_img_radius = $request->theme_item_img_radius ?? '8px';
-        $data->theme_item_hover_scale = $request->theme_item_hover_scale ?? '1.02';
+            // MODALS
+            'theme_modal_bg' => '#ffffff',
+            'theme_modal_radius' => '16px',
+            'theme_modal_shadow' => '0 25px 50px rgba(0,0,0,0.25)',
+            'theme_modal_backdrop' => 'rgba(0,0,0,0.5)',
+            'theme_modal_header_bg' => '#f8f7f7',
 
-        // ==================================
-        // MODALS
-        // ==================================
-        $data->theme_modal_bg = $request->theme_modal_bg ?? '#ffffff';
-        $data->theme_modal_radius = $request->theme_modal_radius ?? '16px';
-        $data->theme_modal_shadow = $request->theme_modal_shadow ?? '0 25px 50px rgba(0,0,0,0.25)';
-        $data->theme_modal_backdrop = $request->theme_modal_backdrop ?? 'rgba(0,0,0,0.5)';
-        $data->theme_modal_header_bg = $request->theme_modal_header_bg ?? '#f8f7f7';
+            // TABLES
+            'theme_table_header_bg' => '#f8f7f7',
+            'theme_table_header_text' => '#1f0300',
+            'theme_table_border' => '#e9e6e6',
+            'theme_table_hover_bg' => '#f8f7f7',
+            'theme_table_stripe_bg' => '#fafafa',
 
-        // ==================================
-        // TABLES
-        // ==================================
-        $data->theme_table_header_bg = $request->theme_table_header_bg ?? '#f8f7f7';
-        $data->theme_table_header_text = $request->theme_table_header_text ?? '#1f0300';
-        $data->theme_table_border = $request->theme_table_border ?? '#e9e6e6';
-        $data->theme_table_hover_bg = $request->theme_table_hover_bg ?? '#f8f7f7';
-        $data->theme_table_stripe_bg = $request->theme_table_stripe_bg ?? '#fafafa';
+            // FORMS
+            'theme_input_height' => '48px',
+            'theme_input_bg' => '#ffffff',
+            'theme_input_border' => '#d9d4d4',
+            'theme_input_radius' => '8px',
+            'theme_input_focus_border' => '#c3002f',
+            'theme_input_focus_shadow' => '0 0 0 3px rgba(195,0,47,0.1)',
+            'theme_input_placeholder' => '#9a8e8c',
 
-        // ==================================
-        // FORMS
-        // ==================================
-        $data->theme_input_height = $request->theme_input_height ?? '48px';
-        $data->theme_input_bg = $request->theme_input_bg ?? '#ffffff';
-        $data->theme_input_border = $request->theme_input_border ?? '#d9d4d4';
-        $data->theme_input_radius = $request->theme_input_radius ?? '8px';
-        $data->theme_input_focus_border = $request->theme_input_focus_border ?? '#c3002f';
-        $data->theme_input_focus_shadow = $request->theme_input_focus_shadow ?? '0 0 0 3px rgba(195,0,47,0.1)';
-        $data->theme_input_placeholder = $request->theme_input_placeholder ?? '#9a8e8c';
+            // BADGES
+            'theme_badge_radius' => '20px',
+            'theme_badge_padding' => '4px 12px',
+            'theme_badge_font_size' => '12px',
+            'theme_badge_font_weight' => '600',
 
-        // ==================================
-        // BADGES
-        // ==================================
-        $data->theme_badge_radius = $request->theme_badge_radius ?? '20px';
-        $data->theme_badge_padding = $request->theme_badge_padding ?? '4px 12px';
-        $data->theme_badge_font_size = $request->theme_badge_font_size ?? '12px';
-        $data->theme_badge_font_weight = $request->theme_badge_font_weight ?? '600';
+            // CHIPS
+            'theme_chip_bg' => '#f8f7f7',
+            'theme_chip_text' => '#4c3533',
+            'theme_chip_radius' => '6px',
+            'theme_chip_border' => '#e9e6e6',
 
-        // ==================================
-        // CHIPS
-        // ==================================
-        $data->theme_chip_bg = $request->theme_chip_bg ?? '#f8f7f7';
-        $data->theme_chip_text = $request->theme_chip_text ?? '#4c3533';
-        $data->theme_chip_radius = $request->theme_chip_radius ?? '6px';
-        $data->theme_chip_border = $request->theme_chip_border ?? '#e9e6e6';
+            // SCROLLBAR
+            'theme_scrollbar_width' => '10px',
+            'theme_scrollbar_track' => '#f1f1f1',
+            'theme_scrollbar_thumb' => '#c1c1c1',
+            'theme_scrollbar_thumb_hover' => '#a1a1a1',
 
-        // ==================================
-        // SCROLLBAR
-        // ==================================
-        $data->theme_scrollbar_width = $request->theme_scrollbar_width ?? '10px';
-        $data->theme_scrollbar_track = $request->theme_scrollbar_track ?? '#f1f1f1';
-        $data->theme_scrollbar_thumb = $request->theme_scrollbar_thumb ?? '#c1c1c1';
-        $data->theme_scrollbar_thumb_hover = $request->theme_scrollbar_thumb_hover ?? '#a1a1a1';
+            // TRANSITIONS
+            'theme_transition_fast' => 'all 0.15s ease',
+            'theme_transition' => 'all 0.3s ease',
+            'theme_transition_slow' => 'all 0.5s ease',
 
-        // ==================================
-        // TRANSITIONS
-        // ==================================
-        $data->theme_transition_fast = $request->theme_transition_fast ?? 'all 0.15s ease';
-        $data->theme_transition = $request->theme_transition ?? 'all 0.3s ease';
-        $data->theme_transition_slow = $request->theme_transition_slow ?? 'all 0.5s ease';
+            // SEARCH COMPONENT
+            'theme_search_bg' => '#ffffff',
+            'theme_search_border' => '#e9e6e6',
+            'theme_search_radius' => '50px',
+            'theme_search_height' => '50px',
+            'theme_search_shadow' => '0 4px 15px rgba(0,0,0,0.08)',
 
-        // ==================================
-        // SEARCH COMPONENT
-        // ==================================
-        $data->theme_search_bg = $request->theme_search_bg ?? '#ffffff';
-        $data->theme_search_border = $request->theme_search_border ?? '#e9e6e6';
-        $data->theme_search_radius = $request->theme_search_radius ?? '50px';
-        $data->theme_search_height = $request->theme_search_height ?? '50px';
-        $data->theme_search_shadow = $request->theme_search_shadow ?? '0 4px 15px rgba(0,0,0,0.08)';
+            // CATEGORY CARDS
+            'theme_category_bg' => '#ffffff',
+            'theme_category_radius' => '12px',
+            'theme_category_shadow' => '0 2px 8px rgba(0,0,0,0.08)',
+            'theme_category_hover_shadow' => '0 8px 25px rgba(0,0,0,0.15)',
 
-        // ==================================
-        // CATEGORY CARDS
-        // ==================================
-        $data->theme_category_bg = $request->theme_category_bg ?? '#ffffff';
-        $data->theme_category_radius = $request->theme_category_radius ?? '12px';
-        $data->theme_category_shadow = $request->theme_category_shadow ?? '0 2px 8px rgba(0,0,0,0.08)';
-        $data->theme_category_hover_shadow = $request->theme_category_hover_shadow ?? '0 8px 25px rgba(0,0,0,0.15)';
+            // PAGINATION
+            'theme_pagination_size' => '40px',
+            'theme_pagination_radius' => '8px',
+            'theme_pagination_gap' => '5px',
 
-        // ==================================
-        // PAGINATION
-        // ==================================
-        $data->theme_pagination_size = $request->theme_pagination_size ?? '40px';
-        $data->theme_pagination_radius = $request->theme_pagination_radius ?? '8px';
-        $data->theme_pagination_gap = $request->theme_pagination_gap ?? '5px';
+            // ALERTS
+            'theme_alert_radius' => '8px',
+            'theme_alert_padding' => '16px 20px',
 
-        // ==================================
-        // ALERTS
-        // ==================================
-        $data->theme_alert_radius = $request->theme_alert_radius ?? '8px';
-        $data->theme_alert_padding = $request->theme_alert_padding ?? '16px 20px';
+            // BREADCRUMB
+            'theme_breadcrumb_bg' => '#f8f7f7',
+            'theme_breadcrumb_separator' => '/',
+            'theme_breadcrumb_text' => '#796866',
 
-        // ==================================
-        // BREADCRUMB
-        // ==================================
-        $data->theme_breadcrumb_bg = $request->theme_breadcrumb_bg ?? '#f8f7f7';
-        $data->theme_breadcrumb_separator = $request->theme_breadcrumb_separator ?? '/';
-        $data->theme_breadcrumb_text = $request->theme_breadcrumb_text ?? '#796866';
+            // SOCIAL COLORS
+            'theme_facebook' => '#1877f2',
+            'theme_twitter' => '#1da1f2',
+            'theme_instagram' => '#e4405f',
+            'theme_whatsapp' => '#25d366',
+            'theme_youtube' => '#ff0000',
+            'theme_linkedin' => '#0a66c2',
+        ];
 
-        // ==================================
-        // SOCIAL COLORS
-        // ==================================
-        $data->theme_facebook = $request->theme_facebook ?? '#1877f2';
-        $data->theme_twitter = $request->theme_twitter ?? '#1da1f2';
-        $data->theme_instagram = $request->theme_instagram ?? '#e4405f';
-        $data->theme_whatsapp = $request->theme_whatsapp ?? '#25d366';
-        $data->theme_youtube = $request->theme_youtube ?? '#ff0000';
-        $data->theme_linkedin = $request->theme_linkedin ?? '#0a66c2';
-
-        $data->save();
+        // Save all theme settings to platform_settings
+        foreach ($themeDefaults as $key => $default) {
+            $value = $request->$key ?? $default;
+            PlatformSetting::set('theme', $key, $value);
+        }
 
         // Clear cache
-        cache()->forget('muaadhsettings');
+        cache()->forget('platform_settings_context');
 
         // Regenerate CSS file with all theme variables
-        $this->generateThemeCss($data);
+        $this->generateThemeCss(platformSettings());
 
         return back()->with('success', __('Theme Builder Settings Updated Successfully'));
     }
@@ -602,50 +519,50 @@ class MuaadhSettingController extends OperatorBaseController
      * Generate theme CSS file with all database colors
      * Complete Theme Builder System
      */
-    private function generateThemeCss($gs)
+    private function generateThemeCss($ps)
     {
         $cssPath = public_path('assets/front/css/theme-colors.css');
 
         // ==================================
         // PRIMARY COLORS
         // ==================================
-        $primary = $gs->theme_primary ?? '#c3002f';
-        $primaryHover = $gs->theme_primary_hover ?? '#a00025';
-        $primaryDark = $gs->theme_primary_dark ?? '#8a0020';
-        $primaryLight = $gs->theme_primary_light ?? '#fef2f4';
+        $primary = $ps->get('theme_primary', '#c3002f');
+        $primaryHover = $ps->get('theme_primary_hover', '#a00025');
+        $primaryDark = $ps->get('theme_primary_dark', '#8a0020');
+        $primaryLight = $ps->get('theme_primary_light', '#fef2f4');
 
         // ==================================
         // SECONDARY COLORS
         // ==================================
-        $secondary = $gs->theme_secondary ?? '#1f0300';
-        $secondaryHover = $gs->theme_secondary_hover ?? '#351c1a';
-        $secondaryLight = $gs->theme_secondary_light ?? '#4c3533';
+        $secondary = $ps->get('theme_secondary', '#1f0300');
+        $secondaryHover = $ps->get('theme_secondary_hover', '#351c1a');
+        $secondaryLight = $ps->get('theme_secondary_light', '#4c3533');
 
         // ==================================
         // TEXT COLORS
         // ==================================
-        $textPrimary = $gs->theme_text_primary ?? '#1f0300';
-        $textSecondary = $gs->theme_text_secondary ?? '#4c3533';
-        $textMuted = $gs->theme_text_muted ?? '#796866';
-        $textLight = $gs->theme_text_light ?? '#9a8e8c';
+        $textPrimary = $ps->get('theme_text_primary', '#1f0300');
+        $textSecondary = $ps->get('theme_text_secondary', '#4c3533');
+        $textMuted = $ps->get('theme_text_muted', '#796866');
+        $textLight = $ps->get('theme_text_light', '#9a8e8c');
         $textLighter = '#b7aead';
 
         // ==================================
         // BACKGROUND COLORS
         // ==================================
-        $bgBody = $gs->theme_bg_body ?? '#ffffff';
-        $bgLight = $gs->theme_bg_light ?? '#f8f7f7';
+        $bgBody = $ps->get('theme_bg_body', '#ffffff');
+        $bgLight = $ps->get('theme_bg_light', '#f8f7f7');
         $bgLighter = '#f6f6f6';
-        $bgGray = $gs->theme_bg_gray ?? '#e9e6e6';
-        $bgDark = $gs->theme_bg_dark ?? '#030712';
+        $bgGray = $ps->get('theme_bg_gray', '#e9e6e6');
+        $bgDark = $ps->get('theme_bg_dark', '#030712');
 
         // ==================================
         // STATUS COLORS
         // ==================================
-        $success = $gs->theme_success ?? '#27be69';
-        $warning = $gs->theme_warning ?? '#fac03c';
-        $danger = $gs->theme_danger ?? '#f2415a';
-        $info = $gs->theme_info ?? '#0ea5e9';
+        $success = $ps->get('theme_success', '#27be69');
+        $warning = $ps->get('theme_warning', '#fac03c');
+        $danger = $ps->get('theme_danger', '#f2415a');
+        $info = $ps->get('theme_info', '#0ea5e9');
 
         // ==================================
         // AUTO-CALCULATED TEXT-ON COLORS (WCAG Contrast)
@@ -662,212 +579,212 @@ class MuaadhSettingController extends OperatorBaseController
         // ==================================
         // BORDER COLORS
         // ==================================
-        $border = $gs->theme_border ?? '#d9d4d4';
-        $borderLight = $gs->theme_border_light ?? '#e9e6e6';
-        $borderDark = $gs->theme_border_dark ?? '#c7c0bf';
+        $border = $ps->get('theme_border', '#d9d4d4');
+        $borderLight = $ps->get('theme_border_light', '#e9e6e6');
+        $borderDark = $ps->get('theme_border_dark', '#c7c0bf');
 
         // ==================================
         // HEADER & FOOTER
         // ==================================
-        $headerBg = $gs->theme_header_bg ?? '#ffffff';
-        $footerBg = $gs->theme_footer_bg ?? '#030712';
-        $footerText = $gs->theme_footer_text ?? '#ffffff';
-        $footerLinkHover = $gs->theme_footer_link_hover ?? $primary;
+        $headerBg = $ps->get('theme_header_bg', '#ffffff');
+        $footerBg = $ps->get('theme_footer_bg', '#030712');
+        $footerText = $ps->get('theme_footer_text', '#ffffff');
+        $footerLinkHover = $ps->get('theme_footer_link_hover', $primary);
 
         // ==================================
         // TYPOGRAPHY
         // ==================================
-        $fontPrimary = $gs->theme_font_primary ?? 'Poppins';
-        $fontHeading = $gs->theme_font_heading ?? 'Saira';
-        $fontSizeBase = $gs->theme_font_size_base ?? '16px';
-        $fontSizeSm = $gs->theme_font_size_sm ?? '14px';
-        $fontSizeLg = $gs->theme_font_size_lg ?? '18px';
-        $lineHeight = $gs->theme_line_height ?? '1.5';
+        $fontPrimary = $ps->get('theme_font_primary', 'Poppins');
+        $fontHeading = $ps->get('theme_font_heading', 'Saira');
+        $fontSizeBase = $ps->get('theme_font_size_base', '16px');
+        $fontSizeSm = $ps->get('theme_font_size_sm', '14px');
+        $fontSizeLg = $ps->get('theme_font_size_lg', '18px');
+        $lineHeight = $ps->get('theme_line_height', '1.5');
 
         // ==================================
         // BORDER RADIUS
         // ==================================
-        $radiusXs = $gs->theme_radius_xs ?? '3px';
-        $radiusSm = $gs->theme_radius_sm ?? '4px';
-        $radius = $gs->theme_radius ?? '8px';
-        $radiusLg = $gs->theme_radius_lg ?? '12px';
-        $radiusXl = $gs->theme_radius_xl ?? '16px';
-        $radiusPill = $gs->theme_radius_pill ?? '50px';
+        $radiusXs = $ps->get('theme_radius_xs', '3px');
+        $radiusSm = $ps->get('theme_radius_sm', '4px');
+        $radius = $ps->get('theme_radius', '8px');
+        $radiusLg = $ps->get('theme_radius_lg', '12px');
+        $radiusXl = $ps->get('theme_radius_xl', '16px');
+        $radiusPill = $ps->get('theme_radius_pill', '50px');
 
         // ==================================
         // SHADOWS
         // ==================================
-        $shadowXs = $gs->theme_shadow_xs ?? '0 1px 2px rgba(0,0,0,0.04)';
-        $shadowSm = $gs->theme_shadow_sm ?? '0 1px 3px rgba(0,0,0,0.06)';
-        $shadow = $gs->theme_shadow ?? '0 2px 8px rgba(0,0,0,0.1)';
-        $shadowLg = $gs->theme_shadow_lg ?? '0 4px 16px rgba(0,0,0,0.15)';
-        $shadowXl = $gs->theme_shadow_xl ?? '0 8px 30px rgba(0,0,0,0.2)';
+        $shadowXs = $ps->get('theme_shadow_xs', '0 1px 2px rgba(0,0,0,0.04)');
+        $shadowSm = $ps->get('theme_shadow_sm', '0 1px 3px rgba(0,0,0,0.06)');
+        $shadow = $ps->get('theme_shadow', '0 2px 8px rgba(0,0,0,0.1)');
+        $shadowLg = $ps->get('theme_shadow_lg', '0 4px 16px rgba(0,0,0,0.15)');
+        $shadowXl = $ps->get('theme_shadow_xl', '0 8px 30px rgba(0,0,0,0.2)');
 
         // ==================================
         // SPACING
         // ==================================
-        $spacingXs = $gs->theme_spacing_xs ?? '4px';
-        $spacingSm = $gs->theme_spacing_sm ?? '8px';
-        $spacing = $gs->theme_spacing ?? '16px';
-        $spacingLg = $gs->theme_spacing_lg ?? '24px';
-        $spacingXl = $gs->theme_spacing_xl ?? '32px';
+        $spacingXs = $ps->get('theme_spacing_xs', '4px');
+        $spacingSm = $ps->get('theme_spacing_sm', '8px');
+        $spacing = $ps->get('theme_spacing', '16px');
+        $spacingLg = $ps->get('theme_spacing_lg', '24px');
+        $spacingXl = $ps->get('theme_spacing_xl', '32px');
 
         // ==================================
         // BUTTONS
         // ==================================
-        $btnPaddingX = $gs->theme_btn_padding_x ?? '24px';
-        $btnPaddingY = $gs->theme_btn_padding_y ?? '12px';
-        $btnFontSize = $gs->theme_btn_font_size ?? '14px';
-        $btnFontWeight = $gs->theme_btn_font_weight ?? '600';
-        $btnRadius = $gs->theme_btn_radius ?? '8px';
-        $btnShadow = $gs->theme_btn_shadow ?? 'none';
+        $btnPaddingX = $ps->get('theme_btn_padding_x', '24px');
+        $btnPaddingY = $ps->get('theme_btn_padding_y', '12px');
+        $btnFontSize = $ps->get('theme_btn_font_size', '14px');
+        $btnFontWeight = $ps->get('theme_btn_font_weight', '600');
+        $btnRadius = $ps->get('theme_btn_radius', '8px');
+        $btnShadow = $ps->get('theme_btn_shadow', 'none');
 
         // ==================================
         // CARDS
         // ==================================
-        $cardBg = $gs->theme_card_bg ?? '#ffffff';
-        $cardBorder = $gs->theme_card_border ?? '#e9e6e6';
-        $cardRadius = $gs->theme_card_radius ?? '12px';
-        $cardShadow = $gs->theme_card_shadow ?? '0 2px 8px rgba(0,0,0,0.08)';
-        $cardHoverShadow = $gs->theme_card_hover_shadow ?? '0 4px 16px rgba(0,0,0,0.12)';
-        $cardPadding = $gs->theme_card_padding ?? '20px';
+        $cardBg = $ps->get('theme_card_bg', '#ffffff');
+        $cardBorder = $ps->get('theme_card_border', '#e9e6e6');
+        $cardRadius = $ps->get('theme_card_radius', '12px');
+        $cardShadow = $ps->get('theme_card_shadow', '0 2px 8px rgba(0,0,0,0.08)');
+        $cardHoverShadow = $ps->get('theme_card_hover_shadow', '0 4px 16px rgba(0,0,0,0.12)');
+        $cardPadding = $ps->get('theme_card_padding', '20px');
 
         // ==================================
         // HEADER
         // ==================================
-        $headerHeight = $gs->theme_header_height ?? '80px';
-        $headerShadow = $gs->theme_header_shadow ?? '0 2px 10px rgba(0,0,0,0.1)';
-        $headerText = $gs->theme_header_text ?? '#1f0300';
-        $navLinkColor = $gs->theme_nav_link_color ?? '#1f0300';
-        $navLinkHover = $gs->theme_nav_link_hover ?? '#c3002f';
-        $navFontSize = $gs->theme_nav_font_size ?? '15px';
-        $navFontWeight = $gs->theme_nav_font_weight ?? '500';
+        $headerHeight = $ps->get('theme_header_height', '80px');
+        $headerShadow = $ps->get('theme_header_shadow', '0 2px 10px rgba(0,0,0,0.1)');
+        $headerText = $ps->get('theme_header_text', '#1f0300');
+        $navLinkColor = $ps->get('theme_nav_link_color', '#1f0300');
+        $navLinkHover = $ps->get('theme_nav_link_hover', '#c3002f');
+        $navFontSize = $ps->get('theme_nav_font_size', '15px');
+        $navFontWeight = $ps->get('theme_nav_font_weight', '500');
 
         // ==================================
         // FOOTER (Extended)
         // ==================================
-        $footerPadding = $gs->theme_footer_padding ?? '60px';
-        $footerTextMuted = $gs->theme_footer_text_muted ?? '#d9d4d4';
-        $footerLink = $gs->theme_footer_link ?? '#ffffff';
-        $footerBorder = $gs->theme_footer_border ?? '#374151';
+        $footerPadding = $ps->get('theme_footer_padding', '60px');
+        $footerTextMuted = $ps->get('theme_footer_text_muted', '#d9d4d4');
+        $footerLink = $ps->get('theme_footer_link', '#ffffff');
+        $footerBorder = $ps->get('theme_footer_border', '#374151');
 
         // ==================================
         // ITEM CARDS
         // ==================================
-        $itemNameSize = $gs->theme_item_name_size ?? '14px';
-        $itemNameWeight = $gs->theme_item_name_weight ?? '500';
-        $itemPriceSize = $gs->theme_item_price_size ?? '16px';
-        $itemPriceWeight = $gs->theme_item_price_weight ?? '700';
-        $itemCardRadius = $gs->theme_item_card_radius ?? '12px';
-        $itemImgRadius = $gs->theme_item_img_radius ?? '8px';
-        $itemHoverScale = $gs->theme_item_hover_scale ?? '1.02';
+        $itemNameSize = $ps->get('theme_item_name_size', '14px');
+        $itemNameWeight = $ps->get('theme_item_name_weight', '500');
+        $itemPriceSize = $ps->get('theme_item_price_size', '16px');
+        $itemPriceWeight = $ps->get('theme_item_price_weight', '700');
+        $itemCardRadius = $ps->get('theme_item_card_radius', '12px');
+        $itemImgRadius = $ps->get('theme_item_img_radius', '8px');
+        $itemHoverScale = $ps->get('theme_item_hover_scale', '1.02');
 
         // ==================================
         // MODALS
         // ==================================
-        $modalBg = $gs->theme_modal_bg ?? '#ffffff';
-        $modalRadius = $gs->theme_modal_radius ?? '16px';
-        $modalShadow = $gs->theme_modal_shadow ?? '0 25px 50px rgba(0,0,0,0.25)';
-        $modalBackdrop = $gs->theme_modal_backdrop ?? 'rgba(0,0,0,0.5)';
-        $modalHeaderBg = $gs->theme_modal_header_bg ?? '#f8f7f7';
+        $modalBg = $ps->get('theme_modal_bg', '#ffffff');
+        $modalRadius = $ps->get('theme_modal_radius', '16px');
+        $modalShadow = $ps->get('theme_modal_shadow', '0 25px 50px rgba(0,0,0,0.25)');
+        $modalBackdrop = $ps->get('theme_modal_backdrop', 'rgba(0,0,0,0.5)');
+        $modalHeaderBg = $ps->get('theme_modal_header_bg', '#f8f7f7');
 
         // ==================================
         // TABLES
         // ==================================
-        $tableHeaderBg = $gs->theme_table_header_bg ?? '#f8f7f7';
-        $tableHeaderText = $gs->theme_table_header_text ?? '#1f0300';
-        $tableBorder = $gs->theme_table_border ?? '#e9e6e6';
-        $tableHoverBg = $gs->theme_table_hover_bg ?? '#f8f7f7';
-        $tableStripeBg = $gs->theme_table_stripe_bg ?? '#fafafa';
+        $tableHeaderBg = $ps->get('theme_table_header_bg', '#f8f7f7');
+        $tableHeaderText = $ps->get('theme_table_header_text', '#1f0300');
+        $tableBorder = $ps->get('theme_table_border', '#e9e6e6');
+        $tableHoverBg = $ps->get('theme_table_hover_bg', '#f8f7f7');
+        $tableStripeBg = $ps->get('theme_table_stripe_bg', '#fafafa');
 
         // ==================================
         // FORMS
         // ==================================
-        $inputHeight = $gs->theme_input_height ?? '48px';
-        $inputBg = $gs->theme_input_bg ?? '#ffffff';
-        $inputBorder = $gs->theme_input_border ?? '#d9d4d4';
-        $inputRadius = $gs->theme_input_radius ?? '8px';
-        $inputFocusBorder = $gs->theme_input_focus_border ?? '#c3002f';
-        $inputFocusShadow = $gs->theme_input_focus_shadow ?? '0 0 0 3px rgba(195,0,47,0.1)';
-        $inputPlaceholder = $gs->theme_input_placeholder ?? '#9a8e8c';
+        $inputHeight = $ps->get('theme_input_height', '48px');
+        $inputBg = $ps->get('theme_input_bg', '#ffffff');
+        $inputBorder = $ps->get('theme_input_border', '#d9d4d4');
+        $inputRadius = $ps->get('theme_input_radius', '8px');
+        $inputFocusBorder = $ps->get('theme_input_focus_border', '#c3002f');
+        $inputFocusShadow = $ps->get('theme_input_focus_shadow', '0 0 0 3px rgba(195,0,47,0.1)');
+        $inputPlaceholder = $ps->get('theme_input_placeholder', '#9a8e8c');
 
         // ==================================
         // BADGES
         // ==================================
-        $badgeRadius = $gs->theme_badge_radius ?? '20px';
-        $badgePadding = $gs->theme_badge_padding ?? '4px 12px';
-        $badgeFontSize = $gs->theme_badge_font_size ?? '12px';
-        $badgeFontWeight = $gs->theme_badge_font_weight ?? '600';
+        $badgeRadius = $ps->get('theme_badge_radius', '20px');
+        $badgePadding = $ps->get('theme_badge_padding', '4px 12px');
+        $badgeFontSize = $ps->get('theme_badge_font_size', '12px');
+        $badgeFontWeight = $ps->get('theme_badge_font_weight', '600');
 
         // ==================================
         // CHIPS
         // ==================================
-        $chipBg = $gs->theme_chip_bg ?? '#f8f7f7';
-        $chipText = $gs->theme_chip_text ?? '#4c3533';
-        $chipRadius = $gs->theme_chip_radius ?? '6px';
-        $chipBorder = $gs->theme_chip_border ?? '#e9e6e6';
+        $chipBg = $ps->get('theme_chip_bg', '#f8f7f7');
+        $chipText = $ps->get('theme_chip_text', '#4c3533');
+        $chipRadius = $ps->get('theme_chip_radius', '6px');
+        $chipBorder = $ps->get('theme_chip_border', '#e9e6e6');
 
         // ==================================
         // SCROLLBAR
         // ==================================
-        $scrollbarWidth = $gs->theme_scrollbar_width ?? '10px';
-        $scrollbarTrack = $gs->theme_scrollbar_track ?? '#f1f1f1';
-        $scrollbarThumb = $gs->theme_scrollbar_thumb ?? '#c1c1c1';
-        $scrollbarThumbHover = $gs->theme_scrollbar_thumb_hover ?? '#a1a1a1';
+        $scrollbarWidth = $ps->get('theme_scrollbar_width', '10px');
+        $scrollbarTrack = $ps->get('theme_scrollbar_track', '#f1f1f1');
+        $scrollbarThumb = $ps->get('theme_scrollbar_thumb', '#c1c1c1');
+        $scrollbarThumbHover = $ps->get('theme_scrollbar_thumb_hover', '#a1a1a1');
 
         // ==================================
         // TRANSITIONS
         // ==================================
-        $transitionFast = $gs->theme_transition_fast ?? 'all 0.15s ease';
-        $transition = $gs->theme_transition ?? 'all 0.3s ease';
-        $transitionSlow = $gs->theme_transition_slow ?? 'all 0.5s ease';
+        $transitionFast = $ps->get('theme_transition_fast', 'all 0.15s ease');
+        $transition = $ps->get('theme_transition', 'all 0.3s ease');
+        $transitionSlow = $ps->get('theme_transition_slow', 'all 0.5s ease');
 
         // ==================================
         // SEARCH COMPONENT
         // ==================================
-        $searchBg = $gs->theme_search_bg ?? '#ffffff';
-        $searchBorder = $gs->theme_search_border ?? '#e9e6e6';
-        $searchRadius = $gs->theme_search_radius ?? '50px';
-        $searchHeight = $gs->theme_search_height ?? '50px';
-        $searchShadow = $gs->theme_search_shadow ?? '0 4px 15px rgba(0,0,0,0.08)';
+        $searchBg = $ps->get('theme_search_bg', '#ffffff');
+        $searchBorder = $ps->get('theme_search_border', '#e9e6e6');
+        $searchRadius = $ps->get('theme_search_radius', '50px');
+        $searchHeight = $ps->get('theme_search_height', '50px');
+        $searchShadow = $ps->get('theme_search_shadow', '0 4px 15px rgba(0,0,0,0.08)');
 
         // ==================================
         // CATEGORY CARDS
         // ==================================
-        $categoryBg = $gs->theme_category_bg ?? '#ffffff';
-        $categoryRadius = $gs->theme_category_radius ?? '12px';
-        $categoryShadow = $gs->theme_category_shadow ?? '0 2px 8px rgba(0,0,0,0.08)';
-        $categoryHoverShadow = $gs->theme_category_hover_shadow ?? '0 8px 25px rgba(0,0,0,0.15)';
+        $categoryBg = $ps->get('theme_category_bg', '#ffffff');
+        $categoryRadius = $ps->get('theme_category_radius', '12px');
+        $categoryShadow = $ps->get('theme_category_shadow', '0 2px 8px rgba(0,0,0,0.08)');
+        $categoryHoverShadow = $ps->get('theme_category_hover_shadow', '0 8px 25px rgba(0,0,0,0.15)');
 
         // ==================================
         // PAGINATION
         // ==================================
-        $paginationSize = $gs->theme_pagination_size ?? '40px';
-        $paginationRadius = $gs->theme_pagination_radius ?? '8px';
-        $paginationGap = $gs->theme_pagination_gap ?? '5px';
+        $paginationSize = $ps->get('theme_pagination_size', '40px');
+        $paginationRadius = $ps->get('theme_pagination_radius', '8px');
+        $paginationGap = $ps->get('theme_pagination_gap', '5px');
 
         // ==================================
         // ALERTS
         // ==================================
-        $alertRadius = $gs->theme_alert_radius ?? '8px';
-        $alertPadding = $gs->theme_alert_padding ?? '16px 20px';
+        $alertRadius = $ps->get('theme_alert_radius', '8px');
+        $alertPadding = $ps->get('theme_alert_padding', '16px 20px');
 
         // ==================================
         // BREADCRUMB
         // ==================================
-        $breadcrumbBg = $gs->theme_breadcrumb_bg ?? '#f8f7f7';
-        $breadcrumbSeparator = $gs->theme_breadcrumb_separator ?? '/';
-        $breadcrumbText = $gs->theme_breadcrumb_text ?? '#796866';
+        $breadcrumbBg = $ps->get('theme_breadcrumb_bg', '#f8f7f7');
+        $breadcrumbSeparator = $ps->get('theme_breadcrumb_separator', '/');
+        $breadcrumbText = $ps->get('theme_breadcrumb_text', '#796866');
 
         // ==================================
         // SOCIAL COLORS
         // ==================================
-        $facebook = $gs->theme_facebook ?? '#1877f2';
-        $twitter = $gs->theme_twitter ?? '#1da1f2';
-        $instagram = $gs->theme_instagram ?? '#e4405f';
-        $whatsapp = $gs->theme_whatsapp ?? '#25d366';
-        $youtube = $gs->theme_youtube ?? '#ff0000';
-        $linkedin = $gs->theme_linkedin ?? '#0a66c2';
+        $facebook = $ps->get('theme_facebook', '#1877f2');
+        $twitter = $ps->get('theme_twitter', '#1da1f2');
+        $instagram = $ps->get('theme_instagram', '#e4405f');
+        $whatsapp = $ps->get('theme_whatsapp', '#25d366');
+        $youtube = $ps->get('theme_youtube', '#ff0000');
+        $linkedin = $ps->get('theme_linkedin', '#0a66c2');
 
         // Convert hex to RGB for opacity usage
         $primaryRgb = $this->hexToRgb($primary);

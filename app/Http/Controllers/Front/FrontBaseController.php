@@ -20,9 +20,9 @@ class FrontBaseController extends Controller
     public function __construct()
     {
         //$this->auth_guests();
-        // Set Global MuaadhSettings
+        // Set Global Platform Settings (via PlatformSettingsService)
 
-        $this->gs = DB::table('muaadhsettings')->first();
+        $this->gs = platformSettings();
 //
 //        // Set Global PageSettings
 //

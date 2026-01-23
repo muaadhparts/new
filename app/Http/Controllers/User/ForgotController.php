@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Models\Muaadhsetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -30,7 +29,7 @@ class ForgotController extends Controller
 
     public function forgot(Request $request)
     {
-        $gs = Muaadhsetting::findOrFail(1);
+        $ps = platformSettings();
         $input = $request->all();
         if (User::where('email', '=', $request->email)->count() > 0) {
             // user found
@@ -40,7 +39,7 @@ class ForgotController extends Controller
             $user->update($input);
             $subject = "Reset Password Request";
             $msg = "Your New Password is : " . $autopass;
-            if ($gs->mail_driver) {
+            if ($ps->get('mail_driver')) {
                 $data = [
                     'to' => $request->email,
                     'subject' => $subject,
@@ -50,7 +49,7 @@ class ForgotController extends Controller
                 $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
-                $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+                $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
                 mail($request->email, $subject, $msg, $headers);
             }
             return back()->with('success', 'New Password has been sent to your email.');

@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Models\MerchantCommission;
 use App\Models\MerchantPurchase;
-use App\Models\Muaadhsetting;
 use App\Models\Purchase;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -31,8 +30,6 @@ class FixPurchaseData extends Command
         if ($dryRun) {
             $this->info('DRY RUN MODE - No changes will be made');
         }
-
-        $gs = Muaadhsetting::find(1);
 
         // Get all purchases
         $purchases = Purchase::with('merchantPurchases')->get();

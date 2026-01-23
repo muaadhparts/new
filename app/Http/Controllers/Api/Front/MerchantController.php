@@ -8,7 +8,6 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\MerchantResource;
 use App\Models\ChatThread;
-use App\Models\Muaadhsetting;
 use App\Models\ChatEntry;
 use App\Models\CatalogItem;
 use App\Models\User;
@@ -119,13 +118,13 @@ class MerchantController extends Controller
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Merchant not found."]]);
             }
 
-            $gs = Muaadhsetting::find(1);
+            $ps = platformSettings();
             $subject = $request->subject;
             $to = $merchant->email;
             $name = $user->name;
             $from = $user->email;
             $msg = "Name: " . $name . "\nEmail: " . $from . "\nMessage: " . $request->message;
-            if ($gs->mail_driver) {
+            if ($ps->get('mail_driver')) {
                 $data = [
                     'to' => $to,
                     'subject' => $subject,
@@ -135,7 +134,7 @@ class MerchantController extends Controller
                 $mailer = new MuaadhMailer();
                 $mailer->sendCustomMail($data);
             } else {
-                $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+                $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
                 mail($to, $subject, $msg, $headers);
             }
 

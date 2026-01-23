@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Models\Muaadhsetting;
 use App\Models\CatalogEvent;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -16,13 +15,9 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
+        $ps = platformSettings();
 
-       
-    
-
-        $gs = Muaadhsetting::findOrFail(1);
-
-        if ($gs->is_capcha == 1) {
+        if ($ps->get('is_capcha') == 1) {
             $request->validate(
                 [
                     'g-recaptcha-response' => 'required',
@@ -68,7 +63,7 @@ class RegisterController extends Controller
         
         $user->fill($input)->save();
 
-        if ($gs->is_verification_email == 1) {
+        if ($ps->get('is_verification_email') == 1) {
             $to = $request->email;
             $subject = 'Verify your email address.';
             $msg = "Dear Customer,<br>We noticed that you need to verify your email address.<br>Simply click the link below to verify. <a href=" . url('user/register/verify/' . $token) . ">" . url('user/register/verify/' . $token) . "</a>";
@@ -122,9 +117,7 @@ class RegisterController extends Controller
 
     public function token($token)
     {
-        $gs = Muaadhsetting::findOrFail(1);
-
-        if ($gs->is_verification_email == 1) {
+        if (setting('is_verification_email') == 1) {
             $user = User::where('verification_link', '=', $token)->first();
             if (isset($user)) {
                 $user->email_verified = 'Yes';

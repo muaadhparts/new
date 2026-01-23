@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Courier;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\Muaadhsetting;
 use App\Models\User;
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Front\FrontBaseController;
@@ -26,9 +25,7 @@ class RegisterController extends FrontBaseController
 
 	public function token($token)
 	{
-		$gs = Muaadhsetting::findOrFail(1);
-
-		if ($gs->is_verification_email == 1) {
+		if (setting('is_verification_email') == 1) {
 			$user = User::where('verification_link', '=', $token)->first();
 			if (isset($user)) {
 				$user->email_verified = 'Yes';

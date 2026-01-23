@@ -207,10 +207,10 @@ class MerchantPriceCalculator
     public function formatPrice(float $amount): string
     {
         $converted = $this->convertToCurrency($amount);
-        $gs = \DB::table('muaadhsettings')->first();
+        $ps = platformSettings();
         $currency = $this->getMonetaryUnit();
 
-        if ($gs && $gs->currency_format == 0) {
+        if ($ps->get('currency_format', 0) == 0) {
             return $currency->sign . number_format($converted, 2);
         }
         return number_format($converted, 2) . $currency->sign;

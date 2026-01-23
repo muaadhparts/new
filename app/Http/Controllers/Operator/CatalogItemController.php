@@ -352,13 +352,13 @@ class CatalogItemController extends OperatorBaseController
      */
     public function settingUpdate(Request $request)
     {
-        $data = \App\Models\Muaadhsetting::findOrFail(1);
-
         $input = $request->only(['wholesell', 'page_count', 'favorite_count']);
 
-        cache()->forget('muaadhsettings');
+        foreach ($input as $key => $value) {
+            \App\Models\PlatformSetting::set('catalog', $key, $value);
+        }
 
-        $data->update($input);
+        cache()->forget('platform_settings_context');
 
         return response()->json(__('Data Updated Successfully.'));
     }

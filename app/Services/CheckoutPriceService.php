@@ -75,10 +75,8 @@ class CheckoutPriceService
      */
     protected function loadSettings(): void
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-            return DB::table('muaadhsettings')->first();
-        });
-        $this->currencyFormat = $gs->currency_format ?? 0;
+        $ps = platformSettings();
+        $this->currencyFormat = $ps->get('currency_format', 0);
     }
 
     // ========================================================================

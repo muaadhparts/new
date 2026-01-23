@@ -65,7 +65,7 @@ class FrontendController extends FrontBaseController
                 ->where('affilate_code', '=', $request->reff)
                 ->first();
             if (!empty($affilate_user)) {
-                if ($gs->is_affilate == 1) {
+                if ($gs->get('is_affilate') == 1) {
                     Session::put('affilate', $affilate_user->id);
                     return redirect()->route('front.index');
                 }
@@ -153,7 +153,7 @@ class FrontendController extends FrontBaseController
     {
         $gs = $this->gs;
 
-        if ($gs->is_capcha == 1) {
+        if ($gs->get('is_capcha') == 1) {
             $request->validate([
                 "g-recaptcha-response" => "required",
             ],
@@ -170,7 +170,7 @@ class FrontendController extends FrontBaseController
         $phone = $request->phone;
         $from = $request->email;
         $msg = "Name: " . $name . "\nEmail: " . $from . "\nPhone: " . $phone . "\nMessage: " . $request->text;
-        if ($gs->mail_driver) {
+        if ($gs->get('mail_driver')) {
             $data = [
                 'to' => $to,
                 'subject' => $subject,
@@ -180,7 +180,7 @@ class FrontendController extends FrontBaseController
             $mailer = new MuaadhMailer();
             $mailer->sendCustomMail($data);
         } else {
-            $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+            $headers = "From: " . $gs->get('from_name') . "<" . $gs->get('from_email') . ">";
             mail($to, $subject, $msg, $headers);
         }
 
@@ -227,7 +227,7 @@ class FrontendController extends FrontBaseController
     public function maintenance()
     {
         $gs = $this->gs;
-        if ($gs->is_maintain != 1) {
+        if ($gs->get('is_maintain') != 1) {
             return redirect()->route('front.index');
         }
 
@@ -249,7 +249,7 @@ class FrontendController extends FrontBaseController
             $days = $secs / 86400;
             if ($days <= 5) {
                 if ($user->mail_sent == 1) {
-                    if ($settings->mail_driver) {
+                    if ($settings->get('mail_driver')) {
                         $data = [
                             'to' => $user->email,
                             'type' => "subscription_warning",
@@ -262,7 +262,7 @@ class FrontendController extends FrontBaseController
                         $mailer = new MuaadhMailer();
                         $mailer->sendAutoMail($data);
                     } else {
-                        $headers = "From: " . $settings->from_name . "<" . $settings->from_email . ">";
+                        $headers = "From: " . $settings->get('from_name') . "<" . $settings->get('from_email') . ">";
                         mail($user->email, __('Your subscription plan duration will end after five days. Please renew your plan otherwise all of your catalogItems will be deactivated.Thank You.'), $headers);
                     }
                     DB::table('users')->where('id', $user->id)->update(['mail_sent' => 0]);
@@ -338,11 +338,9 @@ class FrontendController extends FrontBaseController
 
     public function updateFinalize(Request $request)
     {
-
         if ($request->has('version')) {
-            Muaadhsetting::first()->update([
-                'version' => $request->version,
-            ]);
+            \App\Models\PlatformSetting::set('system', 'version', $request->version);
+            cache()->forget('platform_settings_context');
             Artisan::call('cache:clear');
             Artisan::call('config:clear');
             Artisan::call('route:clear');

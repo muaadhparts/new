@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Models\Muaadhsetting;
 
 class UserResource extends JsonResource
 {
@@ -15,15 +14,13 @@ class UserResource extends JsonResource
      */
     public function toArray($request)
     {
-      $gs = Muaadhsetting::first();
-
       return [
         'id' => $this->id,
         'full_name' => $this->name,
         'phone' => $this->phone,
         'email' => $this->email,
         'fax' => $this->fax,
-        'propic' => $this->photo ? url('/') . '/assets/images/users/' . $this->photo : url('/') . '/assets/images/'.$gs->user_image,
+        'propic' => $this->photo ? url('/') . '/assets/images/users/' . $this->photo : url('/') . '/assets/images/' . setting('user_image'),
         'zip_code' => $this->zip,
         'city' => $this->city,
         'country' => $this->country,

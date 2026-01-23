@@ -4,94 +4,55 @@ namespace App\Services\GlobalData\Contexts;
 
 use App\Services\PlatformSettingsService;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
 
 /**
  * CoreSettingsContext
  *
- * إعدادات النظام الأساسية - UNIFIED SETTINGS SYSTEM
+ * UNIFIED SETTINGS SYSTEM - NO LEGACY FALLBACK
  *
- * يستخدم platform_settings الجديد مع fallback للجداول القديمة
- * أثناء فترة الانتقال. بعد اكتمال النقل، سيتم حذف الـ fallback.
+ * This context provides platform settings via PlatformSettingsService ONLY.
+ * No fallback to muaadhsettings or any legacy table.
  *
- * الجداول القديمة (سيتم حذفها):
- * - muaadhsettings → platform_settings
- * - frontend_settings → تم حذفه
- * - seotools → platform_settings
- * - connect_configs → platform_settings
- * - typefaces → حذف (لا خطوط مخصصة)
+ * Usage in views: platformSetting('group', 'key') or app(PlatformSettingsService::class)
+ * DO NOT use $gs - it is banned.
  */
 class CoreSettingsContext implements ContextInterface
 {
     private ?object $settings = null;
-    private ?object $seoSettings = null;
+    private ?array $seoSettings = null;
 
     public function load(): void
     {
-        // Try new system first, fallback to old
         $this->settings = $this->loadSettings();
         $this->seoSettings = $this->loadSeoSettings();
     }
 
     /**
-     * Load settings - prefer new system, fallback to old
+     * Load settings from PlatformSettingsService ONLY
+     * NO FALLBACK - fails explicitly if service unavailable
      */
-    private function loadSettings(): ?object
+    private function loadSettings(): object
     {
-        return Cache::remember('core_settings_unified', 3600, function () {
-            // Try new platform_settings system
-            if (Schema::hasTable('platform_settings')) {
-                try {
-                    $service = app(PlatformSettingsService::class);
-                    return $service->all();
-                } catch (\Exception $e) {
-                    // Fall through to legacy
-                }
-            }
-
-            // Fallback to old muaadhsettings
-            if (Schema::hasTable('muaadhsettings')) {
-                return DB::table('muaadhsettings')->first();
-            }
-
-            return (object) [];
+        return Cache::remember('platform_settings_context', 3600, function () {
+            $service = app(PlatformSettingsService::class);
+            return $service->all();
         });
     }
 
     /**
-     * Load SEO settings
+     * Load SEO settings from platform_settings ONLY
      */
-    private function loadSeoSettings(): ?object
+    private function loadSeoSettings(): array
     {
-        return Cache::remember('core_seo_unified', 3600, function () {
-            // Try new platform_settings
-            if (Schema::hasTable('platform_settings')) {
-                $seo = DB::table('platform_settings')
-                    ->where('group', 'seo')
-                    ->get()
-                    ->keyBy('key')
-                    ->map(fn($item) => json_decode($item->value))
-                    ->toArray();
-
-                if (!empty($seo)) {
-                    return (object) $seo;
-                }
-            }
-
-            // Fallback to old seotools
-            if (Schema::hasTable('seotools')) {
-                return DB::table('seotools')->first();
-            }
-
-            return (object) [];
+        return Cache::remember('platform_seo_settings', 3600, function () {
+            return \App\Models\PlatformSetting::getGroup('seo');
         });
     }
 
     public function toArray(): array
     {
         return [
-            'gs' => $this->settings,
+            'platformSettings' => $this->settings,
             'seo' => $this->seoSettings,
         ];
     }
@@ -100,18 +61,16 @@ class CoreSettingsContext implements ContextInterface
     {
         $this->settings = null;
         $this->seoSettings = null;
-        Cache::forget('core_settings_unified');
-        Cache::forget('core_seo_unified');
+        Cache::forget('platform_settings_context');
+        Cache::forget('platform_seo_settings');
     }
-
-    // === Getters ===
 
     public function getSettings(): ?object
     {
         return $this->settings;
     }
 
-    public function getSeoSettings(): ?object
+    public function getSeoSettings(): ?array
     {
         return $this->seoSettings;
     }

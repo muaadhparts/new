@@ -15,7 +15,7 @@ class OperatorBaseController extends Controller
     public function __construct()
     {
         $this->middleware('auth:operator');
-        $this->gs = DB::table('muaadhsettings')->find(1);
+        $this->gs = platformSettings();
         $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
         $this->curr = DB::table('monetary_units')->where('is_default', '=', 1)->first();
 

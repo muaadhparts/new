@@ -19,8 +19,8 @@ class MerchantBaseController extends Controller
 
     public function __construct()
     {
-        // Set Global MuaadhSettings (يمكن الوصول إليه بدون auth)
-        $this->gs = DB::table('muaadhsettings')->find(1);
+        // Set Global Platform Settings (يمكن الوصول إليه بدون auth)
+        $this->gs = platformSettings();
 
         // Middleware للتحقق من المصادقة والإعدادات العامة
         $this->middleware(function ($request, $next) {

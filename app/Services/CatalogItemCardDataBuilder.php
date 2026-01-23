@@ -192,15 +192,11 @@ class CatalogItemCardDataBuilder
     }
 
     /**
-     * Load muaadh settings (cached 24 hours)
+     * Load platform settings (via PlatformSettingsService)
      */
     private function loadMuaadhSettings(): void
     {
-        $this->muaadhSettings = Cache::remember(
-            'muaadhsettings',
-            86400,
-            fn() => DB::table('muaadhsettings')->first()
-        );
+        $this->muaadhSettings = platformSettings();
     }
 
     /**

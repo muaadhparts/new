@@ -11,21 +11,16 @@ class PriceHelper
 
     public static function showPrice($price)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-            return DB::table('muaadhsettings')->first();
-        });
+        $ps = platformSettings();
         if (is_numeric($price) && floor($price) != $price) {
-            return number_format($price, 2, $gs->decimal_separator, $gs->thousand_separator);
+            return number_format($price, 2, $ps->get('decimal_separator', '.'), $ps->get('thousand_separator', ','));
         } else {
-            return number_format($price, 0, $gs->decimal_separator, $gs->thousand_separator);
+            return number_format($price, 0, $ps->get('decimal_separator', '.'), $ps->get('thousand_separator', ','));
         }
     }
 
     public static function apishowPrice($price)
     {
-        $gs = cache()->remember('muaadhsettings', now()->addDay(), function () {
-            return DB::table('muaadhsettings')->first();
-        });
         if (is_numeric($price) && floor($price) != $price) {
             return round($price, 2);
         } else {

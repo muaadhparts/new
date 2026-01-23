@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\MerchantPurchase;
-use App\Models\Muaadhsetting;
 use App\Models\User;
 
 /**
@@ -68,20 +67,21 @@ class InvoiceSellerService
      */
     protected function getPlatformInfo(): array
     {
-        $gs = Muaadhsetting::first();
+        $ps = platformSettings();
 
+        $invoiceLogo = $ps->get('invoice_logo');
         $logoUrl = null;
-        if (!empty($gs->invoice_logo)) {
-            $logoUrl = asset('assets/images/' . $gs->invoice_logo);
+        if (!empty($invoiceLogo)) {
+            $logoUrl = asset('assets/images/' . $invoiceLogo);
         }
 
         return [
-            'name' => $gs->site_name ?? 'Platform',
-            'name_ar' => $gs->site_name_ar ?? $gs->site_name ?? 'Platform',
-            'logo' => $gs->invoice_logo ?? null,
+            'name' => $ps->get('site_name', 'Platform'),
+            'name_ar' => $ps->get('site_name_ar') ?? $ps->get('site_name', 'Platform'),
+            'logo' => $invoiceLogo,
             'logo_url' => $logoUrl,
-            'address' => $gs->shop_address ?? '',
-            'phone' => $gs->phone ?? '',
+            'address' => $ps->get('shop_address', ''),
+            'phone' => $ps->get('phone', ''),
             'is_platform' => true,
         ];
     }

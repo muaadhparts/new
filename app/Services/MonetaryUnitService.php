@@ -443,21 +443,14 @@ class MonetaryUnitService
     // ========================================================================
 
     /**
-     * Load settings from muaadhsettings
+     * Load settings from platform_settings
      */
     protected function loadSettings(): void
     {
-        $gs = Cache::remember('muaadhsettings_monetary', self::CACHE_TTL, function () {
-            return DB::table('muaadhsettings')
-                ->select('currency_format', 'decimal_separator', 'thousand_separator')
-                ->first();
-        });
+        $ps = platformSettings();
 
-        if ($gs) {
-            // Note: database column is still 'currency_format' for compatibility
-            $this->format = (int) ($gs->currency_format ?? 0);
-            $this->decimalSeparator = $gs->decimal_separator ?? '.';
-            $this->thousandSeparator = $gs->thousand_separator ?? ',';
-        }
+        $this->format = (int) ($ps->get('currency_format', 0));
+        $this->decimalSeparator = $ps->get('decimal_separator', '.');
+        $this->thousandSeparator = $ps->get('thousand_separator', ',');
     }
 }

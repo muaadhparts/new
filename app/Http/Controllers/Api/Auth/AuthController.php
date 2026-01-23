@@ -3,8 +3,7 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\{
-  Models\User,
-  Models\Muaadhsetting
+  Models\User
 };
 
 use App\{
@@ -47,7 +46,7 @@ class AuthController extends Controller
         return response()->json(['status' => false, 'data' => [], 'error' => $validator->errors()]);
       }
 
-      $gs = Muaadhsetting::first();
+      $ps = platformSettings();
 
       $user = new User;
       $user->name = $request->fullname;
@@ -56,16 +55,17 @@ class AuthController extends Controller
       $user->address = $request->address;
       $user->password = bcrypt($request->password);
 
-      if ($gs->is_verification_email == 0) {
+      if ($ps->get('is_verification_email') == 0) {
         $user->email_verified = 'Yes';
       }
 
-      if ($gs->is_verification_email == 1) {
+      if ($ps->get('is_verification_email') == 1) {
+        $token = md5(time() . $request->fullname . $request->email);
         $to = $request->email;
         $subject = 'Verify your email address.';
         $msg = "Dear Customer,<br> We noticed that you need to verify your email address. <a href=" . url('user/register/verify/' . $token) . ">Simply click here to verify. </a>";
         //Sending Email To Customer
-        if ($gs->mail_driver) {
+        if ($ps->get('mail_driver')) {
           $data = [
             'to' => $to,
             'subject' => $subject,
@@ -75,7 +75,7 @@ class AuthController extends Controller
           $mailer = new MuaadhMailer();
           $mailer->sendCustomMail($data);
         } else {
-          $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+          $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
           mail($to, $subject, $msg, $headers);
         }
       }
@@ -218,7 +218,7 @@ class AuthController extends Controller
 
   public function sendVerificationCode(Request $request)
   {
-    $gs = Muaadhsetting::first();
+    $ps = platformSettings();
   }
 
   /**
@@ -256,7 +256,7 @@ class AuthController extends Controller
 
   public function forgot(Request $request)
   {
-    $gs = Muaadhsetting::findOrFail(1);
+    $ps = platformSettings();
     $user = User::where('email', $request->email)->first();
     if ($user) {
 
@@ -267,7 +267,7 @@ class AuthController extends Controller
       $user->reset_token = $token;
       $user->update();
 
-      if ($gs->mail_driver) {
+      if ($ps->get('mail_driver')) {
         $data = [
           'to' => $request->email,
           'subject' => $subject,
@@ -277,7 +277,7 @@ class AuthController extends Controller
         $mailer = new MuaadhMailer();
         $mailer->sendCustomMail($data);
       } else {
-        $headers = "From: " . $gs->from_name . "<" . $gs->from_email . ">";
+        $headers = "From: " . $ps->get('from_name') . "<" . $ps->get('from_email') . ">";
         mail($request->email, $subject, $msg, $headers);
       }
 
