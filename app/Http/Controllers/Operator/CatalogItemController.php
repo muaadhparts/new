@@ -356,10 +356,6 @@ class CatalogItemController extends OperatorBaseController
 
         $input = $request->only(['wholesell', 'page_count', 'favorite_count']);
 
-        if (!empty($request->item_page)) {
-            $input['item_page'] = implode(',', $request->item_page);
-        }
-
         cache()->forget('muaadhsettings');
 
         $data->update($input);

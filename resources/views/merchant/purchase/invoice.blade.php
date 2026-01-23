@@ -43,10 +43,19 @@
 
         <!-- Merchant Purchase Invoice start  -->
         <div class="gs-merchant-purchase-invoice">
-            <!-- purchase address info -->
+            <!-- Invoice Seller Header - Based on payment_owner_id -->
             <div class="user-purchase-name-wrapper">
-                <div>
-                    <h4 class="purchase-number">{{ $gs->site_name ?? 'MUAADH EPC' }}</h4>
+                <div class="d-flex align-items-center gap-3">
+                    @if($sellerInfo['logo_url'])
+                        <img src="{{ $sellerInfo['logo_url'] }}" alt="{{ $sellerInfo['name'] }}"
+                            style="width: 150px; height: auto; object-fit: contain;">
+                    @endif
+                    <div>
+                        <h4 class="purchase-number mb-0">{{ $sellerInfo['name'] }}</h4>
+                        @if($sellerInfo['address'])
+                            <small class="text-muted">{{ $sellerInfo['address'] }}</small>
+                        @endif
+                    </div>
                 </div>
 
                 <a href="{{route('merchant-purchase-print',$purchase->purchase_number)}}" class="m-btn m-btn--secondary" type="button">

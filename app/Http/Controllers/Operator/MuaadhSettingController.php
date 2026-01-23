@@ -173,13 +173,6 @@ class MuaadhSettingController extends OperatorBaseController
                 $input['footer_logo'] = $name;
             }
 
-            // Handle catalog item page display options
-            if (!empty($request->item_page)) {
-                $input['item_page'] = implode(',', $request->item_page);
-            } else {
-                $input['item_page'] = null;
-            }
-
             if ($request->capcha_secret_key) {
                 $this->setEnv('NOCAPTCHA_SECRET', $request->capcha_secret_key, env('NOCAPTCHA_SECRET'));
             }

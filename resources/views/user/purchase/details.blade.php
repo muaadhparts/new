@@ -475,11 +475,11 @@
                                         </td>
 
                                         <td><b><span
-                                                    class="td-name">{{ \PriceHelper::showCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value) }}</span></b>
+                                                    class="td-name">{{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ?? ($catalogItem['price'] / max(1, $catalogItem['qty']))) * $purchase->currency_value) }}</span></b>
                                         </td>
                                         <td>
                                             <b><span class="td-name">{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
-                                                    <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small></small></span></b>
+                                                    <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small></span></b>
                                         </td>
                                     </tr>
                                 @endforeach

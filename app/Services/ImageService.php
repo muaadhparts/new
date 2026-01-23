@@ -136,4 +136,42 @@ class ImageService
 
         return Storage::disk($this->disk)->exists($path);
     }
+
+    /**
+     * Upload merchant logo
+     *
+     * @param UploadedFile $file
+     * @param int $userId
+     * @return string The stored path
+     */
+    public function uploadMerchantLogo(UploadedFile $file, int $userId): string
+    {
+        $extension = $file->getClientOriginalExtension() ?: 'png';
+
+        // Resize to logo size (400x400 max)
+        $img = Image::make($file->getRealPath())->resize(400, 400, function ($constraint) {
+            $constraint->aspectRatio();
+            $constraint->upsize();
+        });
+
+        // Generate filename: merchant_{userId}_{timestamp}.extension
+        $filename = 'merchant_' . $userId . '_' . time() . '.' . $extension;
+        $path = 'merchant-logos/' . $filename;
+
+        // Store to DO Spaces
+        Storage::disk($this->disk)->put($path, (string) $img->encode(), 'public');
+
+        return $path;
+    }
+
+    /**
+     * Get merchant logo URL
+     *
+     * @param string|null $path
+     * @return string|null
+     */
+    public function getMerchantLogoUrl(?string $path): ?string
+    {
+        return $this->getUrl($path);
+    }
 }

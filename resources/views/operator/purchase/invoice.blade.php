@@ -26,8 +26,28 @@
             <div class="invoice__name">
                 <div class="row">
                     <div class="col-sm-6">
+                        @php
+                            // Get first seller info for header (or platform if multiple)
+                            $firstSeller = count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
+                            // Show platform if: no seller found, multiple sellers, or first seller is platform
+                            $showPlatform = !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true);
+                        @endphp
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
+                           @if($showPlatform)
+                               <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="{{ $gs->site_name }}" style="width: 150px; height: auto; object-fit: contain;">
+                               <div style="margin-top: 5px;"><strong>{{ $gs->site_name }}</strong></div>
+                           @else
+                               {{-- Merchant is the seller --}}
+                               @if($firstSeller['logo_url'])
+                                   <img src="{{ $firstSeller['logo_url'] }}" alt="{{ $firstSeller['name'] }}" style="width: 150px; height: auto; object-fit: contain;">
+                               @endif
+                               <div style="margin-top: 5px;">
+                                   <strong>{{ $firstSeller['name'] }}</strong>
+                                   @if($firstSeller['address'])
+                                       <br><small>{{ $firstSeller['address'] }}</small>
+                                   @endif
+                               </div>
+                           @endif
                         </div>
                     </div>
                     <div class="col-lg-6 text-right">

@@ -147,7 +147,7 @@ class MerchantController extends FrontBaseController
                        ->withAvg('catalogReviews', 'rating');
 
         // Pagination
-        $perPage = isset($pageby) ? (int) $pageby : (int) $this->gs->merchant_page_count;
+        $perPage = isset($pageby) ? (int) $pageby : (int) ($this->gs->page_count ?? 12);
         $prods   = $prods->paginate($perPage);
 
         // Set display price to be this merchant's price specifically

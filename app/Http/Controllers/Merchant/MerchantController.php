@@ -6,6 +6,7 @@ use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use App\Models\MerchantPurchase;
 use App\Models\TrustBadge;
+use App\Services\ImageService;
 use Illuminate\Http\Request;
 
 class MerchantController extends MerchantBaseController
@@ -240,6 +241,64 @@ class MerchantController extends MerchantBaseController
 
         return back()->with('success', __('Trust badge request sent successfully.'));
         //--- Redirect Section Ends
+    }
+
+    //*** GET Request - Merchant Logo Page
+    public function logo()
+    {
+        $data = $this->user;
+        $logoUrl = null;
+
+        if (!empty($data->merchant_logo)) {
+            $logoUrl = app(ImageService::class)->getMerchantLogoUrl($data->merchant_logo);
+        }
+
+        return view('merchant.logo', compact('data', 'logoUrl'));
+    }
+
+    //*** POST Request - Update Merchant Logo
+    public function logoUpdate(Request $request)
+    {
+        $rules = [
+            'merchant_logo' => 'required|mimes:jpeg,jpg,png,svg|max:2048',
+        ];
+        $customs = [
+            'merchant_logo.required' => __('Please select a logo image'),
+            'merchant_logo.mimes' => __('Only jpeg, jpg, png and svg images are allowed'),
+            'merchant_logo.max' => __('Maximum allowed size for logo is 2MB'),
+        ];
+
+        $request->validate($rules, $customs);
+
+        $user = $this->user;
+        $imageService = app(ImageService::class);
+
+        // Delete old logo if exists
+        if (!empty($user->merchant_logo)) {
+            $imageService->delete($user->merchant_logo);
+        }
+
+        // Upload new logo
+        $path = $imageService->uploadMerchantLogo($request->file('merchant_logo'), $user->id);
+        $user->merchant_logo = $path;
+        $user->save();
+
+        return back()->with('success', __('Merchant logo updated successfully.'));
+    }
+
+    //*** POST Request - Delete Merchant Logo
+    public function logoDelete()
+    {
+        $user = $this->user;
+
+        if (!empty($user->merchant_logo)) {
+            $imageService = app(ImageService::class);
+            $imageService->delete($user->merchant_logo);
+            $user->merchant_logo = null;
+            $user->save();
+        }
+
+        return back()->with('success', __('Merchant logo deleted successfully.'));
     }
 
 }

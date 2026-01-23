@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use App\Models\Purchase;
 use App\Models\MerchantPurchase;
 use App\Models\ShipmentTracking;
+use App\Services\InvoiceSellerService;
 use App\Services\ShipmentTrackingService;
 use App\Services\TrackingViewService;
 use Illuminate\Http\Request;
@@ -166,7 +167,12 @@ class PurchaseController extends MerchantBaseController
             'tax_amount' => $merchantPurchase ? ($merchantPurchase->tax_amount ?? 0) : 0,
         ];
 
-        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData', 'merchantInvoiceData', 'branchData'));
+        // Get seller info for invoice header
+        $sellerInfo = $merchantPurchase
+            ? app(InvoiceSellerService::class)->getSellerInfo($merchantPurchase)
+            : app(InvoiceSellerService::class)->getSellerInfo(new MerchantPurchase(['payment_owner_id' => 0, 'shipping_owner_id' => 0]));
+
+        return view('merchant.purchase.invoice', compact('user', 'purchase', 'cart', 'trackingData', 'merchantInvoiceData', 'branchData', 'sellerInfo'));
     }
 
     public function printpage($slug)
@@ -200,7 +206,12 @@ class PurchaseController extends MerchantBaseController
             ];
         }
 
-        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData'));
+        // Get seller info for invoice header
+        $sellerInfo = $merchantPurchase
+            ? app(InvoiceSellerService::class)->getSellerInfo($merchantPurchase)
+            : app(InvoiceSellerService::class)->getSellerInfo(new MerchantPurchase(['payment_owner_id' => 0, 'shipping_owner_id' => 0]));
+
+        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData', 'sellerInfo'));
     }
 
     /**

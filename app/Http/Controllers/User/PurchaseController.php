@@ -7,6 +7,7 @@ use App\{
     Models\CatalogItem,
     Models\DeliveryCourier
 };
+use App\Services\InvoiceSellerService;
 use App\Services\TrackingViewService;
 use Illuminate\Http\Request;
 
@@ -86,7 +87,11 @@ class PurchaseController extends UserBaseController
         // Prepare tracking data for view (no logic in Blade)
         $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
 
-        return view('user.purchase.print', compact('user', 'purchase', 'cart', 'trackingData'));
+        // Get seller info for each merchant purchase
+        $merchantPurchases = $purchase->merchantPurchases()->with('user')->get();
+        $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
+
+        return view('user.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'sellersInfoLookup'));
     }
 
     public function trans()

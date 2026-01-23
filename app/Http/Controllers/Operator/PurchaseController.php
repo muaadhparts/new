@@ -15,6 +15,7 @@ use App\Models\Courier;
 use App\Models\CourierServiceArea;
 use App\Models\Shipping;
 use App\Models\User;
+use App\Services\InvoiceSellerService;
 use App\Services\TrackingViewService;
 use Carbon\Carbon;
 use Datatables;
@@ -150,7 +151,10 @@ class PurchaseController extends OperatorBaseController
             }
         }
 
-        return view('operator.purchase.invoice', compact('purchase', 'cart', 'trackingData', 'merchantPurchases', 'branchesLookup'));
+        // Get seller info for each merchant purchase
+        $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
+
+        return view('operator.purchase.invoice', compact('purchase', 'cart', 'trackingData', 'merchantPurchases', 'branchesLookup', 'sellersInfoLookup'));
     }
 
     public function emailsub(Request $request)
@@ -203,7 +207,10 @@ class PurchaseController extends OperatorBaseController
             }
         }
 
-        return view('operator.purchase.print', compact('purchase', 'cart', 'trackingData', 'branchesLookup'));
+        // Get seller info for each merchant purchase
+        $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
+
+        return view('operator.purchase.print', compact('purchase', 'cart', 'trackingData', 'branchesLookup', 'sellersInfoLookup'));
     }
 
     public function edit($id)

@@ -4063,7 +4063,29 @@
     "Please enter 2 or more characters": "أدخل حرفين أو أكثر",
     "No results found": "لا توجد نتائج",
     "Searching...": "جاري البحث...",
-    "Error loading item": "خطأ في تحميل الصنف"
+    "Error loading item": "خطأ في تحميل الصنف",
+
+    "Merchant Logo": "شعار التاجر",
+    "Merchant Logo for Invoices": "شعار التاجر للفواتير",
+    "Upload your merchant logo. This logo will appear on invoices when you are the payment receiver.": "ارفع شعار متجرك. سيظهر هذا الشعار على الفواتير عندما تكون أنت مستلم الدفع.",
+    "Current Logo": "الشعار الحالي",
+    "Are you sure you want to delete this logo?": "هل أنت متأكد من حذف هذا الشعار؟",
+    "Delete Logo": "حذف الشعار",
+    "No logo uploaded yet": "لم يتم رفع شعار بعد",
+    "Upload New Logo": "رفع شعار جديد",
+    "Please select a logo image": "يرجى اختيار صورة شعار",
+    "Only jpeg, jpg, png and svg images are allowed": "يُسمح فقط بصور jpeg و jpg و png و svg",
+    "Maximum allowed size for logo is 2MB": "الحد الأقصى المسموح لحجم الشعار هو 2 ميجابايت",
+    "Allowed formats: JPEG, JPG, PNG, SVG. Max size: 2MB.": "الصيغ المسموحة: JPEG, JPG, PNG, SVG. الحد الأقصى: 2 ميجابايت.",
+    "Update Logo": "تحديث الشعار",
+    "Upload Logo": "رفع الشعار",
+    "Logo Guidelines": "إرشادات الشعار",
+    "Use a square or landscape logo": "استخدم شعاراً مربعاً أو أفقياً",
+    "Recommended size: 400x400 pixels": "الحجم الموصى به: 400×400 بكسل",
+    "Use transparent background (PNG)": "استخدم خلفية شفافة (PNG)",
+    "This logo appears on invoices when you receive payments directly": "يظهر هذا الشعار على الفواتير عندما تستلم المدفوعات مباشرة",
+    "Merchant logo updated successfully.": "تم تحديث شعار التاجر بنجاح.",
+    "Merchant logo deleted successfully.": "تم حذف شعار التاجر بنجاح."
 }
 
 

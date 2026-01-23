@@ -69,7 +69,6 @@ class Muaadhsetting extends Model
         // MERCHANT SETTINGS
         // ==================================
         'reg_merchant',
-        'merchant_page_count',
 
         // ==================================
         // USER SETTINGS
@@ -105,10 +104,8 @@ class Muaadhsetting extends Model
         // ==================================
         // DISPLAY SETTINGS
         // ==================================
-        'show_stock',
         'verify_item',
         'is_report',
-        'item_page',
 
         // ==================================
         // MAINTENANCE

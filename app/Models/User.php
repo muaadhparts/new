@@ -13,7 +13,7 @@ use App\Models\FavoriteSeller;
 class User extends Authenticatable implements JWTSubject
 {
 
-    protected $fillable = ['name', 'photo', 'zip', 'city_id', 'country', 'address', 'latitude', 'longitude', 'phone', 'fax', 'email', 'password', 'affilate_code', 'verification_link', 'shop_name', 'owner_name', 'shop_number', 'shop_address', 'reg_number', 'shop_message', 'is_merchant', 'shop_details', 'shop_image', 'shipping_cost', 'date', 'mail_sent', 'email_verified', 'email_token', 'warehouse_city', 'warehouse_address', 'warehouse_lat', 'warehouse_lng'];
+    protected $fillable = ['name', 'photo', 'zip', 'city_id', 'country', 'address', 'latitude', 'longitude', 'phone', 'fax', 'email', 'password', 'affilate_code', 'verification_link', 'shop_name', 'owner_name', 'shop_number', 'shop_address', 'reg_number', 'shop_message', 'is_merchant', 'shop_details', 'shop_image', 'merchant_logo', 'shipping_cost', 'date', 'mail_sent', 'email_verified', 'email_token', 'warehouse_city', 'warehouse_address', 'warehouse_lat', 'warehouse_lng'];
 
     protected $hidden = [
         'password', 'remember_token'

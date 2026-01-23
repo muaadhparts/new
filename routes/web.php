@@ -933,6 +933,11 @@ Route::group(['middleware' => 'maintenance'], function () {
             // PROFILE - يمكن لجميع التجار رؤية وتعديل بروفايلهم
             Route::get('/profile', 'Merchant\MerchantController@profile')->name('merchant-profile');
             Route::post('/profile', 'Merchant\MerchantController@profileupdate')->name('merchant-profile-update');
+
+            // MERCHANT LOGO - شعار التاجر للفواتير
+            Route::get('/logo', 'Merchant\MerchantController@logo')->name('merchant-logo');
+            Route::post('/logo', 'Merchant\MerchantController@logoUpdate')->name('merchant-logo-update');
+            Route::delete('/logo', 'Merchant\MerchantController@logoDelete')->name('merchant-logo-delete');
         });
 
         // ============ TRUSTED MERCHANT ONLY ============

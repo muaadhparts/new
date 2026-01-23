@@ -48,7 +48,15 @@ html {
                 <div class="row">
                     <div class="col-sm-6">
                         <div class="invoice__logo text-left">
-                           <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="woo commerce logo">
+                           @if($sellerInfo['logo_url'])
+                               <img src="{{ $sellerInfo['logo_url'] }}" alt="{{ $sellerInfo['name'] }}" style="width: 150px; height: auto; object-fit: contain;">
+                           @endif
+                           <div style="margin-top: 10px;">
+                               <strong>{{ $sellerInfo['name'] }}</strong>
+                               @if($sellerInfo['address'])
+                                   <br><small>{{ $sellerInfo['address'] }}</small>
+                               @endif
+                           </div>
                         </div>
                     </div>
                 </div>
@@ -241,16 +249,10 @@ html {
 <!-- ./wrapper -->
 
 <script type="text/javascript">
-
-    (function($) {
-		"use strict";
-
-setTimeout(function () {
+    // Close window after print dialog is closed (not before)
+    window.onafterprint = function() {
         window.close();
-      }, 500);
-
-    })(jQuery);
-
+    };
 </script>
 
 </body>

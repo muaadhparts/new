@@ -162,9 +162,9 @@
         </li>
 
         <li
-            class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}">
+            class="has-sub-menu {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') || request()->is('merchant/logo') ? 'active' : '' }}">
             <a href="#merchant-collapsed-settings"
-                class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? '' : 'collapsed' }}"
+                class="{{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') || request()->is('merchant/logo') ? '' : 'collapsed' }}"
                 data-bs-toggle="collapse" aria-expanded="false" aria-controls="merchant-collapsed-settings">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                     fill="none">
@@ -178,7 +178,7 @@
                 <span class="label">@lang('Settings')</span>
                 <i class="ms-auto fa-solid fa-angle-down angle-down"></i>
             </a>
-            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'show' : '' }}"
+            <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') || request()->is('merchant/logo') ? 'show' : '' }}"
                 id="merchant-collapsed-settings">
                 <li class=""><a
                         class="sidebar-sub-menu-item {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') ? 'active' : '' }}"
@@ -193,6 +193,10 @@
                 <li class=""><a
                         class="sidebar-sub-menu-item {{ request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'active' : '' }}"
                         href="{{ route('merchant-credentials-index') }}">@lang('API Credentials')</a>
+                </li>
+                <li class=""><a
+                        class="sidebar-sub-menu-item {{ request()->is('merchant/logo') ? 'active' : '' }}"
+                        href="{{ route('merchant-logo') }}">@lang('Merchant Logo')</a>
                 </li>
             </ul>
         </li>

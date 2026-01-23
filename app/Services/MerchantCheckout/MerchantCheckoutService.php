@@ -327,17 +327,27 @@ class MerchantCheckoutService
                 $isFree = ($input['shipping_is_free'] ?? '0') === '1';
                 $shippingName = $input['shipping_name'] ?? ucfirst($shippingProvider);
 
-                // ✅ API shipping ownership - lookup from database using shipping_id
+                // ✅ API shipping ownership - lookup from database
                 $shippingId = $input['shipping_id'] ?? '';
                 $isPlatformProvided = false;
                 $ownerUserId = $merchantId;
 
+                // Try to find shipping record by ID or by provider name
+                $shippingRecord = null;
                 if (is_numeric($shippingId) && (int)$shippingId > 0) {
                     $shippingRecord = Shipping::find((int)$shippingId);
-                    if ($shippingRecord) {
-                        $isPlatformProvided = (int)$shippingRecord->user_id === 0;
-                        $ownerUserId = $isPlatformProvided ? 0 : (int)$shippingRecord->user_id;
-                    }
+                }
+
+                // If not found by ID, try to find by provider name (for API providers like tryoto)
+                if (!$shippingRecord && $shippingProvider) {
+                    $shippingRecord = Shipping::where('provider', $shippingProvider)
+                        ->where('status', 1)
+                        ->first();
+                }
+
+                if ($shippingRecord) {
+                    $isPlatformProvided = (int)$shippingRecord->user_id === 0;
+                    $ownerUserId = $isPlatformProvided ? 0 : (int)$shippingRecord->user_id;
                 }
 
                 $shippingData = array_merge($shippingData, [

@@ -55,6 +55,31 @@ html {
    <div class="container-fluid">
    <div class="row">
    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <!-- Invoice Header - Based on payment_owner_id -->
+      @php
+          $firstSeller = isset($sellersInfoLookup) && count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
+          // Show platform if: no seller found, multiple sellers, or first seller is platform
+          $showPlatform = !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true);
+      @endphp
+      <div class="invoice__logo" style="margin-bottom: 20px; padding: 10px;">
+         @if($showPlatform)
+             @if($gs->invoice_logo)
+                 <img src="{{ asset('assets/images/'.$gs->invoice_logo) }}" alt="{{ $gs->site_name }}" style="width: 150px; height: auto; object-fit: contain;">
+             @endif
+             <div style="margin-top: 5px;"><strong>{{ $gs->site_name }}</strong></div>
+         @else
+             {{-- Merchant is the seller --}}
+             @if($firstSeller['logo_url'])
+                 <img src="{{ $firstSeller['logo_url'] }}" alt="{{ $firstSeller['name'] }}" style="width: 150px; height: auto; object-fit: contain;">
+             @endif
+             <div style="margin-top: 5px;">
+                 <strong>{{ $firstSeller['name'] }}</strong>
+                 @if($firstSeller['address'])
+                     <br><small>{{ $firstSeller['address'] }}</small>
+                 @endif
+             </div>
+         @endif
+      </div>
       <!-- Starting of Dashboard data-table area -->
       <div class="section-padding add-catalogItem-1">
          <div class="row">
@@ -172,10 +197,11 @@ html {
                                                 @endif
                                              </td>
                                              <td>
-                                                {{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) * $purchase->currency_value) }}
+                                                @php $unitPrice = $catalogItem['item_price'] ?? ($catalogItem['price'] / max(1, $catalogItem['qty'])); @endphp
+                                                {{ \PriceHelper::showCurrencyPrice($unitPrice * $purchase->currency_value) }}
                                              </td>
                                              <td>
-                                                {{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] * $catalogItem['qty'] ) * $purchase->currency_value) }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                                {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                              </td>
                                           </tr>
                                           @endforeach
@@ -196,15 +222,10 @@ html {
    <!-- ./wrapper -->
    <!-- ./wrapper -->
    <script type="text/javascript">
-      (function($) {
-      "use strict";
-      
-      setTimeout(function () {
+      // Close window after print dialog is closed (not before)
+      window.onafterprint = function() {
           window.close();
-        }, 500);
-      
-      })(jQuery);
-      
+      };
    </script>
 </body>
 </html>
