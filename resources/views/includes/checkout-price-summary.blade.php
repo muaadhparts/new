@@ -40,10 +40,6 @@
 
     // Extract values from service response
     $catalogItemsTotal = $prices['catalog_items_total'];
-    $discountAmount = $prices['discount_amount'];
-    $discountCode = $prices['discount_code'];
-    $discountPercentage = $prices['discount_percentage'];
-    $hasDiscount = $prices['has_discount'];
     $taxRate = $prices['tax_rate'];
     $taxAmount = $prices['tax_amount'];
     $taxLocation = $prices['tax_location'];
@@ -53,7 +49,6 @@
     $freeShippingDiscount = $prices['free_shipping_discount'];
     $shippingCompany = $prices['shipping_company'];
     $grandTotal = $prices['grand_total'];
-    $subtotalBeforeDiscount = $prices['subtotal_before_discount'];
 
     // Currency info from service
     $currencySign = $prices['currency_sign'];
@@ -90,34 +85,7 @@
         </div>
 
         {{-- ================================================================
-            ROW 2: Discount Code (if applied)
-        ================================================================= --}}
-        <div class="price-details discount-row {{ $hasDiscount ? '' : 'd-none' }}" id="discount-row">
-            <span class="d-flex align-items-center gap-2">
-                <i class="fas fa-tag text-success"></i>
-                @lang('Discount')
-                <span class="discount-percentage-display text-success" id="discount-percentage-display">
-                    {{ $discountPercentage ? '(' . $discountPercentage . ')' : '' }}
-                </span>
-                <span class="badge bg-success discount-code-badge discount-code-display" id="discount-code-display">
-                    {{ $discountCode }}
-                </span>
-            </span>
-            <span class="right-side d-flex align-items-center gap-2">
-                <span class="text-success discount-amount-display" id="discount-amount-display">
-                    -{{ $formatPrice($discountAmount) }}
-                </span>
-                @if($currentStep == 3)
-                <button type="button" class="btn btn-link btn-sm text-danger p-0 remove-discount-btn"
-                        name="@lang('Remove Discount')">
-                    <i class="fas fa-times-circle"></i>
-                </button>
-                @endif
-            </span>
-        </div>
-
-        {{-- ================================================================
-            ROW 3: Tax
+            ROW 2: Tax
         ================================================================= --}}
         @if($currentStep == 1)
             {{-- Step 1: Tax calculated via JavaScript --}}
@@ -153,7 +121,7 @@
         @endif
 
         {{-- ================================================================
-            ROW 4: Shipping OR Courier (Step 2 & 3 only, physical catalogItems)
+            ROW 3: Shipping OR Courier (Step 2 & 3 only, physical catalogItems)
         ================================================================= --}}
         @if($currentStep >= 2)
             @if($currentStep == 2)
@@ -213,7 +181,7 @@
         @endif
 
         {{-- ================================================================
-            ROW 4.5: Courier Fee (Step 3 only, when courier delivery selected)
+            ROW 4: Courier Fee (Step 3 only, when courier delivery selected)
         ================================================================= --}}
         @if($currentStep == 3 && $deliveryType === 'local_courier' && $courierFee > 0)
             <div class="price-details">
@@ -231,8 +199,6 @@
             </div>
             @endif
         @endif
-
-        {{-- ROW 5: Packing - REMOVED --}}
 
     </div>
 
@@ -266,40 +232,18 @@
     HIDDEN FIELDS FOR JAVASCRIPT
 ================================================================= --}}
 <input type="hidden" id="price-catalogItems-total" value="{{ $catalogItemsTotal }}">
-<input type="hidden" id="price-discount-amount" value="{{ $discountAmount }}">
-<input type="hidden" id="price-discount-code" value="{{ $discountCode }}">
 <input type="hidden" id="price-tax-rate" value="{{ $taxRate }}">
 <input type="hidden" id="price-tax-amount" value="{{ $taxAmount }}">
 <input type="hidden" id="price-shipping-cost" value="{{ $shippingCost }}">
 <input type="hidden" id="price-courier-fee" value="{{ $courierFee }}">
 <input type="hidden" id="price-delivery-type" value="{{ $deliveryType }}">
 <input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
-<input type="hidden" id="price-subtotal-before-discount" value="{{ $subtotalBeforeDiscount }}">
 <input type="hidden" id="price-currency-sign" value="{{ $currencySign }}">
 <input type="hidden" id="price-currency-format" value="{{ $currencyFormat }}">
 <input type="hidden" id="price-merchant-id" value="{{ $merchantId ?? '' }}">
 <input type="hidden" id="price-current-step" value="{{ $currentStep }}">
 
 <style>
-.discount-row {
-    background: rgba(25, 135, 84, 0.1);
-    padding: 8px 10px;
-    border-radius: 6px;
-    margin: 5px 0;
-}
-.discount-code-badge {
-    font-size: 11px;
-    padding: 2px 6px;
-}
-.remove-discount-btn {
-    opacity: 0.7;
-    transition: opacity 0.2s;
-    font-size: 14px;
-    line-height: 1;
-}
-.remove-discount-btn:hover {
-    opacity: 1;
-}
 .price-details {
     display: flex;
     justify-content: space-between;
@@ -323,8 +267,6 @@
  * Usage:
  * - PriceSummary.updateTax(rate, amount)
  * - PriceSummary.updateShipping(cost, originalCost, isFree)
- * - PriceSummary.updateDiscount(discount, code, percentage)
- * - PriceSummary.removeDiscount()
  * - PriceSummary.recalculateTotal()
  *
  * ============================================================================
@@ -354,23 +296,20 @@
     function getValues() {
         return {
             catalogItemsTotal: parseFloat($('#price-catalogItems-total').val()) || 0,
-            discountAmount: parseFloat($('#price-discount-amount').val()) || 0,
             taxRate: parseFloat($('#price-tax-rate').val()) || 0,
             taxAmount: parseFloat($('#price-tax-amount').val()) || 0,
             shippingCost: parseFloat($('#price-shipping-cost').val()) || 0,
             courierFee: parseFloat($('#price-courier-fee').val()) || 0,
-            deliveryType: $('#price-delivery-type').val() || 'shipping',
-            subtotalBeforeDiscount: parseFloat($('#price-subtotal-before-discount').val()) || 0
+            deliveryType: $('#price-delivery-type').val() || 'shipping'
         };
     }
 
     // Calculate and update grand total
     function recalculateTotal() {
         var v = getValues();
-        var subtotal = v.catalogItemsTotal - v.discountAmount;
         // Add courier fee OR shipping cost (not both)
         var deliveryCost = v.deliveryType === 'local_courier' ? v.courierFee : v.shippingCost;
-        var grandTotal = subtotal + v.taxAmount + deliveryCost;
+        var grandTotal = v.catalogItemsTotal + v.taxAmount + deliveryCost;
 
         // Update hidden field
         $('#price-grand-total').val(grandTotal.toFixed(2));
@@ -429,36 +368,11 @@
             recalculateTotal();
         },
 
-        // Update discount display (discount must be pre-converted by API)
-        updateDiscount: function(discount, code, percentage) {
-            $('#price-discount-amount').val(discount);
-            $('#price-discount-code').val(code);
-
-            if (discount > 0) {
-                $('#discount-row').removeClass('d-none');
-                $('#discount-code-display, .discount-code-display').text(code);
-                $('#discount-amount-display, .discount-amount-display').html('-' + formatPrice(discount));
-                $('#discount-percentage-display, .discount-percentage-display').html(percentage ? '(' + percentage + ')' : '');
-            } else {
-                $('#discount-row').addClass('d-none');
-            }
-
-            recalculateTotal();
-        },
-
-        // Remove discount
-        removeDiscount: function() {
-            $('#price-discount-amount').val(0);
-            $('#price-discount-code').val('');
-            $('#discount-row').addClass('d-none');
-            recalculateTotal();
-        },
-
         // Manual recalculation
         recalculateTotal: recalculateTotal,
 
-        // Get subtotal before discount (for discount calculations)
-        getSubtotalBeforeDiscount: function() {
+        // Get subtotal (for calculations)
+        getSubtotal: function() {
             var v = getValues();
             return v.catalogItemsTotal + v.taxAmount + v.shippingCost;
         }

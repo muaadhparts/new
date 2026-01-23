@@ -377,22 +377,6 @@ Route::prefix('operator')->group(function () {
 
     //------------ OPERATORPRODUCT DISCUSSION SECTION ENDS ------------
 
-    //------------ OPERATORDISCOUNT CODE SECTION ------------
-
-    Route::group(['middleware' => 'permissions:set_discount_codes'], function () {
-
-        Route::get('/discount-code/datatables', 'Operator\DiscountCodeController@datatables')->name('operator-discount-code-datatables'); //JSON REQUEST
-        Route::get('/discount-code', 'Operator\DiscountCodeController@index')->name('operator-discount-code-index');
-        Route::get('/discount-code/create', 'Operator\DiscountCodeController@create')->name('operator-discount-code-create');
-        Route::post('/discount-code/create', 'Operator\DiscountCodeController@store')->name('operator-discount-code-store');
-        Route::get('/discount-code/edit/{id}', 'Operator\DiscountCodeController@edit')->name('operator-discount-code-edit');
-        Route::post('/discount-code/edit/{id}', 'Operator\DiscountCodeController@update')->name('operator-discount-code-update');
-        Route::delete('/discount-code/delete/{id}', 'Operator\DiscountCodeController@destroy')->name('operator-discount-code-delete');
-        Route::get('/discount-code/status/{id1}/{id2}', 'Operator\DiscountCodeController@status')->name('operator-discount-code-status');
-    });
-
-    //------------ OPERATORDISCOUNT CODE SECTION ENDS------------
-
     //------------ OPERATORUSER SECTION ------------
 
     Route::group(['middleware' => 'permissions:customers'], function () {
@@ -685,8 +669,6 @@ Route::prefix('operator')->group(function () {
         Route::delete('/static-content/delete/{id}', 'Operator\StaticContentController@destroy')->name('operator-static-content-delete');
         Route::get('/static-content/header/{id1}/{id2}', 'Operator\StaticContentController@header')->name('operator-static-content-header');
         Route::get('/static-content/footer/{id1}/{id2}', 'Operator\StaticContentController@footer')->name('operator-static-content-footer');
-        Route::get('/page/banner', 'Operator\FrontendSettingController@page_banner')->name('operator-fs-page-banner');
-        Route::get('/right/banner', 'Operator\FrontendSettingController@right_banner')->name('operator-fs-right-banner');
         //------------ OPERATORPAGE SECTION ENDS------------
 
         Route::get('/frontend-setting/contact', 'Operator\FrontendSettingController@contact')->name('operator-fs-contact');
@@ -1106,20 +1088,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT SHIPMENT TRACKING ENDS ------------
 
-            //------------ MERCHANT DISCOUNT CODE SECTION ------------
-
-            Route::get('/discount-code/datatables', 'Merchant\DiscountCodeController@datatables')->name('merchant-discount-code-datatables');
-            Route::get('/discount-code', 'Merchant\DiscountCodeController@index')->name('merchant-discount-code-index');
-            Route::get('/discount-code/create', 'Merchant\DiscountCodeController@create')->name('merchant-discount-code-create');
-            Route::post('/discount-code/create', 'Merchant\DiscountCodeController@store')->name('merchant-discount-code-store');
-            Route::get('/discount-code/edit/{id}', 'Merchant\DiscountCodeController@edit')->name('merchant-discount-code-edit');
-            Route::post('/discount-code/edit/{id}', 'Merchant\DiscountCodeController@update')->name('merchant-discount-code-update');
-            Route::delete('/discount-code/delete/{id}', 'Merchant\DiscountCodeController@destroy')->name('merchant-discount-code-delete');
-            Route::get('/discount-code/status/{id1}/{id2}', 'Merchant\DiscountCodeController@status')->name('merchant-discount-code-status');
-            Route::get('/discount-code/get-categories', 'Merchant\DiscountCodeController@getCategories')->name('merchant-discount-code-get-categories');
-
-            //------------ MERCHANT DISCOUNT CODE SECTION ENDS------------
-
             //------------ MERCHANT CREDENTIALS SECTION ------------
             Route::get('/credentials', 'Merchant\CredentialController@index')->name('merchant-credentials-index');
             Route::get('/credentials/create', 'Merchant\CredentialController@create')->name('merchant-credentials-create');
@@ -1414,9 +1382,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     // NEW: CatalogItem-first approach (one page per part_number, not per merchant_item)
     Route::get('/result/{part_number}', 'Front\PartResultController@show')->name('front.part-result');
 
-    // Discount code validation
-    Route::get('/carts/discount-code', 'Front\DiscountCodeController@discountCodeCheck');
-
     // ============ NEW MERCHANT CART SYSTEM (v4) ============
     // Clean, unified cart API - replaces all old cart routes
     // Uses: App\Http\Controllers\Front\MerchantCartController
@@ -1519,10 +1484,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         }
         return redirect()->route('merchant-cart.index')->with('error', __('Payment cancelled'));
     })->name('front.payment.cancle');
-
-    // Discount Code routes (global - for cart page)
-    Route::get('/carts/discount-code/check', 'Front\DiscountCodeController@discountCodeCheck')->name('front.discount-code.check');
-    Route::post('/carts/discount-code/remove', 'Front\DiscountCodeController@removeDiscountCode')->name('front.discount-code.remove');
 
     // CSRF Token refresh endpoint
     Route::get('/csrf-token', function() {

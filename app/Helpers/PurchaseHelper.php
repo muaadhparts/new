@@ -5,7 +5,6 @@ namespace App\Helpers;
 use App\{
     Models\MerchantCart,
     Models\User,
-    Models\DiscountCode,
     Models\CatalogItem,
     Models\MerchantPurchase,
     Models\MerchantCommission,
@@ -105,32 +104,6 @@ class PurchaseHelper
             return $user;
         } catch (\Exception $e) {
         }
-    }
-
-    public static function discount_code_check($id)
-    {
-        try {
-            $discountCode = DiscountCode::find($id);
-            $discountCode->used++;
-            if ($discountCode->times != null) {
-                $i = (int)$discountCode->times;
-                $i--;
-                $discountCode->times = (string)$i;
-            }
-            $discountCode->update();
-        } catch (\Exception $e) {
-        }
-    }
-
-    /**
-     * @deprecated Size/qty functionality has been removed from the system
-     * This method is kept for backward compatibility but does nothing
-     */
-    public static function size_qty_check($cart)
-    {
-        // Size/qty columns have been removed from the database
-        // Stock is now managed directly via merchant_items.stock
-        return;
     }
 
     public static function stock_check($cart)

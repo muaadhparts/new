@@ -174,12 +174,6 @@
 </li>
 
 <li>
-    <a href="{{ route('operator-discount-code-index') }}" class=" wave-effect"><i
-            class="fas fa-percentage"></i>{{ __('Set
-                                Discount Codes') }}</a>
-</li>
-
-<li>
     <a href="#menu3" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
         <i class="icofont-user"></i>{{ __('Customers') }}
     </a>

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\DiscountCode;
 use App\Models\MonetaryUnit;
 use App\Models\Shipping;
 use App\Models\MerchantCommission;
@@ -25,11 +24,9 @@ use Illuminate\Support\Facades\Session;
  * Price Structure:
  * ================
  * catalog_items_total = Sum of all catalogItem prices (NEVER changes)
- * discount_amount     = Discount amount from discount code
- * subtotal            = catalog_items_total - discount_amount
- * tax_amount          = subtotal * tax_rate / 100
+ * tax_amount          = catalog_items_total * tax_rate / 100
  * shipping_cost       = Selected shipping price (after free_above check)
- * grand_total         = subtotal + tax_amount + shipping_cost
+ * grand_total         = catalog_items_total + tax_amount + shipping_cost
  *
  * Currency Conversion:
  * ====================
@@ -186,40 +183,8 @@ class CheckoutPriceService
     }
 
     /**
-     * Get discount code amount
-     */
-    public function getDiscountAmount($merchantId = null)
-    {
-        if ($merchantId) {
-            return (float)Session::get('discount_code_merchant_' . $merchantId, 0);
-        }
-        return (float)Session::get('discount_code', 0);
-    }
-
-    /**
-     * Get discount code data
-     */
-    public function getDiscountCodeData($merchantId = null)
-    {
-        if ($merchantId) {
-            return [
-                'amount' => (float)Session::get('discount_code_merchant_' . $merchantId, 0),
-                'code' => Session::get('discount_code_value_merchant_' . $merchantId, ''),
-                'id' => Session::get('discount_code_id_merchant_' . $merchantId),
-                'percentage' => Session::get('discount_percentage_merchant_' . $merchantId, ''),
-            ];
-        }
-        return [
-            'amount' => (float)Session::get('discount_code', 0),
-            'code' => Session::get('discount_code_value', ''),
-            'id' => Session::get('discount_code_id'),
-            'percentage' => Session::get('discount_percentage', ''),
-        ];
-    }
-
-    /**
      * Calculate tax amount
-     * Tax is calculated on subtotal (catalogItems - discount)
+     * Tax is calculated on catalog items total
      */
     public function calculateTax($subtotal, $taxRate)
     {
@@ -279,31 +244,20 @@ class CheckoutPriceService
         // 1. CatalogItems Total (RAW - never changes)
         $catalogItemsTotal = $this->calculateCatalogItemsTotal($merchantId);
 
-        // 2. Discount Code
-        $discountData = $this->getDiscountCodeData($merchantId);
-        $discountAmount = $discountData['amount'];
+        // 2. Tax (on total)
+        $taxAmount = $this->calculateTax($catalogItemsTotal, $taxRate);
 
-        // 3. Subtotal (catalogItems - discount)
-        $subtotal = $catalogItemsTotal - $discountAmount;
-
-        // 4. Tax (on subtotal)
-        $taxAmount = $this->calculateTax($subtotal, $taxRate);
-
-        // 5. Total with tax (for display)
-        $totalWithTax = $subtotal + $taxAmount;
+        // 3. Total with tax (for display)
+        $totalWithTax = $catalogItemsTotal + $taxAmount;
 
         return [
             // Core values
-            'catalog_items_total' => $catalogItemsTotal,  // RAW catalogItems total
-            'discount_amount' => $discountAmount,         // Discount code amount
-            'discount_code' => $discountData['code'],
-            'discount_code_id' => $discountData['id'],
-            'discount_percentage' => $discountData['percentage'],
-            'subtotal' => $subtotal,                      // After discount
+            'catalog_items_total' => $catalogItemsTotal,
+            'subtotal' => $catalogItemsTotal,
             'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
             'tax_location' => $taxLocation,
-            'total_with_tax' => $totalWithTax,            // Subtotal + Tax
+            'total_with_tax' => $totalWithTax,
 
             // For backward compatibility
             'merchant_subtotal' => $catalogItemsTotal,
@@ -320,8 +274,7 @@ class CheckoutPriceService
     {
         // Get step1 values
         $catalogItemsTotal = $step1Data['catalog_items_total'] ?? 0;
-        $discountAmount = $step1Data['discount_amount'] ?? 0;
-        $subtotal = $step1Data['subtotal'] ?? ($catalogItemsTotal - $discountAmount);
+        $subtotal = $step1Data['subtotal'] ?? $catalogItemsTotal;
         $taxRate = $step1Data['tax_rate'] ?? 0;
         $taxAmount = $step1Data['tax_amount'] ?? 0;
         $taxLocation = $step1Data['tax_location'] ?? '';
@@ -332,16 +285,9 @@ class CheckoutPriceService
         // Grand Total = subtotal + tax + shipping
         $grandTotal = $subtotal + $taxAmount + $shippingResult['cost'];
 
-        // Subtotal before discount (for discount code operations in step3)
-        $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount + $shippingResult['cost'];
-
         return [
             // From Step 1
             'catalog_items_total' => $catalogItemsTotal,
-            'discount_amount' => $discountAmount,
-            'discount_code' => $step1Data['discount_code'] ?? '',
-            'discount_code_id' => $step1Data['discount_code_id'] ?? null,
-            'discount_percentage' => $step1Data['discount_percentage'] ?? '',
             'subtotal' => $subtotal,
             'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
@@ -355,10 +301,9 @@ class CheckoutPriceService
             'shipping_company' => $shippingResult['company'],
 
             // Totals
-            'subtotal_before_discount' => $subtotalBeforeDiscount,  // For discount recalculation
-            'grand_total' => $grandTotal,                           // Final amount
-            'total' => $grandTotal,                                 // Backward compatibility
-            'final_total' => $grandTotal,                           // Alias
+            'grand_total' => $grandTotal,
+            'total' => $grandTotal,
+            'final_total' => $grandTotal,
         ];
     }
 
@@ -438,9 +383,6 @@ class CheckoutPriceService
     public function getPriceBreakdown($step, $step1Data = null, $step2Data = null, $merchantId = null)
     {
         $catalogItemsTotal = 0;
-        $discountAmount = 0;
-        $discountCode = '';
-        $discountPercentage = '';
         $taxRate = 0;
         $taxAmount = 0;
         $taxLocation = '';
@@ -450,7 +392,6 @@ class CheckoutPriceService
         $freeShippingDiscount = 0;
         $shippingCompany = '';
         $grandTotal = 0;
-        $subtotalBeforeDiscount = 0;
         // Courier delivery fields
         $deliveryType = 'shipping';
         $courierId = null;
@@ -460,12 +401,7 @@ class CheckoutPriceService
         if ($step == 1) {
             // Step 1: Only catalogItems and tax (calculated dynamically)
             $catalogItemsTotal = $this->calculateCatalogItemsTotal($merchantId);
-            $discountData = $this->getDiscountCodeData($merchantId);
-            $discountAmount = $discountData['amount'];
-            $discountCode = $discountData['code'];
-            $discountPercentage = $discountData['percentage'];
-            $grandTotal = $catalogItemsTotal - $discountAmount;
-            $subtotalBeforeDiscount = $catalogItemsTotal;
+            $grandTotal = $catalogItemsTotal;
 
         } elseif ($step == 2) {
             // Step 2: CatalogItems + Tax from step1, shipping dynamic
@@ -475,22 +411,13 @@ class CheckoutPriceService
                 $taxAmount = $step1Data->tax_amount ?? 0;
                 $taxLocation = $step1Data->tax_location ?? '';
             }
-            $discountData = $this->getDiscountCodeData($merchantId);
-            $discountAmount = $discountData['amount'];
-            $discountCode = $discountData['code'];
-            $discountPercentage = $discountData['percentage'];
 
-            $subtotal = $catalogItemsTotal - $discountAmount;
-            $grandTotal = $subtotal + $taxAmount; // Shipping added via JS
-            $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount;
+            $grandTotal = $catalogItemsTotal + $taxAmount; // Shipping added via JS
 
         } elseif ($step == 3) {
             // Step 3: Everything from step2 session (read-only)
             if ($step2Data) {
                 $catalogItemsTotal = $step2Data->catalog_items_total ?? ($step1Data->catalog_items_total ?? 0);
-                $discountAmount = $step2Data->discount_amount ?? 0;
-                $discountCode = $step2Data->discount_code ?? '';
-                $discountPercentage = $step2Data->discount_percentage ?? '';
                 $taxRate = $step2Data->tax_rate ?? 0;
                 $taxAmount = $step2Data->tax_amount ?? 0;
                 $taxLocation = $step2Data->tax_location ?? '';
@@ -500,7 +427,6 @@ class CheckoutPriceService
                 $freeShippingDiscount = $step2Data->free_shipping_discount ?? 0;
                 $shippingCompany = $step2Data->shipping_company ?? '';
                 $grandTotal = $step2Data->grand_total ?? $step2Data->total ?? 0;
-                $subtotalBeforeDiscount = $step2Data->subtotal_before_discount ?? 0;
                 // Courier delivery fields
                 $deliveryType = $step2Data->delivery_type ?? 'shipping';
                 $courierId = $step2Data->courier_id ?? null;
@@ -511,10 +437,6 @@ class CheckoutPriceService
 
         return [
             'catalog_items_total' => round($catalogItemsTotal, 2),
-            'discount_amount' => round($discountAmount, 2),
-            'discount_code' => $discountCode,
-            'discount_percentage' => $discountPercentage,
-            'has_discount' => $discountAmount > 0,
             'tax_rate' => $taxRate,
             'tax_amount' => round($taxAmount, 2),
             'tax_location' => $taxLocation,
@@ -524,7 +446,6 @@ class CheckoutPriceService
             'free_shipping_discount' => round($freeShippingDiscount, 2),
             'shipping_company' => $shippingCompany,
             'grand_total' => round($grandTotal, 2),
-            'subtotal_before_discount' => round($subtotalBeforeDiscount, 2),
             // Courier delivery fields
             'delivery_type' => $deliveryType,
             'courier_id' => $courierId,
@@ -552,18 +473,13 @@ class CheckoutPriceService
         return [
             // Converted values (for display)
             'catalog_items_total' => $this->convert($raw['catalog_items_total']),
-            'discount_amount' => $this->convert($raw['discount_amount']),
             'tax_amount' => $this->convert($raw['tax_amount']),
             'shipping_cost' => $this->convert($raw['shipping_cost']),
             'original_shipping_cost' => $this->convert($raw['original_shipping_cost']),
             'free_shipping_discount' => $this->convert($raw['free_shipping_discount']),
             'grand_total' => $this->convert($raw['grand_total']),
-            'subtotal_before_discount' => $this->convert($raw['subtotal_before_discount']),
 
             // Non-monetary values (pass through)
-            'discount_code' => $raw['discount_code'],
-            'discount_percentage' => $raw['discount_percentage'],
-            'has_discount' => $raw['has_discount'],
             'tax_rate' => $raw['tax_rate'],
             'tax_location' => $raw['tax_location'],
             'is_free_shipping' => $raw['is_free_shipping'],
@@ -592,7 +508,6 @@ class CheckoutPriceService
         return [
             // Formatted strings (ready for display)
             'catalog_items_total_formatted' => $this->formatPrice($converted['catalog_items_total']),
-            'discount_amount_formatted' => $this->formatPrice($converted['discount_amount']),
             'tax_amount_formatted' => $this->formatPrice($converted['tax_amount']),
             'shipping_cost_formatted' => $this->formatPrice($converted['shipping_cost']),
             'original_shipping_cost_formatted' => $this->formatPrice($converted['original_shipping_cost']),

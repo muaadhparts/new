@@ -138,16 +138,6 @@
                     <div class="row justify-content-center">
 
                       <div class="col-lg-4 d-flex justify-content-between">
-                        <label class="control-label">{{ __('Set Discount Codes') }} *</label>
-                        <label class="switch">
-                          <input type="checkbox" name="section[]" value="set_discount_codes" {{ $data->sectionCheck('set_discount_codes') ? 'checked' : '' }}>
-                          <span class="toggle-switch round"></span>
-                        </label>
-                      </div>
-
-                      <div class="col-lg-2"></div>
-
-                      <div class="col-lg-4 d-flex justify-content-between">
                         <label class="control-label">{{ __('Customers') }} *</label>
                         <label class="switch">
                           <input type="checkbox" name="section[]" value="customers" {{ $data->sectionCheck('customers') ? 'checked' : '' }}>

@@ -83,16 +83,6 @@ Route::prefix('branch/{branchId}/checkout')
         Route::post('/preview-totals', [CheckoutMerchantController::class, 'previewTotals'])
             ->name('branch.checkout.preview-totals');
 
-        // Discount code management
-        Route::get('/discount/check', [CheckoutMerchantController::class, 'checkDiscountCode'])
-            ->name('branch.checkout.discount.check');
-
-        Route::post('/discount/apply', [CheckoutMerchantController::class, 'applyDiscountCode'])
-            ->name('branch.checkout.discount.apply');
-
-        Route::post('/discount/remove', [CheckoutMerchantController::class, 'removeDiscountCode'])
-            ->name('branch.checkout.discount.remove');
-
         // ====================================================================
         // PAYMENT GATEWAY ROUTES - Process Payment
         // ====================================================================

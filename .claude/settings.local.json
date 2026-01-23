@@ -75,7 +75,14 @@
       "Bash(more:*)",
       "Bash(test:*)",
       "Bash(if not exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\" mkdir \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\frontend\\\\partials\")",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(for file in resources/views/load/*.blade.php)",
+      "Bash(do basename:*)",
+      "Bash(while read f)",
+      "Bash(do grep -q \"$f\" \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\layouts\\\\front.blade.php\" \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\layouts\\\\merchant.blade.php\" \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\catalog\\\\illustrations.blade.php\")",
+      "Bash(git log:*)",
+      "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\page_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\page_banner.blade.php\")",
+      "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\")"
     ]
   }
 }

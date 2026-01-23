@@ -72,7 +72,6 @@ class MerchantPurchaseCreator
         // Get checkout data (branch-scoped session)
         $addressData = $this->sessionManager->getAddressData($branchId);
         $shippingData = $this->sessionManager->getShippingData($branchId);
-        $discountData = $this->sessionManager->getDiscountData($branchId);
         $cartPayload = $this->cartService->buildBranchCartPayload($branchId);
 
         if (!$addressData || !$shippingData) {
@@ -88,7 +87,6 @@ class MerchantPurchaseCreator
 
         // Calculate final totals
         $totals = $this->priceCalculator->calculateTotals($cartPayload['items'], [
-            'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'] ?? 0,
             'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
@@ -122,9 +120,6 @@ class MerchantPurchaseCreator
                 'shipping_cost' => $shippingData['shipping_cost'],
                 'tax' => $totals['tax_amount'],
                 'tax_location' => $addressData['tax_location'] ?? '',
-                'discount_amount' => $discountData['amount'] ?? 0,
-                'discount_code' => $discountData['code'] ?? '',
-                'discount_code_id' => $discountData['code_id'] ?? null,
 
                 // Currency
                 'currency_name' => $currency->name,

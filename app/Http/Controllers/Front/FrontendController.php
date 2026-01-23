@@ -38,16 +38,6 @@ class FrontendController extends FrontBaseController
 
     public function monetaryUnit($id)
     {
-
-        if (Session::has('discount_code')) {
-            Session::forget('discount_code');
-            Session::forget('discount_code_value');
-            Session::forget('discount_code_id');
-            Session::forget('discount_total');
-            Session::forget('discount_total1');
-            Session::forget('already');
-            Session::forget('discount_percentage');
-        }
         Session::put('monetary_unit', $id);
         cache()->forget('session_monetary_unit');
         return redirect()->back();

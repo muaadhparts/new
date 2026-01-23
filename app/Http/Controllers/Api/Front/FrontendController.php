@@ -161,9 +161,7 @@ class FrontendController extends Controller
 
     public function banners(Request $request)
     {
-
         try {
-
             $rules = [
                 'type' => 'required',
             ];
@@ -174,25 +172,14 @@ class FrontendController extends Controller
             }
 
             $type = $request->type;
-            $checkType = in_array($type, ['TopSmall', 'BottomSmall', 'Large']);
+            $checkType = in_array($type, ['TopSmall', 'BottomSmall']);
 
             if (!$checkType) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "This type doesn't exists."]]);
             }
 
-            if ($request->type == 'TopSmall') {
-                $banners = Announcement::where('type', '=', 'TopSmall')->get();
-            } elseif ($request->type == 'BottomSmall') {
-                $banners = Announcement::where('type', '=', 'BottomSmall')->get();
-            } elseif ($request->type == 'Large') {
-                $ps = FrontendSetting::first();
-                $large_banner['image'] = asset('assets/images/' . $ps->big_save_banner1);
-                $large_banner['name'] = $ps->big_save_banner_text;
-                $large_banner['text'] = $ps->big_save_banner_subname;
-                $large_banner['link'] = $ps->big_save_banner_link1;
+            $banners = Announcement::where('type', '=', $type)->get();
 
-                return response()->json(['status' => true, 'data' => $large_banner, 'error' => []]);
-            }
             return response()->json(['status' => true, 'data' => BannerResource::collection($banners), 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);

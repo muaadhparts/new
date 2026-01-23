@@ -120,16 +120,6 @@
 
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('set_discount_codes'))
-
-<li>
-    <a href="{{ route('operator-discount-code-index') }}" class=" wave-effect"><i class="fas fa-percentage"></i>{{ __('Set
-        Discount Codes') }}</a>
-</li>
-
-@endif
-
-
 @if(Auth::guard('operator')->user()->sectionCheck('customers'))
 
 <li>
