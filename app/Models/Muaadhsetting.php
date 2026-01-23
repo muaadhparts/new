@@ -66,11 +66,6 @@ class Muaadhsetting extends Model
         'affilate_banner',
 
         // ==================================
-        // SHIPPING SETTINGS
-        // ==================================
-        'merchant_ship_info',
-
-        // ==================================
         // MERCHANT SETTINGS
         // ==================================
         'reg_merchant',

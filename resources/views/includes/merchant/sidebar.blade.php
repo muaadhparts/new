@@ -180,14 +180,12 @@
             </a>
             <ul class="sidebar-sub-menu collapse {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') || request()->is('merchant/location') || request()->is('merchant/location/*') || request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') || request()->is('merchant/credentials') || request()->is('merchant/credentials/*') ? 'show' : '' }}"
                 id="merchant-collapsed-settings">
-                @if ($gs->merchant_ship_info == 1)
-                    <li class=""><a
-                            class="sidebar-sub-menu-item {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-shipping-index') }}">@lang('Shipping Methods')</a></li>
-                    <li class=""><a
-                            class="sidebar-sub-menu-item {{ request()->is('merchant/branch') || request()->is('merchant/branch/*') ? 'active' : '' }}"
-                            href="{{ route('merchant-branch-index') }}">@lang('Warehouse Branches')</a></li>
-                @endif
+                <li class=""><a
+                        class="sidebar-sub-menu-item {{ request()->is('merchant/shipping') || request()->is('merchant/shipping/*') ? 'active' : '' }}"
+                        href="{{ route('merchant-shipping-index') }}">@lang('Shipping Methods')</a></li>
+                <li class=""><a
+                        class="sidebar-sub-menu-item {{ request()->is('merchant/branch') || request()->is('merchant/branch/*') ? 'active' : '' }}"
+                        href="{{ route('merchant-branch-index') }}">@lang('Warehouse Branches')</a></li>
                 <li class=""><a
                         class="sidebar-sub-menu-item {{ request()->is('merchant/network-presence') || request()->is('merchant/network-presence/*') ? 'active' : '' }}"
                         href="{{ route('merchant-network-presence-index') }}">@lang('Network Presence')</a>

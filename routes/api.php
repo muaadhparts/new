@@ -199,18 +199,7 @@ Route::group(['prefix' => 'front'], function () {
 
     //------------ Merchant Controller ------------
 
-    //------------ Checkout Controller ------------
-
-    Route::post('/checkout','Api\Front\CheckoutController@checkout');
-   
-    Route::get('/get-shipping-packaging','Api\Front\CheckoutController@getShippingPackaging');
-    Route::get('/merchant/wise/shipping-packaging','Api\Front\CheckoutController@MerchantWisegetShippingPackaging');
-    Route::get('/purchase/details','Api\Front\CheckoutController@purchaseDetails');
-    Route::get('/get/discount-code','Api\Front\CheckoutController@getDiscountCode');
-    Route::post('/checkout/update/{id}','Api\Front\CheckoutController@update');
-    Route::get('/checkout/delete/{id}','Api\Front\CheckoutController@delete');
-    Route::get('/get/countries','Api\Front\CheckoutController@countries');
-    //------------ Checkout Controller ------------
+    // Old Checkout Controller removed - using branch-based checkout now (CheckoutMerchantController)
 
 });
 

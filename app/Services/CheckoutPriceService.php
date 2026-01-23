@@ -879,8 +879,15 @@ class CheckoutPriceService
 
     /**
      * Determine who receives the money based on payment gateway
+     *
+     * For COD: follows shipping ownership (whoever owns shipping collects the cash)
+     * For Online: follows payment gateway ownership
+     *
+     * @param int $merchantId
+     * @param int|null $paymentGatewayId
+     * @param int|null $shippingId Required for COD to determine shipping owner
      */
-    public function determineMoneyReceiver(int $merchantId, ?int $paymentGatewayId): string
+    public function determineMoneyReceiver(int $merchantId, ?int $paymentGatewayId, ?int $shippingId = null): string
     {
         if (!$paymentGatewayId) {
             return 'platform';
@@ -891,7 +898,13 @@ class CheckoutPriceService
             return 'platform';
         }
 
-        // If gateway belongs to the merchant, merchant receives the money
+        // COD special case: follows shipping ownership
+        // Whoever owns the shipping company collects the cash
+        if ($gateway->keyword === 'cod') {
+            return $this->determineShippingType($merchantId, $shippingId, null);
+        }
+
+        // Online payment: follows payment gateway ownership
         if ($gateway->user_id > 0 && $gateway->user_id == $merchantId) {
             return 'merchant';
         }
@@ -901,10 +914,14 @@ class CheckoutPriceService
 
     /**
      * Determine payment type based on payment gateway ownership
+     *
+     * @param int $merchantId
+     * @param int|null $paymentGatewayId
+     * @param int|null $shippingId Required for COD to determine shipping owner
      */
-    public function determinePaymentType(int $merchantId, ?int $paymentGatewayId): string
+    public function determinePaymentType(int $merchantId, ?int $paymentGatewayId, ?int $shippingId = null): string
     {
-        return $this->determineMoneyReceiver($merchantId, $paymentGatewayId) === 'merchant' ? 'merchant' : 'platform';
+        return $this->determineMoneyReceiver($merchantId, $paymentGatewayId, $shippingId) === 'merchant' ? 'merchant' : 'platform';
     }
 
     /**

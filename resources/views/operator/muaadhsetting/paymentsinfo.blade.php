@@ -158,22 +158,6 @@
                                   </div>
                                 </div>
 
-                                <div class="row justify-content-center">
-                                  <div class="col-lg-4">
-                                    <div class="left-area">
-                                        <h4 class="heading">{{ __('Shipping Information For Merchant') }} *
-                                          </h4>
-                                    </div>
-                                  </div>
-        
-                                  <div class="col-lg-6">
-                                    <label class="switch">
-                                      <input type="checkbox" name="merchant_ship_info" value="1" {{ $gs->merchant_ship_info == 1 ? "checked" : "" }}>
-                                      <span class="toggle-switch round"></span>
-                                    </label>
-                                  </div>
-                                  </div>
-        
                               </div>
 
 

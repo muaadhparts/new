@@ -337,7 +337,7 @@ class MerchantPurchaseCreator
 
             // Payment method and type
             'payment_method' => $isCod ? 'cod' : 'online',
-            'payment_type' => $isCod ? 'platform' : ($this->determinePaymentType($merchantId, $paymentData)),
+            'payment_type' => $paymentOwnerId > 0 ? 'merchant' : 'platform',
             'payment_gateway_id' => $paymentData['pay_id'] ?? null,
 
             // Shipping type

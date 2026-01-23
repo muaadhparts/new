@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Muaadhsetting;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use App\Models\MerchantPurchase;
@@ -160,10 +159,6 @@ class MerchantController extends MerchantBaseController
     //*** GET Request
     public function ship()
     {
-        $gs = Muaadhsetting::find(1);
-        if ($gs->merchant_ship_info == 0) {
-            return redirect()->back();
-        }
         $data = $this->user;
         return view('merchant.ship', compact('data'));
     }

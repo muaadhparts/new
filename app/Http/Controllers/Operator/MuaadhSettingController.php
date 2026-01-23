@@ -214,11 +214,6 @@ class MuaadhSettingController extends OperatorBaseController
             $data = Muaadhsetting::findOrFail(1);
             $prev = $data->molly_key;
 
-            // Handle merchant shipping info setting
-            if ($request->merchant_ship_info == "") {
-                $input['merchant_ship_info'] = 0;
-            }
-
             if ($request->instamojo_sandbox == "") {
                 $input['instamojo_sandbox'] = 0;
             }
