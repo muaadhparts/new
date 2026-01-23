@@ -271,7 +271,6 @@
 <input type="hidden" id="price-tax-rate" value="{{ $taxRate }}">
 <input type="hidden" id="price-tax-amount" value="{{ $taxAmount }}">
 <input type="hidden" id="price-shipping-cost" value="{{ $shippingCost }}">
-<input type="hidden" id="price-packing-cost" value="{{ $packingCost }}">
 <input type="hidden" id="price-courier-fee" value="{{ $courierFee }}">
 <input type="hidden" id="price-delivery-type" value="{{ $deliveryType }}">
 <input type="hidden" id="price-grand-total" value="{{ $grandTotal }}">
@@ -324,7 +323,6 @@
  * Usage:
  * - PriceSummary.updateTax(rate, amount)
  * - PriceSummary.updateShipping(cost, originalCost, isFree)
- * - PriceSummary.updatePacking(cost)
  * - PriceSummary.updateDiscount(discount, code, percentage)
  * - PriceSummary.removeDiscount()
  * - PriceSummary.recalculateTotal()
@@ -360,7 +358,6 @@
             taxRate: parseFloat($('#price-tax-rate').val()) || 0,
             taxAmount: parseFloat($('#price-tax-amount').val()) || 0,
             shippingCost: parseFloat($('#price-shipping-cost').val()) || 0,
-            packingCost: parseFloat($('#price-packing-cost').val()) || 0,
             courierFee: parseFloat($('#price-courier-fee').val()) || 0,
             deliveryType: $('#price-delivery-type').val() || 'shipping',
             subtotalBeforeDiscount: parseFloat($('#price-subtotal-before-discount').val()) || 0
@@ -373,7 +370,7 @@
         var subtotal = v.catalogItemsTotal - v.discountAmount;
         // Add courier fee OR shipping cost (not both)
         var deliveryCost = v.deliveryType === 'local_courier' ? v.courierFee : v.shippingCost;
-        var grandTotal = subtotal + v.taxAmount + deliveryCost + v.packingCost;
+        var grandTotal = subtotal + v.taxAmount + deliveryCost;
 
         // Update hidden field
         $('#price-grand-total').val(grandTotal.toFixed(2));
@@ -432,13 +429,6 @@
             recalculateTotal();
         },
 
-        // Update packing display (cost must be pre-converted by API)
-        updatePacking: function(cost) {
-            $('#price-packing-cost').val(cost);
-            $('#packing-cost-display, .packing-cost-display').html(formatPrice(cost));
-            recalculateTotal();
-        },
-
         // Update discount display (discount must be pre-converted by API)
         updateDiscount: function(discount, code, percentage) {
             $('#price-discount-amount').val(discount);
@@ -470,7 +460,7 @@
         // Get subtotal before discount (for discount calculations)
         getSubtotalBeforeDiscount: function() {
             var v = getValues();
-            return v.catalogItemsTotal + v.taxAmount + v.shippingCost + v.packingCost;
+            return v.catalogItemsTotal + v.taxAmount + v.shippingCost;
         }
     };
 

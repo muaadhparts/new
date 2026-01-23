@@ -479,9 +479,6 @@ Route::prefix('operator')->group(function () {
 
         Route::get('/merchants/status/{id1}/{id2}', 'Operator\MerchantController@status')->name('operator-merchant-st');
         Route::delete('/merchants/delete/{id}', 'Operator\MerchantController@destroy')->name('operator-merchant-delete');
-        // Subscription routes removed - system now uses verification instead
-        // Route::get('/merchant/{id}/add-subscription', 'Operator\MerchantController@addMembershipPlan')->name('operator-merchant-add-subs');
-        // Route::post('/merchant/{id}/add-subscription', 'Operator\MerchantController@addMembershipPlanStore')->name('operator-merchant-add-subs-store');
 
         Route::get('/merchants/withdraws/datatables', 'Operator\MerchantController@withdrawdatatables')->name('operator-merchant-withdraw-datatables'); //JSON REQUEST
         Route::get('/merchants/withdraws', 'Operator\MerchantController@withdraws')->name('operator-merchant-withdraw-index');
@@ -1532,10 +1529,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/webhooks/tryoto/test', 'App\Http\Controllers\TryotoWebhookController@test')->name('webhooks.tryoto.test');
 
     // Flutterwave Notify Routes
-
-    // Membership Plan
-    Route::post('/uflutter/notify', 'Payment\MembershipPlan\FlutterwaveController@notify')->name('user.flutter.notify');
-
     // Checkout
     Route::post('/cflutter/notify', [\App\Http\Controllers\Merchant\Payment\FlutterwavePaymentController::class, 'notify'])->name('front.flutter.notify');
 

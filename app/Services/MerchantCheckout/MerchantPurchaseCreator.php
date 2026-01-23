@@ -120,7 +120,6 @@ class MerchantPurchaseCreator
                 // Pricing
                 'pay_amount' => $this->priceCalculator->convertToBase($totals['grand_total']),
                 'shipping_cost' => $shippingData['shipping_cost'],
-                'packing_cost' => 0, // Packing removed
                 'tax' => $totals['tax_amount'],
                 'tax_location' => $addressData['tax_location'] ?? '',
                 'discount_amount' => $discountData['amount'] ?? 0,
@@ -147,7 +146,6 @@ class MerchantPurchaseCreator
                 // Multi-merchant (single merchant per branch checkout)
                 'merchant_ids' => json_encode([$merchantId]),
                 'merchant_shipping_id' => $shippingData['shipping_id'] ?? 0,
-                'merchant_packing_id' => 0, // Packing removed
 
                 // Courier
                 'couriers' => $shippingData['delivery_type'] === 'local_courier' ? json_encode([
@@ -308,7 +306,6 @@ class MerchantPurchaseCreator
             'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
             'platform_shipping_fee' => $shippingData['platform_shipping_fee'] ?? 0,
-            'platform_packing_fee' => $shippingData['platform_packing_fee'] ?? 0,
         ]);
 
         $merchantPurchase = new MerchantPurchase();
@@ -324,7 +321,6 @@ class MerchantPurchaseCreator
             'tax_amount' => $totals['tax_amount'],
             'net_amount' => $netAmount,
             'shipping_cost' => $shippingData['shipping_cost'],
-            'packing_cost' => 0, // Packing removed
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
 
             // ═══════════════════════════════════════════════════════════════════
@@ -333,7 +329,6 @@ class MerchantPurchaseCreator
             // ═══════════════════════════════════════════════════════════════════
             'payment_owner_id' => $paymentOwnerId,
             'shipping_owner_id' => $shippingOwnerId,
-            'packing_owner_id' => 0, // Packing removed
 
             // Payment method and type
             'payment_method' => $isCod ? 'cod' : 'online',

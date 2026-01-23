@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
  * or PaymentAccountingService::prepareDeliveryCourierData()
  *
  * NEVER calculate cod_amount manually! It equals pay_amount (not pay_amount + fee!)
- * pay_amount already includes: items + tax + courier_fee + packing
+ * pay_amount already includes: items + tax + courier_fee
  *
  * @see \App\Services\PaymentAccountingService::prepareDeliveryCourierData()
  *
@@ -439,7 +439,7 @@ class DeliveryCourier extends Model
      * @param int $serviceAreaId
      * @param int|null $merchantBranchId
      * @param float $deliveryFee - Courier's fee portion (already included in purchaseAmount)
-     * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee + packing)
+     * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee)
      * @param string $paymentMethod (cod|online)
      */
     public function initializeAssignment(
@@ -484,7 +484,7 @@ class DeliveryCourier extends Model
      * @param int $serviceAreaId
      * @param int|null $merchantBranchId
      * @param float $deliveryFee - Courier's fee portion (already included in purchaseAmount)
-     * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee + packing)
+     * @param float $purchaseAmount - TOTAL amount (items + tax + deliveryFee)
      * @param string $paymentMethod
      * @return static
      */

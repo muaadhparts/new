@@ -47,28 +47,21 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="text-center p-3 bg-light rounded">
                                 <h6 class="text-muted">{{ __('Commission Earned') }}</h6>
                                 <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['commission_earned'], 2) }}</h3>
                                 <small class="text-muted">{{ __('From merchant sales') }}</small>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <div class="text-center p-3 bg-light rounded">
-                                <h6 class="text-muted">{{ __('Packing Fee Earned') }}</h6>
-                                <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['packing_fee_earned'] ?? 0, 2) }}</h3>
-                                <small class="text-muted">{{ __('From platform packaging') }}</small>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="text-center p-3 bg-light rounded">
                                 <h6 class="text-muted">{{ __('Shipping Fee Earned') }}</h6>
                                 <h3 class="text-success mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['shipping_fee_earned'] ?? 0, 2) }}</h3>
                                 <small class="text-muted">{{ __('From platform shipping') }}</small>
                             </div>
                         </div>
-                        <div class="col-md-3">
+                        <div class="col-md-4">
                             <div class="text-center p-3 bg-success text-white rounded">
                                 <h6>{{ __('Total Platform Revenue') }}</h6>
                                 <h3 class="mb-0">{{ $currency->sign }}{{ number_format($report['revenue']['total'], 2) }}</h3>

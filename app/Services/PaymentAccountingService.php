@@ -77,7 +77,6 @@ class PaymentAccountingService
         $shippingCost = (float) ($data['shipping_cost'] ?? 0);
         $courierFee = (float) ($data['courier_fee'] ?? 0);
         $platformShippingFee = (float) ($data['platform_shipping_fee'] ?? 0);
-        $platformPackingFee = (float) ($data['platform_packing_fee'] ?? 0);
 
         // Net amount = price - commission - tax
         $netAmount = $price - $commission - $tax;
@@ -92,7 +91,7 @@ class PaymentAccountingService
         $codAmount = $this->calculateMerchantPurchaseCodAmount($paymentMethod, $price, $deliveryFee);
 
         // Platform services total
-        $platformServices = $platformShippingFee + $platformPackingFee;
+        $platformServices = $platformShippingFee;
 
         // Initialize debt ledger
         // Note: courier_owes_merchant removed - couriers always belong to platform
@@ -508,7 +507,7 @@ class PaymentAccountingService
     //
     // 2. delivery_couriers.cod_amount = Physical cash collected by courier
     //    - The ACTUAL amount the courier collects from customer
-    //    - EQUALS pay_amount (includes everything: items + tax + shipping + packing)
+    //    - EQUALS pay_amount (includes everything: items + tax + shipping)
     //
     // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -538,7 +537,7 @@ class PaymentAccountingService
      * Calculate cod_amount for delivery_couriers table (actual cash collection)
      *
      * This is the TOTAL amount the courier physically collects from customer.
-     * It equals pay_amount which already includes: items + tax + shipping/courier + packing
+     * It equals pay_amount which already includes: items + tax + shipping/courier
      *
      * @param string $paymentMethod 'cod' or 'online'
      * @param float $payAmount The total order amount (from purchases.pay_amount)
@@ -552,7 +551,7 @@ class PaymentAccountingService
             return 0;
         }
 
-        // pay_amount already includes EVERYTHING (items + tax + courier_fee + packing)
+        // pay_amount already includes EVERYTHING (items + tax + courier_fee)
         // DO NOT add delivery_fee again - it's already in pay_amount!
         return round($payAmount, 2);
     }

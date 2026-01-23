@@ -35,7 +35,6 @@ use Illuminate\Database\Eloquent\Model;
  *
  * Platform Services = any service where owner_id = 0:
  *   - platform_shipping_fee (if shipping_owner_id = 0)
- *   - platform_packing_fee (if packing_owner_id = 0)
  */
 class MerchantPurchase extends Model
 {
@@ -55,10 +54,8 @@ class MerchantPurchase extends Model
         'commission_amount',
         'tax_amount',
         'shipping_cost',
-        'packing_cost',
         'courier_fee',
         'platform_shipping_fee',
-        'platform_packing_fee',
         'net_amount',
         // === Debt Ledger ===
         'merchant_owes_platform',
@@ -81,7 +78,6 @@ class MerchantPurchase extends Model
         'money_received_by',
         'payment_owner_id',
         'shipping_owner_id',
-        'packing_owner_id',
         'payment_gateway_id',
         'shipping_id',
         'courier_id',
@@ -96,10 +92,8 @@ class MerchantPurchase extends Model
         'commission_amount' => 'decimal:2',
         'tax_amount' => 'decimal:2',
         'shipping_cost' => 'decimal:2',
-        'packing_cost' => 'decimal:2',
         'courier_fee' => 'decimal:2',
         'platform_shipping_fee' => 'decimal:2',
-        'platform_packing_fee' => 'decimal:2',
         'net_amount' => 'decimal:2',
         'price' => 'decimal:2',
         // === Debt Ledger ===
@@ -115,7 +109,6 @@ class MerchantPurchase extends Model
         // === IDs ===
         'payment_owner_id' => 'integer',
         'shipping_owner_id' => 'integer',
-        'packing_owner_id' => 'integer',
     ];
 
     // === Money Holder Constants ===
@@ -266,22 +259,6 @@ class MerchantPurchase extends Model
         return $this->shipping_owner_id > 0;
     }
 
-    /**
-     * Check if packing is provided by platform (packing_owner_id = 0)
-     */
-    public function isPlatformPacking(): bool
-    {
-        return $this->packing_owner_id === 0;
-    }
-
-    /**
-     * Check if packing is provided by merchant (packing_owner_id > 0)
-     */
-    public function isMerchantPacking(): bool
-    {
-        return $this->packing_owner_id > 0;
-    }
-
     // ============================================================
     // MONEY FLOW METHODS
     // ============================================================
@@ -310,25 +287,18 @@ class MerchantPurchase extends Model
      */
     public function calculatePlatformServicesTotal(): float
     {
-        $total = 0;
-
         // Platform shipping fee (if shipping_owner_id = 0)
         if ($this->isPlatformShipping()) {
-            $total += (float) $this->platform_shipping_fee;
+            return (float) $this->platform_shipping_fee;
         }
 
-        // Platform packing fee (if packing_owner_id = 0)
-        if ($this->isPlatformPacking()) {
-            $total += (float) $this->platform_packing_fee;
-        }
-
-        return $total;
+        return 0;
     }
 
     /**
      * Calculate what merchant owes platform
      * Used when: Merchant receives payment directly (merchant payment gateway)
-     * Formula: Commission + Tax + Platform Services (shipping/packing)
+     * Formula: Commission + Tax + Platform Services (shipping)
      */
     public function calculateMerchantOwes(): float
     {

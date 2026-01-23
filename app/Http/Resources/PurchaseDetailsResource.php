@@ -41,7 +41,6 @@ class PurchaseDetailsResource extends JsonResource
         'paid_amount' => $this->currency_sign . '' . round($this->pay_amount * $this->currency_value , 2),
         'payment_method' => $this->method,
         'shipping_cost' => $this->shipping_cost,
-        'packing_cost' => $this->packing_cost,
         'charge_id' => $this->charge_id,
         'transaction_id' => $this->txnid,
         'purchased_products' => $this->when(!empty($this->cart), function() {

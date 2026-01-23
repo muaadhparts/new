@@ -173,7 +173,6 @@ class CheckoutMerchantController extends Controller
             'cart' => $result['data']['cart'] ?? [],
             'totals' => $result['data']['totals'] ?? [],
             'shipping_providers' => $result['data']['shipping_options'] ?? [],
-            'packaging' => $result['data']['packaging_options'] ?? [],
             'couriers' => $result['data']['courier_options'] ?? [],
             'curr' => $curr,
             'gs' => \DB::table('muaadhsettings')->first(),
@@ -211,10 +210,6 @@ class CheckoutMerchantController extends Controller
             'courier_fee' => 'nullable|numeric',
             'service_area_id' => 'nullable|integer',
             'merchant_branch_id' => 'nullable|integer',
-            // Packing fields (removed but kept for compatibility)
-            'packing_id' => 'nullable|integer',
-            'packing_name' => 'nullable|string',
-            'packing_cost' => 'nullable|numeric',
         ]);
 
         $result = $this->checkoutService->processShippingStep($branchId, $validated);
@@ -282,7 +277,6 @@ class CheckoutMerchantController extends Controller
             'success' => true,
             'shipping_options' => $result['data']['shipping_options'] ?? [],
             'courier_options' => $result['data']['courier_options'] ?? [],
-            'packaging_options' => $result['data']['packaging_options'] ?? [],
         ]);
     }
 
@@ -361,7 +355,6 @@ class CheckoutMerchantController extends Controller
             'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'] ?? 0,
             'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
-            'packing_cost' => 0, // Packing removed
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
         ]);
 
@@ -557,14 +550,12 @@ class CheckoutMerchantController extends Controller
         $deliveryType = $request->input('delivery_type', 'shipping');
         $shippingCost = (float) $request->input('shipping_cost', 0);
         $courierFee = (float) $request->input('courier_fee', 0);
-        $packingCost = 0; // Packing removed
 
         // Calculate totals
         $totals = $priceCalculator->calculateTotals($cartSummary['items'], [
             'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'] ?? 0,
             'shipping_cost' => $deliveryType === 'shipping' ? $shippingCost : 0,
-            'packing_cost' => $packingCost,
             'courier_fee' => $deliveryType === 'local_courier' ? $courierFee : 0,
         ]);
 
@@ -577,7 +568,6 @@ class CheckoutMerchantController extends Controller
                 'subtotal' => $curr->sign . number_format($totals['subtotal'], 2),
                 'shipping_cost' => $curr->sign . number_format($totals['shipping_cost'], 2),
                 'courier_fee' => $curr->sign . number_format($totals['courier_fee'], 2),
-                'packing_cost' => $curr->sign . number_format($totals['packing_cost'], 2),
                 'tax_amount' => $curr->sign . number_format($totals['tax_amount'], 2),
                 'grand_total' => $curr->sign . number_format($totals['grand_total'], 2),
             ],

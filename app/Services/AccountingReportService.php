@@ -64,13 +64,7 @@ class AccountingReportService
             ->where('to_party_id', $platform->id)
             ->sum('amount');
 
-        // 2. رسوم التغليف من المنصة (إيراد للمنصة)
-        $packingFeeEarned = $entries
-            ->where('entry_type', AccountingLedger::ENTRY_PACKING_FEE_PLATFORM)
-            ->where('to_party_id', $platform->id)
-            ->sum('amount');
-
-        // 3. رسوم الشحن المنصة (إيراد عند استخدام شحن المنصة)
+        // 2. رسوم الشحن المنصة (إيراد عند استخدام شحن المنصة)
         $shippingFeeEarned = $entries
             ->where('entry_type', AccountingLedger::ENTRY_SHIPPING_FEE_PLATFORM)
             ->where('to_party_id', $platform->id)
@@ -161,9 +155,8 @@ class AccountingReportService
             // الدخل الحقيقي للمنصة
             'revenue' => [
                 'commission_earned' => $commissionEarned,
-                'packing_fee_earned' => $packingFeeEarned,
                 'shipping_fee_earned' => $shippingFeeEarned,
-                'total' => $commissionEarned + $packingFeeEarned + $shippingFeeEarned,
+                'total' => $commissionEarned + $shippingFeeEarned,
             ],
 
             // المبالغ المحصلة (أموال عابرة)
@@ -198,7 +191,6 @@ class AccountingReportService
 
             // الصافي
             'net_position' => $commissionEarned
-                + $packingFeeEarned
                 + $shippingFeeEarned
                 + $receivableFromCouriers
                 + $receivableFromShipping

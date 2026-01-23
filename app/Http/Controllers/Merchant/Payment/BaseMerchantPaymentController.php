@@ -232,7 +232,6 @@ abstract class BaseMerchantPaymentController extends Controller
             'discount_amount' => $discountData['amount'] ?? 0,
             'tax_rate' => $addressData['tax_rate'] ?? 0,
             'shipping_cost' => $shippingData['shipping_cost'] ?? 0,
-            'packing_cost' => 0, // Packaging removed
             'courier_fee' => $shippingData['courier_fee'] ?? 0,
         ]);
 

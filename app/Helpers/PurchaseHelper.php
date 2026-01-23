@@ -297,7 +297,6 @@ class PurchaseHelper
 
                 // Calculate platform services fees (only if platform provides the service)
                 $platformShippingFee = ($shippingData['owner_id'] === 0) ? $shippingData['cost'] : 0;
-                $platformPackingFee = 0; // Packing owner handled separately
 
                 // === Calculate Debt Ledger via Accounting Service ===
                 $accountingData = $accountingService->calculateDebtLedger([
@@ -311,7 +310,6 @@ class PurchaseHelper
                     'shipping_cost' => $shippingData['cost'],
                     'courier_fee' => ($shippingData['type'] === 'courier') ? $shippingData['cost'] : 0,
                     'platform_shipping_fee' => $platformShippingFee,
-                    'platform_packing_fee' => $platformPackingFee,
                 ]);
 
                 $merchantPurchase = new MerchantPurchase();
@@ -325,16 +323,13 @@ class PurchaseHelper
                 $merchantPurchase->commission_amount = $commissionAmount;
                 $merchantPurchase->tax_amount = $taxAmount;
                 $merchantPurchase->shipping_cost = $shippingData['cost'];
-                $merchantPurchase->packing_cost = 0;
                 $merchantPurchase->courier_fee = ($shippingData['type'] === 'courier') ? $shippingData['cost'] : 0;
                 $merchantPurchase->platform_shipping_fee = $platformShippingFee;
-                $merchantPurchase->platform_packing_fee = $platformPackingFee;
                 $merchantPurchase->net_amount = $netAmount;
                 $merchantPurchase->payment_type = $paymentType;
                 $merchantPurchase->shipping_type = $shippingData['type'];
                 $merchantPurchase->payment_owner_id = $paymentOwnerId;
                 $merchantPurchase->shipping_owner_id = $shippingData['owner_id'];
-                $merchantPurchase->packing_owner_id = 0; // Default to platform
                 $merchantPurchase->shipping_id = $shippingData['shipping_id'];
                 $merchantPurchase->courier_id = $shippingData['courier_id'];
 

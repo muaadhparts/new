@@ -127,12 +127,6 @@
                                 <td class="text-end">-{{ $total_platform_shipping_fee }}</td>
                             </tr>
                             @endif
-                            @if($report['total_platform_packing_fee'] > 0)
-                            <tr class="text-muted">
-                                <td>@lang('Platform Packing Fee')</td>
-                                <td class="text-end">-{{ $total_platform_packing_fee }}</td>
-                            </tr>
-                            @endif
                             <tr class="border-top">
                                 <td><strong>@lang('Net Earnings')</strong></td>
                                 <td class="text-end text-success"><strong>{{ $total_net }}</strong></td>

@@ -262,13 +262,11 @@ class AccountingEntryService
     }
 
     /**
-     * قيود الشحن والتغليف
+     * قيود الشحن
      *
      * OWNER_ID PATTERN:
      * - shipping_owner_id = 0 → Platform-provided shipping
      * - shipping_owner_id > 0 → Merchant-provided shipping
-     * - packing_owner_id = 0  → Platform-provided packaging
-     * - packing_owner_id > 0  → Merchant-provided packaging
      */
     protected function createShippingEntries(
         MerchantPurchase $mp,
@@ -323,55 +321,6 @@ class AccountingEntryService
                 'description_ar' => "رسم شحن (تاجر) - طلب #{$mp->purchase_number}",
                 'metadata' => [
                     'shipping_owner_id' => $shippingOwnerId,
-                    'is_platform_provided' => false,
-                ],
-                'status' => AccountingLedger::STATUS_COMPLETED,
-            ]));
-        }
-
-        // ═══ PACKING ENTRIES ═══
-
-        // تغليف المنصة (platform_packing_fee when packing_owner_id = 0)
-        if (($mp->platform_packing_fee ?? 0) > 0) {
-            $entries->push(AccountingLedger::create([
-                'purchase_id' => $mp->purchase_id,
-                'merchant_purchase_id' => $mp->id,
-                'from_party_id' => $merchant->id, // خصم من التاجر
-                'to_party_id' => $platform->id,   // إيراد للمنصة
-                'amount' => $mp->platform_packing_fee,
-                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
-                'transaction_type' => AccountingLedger::TYPE_FEE,
-                'entry_type' => AccountingLedger::ENTRY_PACKING_FEE_PLATFORM,
-                'direction' => AccountingLedger::DIRECTION_CREDIT,
-                'debt_status' => AccountingLedger::DEBT_PENDING,
-                'description' => "Platform packing fee for order #{$mp->purchase_number}",
-                'description_ar' => "رسم تغليف (منصة) - طلب #{$mp->purchase_number}",
-                'metadata' => [
-                    'packing_owner_id' => $mp->packing_owner_id ?? 0,
-                    'is_platform_provided' => true,
-                ],
-                'status' => AccountingLedger::STATUS_COMPLETED,
-            ]));
-        }
-
-        // تغليف التاجر (packing_cost when packing_owner_id > 0)
-        $packingOwnerId = $mp->packing_owner_id ?? 0;
-        if (($mp->packing_cost ?? 0) > 0 && $packingOwnerId > 0) {
-            $entries->push(AccountingLedger::create([
-                'purchase_id' => $mp->purchase_id,
-                'merchant_purchase_id' => $mp->id,
-                'from_party_id' => $platform->id, // العميل عبر المنصة
-                'to_party_id' => $merchant->id,   // إيراد للتاجر
-                'amount' => $mp->packing_cost,
-                'monetary_unit_code' => MonetaryUnitService::BASE_MONETARY_UNIT,
-                'transaction_type' => AccountingLedger::TYPE_FEE,
-                'entry_type' => AccountingLedger::ENTRY_PACKING_FEE_MERCHANT,
-                'direction' => AccountingLedger::DIRECTION_CREDIT,
-                'debt_status' => AccountingLedger::DEBT_PENDING,
-                'description' => "Merchant packing fee for order #{$mp->purchase_number}",
-                'description_ar' => "رسم تغليف (تاجر) - طلب #{$mp->purchase_number}",
-                'metadata' => [
-                    'packing_owner_id' => $packingOwnerId,
                     'is_platform_provided' => false,
                 ],
                 'status' => AccountingLedger::STATUS_COMPLETED,

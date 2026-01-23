@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Operator;
 use App\Http\Controllers\Controller;
 use App\Models\MonetaryUnit;
 use App\Models\MerchantPurchase;
-use App\Models\UserMembershipPlan;
 use App\Models\Withdraw;
 use App\Services\MerchantAccountingService;
 use Carbon\Carbon;
@@ -73,47 +72,6 @@ class IncomeController extends Controller
             'by_merchant' => $report['by_merchant'],
             'tax_from_platform_payments' => $currency->sign . number_format($report['tax_from_platform_payments'], 2),
             'tax_from_merchant_payments' => $currency->sign . number_format($report['tax_from_merchant_payments'], 2),
-        ]);
-    }
-
-    /**
-     * Membership Plan Income Report
-     */
-    public function membershipPlanIncome(Request $request)
-    {
-        $currency = monetaryUnit()->getDefault();
-        $currentDate = Carbon::now();
-        $firstDayOfMonth = Carbon::now()->startOfMonth();
-        $last30Days = Carbon::now()->subDays(30);
-
-        $last30DaysQuery = UserMembershipPlan::whereDate('created_at', '>=', $last30Days)
-            ->whereDate('created_at', '<=', $currentDate)
-            ->where('price', '!=', 0);
-
-        $currentMonthQuery = UserMembershipPlan::whereDate('created_at', '>=', $firstDayOfMonth)
-            ->whereDate('created_at', '<=', $currentDate)
-            ->where('price', '!=', 0);
-
-        // Build filtered query
-        $query = UserMembershipPlan::with('user')->where('price', '!=', 0);
-
-        if ($request->start_date && $request->end_date) {
-            $startDate = Carbon::parse($request->start_date);
-            $endDate = Carbon::parse($request->end_date);
-            $query->whereDate('created_at', '>=', $startDate)
-                  ->whereDate('created_at', '<=', $endDate);
-        }
-
-        $membershipPlans = $query->get();
-
-        return view('operator.earning.membership_plan_income', [
-            'membershipPlans' => $membershipPlans,
-            'total' => $currency->sign . number_format($membershipPlans->sum('price'), 2),
-            'start_date' => isset($startDate) ? $startDate : '',
-            'end_date' => isset($endDate) ? $endDate : '',
-            'currency' => $currency,
-            'current_month' => $currency->sign . number_format($currentMonthQuery->sum('price'), 2),
-            'last_30_days' => $currency->sign . number_format($last30DaysQuery->sum('price'), 2),
         ]);
     }
 

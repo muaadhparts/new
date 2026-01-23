@@ -70,11 +70,9 @@ class MerchantAccountingService
             'total_commission' => $purchases->sum('commission_amount'),
             'total_tax' => $purchases->sum('tax_amount'),
             'total_platform_shipping_fee' => $purchases->sum('platform_shipping_fee'),
-            'total_platform_packing_fee' => $purchases->sum('platform_packing_fee'),
 
             // Shipping Costs
             'total_shipping_cost' => $purchases->sum('shipping_cost'),
-            'total_packing_cost' => $purchases->sum('packing_cost'),
             'total_courier_fee' => $purchases->sum('courier_fee'),
 
             // Net Amount

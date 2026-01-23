@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\Operator;
 use App\Models\Country;
 use App\Models\MerchantBranch;
 use App\Models\Shipping;
@@ -30,24 +29,22 @@ class CheckoutDataService
     public static function loadMerchantData(array $cartItems): array
     {
         // Extract unique merchant IDs from cart items
+        // RULE: Platform NEVER owns items, all items must have user_id > 0
         $merchantIds = collect($cartItems)
             ->pluck('user_id')
             ->unique()
-            ->filter()
+            ->filter(fn($id) => $id > 0) // Only valid merchant IDs
             ->values()
             ->toArray();
 
-        // Handle case where merchant_id = 0 (admin items)
-        $hasAdminItems = in_array(0, $merchantIds) || empty($merchantIds);
-
-        // Remove 0 from merchant IDs for User query
-        $merchantIds = array_filter($merchantIds, fn($id) => $id > 0);
+        if (empty($merchantIds)) {
+            return [];
+        }
 
         // Bulk load all data
         $merchants = self::loadMerchants($merchantIds);
-        $shippingByMerchant = self::loadShipping($merchantIds, $hasAdminItems);
+        $shippingByMerchant = self::loadShipping($merchantIds);
         $merchantBranches = self::loadMerchantBranches($merchantIds);
-        $operator = $hasAdminItems ? Operator::find(1) : null;
 
         // Provider labels (static)
         $providerLabels = [
@@ -65,20 +62,7 @@ class CheckoutDataService
                 'merchant' => $merchants[$merchantId] ?? null,
                 'merchant_branch' => $merchantBranches[$merchantId] ?? null,
                 'shipping' => $shipping,
-                'packaging' => collect(), // Packaging removed
                 'grouped_shipping' => $shipping->groupBy('provider'),
-                'provider_labels' => $providerLabels,
-            ];
-        }
-
-        // Add operator data if needed
-        if ($hasAdminItems) {
-            $operatorShipping = $shippingByMerchant[0] ?? collect();
-            $result[0] = [
-                'merchant' => $operator,
-                'shipping' => $operatorShipping,
-                'packaging' => collect(), // Packaging removed
-                'grouped_shipping' => $operatorShipping->groupBy('provider'),
                 'provider_labels' => $providerLabels,
             ];
         }
@@ -112,7 +96,7 @@ class CheckoutDataService
      *
      * @return Collection grouped by effective merchant_id
      */
-    private static function loadShipping(array $merchantIds, bool $includeAdmin = false): Collection
+    private static function loadShipping(array $merchantIds): Collection
     {
         if (empty($merchantIds)) {
             return collect();

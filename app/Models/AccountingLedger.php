@@ -67,8 +67,6 @@ class AccountingLedger extends Model
     const ENTRY_TAX_COLLECTED = 'TAX_COLLECTED';              // ضريبة محصلة
     const ENTRY_SHIPPING_FEE_PLATFORM = 'SHIPPING_FEE_PLATFORM';  // رسم شحن (منصة)
     const ENTRY_SHIPPING_FEE_MERCHANT = 'SHIPPING_FEE_MERCHANT';  // رسم شحن (تاجر)
-    const ENTRY_PACKING_FEE_PLATFORM = 'PACKING_FEE_PLATFORM';    // رسم تغليف (منصة)
-    const ENTRY_PACKING_FEE_MERCHANT = 'PACKING_FEE_MERCHANT';    // رسم تغليف (تاجر)
     const ENTRY_COURIER_FEE = 'COURIER_FEE';                  // رسم توصيل
     const ENTRY_COD_PENDING = 'COD_PENDING';                  // COD معلق
     const ENTRY_COD_COLLECTED = 'COD_COLLECTED';              // COD محصل
@@ -374,8 +372,6 @@ class AccountingLedger extends Model
             self::ENTRY_TAX_COLLECTED => 'ضريبة محصلة',
             self::ENTRY_SHIPPING_FEE_PLATFORM => 'رسم شحن (منصة)',
             self::ENTRY_SHIPPING_FEE_MERCHANT => 'رسم شحن (تاجر)',
-            self::ENTRY_PACKING_FEE_PLATFORM => 'رسم تغليف (منصة)',
-            self::ENTRY_PACKING_FEE_MERCHANT => 'رسم تغليف (تاجر)',
             self::ENTRY_COURIER_FEE => 'رسم توصيل',
             self::ENTRY_COD_PENDING => 'دفع عند الاستلام (معلق)',
             self::ENTRY_COD_COLLECTED => 'دفع عند الاستلام (محصل)',

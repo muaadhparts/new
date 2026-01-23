@@ -669,19 +669,12 @@
                                 @php
 
                                 $purchase_shipping = @json_decode($purchase->merchant_shipping_id, true);
-                                $purchase_package = @json_decode($purchase->merchant_packing_id, true);
 
                                 $merchant_shipping_id = @$purchase_shipping[$key1];
-                                $merchant_package_id = @$purchase_package[$key1];
                                 if($merchant_shipping_id){
                                 $shipping = App\Models\Shipping::findOrFail($merchant_shipping_id);
                                 }else{
                                 $shipping = [];
-                                }
-                                if($merchant_package_id){
-                                $package = App\Models\Package::findOrFail($merchant_package_id);
-                                }else{
-                                $package = [];
                                 }
 
                                 @endphp
@@ -695,21 +688,11 @@
                                                 $purchase->currency_value) }}</strong>
                                         </p>
                                         @endif
-                                        @if ($package)
-
-                                        <p>
-                                            {{ __('Packaging Method') }} :
-                                            <strong>{{$package->name}} | {{
-                                                \PriceHelper::showCurrencyPrice($package->price *
-                                                $purchase->currency_value) }}</strong>
-                                        </p>
-
-                                        @endif
                                         <p>
                                             {{ __('Total Amount') }} :
                                             <strong>
                                                 {{ \PriceHelper::showCurrencyPrice(($merchant_total +
-                                                @$shipping->price + @$package->price ) *
+                                                @$shipping->price) *
                                                 $purchase->currency_value )}}
                                             </strong>
                                         </p>

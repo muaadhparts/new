@@ -233,7 +233,6 @@ class MerchantCheckoutService
                 'address' => $addressData,
                 'cart' => $cartSummary,
                 'shipping_options' => $shippingOptions,
-                'packaging_options' => [], // Packaging removed
                 'courier_options' => $courierOptions,
                 'saved_shipping' => $savedShipping,
                 'totals' => $totals,
@@ -393,15 +392,6 @@ class MerchantCheckoutService
                 ]);
             }
         }
-
-        // Packing removed - set defaults
-        $shippingData = array_merge($shippingData, [
-            'packing_id' => 0,
-            'packing_name' => null,
-            'packing_cost' => 0,
-            'packing_is_platform_provided' => false,
-            'packing_owner_user_id' => 0,
-        ]);
 
         // Get discount if any
         $discountData = $this->sessionManager->getDiscountData($branchId);

@@ -5,9 +5,7 @@ namespace App\Http\Controllers\Operator;
 use App\{
     Models\User,
     Models\Withdraw,
-    Models\MembershipPlan,
-    Classes\MuaadhMailer,
-    Models\UserMembershipPlan
+    Classes\MuaadhMailer
 };
 
 use Illuminate\{
@@ -526,57 +524,27 @@ class UserController extends OperatorBaseController
 
         }
 
-        // Set user as merchant with subscription
+        // Set user as merchant
         public function setMerchant(Request $request, $id)
         {
-
-            //--- Validation Section
-
             $rules = [
-                'shop_name'   => 'unique:users',
-                ];
+                'shop_name' => 'unique:users',
+            ];
 
             $validator = Validator::make($request->all(), $rules);
 
             if ($validator->fails()) {
-            return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
+                return response()->json(array('errors' => $validator->getMessageBag()->toArray()));
             }
 
-            //--- Validation Section Ends
-
-            // Logic Section
-
             $user = User::findOrFail($id);
-            $membershipPlan = MembershipPlan::findOrFail($request->subs_id);
-            $today = Carbon::now()->format('Y-m-d');
             $input = $request->all();
             $user->is_merchant = 2;
-            $user->date = date('Y-m-d', strtotime($today.' + '.$membershipPlan->days.' days'));
             $user->mail_sent = 1;
             $user->update($input);
 
-            $userPlan = new UserMembershipPlan;
-            $userPlan->user_id = $user->id;
-            $userPlan->membership_plan_id = $membershipPlan->id;
-            $userPlan->name = $membershipPlan->name;
-            $userPlan->currency_sign = $this->curr->sign;
-            $userPlan->currency_code = $this->curr->name;
-            $userPlan->currency_value = $this->curr->value;
-            $userPlan->price = $membershipPlan->price * $this->curr->value;
-            $userPlan->price = $userPlan->price / $this->curr->value;
-            $userPlan->days = $membershipPlan->days;
-            $userPlan->allowed_items = $membershipPlan->allowed_items;
-            $userPlan->details = $membershipPlan->details;
-            $userPlan->method = 'Free';
-            $userPlan->status = 1;
-            $userPlan->save();
-
             $msg = __('Successfully Created Merchant');
             return response()->json($msg);
-
-            // Logic Section Ends
-
-
         }
 
 

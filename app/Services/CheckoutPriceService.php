@@ -329,7 +329,7 @@ class CheckoutPriceService
         // Calculate shipping
         $shippingResult = $this->processShippingData($shippingData, $catalogItemsTotal, $merchantId);
 
-        // Grand Total = subtotal + tax + shipping (packing removed)
+        // Grand Total = subtotal + tax + shipping
         $grandTotal = $subtotal + $taxAmount + $shippingResult['cost'];
 
         // Subtotal before discount (for discount code operations in step3)
@@ -353,10 +353,6 @@ class CheckoutPriceService
             'is_free_shipping' => $shippingResult['is_free'],
             'free_shipping_discount' => $shippingResult['free_discount'],
             'shipping_company' => $shippingResult['company'],
-
-            // Packing (removed - always 0)
-            'packing_cost' => 0,
-            'packing_company' => '',
 
             // Totals
             'subtotal_before_discount' => $subtotalBeforeDiscount,  // For discount recalculation
@@ -453,8 +449,6 @@ class CheckoutPriceService
         $isFreeShipping = false;
         $freeShippingDiscount = 0;
         $shippingCompany = '';
-        $packingCost = 0;
-        $packingCompany = '';
         $grandTotal = 0;
         $subtotalBeforeDiscount = 0;
         // Courier delivery fields
@@ -474,7 +468,7 @@ class CheckoutPriceService
             $subtotalBeforeDiscount = $catalogItemsTotal;
 
         } elseif ($step == 2) {
-            // Step 2: CatalogItems + Tax from step1, shipping/packing dynamic
+            // Step 2: CatalogItems + Tax from step1, shipping dynamic
             if ($step1Data) {
                 $catalogItemsTotal = $step1Data->catalog_items_total ?? 0;
                 $taxRate = $step1Data->tax_rate ?? 0;
@@ -487,7 +481,7 @@ class CheckoutPriceService
             $discountPercentage = $discountData['percentage'];
 
             $subtotal = $catalogItemsTotal - $discountAmount;
-            $grandTotal = $subtotal + $taxAmount; // Shipping/packing added via JS
+            $grandTotal = $subtotal + $taxAmount; // Shipping added via JS
             $subtotalBeforeDiscount = $catalogItemsTotal + $taxAmount;
 
         } elseif ($step == 3) {
@@ -505,8 +499,6 @@ class CheckoutPriceService
                 $isFreeShipping = $step2Data->is_free_shipping ?? false;
                 $freeShippingDiscount = $step2Data->free_shipping_discount ?? 0;
                 $shippingCompany = $step2Data->shipping_company ?? '';
-                $packingCost = $step2Data->packing_cost ?? 0;
-                $packingCompany = $step2Data->packing_company ?? '';
                 $grandTotal = $step2Data->grand_total ?? $step2Data->total ?? 0;
                 $subtotalBeforeDiscount = $step2Data->subtotal_before_discount ?? 0;
                 // Courier delivery fields
@@ -531,8 +523,6 @@ class CheckoutPriceService
             'is_free_shipping' => $isFreeShipping,
             'free_shipping_discount' => round($freeShippingDiscount, 2),
             'shipping_company' => $shippingCompany,
-            'packing_cost' => round($packingCost, 2),
-            'packing_company' => $packingCompany,
             'grand_total' => round($grandTotal, 2),
             'subtotal_before_discount' => round($subtotalBeforeDiscount, 2),
             // Courier delivery fields
@@ -567,7 +557,6 @@ class CheckoutPriceService
             'shipping_cost' => $this->convert($raw['shipping_cost']),
             'original_shipping_cost' => $this->convert($raw['original_shipping_cost']),
             'free_shipping_discount' => $this->convert($raw['free_shipping_discount']),
-            'packing_cost' => $this->convert($raw['packing_cost']),
             'grand_total' => $this->convert($raw['grand_total']),
             'subtotal_before_discount' => $this->convert($raw['subtotal_before_discount']),
 
@@ -579,7 +568,6 @@ class CheckoutPriceService
             'tax_location' => $raw['tax_location'],
             'is_free_shipping' => $raw['is_free_shipping'],
             'shipping_company' => $raw['shipping_company'],
-            'packing_company' => $raw['packing_company'],
 
             // Courier delivery fields
             'delivery_type' => $raw['delivery_type'],
@@ -609,7 +597,6 @@ class CheckoutPriceService
             'shipping_cost_formatted' => $this->formatPrice($converted['shipping_cost']),
             'original_shipping_cost_formatted' => $this->formatPrice($converted['original_shipping_cost']),
             'free_shipping_discount_formatted' => $this->formatPrice($converted['free_shipping_discount']),
-            'packing_cost_formatted' => $this->formatPrice($converted['packing_cost']),
             'grand_total_formatted' => $this->formatPrice($converted['grand_total']),
 
             // Include raw converted values for JS calculations
@@ -855,9 +842,6 @@ class CheckoutPriceService
             'shipping_cost' => $shippingCost,
             'shipping_type' => $shippingType,
             'shipping_id' => $shippingId,
-
-            // Packing (removed - always 0)
-            'packing_cost' => 0,
 
             // Courier
             'courier_id' => $courierId,

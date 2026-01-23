@@ -40,7 +40,7 @@ class MerchantPriceCalculator
         // Subtotal = Items - Discount
         $subtotal = $itemsTotal - $discountAmount;
 
-        // Grand Total = Subtotal + Tax + Shipping + Courier (packing removed)
+        // Grand Total = Subtotal + Tax + Shipping + Courier
         $grandTotal = $subtotal + $taxAmount + $shippingCost + $courierFee;
 
         return [
@@ -50,7 +50,6 @@ class MerchantPriceCalculator
             'tax_rate' => $taxRate,
             'tax_amount' => round($taxAmount, 2),
             'shipping_cost' => round($shippingCost, 2),
-            'packing_cost' => 0, // Packing removed - always 0
             'courier_fee' => round($courierFee, 2),
             'grand_total' => round($grandTotal, 2),
             'currency' => [
@@ -64,7 +63,6 @@ class MerchantPriceCalculator
                 'subtotal' => $this->formatPrice($subtotal),
                 'tax_amount' => $this->formatPrice($taxAmount),
                 'shipping_cost' => $this->formatPrice($shippingCost),
-                'packing_cost' => $this->formatPrice(0),
                 'courier_fee' => $this->formatPrice($courierFee),
                 'grand_total' => $this->formatPrice($grandTotal),
             ],

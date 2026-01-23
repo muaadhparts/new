@@ -39,10 +39,6 @@ class MerchantPurchaseDetailsResource extends JsonResource
             'shipping_cost' => $this->when($this->merchant_shipping_id == $user->id, function() {
                 return $this->shipping_cost;
             }),
-            'packing_cost' => $this->when($this->merchant_packing_id == $user->id, function() {
-                return $this->packing_cost;
-            }),
-            'packing_cost' => $this->packing_cost,
             'ordered_products' => $this->when(!empty($this->cart), function() use ($user) {
             $user = auth()->user();
               $cart = unserialize(bzdecompress(utf8_decode($this->cart)));

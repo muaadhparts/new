@@ -215,7 +215,6 @@ class AccountLedgerService
             'tax_collected' => AccountingLedger::ENTRY_TAX_COLLECTED,
             'commission' => AccountingLedger::ENTRY_COMMISSION_EARNED,
             'platform_fee' => AccountingLedger::ENTRY_PLATFORM_FEE,
-            'packing_fee' => AccountingLedger::ENTRY_PACKING_FEE_PLATFORM,
             'shipping_fee' => AccountingLedger::ENTRY_SHIPPING_FEE_PLATFORM,
             default => AccountingLedger::ENTRY_PLATFORM_FEE,
         };
@@ -279,7 +278,7 @@ class AccountLedgerService
             // تفصيل: العمولة منفصلة عن الضريبة
             $commissionOnly = $mp->commission_amount ?? 0;
             $taxAmount = $mp->tax_amount ?? 0;
-            $platformFees = ($mp->platform_shipping_fee ?? 0) + ($mp->platform_packing_fee ?? 0);
+            $platformFees = $mp->platform_shipping_fee ?? 0;
 
             $ledgerEntries[] = $this->recordDebt(
                 $mp,
@@ -297,7 +296,6 @@ class AccountLedgerService
                         'commission' => $commissionOnly,
                         'tax' => $taxAmount,
                         'platform_shipping_fee' => $mp->platform_shipping_fee ?? 0,
-                        'platform_packing_fee' => $mp->platform_packing_fee ?? 0,
                     ]
                 ]
             );

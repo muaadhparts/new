@@ -62,11 +62,9 @@ class IncomeController extends Controller
             'total_commission' => $currencySign . number_format($report['total_commission'], 2),
             'total_tax' => $currencySign . number_format($report['total_tax'], 2),
             'total_platform_shipping_fee' => $currencySign . number_format($report['total_platform_shipping_fee'], 2),
-            'total_platform_packing_fee' => $currencySign . number_format($report['total_platform_packing_fee'], 2),
 
             // Shipping Costs
             'total_shipping_cost' => $currencySign . number_format($report['total_shipping_cost'], 2),
-            'total_packing_cost' => $currencySign . number_format($report['total_packing_cost'], 2),
             'total_courier_fee' => $currencySign . number_format($report['total_courier_fee'], 2),
 
             // Net Amount
