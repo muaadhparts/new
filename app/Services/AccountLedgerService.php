@@ -337,21 +337,7 @@ class AccountLedgerService
             }
         }
 
-        if ($mp->courier_owes_merchant > 0 && $mp->courier_id) {
-            $courier = Courier::find($mp->courier_id);
-            if ($courier) {
-                $courierParty = AccountParty::forCourier($courier);
-                $ledgerEntries[] = $this->recordDebt(
-                    $mp,
-                    $courierParty,
-                    $merchant,
-                    $mp->courier_owes_merchant,
-                    'Courier owes merchant (COD collected) for purchase #' . $mp->purchase_number,
-                    'المندوب مدين للتاجر (COD محصّل) - طلب #' . $mp->purchase_number,
-                    ['type' => 'courier_to_merchant', 'cod_amount' => $mp->cod_amount]
-                );
-            }
-        }
+        // Note: courier_owes_merchant removed - couriers always owe platform, never merchants
 
         // === 3. Shipping Company ↔ Platform/Merchant ===
         if ($mp->shipping_company_owes_platform > 0 && $mp->delivery_provider) {

@@ -63,7 +63,6 @@ class MerchantPurchase extends Model
         // === Debt Ledger ===
         'merchant_owes_platform',
         'platform_owes_merchant',
-        'courier_owes_merchant',
         'courier_owes_platform',
         'shipping_company_owes_merchant',
         'shipping_company_owes_platform',
@@ -106,7 +105,6 @@ class MerchantPurchase extends Model
         // === Debt Ledger ===
         'merchant_owes_platform' => 'decimal:2',
         'platform_owes_merchant' => 'decimal:2',
-        'courier_owes_merchant' => 'decimal:2',
         'courier_owes_platform' => 'decimal:2',
         'shipping_company_owes_merchant' => 'decimal:2',
         'shipping_company_owes_platform' => 'decimal:2',

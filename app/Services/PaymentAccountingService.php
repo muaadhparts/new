@@ -95,10 +95,10 @@ class PaymentAccountingService
         $platformServices = $platformShippingFee + $platformPackingFee;
 
         // Initialize debt ledger
+        // Note: courier_owes_merchant removed - couriers always belong to platform
         $ledger = [
             'platform_owes_merchant' => 0,
             'merchant_owes_platform' => 0,
-            'courier_owes_merchant' => 0,
             'courier_owes_platform' => 0,
             'shipping_company_owes_merchant' => 0,
             'shipping_company_owes_platform' => 0,
@@ -182,17 +182,11 @@ class PaymentAccountingService
 
         if ($deliveryMethod === MerchantPurchase::DELIVERY_LOCAL_COURIER) {
             // === COD via Local Courier ===
+            // Couriers ALWAYS belong to platform, so they always owe platform
+            // Money flow: Courier → Platform → Merchant
             $ledger['money_holder'] = MerchantPurchase::MONEY_HOLDER_COURIER;
-
-            if ($paymentOwnerId === 0) {
-                // Platform gateway - courier owes platform, platform owes merchant
-                $ledger['courier_owes_platform'] = $price;
-                $ledger['platform_owes_merchant'] = $netAmount;
-            } else {
-                // Merchant gateway - courier owes merchant directly
-                $ledger['courier_owes_merchant'] = $price;
-                $ledger['merchant_owes_platform'] = $commission + $tax + $platformServices;
-            }
+            $ledger['courier_owes_platform'] = $price;
+            $ledger['platform_owes_merchant'] = $netAmount;
 
         } elseif ($deliveryMethod === MerchantPurchase::DELIVERY_SHIPPING_COMPANY) {
             // === COD via Shipping Company ===
@@ -265,6 +259,7 @@ class PaymentAccountingService
 
     /**
      * Get debt summary for a merchant
+     * Note: Couriers always owe platform (not merchants directly)
      */
     public function getMerchantDebtSummary(int $merchantId): array
     {
@@ -274,10 +269,8 @@ class PaymentAccountingService
         return [
             'platform_owes_you' => (float) $query->sum('platform_owes_merchant'),
             'you_owe_platform' => (float) $query->sum('merchant_owes_platform'),
-            'couriers_owe_you' => (float) $query->sum('courier_owes_merchant'),
             'shipping_companies_owe_you' => (float) $query->sum('shipping_company_owes_merchant'),
             'net_receivable' => (float) $query->sum('platform_owes_merchant')
-                + (float) $query->sum('courier_owes_merchant')
                 + (float) $query->sum('shipping_company_owes_merchant')
                 - (float) $query->sum('merchant_owes_platform'),
         ];
@@ -401,30 +394,7 @@ class PaymentAccountingService
         ]);
     }
 
-    /**
-     * Settle courier debt to merchant
-     *
-     * Called when: Courier transfers COD to merchant
-     * Zeroes: courier_owes_merchant
-     */
-    public function settleCourierToMerchant(MerchantPurchase $mp, array $settlementData = []): void
-    {
-        if ($mp->courier_owes_merchant <= 0) {
-            throw new \InvalidArgumentException('No courier debt to merchant exists');
-        }
-
-        $mp->update([
-            'courier_owes_merchant' => 0,
-            'settlement_status' => 'settled',
-            'settled_at' => now(),
-        ]);
-
-        \Log::info('Settlement: Courier → Merchant', [
-            'merchant_purchase_id' => $mp->id,
-            'amount' => $mp->getOriginal('courier_owes_merchant'),
-            'settlement_data' => $settlementData,
-        ]);
-    }
+    // Note: settleCourierToMerchant removed - couriers always owe platform, never merchants
 
     /**
      * Settle platform debt to merchant
@@ -510,7 +480,6 @@ class PaymentAccountingService
         $mp->update([
             'platform_owes_merchant' => 0,
             'merchant_owes_platform' => 0,
-            'courier_owes_merchant' => 0,
             'courier_owes_platform' => 0,
             'shipping_company_owes_merchant' => 0,
             'shipping_company_owes_platform' => 0,

@@ -862,7 +862,6 @@ class AccountingEntryService
                 'settlement_status' => 'cancelled',
                 'platform_owes_merchant' => 0,
                 'merchant_owes_platform' => 0,
-                'courier_owes_merchant' => 0,
                 'courier_owes_platform' => 0,
                 'shipping_company_owes_merchant' => 0,
                 'shipping_company_owes_platform' => 0,

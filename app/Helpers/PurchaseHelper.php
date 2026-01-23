@@ -348,7 +348,6 @@ class PurchaseHelper
                 // === Debt Ledger from Service ===
                 $merchantPurchase->platform_owes_merchant = $accountingData['platform_owes_merchant'];
                 $merchantPurchase->merchant_owes_platform = $accountingData['merchant_owes_platform'];
-                $merchantPurchase->courier_owes_merchant = $accountingData['courier_owes_merchant'];
                 $merchantPurchase->courier_owes_platform = $accountingData['courier_owes_platform'];
                 $merchantPurchase->shipping_company_owes_merchant = $accountingData['shipping_company_owes_merchant'];
                 $merchantPurchase->shipping_company_owes_platform = $accountingData['shipping_company_owes_platform'];

@@ -355,7 +355,6 @@ class MerchantPurchaseCreator
             // === Debt Ledger ===
             'platform_owes_merchant' => $accountingData['platform_owes_merchant'],
             'merchant_owes_platform' => $accountingData['merchant_owes_platform'],
-            'courier_owes_merchant' => $accountingData['courier_owes_merchant'],
             'courier_owes_platform' => $accountingData['courier_owes_platform'],
             'shipping_company_owes_merchant' => $accountingData['shipping_company_owes_merchant'],
             'shipping_company_owes_platform' => $accountingData['shipping_company_owes_platform'],

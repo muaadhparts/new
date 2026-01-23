@@ -86,7 +86,6 @@ class AccountingViewService
             // === Debt Ledger (pre-formatted) ===
             'platformOwesMerchantFormatted' => $currencySign . ' ' . number_format($mp->platform_owes_merchant ?? 0, 2),
             'merchantOwesPlatformFormatted' => $currencySign . ' ' . number_format($mp->merchant_owes_platform ?? 0, 2),
-            'courierOwesMerchantFormatted' => $currencySign . ' ' . number_format($mp->courier_owes_merchant ?? 0, 2),
             'courierOwesPlatformFormatted' => $currencySign . ' ' . number_format($mp->courier_owes_platform ?? 0, 2),
             'shippingOwesMerchantFormatted' => $currencySign . ' ' . number_format($mp->shipping_company_owes_merchant ?? 0, 2),
             'shippingOwesPlatformFormatted' => $currencySign . ' ' . number_format($mp->shipping_company_owes_platform ?? 0, 2),
@@ -94,7 +93,7 @@ class AccountingViewService
             // === Debt Flags ===
             'hasPlatformDebt' => ($mp->platform_owes_merchant ?? 0) > 0,
             'hasMerchantDebt' => ($mp->merchant_owes_platform ?? 0) > 0,
-            'hasCourierDebt' => ($mp->courier_owes_merchant ?? 0) > 0 || ($mp->courier_owes_platform ?? 0) > 0,
+            'hasCourierDebt' => ($mp->courier_owes_platform ?? 0) > 0,
             'hasShippingDebt' => ($mp->shipping_company_owes_merchant ?? 0) > 0 || ($mp->shipping_company_owes_platform ?? 0) > 0,
 
             // === Settlement Status ===
