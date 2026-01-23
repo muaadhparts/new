@@ -516,30 +516,7 @@ Route::prefix('operator')->group(function () {
 
     //------------ OPERATORSUPPORT TICKET SECTION ENDS ------------
 
-    //------------ OPERATORPUBLICATION SECTION ------------
-
-    Route::group(['middleware' => 'permissions:publication'], function () {
-
-        Route::get('/publication/datatables', 'Operator\PublicationController@datatables')->name('operator-publication-datatables'); //JSON REQUEST
-        Route::get('/publication', 'Operator\PublicationController@index')->name('operator-publication-index');
-        Route::get('/publication/create', 'Operator\PublicationController@create')->name('operator-publication-create');
-        Route::post('/publication/create', 'Operator\PublicationController@store')->name('operator-publication-store');
-        Route::get('/publication/edit/{id}', 'Operator\PublicationController@edit')->name('operator-publication-edit');
-        Route::post('/publication/edit/{id}', 'Operator\PublicationController@update')->name('operator-publication-update');
-        Route::delete('/publication/delete/{id}', 'Operator\PublicationController@destroy')->name('operator-publication-delete');
-
-        Route::get('/article-type/datatables', 'Operator\ArticleTypeController@datatables')->name('operator-article-type-datatables'); //JSON REQUEST
-        Route::get('/article-type', 'Operator\ArticleTypeController@index')->name('operator-article-type-index');
-        Route::get('/article-type/create', 'Operator\ArticleTypeController@create')->name('operator-article-type-create');
-        Route::post('/article-type/create', 'Operator\ArticleTypeController@store')->name('operator-article-type-store');
-        Route::get('/article-type/edit/{id}', 'Operator\ArticleTypeController@edit')->name('operator-article-type-edit');
-        Route::post('/article-type/edit/{id}', 'Operator\ArticleTypeController@update')->name('operator-article-type-update');
-        Route::delete('/article-type/delete/{id}', 'Operator\ArticleTypeController@destroy')->name('operator-article-type-delete');
-
-        Route::get('/publication/publication-settings', 'Operator\PublicationController@settings')->name('operator-gs-publication-settings');
-    });
-
-    //------------ OPERATORPUBLICATION SECTION ENDS ------------
+    // PUBLICATION SECTION REMOVED - Feature deleted
 
     //------------ OPERATORGENERAL SETTINGS SECTION ------------
 
@@ -604,17 +581,7 @@ Route::prefix('operator')->group(function () {
         Route::delete('/featured-promo/delete/{id}', 'Operator\FeaturedPromoController@destroy')->name('operator-featured-promo-delete');
         Route::get('/country/status/{id1}/{id2}', 'Operator\FeaturedPromoController@status')->name('operator-featured-promo-status');
 
-        //------------ OPERATORANNOUNCEMENT SECTION ------------
-
-        Route::get('/announcement/datatables/{type}', 'Operator\AnnouncementController@datatables')->name('operator-announcement-datatables'); //JSON REQUEST
-        Route::get('large/announcement/', 'Operator\AnnouncementController@large')->name('operator-announcement-large');
-        Route::get('large/announcement/create', 'Operator\AnnouncementController@largecreate')->name('operator-announcement-create-large');
-        Route::post('/announcement/create', 'Operator\AnnouncementController@store')->name('operator-announcement-store');
-        Route::get('/announcement/edit/{id}', 'Operator\AnnouncementController@edit')->name('operator-announcement-edit');
-        Route::post('/announcement/edit/{id}', 'Operator\AnnouncementController@update')->name('operator-announcement-update');
-        Route::delete('/announcement/delete/{id}', 'Operator\AnnouncementController@destroy')->name('operator-announcement-delete');
-
-        //------------ OPERATORANNOUNCEMENT SECTION ENDS ------------
+        // ANNOUNCEMENT SECTION REMOVED - Feature deleted
 
         //------------ OPERATORBRAND SECTION ------------
 
@@ -643,39 +610,12 @@ Route::prefix('operator')->group(function () {
     //------------ OPERATORHOME PAGE SETTINGS SECTION ENDS ------------
 
     Route::group(['middleware' => 'permissions:menu_page_settings'], function () {
-
-        //------------ OPERATORMENU PAGE SETTINGS SECTION ------------
-
-        //------------ OPERATORHELP ARTICLE SECTION ------------
-
-        Route::get('/help-article/datatables', 'Operator\HelpArticleController@datatables')->name('operator-help-article-datatables'); //JSON REQUEST
-        Route::get('/help-article', 'Operator\HelpArticleController@index')->name('operator-help-article-index');
-        Route::get('/help-article/create', 'Operator\HelpArticleController@create')->name('operator-help-article-create');
-        Route::post('/help-article/create', 'Operator\HelpArticleController@store')->name('operator-help-article-store');
-        Route::get('/help-article/edit/{id}', 'Operator\HelpArticleController@edit')->name('operator-help-article-edit');
-        Route::post('/help-article/update/{id}', 'Operator\HelpArticleController@update')->name('operator-help-article-update');
-        Route::delete('/help-article/delete/{id}', 'Operator\HelpArticleController@destroy')->name('operator-help-article-delete');
-
-        //------------ OPERATORHELP ARTICLE SECTION ENDS ------------
-
-        //------------ OPERATORSTATIC CONTENT SECTION ------------
-
-        Route::get('/static-content/datatables', 'Operator\StaticContentController@datatables')->name('operator-static-content-datatables'); //JSON REQUEST
-        Route::get('/static-content', 'Operator\StaticContentController@index')->name('operator-static-content-index');
-        Route::get('/static-content/create', 'Operator\StaticContentController@create')->name('operator-static-content-create');
-        Route::post('/static-content/create', 'Operator\StaticContentController@store')->name('operator-static-content-store');
-        Route::get('/static-content/edit/{id}', 'Operator\StaticContentController@edit')->name('operator-static-content-edit');
-        Route::post('/static-content/update/{id}', 'Operator\StaticContentController@update')->name('operator-static-content-update');
-        Route::delete('/static-content/delete/{id}', 'Operator\StaticContentController@destroy')->name('operator-static-content-delete');
-        Route::get('/static-content/header/{id1}/{id2}', 'Operator\StaticContentController@header')->name('operator-static-content-header');
-        Route::get('/static-content/footer/{id1}/{id2}', 'Operator\StaticContentController@footer')->name('operator-static-content-footer');
-        //------------ OPERATORPAGE SECTION ENDS------------
+        // HELP ARTICLE SECTION REMOVED - Feature deleted
+        // STATIC CONTENT SECTION REMOVED - Use pages table for policies
 
         Route::get('/frontend-setting/contact', 'Operator\FrontendSettingController@contact')->name('operator-fs-contact');
         Route::post('/frontend-setting/update/all', 'Operator\FrontendSettingController@update')->name('operator-fs-update');
     });
-
-    //------------ OPERATORMENU PAGE SETTINGS SECTION ENDS ------------
 
     //------------ OPERATOREMAIL SETTINGS SECTION ------------
 
@@ -753,15 +693,7 @@ Route::prefix('operator')->group(function () {
 
         //------------ OPERATOR NETWORK PRESENCE ENDS ------------
 
-        //------------ OPERATOR CONNECT CONFIG (OAuth Settings) ------------
-        Route::get('/connect-config', 'Operator\ConnectConfigController@index')->name('operator-connect-config-index');
-        Route::post('/connect-config/update', 'Operator\ConnectConfigController@socialupdate')->name('operator-connect-config-update');
-        Route::post('/connect-config/update/all', 'Operator\ConnectConfigController@socialupdateall')->name('operator-connect-config-update-all');
-        Route::get('/connect-config/facebook', 'Operator\ConnectConfigController@facebook')->name('operator-connect-config-facebook');
-        Route::get('/connect-config/google', 'Operator\ConnectConfigController@google')->name('operator-connect-config-google');
-        Route::get('/connect-config/facebook/{status}', 'Operator\ConnectConfigController@facebookup')->name('operator-connect-config-facebookup');
-        Route::get('/connect-config/google/{status}', 'Operator\ConnectConfigController@googleup')->name('operator-connect-config-googleup');
-        //------------ OPERATOR CONNECT CONFIG ENDS ------------
+        // CONNECT CONFIG SECTION REMOVED - OAuth settings now in platform_settings
     });
     //------------ OPERATOR CONNECT CONFIG SECTION ENDS------------
 
@@ -790,29 +722,8 @@ Route::prefix('operator')->group(function () {
 
     });
 
-    //------------ADMIN TYPEFACE SECTION------------------
-    Route::get('/typefaces/datatables', 'Operator\TypefaceController@datatables')->name('operator.typefaces.datatables');
-    Route::get('/typefaces', 'Operator\TypefaceController@index')->name('operator.typefaces.index');
-    Route::get('/typefaces/create', 'Operator\TypefaceController@create')->name('operator.typefaces.create');
-    Route::post('/typefaces/create', 'Operator\TypefaceController@store')->name('operator.typefaces.store');
-    Route::get('/typefaces/edit/{id}', 'Operator\TypefaceController@edit')->name('operator.typefaces.edit');
-    Route::post('/typefaces/edit/{id}', 'Operator\TypefaceController@update')->name('operator.typefaces.update');
-    Route::delete('/typefaces/delete/{id}', 'Operator\TypefaceController@destroy')->name('operator.typefaces.delete');
-    Route::get('/typefaces/status/{id}', 'Operator\TypefaceController@status')->name('operator.typefaces.status');
-    //------------ADMIN TYPEFACE SECTION------------------
-
-    //------------ OPERATORSEOTOOL SETTINGS SECTION ------------
-
-    Route::group(['middleware' => 'permissions:seo_tools'], function () {
-
-        Route::get('/seotools/analytics', 'Operator\SeoToolController@analytics')->name('operator-seotool-analytics');
-        Route::post('/seotools/analytics/update', 'Operator\SeoToolController@analyticsupdate')->name('operator-seotool-analytics-update');
-        Route::get('/seotools/keywords', 'Operator\SeoToolController@keywords')->name('operator-seotool-keywords');
-        Route::post('/seotools/keywords/update', 'Operator\SeoToolController@keywordsupdate')->name('operator-seotool-keywords-update');
-        Route::get('/catalog-items/popular/{id}', 'Operator\SeoToolController@popular')->name('operator-catalog-item-popular');
-    });
-
-    //------------ OPERATORSEOTOOL SETTINGS SECTION ------------
+    // TYPEFACE SECTION REMOVED - No custom fonts feature
+    // SEOTOOL SECTION REMOVED - SEO now in platform_settings
 
     //------------ OPERATORSTAFF SECTION ------------
 
@@ -1322,18 +1233,8 @@ Route::group(['middleware' => 'maintenance'], function () {
     });
     // SHIPMENT TRACKING SECTION ENDS
 
-    // PUBLICATION SECTION
-    Route::get('/publications', 'Front\FrontendController@publications')->name('front.publications');
-    Route::get('/publications/{slug}', 'Front\FrontendController@publicationshow')->name('front.publicationshow');
-    Route::get('/publications/category/{slug}', 'Front\FrontendController@publicationcategory')->name('front.publicationcategory');
-    Route::get('/publications/tag/{slug}', 'Front\FrontendController@publicationtags')->name('front.publicationtags');
-    Route::get('/publication-search', 'Front\FrontendController@publicationsearch')->name('front.publicationsearch');
-    Route::get('/publications/archive/{slug}', 'Front\FrontendController@publicationarchive')->name('front.publicationarchive');
-    // PUBLICATION SECTION ENDS
-
-    // HELP ARTICLE SECTION
-    Route::get('/help-article', 'Front\FrontendController@helpArticle')->name('front.help-article');
-    // HELP ARTICLE SECTION ENDS
+    // PUBLICATION SECTION REMOVED - Feature deleted
+    // HELP ARTICLE SECTION REMOVED - Feature deleted
 
     // CONTACT SECTION
     Route::get('/contact', 'Front\FrontendController@contact')->name('front.contact');

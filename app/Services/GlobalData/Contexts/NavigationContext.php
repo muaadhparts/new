@@ -5,7 +5,7 @@ namespace App\Services\GlobalData\Contexts;
 use App\Models\Brand;
 use App\Models\MonetaryUnit;
 use App\Models\Language;
-use App\Models\StaticContent;
+use App\Models\Page;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Cache;
  *
  * بيانات التنقل (Header/Footer):
  * - Brands مع Catalogs
- * - المحتوى الثابت
+ * - Policy pages (terms, privacy, refund)
  * - قوائم العملات واللغات
  */
 class NavigationContext implements ContextInterface
 {
     private $brands = null;
-    private $staticContent = null;
+    private $pages = null;
     private $monetaryUnits = null;
     private $languages = null;
 
@@ -37,8 +37,9 @@ class NavigationContext implements ContextInterface
                 ->get(['id', 'slug', 'name', 'name_ar', 'status', 'photo'])
         );
 
-        $this->staticContent = Cache::remember('header_static_content', 3600, fn() =>
-            StaticContent::all()
+        // Policy pages only (terms, privacy, refund)
+        $this->pages = Cache::remember('policy_pages', 3600, fn() =>
+            Page::where('is_active', true)->get()
         );
 
         $this->monetaryUnits = Cache::remember('all_monetary_units', 3600, fn() =>
@@ -54,7 +55,7 @@ class NavigationContext implements ContextInterface
     {
         return [
             'brands' => $this->brands,
-            'static_content' => $this->staticContent,
+            'pages' => $this->pages,
             'monetaryUnits' => $this->monetaryUnits,
             'languges' => $this->languages,
         ];
@@ -63,7 +64,7 @@ class NavigationContext implements ContextInterface
     public function reset(): void
     {
         $this->brands = null;
-        $this->staticContent = null;
+        $this->pages = null;
         $this->monetaryUnits = null;
         $this->languages = null;
     }
@@ -75,9 +76,9 @@ class NavigationContext implements ContextInterface
         return $this->brands;
     }
 
-    public function getStaticContent()
+    public function getPages()
     {
-        return $this->staticContent;
+        return $this->pages;
     }
 
     public function getMonetaryUnits()

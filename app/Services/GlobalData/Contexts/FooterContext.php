@@ -2,7 +2,7 @@
 
 namespace App\Services\GlobalData\Contexts;
 
-use App\Models\StaticContent;
+use App\Models\Page;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
  * FooterContext
  *
  * بيانات الفوتر:
- * - صفحات الفوتر
+ * - Policy pages (terms, privacy, refund)
  * - روابط التواصل الاجتماعي
  */
 class FooterContext implements ContextInterface
@@ -20,8 +20,9 @@ class FooterContext implements ContextInterface
 
     public function load(): void
     {
+        // Policy pages for footer links
         $this->footerPages = Cache::remember('footer_pages', 3600, fn() =>
-            StaticContent::where('footer', 1)->get()
+            Page::where('is_active', true)->get()
         );
 
         $this->socialLinks = Cache::remember('footer_network_presences', 3600, fn() =>

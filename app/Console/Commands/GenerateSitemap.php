@@ -9,12 +9,11 @@ use Spatie\Sitemap\Tags\Url;
 use App\Models\CatalogItem;
 use App\Models\MerchantItem;
 use App\Models\Brand;
-use App\Models\Publication;
 use Carbon\Carbon;
 
 class GenerateSitemap extends Command
 {
-    protected $signature = 'sitemap:generate {--type=all : Type of sitemap (all, products, categories, pages, blogs)}';
+    protected $signature = 'sitemap:generate {--type=all : Type of sitemap (all, products, categories, pages)}';
     protected $description = 'Generate XML sitemaps for SEO - يولد خرائط الموقع للأرشفة';
 
     public function handle()
@@ -60,11 +59,6 @@ class GenerateSitemap extends Command
         $this->generatePagesSitemap();
         $sitemapIndex->add('/sitemap-pages.xml');
 
-        // Generate blogs sitemap
-        $this->info('Generating blogs sitemap...');
-        $this->generateBlogsSitemap();
-        $sitemapIndex->add('/sitemap-blogs.xml');
-
         // Write main sitemap index
         $sitemapIndex->writeToFile(public_path('sitemap.xml'));
     }
@@ -80,9 +74,6 @@ class GenerateSitemap extends Command
                 break;
             case 'pages':
                 $this->generatePagesSitemap();
-                break;
-            case 'blogs':
-                $this->generateBlogsSitemap();
                 break;
             default:
                 $this->error('Unknown sitemap type: ' . $type);
@@ -201,40 +192,5 @@ class GenerateSitemap extends Command
         $this->info("Added pages to sitemap");
     }
 
-    protected function generateBlogsSitemap()
-    {
-        $sitemap = Sitemap::create();
-
-        // Add blog index
-        try {
-            $sitemap->add(
-                Url::create(route('front.blog'))
-                    ->setChangeFrequency(Url::CHANGE_FREQUENCY_DAILY)
-                    ->setPriority(0.6)
-            );
-        } catch (\Exception $e) {
-            // Route may not exist
-        }
-
-        // Add blog posts
-        $posts = Publication::where('status', 1)->get();
-
-        $count = 0;
-        foreach ($posts as $post) {
-            try {
-                $sitemap->add(
-                    Url::create(route('front.blog.details', $post->slug))
-                        ->setLastModificationDate($post->updated_at ? Carbon::parse($post->updated_at) : Carbon::now())
-                        ->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY)
-                        ->setPriority(0.5)
-                );
-                $count++;
-            } catch (\Exception $e) {
-                // Skip if route doesn't exist
-            }
-        }
-
-        $sitemap->writeToFile(public_path('sitemap-blogs.xml'));
-        $this->info("Added {$count} blog posts to sitemap");
-    }
+    // BLOG SITEMAP REMOVED - Publication feature deleted
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\Publication;
 use App\Models\Purchase;
 use App\Models\CatalogItem;
 use App\Models\User;
@@ -30,7 +29,6 @@ class DashboardController extends OperatorBaseController
         }
         $data['users'] = User::count();
         $data['catalogItems'] = CatalogItem::count();
-        $data['publications'] = Publication::count();
 
         // CatalogItem-first: Get latest catalog items with active merchant offers
         $data['latestCatalogItems'] = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))

@@ -4,146 +4,58 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * @deprecated Use PlatformSetting instead. This model exists for backward compatibility only.
+ *
+ * MIGRATION PATH:
+ * - Read: Use app(PlatformSettingsService::class)->get('key') or $gs from GlobalData
+ * - Write: Use PlatformSetting::set('group', 'key', $value)
+ *
+ * This model will be removed after all controllers are migrated to use PlatformSetting.
+ */
 class Muaadhsetting extends Model
 {
     protected $table = 'muaadhsettings';
 
     protected $fillable = [
-        // ==================================
-        // BASIC SETTINGS
-        // ==================================
-        'logo',
-        'favicon',
-        'site_name',
-        'copyright',
-        'footer_logo',
-        'invoice_logo',
-
-        // ==================================
-        // LOADER SETTINGS
-        // ==================================
-        'loader',
-        'admin_loader',
-        'is_admin_loader',
-
-        // ==================================
-        // CHAT/TALKTO
-        // ==================================
-        'is_talkto',
-        'talkto',
-
-        // ==================================
-        // CURRENCY & FORMAT
-        // ==================================
-        'currency_format',
-        'is_currency',
-        'decimal_separator',
-        'thousand_separator',
-
-        // ==================================
-        // WITHDRAW SETTINGS
-        // ==================================
-        'withdraw_fee',
-        'withdraw_charge',
-
-        // ==================================
-        // MAIL SETTINGS
-        // ==================================
-        'mail_driver',
-        'mail_host',
-        'mail_port',
-        'mail_encryption',
-        'mail_user',
-        'mail_pass',
-        'from_email',
-        'from_name',
-
-        // ==================================
-        // AFFILIATE SETTINGS
-        // ==================================
-        'is_affilate',
-        'affilate_charge',
-        'affilate_banner',
-
-        // ==================================
-        // MERCHANT SETTINGS
-        // ==================================
-        'reg_merchant',
-
-        // ==================================
-        // USER SETTINGS
-        // ==================================
-        'user_image',
-        'is_verification_email',
-        'is_buyer_note',
-
-        // ==================================
-        // WHOLESALE
-        // ==================================
-        'wholesell',
-
-        // ==================================
-        // CAPTCHA
-        // ==================================
-        'is_capcha',
-        'capcha_secret_key',
-        'capcha_site_key',
-
-        // ==================================
-        // ERROR PAGES
-        // ==================================
-        'error_banner_404',
-        'error_banner_500',
-
-        // ==================================
-        // POPUP SETTINGS
-        // ==================================
-        'is_popup',
-        'popup_background',
-
-        // ==================================
-        // DISPLAY SETTINGS
-        // ==================================
-        'verify_item',
-        'is_report',
-
-        // ==================================
-        // MAINTENANCE
-        // ==================================
-        'is_maintain',
-        'maintain_text',
-
-        // ==================================
-        // PAGINATION COUNTS
-        // ==================================
-        'page_count',
-        'favorite_count',
-
-        // ==================================
-        // DEBUG & COOKIES
-        // ==================================
-        'is_debug',
-        'is_cookie',
-
-        // ==================================
-        // TRACKING
-        // ==================================
-        'facebook_pixel',
+        'logo', 'favicon', 'footer_logo', 'invoice_logo', 'loader', 'admin_loader',
+        'user_image', 'error_banner_404', 'error_banner_500', 'affilate_banner',
+        'popup_background', 'site_name', 'copyright', 'theme',
+        'mail_driver', 'mail_host', 'mail_port', 'mail_encryption', 'mail_user', 'mail_pass',
+        'from_email', 'from_name', 'currency_format', 'decimal_separator', 'thousand_separator',
+        'is_affilate', 'affilate_charge', 'withdraw_fee', 'withdraw_charge',
+        'is_talkto', 'talkto', 'is_popup', 'is_report', 'is_cookie', 'is_buyer_note',
+        'is_capcha', 'capcha_site_key', 'capcha_secret_key', 'is_verification_email',
+        'is_maintain', 'maintain_text', 'reg_merchant', 'verify_item', 'is_debug',
+        'is_currency', 'facebook_pixel', 'is_admin_loader', 'email', 'phone', 'address'
     ];
 
-    public $timestamps = false;
-
     /**
-     * Upload image and delete old one
+     * Image upload helper
      */
     public function upload($name, $file, $oldname)
     {
-        $file->move('assets/images', $name);
-        if ($oldname != null) {
-            $oldPath = public_path() . '/assets/images/' . $oldname;
-            if (file_exists($oldPath)) {
-                unlink($oldPath);
-            }
+        $path = public_path('assets/images');
+
+        // Remove old file
+        if ($oldname && file_exists($path . '/' . $oldname)) {
+            @unlink($path . '/' . $oldname);
         }
+
+        $file->move($path, $name);
+    }
+
+    /**
+     * Boot method - sync changes to platform_settings
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            cache()->forget('muaadhsettings');
+            cache()->forget('core_settings_unified');
+            cache()->forget('platform_settings_service_all');
+        });
     }
 }

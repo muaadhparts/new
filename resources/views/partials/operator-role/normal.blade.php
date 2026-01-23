@@ -208,26 +208,7 @@
 
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('blog'))
-
-<li>
-    <a href="#blog" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="fas fa-fw fa-newspaper"></i>{{ __('Blog') }}
-    </a>
-    <ul class="collapse list-unstyled" id="publication" data-bs-parent="#accordion">
-        <li>
-            <a href="{{ route('operator-article-type-index') }}"><span>{{ __('Categories') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-publication-index') }}"><span>{{ __('Posts') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-gs-publication-settings') }}"><span>{{ __('Publication Settings') }}</span></a>
-        </li>
-    </ul>
-</li>
-
-@endif
+{{-- BLOG SECTION REMOVED - Feature deleted --}}
 
 @if(Auth::guard('operator')->user()->sectionCheck('muaadh_settings'))
 
@@ -288,18 +269,14 @@
 
 <li>
     <a href="#menu" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="fas fa-file-code"></i>{{ __('Menu Page Settings') }}
+        <i class="fas fa-file-code"></i>{{ __('Page Settings') }}
     </a>
     <ul class="collapse list-unstyled" id="menu" data-bs-parent="#accordion">
-        <li>
-            <a href="{{ route('operator-help-article-index') }}"><span>{{ __('Help Article Page') }}</span></a>
-        </li>
+        {{-- HELP ARTICLE REMOVED - Feature deleted --}}
         <li>
             <a href="{{ route('operator-fs-contact') }}"><span>{{ __('Contact Us Page') }}</span></a>
         </li>
-        <li>
-            <a href="{{ route('operator-static-content-index') }}"><span>{{ __('Other Pages') }}</span></a>
-        </li>
+        {{-- STATIC CONTENT REMOVED - Use pages table for policies --}}
     </ul>
 </li>
 
@@ -344,8 +321,7 @@
     </a>
     <ul class="collapse list-unstyled" id="socials" data-bs-parent="#accordion">
         <li><a href="{{route('operator-network-presence-index')}}"><span>{{ __('Network Presence') }}</span></a></li>
-        <li><a href="{{route('operator-connect-config-facebook')}}"><span>{{ __('Facebook Login') }}</span></a></li>
-        <li><a href="{{route('operator-connect-config-google')}}"><span>{{ __('Google Login') }}</span></a></li>
+        {{-- CONNECT CONFIG (OAuth) REMOVED - Now in platform_settings --}}
     </ul>
 </li>
 
@@ -361,26 +337,7 @@
 
 @endif
 
-@if(Auth::guard('operator')->user()->sectionCheck('seo_tools'))
-
-<li>
-    <a href="#seoTools" class="accordion-toggle wave-effect" data-bs-toggle="collapse" aria-expanded="false">
-        <i class="fas fa-wrench"></i>{{ __('SEO Tools') }}
-    </a>
-    <ul class="collapse list-unstyled" id="seoTools" data-bs-parent="#accordion">
-        <li>
-            <a href="{{ route('operator-catalog-item-popular',30) }}"><span>{{ __('Popular CatalogItems') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-seotool-analytics') }}"><span>{{ __('Google Analytics') }}</span></a>
-        </li>
-        <li>
-            <a href="{{ route('operator-seotool-keywords') }}"><span>{{ __('Website Meta Keywords') }}</span></a>
-        </li>
-    </ul>
-</li>
-
-@endif
+{{-- SEO TOOLS SECTION REMOVED - SEO now in platform_settings --}}
 
 @if(Auth::guard('operator')->user()->sectionCheck('manage_staffs'))
 

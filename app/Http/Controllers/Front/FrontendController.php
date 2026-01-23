@@ -4,9 +4,6 @@ namespace App\Http\Controllers\Front;
 
 use App\Classes\MuaadhMailer;
 use App\Models\FeaturedPromo;
-use App\Models\Publication;
-use App\Models\ArticleType;
-use App\Models\Muaadhsetting;
 use App\Models\HomePageTheme;
 use App\Models\MerchantItem;
 use App\Models\Purchase;
@@ -98,15 +95,7 @@ class FrontendController extends FrontBaseController
             });
         }
 
-        // ============================================================================
-        // SECTION: Publications (if enabled in theme)
-        // ============================================================================
-        if ($theme->show_blogs) {
-            $count = $theme->count_blogs ?? 3;
-            $data['blogs'] = Cache::remember('homepage_publications_' . $count, 3600, function () use ($count) {
-                return Publication::latest()->take($count)->get();
-            });
-        }
+        // PUBLICATIONS SECTION REMOVED - Feature deleted
 
         return view('frontend.index', $data);
     }
@@ -115,141 +104,8 @@ class FrontendController extends FrontBaseController
     // HOME PAGE SECTION ENDS
     // ================================================================================================
 
-    // -------------------------------- PUBLICATION SECTION ----------------------------------------
-
-    public function publications(Request $request)
-    {
-
-        if (DB::table('frontend_settings')->first()->publication == 0) {
-            return redirect()->back();
-        }
-
-        // PUBLICATION TAGS
-        $tags = null;
-        $tagz = '';
-        $name = Publication::pluck('tags')->toArray();
-        foreach ($name as $nm) {
-            $tagz .= $nm . ',';
-        }
-        $tags = array_unique(explode(',', $tagz));
-        // PUBLICATION CATEGORIES
-        $bcats = ArticleType::withCount('publications')->get();
-
-        // PUBLICATIONS
-        $publications = Publication::latest()->paginate($this->gs->post_count);
-        if ($request->ajax()) {
-            return view('front.ajax.publication', compact('publications'));
-        }
-        return view('frontend.publication', compact('publications', 'bcats', 'tags'));
-    }
-
-    public function publicationcategory(Request $request, $slug)
-    {
-
-        // PUBLICATION TAGS
-        $tags = null;
-        $tagz = '';
-        $name = Publication::pluck('tags')->toArray();
-        foreach ($name as $nm) {
-            $tagz .= $nm . ',';
-        }
-        $tags = array_unique(explode(',', $tagz));
-        // PUBLICATION CATEGORIES
-        $bcats = ArticleType::withCount('publications')->get();
-        // PUBLICATIONS
-        $bcat = ArticleType::where('slug', '=', str_replace(' ', '-', $slug))->first();
-        $publications = $bcat->publications()->latest()->paginate($this->gs->post_count);
-        if ($request->ajax()) {
-            return view('front.ajax.publication', compact('publications'));
-        }
-        return view('frontend.publication', compact('bcat', 'publications', 'bcats', 'tags'));
-    }
-
-    public function publicationtags(Request $request, $slug)
-    {
-
-        // PUBLICATION TAGS
-        $tags = null;
-        $tagz = '';
-        $name = Publication::pluck('tags')->toArray();
-        foreach ($name as $nm) {
-            $tagz .= $nm . ',';
-        }
-        $tags = array_unique(explode(',', $tagz));
-        // PUBLICATION CATEGORIES
-        $bcats = ArticleType::withCount('publications')->get();
-        // PUBLICATIONS
-        $publications = Publication::where('tags', 'like', '%' . $slug . '%')->paginate($this->gs->post_count);
-        if ($request->ajax()) {
-            return view('front.ajax.publication', compact('publications'));
-        }
-        return view('frontend.publication', compact('publications', 'slug', 'bcats', 'tags'));
-    }
-
-    public function publicationsearch(Request $request)
-    {
-
-        $tags = null;
-        $tagz = '';
-        $name = Publication::pluck('tags')->toArray();
-        foreach ($name as $nm) {
-            $tagz .= $nm . ',';
-        }
-        $tags = array_unique(explode(',', $tagz));
-        // PUBLICATION CATEGORIES
-        $bcats = ArticleType::withCount('publications')->get();
-        // PUBLICATIONS
-        $search = $request->search;
-        $publications = Publication::where('name', 'like', '%' . $search . '%')->orWhere('details', 'like', '%' . $search . '%')->paginate($this->gs->post_count);
-        if ($request->ajax()) {
-            return view('frontend.ajax.publication', compact('publications'));
-        }
-        return view('frontend.publication', compact('publications', 'search', 'bcats', 'tags'));
-    }
-
-    public function publicationshow($slug)
-    {
-
-        // PUBLICATION TAGS
-        $tags = null;
-        $tagz = '';
-        $name = Publication::pluck('tags')->toArray();
-        foreach ($name as $nm) {
-            $tagz .= $nm . ',';
-        }
-        $tags = array_unique(explode(',', $tagz));
-        // PUBLICATION CATEGORIES
-        $bcats = ArticleType::withCount('publications')->get();
-        // PUBLICATIONS
-
-        $publication = Publication::where('slug', $slug)->first();
-
-        $publication->views = $publication->views + 1;
-        $publication->update();
-        // PUBLICATION META TAG
-        $publication_meta_tag = $publication->meta_tag;
-        $publication_meta_description = $publication->meta_description;
-        return view('frontend.publicationshow', compact('publication', 'bcats', 'tags', 'publication_meta_tag', 'publication_meta_description'));
-    }
-
-    // -------------------------------- PUBLICATION SECTION ENDS----------------------------------------
-
-    // -------------------------------- HELP ARTICLE SECTION ----------------------------------------
-    public function helpArticle()
-    {
-        if (DB::table('frontend_settings')->first()->faq == 0) {
-            return redirect()->back();
-        }
-        $helpArticles = DB::table('help_articles')->latest('id')->get();
-        $count = count(DB::table('help_articles')->get()) / 2;
-        if (($count % 1) != 0) {
-            $chunk = (int) $count + 1;
-        } else {
-            $chunk = $count;
-        }
-        return view('frontend.help-article', compact('helpArticles', 'chunk'));
-    }
-    // -------------------------------- HELP ARTICLE SECTION ENDS----------------------------------------
+    // PUBLICATION SECTION REMOVED - Feature deleted
+    // HELP ARTICLE SECTION REMOVED - Feature deleted
 
     // -------------------------------- AUTOSEARCH SECTION ----------------------------------------
 

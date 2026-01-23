@@ -6,20 +6,13 @@ use App\Classes\MuaadhMailer;
 use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BannerResource;
-// use App\Http\Resources\BlogResource; // Removed - Blog replaced with Publication
-use App\Http\Resources\HelpArticleResource;
 use App\Http\Resources\PurchaseTrackResource;
-use App\Http\Resources\StaticContentResource;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\CatalogItemListResource;
 use App\Models\FeaturedPromo;
-use App\Models\Announcement;
-use App\Models\Publication;
-use App\Models\HelpArticle;
-use App\Models\Muaadhsetting;
 use App\Models\Language;
 use App\Models\Purchase;
-use App\Models\StaticContent;
+use App\Models\Page;
 use App\Models\FrontendSetting;
 use App\Models\Brand;
 use App\Models\CatalogItem;
@@ -172,15 +165,8 @@ class FrontendController extends Controller
             }
 
             $type = $request->type;
-            $checkType = in_array($type, ['TopSmall', 'BottomSmall']);
-
-            if (!$checkType) {
-                return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "This type doesn't exists."]]);
-            }
-
-            $banners = Announcement::where('type', '=', $type)->get();
-
-            return response()->json(['status' => true, 'data' => BannerResource::collection($banners), 'error' => []]);
+            // ANNOUNCEMENTS FEATURE REMOVED
+            return response()->json(['status' => true, 'data' => [], 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
@@ -246,44 +232,31 @@ class FrontendController extends Controller
 
     // Display All Type Of CatalogItems Ends
 
-    // Display HelpArticle, Blog, Page
+    // Display Pages (Policy pages only: terms, privacy, refund)
 
     public function helpArticles()
     {
-        try {
-            $helpArticles = HelpArticle::all();
-            return response()->json(['status' => true, 'data' => HelpArticleResource::collection($helpArticles), 'error' => []]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
+        // HELP ARTICLES FEATURE REMOVED
+        return response()->json(['status' => true, 'data' => [], 'error' => []]);
     }
 
     public function blogs(Request $request)
     {
-        try {
-            if($request->type == 'latest'){
-                $publications = Publication::orderby('id','desc')->take(6)->get();
-            }else{
-                $publications = Publication::all();
-            }
-
-            return response()->json(['status' => true, 'data' => $publications, 'error' => []]);
-        } catch (\Exception $e) {
-            return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
-        }
+        // PUBLICATIONS/BLOGS FEATURE REMOVED
+        return response()->json(['status' => true, 'data' => [], 'error' => []]);
     }
 
     public function pages()
     {
         try {
-            $pages = StaticContent::all();
-            return response()->json(['status' => true, 'data' => StaticContentResource::collection($pages), 'error' => []]);
+            $pages = Page::where('is_active', true)->get();
+            return response()->json(['status' => true, 'data' => $pages, 'error' => []]);
         } catch (\Exception $e) {
             return response()->json(['status' => true, 'data' => [], 'error' => ['message' => $e->getMessage()]]);
         }
     }
 
-    // Display HelpArticle, Blog, Page Ends
+    // Display Pages Ends
 
     // Display All Settings
 
