@@ -1,0 +1,28 @@
+       Table: delivery_couriers
+CREATE TABLE `delivery_couriers` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `purchase_id` int DEFAULT NULL,
+  `merchant_id` int DEFAULT NULL,
+  `courier_id` int DEFAULT NULL,
+  `merchant_branch_id` int DEFAULT NULL,
+  `service_area_id` int DEFAULT NULL,
+  `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `delivery_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `cod_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `purchase_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `payment_method` enum('online','cod') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'cod',
+  `fee_status` enum('pending','paid','collected') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `settlement_status` enum('pending','settled') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `delivered_at` timestamp NULL DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `ready_at` timestamp NULL DEFAULT NULL,
+  `picked_up_at` timestamp NULL DEFAULT NULL,
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `customer_confirmed` tinyint(1) NOT NULL DEFAULT '0',
+  `settled_at` timestamp NULL DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_general_ci,
+  `rejection_reason` text COLLATE utf8mb4_general_ci,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci

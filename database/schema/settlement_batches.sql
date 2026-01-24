@@ -1,0 +1,26 @@
+       Table: settlement_batches
+CREATE TABLE `settlement_batches` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `batch_ref` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique batch reference: SET-20260113-XXXXX',
+  `from_party_id` bigint unsigned NOT NULL,
+  `to_party_id` bigint unsigned NOT NULL,
+  `total_amount` decimal(12,2) NOT NULL,
+  `currency` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR',
+  `payment_method` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'bank_transfer, cash, wallet, etc',
+  `payment_reference` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bank transfer ref, cheque number, etc',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` enum('draft','pending','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `settlement_date` date DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `approved_by` bigint unsigned DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `settlement_batches_batch_ref_unique` (`batch_ref`),
+  KEY `settlement_batches_to_party_id_foreign` (`to_party_id`),
+  KEY `settlement_batches_from_party_id_to_party_id_index` (`from_party_id`,`to_party_id`),
+  KEY `settlement_batches_status_index` (`status`),
+  KEY `settlement_batches_settlement_date_index` (`settlement_date`),
+  CONSTRAINT `settlement_batches_from_party_id_foreign` FOREIGN KEY (`from_party_id`) REFERENCES `account_parties` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `settlement_batches_to_party_id_foreign` FOREIGN KEY (`to_party_id`) REFERENCES `account_parties` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
