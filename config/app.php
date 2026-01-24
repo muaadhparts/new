@@ -175,6 +175,7 @@ return [
         App\Providers\ShippingQuoteServiceProvider::class, // Shipping Quote API routes
         App\Providers\SeoServiceProvider::class, // SEO Service Layer
         App\Providers\MerchantCheckoutServiceProvider::class, // Merchant Checkout Services
+        App\Providers\DomainServiceProvider::class, // DDD Domain Contracts bindings
     ])->toArray(),
 
     /*

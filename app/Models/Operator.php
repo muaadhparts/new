@@ -2,42 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable;
-
-class Operator extends Authenticatable
+/**
+ * @deprecated Use App\Domain\Identity\Models\Operator instead
+ * @see \App\Domain\Identity\Models\Operator
+ */
+class Operator extends \App\Domain\Identity\Models\Operator
 {
-    protected $table = 'operators';
-
-    protected $guard = 'operator';
-
-    protected $fillable = [
-        'name', 'email', 'phone', 'password', 'email_token', 'role_id', 'photo', 'created_at', 'updated_at', 'remember_token', 'shop_name'
-    ];
-
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
-
-    public function role()
-    {
-        return $this->belongsTo(OperatorRole::class, 'role_id')->withDefault();
-    }
-
-    public function IsSuper()
-    {
-        if ($this->id == 1) {
-            return true;
-        }
-        return false;
-    }
-
-    public function sectionCheck($value)
-    {
-        $sections = explode(" , ", $this->role->section);
-        if (in_array($value, $sections)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+    // Backward compatibility
 }

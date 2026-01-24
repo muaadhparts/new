@@ -2,26 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class FrontendSetting extends Model
+/**
+ * @deprecated Use App\Domain\Platform\Models\FrontendSetting instead
+ * @see \App\Domain\Platform\Models\FrontendSetting
+ */
+class FrontendSetting extends \App\Domain\Platform\Models\FrontendSetting
 {
-    protected $table = 'frontend_settings';
-
-    protected $fillable = [
-        'contact_email',
-        'street',
-        'phone',
-        'fax',
-        'email',
-        'home',
-        'blog',
-        'faq',
-        'contact',
-        'category',
-        'newsletter',
-    ];
-
-    public $timestamps = false;
-
+    // Backward compatibility
 }

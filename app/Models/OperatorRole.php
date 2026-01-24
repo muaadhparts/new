@@ -2,35 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 /**
- * Operator Role Model
- *
- * Manages operator user roles and permissions.
+ * @deprecated Use App\Domain\Identity\Models\OperatorRole instead
+ * @see \App\Domain\Identity\Models\OperatorRole
  */
-class OperatorRole extends Model
+class OperatorRole extends \App\Domain\Identity\Models\OperatorRole
 {
-    protected $table = 'operator_roles';
-
-    protected $fillable = ['name', 'section'];
-
-    public $timestamps = false;
-
-    /**
-     * Get all operators with this role.
-     */
-    public function operators()
-    {
-        return $this->hasMany(Operator::class, 'role_id');
-    }
-
-    /**
-     * Check if this role has access to a specific section.
-     */
-    public function sectionCheck($value)
-    {
-        $sections = explode(" , ", $this->section);
-        return in_array($value, $sections);
-    }
+    // Backward compatibility
 }

@@ -2,18 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Withdraw extends Model
+/**
+ * @deprecated Use App\Domain\Accounting\Models\Withdraw instead
+ * @see \App\Domain\Accounting\Models\Withdraw
+ */
+class Withdraw extends \App\Domain\Accounting\Models\Withdraw
 {
-    protected $fillable = ['user_id', 'method', 'acc_email', 'iban', 'country', 'acc_name', 'address', 'swift', 'reference', 'amount', 'fee', 'created_at', 'updated_at', 'status'];
-
-    public function user()
-    {
-        return $this->belongsTo('App\Models\User')->withDefault();
-    }
-    public function courier()
-    {
-        return $this->belongsTo('App\Models\Courier', 'user_id')->withDefault();
-    }
+    // Backward compatibility
 }

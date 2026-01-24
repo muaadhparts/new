@@ -2,16 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class PurchaseTimeline extends Model
+/**
+ * @deprecated Use App\Domain\Commerce\Models\PurchaseTimeline instead
+ * @see \App\Domain\Commerce\Models\PurchaseTimeline
+ */
+class PurchaseTimeline extends \App\Domain\Commerce\Models\PurchaseTimeline
 {
-    protected $table = 'purchase_timelines';
-
-    protected $fillable = ['purchase_id', 'name', 'text'];
-
-    public function purchase()
-    {
-        return $this->belongsTo('App\Models\Purchase', 'purchase_id')->withDefault();
-    }
+    // Backward compatibility
 }

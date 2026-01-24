@@ -3,24 +3,10 @@
 namespace App\Services\GlobalData\Contexts;
 
 /**
- * ContextInterface
- *
- * عقد موحد لكل Context في GlobalData
+ * @deprecated Use App\Domain\Platform\Services\GlobalData\Contexts\ContextInterface instead
+ * @see \App\Domain\Platform\Services\GlobalData\Contexts\ContextInterface
  */
-interface ContextInterface
+interface ContextInterface extends \App\Domain\Platform\Services\GlobalData\Contexts\ContextInterface
 {
-    /**
-     * تحميل البيانات
-     */
-    public function load(): void;
-
-    /**
-     * الحصول على البيانات للـ Views
-     */
-    public function toArray(): array;
-
-    /**
-     * إعادة تعيين (للاختبارات)
-     */
-    public function reset(): void;
+    // Backward compatibility
 }

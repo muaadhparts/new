@@ -2,43 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
-class Section extends Model
+/**
+ * @deprecated Use App\Domain\Catalog\Models\Section instead
+ * @see \App\Domain\Catalog\Models\Section
+ */
+class Section extends \App\Domain\Catalog\Models\Section
 {
-    protected $table = 'sections';
-
-    protected $fillable = [
-        'code',
-        'catalog_id',
-        'full_code',
-        'formattedCode',
-        'category_id',
-    ];
-
-    /**
-     * 🔗 الكتالوج المرتبط بالقسم
-     */
-    public function catalog(): BelongsTo
-    {
-        return $this->belongsTo(Catalog::class, 'catalog_id');
-    }
-
-    /**
-     * 🔗 الفئة (category) المرتبطة بهذا القسم
-     */
-    public function category(): BelongsTo
-    {
-        return $this->belongsTo(NewCategory::class, 'category_id');
-    }
-
-    /**
-     * 🖼️ الرسومات التوضيحية المرتبطة بالقسم
-     */
-    public function illustrations(): HasMany
-    {
-        return $this->hasMany(Illustration::class, 'section_id');
-    }
+    // Backward compatibility
 }

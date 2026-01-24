@@ -2,15 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Country extends Model
+/**
+ * @deprecated Use App\Domain\Shipping\Models\Country instead
+ * @see \App\Domain\Shipping\Models\Country
+ */
+class Country extends \App\Domain\Shipping\Models\Country
 {
-    protected $fillable = ['country_code', 'country_name', 'country_name_ar', 'tax', 'status', 'is_synced', 'synced_at'];
-    public $timestamps = false;
-
-    public function cities()
-    {
-        return $this->hasMany('App\Models\City');
-    }
+    // Backward compatibility
 }

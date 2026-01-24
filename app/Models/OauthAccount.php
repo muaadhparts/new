@@ -2,16 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class OauthAccount extends Model
+/**
+ * @deprecated Use App\Domain\Identity\Models\OauthAccount instead
+ * @see \App\Domain\Identity\Models\OauthAccount
+ */
+class OauthAccount extends \App\Domain\Identity\Models\OauthAccount
 {
-    protected $table = 'oauth_accounts';
-
-    protected $fillable = ['provider_id', 'provider'];
-
-    public function user()
-    {
-        return $this->belongsTo(User::class)->withDefault();
-    }
+    // Backward compatibility
 }
