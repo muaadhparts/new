@@ -94,7 +94,6 @@ class FrontendController extends FrontBaseController
             $data['featured_categories'] = Cache::remember('featured_catalogs_for_home_' . $catalogLimit, 3600, function () use ($catalogLimit) {
                 return \App\Models\Catalog::where('status', 1)
                     ->with('brand:id,name,slug,photo')
-                    ->withCount(['newCategories as products_count'])
                     ->orderBy('sort')
                     ->limit($catalogLimit)
                     ->get();
@@ -125,7 +124,6 @@ class FrontendController extends FrontBaseController
 
         $catalogs = \App\Models\Catalog::where('status', 1)
             ->with('brand:id,name,slug,photo')
-            ->withCount(['newCategories as products_count'])
             ->orderBy('sort')
             ->paginate($perPage);
 

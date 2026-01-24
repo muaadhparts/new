@@ -94,14 +94,14 @@ Sections are rendered based on theme settings and purchase
 
             <div class="muaadh-categories-grid">
                 @foreach ($featured_categories as $catalog)
-                    <a href="{{ route('front.catalog', $catalog->slug) }}" class="muaadh-category-card">
+                    <a href="{{ route('front.catalog', ['brand' => $catalog->brand->slug, 'catalog' => $catalog->slug]) }}" class="muaadh-category-card">
                         <div class="muaadh-category-img">
                             <img src="{{ Storage::url($catalog->largeImagePath) }}" alt="{{ $catalog->localized_name }}" loading="lazy">
-                            <span class="muaadh-category-count">{{ $catalog->products_count }}</span>
+                            <span class="muaadh-category-count">{{ $catalog->items_count }}</span>
                         </div>
                         <div class="muaadh-category-info">
                             <h6 class="muaadh-category-name">{{ $catalog->localized_name }}</h6>
-                            <span class="muaadh-category-catalogItems">{{ $catalog->products_count }} @lang('Categories')</span>
+                            <span class="muaadh-category-catalogItems">{{ $catalog->items_count }} @lang('Items')</span>
                         </div>
                     </a>
                 @endforeach

@@ -134,6 +134,32 @@ class Catalog extends Model
     }
 
     /**
+     * 📊 عدد المنتجات في الكتالوج (CatalogItems مع merchant_items نشطة)
+     */
+    public function getItemsCountAttribute(): int
+    {
+        $partsTable = strtolower("parts_{$this->code}");
+
+        if (!\Schema::hasTable($partsTable)) {
+            return 0;
+        }
+
+        return \DB::table('catalog_items')
+            ->whereExists(function ($query) use ($partsTable) {
+                $query->select(\DB::raw(1))
+                    ->from($partsTable)
+                    ->whereColumn("{$partsTable}.part_number", 'catalog_items.part_number');
+            })
+            ->whereExists(function ($query) {
+                $query->select(\DB::raw(1))
+                    ->from('merchant_items')
+                    ->whereColumn('merchant_items.catalog_item_id', 'catalog_items.id')
+                    ->where('merchant_items.status', 1);
+            })
+            ->count();
+    }
+
+    /**
      * 🏭 دعم Laravel Factories (لو كنت تستخدمه من modules)
      */
     protected static function factory()
