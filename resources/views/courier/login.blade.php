@@ -1,4 +1,4 @@
-@extends('layouts.front')
+@extends('layouts.courier')
 
 @section('content')
     <section class="gs-breadcrumb-section">

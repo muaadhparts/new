@@ -84,7 +84,10 @@
       "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\page_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\page_banner.blade.php\")",
       "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\")",
       "Bash(for table in announcements testimonials publications static_content home_page_themes frontend_settings seotools typefaces connect_configs languages mailing_list help_articles article_types muaadhsettings settings)",
-      "Bash(do echo -n \"$table: \")"
+      "Bash(do echo -n \"$table: \")",
+      "Bash(for file in resources/views/courier/dashbaord.blade.php resources/views/courier/add_service.blade.php resources/views/courier/edit_service.blade.php resources/views/courier/financial_report.blade.php resources/views/courier/orders.blade.php resources/views/courier/profile.blade.php resources/views/courier/purchase_details.blade.php resources/views/courier/reset.blade.php resources/views/courier/service-area.blade.php resources/views/courier/settlements.blade.php resources/views/courier/transactions.blade.php resources/views/courier/withdraw/index.blade.php resources/views/courier/withdraw/withdraw.blade.php)",
+      "Bash(do sed -i \"s/@extends\\(''layouts.front''\\)/@extends\\(''layouts.courier''\\)/\" \"$file\")",
+      "Bash(for file in resources/views/courier/login.blade.php resources/views/courier/register.blade.php resources/views/courier/forgot.blade.php)"
     ]
   }
 }
