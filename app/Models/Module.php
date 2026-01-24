@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class Module extends Model
+/**
+ * @deprecated Use App\Domain\Platform\Models\Module instead
+ * @see \App\Domain\Platform\Models\Module
+ */
+class Module extends \App\Domain\Platform\Models\Module
 {
-    protected $table = 'modules';
-
-    protected $fillable = [
-        'name', 'keyword', 'uninstall_files'
-    ];
+    // Backward compatibility - extends Domain Model
 }
