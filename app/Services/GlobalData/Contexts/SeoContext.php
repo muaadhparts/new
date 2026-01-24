@@ -37,7 +37,7 @@ class SeoContext implements ContextInterface
         $this->organizationSchema = OrganizationSchema::fromSettings(
             $settings,
             $this->coreSettings->getSeoSettings(),
-            $this->coreSettings->getConnectConfig()
+            $this->coreSettings->getSocialLinks()
         );
 
         $this->websiteSchema = WebsiteSchema::fromSettings($settings);

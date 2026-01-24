@@ -154,6 +154,8 @@ class PlatformSettingsService
             $flat['is_report'] = $features['is_report'] ?? 0;
             $flat['is_cookie'] = $features['is_cookie'] ?? 0;
             $flat['facebook_pixel'] = $features['facebook_pixel'] ?? null;
+            $flat['wholesell'] = $features['is_wholesale'] ?? 0;
+            $flat['is_loader'] = $features['is_loader'] ?? 0;
 
             // Security
             $security = $allSettings['security'] ?? [];

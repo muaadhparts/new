@@ -47,18 +47,6 @@
                             <div class="row justify-content-center">
                               <div class="col-lg-3">
                                 <div class="left-area">
-                                    <h4 class="heading">{{ __('Website') }} *
-                                      </h4>
-                                </div>
-                              </div>
-                              <div class="col-lg-6">
-                                <input type="text" class="form-control" placeholder="{{ __('Enter Website') }}" name="site" value="{{ $data->site }}">
-                              </div>
-                            </div>
-    
-                            <div class="row justify-content-center">
-                              <div class="col-lg-3">
-                                <div class="left-area">
                                     <h4 class="heading">{{ __('Phone') }} *
                                       </h4>
                                 </div>

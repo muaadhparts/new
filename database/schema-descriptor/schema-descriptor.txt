@@ -93,15 +93,6 @@ CONSTRAINT `accounting_ledger_original_entry_id_foreign` FOREIGN KEY (`original_
 CONSTRAINT `accounting_ledger_settlement_batch_id_foreign` FOREIGN KEY (`settlement_batch_id`) REFERENCES `settlement_batches` (`id`) ON DELETE SET NULL
 CONSTRAINT `accounting_ledger_to_party_id_foreign` FOREIGN KEY (`to_party_id`) REFERENCES `account_parties` (`id`) ON DELETE RESTRICT
 
-TABLE announcements
-`id` int NOT NULL AUTO_INCREMENT
-`photo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`link` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`type` enum('Large','TopSmall','BottomSmall') NOT NULL
-`name` varchar(255) DEFAULT NULL
-`text` varchar(255) DEFAULT NULL
-PRIMARY KEY (`id`)
-
 TABLE api_credentials
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `service_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
@@ -116,12 +107,6 @@ TABLE api_credentials
 PRIMARY KEY (`id`)
 UNIQUE KEY `api_credentials_service_key_unique` (`service_name`,`key_name`)
 KEY `api_credentials_service_name_index` (`service_name`)
-
-TABLE article_types
-`id` int NOT NULL AUTO_INCREMENT
-`name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-PRIMARY KEY (`id`)
 
 TABLE brand_regions
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
@@ -364,28 +349,6 @@ TABLE comms_blueprints
 `status` int NOT NULL DEFAULT '1'
 PRIMARY KEY (`id`)
 
-TABLE connect_configs
-`id` int unsigned NOT NULL AUTO_INCREMENT
-`facebook` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`gplus` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`twitter` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`linkedin` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`dribble` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`f_status` tinyint NOT NULL DEFAULT '1'
-`g_status` tinyint NOT NULL DEFAULT '1'
-`t_status` tinyint NOT NULL DEFAULT '1'
-`l_status` tinyint NOT NULL DEFAULT '1'
-`d_status` tinyint NOT NULL DEFAULT '1'
-`f_check` tinyint DEFAULT NULL
-`g_check` tinyint DEFAULT NULL
-`fclient_id` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`fclient_secret` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`fredirect` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`gclient_id` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`gclient_secret` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`gredirect` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-PRIMARY KEY (`id`)
-
 TABLE countries
 `id` int NOT NULL AUTO_INCREMENT
 `country_code` varchar(2) NOT NULL DEFAULT ''
@@ -488,12 +451,6 @@ TABLE frontend_settings
 `contact` tinyint(1) NOT NULL DEFAULT '0'
 `category` tinyint(1) NOT NULL DEFAULT '0'
 `newsletter` int NOT NULL DEFAULT '1'
-PRIMARY KEY (`id`)
-
-TABLE help_articles
-`id` int unsigned NOT NULL AUTO_INCREMENT
-`name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
-`details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 PRIMARY KEY (`id`)
 
 TABLE home_page_themes
@@ -715,6 +672,21 @@ KEY `merchant_purchases_money_holder_index` (`money_holder`)
 KEY `merchant_purchases_collection_status_index` (`collection_status`)
 KEY `merchant_purchases_settlement_status_money_holder_index` (`settlement_status`,`money_holder`)
 
+TABLE merchant_settings
+`id` bigint unsigned NOT NULL AUTO_INCREMENT
+`merchant_id` int unsigned NOT NULL COMMENT 'FK to users.id (merchant)'
+`group` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting group'
+`key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting key within group'
+`value` json DEFAULT NULL COMMENT 'Setting value (JSON)'
+`type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'string'
+`created_at` timestamp NULL DEFAULT NULL
+`updated_at` timestamp NULL DEFAULT NULL
+PRIMARY KEY (`id`)
+UNIQUE KEY `merchant_settings_unique` (`merchant_id`,`group`,`key`)
+KEY `merchant_settings_merchant_group` (`merchant_id`,`group`)
+KEY `merchant_settings_group_index` (`group`)
+CONSTRAINT `merchant_settings_merchant_id_foreign` FOREIGN KEY (`merchant_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+
 TABLE merchant_stock_updates
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `user_id` int unsigned NOT NULL COMMENT 'Vendor user ID'
@@ -770,59 +742,6 @@ TABLE monetary_units
 `sign` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `value` double NOT NULL
 `is_default` tinyint(1) NOT NULL DEFAULT '0'
-PRIMARY KEY (`id`)
-
-TABLE muaadhsettings
-`id` bigint NOT NULL AUTO_INCREMENT
-`logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`favicon` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`site_name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`loader` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
-`admin_loader` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`is_talkto` tinyint(1) NOT NULL DEFAULT '1'
-`talkto` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`currency_format` tinyint(1) NOT NULL DEFAULT '0'
-`withdraw_fee` double NOT NULL DEFAULT '0'
-`withdraw_charge` double NOT NULL DEFAULT '0'
-`mail_driver` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`mail_host` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`mail_port` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`mail_encryption` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`mail_user` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`mail_pass` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`from_email` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`from_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`is_buyer_note` tinyint(1) NOT NULL DEFAULT '1'
-`is_currency` tinyint(1) NOT NULL DEFAULT '1'
-`is_affilate` tinyint(1) NOT NULL DEFAULT '1'
-`affilate_charge` int NOT NULL DEFAULT '0'
-`affilate_banner` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`reg_merchant` tinyint(1) NOT NULL DEFAULT '0'
-`copyright` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`is_admin_loader` tinyint(1) NOT NULL DEFAULT '0'
-`is_verification_email` tinyint(1) NOT NULL DEFAULT '0'
-`wholesell` int NOT NULL DEFAULT '0'
-`is_capcha` tinyint(1) NOT NULL DEFAULT '0'
-`capcha_secret_key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`capcha_site_key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`error_banner_404` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`error_banner_500` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`is_popup` tinyint(1) NOT NULL DEFAULT '0'
-`popup_background` text COLLATE utf8mb4_unicode_ci
-`invoice_logo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`user_image` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`is_report` tinyint(1) NOT NULL
-`footer_logo` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`is_maintain` tinyint(1) NOT NULL DEFAULT '0'
-`maintain_text` text COLLATE utf8mb4_unicode_ci
-`verify_item` tinyint(1) NOT NULL DEFAULT '0'
-`page_count` int NOT NULL DEFAULT '0'
-`favorite_count` int NOT NULL DEFAULT '0'
-`is_debug` tinyint(1) NOT NULL DEFAULT '0'
-`decimal_separator` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`thousand_separator` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`is_cookie` tinyint(1) NOT NULL DEFAULT '0'
-`facebook_pixel` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 PRIMARY KEY (`id`)
 
 TABLE network_presences
@@ -918,6 +837,19 @@ TABLE operators
 PRIMARY KEY (`id`)
 UNIQUE KEY `admins_email_unique` (`email`)
 
+TABLE pages
+`id` bigint unsigned NOT NULL AUTO_INCREMENT
+`slug` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'URL slug: terms, privacy, refund'
+`title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Page title'
+`title_ar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Arabic title'
+`content` longtext COLLATE utf8mb4_unicode_ci COMMENT 'Page content (HTML)'
+`content_ar` longtext COLLATE utf8mb4_unicode_ci COMMENT 'Arabic content'
+`is_active` tinyint(1) NOT NULL DEFAULT '1'
+`created_at` timestamp NULL DEFAULT NULL
+`updated_at` timestamp NULL DEFAULT NULL
+PRIMARY KEY (`id`)
+UNIQUE KEY `pages_slug_unique` (`slug`)
+
 TABLE part_periods_r50gl
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `part_id` bigint unsigned NOT NULL
@@ -992,21 +924,18 @@ PRIMARY KEY (`id`)
 KEY `platform_revenue_log_date_index` (`date`)
 KEY `platform_revenue_log_source_index` (`source`)
 
-TABLE publications
-`id` int unsigned NOT NULL AUTO_INCREMENT
-`category_id` int NOT NULL
-`name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
-`slug` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`photo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`source` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`views` int NOT NULL DEFAULT '0'
-`status` tinyint NOT NULL DEFAULT '1'
-`meta_tag` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`meta_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`tags` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+TABLE platform_settings
+`id` bigint unsigned NOT NULL AUTO_INCREMENT
+`group` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting group: branding, mail, payment, etc'
+`key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting key within group'
+`value` json DEFAULT NULL COMMENT 'Setting value (JSON for flexibility)'
+`type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'string' COMMENT 'Value type: string, boolean, integer, json, file'
+`description` text COLLATE utf8mb4_unicode_ci COMMENT 'Human-readable description'
 `created_at` timestamp NULL DEFAULT NULL
+`updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
+UNIQUE KEY `platform_settings_group_key_unique` (`group`,`key`)
+KEY `platform_settings_group_index` (`group`)
 
 TABLE purchase_timelines
 `id` int NOT NULL AUTO_INCREMENT
@@ -1141,17 +1070,6 @@ KEY `idx_sections_category_catalog` (`category_id`,`catalog_id`)
 KEY `idx_sections_full_code_catalog` (`full_code`,`catalog_id`)
 CONSTRAINT `sections_ibfk_1` FOREIGN KEY (`catalog_id`) REFERENCES `catalogs` (`id`) ON DELETE CASCADE
 CONSTRAINT `sections_ibfk_2` FOREIGN KEY (`category_id`) REFERENCES `newcategories` (`id`) ON DELETE SET NULL
-
-TABLE seotools
-`id` int unsigned NOT NULL AUTO_INCREMENT
-`google_analytics` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`gtm_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`search_console_verification` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`bing_verification` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`facebook_pixel` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`meta_keys` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`meta_description` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-PRIMARY KEY (`id`)
 
 TABLE settings
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
@@ -1299,18 +1217,6 @@ TABLE specs
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
 
-TABLE static_content
-`id` int NOT NULL AUTO_INCREMENT
-`name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`photo` varchar(500) DEFAULT NULL
-`meta_tag` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`meta_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`header` tinyint(1) NOT NULL DEFAULT '0'
-`footer` tinyint(1) NOT NULL DEFAULT '0'
-PRIMARY KEY (`id`)
-
 TABLE stock_reservations
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `session_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
@@ -1377,14 +1283,6 @@ TABLE telescope_monitoring
 `tag` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 PRIMARY KEY (`tag`)
 
-TABLE testimonials
-`id` int unsigned NOT NULL AUTO_INCREMENT
-`photo` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`subname` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-PRIMARY KEY (`id`)
-
 TABLE token_logs
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `type` varchar(50) NOT NULL
@@ -1414,13 +1312,6 @@ TABLE trust_badges
 `warning_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
-PRIMARY KEY (`id`)
-
-TABLE typefaces
-`id` int NOT NULL AUTO_INCREMENT
-`is_default` tinyint DEFAULT '0'
-`font_family` varchar(100) DEFAULT NULL
-`font_value` varchar(100) DEFAULT NULL
 PRIMARY KEY (`id`)
 
 TABLE user_catalog_events

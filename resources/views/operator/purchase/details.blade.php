@@ -427,8 +427,7 @@
                 @foreach($resultArray as $key1 => $catalogItem)
 
                 @php
-                $gs = App\Models\Muaadhsetting::find(1);
-                $platformName = $gs->site_name ?? __('Platform');
+                $platformName = platformSettings()->get('site_name', __('Platform'));
 
                 if($key1 == 0){
                     // Platform items (user_id = 0)
@@ -587,58 +586,25 @@
                                             <span class="badge {{ isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $itemCondition }}</span>
                                         </p>
 
-                                        @if($catalogItem['affilate_user'] != 0)
-                                        <p>
-                                            <strong>{{ __('Referral User') }} :</strong> {{
-                                            \App\Models\User::find($catalogItem['affilate_user'])->name }}
-                                        </p>
-                                        @endif
 
                                     </td>
                                     <td>
-                                        @if($catalogItem['size'])
-                                        <p>
-                                            <strong>{{ __('Size') }} :</strong> {{str_replace('-','
-                                            ',$catalogItem['size'])}}
-                                        </p>
-                                        @endif
-                                        @if($catalogItem['color'])
                                         @php
-                                            $clr = $catalogItem['color'];
-                                            $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
+                                            $qty = (int) ($catalogItem['qty'] ?? 1);
+                                            $totalPrice = (float) ($catalogItem['price'] ?? 0);
+                                            $unitPrice = $qty > 0 ? $totalPrice / $qty : $totalPrice;
                                         @endphp
-                                        @if($colorHex)
-                                        <p>
-                                            <strong>{{ __('color') }} :</strong> <span style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"></span>
-                                        </p>
-                                        @endif
-                                        @endif
                                         <p>
                                             <strong>{{ __('Price') }} :</strong> {{
-                                            \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) *
-                                            $purchase->currency_value) }}
+                                            \PriceHelper::showCurrencyPrice($unitPrice * $purchase->currency_value) }}
                                         </p>
                                         <p>
-                                            <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{
-                                            $catalogItem['item']['measure'] }}
+                                            <strong>{{ __('Qty') }} :</strong> {{ $qty }} {{
+                                            $catalogItem['item']['measure'] ?? '' }}
                                         </p>
-                                        @if(!empty($catalogItem['keys']))
-
-                                        @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',',
-                                        $catalogItem['values'])) as $key => $value)
-                                        <p>
-                                            <b>{{ ucwords(str_replace('_', ' ', $key)) }} : </b> {{ $value }}
-                                        </p>
-                                        @endforeach
-
-                                        @endif
-
                                     </td>
 
-                                    <td> {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] *
-                                        $purchase->currency_value)
-                                        }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'%
-                                            '.__('Off').')' }}</small>
+                                    <td> {{ \PriceHelper::showCurrencyPrice($totalPrice * $purchase->currency_value) }}
                                     </td>
 
 

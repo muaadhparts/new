@@ -761,8 +761,6 @@ Route::prefix('operator')->group(function () {
 
     // Note: Status and Feature routes are now in the ADMIN CATALOG ITEM SECTION above
 
-    Route::post('/frontend-setting/update/all', 'Operator\FrontendSettingController@update')->name('operator-fs-update');
-
     // ------------ GLOBAL ENDS ----------------------
 
     Route::group(['middleware' => 'permissions:super'], function () {
@@ -1217,6 +1215,9 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/', 'Front\FrontendController@index')->name('front.index');
     // Route removed - extraIndex merged into index() with section-based rendering
 
+    // ALL CATALOGS PAGE (with pagination)
+    Route::get('/catalogs', 'Front\FrontendController@allCatalogs')->name('front.catalogs');
+
     Route::get('/monetary-unit/{id}', 'Front\FrontendController@monetaryUnit')->name('front.monetary-unit');
     Route::get('/language/{id}', 'Front\FrontendController@language')->name('front.language');
     Route::get('/purchase/track/{id}', 'Front\FrontendController@trackload')->name('front.track.search');
@@ -1234,7 +1235,14 @@ Route::group(['middleware' => 'maintenance'], function () {
     // SHIPMENT TRACKING SECTION ENDS
 
     // PUBLICATION SECTION REMOVED - Feature deleted
+    // Stub routes to prevent errors in legacy views
+    Route::get('/publications', fn() => redirect()->route('front.index'))->name('front.publications');
+    Route::get('/publication/{slug}', fn() => redirect()->route('front.index'))->name('front.publicationshow');
+
     // HELP ARTICLE SECTION REMOVED - Feature deleted
+    // Stub routes to prevent errors in legacy views
+    Route::get('/help-article', fn() => redirect()->route('front.index'))->name('front.help-article');
+    Route::get('/help-article/{slug}', fn() => redirect()->route('front.index'))->name('front.help-article-show');
 
     // CONTACT SECTION
     Route::get('/contact', 'Front\FrontendController@contact')->name('front.contact');

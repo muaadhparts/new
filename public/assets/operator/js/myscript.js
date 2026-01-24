@@ -801,6 +801,16 @@
 
         $(window).scrollTop(0);
       },
+      error: function (xhr, status, error) {
+        if (admin_loader == 1) {
+          $(".gocover").hide();
+        }
+        $("button.addProductSubmit-btn").prop("disabled", false);
+        muaadhform.parent().find(".alert-success").hide();
+        muaadhform.parent().find(".alert-danger").show();
+        muaadhform.parent().find(".alert-danger ul").html("<li>Error: " + (xhr.responseJSON?.message || error || "Unknown error") + "</li>");
+        $(window).scrollTop(0);
+      },
     });
   });
 

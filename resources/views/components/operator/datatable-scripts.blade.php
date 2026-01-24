@@ -19,7 +19,7 @@
 @php
     $tableId = $tableId ?? 'muaadhtable';
     $modalId = $modalId ?? 'modal1';
-    $gs = $gs ?? \App\Models\Muaadhsetting::first();
+    $ps = platformSettings();
 @endphp
 
 <script type="text/javascript">
@@ -42,7 +42,7 @@
             @endforeach
         ],
         language: {
-            processing: '<img src="{{ asset('assets/images/' . ($gs->admin_loader ?? 'loader.gif')) }}">'
+            processing: '<img src="{{ asset('assets/images/' . ($ps->get('admin_loader', 'loader.gif'))) }}">'
         }
     });
 

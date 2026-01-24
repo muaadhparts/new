@@ -210,6 +210,10 @@
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-lg-3 col-md-4 mb-3">
+                                            <label class="control-label">{{ __('Catalogs') }}</label>
+                                            <input type="number" class="form-control" name="count_categories" value="12" min="1" max="50">
+                                        </div>
+                                        <div class="col-lg-3 col-md-4 mb-3">
                                             <label class="control-label">{{ __('Blogs') }}</label>
                                             <input type="number" class="form-control" name="count_blogs" value="3" min="1" max="12">
                                         </div>

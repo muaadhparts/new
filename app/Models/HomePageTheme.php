@@ -31,6 +31,7 @@ class HomePageTheme extends Model
         'name_blogs',
         // Counts
         'count_blogs',
+        'count_categories',
         // Extra Settings
         'settings',
     ];

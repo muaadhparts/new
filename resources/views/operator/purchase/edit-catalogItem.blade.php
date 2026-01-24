@@ -103,7 +103,10 @@
 
   var order_id = $('#order_id').val();
   var item_id = $('#item_id').val();
-  let gs  = {!! json_encode(\App\Models\Muaadhsetting::first()->makeHidden(['stripe_key', 'stripe_secret', 'smtp_pass', 'instamojo_key', 'instamojo_token', 'paystack_key', 'paystack_email', 'paypal_business', 'paytm_merchant', 'paytm_secret', 'paytm_website', 'paytm_industry', 'paytm_mode', 'molly_key', 'razorpay_key', 'razorpay_secret'])) !!};
+  let gs = {
+      decimal_separator: '{{ platformSettings()->get('decimal_separator', '.') }}',
+      thousand_separator: '{{ platformSettings()->get('thousand_separator', ',') }}'
+  };
 
   function number_format (number, decimals, dec_point, thousands_sep) {
       // Strip all characters but numerical ones.

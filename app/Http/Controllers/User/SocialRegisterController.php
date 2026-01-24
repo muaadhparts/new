@@ -4,7 +4,6 @@ namespace App\Http\Controllers\User;
 
 use App\Models\CatalogEvent;
 use App\Models\OauthAccount;
-use App\Models\ConnectConfig;
 use App\Models\User;
 use App\Http\Controllers\Controller;
 use Auth;
@@ -18,12 +17,12 @@ class SocialRegisterController extends Controller
 
     public function __construct()
     {
-      $link = ConnectConfig::findOrFail(1);
-      Config::set('services.google.client_id', $link->gclient_id);
-      Config::set('services.google.client_secret', $link->gclient_secret);
+      $ps = platformSettings();
+      Config::set('services.google.client_id', $ps->get('google_client_id'));
+      Config::set('services.google.client_secret', $ps->get('google_client_secret'));
       Config::set('services.google.redirect', url('/auth/google/callback'));
-      Config::set('services.facebook.client_id', $link->fclient_id);
-      Config::set('services.facebook.client_secret', $link->fclient_secret);
+      Config::set('services.facebook.client_id', $ps->get('facebook_app_id'));
+      Config::set('services.facebook.client_secret', $ps->get('facebook_app_secret'));
       $url = url('/auth/facebook/callback');
       $url = preg_replace("/^http:/i", "https:", $url);
       Config::set('services.facebook.redirect', $url);

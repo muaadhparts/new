@@ -76,26 +76,32 @@ Sections are rendered based on theme settings and purchase
     @endif
 
     {{-- ===================================================================
-         SECTION: Categories (if enabled: $theme->show_categories)
+         SECTION: Catalogs (if enabled: $theme->show_categories)
          =================================================================== --}}
     @if(($theme->show_categories ?? false) && isset($featured_categories) && count($featured_categories) > 0)
     <section class="muaadh-section">
         <div class="container">
             <div class="muaadh-section-header">
-                <span class="muaadh-badge-primary">@lang('Browse Categories')</span>
-                <h2 class="muaadh-section-name">{{ $theme->name_categories ?? __('Shop by Category') }}</h2>
+                <span class="muaadh-badge-primary">@lang('Browse Catalogs')</span>
+                <h2 class="muaadh-section-name">{{ $theme->name_categories ?? __('Shop by Catalog') }}</h2>
+                @if(isset($total_catalogs_count) && $total_catalogs_count > count($featured_categories))
+                    <a href="{{ route('front.catalogs') }}" class="muaadh-view-all">
+                        @lang('View All') ({{ $total_catalogs_count }})
+                        <i class="fas fa-arrow-{{ app()->getLocale() == 'ar' ? 'left' : 'right' }} ms-1"></i>
+                    </a>
+                @endif
             </div>
 
             <div class="muaadh-categories-grid">
-                @foreach ($featured_categories as $fcategory)
-                    <a href="{{ route('front.catalog', $fcategory->slug) }}" class="muaadh-category-card">
+                @foreach ($featured_categories as $catalog)
+                    <a href="{{ route('front.catalog', $catalog->slug) }}" class="muaadh-category-card">
                         <div class="muaadh-category-img">
-                            <img src="{{ asset('assets/images/categories/' . $fcategory->image) }}" alt="{{ $fcategory->name }}" loading="lazy">
-                            <span class="muaadh-category-count">{{ $fcategory->products_count }}</span>
+                            <img src="{{ Storage::url($catalog->largeImagePath) }}" alt="{{ $catalog->localized_name }}" loading="lazy">
+                            <span class="muaadh-category-count">{{ $catalog->products_count }}</span>
                         </div>
                         <div class="muaadh-category-info">
-                            <h6 class="muaadh-category-name">{{ $fcategory->name }}</h6>
-                            <span class="muaadh-category-catalogItems">{{ $fcategory->products_count }} @lang('Items')</span>
+                            <h6 class="muaadh-category-name">{{ $catalog->localized_name }}</h6>
+                            <span class="muaadh-category-catalogItems">{{ $catalog->products_count }} @lang('Categories')</span>
                         </div>
                     </a>
                 @endforeach

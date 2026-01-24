@@ -12,7 +12,14 @@ class FrontendSettingController extends OperatorBaseController
      */
     public function update(Request $request)
     {
-        $data = FrontendSetting::findOrFail(1);
+        $data = FrontendSetting::firstOrCreate(['id' => 1], [
+            'contact_email' => '',
+            'street' => '',
+            'phone' => '',
+            'fax' => '',
+            'email' => '',
+        ]);
+
         $data->update($request->only($data->getFillable()));
 
         cache()->forget('frontend_settings');
@@ -25,7 +32,13 @@ class FrontendSettingController extends OperatorBaseController
      */
     public function contact()
     {
-        $data = FrontendSetting::find(1);
+        $data = FrontendSetting::firstOrCreate(['id' => 1], [
+            'contact_email' => '',
+            'street' => '',
+            'phone' => '',
+            'fax' => '',
+            'email' => '',
+        ]);
         return view('operator.frontend-setting.contact', compact('data'));
     }
 }

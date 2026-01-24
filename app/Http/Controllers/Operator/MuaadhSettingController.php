@@ -224,13 +224,13 @@ class MuaadhSettingController extends OperatorBaseController
         $ps = platformSettings();
         $prev = '';
         if ($field == 'is_debug') {
-            $prev = $ps->get('is_debug') == 1 ? 'true' : 'false');
+            $prev = $ps->get('is_debug') == 1 ? 'true' : 'false';
         }
 
         PlatformSetting::set('general', $field, $value);
 
         if ($field == 'is_debug') {
-            $now = $value == 1 ? 'true' : 'false');
+            $now = $value == 1 ? 'true' : 'false';
             $this->setEnv('APP_DEBUG', $now, $prev);
         }
         cache()->forget('platform_settings_context');

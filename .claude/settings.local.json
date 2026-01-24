@@ -82,7 +82,9 @@
       "Bash(do grep -q \"$f\" \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\layouts\\\\front.blade.php\" \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\layouts\\\\merchant.blade.php\" \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\catalog\\\\illustrations.blade.php\")",
       "Bash(git log:*)",
       "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\page_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\page_banner.blade.php\")",
-      "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\")"
+      "Bash(if exist \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\" del \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\resources\\\\views\\\\operator\\\\frontend-setting\\\\right_banner.blade.php\")",
+      "Bash(for table in announcements testimonials publications static_content home_page_themes frontend_settings seotools typefaces connect_configs languages mailing_list help_articles article_types muaadhsettings settings)",
+      "Bash(do echo -n \"$table: \")"
     ]
   }
 }

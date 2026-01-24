@@ -6,6 +6,7 @@ use App\Models\Brand;
 use App\Models\MonetaryUnit;
 use App\Models\Language;
 use App\Models\Page;
+use App\Models\PlatformSetting;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -22,6 +23,7 @@ class NavigationContext implements ContextInterface
     private $pages = null;
     private $monetaryUnits = null;
     private $languages = null;
+    private $connectConfig = null;
 
     public function load(): void
     {
@@ -49,6 +51,38 @@ class NavigationContext implements ContextInterface
         $this->languages = Cache::remember('all_languages', 3600, fn() =>
             Language::all()
         );
+
+        // ConnectConfig - legacy variable from connect_configs table
+        // Now loaded from platform_settings (social_links + social_login groups)
+        $this->connectConfig = Cache::remember('connect_config_legacy', 3600, function () {
+            $socialLinks = PlatformSetting::getGroup('social_links');
+            $socialLogin = PlatformSetting::getGroup('social_login');
+
+            return (object) [
+                // Social links
+                'facebook' => $socialLinks['facebook'] ?? null,
+                'twitter' => $socialLinks['twitter'] ?? null,
+                'linkedin' => $socialLinks['linkedin'] ?? null,
+                'gplus' => $socialLinks['google_plus'] ?? null,
+                'instagram' => $socialLinks['instagram'] ?? null,
+                'youtube' => $socialLinks['youtube'] ?? null,
+                'dribble' => $socialLinks['dribble'] ?? null,
+                'f_status' => $socialLinks['facebook_status'] ?? 0,
+                'g_status' => $socialLinks['google_plus_status'] ?? 0,
+                't_status' => $socialLinks['twitter_status'] ?? 0,
+                'l_status' => $socialLinks['linkedin_status'] ?? 0,
+                'd_status' => $socialLinks['dribble_status'] ?? 0,
+                // Social login
+                'f_check' => $socialLogin['facebook_enabled'] ?? 0,
+                'g_check' => $socialLogin['google_enabled'] ?? 0,
+                'fclient_id' => $socialLogin['facebook_client_id'] ?? null,
+                'fclient_secret' => $socialLogin['facebook_client_secret'] ?? null,
+                'fredirect' => $socialLogin['facebook_redirect'] ?? null,
+                'gclient_id' => $socialLogin['google_client_id'] ?? null,
+                'gclient_secret' => $socialLogin['google_client_secret'] ?? null,
+                'gredirect' => $socialLogin['google_redirect'] ?? null,
+            ];
+        });
     }
 
     public function toArray(): array
@@ -58,6 +92,12 @@ class NavigationContext implements ContextInterface
             'pages' => $this->pages,
             'monetaryUnits' => $this->monetaryUnits,
             'languges' => $this->languages,
+            // Legacy alias - static_content table was dropped
+            // Empty collection so views don't error
+            'static_content' => collect([]),
+            // Legacy alias - connect_configs table was dropped
+            // Data now comes from platform_settings
+            'connectConfig' => $this->connectConfig,
         ];
     }
 
@@ -67,6 +107,8 @@ class NavigationContext implements ContextInterface
         $this->pages = null;
         $this->monetaryUnits = null;
         $this->languages = null;
+        $this->connectConfig = null;
+        Cache::forget('connect_config_legacy');
     }
 
     // === Getters ===

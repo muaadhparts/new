@@ -4085,7 +4085,14 @@
     "Use transparent background (PNG)": "استخدم خلفية شفافة (PNG)",
     "This logo appears on invoices when you receive payments directly": "يظهر هذا الشعار على الفواتير عندما تستلم المدفوعات مباشرة",
     "Merchant logo updated successfully.": "تم تحديث شعار التاجر بنجاح.",
-    "Merchant logo deleted successfully.": "تم حذف شعار التاجر بنجاح."
+    "Merchant logo deleted successfully.": "تم حذف شعار التاجر بنجاح.",
+    "Shop by Catalog": "تصفح حسب الكتالوج",
+    "Browse Catalogs": "تصفح الكتالوجات",
+    "Subscribe to Our Newsletter": "اشترك في نشرتنا البريدية",
+    "Get the latest updates on new catalogItems and upcoming sales": "احصل على آخر التحديثات حول المنتجات الجديدة والعروض القادمة",
+    "Subscribe": "اشترك",
+    "All Catalogs": "جميع الكتالوجات",
+    "View All": "عرض الكل"
 }
 
 

@@ -8,7 +8,7 @@
     - $ps (PageSettings)
     - $languges (Languages collection)
     - $monetaryUnits (MonetaryUnits collection)
-    - $gs (MuaadhSettings)
+    - $gs (PlatformSettingsService)
     - $authUser, $courierUser (from HeaderComposer)
 
     Usage:

@@ -87,11 +87,21 @@ class FrontendController extends FrontBaseController
         }
 
         // ============================================================================
-        // SECTION: Featured Categories (if enabled in theme)
+        // SECTION: Featured Catalogs (if enabled in theme)
         // ============================================================================
         if ($theme->show_categories) {
-            $data['featured_categories'] = Cache::remember('featured_categories_with_count', 3600, function () {
-                return collect();
+            $catalogLimit = $theme->count_categories ?? 12;
+            $data['featured_categories'] = Cache::remember('featured_catalogs_for_home_' . $catalogLimit, 3600, function () use ($catalogLimit) {
+                return \App\Models\Catalog::where('status', 1)
+                    ->with('brand:id,name,slug,photo')
+                    ->withCount(['newCategories as products_count'])
+                    ->orderBy('sort')
+                    ->limit($catalogLimit)
+                    ->get();
+            });
+            // Check if there are more catalogs to show "View All" link
+            $data['total_catalogs_count'] = Cache::remember('total_catalogs_count', 3600, function () {
+                return \App\Models\Catalog::where('status', 1)->count();
             });
         }
 
@@ -102,6 +112,31 @@ class FrontendController extends FrontBaseController
 
     // ================================================================================================
     // HOME PAGE SECTION ENDS
+    // ================================================================================================
+
+    // ================================================================================================
+    // ALL CATALOGS PAGE (with pagination)
+    // ================================================================================================
+
+    public function allCatalogs(Request $request)
+    {
+        $theme = HomePageTheme::getActive();
+        $perPage = $theme->count_categories ?? 12;
+
+        $catalogs = \App\Models\Catalog::where('status', 1)
+            ->with('brand:id,name,slug,photo')
+            ->withCount(['newCategories as products_count'])
+            ->orderBy('sort')
+            ->paginate($perPage);
+
+        return view('frontend.catalogs', [
+            'catalogs' => $catalogs,
+            'theme' => $theme,
+        ]);
+    }
+
+    // ================================================================================================
+    // ALL CATALOGS PAGE ENDS
     // ================================================================================================
 
     // PUBLICATION SECTION REMOVED - Feature deleted
