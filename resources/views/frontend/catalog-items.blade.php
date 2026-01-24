@@ -272,11 +272,11 @@
 
 
                         @if (
-                            (!empty($cat) && !empty(json_decode($cat->attributes, true))) ||
-                                (!empty($subcat) && !empty(json_decode($subcat->attributes, true))) ||
-                                (!empty($childcat) && !empty(json_decode($childcat->attributes, true))))
+                            (!empty($cat) && !empty($cat->attributes) && !empty(json_decode($cat->attributes, true))) ||
+                                (!empty($subcat) && !empty($subcat->attributes) && !empty(json_decode($subcat->attributes, true))) ||
+                                (!empty($childcat) && !empty($childcat->attributes) && !empty(json_decode($childcat->attributes, true))))
                             <!-- Warranty Type-->
-                            @if (!empty($cat) && !empty(json_decode($cat->attributes, true)))
+                            @if (!empty($cat) && !empty($cat->attributes) && !empty(json_decode($cat->attributes, true)))
                                 @foreach ($cat->attributes as $key => $attr)
                                     <div class="single-catalogItem-widget">
                                         <h5 class="widget-name">{{ $attr->name }}</h5>
@@ -311,7 +311,7 @@
                             @endif
 
 
-                            @if (!empty($subcat) && !empty(json_decode($subcat->attributes, true)))
+                            @if (!empty($subcat) && !empty($subcat->attributes) && !empty(json_decode($subcat->attributes, true)))
                                 @foreach ($subcat->attributes as $key => $attr)
                                     <div class="single-catalogItem-widget">
                                         <h5 class="widget-name">{{ $attr->name }}</h5>
@@ -344,7 +344,7 @@
                             @endif
 
 
-                            @if (!empty($childcat) && !empty(json_decode($childcat->attributes, true)))
+                            @if (!empty($childcat) && !empty($childcat->attributes) && !empty(json_decode($childcat->attributes, true)))
                                 @foreach ($childcat->attributes as $key => $attr)
                                     <div class="single-catalogItem-widget">
                                         <h5 class="widget-name">{{ $attr->name }}</h5>

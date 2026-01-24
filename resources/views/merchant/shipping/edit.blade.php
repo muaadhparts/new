@@ -55,10 +55,10 @@
 
 
                         <div class="form-group">
-                            <label for="subname">@lang('Duration')</label>
-                            <input type="text" id="subname" class="form-control" placeholder="@lang('Duration')"
-                                value="{{ $data->subname }}" name="subname">
-                            @error('subname')
+                            <label for="subtitle">@lang('Duration')</label>
+                            <input type="text" id="subtitle" class="form-control" placeholder="@lang('Duration')"
+                                value="{{ $data->subtitle }}" name="subtitle">
+                            @error('subtitle')
                                 <span class="text-danger">{{ $message }}</span>
                             @enderror
                         </div>

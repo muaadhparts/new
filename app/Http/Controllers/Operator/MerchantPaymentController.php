@@ -28,7 +28,7 @@ class MerchantPaymentController extends OperatorBaseController
                                     return $data->getAutoDataText();
                                 }else {
                                     if($data->keyword == 'cod'){
-                                        return $data->subname;
+                                        return $data->subtitle;
                                     }else{
                                         $details = mb_strlen(strip_tags($data->details),'utf-8') > 250 ? mb_substr(strip_tags($data->details),0,250,'utf-8').'...' : strip_tags($data->details);
                                         return  $details;
@@ -170,7 +170,7 @@ class MerchantPaymentController extends OperatorBaseController
             //--- Validation Section
             $rules = [
                 'name' => 'unique:merchant_payments,name,'.$id,
-                'currency_id' => 'required'
+                'monetary_unit_id' => 'required'
             ];
 
             $validator = Validator::make($request->all(), $rules);
@@ -202,7 +202,7 @@ class MerchantPaymentController extends OperatorBaseController
                 }
             }
             $input['information'] = json_encode($info_data);
-            $input['currency_id'] = json_encode($request->currency_id);
+            $input['monetary_unit_id'] = json_encode($request->monetary_unit_id);
             $data->update($input);
 
 
@@ -227,7 +227,7 @@ class MerchantPaymentController extends OperatorBaseController
             //--- Logic Section
 
             $input = $request->all();
-            $input['currency_id'] = json_encode($request->currency_id);
+            $input['monetary_unit_id'] = json_encode($request->monetary_unit_id);
             $data->update($input);
 
 

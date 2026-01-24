@@ -37,7 +37,7 @@
                                                 + {{ $curr->sign }}{{ round($data->price * $curr->value, 2) }}
                                             @endif
                                         </span>
-                                        <small class="d-block">{{ $data->subname }}</small>
+                                        <small class="d-block">{{ $data->subtitle }}</small>
                                         @if(($data->free_above ?? 0) > 0)
                                             <small class="text-success d-block free-shipping-hint">
                                                 @lang('Free shipping if purchase above') {{ $curr->sign }}{{ round($data->free_above * $curr->value, 2) }}

@@ -574,7 +574,7 @@ class MerchantCheckoutService
                 $grouped[$provider]['methods'][] = [
                     'id' => $s->id,
                     'name' => $s->name,
-                    'subname' => $s->subname,
+                    'subtitle' => $s->subtitle,
                     'price' => round((float)$s->price, 2),
                     'original_price' => round((float)$s->price, 2),
                     'chargeable_price' => $isFree ? 0 : round((float)$s->price, 2),
@@ -788,7 +788,7 @@ class MerchantCheckoutService
                 'id' => $p->id,
                 'keyword' => $p->keyword,
                 'name' => $p->name,
-                'subname' => $p->subname,
+                'subtitle' => $p->subtitle,
                 'type' => $p->type,
                 'show_form' => $p->showForm(),
                 // ✅ للحسابات المالية

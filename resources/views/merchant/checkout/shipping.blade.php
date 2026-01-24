@@ -263,8 +263,8 @@
                                             <label class="form-check-label w-100 d-flex justify-content-between align-items-center" for="ship_{{ $method['id'] }}">
                                                 <div>
                                                     <strong>{{ $method['name'] }}</strong>
-                                                    @if(!empty($method['subname']))
-                                                    <br><small class="text-muted">{{ $method['subname'] }}</small>
+                                                    @if(!empty($method['subtitle']))
+                                                    <br><small class="text-muted">{{ $method['subtitle'] }}</small>
                                                     @endif
                                                     @if($method['free_above'] > 0 && !$method['is_free'])
                                                     <br><small class="text-info">

@@ -44,6 +44,7 @@ class Withdraw extends Model
         'amount',
         'fee',
         'status',
+        'type',
     ];
 
     protected $casts = [
@@ -51,11 +52,15 @@ class Withdraw extends Model
         'fee' => 'decimal:2',
     ];
 
-    // === Status Constants ===
+    // === Status Constants (per schema enum) ===
     const STATUS_PENDING = 'pending';
-    const STATUS_APPROVED = 'approved';
     const STATUS_COMPLETED = 'completed';
     const STATUS_REJECTED = 'rejected';
+
+    // === Type Constants (per schema enum) ===
+    const TYPE_USER = 'user';
+    const TYPE_MERCHANT = 'merchant';
+    const TYPE_RIDER = 'rider';
 
     // === Method Constants ===
     const METHOD_BANK_TRANSFER = 'bank_transfer';
@@ -85,11 +90,6 @@ class Withdraw extends Model
         return $query->where('status', self::STATUS_PENDING);
     }
 
-    public function scopeApproved($query)
-    {
-        return $query->where('status', self::STATUS_APPROVED);
-    }
-
     public function scopeCompleted($query)
     {
         return $query->where('status', self::STATUS_COMPLETED);
@@ -105,6 +105,11 @@ class Withdraw extends Model
         return $query->where('user_id', $userId);
     }
 
+    public function scopeForType($query, string $type)
+    {
+        return $query->where('type', $type);
+    }
+
     // =========================================================================
     // HELPERS
     // =========================================================================
@@ -112,11 +117,6 @@ class Withdraw extends Model
     public function isPending(): bool
     {
         return $this->status === self::STATUS_PENDING;
-    }
-
-    public function isApproved(): bool
-    {
-        return $this->status === self::STATUS_APPROVED;
     }
 
     public function isCompleted(): bool
@@ -141,7 +141,6 @@ class Withdraw extends Model
     {
         return match ($this->status) {
             self::STATUS_PENDING => __('Pending'),
-            self::STATUS_APPROVED => __('Approved'),
             self::STATUS_COMPLETED => __('Completed'),
             self::STATUS_REJECTED => __('Rejected'),
             default => $this->status,
@@ -152,10 +151,19 @@ class Withdraw extends Model
     {
         return match ($this->status) {
             self::STATUS_PENDING => 'warning',
-            self::STATUS_APPROVED => 'info',
             self::STATUS_COMPLETED => 'success',
             self::STATUS_REJECTED => 'danger',
             default => 'secondary',
+        };
+    }
+
+    public function getTypeLabel(): string
+    {
+        return match ($this->type) {
+            self::TYPE_USER => __('User'),
+            self::TYPE_MERCHANT => __('Merchant'),
+            self::TYPE_RIDER => __('Rider'),
+            default => $this->type,
         };
     }
 }

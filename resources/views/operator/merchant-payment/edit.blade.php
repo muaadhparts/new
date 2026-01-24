@@ -67,23 +67,23 @@
                         @endforeach
                         <hr>
                        @php
-                           $setCurrency = json_decode($data->currency_id);
-                           if($setCurrency == 0){
-                             $setCurrency = [];
+                           $setMonetaryUnits = json_decode($data->monetary_unit_id);
+                           if($setMonetaryUnits == 0){
+                             $setMonetaryUnits = [];
                            }
                        @endphp
                         @foreach(DB::table('monetary_units')->get() as $dcurr)
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">
-                             
+
                             </div>
                           </div>
                           <div class="col-lg-7">
                             <ul class="list">
                               <li>
-                                <input class="" name="currency_id[]" {{in_array($dcurr->id,$setCurrency) ? 'checked' : ''}} type="checkbox" id="currency_id{{$dcurr->id}}" value="{{$dcurr->id}}">
-                                <label for="currency_id{{$dcurr->id}}">{{$dcurr->name}}</label>
+                                <input class="" name="monetary_unit_id[]" {{in_array($dcurr->id,$setMonetaryUnits) ? 'checked' : ''}} type="checkbox" id="monetary_unit_id{{$dcurr->id}}" value="{{$dcurr->id}}">
+                                <label for="monetary_unit_id{{$dcurr->id}}">{{$dcurr->name}}</label>
                               </li>
                             </ul>
                           </div>
@@ -117,7 +117,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                              <input type="text" class="form-control" name="subname" placeholder="{{ __('Subname') }}" value="{{$data->subname}}">
+                              <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Subtitle') }}" value="{{$data->subtitle}}">
                           </div>
                         </div>
 

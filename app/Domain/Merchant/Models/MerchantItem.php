@@ -54,7 +54,6 @@ class MerchantItem extends Model
         'item_condition',
         'details',
         'policy',
-        'features',
     ];
 
     // =========================================================

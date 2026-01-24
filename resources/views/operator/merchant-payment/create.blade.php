@@ -35,7 +35,7 @@
                           </div>
                           <div class="col-lg-7">
 
-                              <input type="text" class="form-control" name="subname" placeholder="{{ __('Subname') }}" value="">
+                              <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Subtitle') }}" value="">
 
                           </div>
                         </div>

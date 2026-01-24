@@ -80,8 +80,8 @@ class CatalogItemCardDTO
         MerchantItem $merchant,
         Collection $favoriteCatalogItemIds,
         Collection $favoriteMerchantIds
-    ): self {
-        $dto = new self();
+    ): static {
+        $dto = new static();
         $catalogItem = $merchant->catalogItem;
 
         // CatalogItem data
@@ -153,12 +153,12 @@ class CatalogItemCardDTO
         ?MerchantItem $merchant,
         Collection $favoriteCatalogItemIds,
         Collection $favoriteMerchantIds
-    ): self {
+    ): static {
         if ($merchant) {
-            return self::fromMerchantItem($merchant, $favoriteCatalogItemIds, $favoriteMerchantIds);
+            return static::fromMerchantItem($merchant, $favoriteCatalogItemIds, $favoriteMerchantIds);
         }
 
-        $dto = new self();
+        $dto = new static();
 
         // CatalogItem data
         $dto->catalogItemId = $catalogItem->id;
@@ -231,8 +231,8 @@ class CatalogItemCardDTO
         ?MerchantItem $bestMerchant,
         Collection $favoriteCatalogItemIds,
         Collection $favoriteMerchantIds
-    ): self {
-        $dto = new self();
+    ): static {
+        $dto = new static();
 
         // CatalogItem data (from catalog_items table)
         $dto->catalogItemId = $catalogItem->id;

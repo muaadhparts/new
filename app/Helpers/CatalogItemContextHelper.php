@@ -105,7 +105,6 @@ class CatalogItemContextHelper
         $catalogItem->whole_sell_discount = $mp->whole_sell_discount ?? null;
         $catalogItem->ship = $mp->ship ?? null;
         $catalogItem->policy = $mp->policy ?? null;
-        $catalogItem->features = $mp->features ?? null;
     }
 
     /**

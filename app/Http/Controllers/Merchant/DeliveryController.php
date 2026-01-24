@@ -1189,7 +1189,7 @@ class DeliveryController extends MerchantBaseController
                 return [
                     'id' => $shipping->id,
                     'name' => $shipping->name,
-                    'subname' => $shipping->subname,
+                    'subtitle' => $shipping->subtitle,
                     'price' => (float) $shipping->price,
                     'display_price' => PriceHelper::showAdminCurrencyPrice($shipping->price),
                     'free_above' => $shipping->free_above,

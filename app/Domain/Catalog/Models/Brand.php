@@ -17,13 +17,12 @@ use Illuminate\Support\Facades\Storage;
  * @property string|null $name_ar
  * @property string|null $slug
  * @property int $status
- * @property int $featured
- * @property string|null $link
+ * @property int|null $is_featured
  * @property string|null $photo
  */
 class Brand extends Model
 {
-    protected $fillable = ['name', 'name_ar', 'slug', 'status', 'featured', 'link', 'photo'];
+    protected $fillable = ['name', 'name_ar', 'slug', 'status', 'is_featured', 'photo'];
 
     public $timestamps = false;
 

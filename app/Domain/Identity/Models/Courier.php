@@ -32,7 +32,7 @@ class Courier extends Authenticatable
 
     protected $fillable = [
         'name', 'photo', 'address', 'phone',
-        'email', 'password', 'email_verify', 'email_verified', 'email_token',
+        'email', 'password', 'email_verify', 'email_token',
         'status', 'balance', 'total_collected', 'total_delivered', 'total_fees_earned'
     ];
 

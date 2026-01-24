@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Builder;
  * @property string $integration_type
  * @property string|null $provider
  * @property string $name
- * @property string|null $subname
+ * @property string|null $subtitle
  * @property float $price
  * @property float|null $free_above
  * @property int $status
@@ -40,7 +40,7 @@ class Shipping extends Model
         'integration_type', // none, manual, api
         'provider',
         'name',
-        'subname',
+        'subtitle',
         'price',
         'free_above',
         'status',

@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Session;
  * Table: catalog_items
  *
  * CatalogItem stores only catalogue-level attributes.
- * Merchant-specific data (price, stock, policy, features, status, etc.) is in MerchantItem.
+ * Merchant-specific data (price, stock, policy, status, etc.) is in MerchantItem.
  *
  * @property int $id
  * @property string $part_number
@@ -571,15 +571,6 @@ class CatalogItem extends Model
     {
         $mi = $this->activeMerchant($userId);
         return $mi?->policy;
-    }
-
-    /**
-     * Get merchant-specific features from merchant item.
-     */
-    public function getMerchantFeatures(?int $userId = null): ?string
-    {
-        $mi = $this->activeMerchant($userId);
-        return $mi?->features;
     }
 
     /**

@@ -35,7 +35,7 @@
                                 @if($data->price != 0)
                                 + {{ $curr->sign }}{{ round($data->price * $curr->value,2) }}
                                 @endif
-                                <small>{{ $data->subname }}</small>
+                                <small>{{ $data->subtitle }}</small>
                             </label>
                         </div>
                         @empty

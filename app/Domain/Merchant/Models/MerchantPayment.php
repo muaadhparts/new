@@ -31,7 +31,6 @@ class MerchantPayment extends Model
         'name',
         'title',
         'subtitle',
-        'subname',
         'type',
         'information',
         'keyword',
@@ -51,7 +50,7 @@ class MerchantPayment extends Model
 
     public function monetaryUnit(): BelongsTo
     {
-        return $this->belongsTo(MonetaryUnit::class, 'currency_id')->withDefault();
+        return $this->belongsTo(MonetaryUnit::class, 'monetary_unit_id')->withDefault();
     }
 
     // =========================================================
@@ -110,7 +109,7 @@ class MerchantPayment extends Model
 
     public static function scopeHasGateway($curr)
     {
-        return self::where('currency_id', 'like', "%\"{$curr}\"%")->orwhere('currency_id', '*')->get();
+        return self::where('monetary_unit_id', 'like', "%\"{$curr}\"%")->orwhere('monetary_unit_id', '*')->get();
     }
 
     public function convertAutoData(): array

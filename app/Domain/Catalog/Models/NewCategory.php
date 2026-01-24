@@ -17,14 +17,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property string $full_code
- * @property string|null $formattedCode
+ * @property string|null $formatted_code
  * @property string|null $slug
  * @property string $label_en
  * @property string|null $label_ar
  * @property int $catalog_id
  * @property int $brand_id
+ * @property int $brand_region_id
  * @property int $level
  * @property int|null $parent_id
+ * @property string|null $Applicability
  */
 class NewCategory extends Model
 {
@@ -32,10 +34,10 @@ class NewCategory extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'full_code', 'formattedCode', 'slug',
+        'full_code', 'formatted_code', 'slug',
         'label_en', 'label_ar', 'catalog_id',
-        'brand_id', 'level', 'parent_id',
-        'thumbnail', 'images',
+        'brand_id', 'brand_region_id', 'level', 'parent_id',
+        'thumbnail', 'images', 'Applicability',
         'spec_key', 'parents_key', 'path', 'keywords'
     ];
 
@@ -68,6 +70,14 @@ class NewCategory extends Model
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class, 'brand_id');
+    }
+
+    /**
+     * The brand region this category belongs to
+     */
+    public function brandRegion(): BelongsTo
+    {
+        return $this->belongsTo(BrandRegion::class, 'brand_region_id');
     }
 
     /**

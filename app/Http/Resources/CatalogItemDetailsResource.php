@@ -82,7 +82,6 @@ class CatalogItemDetailsResource extends JsonResource
 
       'details'        => $mp && !empty($mp->details) ? strip_tags($mp->details) : strip_tags($this->policy),
       'policy'         => $mp && !empty($mp->policy) ? strip_tags($mp->policy) : strip_tags($this->policy),
-      'features'       => $mp && !empty($mp->features) ? $mp->features : $this->features,
       'whole_sell_quantity' => $mp ? $mp->whole_sell_qty : null,
       'whole_sell_discount' => $mp ? $mp->whole_sell_discount : null,
 

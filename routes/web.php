@@ -931,14 +931,6 @@ Route::group(['middleware' => 'maintenance'], function () {
 
             //------------ MERCHANT SHIPPING ENDS ------------
 
-            //------------ MERCHANT WAREHOUSE SETTINGS ------------
-
-            Route::get('/warehouse', 'Merchant\WarehouseController@index')->name('merchant-warehouse-index');
-            Route::post('/warehouse/update', 'Merchant\WarehouseController@update')->name('merchant-warehouse-update');
-            Route::get('/warehouse/get-cities', 'Merchant\WarehouseController@getCities')->name('merchant-warehouse-get-cities');
-
-            //------------ MERCHANT WAREHOUSE ENDS ------------
-
             //------------ MERCHANT CATALOG EVENT SECTION ------------
 
             Route::get('/purchase/event/show/{id}', 'Merchant\CatalogEventController@showPurchaseEvents')->name('merchant-purchase-event-show');

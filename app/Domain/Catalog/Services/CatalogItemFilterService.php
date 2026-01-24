@@ -31,10 +31,13 @@ class CatalogItemFilterService
      */
     public function getFilterSidebarData(): array
     {
+        $brands = Brand::with('catalogs')->where('status', 1)->get();
+
         return [
             // Brand has 'subs' accessor that returns catalogs
             // Catalog has 'childs' accessor that returns NewCategories Level 1
-            'categories' => Brand::with('catalogs')->where('status', 1)->get(),
+            'categories' => $brands,
+            'brands' => $brands, // Alias for views that use $brands
             'merchants' => $this->getActiveMerchants(),
             'quality_brands' => QualityBrand::active()->orderBy('name_en', 'asc')->get(),
         ];

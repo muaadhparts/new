@@ -862,9 +862,9 @@
                                 <strong>@lang('Price:')</strong>
                                 <span class="detail-price"></span>
                             </div>
-                            <div class="col-12 mt-2 detail-subname-row d-none">
+                            <div class="col-12 mt-2 detail-subtitle-row d-none">
                                 <strong>@lang('Delivery Time:')</strong>
-                                <span class="detail-subname"></span>
+                                <span class="detail-subtitle"></span>
                             </div>
                         </div>
                     </div>
@@ -1024,7 +1024,7 @@
                 response.options.forEach(function(option) {
                     html += `<option value="${option.id}"
                                 data-name="${escapeHtml(option.name)}"
-                                data-subname="${escapeHtml(option.subname || '')}"
+                                data-subtitle="${escapeHtml(option.subtitle || '')}"
                                 data-price="${option.price}"
                                 data-display-price="${option.display_price}">
                                 ${option.name} - ${option.display_price}
@@ -1082,12 +1082,12 @@
             $form.find('.detail-name').text(selected.data('name'));
             $form.find('.detail-price').text(selected.data('display-price'));
 
-            const subname = selected.data('subname');
-            if (subname) {
-                $form.find('.detail-subname').text(subname);
-                $form.find('.detail-subname-row').removeClass('d-none');
+            const subtitle = selected.data('subtitle');
+            if (subtitle) {
+                $form.find('.detail-subtitle').text(subtitle);
+                $form.find('.detail-subtitle-row').removeClass('d-none');
             } else {
-                $form.find('.detail-subname-row').addClass('d-none');
+                $form.find('.detail-subtitle-row').addClass('d-none');
             }
 
             $form.find('.provider-details').removeClass('d-none');

@@ -34,7 +34,7 @@
                             </div>
                           </div>
                           <div class="col-lg-7">
-                            <input type="text" class="form-control" name="subname" placeholder="{{ __('Duration') }}" required="" value="">
+                            <input type="text" class="form-control" name="subtitle" placeholder="{{ __('Duration') }}" required="" value="">
                           </div>
                         </div>
 

@@ -19,7 +19,7 @@
     $layout = $layout ?? 'grid';
     $defaultImage = asset('assets/images/noimage.png');
 
-    if (isset($card) && $card instanceof \App\DataTransferObjects\CatalogItemCardDTO) {
+    if (isset($card) && $card instanceof \App\Domain\Catalog\DTOs\CatalogItemCardDTO) {
         // === Source: CatalogItemCardDTO ===
         $catalogItemId = $card->catalogItemId;
         $merchantItemId = $card->merchantItemId;
@@ -60,6 +60,11 @@
         $hasMultipleOffers = $card->hasMultipleOffers ?? false;
     } else {
         // === Source: CatalogItem + MerchantItem ===
+        // Skip if no catalog item is provided
+        if (!isset($catalogItem) || !$catalogItem) {
+            return;
+        }
+
         $isMerchantItem = $catalogItem instanceof \App\Models\MerchantItem;
 
         if ($isMerchantItem) {
