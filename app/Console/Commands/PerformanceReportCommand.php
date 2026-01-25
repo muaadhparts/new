@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\PerformanceAnalyzer;
+use App\Domain\Platform\Services\PerformanceAnalyzer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;

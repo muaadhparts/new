@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Services\SEO;
+namespace App\Domain\Platform\Services\SEO;
 
-use App\Services\SEO\Schema\SchemaBuilder;
-use App\Services\SEO\Schema\CatalogItemSchema;
-use App\Services\SEO\Schema\OrganizationSchema;
-use App\Services\SEO\Schema\BreadcrumbSchema;
-use App\Services\SEO\Schema\WebsiteSchema;
+use App\Domain\Platform\Services\SEO\Schema\SchemaBuilder;
+use App\Domain\Platform\Services\SEO\Schema\CatalogItemSchema;
+use App\Domain\Platform\Services\SEO\Schema\OrganizationSchema;
+use App\Domain\Platform\Services\SEO\Schema\BreadcrumbSchema;
+use App\Domain\Platform\Services\SEO\Schema\WebsiteSchema;
 use Illuminate\Support\Facades\Cache;
 
 /**

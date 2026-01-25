@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\City;
-use App\Models\Country;
-use App\Services\ApiCredentialService;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Merchant\Services\ApiCredentialService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

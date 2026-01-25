@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Models\Country;
-use App\Models\City;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Shipping\Models\City;
 
 /**
  * LocationHelper - مساعد موحد لعرض أسماء الدول والمدن

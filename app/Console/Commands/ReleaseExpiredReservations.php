@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\StockReservation;
+use App\Domain\Commerce\Models\StockReservation;
 
 /**
  * Release Expired Stock Reservations

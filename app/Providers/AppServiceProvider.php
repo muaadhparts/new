@@ -2,10 +2,10 @@
 
 namespace App\Providers;
 
-use App\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\ShipmentTracking;
 use App\Observers\ShipmentTrackingObserver;
-use App\Services\GlobalData\GlobalDataService;
-use App\Services\MonetaryUnitService;
+use App\Domain\Platform\Services\GlobalData\GlobalDataService;
+use App\Domain\Platform\Services\MonetaryUnitService;
 use App\View\Composers\HeaderComposer;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;

@@ -2,9 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Models\MerchantCommission;
-use App\Models\MerchantPurchase;
-use App\Models\Purchase;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Commerce\Models\Purchase;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 

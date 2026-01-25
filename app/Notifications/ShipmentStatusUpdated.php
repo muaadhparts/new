@@ -6,7 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\ShipmentTracking;
 
 class ShipmentStatusUpdated extends Notification implements ShouldQueue
 {

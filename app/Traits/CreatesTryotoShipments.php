@@ -3,9 +3,9 @@
 namespace App\Traits;
 
 use App\Helpers\PriceHelper;
-use App\Models\Purchase;
-use App\Models\UserCatalogEvent;
-use App\Services\TryotoService;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Catalog\Models\UserCatalogEvent;
+use App\Domain\Shipping\Services\TryotoService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 

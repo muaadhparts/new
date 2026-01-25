@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Services\ApiCredentialService;
+use App\Domain\Merchant\Services\ApiCredentialService;
 use Illuminate\Console\Command;
 
 class SetApiCredential extends Command

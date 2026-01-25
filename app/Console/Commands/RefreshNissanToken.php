@@ -3,8 +3,8 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Models\Token;
-use App\Services\NissanTokenService;
+use App\Domain\Catalog\Models\Token;
+use App\Domain\Catalog\Services\NissanTokenService;
 
 class RefreshNissanToken extends Command
 {

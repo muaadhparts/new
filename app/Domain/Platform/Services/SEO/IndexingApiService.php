@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\SEO;
+namespace App\Domain\Platform\Services\SEO;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

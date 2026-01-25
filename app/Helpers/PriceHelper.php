@@ -2,7 +2,7 @@
 
 namespace App\Helpers;
 
-use App\Models\MonetaryUnit;
+use App\Domain\Platform\Models\MonetaryUnit;
 use DB;
 use Session;
 

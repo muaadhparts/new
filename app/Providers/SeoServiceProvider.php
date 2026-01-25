@@ -2,8 +2,9 @@
 
 namespace App\Providers;
 
-use App\Services\SEO\IndexingApiService;
-use App\Services\SEO\SeoService;
+use App\Domain\Platform\Services\SEO\IndexingApiService;
+use App\Domain\Platform\Services\SEO\SeoService;
+use App\Domain\Platform\Services\SEO\ConsentModeService;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
@@ -51,18 +52,18 @@ class SeoServiceProvider extends ServiceProvider
     {
         // @seoMeta - Render meta tags
         Blade::directive('seoMeta', function () {
-            return '<?php echo app(\App\Services\SEO\SeoService::class)->renderMeta(); ?>';
+            return '<?php echo app(\App\Domain\Platform\Services\SEO\SeoService::class)->renderMeta(); ?>';
         });
 
         // @seoSchemas - Render all schemas
         Blade::directive('seoSchemas', function () {
-            return '<?php echo app(\App\Services\SEO\SeoService::class)->renderSchemas(); ?>';
+            return '<?php echo app(\App\Domain\Platform\Services\SEO\SeoService::class)->renderSchemas(); ?>';
         });
 
         // @seoCanonical - Render canonical URL
         Blade::directive('seoCanonical', function () {
             return '<?php
-                $canonical = app(\App\Services\SEO\SeoService::class)->getCanonical();
+                $canonical = app(\App\Domain\Platform\Services\SEO\SeoService::class)->getCanonical();
                 if ($canonical) {
                     echo \'<link rel="canonical" href="\' . e($canonical) . \'">\';
                 }
@@ -71,17 +72,17 @@ class SeoServiceProvider extends ServiceProvider
 
         // @consentMode - Render consent mode scripts
         Blade::directive('consentMode', function () {
-            return '<?php echo \App\Services\SEO\ConsentModeService::renderConsentInit(); ?>';
+            return '<?php echo \App\Domain\Platform\Services\SEO\ConsentModeService::renderConsentInit(); ?>';
         });
 
         // @consentScripts - Render consent update functions
         Blade::directive('consentScripts', function () {
-            return '<?php echo \App\Services\SEO\ConsentModeService::renderConsentUpdateScript(); ?>';
+            return '<?php echo \App\Domain\Platform\Services\SEO\ConsentModeService::renderConsentUpdateScript(); ?>';
         });
 
         // @cookieBanner - Render cookie consent banner
         Blade::directive('cookieBanner', function () {
-            return '<?php echo \App\Services\SEO\ConsentModeService::renderCookieBanner(); ?>';
+            return '<?php echo \App\Domain\Platform\Services\SEO\ConsentModeService::renderCookieBanner(); ?>';
         });
 
         // @globalSchemas - Render Organization & Website schemas

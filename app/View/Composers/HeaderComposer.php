@@ -2,8 +2,8 @@
 
 namespace App\View\Composers;
 
-use App\Models\FavoriteSeller;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\View\View;

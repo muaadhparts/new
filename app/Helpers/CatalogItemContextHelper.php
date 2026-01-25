@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Support\Facades\DB;
 
 /**

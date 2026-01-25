@@ -3,8 +3,8 @@
 namespace App\Listeners;
 
 use App\Events\ShipmentStatusChanged;
-use App\Models\Purchase;
-use App\Models\User;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\Models\User;
 use App\Notifications\ShipmentStatusUpdated;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;

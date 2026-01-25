@@ -2,18 +2,14 @@
 
 namespace App\Helpers;
 
-use App\{
-    Models\MerchantCart,
-    Models\User,
-    Models\CatalogItem,
-    Models\MerchantPurchase,
-    Models\MerchantCommission,
-    Models\CatalogEvent,
-    Models\UserCatalogEvent
-};
-use App\Models\ReferralCommission;
-use App\Services\PaymentAccountingService;
-use App\Services\AccountLedgerService;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogEvent;
+use App\Domain\Catalog\Models\UserCatalogEvent;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Accounting\Models\ReferralCommission;
+use App\Domain\Accounting\Services\PaymentAccountingService;
+use App\Domain\Accounting\Services\AccountLedgerService;
 use Auth;
 use Session;
 use Illuminate\Support\Str;
@@ -112,7 +108,7 @@ class PurchaseHelper
                 $x = (string)$cartItem['stock'];
                 if ($x != null) {
                     // Update stock in merchant_items instead of catalog_items
-                    $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
+                    $merchantItem = \App\Domain\Merchant\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
                         ->where('user_id', $cartItem['user_id'])
                         ->first();
 
@@ -376,7 +372,7 @@ class PurchaseHelper
         // Check if merchant-specific payment gateway was used
         $merchantPaymentGatewayId = $checkoutData['merchant_payment_gateway_id'] ?? 0;
         if ($merchantPaymentGatewayId > 0) {
-            $credential = \App\Models\MerchantCredential::where('id', $merchantPaymentGatewayId)
+            $credential = \App\Domain\Merchant\Models\MerchantCredential::where('id', $merchantPaymentGatewayId)
                 ->where('is_active', true)
                 ->first();
 
@@ -389,7 +385,7 @@ class PurchaseHelper
         $merchantId = $checkoutData['merchant_id'] ?? 0;
         if ($merchantId > 0) {
             $serviceName = self::getPaymentServiceName($paymentMethod);
-            $hasMerchantCredentials = \App\Models\MerchantCredential::where('user_id', $merchantId)
+            $hasMerchantCredentials = \App\Domain\Merchant\Models\MerchantCredential::where('user_id', $merchantId)
                 ->where('service_name', $serviceName)
                 ->where('is_active', true)
                 ->exists();
@@ -467,7 +463,7 @@ class PurchaseHelper
 
             // Courier owner from database
             if ($result['courier_id'] > 0) {
-                $courier = \App\Models\Courier::find($result['courier_id']);
+                $courier = \App\Domain\Identity\Models\Courier::find($result['courier_id']);
                 $result['owner_id'] = $courier ? (int)($courier->user_id ?? 0) : 0;
             }
         } elseif ($provider === 'pickup') {
@@ -479,7 +475,7 @@ class PurchaseHelper
             // Check Shipping table to determine owner
             $shippingId = (int)($shippingChoice['shipping_id'] ?? 0);
             if ($shippingId > 0) {
-                $shipping = \App\Models\Shipping::find($shippingId);
+                $shipping = \App\Domain\Shipping\Models\Shipping::find($shippingId);
                 if ($shipping) {
                     $result['owner_id'] = (int)($shipping->user_id ?? 0);
                     $result['type'] = ($result['owner_id'] === 0) ? 'platform' : 'merchant';

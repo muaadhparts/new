@@ -3,13 +3,13 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use App\Services\Cart\MerchantCartManager;
-use App\Services\Cart\StockReservation;
-use App\Services\MerchantCheckout\MerchantSessionManager;
-use App\Services\MerchantCheckout\MerchantPriceCalculator;
-use App\Services\MerchantCheckout\MerchantCheckoutService;
-use App\Services\MerchantCheckout\MerchantPurchaseCreator;
-use App\Services\PaymentAccountingService;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
+use App\Domain\Commerce\Services\Cart\StockReservation;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantSessionManager;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantPriceCalculator;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantCheckoutService;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantPurchaseCreator;
+use App\Domain\Accounting\Services\PaymentAccountingService;
 
 class MerchantCheckoutServiceProvider extends ServiceProvider
 {

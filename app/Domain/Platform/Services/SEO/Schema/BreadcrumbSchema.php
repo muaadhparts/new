@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services\SEO\Schema;
+namespace App\Domain\Platform\Services\SEO\Schema;
 
 /**
  * BreadcrumbList Schema Builder

@@ -382,12 +382,12 @@ if (! function_exists('space_path')) {
  *   monetaryUnit()->convert(100)       // Convert from SAR to current
  *   monetaryUnit()->convertAndFormat() // Convert + format in one call
  *
- * @return \App\Services\MonetaryUnitService
+ * @return \App\Domain\Platform\Services\MonetaryUnitService
  */
 if (! function_exists('monetaryUnit')) {
-    function monetaryUnit(): \App\Services\MonetaryUnitService
+    function monetaryUnit(): \App\Domain\Platform\Services\MonetaryUnitService
     {
-        return app(\App\Services\MonetaryUnitService::class);
+        return app(\App\Domain\Platform\Services\MonetaryUnitService::class);
     }
 }
 
@@ -425,12 +425,12 @@ if (! function_exists('formatPrice')) {
  *   platformSettings()->site_name      // Get site name
  *   platformSettings()->get('key')     // Get any setting by key
  *
- * @return \App\Services\PlatformSettingsService
+ * @return \App\Domain\Platform\Services\PlatformSettingsService
  */
 if (! function_exists('platformSettings')) {
-    function platformSettings(): \App\Services\PlatformSettingsService
+    function platformSettings(): \App\Domain\Platform\Services\PlatformSettingsService
     {
-        return app(\App\Services\PlatformSettingsService::class);
+        return app(\App\Domain\Platform\Services\PlatformSettingsService::class);
     }
 }
 
@@ -459,6 +459,6 @@ if (! function_exists('setting')) {
 if (! function_exists('groupSetting')) {
     function groupSetting(string $group, string $key, $default = null)
     {
-        return \App\Models\PlatformSetting::get($group, $key, $default);
+        return \App\Domain\Platform\Models\PlatformSetting::get($group, $key, $default);
     }
 }

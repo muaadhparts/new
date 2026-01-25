@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\ShipmentTracking;
-use App\Services\OrderStatusResolverService;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Commerce\Services\OrderStatusResolverService;
 use App\Events\ShipmentStatusChanged;
 use Illuminate\Support\Facades\Log;
 

@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\ShipmentTracking;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;

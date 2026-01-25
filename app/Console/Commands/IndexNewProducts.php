@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use App\Services\SEO\IndexingApiService;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
+use App\Domain\Platform\Services\SEO\IndexingApiService;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Carbon\Carbon;
 
 class IndexNewProducts extends Command

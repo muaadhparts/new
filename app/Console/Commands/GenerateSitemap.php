@@ -6,9 +6,9 @@ use Illuminate\Console\Command;
 use Spatie\Sitemap\Sitemap;
 use Spatie\Sitemap\SitemapIndex;
 use Spatie\Sitemap\Tags\Url;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\Brand;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\Brand;
 use Carbon\Carbon;
 
 class GenerateSitemap extends Command

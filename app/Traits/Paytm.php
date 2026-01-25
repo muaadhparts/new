@@ -2,7 +2,7 @@
 
 namespace App\Traits;
 
-use App\Models\MerchantPayment;
+use App\Domain\Merchant\Models\MerchantPayment;
 
 
 trait Paytm {

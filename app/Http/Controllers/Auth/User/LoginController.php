@@ -23,7 +23,7 @@ class LoginController extends Controller
 
         // حفظ اللغة والعملة فقط (بيانات أساسية)
         $languageBackup = Session::get('language');
-        $currencyBackup = Session::get(\App\Services\MonetaryUnitService::SESSION_KEY);
+        $currencyBackup = Session::get(\App\Domain\Platform\Services\MonetaryUnitService::SESSION_KEY);
 
         // Remember Me: إذا تم تحديد الخيار، يبقى مسجل الدخول
         $remember = $request->has('remember') || $request->remember == 1;
@@ -46,7 +46,7 @@ class LoginController extends Controller
                 Session::put('language', $languageBackup);
             }
             if ($currencyBackup) {
-                Session::put(\App\Services\MonetaryUnitService::SESSION_KEY, $currencyBackup);
+                Session::put(\App\Domain\Platform\Services\MonetaryUnitService::SESSION_KEY, $currencyBackup);
             }
 
             // إذا كان تسجيل دخول البائع

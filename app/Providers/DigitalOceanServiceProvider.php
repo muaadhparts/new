@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Services\ApiCredentialService;
+use App\Domain\Merchant\Services\ApiCredentialService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\ServiceProvider;
 

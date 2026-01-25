@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\PlatformSetting;
+use App\Domain\Platform\Models\PlatformSetting;
 use Illuminate\Console\Command;
 
 class ThemeApply extends Command
