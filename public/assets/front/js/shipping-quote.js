@@ -1,80 +1,57 @@
 /**
- * Shipping Quote Service - Frontend JavaScript
+ * Shipping Quote Service
  *
- * Shows shipping cost quotes without creating shipments.
- * REQUIRES browser geolocation coordinates - same as checkout flow.
- *
- * Usage:
- * - ShippingQuote.showQuoteModal(merchantUserId, weight) - Show modal with options
- * - Auto-initialization for elements with data-shipping-quote attribute
+ * حساب تكلفة الشحن - يتطلب:
+ * - merchant_id: معرف التاجر
+ * - branch_id: معرف الفرع
+ * - weight: وزن المنتج
+ * - coordinates: إحداثيات العميل من المتصفح
  */
 const ShippingQuote = (function() {
     'use strict';
 
-    const config = {
-        apiBase: '/api/shipping-quote',
-        modalId: 'shippingQuoteModal',
-    };
-
+    const API_BASE = '/api/shipping-quote';
+    const CACHE_TTL = 5 * 60 * 1000;
     const quoteCache = new Map();
-    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-    /**
-     * Get coordinates - from CustomerLocation or request from browser
-     */
+    // ========================================
+    // Coordinates
+    // ========================================
+
     async function getCoordinates() {
-        // First check if CustomerLocation has coordinates
         if (typeof CustomerLocation !== 'undefined' && CustomerLocation.hasCoordinates()) {
             return CustomerLocation.getCoordinates();
         }
-
-        // Request from browser
         return requestBrowserGeolocation();
     }
 
-    /**
-     * Request coordinates from browser geolocation
-     */
     function requestBrowserGeolocation() {
         return new Promise((resolve) => {
             if (!navigator.geolocation) {
                 resolve(null);
                 return;
             }
-
             navigator.geolocation.getCurrentPosition(
-                (position) => {
-                    resolve({
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
-                    });
-                },
-                (error) => {
-                    console.log('Geolocation error:', error.message);
-                    resolve(null);
-                },
-                {
-                    enableHighAccuracy: false,
-                    timeout: 10000,
-                    maximumAge: 300000
-                }
+                (pos) => resolve({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+                () => resolve(null),
+                { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
             );
         });
     }
 
-    /**
-     * Show location permission modal
-     */
-    function showLocationPermissionModal() {
+    // ========================================
+    // Location Permission Modal
+    // ========================================
+
+    function showLocationModal() {
         return new Promise((resolve) => {
-            const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
+            const isRtl = document.documentElement.dir === 'rtl';
             const t = {
                 title: isRtl ? 'تفعيل الموقع' : 'Enable Location',
-                message: isRtl
-                    ? 'لحساب تكلفة الشحن بدقة، نحتاج إلى معرفة موقعك. يرجى السماح بالوصول للموقع في المتصفح.'
-                    : 'To calculate accurate shipping costs, we need to know your location. Please allow location access in your browser.',
-                enableBtn: isRtl ? 'تفعيل الموقع' : 'Enable Location',
-                cancelBtn: isRtl ? 'إلغاء' : 'Cancel',
+                message: isRtl ? 'لحساب تكلفة الشحن بدقة، نحتاج إلى معرفة موقعك.' : 'To calculate shipping, we need your location.',
+                enable: isRtl ? 'تفعيل' : 'Enable',
+                cancel: isRtl ? 'إلغاء' : 'Cancel',
+                error: isRtl ? 'لم نتمكن من الحصول على موقعك' : 'Could not get your location'
             };
 
             const modal = document.createElement('div');
@@ -83,24 +60,18 @@ const ShippingQuote = (function() {
                 <div class="customer-location-modal__backdrop"></div>
                 <div class="customer-location-modal__content">
                     <div class="customer-location-modal__header">
-                        <h3 class="customer-location-modal__title">
-                            <i class="fas fa-map-marker-alt"></i> ${t.title}
-                        </h3>
-                        <button type="button" class="customer-location-modal__close">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <h3 class="customer-location-modal__title"><i class="fas fa-map-marker-alt"></i> ${t.title}</h3>
+                        <button type="button" class="customer-location-modal__close"><i class="fas fa-times"></i></button>
                     </div>
                     <div class="customer-location-modal__body">
-                        <div class="shipping-quote-modal__location-request">
-                            <div class="shipping-quote-modal__location-icon">
-                                <i class="fas fa-location-arrow"></i>
-                            </div>
-                            <p class="shipping-quote-modal__location-message">${t.message}</p>
+                        <div class="text-center py-4">
+                            <i class="fas fa-location-arrow fa-3x text-primary mb-3"></i>
+                            <p class="location-message">${t.message}</p>
                         </div>
                     </div>
                     <div class="customer-location-modal__footer">
-                        <button type="button" class="btn btn-secondary customer-location-modal__cancel">${t.cancelBtn}</button>
-                        <button type="button" class="btn btn-primary shipping-quote-modal__enable-location">${t.enableBtn}</button>
+                        <button type="button" class="btn btn-secondary btn-cancel">${t.cancel}</button>
+                        <button type="button" class="btn btn-primary btn-enable">${t.enable}</button>
                     </div>
                 </div>
             `;
@@ -111,242 +82,108 @@ const ShippingQuote = (function() {
                 resolve(result);
             };
 
-            modal.querySelector('.customer-location-modal__backdrop').addEventListener('click', () => close(null));
-            modal.querySelector('.customer-location-modal__close').addEventListener('click', () => close(null));
-            modal.querySelector('.customer-location-modal__cancel').addEventListener('click', () => close(null));
+            modal.querySelector('.customer-location-modal__backdrop').onclick = () => close(null);
+            modal.querySelector('.customer-location-modal__close').onclick = () => close(null);
+            modal.querySelector('.btn-cancel').onclick = () => close(null);
 
-            modal.querySelector('.shipping-quote-modal__enable-location').addEventListener('click', async () => {
+            modal.querySelector('.btn-enable').onclick = async () => {
                 const coords = await requestBrowserGeolocation();
                 if (coords) {
-                    // Store coordinates via API
-                    try {
-                        await fetch(config.apiBase + '/store-location', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
-                                'X-CSRF-TOKEN': getCSRFToken()
-                            },
-                            body: JSON.stringify(coords)
-                        });
-
-                        // Update CustomerLocation if available
-                        if (typeof CustomerLocation !== 'undefined') {
-                            await CustomerLocation.setFromGeolocation(coords.latitude, coords.longitude);
-                        }
-                    } catch (e) {
-                        // Ignore storage errors
-                    }
+                    fetch(API_BASE + '/store-location', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCSRFToken() },
+                        body: JSON.stringify(coords)
+                    }).catch(() => {});
                     close(coords);
                 } else {
-                    // Show error message
-                    const messageEl = modal.querySelector('.shipping-quote-modal__location-message');
-                    messageEl.innerHTML = isRtl
-                        ? '<span style="color: var(--danger-color)">لم نتمكن من الحصول على موقعك. يرجى التحقق من إعدادات المتصفح والسماح بالوصول للموقع.</span>'
-                        : '<span style="color: var(--danger-color)">Could not get your location. Please check browser settings and allow location access.</span>';
+                    modal.querySelector('.location-message').innerHTML = `<span class="text-danger">${t.error}</span>`;
                 }
-            });
+            };
 
             document.body.appendChild(modal);
-            setTimeout(() => modal.classList.add('show'), 10);
+            requestAnimationFrame(() => modal.classList.add('show'));
         });
     }
 
-    /**
-     * Get quick shipping estimate (cheapest option)
-     * @param {number} merchantUserId - Merchant's user ID
-     * @param {number} branchId - Merchant branch ID (required - NO DEFAULT)
-     * @param {number} weight - Product weight in kg (required - NO DEFAULT)
-     */
-    async function getQuickEstimate(merchantUserId, branchId, weight) {
-        // Validate required parameters - NO DEFAULTS
-        if (!branchId || branchId <= 0) {
-            return {
-                success: false,
-                error_code: 'BRANCH_REQUIRED',
-                message: getTranslation('فرع التاجر غير محدد', 'Merchant branch is not set')
-            };
+    // ========================================
+    // API Calls
+    // ========================================
+
+    async function getQuote(merchantId, branchId, weight, fullOptions = false) {
+        if (!merchantId || !branchId || !weight || weight <= 0) {
+            return { success: false, error_code: 'MISSING_DATA' };
         }
 
-        if (!weight || weight <= 0) {
-            return {
-                success: false,
-                error_code: 'WEIGHT_REQUIRED',
-                message: getTranslation('وزن المنتج غير محدد', 'Product weight is not set')
-            };
-        }
-
-        // Get coordinates
         let coords = await getCoordinates();
-
         if (!coords) {
-            // Request location from user
-            coords = await showLocationPermissionModal();
+            coords = await showLocationModal();
             if (!coords) {
-                return {
-                    success: false,
-                    requires_location: true,
-                    message: getTranslation('يرجى تفعيل خدمة الموقع', 'Please enable location services')
-                };
+                return { success: false, requires_location: true };
             }
         }
 
-        const cacheKey = `${merchantUserId}:${branchId}:${weight}:${coords.latitude.toFixed(4)}:${coords.longitude.toFixed(4)}`;
-
+        const cacheKey = `${merchantId}:${branchId}:${weight}:${coords.latitude.toFixed(3)}:${coords.longitude.toFixed(3)}:${fullOptions}`;
         const cached = quoteCache.get(cacheKey);
-        if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+        if (cached && Date.now() - cached.time < CACHE_TTL) {
             return cached.data;
         }
 
         try {
-            const response = await fetch(config.apiBase + '/quick-estimate', {
+            const endpoint = fullOptions ? '/quote' : '/quick-estimate';
+            const response = await fetch(API_BASE + endpoint, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCSRFToken()
-                },
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': getCSRFToken() },
                 body: JSON.stringify({
-                    merchant_id: merchantUserId,
+                    merchant_id: merchantId,
                     branch_id: branchId,
                     weight: weight,
                     latitude: coords.latitude,
                     longitude: coords.longitude
                 })
             });
-
             const data = await response.json();
-
             if (data.success) {
-                quoteCache.set(cacheKey, { data, timestamp: Date.now() });
+                quoteCache.set(cacheKey, { data, time: Date.now() });
             }
-
             return data;
-        } catch (error) {
-            return { success: false, message: getTranslation('حدث خطأ في الاتصال', 'Connection error') };
+        } catch (e) {
+            return { success: false, error_code: 'CONNECTION_ERROR' };
         }
     }
 
-    /**
-     * Get full catalogItem quote with all options
-     * @param {number} merchantUserId - Merchant's user ID
-     * @param {number} branchId - Merchant branch ID (required - NO DEFAULT)
-     * @param {number} weight - Product weight in kg (required - NO DEFAULT)
-     * @param {number|null} catalogItemId - Optional catalog item ID
-     */
-    async function getProductQuote(merchantUserId, branchId, weight, catalogItemId = null) {
-        // Validate required parameters - NO DEFAULTS
-        if (!branchId || branchId <= 0) {
-            return {
-                success: false,
-                error_code: 'BRANCH_REQUIRED',
-                message: getTranslation('فرع التاجر غير محدد', 'Merchant branch is not set')
-            };
-        }
+    // ========================================
+    // Options Modal (عرض جميع الخيارات)
+    // ========================================
 
-        if (!weight || weight <= 0) {
-            return {
-                success: false,
-                error_code: 'WEIGHT_REQUIRED',
-                message: getTranslation('وزن المنتج غير محدد', 'Product weight is not set')
-            };
-        }
-
-        // Get coordinates
-        let coords = await getCoordinates();
-
-        if (!coords) {
-            // Request location from user
-            coords = await showLocationPermissionModal();
-            if (!coords) {
-                return {
-                    success: false,
-                    requires_location: true,
-                    message: getTranslation('يرجى تفعيل خدمة الموقع', 'Please enable location services')
-                };
-            }
-        }
-
-        try {
-            const response = await fetch(config.apiBase + '/quote', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': getCSRFToken()
-                },
-                body: JSON.stringify({
-                    merchant_id: merchantUserId,
-                    branch_id: branchId,
-                    weight,
-                    catalog_item_id: catalogItemId,
-                    latitude: coords.latitude,
-                    longitude: coords.longitude
-                })
-            });
-
-            return await response.json();
-        } catch (error) {
-            return { success: false, message: getTranslation('حدث خطأ في الاتصال', 'Connection error') };
-        }
-    }
-
-    /**
-     * Show shipping quote modal with all options
-     * @param {number} merchantUserId - Merchant's user ID
-     * @param {number} branchId - Merchant branch ID (required - NO DEFAULT)
-     * @param {number} weight - Product weight in kg (required - NO DEFAULT)
-     * @param {string} catalogItemName - Optional product name for display
-     */
-    async function showQuoteModal(merchantUserId, branchId, weight, catalogItemName = '') {
-        // Create and show modal with loading state
-        const modal = createModal(catalogItemName);
-        document.body.appendChild(modal);
-        setTimeout(() => modal.classList.add('show'), 10);
-
-        // Fetch quote with branch_id
-        const result = await getProductQuote(merchantUserId, branchId, weight);
-
-        // Update modal with result
-        updateModalContent(modal, result);
-    }
-
-    /**
-     * Create the quote modal
-     */
-    function createModal(productName) {
-        const existing = document.getElementById(config.modalId);
-        if (existing) existing.remove();
-
-        const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
+    async function showOptionsModal(merchantId, branchId, weight) {
+        const isRtl = document.documentElement.dir === 'rtl';
         const t = {
-            title: isRtl ? 'تكلفة الشحن' : 'Shipping Cost',
-            loading: isRtl ? 'جاري حساب تكلفة الشحن...' : 'Calculating shipping...',
+            title: isRtl ? 'خيارات الشحن' : 'Shipping Options',
+            loading: isRtl ? 'جاري التحميل...' : 'Loading...',
             close: isRtl ? 'إغلاق' : 'Close',
+            noOptions: isRtl ? 'لا توجد خيارات شحن متاحة' : 'No shipping options available',
+            days: isRtl ? 'أيام' : 'days',
+            error: isRtl ? 'حدث خطأ' : 'Error'
         };
 
+        // إنشاء Modal
         const modal = document.createElement('div');
-        modal.id = config.modalId;
         modal.className = 'customer-location-modal';
         modal.innerHTML = `
             <div class="customer-location-modal__backdrop"></div>
             <div class="customer-location-modal__content">
                 <div class="customer-location-modal__header">
-                    <h3 class="customer-location-modal__title">
-                        <i class="fas fa-truck"></i> ${t.title}
-                    </h3>
-                    <button type="button" class="customer-location-modal__close">
-                        <i class="fas fa-times"></i>
-                    </button>
+                    <h3 class="customer-location-modal__title"><i class="fas fa-truck"></i> ${t.title}</h3>
+                    <button type="button" class="customer-location-modal__close"><i class="fas fa-times"></i></button>
                 </div>
-                <div class="customer-location-modal__body" id="shippingQuoteContent">
-                    <div class="shipping-quote-modal__loading">
-                        <div class="shipping-quote-modal__loading-spinner"></div>
-                        <p>${t.loading}</p>
+                <div class="customer-location-modal__body" id="shippingOptionsBody">
+                    <div class="text-center py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                        <p class="mt-2">${t.loading}</p>
                     </div>
                 </div>
                 <div class="customer-location-modal__footer">
-                    <button type="button" class="btn btn-secondary customer-location-modal__cancel">${t.close}</button>
+                    <button type="button" class="btn btn-secondary btn-close-modal">${t.close}</button>
                 </div>
             </div>
         `;
@@ -356,231 +193,131 @@ const ShippingQuote = (function() {
             setTimeout(() => modal.remove(), 300);
         };
 
-        modal.querySelector('.customer-location-modal__backdrop').addEventListener('click', close);
-        modal.querySelector('.customer-location-modal__close').addEventListener('click', close);
-        modal.querySelector('.customer-location-modal__cancel').addEventListener('click', close);
+        modal.querySelector('.customer-location-modal__backdrop').onclick = close;
+        modal.querySelector('.customer-location-modal__close').onclick = close;
+        modal.querySelector('.btn-close-modal').onclick = close;
 
-        return modal;
-    }
+        document.body.appendChild(modal);
+        requestAnimationFrame(() => modal.classList.add('show'));
 
-    /**
-     * Update modal content with quote result
-     */
-    function updateModalContent(modal, result) {
-        const content = modal.querySelector('#shippingQuoteContent');
-        const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
+        // جلب البيانات
+        const result = await getQuote(merchantId, branchId, weight, true);
+        const body = modal.querySelector('#shippingOptionsBody');
 
-        if (!result.success) {
-            content.innerHTML = `
-                <div class="shipping-quote-modal__error">
-                    <div class="shipping-quote-modal__error-icon">
-                        <i class="fas fa-exclamation-triangle"></i>
-                    </div>
-                    <p>${result.message || (isRtl ? 'لم نتمكن من حساب تكلفة الشحن' : 'Could not calculate shipping')}</p>
+        if (!result.success || !result.options || result.options.length === 0) {
+            body.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-box-open fa-2x text-muted mb-2"></i>
+                    <p class="text-muted">${result.message || t.noOptions}</p>
                 </div>
             `;
             return;
         }
 
-        if (!result.options || result.options.length === 0) {
-            content.innerHTML = `
-                <div class="shipping-quote-modal__error">
-                    <div class="shipping-quote-modal__error-icon"><i class="fas fa-box"></i></div>
-                    <p>${isRtl ? 'لا توجد خيارات شحن متاحة' : 'No shipping options available'}</p>
+        // عرض الخيارات
+        const optionsHtml = result.options.map(opt => `
+            <div class="shipping-option d-flex justify-content-between align-items-center p-3 border-bottom">
+                <div>
+                    <div class="fw-bold"><i class="fas fa-truck text-primary me-2"></i>${opt.name}</div>
+                    ${opt.estimated_days ? `<small class="text-muted"><i class="fas fa-clock me-1"></i>${opt.estimated_days} ${t.days}</small>` : ''}
                 </div>
-            `;
-            return;
-        }
-
-        const optionsHtml = result.options.map(option => `
-            <div class="shipping-quote-modal__option">
-                <div class="shipping-quote-modal__option-info">
-                    <div class="shipping-quote-modal__option-name">
-                        <i class="fas fa-truck"></i> ${option.name}
-                    </div>
-                    ${option.estimated_days ? `
-                        <div class="shipping-quote-modal__option-time">
-                            <i class="fas fa-clock"></i>
-                            ${isRtl ? 'التوصيل خلال' : 'Delivery in'} ${option.estimated_days} ${isRtl ? 'أيام' : 'days'}
-                        </div>
-                    ` : ''}
-                </div>
-                <div class="shipping-quote-modal__option-price">
-                    ${formatPrice(option.price)}
-                </div>
+                <div class="fw-bold text-success">${formatPrice(opt.price)}</div>
             </div>
         `).join('');
 
-        content.innerHTML = `<div class="shipping-quote-modal__options">${optionsHtml}</div>`;
+        body.innerHTML = `
+            <div class="shipping-options-list">
+                ${result.origin && result.destination ? `
+                    <div class="d-flex justify-content-between text-muted small mb-3 px-2">
+                        <span><i class="fas fa-map-marker-alt"></i> ${result.origin}</span>
+                        <span><i class="fas fa-arrow-left mx-2"></i></span>
+                        <span><i class="fas fa-map-marker-alt"></i> ${result.destination}</span>
+                    </div>
+                ` : ''}
+                ${optionsHtml}
+            </div>
+        `;
     }
 
-    /**
-     * Format price with currency
-     */
     function formatPrice(amount) {
-        const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
-        const formatted = new Intl.NumberFormat(isRtl ? 'ar-SA' : 'en-SA', {
+        const isRtl = document.documentElement.dir === 'rtl';
+        return new Intl.NumberFormat(isRtl ? 'ar-SA' : 'en-SA', {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
-        }).format(amount);
-
-        return `${formatted} ${isRtl ? 'ر.س' : 'SAR'}`;
+        }).format(amount) + ' ' + (isRtl ? 'ر.س' : 'SAR');
     }
 
-    /**
-     * Get translation based on document direction
-     */
-    function getTranslation(ar, en) {
-        const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
-        return isRtl ? ar : en;
-    }
+    // ========================================
+    // Button Handler
+    // ========================================
 
-    /**
-     * Handle shipping quote button click
-     */
-    async function handleButtonClick(button) {
+    async function handleClick(button) {
         const merchantId = parseInt(button.dataset.merchantId);
         const branchId = parseInt(button.dataset.branchId);
         const weight = parseFloat(button.dataset.weight);
-        const productName = button.dataset.catalogItemName || '';
-        const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
+        const isRtl = document.documentElement.dir === 'rtl';
 
-        console.log('[ShippingQuote] handleButtonClick', { merchantId, branchId, weight });
+        if (!merchantId || !branchId || !weight) return;
 
-        // Validate required data - NO DEFAULTS
-        if (!merchantId) {
-            console.log('[ShippingQuote] No merchantId, returning');
+        // إذا كان يعرض السعر بالفعل، افتح Modal الخيارات
+        if (button.dataset.hasResult === 'true') {
+            showOptionsModal(merchantId, branchId, weight);
             return;
         }
 
-        if (!branchId || branchId <= 0) {
-            button.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>${isRtl ? 'الفرع غير محدد' : 'Branch not set'}</span>`;
-            button.classList.add('m-shipping-quote-btn--error');
-            return;
-        }
+        // Loading state
+        const originalHTML = button.innerHTML;
+        button.classList.add('is-loading');
+        button.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
 
-        if (!weight || weight <= 0) {
-            button.innerHTML = `<i class="fas fa-exclamation-triangle"></i> <span>${isRtl ? 'الوزن غير محدد' : 'Weight not set'}</span>`;
-            button.classList.add('m-shipping-quote-btn--error');
-            return;
-        }
+        const result = await getQuote(merchantId, branchId, weight);
 
-        // Show loading state
-        const originalContent = button.innerHTML;
-        button.classList.add('m-shipping-quote-btn--loading');
-        button.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${isRtl ? 'جاري التحميل...' : 'Loading...'}</span>`;
-
-        // Get quick estimate with branch_id
-        const result = await getQuickEstimate(merchantId, branchId, weight);
-
-        button.classList.remove('m-shipping-quote-btn--loading');
+        button.classList.remove('is-loading');
 
         if (result.success && result.price) {
-            // Show inline result with price
-            button.innerHTML = `
-                <i class="fas fa-truck m-shipping-quote-btn__icon"></i>
-                <span class="m-shipping-quote-btn__price">${result.formatted_price}</span>
-            `;
-            button.classList.add('has-price');
-            // Mark as showing price so next click opens modal
-            button.dataset.shippingQuoteHasPrice = 'true';
+            button.innerHTML = `<i class="fas fa-truck"></i> <span>${result.formatted_price}</span>`;
+            button.classList.add('has-result');
+            button.dataset.hasResult = 'true';
         } else {
-            // Show error or no service message
-            let errorMsg;
-            if (result.requires_location) {
-                errorMsg = isRtl ? 'فعّل الموقع' : 'Enable location';
-            } else if (result.error_code === 'BRANCH_REQUIRED') {
-                errorMsg = isRtl ? 'الفرع غير محدد' : 'Branch not set';
-            } else if (result.error_code === 'WEIGHT_REQUIRED') {
-                errorMsg = isRtl ? 'الوزن غير محدد' : 'Weight not set';
-            } else {
-                errorMsg = isRtl ? 'غير متاح' : 'N/A';
-            }
+            const msg = result.requires_location
+                ? (isRtl ? 'فعّل الموقع' : 'Enable location')
+                : (isRtl ? 'غير متاح' : 'N/A');
+            button.innerHTML = `<i class="fas fa-times"></i> <span>${msg}</span>`;
+            button.classList.add('has-error');
 
-            button.innerHTML = `<i class="fas fa-${result.requires_location ? 'map-marker-alt' : 'times'}"></i> <span>${errorMsg}</span>`;
-            button.classList.add('m-shipping-quote-btn--error');
-
-            // Reset after 3 seconds
             setTimeout(() => {
-                button.innerHTML = originalContent;
-                button.classList.remove('m-shipping-quote-btn--error');
-                delete button.dataset.shippingQuoteHasPrice;
+                button.innerHTML = originalHTML;
+                button.classList.remove('has-error');
             }, 3000);
         }
     }
 
-    /**
-     * Initialize shipping quote buttons using event delegation
-     * This works automatically for dynamically added buttons (AJAX)
-     */
-    function initButtons() {
-        // Only set up delegation once
-        if (document.body.dataset.shippingQuoteDelegation) return;
-        document.body.dataset.shippingQuoteDelegation = 'true';
+    // ========================================
+    // Event Delegation
+    // ========================================
 
-        console.log('[ShippingQuote] Event delegation initialized');
+    function init() {
+        if (document.body.dataset.shippingQuoteInit) return;
+        document.body.dataset.shippingQuoteInit = '1';
 
-        // Use event delegation on document body
-        document.body.addEventListener('click', async function(e) {
-            const button = e.target.closest('[data-shipping-quote]');
-            if (!button) return;
-
-            console.log('[ShippingQuote] Button HTML:', button.outerHTML);
-            console.log('[ShippingQuote] Button dataset:', button.dataset);
-
+        document.body.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-shipping-quote]');
+            if (!btn || btn.disabled) return;
             e.preventDefault();
-            e.stopPropagation();
-
-            // If already showing price, open modal instead
-            if (button.dataset.shippingQuoteHasPrice === 'true') {
-                const merchantId = parseInt(button.dataset.merchantId);
-                const branchId = parseInt(button.dataset.branchId);
-                const weight = parseFloat(button.dataset.weight);
-                const productName = button.dataset.catalogItemName || '';
-                showQuoteModal(merchantId, branchId, weight, productName);
-                return;
-            }
-
-            // Otherwise, get quick estimate
-            await handleButtonClick(button);
+            handleClick(btn);
         });
-    }
-
-    /**
-     * Clear quote cache
-     */
-    function clearCache() {
-        quoteCache.clear();
     }
 
     function getCSRFToken() {
         return document.querySelector('meta[name="csrf-token"]')?.content || '';
     }
 
-    // Auto-initialize (handle both before and after DOMContentLoaded)
-    console.log('[ShippingQuote] Script loaded, readyState:', document.readyState);
+    // Auto-init
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initButtons);
+        document.addEventListener('DOMContentLoaded', init);
     } else {
-        initButtons();
+        init();
     }
 
-    // Re-initialize when location changes
-    document.addEventListener('customer-location-changed', () => {
-        clearCache();
-        document.querySelectorAll('[data-shipping-quote].has-price').forEach(btn => {
-            btn.classList.remove('has-price');
-            delete btn.dataset.shippingQuoteHasPrice;
-        });
-    });
-
-    // Public API
-    return {
-        getQuickEstimate,
-        getProductQuote,
-        showQuoteModal,
-        initButtons,
-        clearCache,
-        formatPrice,
-    };
+    return { getQuote, showOptionsModal, init };
 })();
