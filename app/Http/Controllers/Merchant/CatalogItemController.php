@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\MerchantBranch;
-use App\Models\QualityBrand;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Catalog\Models\QualityBrand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Validator;

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
-use App\Models\MerchantItem;
-use App\Models\User;
-use App\Models\Withdraw;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
+use App\Domain\Accounting\Models\Withdraw;
 use Auth;
 use Carbon\Carbon;
 use Datatables;

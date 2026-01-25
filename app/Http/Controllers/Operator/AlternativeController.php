@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\CatalogItem;
-use App\Models\SkuAlternative;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\SkuAlternative;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

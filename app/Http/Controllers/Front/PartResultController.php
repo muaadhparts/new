@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Models\CatalogItem;
-use App\Services\AlternativeService;
-use App\Services\CatalogItemOffersService;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\AlternativeService;
+use App\Domain\Catalog\Services\CatalogItemOffersService;
 use Illuminate\Http\Request;
 
 /**

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 use Auth;
 use Exception;
 use Illuminate\Http\Request;

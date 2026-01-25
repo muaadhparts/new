@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\CatalogReview;
+use App\Domain\Catalog\Models\CatalogReview;
 
 use Datatables;
 

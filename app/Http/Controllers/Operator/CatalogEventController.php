@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\CatalogEvent;
+use App\Domain\Catalog\Models\CatalogEvent;
 
 class CatalogEventController extends OperatorBaseController
 {

@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\City;
-use App\Models\Country;
-use App\Services\TryotoLocationService;
-use App\Services\TryotoService;
-use App\Services\CountrySyncService;
-use App\Services\ApiCredentialService;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Shipping\Services\TryotoLocationService;
+use App\Domain\Shipping\Services\TryotoService;
+use App\Domain\Shipping\Services\CountrySyncService;
+use App\Domain\Platform\Services\ApiCredentialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Operator;
 
 use App\{
     Http\Controllers\Controller,
-    Models\MerchantPhoto,
-    Models\CatalogItem
+    Domain\Merchant\Models\MerchantPhoto,
+    Domain\Catalog\Models\CatalogItem
 };
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;

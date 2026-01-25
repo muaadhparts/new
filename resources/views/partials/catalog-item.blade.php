@@ -27,21 +27,21 @@
 
     $forceMerchant = request()->has('user') || isset($catalogItem->merchant_user_id);
     if ($forceMerchant) {
-        $priceHtml = $rawPrice !== null ? \App\Models\CatalogItem::convertPrice($rawPrice) : '-';
-        $prevHtml  = $rawPrev  !== null ? \App\Models\CatalogItem::convertPrice($rawPrev)  : null;
+        $priceHtml = $rawPrice !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrice) : '-';
+        $prevHtml  = $rawPrev  !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrev)  : null;
     } else {
         $priceHtml = method_exists($catalogItem, 'showPrice')
             ? $catalogItem->showPrice()
-            : (\App\Models\CatalogItem::convertPrice($rawPrice ?? 0));
+            : (\App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrice ?? 0));
         $prevHtml  = (method_exists($catalogItem, 'showPreviousPrice') && $catalogItem->showPreviousPrice())
             ? $catalogItem->showPreviousPrice()
-            : ($rawPrev !== null ? \App\Models\CatalogItem::convertPrice($rawPrev) : null);
+            : ($rawPrev !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrev) : null);
     }
 
     // تقييمات
     $avg   = $catalogItem->catalog_reviews_avg_rating ?? null;
     $count = class_exists('App\\Models\\CatalogReview') && method_exists('App\\Models\\CatalogReview', 'reviewCount')
-        ? \App\Models\CatalogTestimonial::reviewCount($catalogItem->id)
+        ? \App\Domain\Catalog\Models\CatalogTestimonial::reviewCount($catalogItem->id)
         : null;
 
     // Quality Brand

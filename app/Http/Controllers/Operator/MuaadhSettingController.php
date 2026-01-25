@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\PlatformSetting;
+use App\Domain\Platform\Models\PlatformSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 

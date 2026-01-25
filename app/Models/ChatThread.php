@@ -2,24 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class ChatThread extends Model
+/**
+ * @deprecated Use App\Domain\Commerce\Models\ChatThread instead
+ */
+class ChatThread extends \App\Domain\Commerce\Models\ChatThread
 {
-    protected $table = 'chat_threads';
-
-    public function sent()
-    {
-        return $this->belongsTo('App\Models\User', 'sent_user');
-    }
-
-    public function recieved()
-    {
-        return $this->belongsTo('App\Models\User', 'recieved_user');
-    }
-
-    public function chatEntries()
-    {
-        return $this->hasMany('App\Models\ChatEntry');
-    }
 }

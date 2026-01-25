@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\BuyerNote;
+use App\Domain\Catalog\Models\BuyerNote;
 use Datatables;
 
 class BuyerNoteController extends OperatorBaseController

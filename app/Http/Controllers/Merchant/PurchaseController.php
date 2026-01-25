@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Purchase;
-use App\Models\MerchantPurchase;
-use App\Models\ShipmentTracking;
-use App\Services\InvoiceSellerService;
-use App\Services\ShipmentTrackingService;
-use App\Services\TrackingViewService;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Shipping\Services\InvoiceSellerService;
+use App\Domain\Shipping\Services\ShipmentTrackingService;
+use App\Domain\Shipping\Services\TrackingViewService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends MerchantBaseController
@@ -75,7 +75,7 @@ class PurchaseController extends MerchantBaseController
         }
 
         // ✅ فحص حالة التوصيل والإكمال في الـ Controller
-        $deliveryCourier = \App\Models\DeliveryCourier::where('merchant_id', $merchantId)
+        $deliveryCourier = \App\Domain\Shipping\Models\DeliveryCourier::where('merchant_id', $merchantId)
             ->where('purchase_id', $purchase->id)
             ->first();
 
@@ -100,7 +100,7 @@ class PurchaseController extends MerchantBaseController
         $merchantIds = collect($cartItems)->pluck('item.user_id')->filter()->unique()->values()->toArray();
 
         // تحميل كل التجار مرة واحدة
-        $merchantsLookup = \App\Models\User::whereIn('id', $merchantIds)
+        $merchantsLookup = \App\Domain\Identity\Models\User::whereIn('id', $merchantIds)
             ->get()
             ->keyBy('id')
             ->toArray();

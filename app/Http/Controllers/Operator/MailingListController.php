@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\MailingList;
+use App\Domain\Platform\Models\MailingList;
 
 use Datatables;
 

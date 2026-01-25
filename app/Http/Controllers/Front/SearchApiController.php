@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\CatalogItem;
-use App\Services\CatalogSessionManager;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\CatalogSessionManager;
 use App\Traits\NormalizesInput;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -262,14 +262,14 @@ class SearchApiController extends Controller
     protected function fetchFromNissanApi(string $vin)
     {
         try {
-            $tokenModel = \App\Models\Token::valid() ?? \App\Services\NissanTokenService::refresh();
+            $tokenModel = \App\Domain\Catalog\Models\Token::valid() ?? \App\Domain\Catalog\Services\NissanTokenService::refresh();
 
             if (!$tokenModel || !$tokenModel->accessToken) {
                 return null;
             }
 
             $token = $tokenModel->accessToken;
-            $cookie = \App\Models\NissanCredential::first()->cookie ?? '';
+            $cookie = \App\Domain\Catalog\Models\NissanCredential::first()->cookie ?? '';
 
             $headers = [
                 'Authorization'   => $token,

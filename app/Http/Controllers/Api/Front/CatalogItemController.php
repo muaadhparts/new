@@ -8,8 +8,8 @@ use App\Http\Resources\BuyerNoteResource;
 use App\Http\Resources\CatalogItemDetailsResource;
 use App\Http\Resources\CatalogReviewResource;
 use App\Http\Resources\NoteResponseResource;
-use App\Models\BuyerNote;
-use App\Models\CatalogItem;
+use App\Domain\Catalog\Models\BuyerNote;
+use App\Domain\Catalog\Models\CatalogItem;
 
 class CatalogItemController extends Controller
 {

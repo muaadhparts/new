@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Api\User;
 
-use App\{
-    Models\CatalogItem,
-    Models\FavoriteSeller,
-    Http\Controllers\Controller,
-    Http\Resources\CatalogItemListResource,
-    View\Composers\HeaderComposer
-};
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Identity\Models\FavoriteSeller;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\CatalogItemListResource;
+use App\View\Composers\HeaderComposer;
 
 use Auth;
 use Illuminate\Http\Request;

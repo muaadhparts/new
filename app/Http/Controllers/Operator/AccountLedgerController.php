@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\AccountParty;
-use App\Models\AccountingLedger;
-use App\Models\AccountBalance;
-use App\Models\SettlementBatch;
-use App\Models\MonetaryUnit;
-use App\Services\AccountLedgerService;
-use App\Services\AccountingEntryService;
-use App\Services\AccountingReportService;
-use App\Services\MerchantStatementService;
+use App\Domain\Accounting\Models\AccountParty;
+use App\Domain\Accounting\Models\AccountingLedger;
+use App\Domain\Accounting\Models\AccountBalance;
+use App\Domain\Accounting\Models\SettlementBatch;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Accounting\Services\AccountLedgerService;
+use App\Domain\Accounting\Services\AccountingEntryService;
+use App\Domain\Accounting\Services\AccountingReportService;
+use App\Domain\Accounting\Services\MerchantStatementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -431,7 +431,7 @@ class AccountLedgerController extends OperatorBaseController
      */
     public function pendingSettlementsByProvider(Request $request, string $providerCode)
     {
-        $purchases = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)
+        $purchases = \App\Domain\Commerce\Models\MerchantPurchase::where('delivery_provider', $providerCode)
             ->where(function ($q) {
                 $q->where('shipping_company_owes_platform', '>', 0)
                     ->orWhere('shipping_company_owes_merchant', '>', 0);
@@ -456,14 +456,14 @@ class AccountLedgerController extends OperatorBaseController
      */
     public function pendingSettlementsByCourier(Request $request, int $courierId)
     {
-        $purchases = \App\Models\MerchantPurchase::where('courier_id', $courierId)
+        $purchases = \App\Domain\Commerce\Models\MerchantPurchase::where('courier_id', $courierId)
             ->where('courier_owes_platform', '>', 0)
             ->with(['purchase', 'merchant'])
             ->orderBy('created_at', 'desc')
             ->paginate(50);
 
         $totalOwed = $purchases->sum('courier_owes_platform');
-        $courier = \App\Models\DeliveryCourier::find($courierId);
+        $courier = \App\Domain\Shipping\Models\DeliveryCourier::find($courierId);
         $currency = monetaryUnit()->getDefault();
 
         return view('operator.accounts.pending-courier-settlements', [
@@ -759,7 +759,7 @@ class AccountLedgerController extends OperatorBaseController
         $currency = monetaryUnit()->getDefault();
 
         // === جلب جميع الشحنات لهذه الشركة ===
-        $query = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)
+        $query = \App\Domain\Commerce\Models\MerchantPurchase::where('delivery_provider', $providerCode)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->with(['purchase', 'merchant', 'settlementBatch']);
 
@@ -875,7 +875,7 @@ class AccountLedgerController extends OperatorBaseController
         $currency = monetaryUnit()->getDefault();
 
         // نفس منطق shippingCompanyStatement
-        $purchases = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)
+        $purchases = \App\Domain\Commerce\Models\MerchantPurchase::where('delivery_provider', $providerCode)
             ->whereBetween('created_at', [$startDate->startOfDay(), $endDate->endOfDay()])
             ->with(['purchase', 'merchant'])
             ->orderBy('created_at', 'desc')
@@ -944,7 +944,7 @@ class AccountLedgerController extends OperatorBaseController
         $currency = monetaryUnit()->getDefault();
 
         // جلب جميع شركات الشحن الفريدة من الطلبات
-        $providers = \App\Models\MerchantPurchase::whereNotNull('delivery_provider')
+        $providers = \App\Domain\Commerce\Models\MerchantPurchase::whereNotNull('delivery_provider')
             ->where('delivery_provider', '!=', '')
             ->select('delivery_provider')
             ->distinct()
@@ -952,7 +952,7 @@ class AccountLedgerController extends OperatorBaseController
 
         $companies = [];
         foreach ($providers as $providerCode) {
-            $purchases = \App\Models\MerchantPurchase::where('delivery_provider', $providerCode)->get();
+            $purchases = \App\Domain\Commerce\Models\MerchantPurchase::where('delivery_provider', $providerCode)->get();
 
             $companies[] = [
                 'code' => $providerCode,
@@ -978,7 +978,7 @@ class AccountLedgerController extends OperatorBaseController
     /**
      * Helper: وصف الشحنة
      */
-    protected function getShipmentDescription(\App\Models\MerchantPurchase $mp): string
+    protected function getShipmentDescription(\App\Domain\Commerce\Models\MerchantPurchase $mp): string
     {
         $status = $mp->purchase->delivery_status ?? 'unknown';
         $statusLabels = [

@@ -5,9 +5,9 @@ namespace App\Http\Controllers\Api\User;
 use App\Http\Controllers\Controller;
 
 use App\Http\Resources\UserResource;
-use App\Models\FavoriteSeller;
-use App\Models\CatalogItem;
-use App\Models\User;use Auth;
+use App\Domain\Identity\Models\FavoriteSeller;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Identity\Models\User;use Auth;
 use Hash;
 use Illuminate\Http\Request;
 use Validator;
@@ -147,7 +147,7 @@ class ProfileController extends Controller
                 $fav->user_id = $user->id;
                 $fav->merchant_item_id = $input['merchant_item_id'];
                 // Get catalog_item_id from MerchantItem
-                $merchantItem = \App\Models\MerchantItem::find($input['merchant_item_id']);
+                $merchantItem = \App\Domain\Merchant\Models\MerchantItem::find($input['merchant_item_id']);
                 if ($merchantItem) {
                     $fav->catalog_item_id = $merchantItem->catalog_item_id;
                 }

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\MonetaryUnit;
-use App\Models\Language;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Platform\Models\Language;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;

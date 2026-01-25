@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\City;
-use App\Models\MerchantBranch;
-use App\Services\TryotoService;
-use App\Services\TryotoLocationService;
-use App\Services\ShippingCalculatorService;
-use App\Services\CheckoutPriceService;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Shipping\Services\TryotoService;
+use App\Domain\Shipping\Services\TryotoLocationService;
+use App\Domain\Shipping\Services\ShippingCalculatorService;
+use App\Domain\Commerce\Services\CheckoutPriceService;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
@@ -376,7 +376,7 @@ class ShippingApiController extends Controller
     protected function getFreeShippingInfoFromItems(int $merchantId, array $cartItems): array
     {
         // Get free_above from shippings table for tryoto provider
-        $tryotoShipping = \App\Models\Shipping::where('provider', 'tryoto')
+        $tryotoShipping = \App\Domain\Shipping\Models\Shipping::where('provider', 'tryoto')
             ->where('status', 1)
             ->where(function ($q) use ($merchantId) {
                 $q->where('user_id', $merchantId)
@@ -532,7 +532,7 @@ class ShippingApiController extends Controller
         $geocodingSuccess = false;
 
         try {
-            $googleMapsService = app(\App\Services\GoogleMapsService::class);
+            $googleMapsService = app(\App\Domain\Shipping\Services\GoogleMapsService::class);
             $geocodeResult = $googleMapsService->reverseGeocode((float)$latitude, (float)$longitude, 'en');
 
             if ($geocodeResult['success'] && !empty($geocodeResult['data'])) {
@@ -633,7 +633,7 @@ class ShippingApiController extends Controller
         // Get country name from country_id
         $countryName = null;
         if ($countryId) {
-            $country = \App\Models\Country::find($countryId);
+            $country = \App\Domain\Shipping\Models\Country::find($countryId);
             $countryName = $country?->country_name;
         }
 
@@ -669,7 +669,7 @@ class ShippingApiController extends Controller
         $normalizedCity = $this->normalizeCityName($cityName);
 
         // Check if the normalized city exists in Tryoto's supported cities
-        $city = \App\Models\City::where('city_name', 'LIKE', '%' . $normalizedCity . '%')
+        $city = \App\Domain\Shipping\Models\City::where('city_name', 'LIKE', '%' . $normalizedCity . '%')
             ->where('tryoto_supported', 1)
             ->first();
 

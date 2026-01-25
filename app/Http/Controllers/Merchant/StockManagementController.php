@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Models\CatalogItemCodeMapping;
-use App\Models\MerchantBranch;
-use App\Models\MerchantItem;
-use App\Models\MerchantStockUpdate;
+use App\Domain\Catalog\Models\CatalogItemCodeMapping;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantStockUpdate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;

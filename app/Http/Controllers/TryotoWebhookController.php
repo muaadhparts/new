@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Purchase;
-use App\Models\MerchantPurchase;
-use App\Models\ShipmentTracking;
-use App\Models\UserCatalogEvent;
-use App\Services\ShipmentTrackingService;
-use App\Services\PaymentAccountingService;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Identity\Models\UserCatalogEvent;
+use App\Domain\Shipping\Services\ShipmentTrackingService;
+use App\Domain\Accounting\Services\PaymentAccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

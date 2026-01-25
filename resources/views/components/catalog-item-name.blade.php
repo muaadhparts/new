@@ -29,7 +29,7 @@
         $mpId = $merchantItemId;
         if (!$mpId) {
             // Try to get MP ID if itemData is actually a MerchantItem
-            $mpId = ($itemData instanceof \App\Models\MerchantItem)
+            $mpId = ($itemData instanceof \App\Domain\Merchant\Models\MerchantItem)
                 ? $itemData->id
                 : ($itemData['item']['id'] ?? $itemData['id'] ?? null);
         }
@@ -44,9 +44,9 @@
         $mpId = $merchantItemId;
         if (!$mpId) {
             // Check if this is a MerchantItem or need to fetch one
-            if ($itemData instanceof \App\Models\MerchantItem) {
+            if ($itemData instanceof \App\Domain\Merchant\Models\MerchantItem) {
                 $mpId = $itemData->id;
-            } elseif ($itemData instanceof \App\Models\CatalogItem && $userId) {
+            } elseif ($itemData instanceof \App\Domain\Catalog\Models\CatalogItem && $userId) {
                 // Fetch first active MI for this catalog item and merchant
                 $mp = $itemData->merchantItems()->where('user_id', $userId)->where('status', 1)->first();
                 $mpId = $mp->id ?? null;

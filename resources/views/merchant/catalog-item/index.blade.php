@@ -109,7 +109,7 @@
                                         @endif
                                     </span>
                                 </td>
-                                <td><span class="content">{{ \App\Models\CatalogItem::convertPrice($item->price) }}</span></td>
+                                <td><span class="content">{{ \App\Domain\Catalog\Models\CatalogItem::convertPrice($item->price) }}</span></td>
                                 <td>
                                     <div class="status position-relative">
                                         <div class="dropdown-container">

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\MerchantItem;
-use App\Models\MerchantPhoto;
-use App\Services\ImageService;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantPhoto;
+use App\Domain\Catalog\Services\ImageService;
 use Illuminate\Http\Request;
 
 class MyItemImageController extends MerchantBaseController

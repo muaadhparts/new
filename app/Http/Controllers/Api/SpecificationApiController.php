@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
-use App\Models\Catalog;
-use App\Services\CatalogSessionManager;
-use App\Services\CategoryFilterService;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Services\CatalogSessionManager;
+use App\Domain\Catalog\Services\CategoryFilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 

@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\{
-    Models\Brand
-};
+use App\Domain\Catalog\Models\Brand;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
-use App\Models\Country;
-use App\Models\MonetaryUnit;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Platform\Models\MonetaryUnit;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 

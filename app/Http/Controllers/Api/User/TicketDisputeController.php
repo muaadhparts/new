@@ -6,11 +6,11 @@ use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\TicketDisputeMessageResource;
 use App\Http\Resources\TicketDisputeResource;
-use App\Models\SupportThread;
-use App\Models\SupportMessage;
-use App\Models\CatalogEvent;
-use App\Models\Purchase;
-use App\Models\FrontendSetting;
+use App\Domain\Commerce\Models\SupportThread;
+use App\Domain\Commerce\Models\SupportMessage;
+use App\Domain\Catalog\Models\CatalogEvent;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Platform\Models\FrontendSetting;
 use Illuminate\Http\Request;
 use Validator;
 

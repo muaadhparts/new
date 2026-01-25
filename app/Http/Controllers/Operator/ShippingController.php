@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Operator;
 
 use App\{
-    Models\MonetaryUnit,
-    Models\Shipping
+    Domain\Platform\Models\MonetaryUnit,
+    Domain\Shipping\Models\Shipping
 };
 use Illuminate\Http\Request;
 use Validator;

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\NetworkPresence;
+use App\Domain\Identity\Models\NetworkPresence;
 use Illuminate\Http\Request;
 
 class NetworkPresenceController extends MerchantBaseController

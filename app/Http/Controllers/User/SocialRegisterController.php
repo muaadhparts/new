@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\CatalogEvent;
-use App\Models\OauthAccount;
-use App\Models\User;
+use App\Domain\Catalog\Models\CatalogEvent;
+use App\Domain\Identity\Models\OauthAccount;
+use App\Domain\Identity\Models\User;
 use App\Http\Controllers\Controller;
 use Auth;
 use Config;

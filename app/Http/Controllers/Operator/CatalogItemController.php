@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Datatables;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -355,7 +355,7 @@ class CatalogItemController extends OperatorBaseController
         $input = $request->only(['wholesell', 'page_count', 'favorite_count']);
 
         foreach ($input as $key => $value) {
-            \App\Models\PlatformSetting::set('catalog', $key, $value);
+            \App\Domain\Platform\Models\PlatformSetting::set('catalog', $key, $value);
         }
 
         cache()->forget('platform_settings_context');

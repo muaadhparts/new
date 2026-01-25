@@ -1454,7 +1454,7 @@ table.dataTable thead .sorting_desc_disabled::after {
                                                         @if(is_array($shippingNames))
                                                             @foreach($shippingNames as $merchantId => $shippingId)
                                                                 @php
-                                                                    $shipping = \App\Models\Shipping::find($shippingId);
+                                                                    $shipping = \App\Domain\Shipping\Models\Shipping::find($shippingId);
                                                                 @endphp
                                                                 {{ $shipping ? $shipping->name : __('Shipping') }}
                                                                 @if(!$loop->last), @endif

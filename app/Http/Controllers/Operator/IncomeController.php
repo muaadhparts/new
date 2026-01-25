@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
-use App\Models\MonetaryUnit;
-use App\Models\MerchantPurchase;
-use App\Models\Withdraw;
-use App\Services\MerchantAccountingService;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Accounting\Models\Withdraw;
+use App\Domain\Accounting\Services\MerchantAccountingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 

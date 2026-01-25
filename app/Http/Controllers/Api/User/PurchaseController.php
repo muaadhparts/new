@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Api\User;
 
-use App\{
-  Models\Purchase,
-  Http\Controllers\Controller,
-  Http\Resources\PurchaseResource,
-  Http\Resources\PurchaseDetailsResource
-};
+use App\Domain\Commerce\Models\Purchase;
+use App\Http\Controllers\Controller;
+use App\Http\Resources\PurchaseResource;
+use App\Http\Resources\PurchaseDetailsResource;
 
 use Illuminate\Http\Request;
 use Validator;

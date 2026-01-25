@@ -146,8 +146,8 @@
                                 {{-- Multi-Step Category Selector (5 Levels - Lightweight) --}}
                                 <div class="category-step-selector">
                                     @php
-                                        use App\Models\Catalog;
-                                        use App\Models\NewCategory;
+                                        use App\Domain\Catalog\Models\Catalog;
+                                        use App\Domain\Catalog\Models\NewCategory;
 
                                         // Read URL segments
                                         $currentBrandSlug = Request::segment(2);

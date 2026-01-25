@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\CatalogItem;
-use App\Services\ImageService;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

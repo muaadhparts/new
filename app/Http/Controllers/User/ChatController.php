@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\User;
 
 use App\Classes\MuaadhMailer;
-use App\Models\SupportThread;
-use App\Models\SupportMessage;
-use App\Models\ChatThread;
-use App\Models\ChatEntry;
-use App\Models\CatalogEvent;
-use App\Models\Purchase;
-use App\Models\User;
+use App\Domain\Commerce\Models\SupportThread;
+use App\Domain\Commerce\Models\SupportMessage;
+use App\Domain\Commerce\Models\ChatThread;
+use App\Domain\Commerce\Models\ChatEntry;
+use App\Domain\Catalog\Models\CatalogEvent;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\Models\User;
 use Illuminate\Http\Request;
 
 class ChatController extends UserBaseController

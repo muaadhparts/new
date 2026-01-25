@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\FrontendSetting;
+use App\Domain\Platform\Models\FrontendSetting;
 use Illuminate\Http\Request;
 
 class FrontendSettingController extends OperatorBaseController

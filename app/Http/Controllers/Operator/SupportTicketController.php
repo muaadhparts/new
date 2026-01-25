@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
-use App\Models\SupportThread;
-use App\Models\SupportMessage;
-use App\Models\Purchase;
-use App\Models\Courier;
-use App\Models\User;
+use App\Domain\Commerce\Models\SupportThread;
+use App\Domain\Commerce\Models\SupportMessage;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Models\Courier;
+use App\Domain\Identity\Models\User;
 use Auth;
 use Datatables;
 use Illuminate\Http\Request;

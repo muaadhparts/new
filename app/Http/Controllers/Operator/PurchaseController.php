@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
-use App\Models\ReferralCommission;
+use App\Domain\Accounting\Models\ReferralCommission;
 // MerchantCart removed - use MerchantCartManager for customer cart
-use App\Models\DeliveryCourier;
-use App\Models\MerchantCommission;
-use App\Models\Purchase;
-use App\Models\PurchaseTimeline;
-use App\Models\CatalogItem;
-use App\Models\Courier;
-use App\Models\CourierServiceArea;
-use App\Models\Shipping;
-use App\Models\User;
-use App\Services\InvoiceSellerService;
-use App\Services\TrackingViewService;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\PurchaseTimeline;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Shipping\Models\Courier;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Identity\Models\User;
+use App\Domain\Shipping\Services\InvoiceSellerService;
+use App\Domain\Shipping\Services\TrackingViewService;
 use Carbon\Carbon;
 use Datatables;
 use Illuminate\Http\Request;
@@ -299,7 +299,7 @@ class PurchaseController extends OperatorBaseController
                             // Find the merchant item that was used for this purchase item
                             $merchantId = $cartItem['item']['user_id'] ?? null;
                             if ($merchantId) {
-                                $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
+                                $merchantItem = \App\Domain\Merchant\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
                                     ->where('user_id', $merchantId)
                                     ->first();
 
@@ -317,7 +317,7 @@ class PurchaseController extends OperatorBaseController
                         if (!empty($x)) {
                             $merchantId = $cartItem['item']['user_id'] ?? null;
                             if ($merchantId) {
-                                $merchantItem = \App\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
+                                $merchantItem = \App\Domain\Merchant\Models\MerchantItem::where('catalog_item_id', $cartItem['item']['id'])
                                     ->where('user_id', $merchantId)
                                     ->first();
 
@@ -377,7 +377,7 @@ class PurchaseController extends OperatorBaseController
         $merchantId = $request->merchant_id;
 
         // Find catalogItem through merchant_items relationship
-        $merchantItem = \App\Models\MerchantItem::where('user_id', $merchantId)
+        $merchantItem = \App\Domain\Merchant\Models\MerchantItem::where('user_id', $merchantId)
             ->whereHas('catalogItem', function($query) use ($part_number) {
                 $query->where('part_number', $part_number)->where('status', 1);
             })

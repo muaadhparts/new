@@ -6,9 +6,9 @@ use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ChatEntryResource;
 use App\Http\Resources\ChatThreadResource;
-use App\Models\ChatThread;
-use App\Models\ChatEntry;
-use App\Models\User;
+use App\Domain\Commerce\Models\ChatThread;
+use App\Domain\Commerce\Models\ChatEntry;
+use App\Domain\Identity\Models\User;
 use Illuminate\Http\Request;
 use Validator;
 

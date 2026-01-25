@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\MonetaryUnit;
+use App\Domain\Platform\Models\MonetaryUnit;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;

@@ -117,9 +117,9 @@
                                     <label>@lang('New Status')</label>
                                     <select name="status" class="form-control" required>
                                         <option value="">@lang('Select...')</option>
-                                        @foreach(\App\Models\ShipmentTracking::getManualUpdateStatuses() as $status)
+                                        @foreach(\App\Domain\Shipping\Models\ShipmentTracking::getManualUpdateStatuses() as $status)
                                             <option value="{{ $status }}">
-                                                {{ \App\Models\ShipmentTracking::getStatusTranslation($status) }}
+                                                {{ \App\Domain\Shipping\Models\ShipmentTracking::getStatusTranslation($status) }}
                                             </option>
                                         @endforeach
                                     </select>

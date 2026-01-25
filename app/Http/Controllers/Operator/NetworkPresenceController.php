@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\NetworkPresence;
+use App\Domain\Platform\Models\NetworkPresence;
 use Illuminate\Http\Request;
 use Datatables;
 

@@ -4,19 +4,17 @@ namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\{
-    Models\Purchase
-};
+use App\Domain\Commerce\Models\Purchase;
 use App\Helpers\PriceHelper;
-use App\Models\City;
-use App\Models\Country;
-use App\Models\DeliveryCourier;
-use App\Models\Courier;
-use App\Models\CourierServiceArea;
-use App\Models\Shipping;
-use App\Models\ShipmentTracking;
-use App\Services\TryotoService;
-use App\Services\ShipmentTrackingService;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Identity\Models\Courier;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Shipping\Services\TryotoService;
+use App\Domain\Shipping\Services\ShipmentTrackingService;
 use Datatables;
 use Illuminate\Support\Facades\Log;
 

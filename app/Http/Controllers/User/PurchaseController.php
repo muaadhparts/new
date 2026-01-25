@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\User;
 
-use App\{
-    Models\Purchase,
-    Models\CatalogItem,
-    Models\DeliveryCourier
-};
-use App\Services\InvoiceSellerService;
-use App\Services\TrackingViewService;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Commerce\Services\InvoiceSellerService;
+use App\Domain\Commerce\Services\TrackingViewService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends UserBaseController
@@ -49,7 +47,7 @@ class PurchaseController extends UserBaseController
         // Load shipment trackings for tracking display
         $shipmentLogs = collect();
         if ($purchase) {
-            $shipmentLogs = \App\Models\ShipmentTracking::where('purchase_id', $purchase->id)
+            $shipmentLogs = \App\Domain\Shipping\Models\ShipmentTracking::where('purchase_id', $purchase->id)
                 ->orderBy('occurred_at', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->get();

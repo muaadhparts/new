@@ -1,13 +1,6 @@
 <?php
 
-function merchantCompareCheck($merchant_item_id)
-{
-    $compare = session('compare');
-    if (!$compare || !isset($compare->items)) {
-        return false;
-    }
-    return isset($compare->items[$merchant_item_id]);
-}
+// merchantCompareCheck() function removed - Compare feature deleted
 
 function getMerchantDisplayName($merchantItem)
 {

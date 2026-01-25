@@ -7,10 +7,10 @@ use App\Helpers\CatalogItemContextHelper;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use App\Http\Resources\MerchantResource;
-use App\Models\ChatThread;
-use App\Models\ChatEntry;
-use App\Models\CatalogItem;
-use App\Models\User;
+use App\Domain\Commerce\Models\ChatThread;
+use App\Domain\Commerce\Models\ChatEntry;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Identity\Models\User;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;

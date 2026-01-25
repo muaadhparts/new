@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Models\MonetaryUnit;
-use App\Models\SettlementBatch;
-use App\Services\MerchantAccountingService;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Accounting\Models\SettlementBatch;
+use App\Domain\Accounting\Services\MerchantAccountingService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -304,7 +304,7 @@ class IncomeController extends Controller
         $currencySign = $currency->sign ?? 'SAR ';
 
         // Get merchant's party for settlements
-        $merchantParty = \App\Models\AccountParty::where('party_type', 'merchant')
+        $merchantParty = \App\Domain\Accounting\Models\AccountParty::where('party_type', 'merchant')
             ->where('party_id', $merchantId)
             ->first();
 
@@ -323,7 +323,7 @@ class IncomeController extends Controller
                 ->sum('total_amount');
 
             // Get pending amount from platform_owes_merchant
-            $pendingAmount = \App\Models\MerchantPurchase::where('user_id', $merchantId)
+            $pendingAmount = \App\Domain\Commerce\Models\MerchantPurchase::where('user_id', $merchantId)
                 ->where('settlement_status', '!=', 'settled')
                 ->sum('platform_owes_merchant');
         }

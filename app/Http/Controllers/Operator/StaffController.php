@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\Operator;
+use App\Domain\Platform\Models\Operator;
 use Illuminate\Http\Request;
 use Auth;
 use Validator;

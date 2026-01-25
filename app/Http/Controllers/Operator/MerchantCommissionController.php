@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\MerchantCommission;
-use App\Models\User;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Identity\Models\User;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;

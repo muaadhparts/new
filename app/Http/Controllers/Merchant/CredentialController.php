@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\MerchantCredential;
-use App\Services\MerchantCredentialService;
+use App\Domain\Merchant\Models\MerchantCredential;
+use App\Domain\Merchant\Services\MerchantCredentialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 

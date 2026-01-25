@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\{
-    Models\Courier,
-    Models\Withdraw,
-    Models\WalletLog,
-    Classes\MuaadhMailer,
-};
+use App\Domain\Shipping\Models\Courier;
+use App\Domain\Accounting\Models\Withdraw;
+use App\Domain\Accounting\Models\WalletLog;
+use App\Classes\MuaadhMailer;
 
 use Illuminate\{
     Http\Request,

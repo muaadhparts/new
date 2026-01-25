@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Shipping;
+use App\Domain\Shipping\Models\Shipping;
 
 use Illuminate\Http\Request;
 

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Classes\MuaadhMailer;
-use App\Models\Operator;
+use App\Domain\Platform\Models\Operator;
 use Illuminate\Support\Facades\Hash;
 
 use Illuminate\Http\Request;

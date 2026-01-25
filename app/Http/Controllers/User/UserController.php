@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Models\ReferralCommission;
-use App\Models\FavoriteSeller;
-use App\Models\Purchase;
-use App\Models\MerchantPayment;
+use App\Domain\Accounting\Models\ReferralCommission;
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Merchant\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 

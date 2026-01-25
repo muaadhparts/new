@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Operator;
 
 use App\{
     Classes\MuaadhMailer,
-    Models\CommsBlueprint,
-    Models\User
+    Domain\Platform\Models\CommsBlueprint,
+    Domain\Identity\Models\User
 };
 use Illuminate\Http\Request;
 use Datatables;

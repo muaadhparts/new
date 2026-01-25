@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\UserCatalogEvent;
+use App\Domain\Catalog\Models\UserCatalogEvent;
 use Illuminate\Support\Facades\Cache;
 
 class CatalogEventController extends MerchantBaseController

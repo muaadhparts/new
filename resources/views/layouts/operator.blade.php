@@ -20,8 +20,8 @@
 @php
 	// Get language from Session (same as frontend)
 	$adminLang = Session::has('language')
-		? \App\Models\Language::find(Session::get('language'))
-		: \App\Models\Language::where('is_default', 1)->first();
+		? \App\Domain\Platform\Models\Language::find(Session::get('language'))
+		: \App\Domain\Platform\Models\Language::where('is_default', 1)->first();
 @endphp
 <html lang="en" dir="{{ $adminLang && $adminLang->rtl == 1 ? 'rtl' : 'ltr' }}">
 

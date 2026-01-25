@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Services\MerchantCheckout\MerchantCheckoutService;
-use App\Services\MerchantCheckout\MerchantPurchaseCreator;
-use App\Services\MerchantCheckout\MerchantSessionManager;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantCheckoutService;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantPurchaseCreator;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantSessionManager;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -66,7 +66,7 @@ class CheckoutMerchantController extends Controller
         }
 
         // Get Google Maps API key
-        $googleMapsApiKey = \App\Models\ApiCredential::getCredential('google_maps', 'api_key');
+        $googleMapsApiKey = \App\Domain\Platform\Models\ApiCredential::getCredential('google_maps', 'api_key');
 
         // Get currency
         $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();

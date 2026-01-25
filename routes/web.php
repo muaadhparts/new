@@ -572,15 +572,7 @@ Route::prefix('operator')->group(function () {
 
         //------------ OPERATORHOME PAGE THEMES SECTION ENDS ------------
 
-        Route::get('/featured-promo/datatables', 'Operator\FeaturedPromoController@datatables')->name('operator-featured-promo-datatables');
-        Route::get('/featured-promo', 'Operator\FeaturedPromoController@index')->name('operator-featured-promo-index');
-        Route::get('/featured-promo/create', 'Operator\FeaturedPromoController@create')->name('operator-featured-promo-create');
-        Route::post('/featured-promo/create', 'Operator\FeaturedPromoController@store')->name('operator-featured-promo-store');
-        Route::get('/featured-promo/edit/{id}', 'Operator\FeaturedPromoController@edit')->name('operator-featured-promo-edit');
-        Route::post('/featured-promo/edit/{id}', 'Operator\FeaturedPromoController@update')->name('operator-featured-promo-update');
-        Route::delete('/featured-promo/delete/{id}', 'Operator\FeaturedPromoController@destroy')->name('operator-featured-promo-delete');
-        Route::get('/country/status/{id1}/{id2}', 'Operator\FeaturedPromoController@status')->name('operator-featured-promo-status');
-
+        // FEATURED PROMO SECTION REMOVED - Feature deleted
         // ANNOUNCEMENT SECTION REMOVED - Feature deleted
 
         //------------ OPERATORBRAND SECTION ------------
@@ -1267,13 +1259,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/api/merchant/branches', 'Front\CatalogController@getMerchantBranches')->name('front.api.merchant.branches');
     // CATALOG SECTION ENDS
 
-    // COMPARE SECTION
-    Route::get('/item/compare/view', 'Front\CompareController@compare')->name('catalog-item.compare');
-    Route::get('/compare/add/merchant/{merchantItemId}', 'Front\CompareController@addMerchantCompare')->name('merchant.compare.add');
-    Route::get('/compare/remove/merchant/{merchantItemId}', 'Front\CompareController@removeMerchantCompare')->name('merchant.compare.remove');
-    Route::get('/item/compare/add/merchant/{merchantItemId}', 'Front\CompareController@addcompare')->name('catalog-item.compare.add.merchant');
-    Route::get('/item/compare/remove/{merchantItemId}', 'Front\CompareController@removecompare')->name('catalog-item.compare.remove');
-    // COMPARE SECTION ENDS
+    // COMPARE SECTION REMOVED - Feature deleted
 
     // SEARCH RESULTS PAGE - Shows catalog items matching search query
     // Displays cards with offers button and alternatives (like tree view)

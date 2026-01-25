@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant\Payment;
 
-use App\Models\MerchantPayment;
+use App\Domain\Merchant\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 

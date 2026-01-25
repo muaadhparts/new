@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\Models\AbuseFlag;
-use App\Services\CatalogItemFilterService;
-use App\Services\NewCategoryTreeService;
+use App\Domain\Catalog\Models\AbuseFlag;
+use App\Domain\Catalog\Services\CatalogItemFilterService;
+use App\Domain\Catalog\Services\NewCategoryTreeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 
@@ -208,12 +208,12 @@ class CatalogController extends FrontBaseController
             return response()->json([]);
         }
 
-        $brand = \App\Models\Brand::where('slug', $brandSlug)->where('status', 1)->first();
+        $brand = \App\Domain\Catalog\Models\Brand::where('slug', $brandSlug)->where('status', 1)->first();
         if (!$brand) {
             return response()->json([]);
         }
 
-        $catalogs = \App\Models\Catalog::where('brand_id', $brand->id)
+        $catalogs = \App\Domain\Catalog\Models\Catalog::where('brand_id', $brand->id)
             ->where('status', 1)
             ->orderBy('name')
             ->get(['id', 'slug', 'name', 'name_ar']);
@@ -237,12 +237,12 @@ class CatalogController extends FrontBaseController
             return response()->json([]);
         }
 
-        $catalog = \App\Models\Catalog::where('slug', $catalogSlug)->first();
+        $catalog = \App\Domain\Catalog\Models\Catalog::where('slug', $catalogSlug)->first();
         if (!$catalog) {
             return response()->json([]);
         }
 
-        $query = \App\Models\NewCategory::where('catalog_id', $catalog->id)
+        $query = \App\Domain\Catalog\Models\NewCategory::where('catalog_id', $catalog->id)
             ->where('level', $level)
             ->orderBy('label_en');
 
@@ -253,7 +253,7 @@ class CatalogController extends FrontBaseController
             if (!$parentSlug) {
                 return response()->json([]);
             }
-            $parent = \App\Models\NewCategory::where('catalog_id', $catalog->id)
+            $parent = \App\Domain\Catalog\Models\NewCategory::where('catalog_id', $catalog->id)
                 ->where('slug', $parentSlug)
                 ->where('level', $level - 1)
                 ->first();

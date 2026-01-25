@@ -4,10 +4,10 @@ namespace App\Http\Controllers\Courier;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Front\FrontBaseController;
-use App\Models\CatalogEvent;
+use App\Domain\Identity\Models\UserCatalogEvent;
 use Auth;
 
 use Validator;
@@ -30,7 +30,7 @@ class RegisterController extends FrontBaseController
 			if (isset($user)) {
 				$user->email_verified = 'Yes';
 				$user->update();
-				$notification = new CatalogEvent;
+				$notification = new UserCatalogEvent;
 				$notification->user_id = $user->id;
 				$notification->save();
 				Auth::guard('web')->login($user);

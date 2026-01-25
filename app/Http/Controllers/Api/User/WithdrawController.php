@@ -7,8 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\WithdrawDetailsResource;
 
 use App\Http\Resources\WithdrawResource;
-use App\Models\User;
-use App\Models\Withdraw;
+use App\Domain\Identity\Models\User;
+use App\Domain\Accounting\Models\Withdraw;
 use Auth;
 
 use Illuminate\Http\Request;

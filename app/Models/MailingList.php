@@ -2,13 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class MailingList extends Model
+/**
+ * @deprecated Use App\Domain\Platform\Models\MailingList instead
+ */
+class MailingList extends \App\Domain\Platform\Models\MailingList
 {
-    protected $table = 'mailing_list';
-
-    protected $fillable = ['email'];
-
-    public $timestamps = false;
 }

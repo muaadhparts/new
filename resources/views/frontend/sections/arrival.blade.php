@@ -52,8 +52,8 @@ Receives: $merchantItems (Collection of MerchantItem models)
         $offPercentage = ($previousPrice > 0 && $previousPrice > $price)
             ? round((($previousPrice - $price) / $previousPrice) * 100)
             : 0;
-        $priceFormatted = \App\Models\CatalogItem::convertPrice($price);
-        $previousPriceFormatted = $previousPrice > 0 ? \App\Models\CatalogItem::convertPrice($previousPrice) : '';
+        $priceFormatted = \App\Domain\Catalog\Models\CatalogItem::convertPrice($price);
+        $previousPriceFormatted = $previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : '';
 
         // Stock
         $stockQty = (int)($merchantItem->stock ?? 0);

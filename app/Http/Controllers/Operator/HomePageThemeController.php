@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\HomePageTheme;
+use App\Domain\Platform\Models\HomePageTheme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

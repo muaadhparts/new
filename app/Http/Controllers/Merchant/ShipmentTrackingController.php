@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Merchant;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShipmentTracking;
-use App\Models\Purchase;
-use App\Models\Shipping;
-use App\Services\ShipmentTrackingService;
-use App\Services\TryotoService;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Shipping\Services\ShipmentTrackingService;
+use App\Domain\Shipping\Services\TryotoService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 

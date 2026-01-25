@@ -24,7 +24,7 @@ class ManualPaymentController extends BaseMerchantPaymentController
      */
     protected function getPaymentConfig(int $merchantId): ?array
     {
-        $payment = \App\Models\MerchantPayment::where('keyword', $this->paymentKeyword)
+        $payment = \App\Domain\Merchant\Models\MerchantPayment::where('keyword', $this->paymentKeyword)
             ->where('checkout', 1)
             ->where(function ($query) use ($merchantId) {
                 $query->where('user_id', $merchantId)

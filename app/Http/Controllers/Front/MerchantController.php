@@ -2,15 +2,13 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\{
-    Models\User,
-    Models\CatalogItem,
-    Classes\MuaadhMailer,
-    Models\ChatThread,
-    Models\ChatEntry
-};
-use App\Models\QualityBrand;
-use App\Models\MerchantBranch;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Classes\MuaadhMailer;
+use App\Domain\Commerce\Models\ChatThread;
+use App\Domain\Commerce\Models\ChatEntry;
+use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Merchant\Models\MerchantBranch;
 use Illuminate\{
     Http\Request,
     Support\Facades\DB

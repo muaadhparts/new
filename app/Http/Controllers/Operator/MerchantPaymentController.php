@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\MerchantPayment;
+use App\Domain\Merchant\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;

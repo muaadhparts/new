@@ -136,7 +136,7 @@ class FavoriteController extends UserBaseController
             return response()->json($data);
         }
 
-        $merchantItem = \App\Models\MerchantItem::findOrFail($merchantProductId);
+        $merchantItem = \App\Domain\Merchant\Models\MerchantItem::findOrFail($merchantProductId);
 
         $favorite = new FavoriteSeller();
         $favorite->user_id = $user->id;

@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Api\Auth;
 
-use App\{
-  Models\User
-};
+use App\Domain\Identity\Models\User;
 
 use App\{
   Http\Controllers\Controller,

@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api\Front;
 
-use App\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogItem;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use Illuminate\Http\Request;

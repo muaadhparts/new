@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\ShipmentTracking;
-use App\Models\Purchase;
-use App\Services\ShipmentTrackingService;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Services\ShipmentTrackingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 

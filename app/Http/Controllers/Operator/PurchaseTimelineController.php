@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Operator;
 
 use App\{
-    Models\Purchase,
-    Models\PurchaseTimeline
+    Domain\Commerce\Models\Purchase,
+    Domain\Commerce\Models\PurchaseTimeline
 };
 use Illuminate\Http\Request;
 use Validator;

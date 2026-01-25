@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\Language;
+use App\Domain\Platform\Models\Language;
 use Datatables;
 use Illuminate\Http\Request;
 

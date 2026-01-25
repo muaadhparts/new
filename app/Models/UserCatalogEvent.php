@@ -2,24 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-class UserCatalogEvent extends Model
+/**
+ * @deprecated Use App\Domain\Catalog\Models\UserCatalogEvent instead
+ */
+class UserCatalogEvent extends \App\Domain\Catalog\Models\UserCatalogEvent
 {
-    protected $table = 'user_catalog_events';
-
-    protected $fillable = ['user_id', 'purchase_number', 'is_read'];
-
-    public function user()
-    {
-        return $this->belongsTo('App\Models\User')->withDefault();
-    }
-
-    public static function countPurchase($id)
-    {
-        // OPTIMIZED: Use database count() instead of loading all records
-        return UserCatalogEvent::where('user_id', $id)
-            ->where('is_read', 0)
-            ->count();
-    }
 }

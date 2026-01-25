@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers\Front;
 
-use App\DataTransferObjects\CatalogItemCardDTO;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Services\AlternativeService;
+use App\Domain\Catalog\DTOs\CatalogItemCardDTO;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Services\AlternativeService;
 use App\Traits\NormalizesInput;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Front;
 
 use App\Helpers\CatalogItemContextHelper;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\AbuseFlag;
-use App\Services\CatalogItemOffersService;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\AbuseFlag;
+use App\Domain\Catalog\Services\CatalogItemOffersService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -109,7 +109,7 @@ class CatalogItemDetailsController extends FrontBaseController
      */
     public function offersByPartNumber(string $part_number, CatalogItemOffersService $offersService)
     {
-        $catalogItem = \App\Models\CatalogItem::where('part_number', $part_number)->first();
+        $catalogItem = \App\Domain\Catalog\Models\CatalogItem::where('part_number', $part_number)->first();
 
         if (!$catalogItem) {
             return response()->view('partials.catalog-item-offers', [

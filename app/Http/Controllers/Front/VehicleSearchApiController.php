@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Catalog;
-use App\Models\NewCategory;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\NewCategory;
 use App\Traits\NormalizesInput;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

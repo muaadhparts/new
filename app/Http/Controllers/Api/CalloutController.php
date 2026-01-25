@@ -4,10 +4,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\NewCategory;
-use App\Models\Illustration;
-use App\Models\Section;
-use App\Models\CatalogItem;
+use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Illustration;
+use App\Domain\Catalog\Models\Section;
+use App\Domain\Catalog\Models\CatalogItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;

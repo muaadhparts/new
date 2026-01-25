@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Operator;
 
 use App\{
-    Models\User,
-    Models\Withdraw,
+    Domain\Identity\Models\User,
+    Domain\Accounting\Models\Withdraw,
     Classes\MuaadhMailer
 };
 

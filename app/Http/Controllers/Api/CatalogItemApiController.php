@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\MerchantItem;
-use App\Models\SkuAlternative;
-use App\Models\CatalogItem;
-use App\Models\Catalog;
-use App\Models\Brand;
-use App\Services\AlternativeService;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\SkuAlternative;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Services\AlternativeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 

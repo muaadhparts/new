@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\OperatorRole;
+use App\Domain\Platform\Models\OperatorRole;
 use Illuminate\Http\Request;
 use Validator;
 use Datatables;

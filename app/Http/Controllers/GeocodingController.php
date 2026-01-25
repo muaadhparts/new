@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Country;
-use App\Models\City;
-use App\Services\GoogleMapsService;
-use App\Services\TryotoLocationService;
-use App\Services\CountrySyncService;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Platform\Models\Country;
+use App\Domain\Platform\Models\City;
+use App\Domain\Shipping\Services\GoogleMapsService;
+use App\Domain\Shipping\Services\TryotoLocationService;
+use App\Domain\Shipping\Services\CountrySyncService;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -669,7 +669,7 @@ class GeocodingController extends Controller
         if ($country) {
             $nearestCity = $this->findNearestCityInCountry($latitude, $longitude, $country->id, 100);
             if ($nearestCity) {
-                $city = \App\Models\City::find($nearestCity['id']);
+                $city = \App\Domain\Platform\Models\City::find($nearestCity['id']);
                 Log::info('getTaxFromCoordinates: Found city by coordinates', [
                     'city_id' => $city->id,
                     'city_name' => $city->city_name,
@@ -680,7 +680,7 @@ class GeocodingController extends Controller
 
         // ثانياً: إذا لم نجد بالإحداثيات، نبحث بالاسم
         if (!$city && $cityName) {
-            $city = \App\Models\City::where('city_name', 'LIKE', '%' . $cityName . '%')
+            $city = \App\Domain\Platform\Models\City::where('city_name', 'LIKE', '%' . $cityName . '%')
                 ->orWhere('city_name', 'LIKE', '%' . $this->normalizeArabicCity($cityName) . '%')
                 ->first();
 
@@ -890,7 +890,7 @@ class GeocodingController extends Controller
             sin(radians(latitude))
         ))";
 
-        $city = \App\Models\City::select('cities.*')
+        $city = \App\Domain\Platform\Models\City::select('cities.*')
             ->selectRaw("{$haversine} AS distance_km", [$latitude, $longitude, $latitude])
             ->where('country_id', $countryId)
             ->whereNotNull('latitude')

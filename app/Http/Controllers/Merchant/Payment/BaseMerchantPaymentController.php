@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Merchant\Payment;
 
 use App\Http\Controllers\Controller;
-use App\Services\MerchantCheckout\MerchantCheckoutService;
-use App\Services\MerchantCheckout\MerchantPurchaseCreator;
-use App\Services\MerchantCheckout\MerchantSessionManager;
-use App\Services\Cart\MerchantCartManager;
-use App\Services\MerchantCheckout\MerchantPriceCalculator;
-use App\Models\MerchantPayment;
-use App\Models\MerchantCredential;
-use App\Models\MerchantBranch;
-use App\Models\Purchase;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantCheckoutService;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantPurchaseCreator;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantSessionManager;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
+use App\Domain\Commerce\Services\MerchantCheckout\MerchantPriceCalculator;
+use App\Domain\Merchant\Models\MerchantPayment;
+use App\Domain\Merchant\Models\MerchantCredential;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Commerce\Models\Purchase;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Session;

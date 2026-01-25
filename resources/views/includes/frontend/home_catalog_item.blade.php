@@ -65,7 +65,7 @@
             return;
         }
 
-        $isMerchantItem = $catalogItem instanceof \App\Models\MerchantItem;
+        $isMerchantItem = $catalogItem instanceof \App\Domain\Merchant\Models\MerchantItem;
 
         if ($isMerchantItem) {
             $merchantItem = $catalogItem;
@@ -119,9 +119,9 @@
         $hasMerchant = $merchantItem && $merchantItem->user_id > 0;
 
         if ($merchantItem) {
-            $priceFormatted = method_exists($merchantItem, 'showPrice') ? $merchantItem->showPrice() : \App\Models\CatalogItem::convertPrice($merchantItem->price);
+            $priceFormatted = method_exists($merchantItem, 'showPrice') ? $merchantItem->showPrice() : \App\Domain\Catalog\Models\CatalogItem::convertPrice($merchantItem->price);
             $previousPrice = $merchantItem->previous_price ?? 0;
-            $previousPriceFormatted = $previousPrice > 0 ? \App\Models\CatalogItem::convertPrice($previousPrice) : '';
+            $previousPriceFormatted = $previousPrice > 0 ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($previousPrice) : '';
         } else {
             $priceFormatted = $actualCatalogItem->showPrice();
             $previousPrice = $actualCatalogItem->previous_price ?? 0;

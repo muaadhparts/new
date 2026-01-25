@@ -2,12 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-
-class ReferralCommission extends Model
+/**
+ * @deprecated Use App\Domain\Accounting\Models\ReferralCommission instead
+ */
+class ReferralCommission extends \App\Domain\Accounting\Models\ReferralCommission
 {
-    use HasFactory;
-
-    protected $table = 'referral_commissions';
 }

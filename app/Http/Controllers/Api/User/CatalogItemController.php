@@ -8,11 +8,11 @@ use App\Http\Resources\CatalogReviewResource;
 use App\Http\Resources\NoteResponseResource;
 
 use App\Http\Resources\AbuseFlagResource;
-use App\Models\BuyerNote;
-use App\Models\Purchase;
-use App\Models\CatalogReview;
-use App\Models\NoteResponse;
-use App\Models\AbuseFlag;
+use App\Domain\Catalog\Models\BuyerNote;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Catalog\Models\CatalogReview;
+use App\Domain\Catalog\Models\NoteResponse;
+use App\Domain\Catalog\Models\AbuseFlag;
 use Illuminate\Http\Request;
 use Validator;
 

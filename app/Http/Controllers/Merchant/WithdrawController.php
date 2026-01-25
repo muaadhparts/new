@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\Withdraw;
+use App\Domain\Accounting\Models\Withdraw;
 use Illuminate\Http\Request;
 
 class WithdrawController extends MerchantBaseController

@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\MerchantPurchase;
-use App\Models\TrustBadge;
-use App\Services\ImageService;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Merchant\Models\TrustBadge;
+use App\Domain\Catalog\Services\ImageService;
 use Illuminate\Http\Request;
 
 class MerchantController extends MerchantBaseController

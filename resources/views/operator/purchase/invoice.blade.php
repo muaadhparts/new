@@ -173,7 +173,7 @@
                                                     // Check both new name (quality_brand_id) and old name (quality_brand_id) for backward compatibility
                                                     $qbId = $catalogItem['quality_brand_id'] ?? $catalogItem['quality_brand_id'] ?? null;
                                                     if ($qbId) {
-                                                        $invoiceQualityBrand = \App\Models\QualityBrand::find($qbId);
+                                                        $invoiceQualityBrand = \App\Domain\Catalog\Models\QualityBrand::find($qbId);
                                                     }
                                                 @endphp
                                                 @if($invoiceQualityBrand)

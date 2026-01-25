@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\Purchase;
-use App\Models\CatalogItem;
-use App\Models\User;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Identity\Models\User;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;

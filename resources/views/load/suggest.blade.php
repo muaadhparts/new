@@ -3,7 +3,7 @@
 	@if ($langg->id == $cartItem->language_id)
 	@php
 		// Check if $cartItem is a MerchantItem or CatalogItem model
-		$isMerchantItem = $cartItem instanceof \App\Models\MerchantItem;
+		$isMerchantItem = $cartItem instanceof \App\Domain\Merchant\Models\MerchantItem;
 
 		if ($isMerchantItem) {
 			$partNumber = $cartItem->catalogItem->part_number ?? $cartItem->part_number ?? null;

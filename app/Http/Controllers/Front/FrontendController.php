@@ -3,13 +3,12 @@
 namespace App\Http\Controllers\Front;
 
 use App\Classes\MuaadhMailer;
-use App\Models\FeaturedPromo;
-use App\Models\HomePageTheme;
-use App\Models\MerchantItem;
-use App\Models\Purchase;
-use App\Models\CatalogItem;
-use App\Models\CatalogReview;
-use App\Models\MailingList;
+use App\Domain\Platform\Models\HomePageTheme;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogReview;
+use App\Domain\Platform\Models\MailingList;
 use Artisan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -82,7 +81,7 @@ class FrontendController extends FrontBaseController
         // ============================================================================
         if ($theme->show_brands) {
             $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
-                return \App\Models\Brand::all();
+                return \App\Domain\Catalog\Models\Brand::all();
             });
         }
 
@@ -92,7 +91,7 @@ class FrontendController extends FrontBaseController
         if ($theme->show_categories) {
             $catalogLimit = $theme->count_categories ?? 12;
             $data['featured_categories'] = Cache::remember('featured_catalogs_for_home_' . $catalogLimit, 3600, function () use ($catalogLimit) {
-                return \App\Models\Catalog::where('status', 1)
+                return \App\Domain\Catalog\Models\Catalog::where('status', 1)
                     ->with('brand:id,name,slug,photo')
                     ->orderBy('sort')
                     ->limit($catalogLimit)
@@ -100,7 +99,7 @@ class FrontendController extends FrontBaseController
             });
             // Check if there are more catalogs to show "View All" link
             $data['total_catalogs_count'] = Cache::remember('total_catalogs_count', 3600, function () {
-                return \App\Models\Catalog::where('status', 1)->count();
+                return \App\Domain\Catalog\Models\Catalog::where('status', 1)->count();
             });
         }
 
@@ -122,7 +121,7 @@ class FrontendController extends FrontBaseController
         $theme = HomePageTheme::getActive();
         $perPage = $theme->count_categories ?? 12;
 
-        $catalogs = \App\Models\Catalog::where('status', 1)
+        $catalogs = \App\Domain\Catalog\Models\Catalog::where('status', 1)
             ->with('brand:id,name,slug,photo')
             ->orderBy('sort')
             ->paginate($perPage);
@@ -319,7 +318,7 @@ class FrontendController extends FrontBaseController
         // إذا لم نجد Purchase، نبحث في tracking numbers
         $shipmentLogs = [];
         if (!$purchase) {
-            $shipmentLogs = \App\Models\ShipmentTracking::where('tracking_number', $id)
+            $shipmentLogs = \App\Domain\Shipping\Models\ShipmentTracking::where('tracking_number', $id)
                            ->orderBy('occurred_at', 'desc')
                            ->orderBy('created_at', 'desc')
                            ->get();
@@ -329,7 +328,7 @@ class FrontendController extends FrontBaseController
             }
         } else {
             // إذا وجدنا Purchase، نجلب جميع shipment logs له
-            $shipmentLogs = \App\Models\ShipmentTracking::where('purchase_id', $purchase->id)
+            $shipmentLogs = \App\Domain\Shipping\Models\ShipmentTracking::where('purchase_id', $purchase->id)
                            ->orderBy('occurred_at', 'desc')
                            ->orderBy('created_at', 'desc')
                            ->get();
@@ -372,7 +371,7 @@ class FrontendController extends FrontBaseController
     public function updateFinalize(Request $request)
     {
         if ($request->has('version')) {
-            \App\Models\PlatformSetting::set('system', 'version', $request->version);
+            \App\Domain\Platform\Models\PlatformSetting::set('system', 'version', $request->version);
             cache()->forget('platform_settings_context');
             Artisan::call('cache:clear');
             Artisan::call('config:clear');

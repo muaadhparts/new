@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Http\Controllers\Controller;
-use App\Models\Courier;
-use App\Models\MonetaryUnit;
-use App\Models\DeliveryCourier;
-use App\Services\CourierAccountingService;
+use App\Domain\Shipping\Models\Courier;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Accounting\Services\CourierAccountingService;
 use Illuminate\Http\Request;
 
 class CourierManagementController extends Controller

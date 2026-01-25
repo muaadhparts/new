@@ -194,7 +194,7 @@
                                             <span class="content">{{ $item->merchantBranch?->warehouse_name ?? __('N/A') }}</span>
                                         </td>
                                         <td>
-                                            <span class="content">{{ \App\Models\CatalogItem::convertPrice($item->price) }}</span>
+                                            <span class="content">{{ \App\Domain\Catalog\Models\CatalogItem::convertPrice($item->price) }}</span>
                                         </td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">

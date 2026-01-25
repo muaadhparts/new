@@ -3,14 +3,14 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Brand;
-use App\Models\Catalog;
-use App\Models\NewCategory;
-use App\Models\Section;
-use App\Models\Illustration;
-use App\Models\Specification;
-use App\Services\CatalogSessionManager;
-use App\Services\CategoryFilterService;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\Section;
+use App\Domain\Catalog\Models\Illustration;
+use App\Domain\Catalog\Models\Specification;
+use App\Domain\Catalog\Services\CatalogSessionManager;
+use App\Domain\Catalog\Services\CategoryFilterService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;

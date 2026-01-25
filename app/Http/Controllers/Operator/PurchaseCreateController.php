@@ -6,12 +6,12 @@ use App\Classes\MuaadhMailer;
 use App\Helpers\PurchaseHelper;
 use App\Http\Controllers\Controller;
 // MerchantCart removed - operator cart methods need rewrite
-use App\Models\Country;
-use App\Models\MonetaryUnit;
-use App\Models\Purchase;
-use App\Models\FrontendSetting;
-use App\Models\CatalogItem;
-use App\Models\User;
+use App\Domain\Platform\Models\Country;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Platform\Models\FrontendSetting;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Identity\Models\User;
 use Illuminate\Http\Request;
 use Datatables;
 use Illuminate\Support\Facades\Session;
@@ -41,14 +41,14 @@ class PurchaseCreateController extends OperatorBaseController
     public function datatables()
     {
         // Query merchant items directly - each merchant item = independent row
-        $datas = \App\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
+        $datas = \App\Domain\Merchant\Models\MerchantItem::with(['catalogItem', 'user', 'qualityBrand'])
             ->where('status', 1)
             ->whereHas('catalogItem', function($q) {
                 $q->where('status', 1);
             });
 
         return Datatables::of($datas)
-            ->addColumn('name', function (\App\Models\MerchantItem $mi) {
+            ->addColumn('name', function (\App\Domain\Merchant\Models\MerchantItem $mi) {
                 $catalogItem = $mi->catalogItem;
                 if (!$catalogItem) return __('N/A');
 
@@ -73,7 +73,7 @@ class PurchaseCreateController extends OperatorBaseController
                 return $img . $name . $condition . '<br>' . $merchantInfo . '<br><small>' . __("Price") . ': ' . number_format($finalPrice, 2) . ' ' . $this->curr->sign . '</small><br><small>' . __("Stock") . ': ' . $stock . '</small>';
             })
 
-            ->addColumn('action', function (\App\Models\MerchantItem $mi) {
+            ->addColumn('action', function (\App\Domain\Merchant\Models\MerchantItem $mi) {
                 // Use merchant_item_id instead of catalog_item_id
                 return '<div class="action-list"><a href="javascript:;" class="purchase_product_add" data-bs-toggle="modal" class="add-btn-small pl-2" data-bs-target="#add-catalogItem" data-href="' . $mi->id . '" data-catalog-item-id="' . $mi->catalog_item_id . '"> <i class="fas fa-plus"></i></a></div>';
             })

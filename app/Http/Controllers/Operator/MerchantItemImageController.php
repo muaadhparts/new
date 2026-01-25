@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\MerchantPhoto;
-use App\Models\User;
-use App\Models\MerchantBranch;
-use App\Models\QualityBrand;
-use App\Services\ImageService;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantPhoto;
+use App\Domain\Identity\Models\User;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Catalog\Services\ImageService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 

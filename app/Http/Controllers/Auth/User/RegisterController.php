@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Auth\User;
 
 use App\Classes\MuaadhMailer;
 use App\Http\Controllers\Controller;
-use App\Models\CatalogEvent;
-use App\Models\User;
+use App\Domain\Catalog\Models\CatalogEvent;
+use App\Domain\Identity\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;

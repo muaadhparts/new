@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\TrustBadge;
+use App\Domain\Merchant\Models\TrustBadge;
 
 use Illuminate\Http\Request;
 use Datatables;
@@ -86,7 +86,7 @@ class TrustBadgeController extends OperatorBaseController
 
     public function edit($id)
     {
-        $data = \App\Models\Purchase::find($id);
+        $data = \App\Domain\Commerce\Models\Purchase::find($id);
         return view('operator.purchase.delivery',compact('data'));
     }
 
@@ -95,7 +95,7 @@ class TrustBadgeController extends OperatorBaseController
     public function update(Request $request, $id)
     {
         //--- Logic Section
-        $data = \App\Models\Purchase::findOrFail($id);
+        $data = \App\Domain\Commerce\Models\Purchase::findOrFail($id);
 
         $input = $request->all();
 

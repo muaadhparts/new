@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\Merchant;
 
-use App\Models\MerchantBranch;
-use App\Models\City;
-use App\Models\Country;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
 use Illuminate\Http\Request;
 
 

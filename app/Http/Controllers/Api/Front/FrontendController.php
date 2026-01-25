@@ -9,14 +9,13 @@ use App\Http\Resources\BannerResource;
 use App\Http\Resources\PurchaseTrackResource;
 use App\Http\Resources\BrandResource;
 use App\Http\Resources\CatalogItemListResource;
-use App\Models\FeaturedPromo;
-use App\Models\Language;
-use App\Models\Purchase;
-use App\Models\Page;
-use App\Models\FrontendSetting;
-use App\Models\Brand;
-use App\Models\CatalogItem;
-use App\Models\User;
+use App\Domain\Platform\Models\Language;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Platform\Models\Page;
+use App\Domain\Platform\Models\FrontendSetting;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Identity\Models\User;
 use DB;
 use Illuminate\Http\Request;
 use Validator;
@@ -378,16 +377,5 @@ class FrontendController extends Controller
 
     // Send Email To Admin Ends
 
-    public function arrival()
-    {
-        $FeaturedPromo = FeaturedPromo::get()->toArray();
-        foreach ($FeaturedPromo as $key => $value) {
-            $FeaturedPromo[$key]['photo'] = url('/') . '/assets/images/banners/' . $value['photo'];
-        }
-
-        return response()->json(['status' => true, 'data' => $FeaturedPromo, 'error' => []]);
-    }
-
-
-
+    // arrival() method removed - FeaturedPromo feature deleted
 }

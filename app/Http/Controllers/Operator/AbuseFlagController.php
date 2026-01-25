@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Models\AbuseFlag;
+use App\Domain\Catalog\Models\AbuseFlag;
 use Datatables;
 
 class AbuseFlagController extends OperatorBaseController
