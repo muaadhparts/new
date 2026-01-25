@@ -38,7 +38,6 @@ Route::prefix('catalog-item')->middleware(['web'])->group(function () {
 // --------------------- SHIPPING API ROUTES ---------------------
 Route::prefix('shipping')->middleware(['web'])->group(function () {
     Route::post('/tryoto/options', [ShippingApiController::class, 'getTryotoOptions'])->name('api.shipping.tryoto.options');
-    Route::post('/tryoto/html', [ShippingApiController::class, 'getTryotoHtml'])->name('api.shipping.tryoto.html');
 });
 // --------------------- SHIPPING API ROUTES END ---------------------
 
