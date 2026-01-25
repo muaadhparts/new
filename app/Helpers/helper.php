@@ -433,6 +433,24 @@ if (! function_exists('platformSettings')) {
 }
 
 /**
+ * Get the ThemeService instance for theme-related operations
+ *
+ * Usage:
+ *   themeService()->get('theme_primary')     // Get theme setting
+ *   themeService()->set('theme_primary', '#006c35')  // Set theme setting
+ *   themeService()->applyPreset('saudi')     // Apply preset
+ *   themeService()->generateCss()            // Generate CSS file
+ *
+ * @return \App\Domain\Platform\Services\ThemeService
+ */
+if (! function_exists('themeService')) {
+    function themeService(): \App\Domain\Platform\Services\ThemeService
+    {
+        return app(\App\Domain\Platform\Services\ThemeService::class);
+    }
+}
+
+/**
  * Get a specific platform setting value
  *
  * @param string $key Setting key (e.g., 'logo', 'site_name', 'is_maintain')

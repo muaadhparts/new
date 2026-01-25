@@ -195,11 +195,9 @@ class PlatformSettingsService
             $flat['page_count'] = $stats['page_count'] ?? 0;
             $flat['favorite_count'] = $stats['favorite_count'] ?? 0;
 
-            // Theme - include all theme settings directly
-            $theme = $allSettings['theme'] ?? [];
-            foreach ($theme as $key => $value) {
-                $flat[$key] = $value;
-            }
+            // Note: Theme settings are handled by ThemeService
+            // Use themeService()->get('key') or themeService()->getAll()
+            // This avoids duplication and keeps theme logic centralized
 
             return (object) $flat;
         });

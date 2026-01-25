@@ -839,8 +839,8 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Primary') }} <span class="color-hint">--theme-primary</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary" id="theme_primary" class="color-field" value="{{ $gs->theme_primary ?? '#c3002f' }}">
-                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary ?? '#c3002f' }}" data-target="theme_primary">
+                                            <input type="text" name="theme_primary" id="theme_primary" class="color-field" value="{{ $theme->theme_primary ?? '#c3002f' }}">
+                                            <input type="color" class="native-color-picker" value="{{ $theme->theme_primary ?? '#c3002f' }}" data-target="theme_primary">
                                         </div>
                                     </div>
                                 </div>
@@ -848,8 +848,8 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Hover') }} <span class="color-hint">--theme-primary-hover</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary_hover" id="theme_primary_hover" class="color-field" value="{{ $gs->theme_primary_hover ?? '#a00025' }}">
-                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary_hover ?? '#a00025' }}" data-target="theme_primary_hover">
+                                            <input type="text" name="theme_primary_hover" id="theme_primary_hover" class="color-field" value="{{ $theme->theme_primary_hover ?? '#a00025' }}">
+                                            <input type="color" class="native-color-picker" value="{{ $theme->theme_primary_hover ?? '#a00025' }}" data-target="theme_primary_hover">
                                         </div>
                                     </div>
                                 </div>
@@ -857,8 +857,8 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Dark') }} <span class="color-hint">--theme-primary-dark</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary_dark" id="theme_primary_dark" class="color-field" value="{{ $gs->theme_primary_dark ?? '#8a0020' }}">
-                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary_dark ?? '#8a0020' }}" data-target="theme_primary_dark">
+                                            <input type="text" name="theme_primary_dark" id="theme_primary_dark" class="color-field" value="{{ $theme->theme_primary_dark ?? '#8a0020' }}">
+                                            <input type="color" class="native-color-picker" value="{{ $theme->theme_primary_dark ?? '#8a0020' }}" data-target="theme_primary_dark">
                                         </div>
                                     </div>
                                 </div>
@@ -866,8 +866,8 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Light') }} <span class="color-hint">--theme-primary-light</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_primary_light" id="theme_primary_light" class="color-field" value="{{ $gs->theme_primary_light ?? '#fef2f4' }}">
-                                            <input type="color" class="native-color-picker" value="{{ $gs->theme_primary_light ?? '#fef2f4' }}" data-target="theme_primary_light">
+                                            <input type="text" name="theme_primary_light" id="theme_primary_light" class="color-field" value="{{ $theme->theme_primary_light ?? '#fef2f4' }}">
+                                            <input type="color" class="native-color-picker" value="{{ $theme->theme_primary_light ?? '#fef2f4' }}" data-target="theme_primary_light">
                                         </div>
                                     </div>
                                 </div>
@@ -883,7 +883,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Secondary') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_secondary" id="theme_secondary" class="color-field" value="{{ $gs->theme_secondary ?? '#1f0300' }}">
+                                            <input type="text" name="theme_secondary" id="theme_secondary" class="color-field" value="{{ $theme->theme_secondary ?? '#1f0300' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -892,7 +892,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Hover') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_secondary_hover" id="theme_secondary_hover" class="color-field" value="{{ $gs->theme_secondary_hover ?? '#351c1a' }}">
+                                            <input type="text" name="theme_secondary_hover" id="theme_secondary_hover" class="color-field" value="{{ $theme->theme_secondary_hover ?? '#351c1a' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -901,7 +901,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Light') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_secondary_light" id="theme_secondary_light" class="color-field" value="{{ $gs->theme_secondary_light ?? '#4c3533' }}">
+                                            <input type="text" name="theme_secondary_light" id="theme_secondary_light" class="color-field" value="{{ $theme->theme_secondary_light ?? '#4c3533' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -918,7 +918,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Primary Text') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_primary" id="theme_text_primary" class="color-field" value="{{ $gs->theme_text_primary ?? '#1f0300' }}">
+                                            <input type="text" name="theme_text_primary" id="theme_text_primary" class="color-field" value="{{ $theme->theme_text_primary ?? '#1f0300' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -927,7 +927,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Secondary Text') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_secondary" id="theme_text_secondary" class="color-field" value="{{ $gs->theme_text_secondary ?? '#4c3533' }}">
+                                            <input type="text" name="theme_text_secondary" id="theme_text_secondary" class="color-field" value="{{ $theme->theme_text_secondary ?? '#4c3533' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -936,7 +936,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Muted') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_muted" id="theme_text_muted" class="color-field" value="{{ $gs->theme_text_muted ?? '#796866' }}">
+                                            <input type="text" name="theme_text_muted" id="theme_text_muted" class="color-field" value="{{ $theme->theme_text_muted ?? '#796866' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -945,7 +945,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Light') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_text_light" id="theme_text_light" class="color-field" value="{{ $gs->theme_text_light ?? '#9a8e8c' }}">
+                                            <input type="text" name="theme_text_light" id="theme_text_light" class="color-field" value="{{ $theme->theme_text_light ?? '#9a8e8c' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -962,7 +962,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Body') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_body" id="theme_bg_body" class="color-field" value="{{ $gs->theme_bg_body ?? '#ffffff' }}">
+                                            <input type="text" name="theme_bg_body" id="theme_bg_body" class="color-field" value="{{ $theme->theme_bg_body ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -971,7 +971,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Light') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_light" id="theme_bg_light" class="color-field" value="{{ $gs->theme_bg_light ?? '#f8f7f7' }}">
+                                            <input type="text" name="theme_bg_light" id="theme_bg_light" class="color-field" value="{{ $theme->theme_bg_light ?? '#f8f7f7' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -980,7 +980,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Gray') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_gray" id="theme_bg_gray" class="color-field" value="{{ $gs->theme_bg_gray ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_bg_gray" id="theme_bg_gray" class="color-field" value="{{ $theme->theme_bg_gray ?? '#e9e6e6' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -989,7 +989,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Dark') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_bg_dark" id="theme_bg_dark" class="color-field" value="{{ $gs->theme_bg_dark ?? '#030712' }}">
+                                            <input type="text" name="theme_bg_dark" id="theme_bg_dark" class="color-field" value="{{ $theme->theme_bg_dark ?? '#030712' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1006,7 +1006,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-check text-success"></i> {{ __('Success') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_success" id="theme_success" class="color-field" value="{{ $gs->theme_success ?? '#27be69' }}">
+                                            <input type="text" name="theme_success" id="theme_success" class="color-field" value="{{ $theme->theme_success ?? '#27be69' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1015,7 +1015,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-exclamation-triangle text-warning"></i> {{ __('Warning') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_warning" id="theme_warning" class="color-field" value="{{ $gs->theme_warning ?? '#fac03c' }}">
+                                            <input type="text" name="theme_warning" id="theme_warning" class="color-field" value="{{ $theme->theme_warning ?? '#fac03c' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1024,7 +1024,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-times-circle text-danger"></i> {{ __('Danger') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_danger" id="theme_danger" class="color-field" value="{{ $gs->theme_danger ?? '#f2415a' }}">
+                                            <input type="text" name="theme_danger" id="theme_danger" class="color-field" value="{{ $theme->theme_danger ?? '#f2415a' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1033,7 +1033,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-info-circle text-info"></i> {{ __('Info') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_info" id="theme_info" class="color-field" value="{{ $gs->theme_info ?? '#0ea5e9' }}">
+                                            <input type="text" name="theme_info" id="theme_info" class="color-field" value="{{ $theme->theme_info ?? '#0ea5e9' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1050,7 +1050,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Default') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_border" id="theme_border" class="color-field" value="{{ $gs->theme_border ?? '#d9d4d4' }}">
+                                            <input type="text" name="theme_border" id="theme_border" class="color-field" value="{{ $theme->theme_border ?? '#d9d4d4' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1059,7 +1059,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Light') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_border_light" id="theme_border_light" class="color-field" value="{{ $gs->theme_border_light ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_border_light" id="theme_border_light" class="color-field" value="{{ $theme->theme_border_light ?? '#e9e6e6' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1068,7 +1068,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Dark') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_border_dark" id="theme_border_dark" class="color-field" value="{{ $gs->theme_border_dark ?? '#c7c0bf' }}">
+                                            <input type="text" name="theme_border_dark" id="theme_border_dark" class="color-field" value="{{ $theme->theme_border_dark ?? '#c7c0bf' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1089,14 +1089,14 @@
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Primary Font') }}</label>
                                         <select name="theme_font_primary" id="theme_font_primary">
-                                            <option value="Poppins" {{ ($gs->theme_font_primary ?? 'Poppins') == 'Poppins' ? 'selected' : '' }}>Poppins</option>
-                                            <option value="Inter" {{ ($gs->theme_font_primary ?? '') == 'Inter' ? 'selected' : '' }}>Inter</option>
-                                            <option value="Roboto" {{ ($gs->theme_font_primary ?? '') == 'Roboto' ? 'selected' : '' }}>Roboto</option>
-                                            <option value="Open Sans" {{ ($gs->theme_font_primary ?? '') == 'Open Sans' ? 'selected' : '' }}>Open Sans</option>
-                                            <option value="Lato" {{ ($gs->theme_font_primary ?? '') == 'Lato' ? 'selected' : '' }}>Lato</option>
-                                            <option value="Montserrat" {{ ($gs->theme_font_primary ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat</option>
-                                            <option value="Cairo" {{ ($gs->theme_font_primary ?? '') == 'Cairo' ? 'selected' : '' }}>Cairo (Arabic)</option>
-                                            <option value="Tajawal" {{ ($gs->theme_font_primary ?? '') == 'Tajawal' ? 'selected' : '' }}>Tajawal (Arabic)</option>
+                                            <option value="Poppins" {{ ($theme->theme_font_primary ?? 'Poppins') == 'Poppins' ? 'selected' : '' }}>Poppins</option>
+                                            <option value="Inter" {{ ($theme->theme_font_primary ?? '') == 'Inter' ? 'selected' : '' }}>Inter</option>
+                                            <option value="Roboto" {{ ($theme->theme_font_primary ?? '') == 'Roboto' ? 'selected' : '' }}>Roboto</option>
+                                            <option value="Open Sans" {{ ($theme->theme_font_primary ?? '') == 'Open Sans' ? 'selected' : '' }}>Open Sans</option>
+                                            <option value="Lato" {{ ($theme->theme_font_primary ?? '') == 'Lato' ? 'selected' : '' }}>Lato</option>
+                                            <option value="Montserrat" {{ ($theme->theme_font_primary ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat</option>
+                                            <option value="Cairo" {{ ($theme->theme_font_primary ?? '') == 'Cairo' ? 'selected' : '' }}>Cairo (Arabic)</option>
+                                            <option value="Tajawal" {{ ($theme->theme_font_primary ?? '') == 'Tajawal' ? 'selected' : '' }}>Tajawal (Arabic)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1104,11 +1104,11 @@
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Heading Font') }}</label>
                                         <select name="theme_font_heading" id="theme_font_heading">
-                                            <option value="Saira" {{ ($gs->theme_font_heading ?? 'Saira') == 'Saira' ? 'selected' : '' }}>Saira</option>
-                                            <option value="Poppins" {{ ($gs->theme_font_heading ?? '') == 'Poppins' ? 'selected' : '' }}>Poppins</option>
-                                            <option value="Montserrat" {{ ($gs->theme_font_heading ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat</option>
-                                            <option value="Playfair Display" {{ ($gs->theme_font_heading ?? '') == 'Playfair Display' ? 'selected' : '' }}>Playfair Display</option>
-                                            <option value="Cairo" {{ ($gs->theme_font_heading ?? '') == 'Cairo' ? 'selected' : '' }}>Cairo (Arabic)</option>
+                                            <option value="Saira" {{ ($theme->theme_font_heading ?? 'Saira') == 'Saira' ? 'selected' : '' }}>Saira</option>
+                                            <option value="Poppins" {{ ($theme->theme_font_heading ?? '') == 'Poppins' ? 'selected' : '' }}>Poppins</option>
+                                            <option value="Montserrat" {{ ($theme->theme_font_heading ?? '') == 'Montserrat' ? 'selected' : '' }}>Montserrat</option>
+                                            <option value="Playfair Display" {{ ($theme->theme_font_heading ?? '') == 'Playfair Display' ? 'selected' : '' }}>Playfair Display</option>
+                                            <option value="Cairo" {{ ($theme->theme_font_heading ?? '') == 'Cairo' ? 'selected' : '' }}>Cairo (Arabic)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1122,19 +1122,19 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Base Size') }}</label>
-                                        <input type="text" name="theme_font_size_base" value="{{ $gs->theme_font_size_base ?? '16px' }}">
+                                        <input type="text" name="theme_font_size_base" value="{{ $theme->theme_font_size_base ?? '16px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Small Size') }}</label>
-                                        <input type="text" name="theme_font_size_sm" value="{{ $gs->theme_font_size_sm ?? '14px' }}">
+                                        <input type="text" name="theme_font_size_sm" value="{{ $theme->theme_font_size_sm ?? '14px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Large Size') }}</label>
-                                        <input type="text" name="theme_font_size_lg" value="{{ $gs->theme_font_size_lg ?? '18px' }}">
+                                        <input type="text" name="theme_font_size_lg" value="{{ $theme->theme_font_size_lg ?? '18px' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1147,37 +1147,37 @@
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('XS') }}</label>
-                                        <input type="text" name="theme_radius_xs" value="{{ $gs->theme_radius_xs ?? '3px' }}">
+                                        <input type="text" name="theme_radius_xs" value="{{ $theme->theme_radius_xs ?? '3px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('SM') }}</label>
-                                        <input type="text" name="theme_radius_sm" value="{{ $gs->theme_radius_sm ?? '4px' }}">
+                                        <input type="text" name="theme_radius_sm" value="{{ $theme->theme_radius_sm ?? '4px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Default') }}</label>
-                                        <input type="text" name="theme_radius" value="{{ $gs->theme_radius ?? '8px' }}">
+                                        <input type="text" name="theme_radius" value="{{ $theme->theme_radius ?? '8px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('LG') }}</label>
-                                        <input type="text" name="theme_radius_lg" value="{{ $gs->theme_radius_lg ?? '12px' }}">
+                                        <input type="text" name="theme_radius_lg" value="{{ $theme->theme_radius_lg ?? '12px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('XL') }}</label>
-                                        <input type="text" name="theme_radius_xl" value="{{ $gs->theme_radius_xl ?? '16px' }}">
+                                        <input type="text" name="theme_radius_xl" value="{{ $theme->theme_radius_xl ?? '16px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-2">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Pill') }}</label>
-                                        <input type="text" name="theme_radius_pill" value="{{ $gs->theme_radius_pill ?? '50px' }}">
+                                        <input type="text" name="theme_radius_pill" value="{{ $theme->theme_radius_pill ?? '50px' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1190,19 +1190,19 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Small Shadow') }}</label>
-                                        <input type="text" name="theme_shadow_sm" value="{{ $gs->theme_shadow_sm ?? '0 1px 3px rgba(0,0,0,0.06)' }}">
+                                        <input type="text" name="theme_shadow_sm" value="{{ $theme->theme_shadow_sm ?? '0 1px 3px rgba(0,0,0,0.06)' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Default Shadow') }}</label>
-                                        <input type="text" name="theme_shadow" value="{{ $gs->theme_shadow ?? '0 2px 8px rgba(0,0,0,0.1)' }}">
+                                        <input type="text" name="theme_shadow" value="{{ $theme->theme_shadow ?? '0 2px 8px rgba(0,0,0,0.1)' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Large Shadow') }}</label>
-                                        <input type="text" name="theme_shadow_lg" value="{{ $gs->theme_shadow_lg ?? '0 4px 16px rgba(0,0,0,0.15)' }}">
+                                        <input type="text" name="theme_shadow_lg" value="{{ $theme->theme_shadow_lg ?? '0 4px 16px rgba(0,0,0,0.15)' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1220,29 +1220,29 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Padding X') }}</label>
-                                        <input type="text" name="theme_btn_padding_x" value="{{ $gs->theme_btn_padding_x ?? '24px' }}">
+                                        <input type="text" name="theme_btn_padding_x" value="{{ $theme->theme_btn_padding_x ?? '24px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Padding Y') }}</label>
-                                        <input type="text" name="theme_btn_padding_y" value="{{ $gs->theme_btn_padding_y ?? '12px' }}">
+                                        <input type="text" name="theme_btn_padding_y" value="{{ $theme->theme_btn_padding_y ?? '12px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_btn_font_size" value="{{ $gs->theme_btn_font_size ?? '14px' }}">
+                                        <input type="text" name="theme_btn_font_size" value="{{ $theme->theme_btn_font_size ?? '14px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Weight') }}</label>
                                         <select name="theme_btn_font_weight">
-                                            <option value="400" {{ ($gs->theme_btn_font_weight ?? '600') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_btn_font_weight ?? '600') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_btn_font_weight ?? '600') == '600' ? 'selected' : '' }}>Semibold (600)</option>
-                                            <option value="700" {{ ($gs->theme_btn_font_weight ?? '600') == '700' ? 'selected' : '' }}>Bold (700)</option>
+                                            <option value="400" {{ ($theme->theme_btn_font_weight ?? '600') == '400' ? 'selected' : '' }}>Normal (400)</option>
+                                            <option value="500" {{ ($theme->theme_btn_font_weight ?? '600') == '500' ? 'selected' : '' }}>Medium (500)</option>
+                                            <option value="600" {{ ($theme->theme_btn_font_weight ?? '600') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                            <option value="700" {{ ($theme->theme_btn_font_weight ?? '600') == '700' ? 'selected' : '' }}>Bold (700)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1251,13 +1251,13 @@
                                 <div class="col-md-6">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_btn_radius" value="{{ $gs->theme_btn_radius ?? '8px' }}">
+                                        <input type="text" name="theme_btn_radius" value="{{ $theme->theme_btn_radius ?? '8px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Box Shadow') }}</label>
-                                        <input type="text" name="theme_btn_shadow" value="{{ $gs->theme_btn_shadow ?? 'none' }}">
+                                        <input type="text" name="theme_btn_shadow" value="{{ $theme->theme_btn_shadow ?? 'none' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1276,7 +1276,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_card_bg" class="color-field" value="{{ $gs->theme_card_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_card_bg" class="color-field" value="{{ $theme->theme_card_bg ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1285,7 +1285,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Border Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_card_border" class="color-field" value="{{ $gs->theme_card_border ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_card_border" class="color-field" value="{{ $theme->theme_card_border ?? '#e9e6e6' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1293,7 +1293,7 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_card_radius" value="{{ $gs->theme_card_radius ?? '12px' }}">
+                                        <input type="text" name="theme_card_radius" value="{{ $theme->theme_card_radius ?? '12px' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1301,19 +1301,19 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Shadow') }}</label>
-                                        <input type="text" name="theme_card_shadow" value="{{ $gs->theme_card_shadow ?? '0 2px 8px rgba(0,0,0,0.08)' }}">
+                                        <input type="text" name="theme_card_shadow" value="{{ $theme->theme_card_shadow ?? '0 2px 8px rgba(0,0,0,0.08)' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Hover Shadow') }}</label>
-                                        <input type="text" name="theme_card_hover_shadow" value="{{ $gs->theme_card_hover_shadow ?? '0 4px 16px rgba(0,0,0,0.12)' }}">
+                                        <input type="text" name="theme_card_hover_shadow" value="{{ $theme->theme_card_hover_shadow ?? '0 4px 16px rgba(0,0,0,0.12)' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Padding') }}</label>
-                                        <input type="text" name="theme_card_padding" value="{{ $gs->theme_card_padding ?? '20px' }}">
+                                        <input type="text" name="theme_card_padding" value="{{ $theme->theme_card_padding ?? '20px' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1327,29 +1327,29 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Name Size') }}</label>
-                                        <input type="text" name="theme_item_name_size" value="{{ $gs->theme_item_name_size ?? '14px' }}">
+                                        <input type="text" name="theme_item_name_size" value="{{ $theme->theme_item_name_size ?? '14px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Name Weight') }}</label>
                                         <select name="theme_item_name_weight">
-                                            <option value="400" {{ ($gs->theme_item_name_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_item_name_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_item_name_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                            <option value="400" {{ ($theme->theme_item_name_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
+                                            <option value="500" {{ ($theme->theme_item_name_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
+                                            <option value="600" {{ ($theme->theme_item_name_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Price Size') }}</label>
-                                        <input type="text" name="theme_item_price_size" value="{{ $gs->theme_item_price_size ?? '16px' }}">
+                                        <input type="text" name="theme_item_price_size" value="{{ $theme->theme_item_price_size ?? '16px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Hover Scale') }}</label>
-                                        <input type="text" name="theme_item_hover_scale" value="{{ $gs->theme_item_hover_scale ?? '1.02' }}">
+                                        <input type="text" name="theme_item_hover_scale" value="{{ $theme->theme_item_hover_scale ?? '1.02' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1367,14 +1367,14 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Height') }}</label>
-                                        <input type="text" name="theme_input_height" value="{{ $gs->theme_input_height ?? '48px' }}">
+                                        <input type="text" name="theme_input_height" value="{{ $theme->theme_input_height ?? '48px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_bg" class="color-field" value="{{ $gs->theme_input_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_input_bg" class="color-field" value="{{ $theme->theme_input_bg ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1383,7 +1383,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Border Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_border" class="color-field" value="{{ $gs->theme_input_border ?? '#d9d4d4' }}">
+                                            <input type="text" name="theme_input_border" class="color-field" value="{{ $theme->theme_input_border ?? '#d9d4d4' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1391,7 +1391,7 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_input_radius" value="{{ $gs->theme_input_radius ?? '8px' }}">
+                                        <input type="text" name="theme_input_radius" value="{{ $theme->theme_input_radius ?? '8px' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1400,7 +1400,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Focus Border') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_focus_border" class="color-field" value="{{ $gs->theme_input_focus_border ?? '#c3002f' }}">
+                                            <input type="text" name="theme_input_focus_border" class="color-field" value="{{ $theme->theme_input_focus_border ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1408,14 +1408,14 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Focus Shadow') }}</label>
-                                        <input type="text" name="theme_input_focus_shadow" value="{{ $gs->theme_input_focus_shadow ?? '0 0 0 3px rgba(195,0,47,0.1)' }}">
+                                        <input type="text" name="theme_input_focus_shadow" value="{{ $theme->theme_input_focus_shadow ?? '0 0 0 3px rgba(195,0,47,0.1)' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Placeholder Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_input_placeholder" class="color-field" value="{{ $gs->theme_input_placeholder ?? '#9a8e8c' }}">
+                                            <input type="text" name="theme_input_placeholder" class="color-field" value="{{ $theme->theme_input_placeholder ?? '#9a8e8c' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1436,7 +1436,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_header_bg" class="color-field" value="{{ $gs->theme_header_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_header_bg" class="color-field" value="{{ $theme->theme_header_bg ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1444,13 +1444,13 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Height') }}</label>
-                                        <input type="text" name="theme_header_height" value="{{ $gs->theme_header_height ?? '80px' }}">
+                                        <input type="text" name="theme_header_height" value="{{ $theme->theme_header_height ?? '80px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Shadow') }}</label>
-                                        <input type="text" name="theme_header_shadow" value="{{ $gs->theme_header_shadow ?? '0 2px 10px rgba(0,0,0,0.1)' }}">
+                                        <input type="text" name="theme_header_shadow" value="{{ $theme->theme_header_shadow ?? '0 2px 10px rgba(0,0,0,0.1)' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1464,7 +1464,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_nav_link_color" class="color-field" value="{{ $gs->theme_nav_link_color ?? '#1f0300' }}">
+                                            <input type="text" name="theme_nav_link_color" class="color-field" value="{{ $theme->theme_nav_link_color ?? '#1f0300' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1473,7 +1473,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Hover Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_nav_link_hover" class="color-field" value="{{ $gs->theme_nav_link_hover ?? '#c3002f' }}">
+                                            <input type="text" name="theme_nav_link_hover" class="color-field" value="{{ $theme->theme_nav_link_hover ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1481,16 +1481,16 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_nav_font_size" value="{{ $gs->theme_nav_font_size ?? '15px' }}">
+                                        <input type="text" name="theme_nav_font_size" value="{{ $theme->theme_nav_font_size ?? '15px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Weight') }}</label>
                                         <select name="theme_nav_font_weight">
-                                            <option value="400" {{ ($gs->theme_nav_font_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
-                                            <option value="500" {{ ($gs->theme_nav_font_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_nav_font_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                            <option value="400" {{ ($theme->theme_nav_font_weight ?? '500') == '400' ? 'selected' : '' }}>Normal (400)</option>
+                                            <option value="500" {{ ($theme->theme_nav_font_weight ?? '500') == '500' ? 'selected' : '' }}>Medium (500)</option>
+                                            <option value="600" {{ ($theme->theme_nav_font_weight ?? '500') == '600' ? 'selected' : '' }}>Semibold (600)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1510,7 +1510,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_bg" class="color-field" value="{{ $gs->theme_footer_bg ?? '#030712' }}">
+                                            <input type="text" name="theme_footer_bg" class="color-field" value="{{ $theme->theme_footer_bg ?? '#030712' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1519,7 +1519,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Text Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_text" class="color-field" value="{{ $gs->theme_footer_text ?? '#ffffff' }}">
+                                            <input type="text" name="theme_footer_text" class="color-field" value="{{ $theme->theme_footer_text ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1528,7 +1528,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Muted Text') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_text_muted" class="color-field" value="{{ $gs->theme_footer_text_muted ?? '#d9d4d4' }}">
+                                            <input type="text" name="theme_footer_text_muted" class="color-field" value="{{ $theme->theme_footer_text_muted ?? '#d9d4d4' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1537,7 +1537,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Hover') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_link_hover" class="color-field" value="{{ $gs->theme_footer_link_hover ?? '#c3002f' }}">
+                                            <input type="text" name="theme_footer_link_hover" class="color-field" value="{{ $theme->theme_footer_link_hover ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1547,14 +1547,14 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Padding') }}</label>
-                                        <input type="text" name="theme_footer_padding" value="{{ $gs->theme_footer_padding ?? '60px' }}">
+                                        <input type="text" name="theme_footer_padding" value="{{ $theme->theme_footer_padding ?? '60px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_link" class="color-field" value="{{ $gs->theme_footer_link ?? '#ffffff' }}">
+                                            <input type="text" name="theme_footer_link" class="color-field" value="{{ $theme->theme_footer_link ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1563,7 +1563,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Border Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_footer_border" class="color-field" value="{{ $gs->theme_footer_border ?? '#374151' }}">
+                                            <input type="text" name="theme_footer_border" class="color-field" value="{{ $theme->theme_footer_border ?? '#374151' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1584,28 +1584,28 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_badge_radius" value="{{ $gs->theme_badge_radius ?? '20px' }}">
+                                        <input type="text" name="theme_badge_radius" value="{{ $theme->theme_badge_radius ?? '20px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Padding') }}</label>
-                                        <input type="text" name="theme_badge_padding" value="{{ $gs->theme_badge_padding ?? '4px 12px' }}">
+                                        <input type="text" name="theme_badge_padding" value="{{ $theme->theme_badge_padding ?? '4px 12px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_badge_font_size" value="{{ $gs->theme_badge_font_size ?? '12px' }}">
+                                        <input type="text" name="theme_badge_font_size" value="{{ $theme->theme_badge_font_size ?? '12px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Weight') }}</label>
                                         <select name="theme_badge_font_weight">
-                                            <option value="500" {{ ($gs->theme_badge_font_weight ?? '600') == '500' ? 'selected' : '' }}>Medium (500)</option>
-                                            <option value="600" {{ ($gs->theme_badge_font_weight ?? '600') == '600' ? 'selected' : '' }}>Semibold (600)</option>
-                                            <option value="700" {{ ($gs->theme_badge_font_weight ?? '600') == '700' ? 'selected' : '' }}>Bold (700)</option>
+                                            <option value="500" {{ ($theme->theme_badge_font_weight ?? '600') == '500' ? 'selected' : '' }}>Medium (500)</option>
+                                            <option value="600" {{ ($theme->theme_badge_font_weight ?? '600') == '600' ? 'selected' : '' }}>Semibold (600)</option>
+                                            <option value="700" {{ ($theme->theme_badge_font_weight ?? '600') == '700' ? 'selected' : '' }}>Bold (700)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -1620,14 +1620,14 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Width') }}</label>
-                                        <input type="text" name="theme_scrollbar_width" value="{{ $gs->theme_scrollbar_width ?? '10px' }}">
+                                        <input type="text" name="theme_scrollbar_width" value="{{ $theme->theme_scrollbar_width ?? '10px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Track Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_scrollbar_track" class="color-field" value="{{ $gs->theme_scrollbar_track ?? '#f1f1f1' }}">
+                                            <input type="text" name="theme_scrollbar_track" class="color-field" value="{{ $theme->theme_scrollbar_track ?? '#f1f1f1' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1636,7 +1636,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Thumb Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_scrollbar_thumb" class="color-field" value="{{ $gs->theme_scrollbar_thumb ?? '#c1c1c1' }}">
+                                            <input type="text" name="theme_scrollbar_thumb" class="color-field" value="{{ $theme->theme_scrollbar_thumb ?? '#c1c1c1' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1645,7 +1645,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Thumb Hover') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_scrollbar_thumb_hover" class="color-field" value="{{ $gs->theme_scrollbar_thumb_hover ?? '#a1a1a1' }}">
+                                            <input type="text" name="theme_scrollbar_thumb_hover" class="color-field" value="{{ $theme->theme_scrollbar_thumb_hover ?? '#a1a1a1' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1662,7 +1662,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_modal_bg" class="color-field" value="{{ $gs->theme_modal_bg ?? '#ffffff' }}">
+                                            <input type="text" name="theme_modal_bg" class="color-field" value="{{ $theme->theme_modal_bg ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1670,13 +1670,13 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Border Radius') }}</label>
-                                        <input type="text" name="theme_modal_radius" value="{{ $gs->theme_modal_radius ?? '16px' }}">
+                                        <input type="text" name="theme_modal_radius" value="{{ $theme->theme_modal_radius ?? '16px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Backdrop') }}</label>
-                                        <input type="text" name="theme_modal_backdrop" value="{{ $gs->theme_modal_backdrop ?? 'rgba(0,0,0,0.5)' }}">
+                                        <input type="text" name="theme_modal_backdrop" value="{{ $theme->theme_modal_backdrop ?? 'rgba(0,0,0,0.5)' }}">
                                     </div>
                                 </div>
                             </div>
@@ -1691,7 +1691,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Header Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_table_header_bg" class="color-field" value="{{ $gs->theme_table_header_bg ?? '#f8f7f7' }}">
+                                            <input type="text" name="theme_table_header_bg" class="color-field" value="{{ $theme->theme_table_header_bg ?? '#f8f7f7' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1700,7 +1700,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Border Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_table_border" class="color-field" value="{{ $gs->theme_table_border ?? '#e9e6e6' }}">
+                                            <input type="text" name="theme_table_border" class="color-field" value="{{ $theme->theme_table_border ?? '#e9e6e6' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1709,7 +1709,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Hover Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_table_hover_bg" class="color-field" value="{{ $gs->theme_table_hover_bg ?? '#f8f7f7' }}">
+                                            <input type="text" name="theme_table_hover_bg" class="color-field" value="{{ $theme->theme_table_hover_bg ?? '#f8f7f7' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1730,7 +1730,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }} <span class="color-hint">--theme-topbar-bg</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_topbar_bg" id="theme_topbar_bg" class="color-field" value="{{ $gs->theme_topbar_bg ?? $gs->theme_secondary ?? '#1f2937' }}">
+                                            <input type="text" name="theme_topbar_bg" id="theme_topbar_bg" class="color-field" value="{{ $theme->theme_topbar_bg ?? $theme->theme_secondary ?? '#1f2937' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1739,7 +1739,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Text Color') }} <span class="color-hint">--theme-topbar-text</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_topbar_text" id="theme_topbar_text" class="color-field" value="{{ $gs->theme_topbar_text ?? '#ffffff' }}">
+                                            <input type="text" name="theme_topbar_text" id="theme_topbar_text" class="color-field" value="{{ $theme->theme_topbar_text ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1748,7 +1748,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Hover') }} <span class="color-hint">--theme-topbar-link-hover</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_topbar_link_hover" id="theme_topbar_link_hover" class="color-field" value="{{ $gs->theme_topbar_link_hover ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <input type="text" name="theme_topbar_link_hover" id="theme_topbar_link_hover" class="color-field" value="{{ $theme->theme_topbar_link_hover ?? $theme->theme_primary ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1758,20 +1758,20 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Height') }}</label>
-                                        <input type="text" name="theme_topbar_height" value="{{ $gs->theme_topbar_height ?? '40px' }}">
+                                        <input type="text" name="theme_topbar_height" value="{{ $theme->theme_topbar_height ?? '40px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Font Size') }}</label>
-                                        <input type="text" name="theme_topbar_font_size" value="{{ $gs->theme_topbar_font_size ?? '13px' }}">
+                                        <input type="text" name="theme_topbar_font_size" value="{{ $theme->theme_topbar_font_size ?? '13px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Border Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_topbar_border" id="theme_topbar_border" class="color-field" value="{{ $gs->theme_topbar_border ?? 'rgba(255,255,255,0.1)' }}">
+                                            <input type="text" name="theme_topbar_border" id="theme_topbar_border" class="color-field" value="{{ $theme->theme_topbar_border ?? 'rgba(255,255,255,0.1)' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1792,7 +1792,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Background') }} <span class="color-hint">--theme-breadcrumb-bg</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_breadcrumb_bg" id="theme_breadcrumb_bg" class="color-field" value="{{ $gs->theme_breadcrumb_bg ?? $gs->theme_secondary ?? '#1f2937' }}">
+                                            <input type="text" name="theme_breadcrumb_bg" id="theme_breadcrumb_bg" class="color-field" value="{{ $theme->theme_breadcrumb_bg ?? $theme->theme_secondary ?? '#1f2937' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1801,7 +1801,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Name Color') }} <span class="color-hint">--theme-breadcrumb-name</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_breadcrumb_name" id="theme_breadcrumb_name" class="color-field" value="{{ $gs->theme_breadcrumb_name ?? '#ffffff' }}">
+                                            <input type="text" name="theme_breadcrumb_name" id="theme_breadcrumb_name" class="color-field" value="{{ $theme->theme_breadcrumb_name ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1810,7 +1810,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Color') }} <span class="color-hint">--theme-breadcrumb-link</span></label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_breadcrumb_link" id="theme_breadcrumb_link" class="color-field" value="{{ $gs->theme_breadcrumb_link ?? 'rgba(255,255,255,0.8)' }}">
+                                            <input type="text" name="theme_breadcrumb_link" id="theme_breadcrumb_link" class="color-field" value="{{ $theme->theme_breadcrumb_link ?? 'rgba(255,255,255,0.8)' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1820,26 +1820,26 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Height') }}</label>
-                                        <input type="text" name="theme_breadcrumb_height" value="{{ $gs->theme_breadcrumb_height ?? '200px' }}">
+                                        <input type="text" name="theme_breadcrumb_height" value="{{ $theme->theme_breadcrumb_height ?? '200px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Name Size') }}</label>
-                                        <input type="text" name="theme_breadcrumb_name_size" value="{{ $gs->theme_breadcrumb_name_size ?? '32px' }}">
+                                        <input type="text" name="theme_breadcrumb_name_size" value="{{ $theme->theme_breadcrumb_name_size ?? '32px' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Overlay Opacity') }}</label>
-                                        <input type="text" name="theme_breadcrumb_overlay" value="{{ $gs->theme_breadcrumb_overlay ?? '0.6' }}">
+                                        <input type="text" name="theme_breadcrumb_overlay" value="{{ $theme->theme_breadcrumb_overlay ?? '0.6' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Hover') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_breadcrumb_link_hover" id="theme_breadcrumb_link_hover" class="color-field" value="{{ $gs->theme_breadcrumb_link_hover ?? '#ffffff' }}">
+                                            <input type="text" name="theme_breadcrumb_link_hover" id="theme_breadcrumb_link_hover" class="color-field" value="{{ $theme->theme_breadcrumb_link_hover ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1861,7 +1861,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-check text-success"></i> {{ __('Success Dark') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_success_dark" id="theme_success_dark" class="color-field" value="{{ $gs->theme_success_dark ?? '#059669' }}">
+                                            <input type="text" name="theme_success_dark" id="theme_success_dark" class="color-field" value="{{ $theme->theme_success_dark ?? '#059669' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1870,7 +1870,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-exclamation-triangle text-warning"></i> {{ __('Warning Dark') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_warning_dark" id="theme_warning_dark" class="color-field" value="{{ $gs->theme_warning_dark ?? '#b45309' }}">
+                                            <input type="text" name="theme_warning_dark" id="theme_warning_dark" class="color-field" value="{{ $theme->theme_warning_dark ?? '#b45309' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1879,7 +1879,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-times-circle text-danger"></i> {{ __('Danger Dark') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_danger_dark" id="theme_danger_dark" class="color-field" value="{{ $gs->theme_danger_dark ?? '#dc2626' }}">
+                                            <input type="text" name="theme_danger_dark" id="theme_danger_dark" class="color-field" value="{{ $theme->theme_danger_dark ?? '#dc2626' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1888,7 +1888,7 @@
                                     <div class="color-input-wrapper">
                                         <label><i class="fas fa-info-circle text-info"></i> {{ __('Info Dark') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_info_dark" id="theme_info_dark" class="color-field" value="{{ $gs->theme_info_dark ?? '#0284c7' }}">
+                                            <input type="text" name="theme_info_dark" id="theme_info_dark" class="color-field" value="{{ $theme->theme_info_dark ?? '#0284c7' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1905,7 +1905,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_link_color" id="theme_link_color" class="color-field" value="{{ $gs->theme_link_color ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <input type="text" name="theme_link_color" id="theme_link_color" class="color-field" value="{{ $theme->theme_link_color ?? $theme->theme_primary ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1914,7 +1914,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Hover') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_link_hover" id="theme_link_hover" class="color-field" value="{{ $gs->theme_link_hover ?? $gs->theme_primary_hover ?? '#a00025' }}">
+                                            <input type="text" name="theme_link_hover" id="theme_link_hover" class="color-field" value="{{ $theme->theme_link_hover ?? $theme->theme_primary_hover ?? '#a00025' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1923,7 +1923,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Link Visited') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_link_visited" id="theme_link_visited" class="color-field" value="{{ $gs->theme_link_visited ?? $gs->theme_primary_dark ?? '#8a0020' }}">
+                                            <input type="text" name="theme_link_visited" id="theme_link_visited" class="color-field" value="{{ $theme->theme_link_visited ?? $theme->theme_primary_dark ?? '#8a0020' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1940,7 +1940,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Focus Ring Color') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_focus_ring" id="theme_focus_ring" class="color-field" value="{{ $gs->theme_focus_ring ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <input type="text" name="theme_focus_ring" id="theme_focus_ring" class="color-field" value="{{ $theme->theme_focus_ring ?? $theme->theme_primary ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1949,7 +1949,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Selection Background') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_selection_bg" id="theme_selection_bg" class="color-field" value="{{ $gs->theme_selection_bg ?? $gs->theme_primary ?? '#c3002f' }}">
+                                            <input type="text" name="theme_selection_bg" id="theme_selection_bg" class="color-field" value="{{ $theme->theme_selection_bg ?? $theme->theme_primary ?? '#c3002f' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1958,7 +1958,7 @@
                                     <div class="color-input-wrapper">
                                         <label>{{ __('Selection Text') }}</label>
                                         <div class="color-input-group">
-                                            <input type="text" name="theme_selection_text" id="theme_selection_text" class="color-field" value="{{ $gs->theme_selection_text ?? '#ffffff' }}">
+                                            <input type="text" name="theme_selection_text" id="theme_selection_text" class="color-field" value="{{ $theme->theme_selection_text ?? '#ffffff' }}">
                                             <span class="color-preview cp"><i></i></span>
                                         </div>
                                     </div>
@@ -1974,19 +1974,19 @@
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Transition Speed (Fast)') }}</label>
-                                        <input type="text" name="theme_transition_fast" value="{{ $gs->theme_transition_fast ?? '0.15s' }}">
+                                        <input type="text" name="theme_transition_fast" value="{{ $theme->theme_transition_fast ?? '0.15s' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Transition Speed (Normal)') }}</label>
-                                        <input type="text" name="theme_transition_normal" value="{{ $gs->theme_transition_normal ?? '0.25s' }}">
+                                        <input type="text" name="theme_transition_normal" value="{{ $theme->theme_transition_normal ?? '0.25s' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Transition Speed (Slow)') }}</label>
-                                        <input type="text" name="theme_transition_slow" value="{{ $gs->theme_transition_slow ?? '0.4s' }}">
+                                        <input type="text" name="theme_transition_slow" value="{{ $theme->theme_transition_slow ?? '0.4s' }}">
                                     </div>
                                 </div>
                             </div>
@@ -2000,25 +2000,25 @@
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Dropdown') }}</label>
-                                        <input type="text" name="theme_zindex_dropdown" value="{{ $gs->theme_zindex_dropdown ?? '1000' }}">
+                                        <input type="text" name="theme_zindex_dropdown" value="{{ $theme->theme_zindex_dropdown ?? '1000' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Sticky') }}</label>
-                                        <input type="text" name="theme_zindex_sticky" value="{{ $gs->theme_zindex_sticky ?? '1020' }}">
+                                        <input type="text" name="theme_zindex_sticky" value="{{ $theme->theme_zindex_sticky ?? '1020' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Modal') }}</label>
-                                        <input type="text" name="theme_zindex_modal" value="{{ $gs->theme_zindex_modal ?? '1050' }}">
+                                        <input type="text" name="theme_zindex_modal" value="{{ $theme->theme_zindex_modal ?? '1050' }}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="text-input-wrapper">
                                         <label>{{ __('Tooltip') }}</label>
-                                        <input type="text" name="theme_zindex_tooltip" value="{{ $gs->theme_zindex_tooltip ?? '1080' }}">
+                                        <input type="text" name="theme_zindex_tooltip" value="{{ $theme->theme_zindex_tooltip ?? '1080' }}">
                                     </div>
                                 </div>
                             </div>
