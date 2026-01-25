@@ -36,7 +36,7 @@
 @else
     <meta property="og:name" content="{{ $gs->site_name }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
-    @if(isset($seo) && $seo)
+    @if(isset($seo) && $seo && !empty($seo->meta_keys))
         <meta name="keywords" content="{{ $seo->meta_keys }}">
     @endif
     <meta name="author" content="Muaadh">

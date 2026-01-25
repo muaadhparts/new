@@ -21,6 +21,25 @@ All new CSS in `muaadh-system.css`. Use `m-*` prefix classes and CSS variables.
 ### 5. Migrations Only
 All database changes via Laravel migrations. `database/schema/` is READ-ONLY reference.
 
+### 6. Blade Display Only
+**Blade files are DISPLAY ONLY.** All data must arrive pre-computed from Controller/Service via DTO or ViewData.
+
+```blade
+{{-- FORBIDDEN in Blade --}}
+$model->relationship()->count()     {{-- Query in view --}}
+$var ?? 'default'                   {{-- Fallback hides bugs --}}
+DB::table('x')->get()               {{-- Direct query --}}
+@php complex logic @endphp          {{-- Business logic in view --}}
+json_encode($data)                  {{-- Transform in view --}}
+
+{{-- REQUIRED --}}
+{{ $dto->offersCount }}             {{-- Pre-computed in Service --}}
+{{ $dto->formattedPrice }}          {{-- Pre-formatted in Service --}}
+@foreach($items as $item)           {{-- Collection passed from Controller --}}
+```
+
+**Lint Check:** `php artisan lint:blade --ci`
+
 ---
 
 ## FORBIDDEN PATTERNS
@@ -89,12 +108,21 @@ $items = $purchase->getCartItems();
 ### Database - Destructive Operations
 ```sql
 -- ABSOLUTELY FORBIDDEN (even if user requests)
-DROP DATABASE
-DROP TABLE (with data)
-TRUNCATE TABLE
-DELETE FROM table (without WHERE)
+DROP DATABASE                    -- NEVER
+DROP TABLE (with data)           -- NEVER (only _backup/_old/_temp allowed)
+TRUNCATE TABLE                   -- NEVER
+DELETE FROM table (without WHERE) -- NEVER
+php artisan migrate:fresh        -- NEVER in production
+php artisan migrate:reset        -- NEVER in production
+php artisan db:wipe              -- NEVER
 ```
-When renaming tables: Keep `_old` suffix forever, NEVER delete.
+
+**CRITICAL RULES:**
+1. When renaming tables: Keep `_old` suffix forever, NEVER delete
+2. All schema changes via migrations ONLY
+3. Schema reference: `database/schema-descriptor/schema-descriptor.txt` (READ-ONLY)
+4. To recreate tables: Use migrations with `CREATE TABLE IF NOT EXISTS`
+5. NEVER run destructive commands even if user requests
 
 ---
 
@@ -161,9 +189,11 @@ $catalogItem->features; // Doesn't exist
 
 ### Common Commands
 ```bash
-npm run build           # Build with lint
-php artisan migrate     # Run migrations
-php artisan cache:clear # Clear cache
+npm run build             # Build with lint
+php artisan migrate       # Run migrations
+php artisan cache:clear   # Clear cache
+php artisan lint:blade    # Check Blade Display Only rule
+php artisan lint:blade --ci  # CI mode (exit code 1 on errors)
 ```
 
 ### CSS Classes
@@ -193,3 +223,4 @@ php artisan cache:clear # Clear cache
 | Column Renames | `docs/reference/column-renames.md` |
 | Removed Features | `docs/reference/removed-features.md` |
 | Table Rename Method | `docs/standards/TABLE_RENAME_METHODOLOGY.md` |
+| Blade Display Only | `docs/plans/BLADE_DISPLAY_ONLY_PLAN.md` |

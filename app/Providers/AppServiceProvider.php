@@ -7,6 +7,7 @@ use App\Observers\ShipmentTrackingObserver;
 use App\Domain\Platform\Services\GlobalData\GlobalDataService;
 use App\Domain\Platform\Services\MonetaryUnitService;
 use App\View\Composers\HeaderComposer;
+use App\Domain\Merchant\ViewComposers\MerchantHeaderComposer;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
@@ -84,6 +85,14 @@ class AppServiceProvider extends ServiceProvider
             'includes.frontend.extra_head',
             'includes.frontend.mobile_menu',
         ], HeaderComposer::class);
+
+        // === MerchantHeaderComposer ===
+        // يوفر $merchantNotifications للإشعارات
+        // Blade Display Only - لا استعلامات في الـ views
+        View::composer([
+            'includes.merchant.header',
+            'layouts.merchant',
+        ], MerchantHeaderComposer::class);
 
         // =========================================================
         // BLADE DIRECTIVE: @themeStyles

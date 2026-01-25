@@ -86,7 +86,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total CatalogItems!')</p>
                         <h3 class="value">
-                            <span class="counter">{{ $user->merchantItems()->count() }}</span>
+                            <span class="counter">{{ $totalCatalogItems }}</span>
                         </h3>
                     </div>
                 </div>
@@ -97,8 +97,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total Item Sold!')</p>
                         <h3 class="value">
-                            <span
-                                class="counter">{{ App\Domain\Merchant\Models\MerchantPurchase::where('user_id', '=', $user->id)->where('status', '=', 'completed')->sum('qty') }}</span>
+                            <span class="counter">{{ $totalItemsSold }}</span>
                         </h3>
                     </div>
                 </div>
@@ -108,8 +107,7 @@
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_2.svg" alt="">
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Current Balance')</p>
-                        <h3 class="value">{{$curr->sign}}<span class="counter">
-                                {{ App\Domain\Catalog\Models\CatalogItem::merchantConvertWithoutCurrencyPrice(auth()->user()->current_balance) }}</span></h3>
+                        <h3 class="value">{{ $curr->sign }}<span class="counter">{{ $currentBalance }}</span></h3>
                     </div>
                 </div>
             </div>
@@ -118,12 +116,7 @@
                     <img src="{{ asset('assets/front') }}/icons/merchant-dashboard-icon_3.svg" alt="">
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total Earning')</p>
-                        @php
-                            $datas = App\Domain\Merchant\Models\MerchantPurchase::with('purchase')->where('user_id', Auth::user()->id);
-                            $totalPrice = $datas->count() > 0 ? $datas->sum('price') : 0;
-                        @endphp
-                        <h3 class="value">{{$curr->sign}}<span
-                                class="counter">{{ App\Domain\Catalog\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($totalPrice) }}</span></h3>
+                        <h3 class="value">{{ $curr->sign }}<span class="counter">{{ $totalEarning }}</span></h3>
                     </div>
                 </div>
             </div>

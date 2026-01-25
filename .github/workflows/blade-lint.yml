@@ -1,0 +1,52 @@
+name: Blade Lint
+
+on:
+  push:
+    branches: [main, master, develop]
+    paths:
+      - 'resources/views/**'
+      - 'app/Console/Commands/LintBladeFiles.php'
+  pull_request:
+    paths:
+      - 'resources/views/**'
+
+jobs:
+  blade-lint:
+    runs-on: ubuntu-latest
+    name: Blade Display Only Check
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --no-progress --prefer-dist --optimize-autoloader
+
+      - name: Run Blade Lint
+        run: php artisan lint:blade --ci
+
+      - name: Upload violations report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blade-lint-report
+          path: storage/logs/blade-lint-*.log
+          retention-days: 7

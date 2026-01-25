@@ -80,6 +80,27 @@ class MerchantController extends MerchantBaseController
                 ->where('status', 'completed')
                 ->count();
 
+            // ============================================================
+            // PRE-COMPUTED DATA FOR BLADE (Blade Display Only Rule)
+            // ============================================================
+
+            // Total catalog items count
+            $data['totalCatalogItems'] = $this->user->merchantItems()->count();
+
+            // Total items sold (completed purchases)
+            $data['totalItemsSold'] = MerchantPurchase::where('user_id', $userId)
+                ->where('status', 'completed')
+                ->sum('qty');
+
+            // Current balance (formatted)
+            $data['currentBalance'] = CatalogItem::merchantConvertWithoutCurrencyPrice(
+                $this->user->current_balance
+            );
+
+            // Total earning
+            $totalEarning = MerchantPurchase::where('user_id', $userId)->sum('price');
+            $data['totalEarning'] = CatalogItem::merchantConvertWithoutCurrencyPrice($totalEarning);
+
             return view('merchant.index', $data);
         } catch (\Exception $e) {
             \Log::error('MerchantController@index error: ' . $e->getMessage());

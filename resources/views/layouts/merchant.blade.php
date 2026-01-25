@@ -48,15 +48,7 @@
     @themeStyles
 
     <link rel="icon" href="{{ asset('assets/images/' . $gs->favicon) }}">
-    @include('includes.frontend.extra_head')
     @livewireStyles
-
-    {{-- Hide bottom layer --}}
-    <style>
-        .frontend-header-wrapper .header-top {
-            display: none !important;
-        }
-    </style>
 
     @yield('css')
     @stack('styles')
@@ -64,17 +56,8 @@
 
 </head>
 
-{{-- Header data ($brands, $static_content, $monetaryUnits, $languges) provided by GlobalDataMiddleware with caching --}}
+{{-- Header data provided by GlobalDataMiddleware with caching --}}
 <body class="m-theme-scope">
-
-    <div class="frontend-header-wrapper">
-        {{-- Frontend Header (hide mobile toggle - merchant has its own in merchant/header) --}}
-        @include('includes.frontend.header', ['hideMobileToggle' => true])
-    </div>
-
-    {{-- Store Mobile Menu (for shopping as customer) --}}
-    @include('includes.frontend.mobile_menu')
-    <div class="muaadh-mobile-overlay"></div>
 
     {{-- Merchant Dashboard Mobile Sidebar --}}
     @include('includes.merchant.merchant-mobile-header')

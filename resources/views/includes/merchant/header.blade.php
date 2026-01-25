@@ -33,6 +33,28 @@
 
         <!-- icon button and user dropdown wrapper  -->
         <div class="d-flex align-items-center gap-2 gap-md-3">
+            {{-- Language Selector --}}
+            <div class="dropdown">
+                <button class="icon-btn icon-btn-lg p-0 dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="@lang('Language')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="62" height="60" viewBox="0 0 62 60" fill="none">
+                        <rect width="62" height="60" rx="10" fill="#F8F7F8"/>
+                        <path d="M31 43C37.6274 43 43 37.6274 43 31C43 24.3726 37.6274 19 31 19C24.3726 19 19 24.3726 19 31C19 37.6274 24.3726 43 31 43Z" stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M19 31H43" stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M31 19C33.5013 21.7384 34.9228 25.292 35 31C34.9228 36.708 33.5013 40.2616 31 43C28.4987 40.2616 27.0772 36.708 27 31C27.0772 25.292 28.4987 21.7384 31 19Z" stroke="#030712" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    @foreach ($languges ?? [] as $language)
+                        <li>
+                            <a class="dropdown-item {{ ($langg->id ?? 0) == $language->id ? 'active' : '' }}"
+                                href="{{ route('front.language', $language->id) }}">
+                                {{ $language->language }}
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+
             <button id="toggle-merchant-noti" class="icon-btn icon-btn-lg p-0" type="button">
                 <svg xmlns="http://www.w3.org/2000/svg" width="62" height="60" viewBox="0 0 62 60"
                     fill="none">
@@ -144,18 +166,7 @@
             <a class="clear-btn" href="{{ route('merchant-purchase-event-clear',Auth::user()->id) }}">Clear All</a>
         </div>
         <ul>
-            @php
-                // Cached + Limited notifications (5 min cache, max 20 items)
-                $catalogEvents = Cache::remember(
-                    'merchant_events_' . auth()->id(),
-                    300,
-                    fn() => App\Domain\Identity\Models\UserCatalogEvent::whereUserId(auth()->id())
-                        ->orderby('id', 'desc')
-                        ->limit(20)
-                        ->get()
-                );
-            @endphp
-            @forelse ($catalogEvents as $data)
+            @forelse ($merchantNotifications as $data)
             <li>
                 <span class="sm-info-1">@lang('Purchase has been placed')</span>
                 <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}"
