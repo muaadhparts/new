@@ -272,6 +272,8 @@ class ShippingApiController extends Controller
                 'count' => count($convertedOptions),
                 'weight' => $weight,
                 'free_shipping' => $freeShippingInfo,
+                'origin_city' => $originCity,
+                'destination_city' => $destinationCity,
                 'resolved_city' => $destinationCity,
                 'is_platform_provided' => $freeShippingInfo['is_platform_provided'],
                 'owner_user_id' => $freeShippingInfo['owner_user_id'],
@@ -353,6 +355,13 @@ class ShippingApiController extends Controller
             ]);
         }
 
+        // Get origin city from branch
+        $branchCityData = ShippingCalculatorService::getBranchCity($branchId);
+        $originCity = $branchCityData['city_name'] ?? null;
+
+        // Get destination city from API response
+        $destinationCity = $data['resolved_city'] ?? null;
+
         $html = view('partials.api.tryoto-options', [
             'deliveryCompany' => $data['delivery_options'],
             'branchId' => $branchId,
@@ -361,6 +370,8 @@ class ShippingApiController extends Controller
             'curr' => $curr,
             'freeAbove' => $freeAboveConverted,
             'merchantItemsTotal' => $merchantItemsTotalConverted,
+            'originCity' => $originCity,
+            'destinationCity' => $destinationCity,
         ])->render();
 
         return response()->json([

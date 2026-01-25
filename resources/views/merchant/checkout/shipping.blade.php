@@ -501,6 +501,24 @@ function loadApiProviderOptions(provider) {
 function renderApiProviderOptions(provider, options, freeShippingInfo) {
     let html = '';
 
+    // Show origin → destination route info
+    const responseData = apiResponseData[provider];
+    if (responseData && responseData.origin_city && responseData.destination_city) {
+        html += `<div class="tryoto-route-info d-flex align-items-center justify-content-center gap-3 p-3 mb-3 bg-light rounded border">
+            <div class="d-flex align-items-center gap-2 text-primary">
+                <i class="fas fa-store"></i>
+                <span class="fw-medium">${responseData.origin_city}</span>
+            </div>
+            <div class="text-muted">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="d-flex align-items-center gap-2 text-success">
+                <i class="fas fa-map-marker-alt"></i>
+                <span class="fw-medium">${responseData.destination_city}</span>
+            </div>
+        </div>`;
+    }
+
     // Show free shipping banner if qualifies (from API response)
     if (freeShippingInfo.qualifies) {
         html += `<div class="alert alert-success mb-3 py-2">

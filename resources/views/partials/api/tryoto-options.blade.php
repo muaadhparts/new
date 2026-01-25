@@ -14,6 +14,23 @@
 
 <div class="tryoto-options-container" data-merchant-user-id="{{ $merchantUserIdValue }}">
 
+    {{-- ✅ Origin → Destination Route --}}
+    @if(isset($originCity) && isset($destinationCity))
+        <div class="tryoto-route-info">
+            <div class="tryoto-route-point tryoto-route-point--origin">
+                <i class="fas fa-store"></i>
+                <span>{{ $originCity }}</span>
+            </div>
+            <div class="tryoto-route-arrow">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <div class="tryoto-route-point tryoto-route-point--destination">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ $destinationCity }}</span>
+            </div>
+        </div>
+    @endif
+
     {{-- ✅ Free Shipping Alert --}}
     @if($isFreeShipping)
         <div class="tryoto-free-alert tryoto-free-alert--success">
@@ -157,6 +174,48 @@
     --tryoto-text-muted: var(--theme-text-muted, #7a6f5f);
     --tryoto-radius: 8px;
     font-family: inherit;
+}
+
+/* Route Info - Origin → Destination */
+.tryoto-route-info {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--tryoto-bg) 0%, var(--tryoto-bg-hover) 100%);
+    border-radius: var(--tryoto-radius);
+    border: 1px solid var(--tryoto-border);
+}
+
+.tryoto-route-point {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.tryoto-route-point i {
+    font-size: 14px;
+}
+
+.tryoto-route-point--origin {
+    color: var(--tryoto-primary);
+}
+
+.tryoto-route-point--destination {
+    color: var(--tryoto-success);
+}
+
+.tryoto-route-arrow {
+    color: var(--tryoto-text-muted);
+    font-size: 12px;
+}
+
+[dir="rtl"] .tryoto-route-arrow i {
+    transform: rotate(180deg);
 }
 
 /* Free Shipping Alert */
