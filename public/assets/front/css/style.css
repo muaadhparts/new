@@ -12663,7 +12663,7 @@ ul.tagit li.tagit-choice .tagit-close {
 }
 
 .muaadh-topbar-link:hover {
-    color: var(--theme-topbar-text-hover, var(--theme-primary, var(--muaadh-white)));
+    color: var(--theme-topbar-link-hover, var(--theme-primary, var(--muaadh-white)));
 }
 
 .muaadh-topbar-link i {
@@ -12673,7 +12673,7 @@ ul.tagit li.tagit-choice .tagit-close {
 .muaadh-topbar-divider {
     width: 1px;
     height: 16px;
-    background: rgba(255, 255, 255, 0.3);
+    background: var(--theme-topbar-border, rgba(255, 255, 255, 0.3));
 }
 
 .muaadh-topbar-auth {

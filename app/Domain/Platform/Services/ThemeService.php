@@ -73,6 +73,12 @@ class ThemeService
         'theme_border_light' => '#e9e6e6',
         'theme_border_dark' => '#c7c0bf',
 
+        // TOPBAR
+        'theme_topbar_bg' => '#1f0300',
+        'theme_topbar_text' => 'rgba(255, 255, 255, 0.9)',
+        'theme_topbar_link_hover' => '#ffffff',
+        'theme_topbar_border' => 'rgba(255, 255, 255, 0.2)',
+
         // HEADER & FOOTER
         'theme_header_bg' => '#ffffff',
         'theme_header_height' => '80px',
@@ -520,6 +526,12 @@ class ThemeService
     --theme-nav-font-size: {$s['theme_nav_font_size']};
     --theme-nav-font-weight: {$s['theme_nav_font_weight']};
 
+    /* ===== TOPBAR ===== */
+    --theme-topbar-bg: {$s['theme_topbar_bg']};
+    --theme-topbar-text: {$s['theme_topbar_text']};
+    --theme-topbar-link-hover: {$s['theme_topbar_link_hover']};
+    --theme-topbar-border: {$s['theme_topbar_border']};
+
     /* ===== FOOTER ===== */
     --theme-footer-bg: {$s['theme_footer_bg']};
     --theme-footer-text: {$s['theme_footer_text']};
@@ -711,6 +723,157 @@ CSS;
     protected function loadPresets(): void
     {
         $this->presets = [
+            // =========================================================
+            // AUTO PARTS - قطع غيار السيارات
+            // =========================================================
+            // أزرق داكن احترافي + برتقالي للأزرار + رمادي صناعي
+            // مناسب لمتاجر قطع الغيار والكتالوجات الصناعية
+            'auto_parts' => [
+                // PRIMARY - أزرق داكن (ثقة، احترافية، صناعة)
+                'theme_primary' => '#1e40af',
+                'theme_primary_hover' => '#1e3a8a',
+                'theme_primary_dark' => '#172554',
+                'theme_primary_light' => '#dbeafe',
+
+                // SECONDARY - رمادي فحمي داكن
+                'theme_secondary' => '#0f172a',
+                'theme_secondary_hover' => '#1e293b',
+                'theme_secondary_light' => '#334155',
+
+                // TEXT - درجات الرمادي
+                'theme_text_primary' => '#0f172a',
+                'theme_text_secondary' => '#334155',
+                'theme_text_muted' => '#64748b',
+                'theme_text_light' => '#94a3b8',
+
+                // BACKGROUNDS - خلفيات صناعية نظيفة
+                'theme_bg_body' => '#f8fafc',
+                'theme_bg_light' => '#f1f5f9',
+                'theme_bg_gray' => '#e2e8f0',
+                'theme_bg_dark' => '#0f172a',
+
+                // STATUS COLORS
+                'theme_success' => '#22c55e',
+                'theme_warning' => '#f97316', // برتقالي - لون مميز للـ CTAs
+                'theme_danger' => '#ef4444',
+                'theme_info' => '#0ea5e9',
+
+                // BORDERS
+                'theme_border' => '#cbd5e1',
+                'theme_border_light' => '#e2e8f0',
+                'theme_border_dark' => '#94a3b8',
+
+                // TYPOGRAPHY - خطوط عصرية
+                'theme_font_primary' => 'Inter',
+                'theme_font_heading' => 'Inter',
+                'theme_font_size_base' => '15px',
+                'theme_font_size_sm' => '13px',
+                'theme_font_size_lg' => '18px',
+
+                // RADIUS - حواف حادة نسبياً (طابع صناعي)
+                'theme_radius_xs' => '2px',
+                'theme_radius_sm' => '4px',
+                'theme_radius' => '6px',
+                'theme_radius_lg' => '8px',
+                'theme_radius_xl' => '12px',
+                'theme_radius_pill' => '50px',
+
+                // SHADOWS - ظلال خفيفة
+                'theme_shadow_xs' => '0 1px 2px rgba(15,23,42,0.04)',
+                'theme_shadow_sm' => '0 1px 3px rgba(15,23,42,0.06)',
+                'theme_shadow' => '0 4px 6px rgba(15,23,42,0.07)',
+                'theme_shadow_lg' => '0 10px 15px rgba(15,23,42,0.1)',
+                'theme_shadow_xl' => '0 20px 25px rgba(15,23,42,0.15)',
+
+                // BUTTONS
+                'theme_btn_padding_x' => '20px',
+                'theme_btn_padding_y' => '10px',
+                'theme_btn_font_size' => '14px',
+                'theme_btn_font_weight' => '600',
+                'theme_btn_radius' => '6px',
+                'theme_btn_shadow' => '0 1px 2px rgba(30,64,175,0.15)',
+
+                // CARDS
+                'theme_card_bg' => '#ffffff',
+                'theme_card_border' => '#e2e8f0',
+                'theme_card_radius' => '8px',
+                'theme_card_shadow' => '0 1px 3px rgba(15,23,42,0.05)',
+                'theme_card_hover_shadow' => '0 10px 20px rgba(30,64,175,0.1)',
+                'theme_card_padding' => '20px',
+
+                // ITEM CARDS - بطاقات المنتجات
+                'theme_item_name_size' => '14px',
+                'theme_item_name_weight' => '600',
+                'theme_item_price_size' => '18px',
+                'theme_item_price_weight' => '700',
+                'theme_item_card_radius' => '8px',
+                'theme_item_img_radius' => '6px',
+                'theme_item_hover_scale' => '1.02',
+
+                // INPUTS
+                'theme_input_height' => '44px',
+                'theme_input_bg' => '#ffffff',
+                'theme_input_border' => '#cbd5e1',
+                'theme_input_radius' => '6px',
+                'theme_input_focus_border' => '#1e40af',
+                'theme_input_focus_shadow' => '0 0 0 3px rgba(30,64,175,0.15)',
+                'theme_input_placeholder' => '#94a3b8',
+
+                // TOPBAR - أزرق داكن مع برتقالي
+                'theme_topbar_bg' => '#1e3a5f',
+                'theme_topbar_text' => 'rgba(255, 255, 255, 0.9)',
+                'theme_topbar_link_hover' => '#f97316',
+                'theme_topbar_border' => 'rgba(255, 255, 255, 0.2)',
+
+                // HEADER
+                'theme_header_bg' => '#ffffff',
+                'theme_header_height' => '72px',
+                'theme_header_shadow' => '0 1px 3px rgba(15,23,42,0.08)',
+                'theme_header_text' => '#0f172a',
+                'theme_nav_link_color' => '#334155',
+                'theme_nav_link_hover' => '#1e40af',
+                'theme_nav_font_size' => '15px',
+                'theme_nav_font_weight' => '500',
+
+                // FOOTER - داكن احترافي
+                'theme_footer_bg' => '#0f172a',
+                'theme_footer_text' => '#f1f5f9',
+                'theme_footer_text_muted' => '#94a3b8',
+                'theme_footer_link' => '#cbd5e1',
+                'theme_footer_link_hover' => '#f97316', // برتقالي للتمييز
+                'theme_footer_border' => '#1e293b',
+                'theme_footer_padding' => '50px',
+
+                // BADGES
+                'theme_badge_radius' => '4px',
+                'theme_badge_padding' => '4px 10px',
+                'theme_badge_font_size' => '12px',
+                'theme_badge_font_weight' => '600',
+
+                // SCROLLBAR
+                'theme_scrollbar_width' => '8px',
+                'theme_scrollbar_track' => '#f1f5f9',
+                'theme_scrollbar_thumb' => '#cbd5e1',
+                'theme_scrollbar_thumb_hover' => '#94a3b8',
+
+                // MODALS
+                'theme_modal_bg' => '#ffffff',
+                'theme_modal_radius' => '12px',
+                'theme_modal_shadow' => '0 25px 50px rgba(15,23,42,0.25)',
+                'theme_modal_backdrop' => 'rgba(15,23,42,0.6)',
+                'theme_modal_header_bg' => '#f8fafc',
+
+                // TABLES
+                'theme_table_header_bg' => '#f1f5f9',
+                'theme_table_header_text' => '#0f172a',
+                'theme_table_border' => '#e2e8f0',
+                'theme_table_hover_bg' => '#f8fafc',
+                'theme_table_stripe_bg' => '#fafafa',
+            ],
+
+            // =========================================================
+            // SAUDI HERITAGE - التراث السعودي
+            // =========================================================
             'saudi' => [
                 // تراث سعودي - أخضر رسمي + ذهبي + بني صحراوي
                 'theme_primary' => '#006c35',
@@ -800,6 +963,12 @@ CSS;
                 'theme_table_header_bg' => '#faf8f5',
                 'theme_table_border' => '#e8dcc8',
                 'theme_table_hover_bg' => '#f5f2ec',
+
+                // TOPBAR - أخضر داكن مع ذهبي (تراثي)
+                'theme_topbar_bg' => '#004420',
+                'theme_topbar_text' => 'rgba(255, 255, 255, 0.9)',
+                'theme_topbar_link_hover' => '#c9a962', // ذهبي
+                'theme_topbar_border' => 'rgba(201, 169, 98, 0.3)',
             ],
         ];
     }

@@ -3213,23 +3213,23 @@ select option {
    HEADER & FOOTER THEME FIX
    ============================================================================= */
 
-/* Topbar - follows theme secondary color */
+/* Topbar - follows theme topbar variables */
 .muaadh-topbar {
-    background: var(--theme-secondary, #1f2937) !important;
+    background: var(--theme-topbar-bg, var(--theme-secondary, #1f2937)) !important;
 }
 
 .muaadh-topbar-link,
 .muaadh-topbar .muaadh-dropdown-toggle {
-    color: var(--theme-text-on-secondary, rgba(255, 255, 255, 0.9)) !important;
+    color: var(--theme-topbar-text, rgba(255, 255, 255, 0.9)) !important;
 }
 
 .muaadh-topbar-link:hover,
 .muaadh-topbar .muaadh-dropdown-toggle:hover {
-    color: var(--theme-primary-light, #ffffff) !important;
+    color: var(--theme-topbar-link-hover, var(--theme-primary-light, #ffffff)) !important;
 }
 
 .muaadh-topbar-divider {
-    background: var(--theme-secondary-light, rgba(255, 255, 255, 0.3)) !important;
+    background: var(--theme-topbar-border, rgba(255, 255, 255, 0.3)) !important;
 }
 
 /* Header - follows theme colors */

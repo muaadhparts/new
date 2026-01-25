@@ -827,6 +827,7 @@
                             <p class="theme-section-desc">{{ __('Select a preset to quickly apply a complete color scheme') }}</p>
                             <div class="preset-grid">
                                 <button type="button" class="preset-btn" data-preset="saudi" style="background: linear-gradient(135deg, #006c35 0%, #d4af37 50%, #1a1510 100%); color: #fff; box-shadow: 0 4px 12px rgba(0,108,53,0.4);">{{ __('Saudi Heritage') }}</button>
+                                <button type="button" class="preset-btn" data-preset="auto_parts" style="background: linear-gradient(135deg, #1e40af 0%, #f97316 50%, #0f172a 100%); color: #fff; box-shadow: 0 4px 12px rgba(30,64,175,0.4);">{{ __('Auto Parts') }}</button>
                             </div>
                         </div>
 
@@ -2244,7 +2245,49 @@ $(document).ready(function() {
             theme_badge_radius: '3px', theme_badge_padding: '4px 10px', theme_badge_font_size: '12px', theme_badge_font_weight: '600',
             theme_scrollbar_width: '8px', theme_scrollbar_track: '#f5f2ec', theme_scrollbar_thumb: '#d4c4a8', theme_scrollbar_thumb_hover: '#c9a962',
             theme_modal_bg: '#ffffff', theme_modal_radius: '10px', theme_modal_backdrop: 'rgba(26,21,16,0.65)',
-            theme_table_header_bg: '#faf8f5', theme_table_border: '#e8dcc8', theme_table_hover_bg: '#f5f2ec'
+            theme_table_header_bg: '#faf8f5', theme_table_border: '#e8dcc8', theme_table_hover_bg: '#f5f2ec',
+            // شريط العلوي - أخضر داكن مع ذهبي
+            theme_topbar_bg: '#004420', theme_topbar_text: 'rgba(255, 255, 255, 0.9)', theme_topbar_link_hover: '#c9a962', theme_topbar_border: 'rgba(201, 169, 98, 0.3)'
+        },
+
+        auto_parts: {
+            // ===== قطع غيار السيارات - أزرق داكن + برتقالي + رمادي صناعي =====
+            // ألوان مستوحاة من: صناعة السيارات، الاحترافية، الثقة
+            // الألوان الأساسية
+            theme_primary: '#1e40af', theme_primary_hover: '#1e3a8a', theme_primary_dark: '#172554', theme_primary_light: '#dbeafe',
+            theme_secondary: '#0f172a', theme_secondary_hover: '#1e293b', theme_secondary_light: '#334155',
+            theme_text_primary: '#0f172a', theme_text_secondary: '#334155', theme_text_muted: '#64748b', theme_text_light: '#94a3b8',
+            theme_bg_body: '#f8fafc', theme_bg_light: '#f1f5f9', theme_bg_gray: '#e2e8f0', theme_bg_dark: '#0f172a',
+            theme_success: '#22c55e', theme_warning: '#f97316', theme_danger: '#ef4444', theme_info: '#0ea5e9',
+            theme_border: '#cbd5e1', theme_border_light: '#e2e8f0', theme_border_dark: '#94a3b8',
+            // الخطوط والأحجام - عصري ونظيف
+            theme_font_primary: 'Inter', theme_font_heading: 'Inter',
+            theme_font_size_base: '15px', theme_font_size_sm: '13px', theme_font_size_lg: '18px',
+            theme_radius_xs: '2px', theme_radius_sm: '4px', theme_radius: '6px', theme_radius_lg: '8px', theme_radius_xl: '12px', theme_radius_pill: '50px',
+            theme_shadow_xs: '0 1px 2px rgba(15,23,42,0.04)', theme_shadow_sm: '0 1px 3px rgba(15,23,42,0.06)', theme_shadow: '0 4px 6px rgba(15,23,42,0.07)', theme_shadow_lg: '0 10px 15px rgba(15,23,42,0.1)',
+            // الأزرار - حادة واحترافية
+            theme_btn_padding_x: '20px', theme_btn_padding_y: '10px', theme_btn_font_size: '14px', theme_btn_font_weight: '600',
+            theme_btn_radius: '6px', theme_btn_shadow: '0 1px 2px rgba(30,64,175,0.15)',
+            // البطاقات - نظيفة وعملية
+            theme_card_bg: '#ffffff', theme_card_border: '#e2e8f0', theme_card_radius: '8px',
+            theme_card_shadow: '0 1px 3px rgba(15,23,42,0.05)', theme_card_hover_shadow: '0 10px 20px rgba(30,64,175,0.1)', theme_card_padding: '20px',
+            theme_item_name_size: '14px', theme_item_name_weight: '600', theme_item_price_size: '18px', theme_item_hover_scale: '1.02',
+            // النماذج
+            theme_input_height: '44px', theme_input_bg: '#ffffff', theme_input_border: '#cbd5e1',
+            theme_input_radius: '6px', theme_input_focus_border: '#1e40af', theme_input_focus_shadow: '0 0 0 3px rgba(30,64,175,0.15)', theme_input_placeholder: '#94a3b8',
+            // الرأس - بسيط ومركز
+            theme_header_bg: '#ffffff', theme_header_height: '72px', theme_header_shadow: '0 1px 3px rgba(15,23,42,0.08)',
+            theme_nav_link_color: '#334155', theme_nav_link_hover: '#1e40af', theme_nav_font_size: '15px', theme_nav_font_weight: '500',
+            // التذييل - داكن واحترافي
+            theme_footer_bg: '#0f172a', theme_footer_text: '#f1f5f9', theme_footer_text_muted: '#94a3b8',
+            theme_footer_link_hover: '#f97316', theme_footer_padding: '50px', theme_footer_link: '#cbd5e1', theme_footer_border: '#1e293b',
+            // المكونات
+            theme_badge_radius: '4px', theme_badge_padding: '4px 10px', theme_badge_font_size: '12px', theme_badge_font_weight: '600',
+            theme_scrollbar_width: '8px', theme_scrollbar_track: '#f1f5f9', theme_scrollbar_thumb: '#cbd5e1', theme_scrollbar_thumb_hover: '#94a3b8',
+            theme_modal_bg: '#ffffff', theme_modal_radius: '12px', theme_modal_backdrop: 'rgba(15,23,42,0.6)',
+            theme_table_header_bg: '#f1f5f9', theme_table_border: '#e2e8f0', theme_table_hover_bg: '#f8fafc',
+            // شريط العلوي - أزرق داكن مع برتقالي
+            theme_topbar_bg: '#1e3a5f', theme_topbar_text: 'rgba(255, 255, 255, 0.9)', theme_topbar_link_hover: '#f97316', theme_topbar_border: 'rgba(255, 255, 255, 0.2)'
         }
     };
 
