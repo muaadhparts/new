@@ -111,7 +111,7 @@
 								<li class="bell-area">
 									<a id="event_conv" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-envelope"></i>
-										<span id="conv-event-count">{{ App\Models\CatalogEvent::countChatThread() }}</span>
+										<span id="conv-event-count">{{ App\Domain\Catalog\Models\CatalogEvent::countChatThread() }}</span>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper" data-href="{{ route('conv-event-show') }}"
@@ -123,7 +123,7 @@
 								<li class="bell-area">
 									<a id="event_product" class="dropdown-toggle-1" href="javascript:;">
 										<i class="icofont-cart"></i>
-										<span id="catalogItem-event-count">{{ App\Models\CatalogEvent::countCatalogItem() }}</span>
+										<span id="catalogItem-event-count">{{ App\Domain\Catalog\Models\CatalogEvent::countCatalogItem() }}</span>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper" data-href="{{ route('catalog-item-event-show') }}"
@@ -135,7 +135,7 @@
 								<li class="bell-area">
 									<a id="event_user" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-user"></i>
-										<span id="user-event-count">{{ App\Models\CatalogEvent::countRegistration() }}</span>
+										<span id="user-event-count">{{ App\Domain\Catalog\Models\CatalogEvent::countRegistration() }}</span>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper" data-href="{{ route('user-event-show') }}"
@@ -147,7 +147,7 @@
 								<li class="bell-area">
 									<a id="event_order" class="dropdown-toggle-1" href="javascript:;">
 										<i class="far fa-newspaper"></i>
-										<span id="purchase-event-count">{{ App\Models\CatalogEvent::countPurchase() }}</span>
+										<span id="purchase-event-count">{{ App\Domain\Catalog\Models\CatalogEvent::countPurchase() }}</span>
 									</a>
 									<div class="dropdown-menu">
 										<div class="dropdownmenu-wrapper" data-href="{{ route('purchase-event-show') }}"

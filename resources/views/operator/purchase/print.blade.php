@@ -168,7 +168,7 @@ html {
                                                 @if(isset($catalogItem['merchant_name']))
                                                     {{ $catalogItem['merchant_name'] }}
                                                 @elseif(isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0)
-                                                    @php $user = App\Models\User::find($catalogItem['item']['user_id']); @endphp
+                                                    @php $user = App\Domain\Identity\Models\User::find($catalogItem['item']['user_id']); @endphp
                                                     {{ $user->shop_name ?? $user->name ?? '' }}
                                                 @endif
                                                 {{-- Branch Info --}}

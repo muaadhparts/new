@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\SkuAlternative;
+use App\Domain\Catalog\Models\SkuAlternative;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class SkuAlternativeFactory extends Factory

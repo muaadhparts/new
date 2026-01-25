@@ -83,15 +83,15 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => App\Models\User::class,
+            'model' => App\Domain\Identity\Models\User::class,
         ],
         'operators' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Operator::class,
+            'model' => App\Domain\Identity\Models\Operator::class,
         ],
         'couriers' => [
             'driver' => 'eloquent',
-            'model' => App\Models\Courier::class,
+            'model' => App\Domain\Identity\Models\Courier::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

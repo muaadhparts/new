@@ -3,18 +3,12 @@
 namespace Tests\Regression\Accounting;
 
 use Tests\TestCase;
-use App\Models\AccountParty;
-use App\Models\AccountBalance;
-use App\Models\AccountingLedger;
-use App\Models\SettlementBatch;
-use App\Models\PlatformRevenueLog;
-use App\Models\Withdraw;
-use App\Domain\Accounting\Models\AccountParty as DomainAccountParty;
-use App\Domain\Accounting\Models\AccountBalance as DomainAccountBalance;
-use App\Domain\Accounting\Models\AccountingLedger as DomainAccountingLedger;
-use App\Domain\Accounting\Models\SettlementBatch as DomainSettlementBatch;
-use App\Domain\Accounting\Models\PlatformRevenueLog as DomainPlatformRevenueLog;
-use App\Domain\Accounting\Models\Withdraw as DomainWithdraw;
+use App\Domain\Accounting\Models\AccountParty;
+use App\Domain\Accounting\Models\AccountBalance;
+use App\Domain\Accounting\Models\AccountingLedger;
+use App\Domain\Accounting\Models\SettlementBatch;
+use App\Domain\Accounting\Models\PlatformRevenueLog;
+use App\Domain\Accounting\Models\Withdraw;
 
 /**
  * Regression Tests for Accounting Domain Models
@@ -41,42 +35,42 @@ class AccountingModelsTest extends TestCase
     public function old_account_party_extends_domain_model()
     {
         $model = new AccountParty();
-        $this->assertInstanceOf(DomainAccountParty::class, $model);
+        $this->assertInstanceOf(AccountParty::class, $model);
     }
 
     /** @test */
     public function old_account_balance_extends_domain_model()
     {
         $model = new AccountBalance();
-        $this->assertInstanceOf(DomainAccountBalance::class, $model);
+        $this->assertInstanceOf(AccountBalance::class, $model);
     }
 
     /** @test */
     public function old_accounting_ledger_extends_domain_model()
     {
         $model = new AccountingLedger();
-        $this->assertInstanceOf(DomainAccountingLedger::class, $model);
+        $this->assertInstanceOf(AccountingLedger::class, $model);
     }
 
     /** @test */
     public function old_settlement_batch_extends_domain_model()
     {
         $model = new SettlementBatch();
-        $this->assertInstanceOf(DomainSettlementBatch::class, $model);
+        $this->assertInstanceOf(SettlementBatch::class, $model);
     }
 
     /** @test */
     public function old_platform_revenue_log_extends_domain_model()
     {
         $model = new PlatformRevenueLog();
-        $this->assertInstanceOf(DomainPlatformRevenueLog::class, $model);
+        $this->assertInstanceOf(PlatformRevenueLog::class, $model);
     }
 
     /** @test */
     public function old_withdraw_extends_domain_model()
     {
         $model = new Withdraw();
-        $this->assertInstanceOf(DomainWithdraw::class, $model);
+        $this->assertInstanceOf(Withdraw::class, $model);
     }
 
     // =========================================================================

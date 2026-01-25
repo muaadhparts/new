@@ -3,25 +3,19 @@
 namespace Tests\Regression\Identity;
 
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Operator;
-use App\Models\OperatorRole;
-use App\Models\Courier;
-use App\Models\OauthAccount;
-use App\Domain\Identity\Models\User as DomainUser;
-use App\Domain\Identity\Models\Operator as DomainOperator;
-use App\Domain\Identity\Models\OperatorRole as DomainOperatorRole;
-use App\Domain\Identity\Models\Courier as DomainCourier;
-use App\Domain\Identity\Models\OauthAccount as DomainOauthAccount;
+use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Models\Operator;
+use App\Domain\Identity\Models\OperatorRole;
+use App\Domain\Identity\Models\Courier;
+use App\Domain\Identity\Models\OauthAccount;
 
 class IdentityModelsTest extends TestCase
 {
     /**
-     * Test that old model paths still work (backward compatibility)
+     * Test that Domain models load correctly
      */
-    public function test_old_model_paths_work(): void
+    public function test_domain_models_load(): void
     {
-        // These should not throw exceptions
         $user = User::first();
         $this->assertNotNull($user);
 
@@ -30,21 +24,6 @@ class IdentityModelsTest extends TestCase
 
         $role = OperatorRole::first();
         $this->assertNotNull($role);
-    }
-
-    /**
-     * Test that old models are instances of new Domain models
-     */
-    public function test_old_models_extend_domain_models(): void
-    {
-        $user = User::first();
-        $this->assertInstanceOf(DomainUser::class, $user);
-
-        $operator = Operator::first();
-        $this->assertInstanceOf(DomainOperator::class, $operator);
-
-        $role = OperatorRole::first();
-        $this->assertInstanceOf(DomainOperatorRole::class, $role);
     }
 
     /**
@@ -128,7 +107,7 @@ class IdentityModelsTest extends TestCase
         // Test role relation
         $role = $operator->role;
         $this->assertNotNull($role);
-        $this->assertInstanceOf(DomainOperatorRole::class, $role);
+        $this->assertInstanceOf(OperatorRole::class, $role);
     }
 
     /**
@@ -174,7 +153,7 @@ class IdentityModelsTest extends TestCase
         $courier = Courier::first();
 
         if ($courier) {
-            $this->assertInstanceOf(DomainCourier::class, $courier);
+            $this->assertInstanceOf(Courier::class, $courier);
             $this->assertIsString($courier->name);
 
             // Test balance methods
@@ -242,7 +221,7 @@ class IdentityModelsTest extends TestCase
         $oauthAccount = OauthAccount::first();
 
         if ($oauthAccount) {
-            $this->assertInstanceOf(DomainOauthAccount::class, $oauthAccount);
+            $this->assertInstanceOf(OauthAccount::class, $oauthAccount);
 
             // Test user relation
             $user = $oauthAccount->user;

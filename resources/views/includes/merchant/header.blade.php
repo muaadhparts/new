@@ -149,7 +149,7 @@
                 $catalogEvents = Cache::remember(
                     'merchant_events_' . auth()->id(),
                     300,
-                    fn() => App\Models\UserCatalogEvent::whereUserId(auth()->id())
+                    fn() => App\Domain\Identity\Models\UserCatalogEvent::whereUserId(auth()->id())
                         ->orderby('id', 'desc')
                         ->limit(20)
                         ->get()

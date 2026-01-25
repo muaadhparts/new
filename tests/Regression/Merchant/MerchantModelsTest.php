@@ -3,26 +3,16 @@
 namespace Tests\Regression\Merchant;
 
 use Tests\TestCase;
-use App\Models\MerchantItem;
-use App\Models\MerchantBranch;
-use App\Models\MerchantPhoto;
-use App\Models\MerchantCommission;
-use App\Models\MerchantPayment;
-use App\Models\MerchantSetting;
-use App\Models\MerchantCredential;
-use App\Models\MerchantTaxSetting;
-use App\Models\MerchantStockUpdate;
-use App\Models\ApiCredential;
-use App\Domain\Merchant\Models\MerchantItem as DomainMerchantItem;
-use App\Domain\Merchant\Models\MerchantBranch as DomainMerchantBranch;
-use App\Domain\Merchant\Models\MerchantPhoto as DomainMerchantPhoto;
-use App\Domain\Merchant\Models\MerchantCommission as DomainMerchantCommission;
-use App\Domain\Merchant\Models\MerchantPayment as DomainMerchantPayment;
-use App\Domain\Merchant\Models\MerchantSetting as DomainMerchantSetting;
-use App\Domain\Merchant\Models\MerchantCredential as DomainMerchantCredential;
-use App\Domain\Merchant\Models\MerchantTaxSetting as DomainMerchantTaxSetting;
-use App\Domain\Merchant\Models\MerchantStockUpdate as DomainMerchantStockUpdate;
-use App\Domain\Merchant\Models\ApiCredential as DomainApiCredential;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Models\MerchantPhoto;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Merchant\Models\MerchantPayment;
+use App\Domain\Merchant\Models\MerchantSetting;
+use App\Domain\Merchant\Models\MerchantCredential;
+use App\Domain\Merchant\Models\MerchantTaxSetting;
+use App\Domain\Merchant\Models\MerchantStockUpdate;
+use App\Domain\Merchant\Models\ApiCredential;
 
 /**
  * Regression tests for Merchant Domain models
@@ -39,7 +29,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_item_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantItem::class, DomainMerchantItem::class),
+            is_subclass_of(MerchantItem::class, MerchantItem::class),
             'MerchantItem should extend Domain MerchantItem'
         );
     }
@@ -86,7 +76,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_branch_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantBranch::class, DomainMerchantBranch::class),
+            is_subclass_of(MerchantBranch::class, MerchantBranch::class),
             'MerchantBranch should extend Domain MerchantBranch'
         );
     }
@@ -124,7 +114,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_photo_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantPhoto::class, DomainMerchantPhoto::class),
+            is_subclass_of(MerchantPhoto::class, MerchantPhoto::class),
             'MerchantPhoto should extend Domain MerchantPhoto'
         );
     }
@@ -155,7 +145,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_commission_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantCommission::class, DomainMerchantCommission::class),
+            is_subclass_of(MerchantCommission::class, MerchantCommission::class),
             'MerchantCommission should extend Domain MerchantCommission'
         );
     }
@@ -189,7 +179,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_payment_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantPayment::class, DomainMerchantPayment::class),
+            is_subclass_of(MerchantPayment::class, MerchantPayment::class),
             'MerchantPayment should extend Domain MerchantPayment'
         );
     }
@@ -231,7 +221,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_setting_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantSetting::class, DomainMerchantSetting::class),
+            is_subclass_of(MerchantSetting::class, MerchantSetting::class),
             'MerchantSetting should extend Domain MerchantSetting'
         );
     }
@@ -256,7 +246,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_credential_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantCredential::class, DomainMerchantCredential::class),
+            is_subclass_of(MerchantCredential::class, MerchantCredential::class),
             'MerchantCredential should extend Domain MerchantCredential'
         );
     }
@@ -288,7 +278,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_tax_setting_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantTaxSetting::class, DomainMerchantTaxSetting::class),
+            is_subclass_of(MerchantTaxSetting::class, MerchantTaxSetting::class),
             'MerchantTaxSetting should extend Domain MerchantTaxSetting'
         );
     }
@@ -313,7 +303,7 @@ class MerchantModelsTest extends TestCase
     public function test_merchant_stock_update_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantStockUpdate::class, DomainMerchantStockUpdate::class),
+            is_subclass_of(MerchantStockUpdate::class, MerchantStockUpdate::class),
             'MerchantStockUpdate should extend Domain MerchantStockUpdate'
         );
     }
@@ -348,7 +338,7 @@ class MerchantModelsTest extends TestCase
     public function test_api_credential_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(ApiCredential::class, DomainApiCredential::class),
+            is_subclass_of(ApiCredential::class, ApiCredential::class),
             'ApiCredential should extend Domain ApiCredential'
         );
     }

@@ -3,10 +3,10 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Country;
-use App\Models\State;
-use App\Models\City;
+use App\Domain\Identity\Models\User;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Shipping\Models\State;
+use App\Domain\Shipping\Models\City;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Facades\Log;

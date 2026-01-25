@@ -2,11 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\User;
-use App\Models\QualityBrand;
-use App\Models\MerchantBranch;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Merchant\Models\MerchantBranch;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

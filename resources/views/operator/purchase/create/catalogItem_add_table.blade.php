@@ -37,7 +37,7 @@
                 <a target="_blank" href="{{ $prodAddTableUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
               </td>
               <td class="catalogItem-price">
-                 <span>{{ App\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}
+                 <span>{{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}
                  </span>
               </td>
               <td>
@@ -66,7 +66,7 @@
               <td class="catalogItem-subtotal">
                  <p class="d-inline-block"
                     id="prc{{$catalogItem['item']['id'].$catalogItem['size'].$catalogItem['color'].str_replace(str_split(' ,'),'',$catalogItem['values'])}}">
-                    {{ App\Models\CatalogItem::convertPrice($catalogItem['price']) }}
+                    {{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['price']) }}
                  </p>
                  @if ($catalogItem['discount'] != 0)
                  <strong>{{$catalogItem['discount']}} %{{__('off')}}</strong>

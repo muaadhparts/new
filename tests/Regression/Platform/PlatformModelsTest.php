@@ -3,14 +3,11 @@
 namespace Tests\Regression\Platform;
 
 use Tests\TestCase;
-use App\Models\Language;
-use App\Models\MonetaryUnit;
-use App\Models\HomePageTheme;
-use App\Models\FrontendSetting;
-use App\Models\PlatformSetting;
-use App\Domain\Platform\Models\Language as DomainLanguage;
-use App\Domain\Platform\Models\MonetaryUnit as DomainMonetaryUnit;
-use App\Domain\Platform\Models\HomePageTheme as DomainHomePageTheme;
+use App\Domain\Platform\Models\Language;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Platform\Models\HomePageTheme;
+use App\Domain\Platform\Models\FrontendSetting;
+use App\Domain\Platform\Models\PlatformSetting;
 
 class PlatformModelsTest extends TestCase
 {
@@ -36,13 +33,13 @@ class PlatformModelsTest extends TestCase
     public function test_old_models_extend_domain_models(): void
     {
         $language = Language::first();
-        $this->assertInstanceOf(DomainLanguage::class, $language);
+        $this->assertInstanceOf(Language::class, $language);
 
         $monetaryUnit = MonetaryUnit::first();
-        $this->assertInstanceOf(DomainMonetaryUnit::class, $monetaryUnit);
+        $this->assertInstanceOf(MonetaryUnit::class, $monetaryUnit);
 
         $theme = HomePageTheme::first();
-        $this->assertInstanceOf(DomainHomePageTheme::class, $theme);
+        $this->assertInstanceOf(HomePageTheme::class, $theme);
     }
 
     /**

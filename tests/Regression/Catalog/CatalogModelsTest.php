@@ -3,28 +3,23 @@
 namespace Tests\Regression\Catalog;
 
 use Tests\TestCase;
-use App\Models\Brand;
-use App\Models\BrandRegion;
-use App\Models\Catalog;
-use App\Models\NewCategory;
-use App\Models\CatalogItem;
-use App\Models\CatalogItemFitment;
-use App\Models\Section;
-use App\Models\Illustration;
-use App\Models\Callout;
-use App\Models\CatalogReview;
-use App\Models\CategoryPeriod;
-use App\Models\Specification;
-use App\Models\SpecificationItem;
-use App\Models\CategorySpecGroup;
-use App\Models\CategorySpecGroupItem;
-use App\Models\QualityBrand;
-use App\Models\SkuAlternative;
-use App\Domain\Catalog\Models\Brand as DomainBrand;
-use App\Domain\Catalog\Models\Catalog as DomainCatalog;
-use App\Domain\Catalog\Models\NewCategory as DomainNewCategory;
-use App\Domain\Catalog\Models\CatalogItem as DomainCatalogItem;
-use App\Domain\Catalog\Models\QualityBrand as DomainQualityBrand;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\BrandRegion;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\NewCategory;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogItemFitment;
+use App\Domain\Catalog\Models\Section;
+use App\Domain\Catalog\Models\Illustration;
+use App\Domain\Catalog\Models\Callout;
+use App\Domain\Catalog\Models\CatalogReview;
+use App\Domain\Catalog\Models\CategoryPeriod;
+use App\Domain\Catalog\Models\Specification;
+use App\Domain\Catalog\Models\SpecificationItem;
+use App\Domain\Catalog\Models\CategorySpecGroup;
+use App\Domain\Catalog\Models\CategorySpecGroupItem;
+use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Catalog\Models\SkuAlternative;
 
 class CatalogModelsTest extends TestCase
 {
@@ -50,13 +45,13 @@ class CatalogModelsTest extends TestCase
     public function test_old_models_extend_domain_models(): void
     {
         $brand = Brand::first();
-        $this->assertInstanceOf(DomainBrand::class, $brand);
+        $this->assertInstanceOf(Brand::class, $brand);
 
         $catalog = Catalog::first();
-        $this->assertInstanceOf(DomainCatalog::class, $catalog);
+        $this->assertInstanceOf(Catalog::class, $catalog);
 
         $category = NewCategory::first();
-        $this->assertInstanceOf(DomainNewCategory::class, $category);
+        $this->assertInstanceOf(NewCategory::class, $category);
     }
 
     /**
@@ -117,7 +112,7 @@ class CatalogModelsTest extends TestCase
         $catalogItem = CatalogItem::first();
 
         if ($catalogItem) {
-            $this->assertInstanceOf(DomainCatalogItem::class, $catalogItem);
+            $this->assertInstanceOf(CatalogItem::class, $catalogItem);
             $this->assertIsString($catalogItem->localized_name);
 
             // Test part_number
@@ -176,7 +171,7 @@ class CatalogModelsTest extends TestCase
         $qualityBrand = QualityBrand::active()->first();
 
         if ($qualityBrand) {
-            $this->assertInstanceOf(DomainQualityBrand::class, $qualityBrand);
+            $this->assertInstanceOf(QualityBrand::class, $qualityBrand);
             $this->assertIsString($qualityBrand->localized_name);
             $this->assertIsString($qualityBrand->display_name);
         } else {

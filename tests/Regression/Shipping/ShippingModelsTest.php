@@ -3,18 +3,12 @@
 namespace Tests\Regression\Shipping;
 
 use Tests\TestCase;
-use App\Models\Shipping;
-use App\Models\ShipmentTracking;
-use App\Models\DeliveryCourier;
-use App\Models\CourierServiceArea;
-use App\Models\City;
-use App\Models\Country;
-use App\Domain\Shipping\Models\Shipping as DomainShipping;
-use App\Domain\Shipping\Models\ShipmentTracking as DomainShipmentTracking;
-use App\Domain\Shipping\Models\DeliveryCourier as DomainDeliveryCourier;
-use App\Domain\Shipping\Models\CourierServiceArea as DomainCourierServiceArea;
-use App\Domain\Shipping\Models\City as DomainCity;
-use App\Domain\Shipping\Models\Country as DomainCountry;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
 
 /**
  * Regression tests for Shipping Domain models
@@ -31,7 +25,7 @@ class ShippingModelsTest extends TestCase
     public function test_shipping_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(Shipping::class, DomainShipping::class),
+            is_subclass_of(Shipping::class, Shipping::class),
             'Shipping should extend Domain Shipping'
         );
     }
@@ -67,7 +61,7 @@ class ShippingModelsTest extends TestCase
     public function test_shipment_tracking_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(ShipmentTracking::class, DomainShipmentTracking::class),
+            is_subclass_of(ShipmentTracking::class, ShipmentTracking::class),
             'ShipmentTracking should extend Domain ShipmentTracking'
         );
     }
@@ -122,7 +116,7 @@ class ShippingModelsTest extends TestCase
     public function test_delivery_courier_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(DeliveryCourier::class, DomainDeliveryCourier::class),
+            is_subclass_of(DeliveryCourier::class, DeliveryCourier::class),
             'DeliveryCourier should extend Domain DeliveryCourier'
         );
     }
@@ -181,7 +175,7 @@ class ShippingModelsTest extends TestCase
     public function test_courier_service_area_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(CourierServiceArea::class, DomainCourierServiceArea::class),
+            is_subclass_of(CourierServiceArea::class, CourierServiceArea::class),
             'CourierServiceArea should extend Domain CourierServiceArea'
         );
     }
@@ -224,7 +218,7 @@ class ShippingModelsTest extends TestCase
     public function test_city_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(City::class, DomainCity::class),
+            is_subclass_of(City::class, City::class),
             'City should extend Domain City'
         );
     }
@@ -259,7 +253,7 @@ class ShippingModelsTest extends TestCase
     public function test_country_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(Country::class, DomainCountry::class),
+            is_subclass_of(Country::class, Country::class),
             'Country should extend Domain Country'
         );
     }

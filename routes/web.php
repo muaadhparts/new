@@ -2,7 +2,7 @@
 
 // ************************************ OPERATOR SECTION **********************************************
 
-use App\Models\Token;
+use App\Domain\Catalog\Models\Token;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Http;

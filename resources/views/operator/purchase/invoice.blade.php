@@ -132,7 +132,7 @@
                                             <td width="40%">
                                                 @php
                                                 $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
-                                                    ? App\Models\User::find($catalogItem['item']['user_id'])
+                                                    ? App\Domain\Identity\Models\User::find($catalogItem['item']['user_id'])
                                                     : null;
                                                 $invoiceProductUrl = !empty($catalogItem['item']['part_number'])
                                                     ? route('front.part-result', $catalogItem['item']['part_number'])

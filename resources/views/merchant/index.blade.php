@@ -98,7 +98,7 @@
                         <p class="name">@lang('Total Item Sold!')</p>
                         <h3 class="value">
                             <span
-                                class="counter">{{ App\Models\MerchantPurchase::where('user_id', '=', $user->id)->where('status', '=', 'completed')->sum('qty') }}</span>
+                                class="counter">{{ App\Domain\Merchant\Models\MerchantPurchase::where('user_id', '=', $user->id)->where('status', '=', 'completed')->sum('qty') }}</span>
                         </h3>
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Current Balance')</p>
                         <h3 class="value">{{$curr->sign}}<span class="counter">
-                                {{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice(auth()->user()->current_balance) }}</span></h3>
+                                {{ App\Domain\Catalog\Models\CatalogItem::merchantConvertWithoutCurrencyPrice(auth()->user()->current_balance) }}</span></h3>
                     </div>
                 </div>
             </div>
@@ -119,11 +119,11 @@
                     <div class="name-and-value-wrapper">
                         <p class="name">@lang('Total Earning')</p>
                         @php
-                            $datas = App\Models\MerchantPurchase::with('purchase')->where('user_id', Auth::user()->id);
+                            $datas = App\Domain\Merchant\Models\MerchantPurchase::with('purchase')->where('user_id', Auth::user()->id);
                             $totalPrice = $datas->count() > 0 ? $datas->sum('price') : 0;
                         @endphp
                         <h3 class="value">{{$curr->sign}}<span
-                                class="counter">{{ App\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($totalPrice) }}</span></h3>
+                                class="counter">{{ App\Domain\Catalog\Models\CatalogItem::merchantConvertWithoutCurrencyPrice($totalPrice) }}</span></h3>
                     </div>
                 </div>
             </div>

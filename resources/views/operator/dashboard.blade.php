@@ -93,7 +93,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card c-info-box-area">
                 <div class="c-info-box box1">
-                    <p>{{ App\Models\User::where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
+                    <p>{{ App\Domain\Identity\Models\User::where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
                 </div>
                 <div class="c-info-box-content">
                     <h6 class="name">{{ __('New Customers') }}</h6>
@@ -104,7 +104,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card c-info-box-area">
                 <div class="c-info-box box2">
-                    <p>{{ App\Models\User::count() }}</p>
+                    <p>{{ App\Domain\Identity\Models\User::count() }}</p>
                 </div>
                 <div class="c-info-box-content">
                     <h6 class="name">{{ __('Total Customers') }}</h6>
@@ -115,7 +115,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card c-info-box-area">
                 <div class="c-info-box box3">
-                    <p>{{ App\Models\Purchase::where('status','=','completed')->where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
+                    <p>{{ App\Domain\Commerce\Models\Purchase::where('status','=','completed')->where( 'created_at', '>', Carbon\Carbon::now()->subDays(30))->get()->count()  }}</p>
                 </div>
                 <div class="c-info-box-content">
                     <h6 class="name">{{ __('Total Sales') }}</h6>
@@ -126,7 +126,7 @@
         <div class="col-md-6 col-xl-3">
             <div class="card c-info-box-area">
                 <div class="c-info-box box4">
-                     <p>{{ App\Models\Purchase::where('status','=','completed')->get()->count() }}</p>
+                     <p>{{ App\Domain\Commerce\Models\Purchase::where('status','=','completed')->get()->count() }}</p>
                 </div>
                 <div class="c-info-box-content">
                     <h6 class="name">{{ __('Total Sales') }}</h6>

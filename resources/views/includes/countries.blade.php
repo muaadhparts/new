@@ -5,7 +5,7 @@
 --}}
 @php $selectedCountry = $selectedCountry ?? null; @endphp
 <option value="" {{ !$selectedCountry ? 'selected' : '' }}>{{ __('Select Country') }}</option>
-@foreach (App\Models\Country::where('status',1)->get() as $data)
+@foreach (App\Domain\Shipping\Models\Country::where('status',1)->get() as $data)
     <option value="{{ $data->country_name }}"
         data="{{ $data->id }}"
         rel="{{ $data->cities->count() > 0 ? 1 : 0 }}"

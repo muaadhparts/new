@@ -1398,7 +1398,7 @@ table.dataTable thead .sorting_desc_disabled::after {
                                             <td width="50%">
                                                 @if($catalogItem['item']['user_id'] != 0)
                                                 @php
-                                                $user = App\Models\User::find($catalogItem['item']['user_id']);
+                                                $user = App\Domain\Identity\Models\User::find($catalogItem['item']['user_id']);
                                                 @endphp
                                                 @if(isset($user))
                                                 <x-catalog-item-name :item="$catalogItem" :merchant-user-id="$catalogItem['item']['user_id']" />

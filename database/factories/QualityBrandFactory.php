@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\QualityBrand;
+use App\Domain\Catalog\Models\QualityBrand;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class QualityBrandFactory extends Factory

@@ -227,8 +227,8 @@
                                     <th width="45%">{{ __('Affilate User') }}</th>
                                     <th width="10%">:</th>
                                     <td width="45%">
-                                        @if( App\Models\User::where('id', $purchase->affilate_user)->exists() )
-                                        {{ App\Models\User::where('id', $purchase->affilate_user)->first()->name }}
+                                        @if( App\Domain\Identity\Models\User::where('id', $purchase->affilate_user)->exists() )
+                                        {{ App\Domain\Identity\Models\User::where('id', $purchase->affilate_user)->first()->name }}
                                         @else
                                         {{ __('Deleted') }}
                                         @endif
@@ -433,7 +433,7 @@
                     // Platform items (user_id = 0)
                     $merchantName = $platformName;
                 }else{
-                    $merchant = App\Models\User::find($key1);
+                    $merchant = App\Domain\Identity\Models\User::find($key1);
                     $merchantName = $merchant->shop_name ?? $merchant->name ?? __('Unknown Merchant');
                 }
                 @endphp
@@ -474,7 +474,7 @@
                                     <td>
                                         @if($catalogItem['item']['user_id'] != 0)
                                         @php
-                                        $user = App\Models\User::find($catalogItem['item']['user_id']);
+                                        $user = App\Domain\Identity\Models\User::find($catalogItem['item']['user_id']);
                                         $branchInfo = $branchesLookup[$catalogItem['item']['user_id']] ?? null;
                                         @endphp
                                         @if(isset($user))
@@ -502,7 +502,7 @@
                                     <td>
                                         @if($catalogItem['item']['user_id'] != 0)
                                         @php
-                                        $merchantPurchase = App\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$catalogItem['item']['user_id'])->first();
+                                        $merchantPurchase = App\Domain\Merchant\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$catalogItem['item']['user_id'])->first();
 
 
                                         @endphp
@@ -551,7 +551,7 @@
                                         <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                         @php
                                         $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
-                                            ? App\Models\User::find($catalogItem['item']['user_id'])
+                                            ? App\Domain\Identity\Models\User::find($catalogItem['item']['user_id'])
                                             : null;
                                         @endphp
                                         @if(isset($user) || isset($catalogItem['merchant_name']))
@@ -612,7 +612,7 @@
 
                                         <div class="action-list">
 
-                                            @if (App\Models\CatalogItem::whereId($catalogItem['item']['id'])->exists())
+                                            @if (App\Domain\Catalog\Models\CatalogItem::whereId($catalogItem['item']['id'])->exists())
                                             <a class="btn btn-primary btn-sm edit-catalogItem" data-href="{{ route('operator-purchase-catalogItem-edit',[$itemKey, $catalogItem['item']['id'] ,$purchase->id]) }}"
                                                 data-bs-toggle="modal" data-bs-target="#edit-catalogItem-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
@@ -638,7 +638,7 @@
 
                                 $merchant_shipping_id = @$purchase_shipping[$key1];
                                 if($merchant_shipping_id){
-                                $shipping = App\Models\Shipping::findOrFail($merchant_shipping_id);
+                                $shipping = App\Domain\Shipping\Models\Shipping::findOrFail($merchant_shipping_id);
                                 }else{
                                 $shipping = [];
                                 }

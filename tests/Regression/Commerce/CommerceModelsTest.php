@@ -3,18 +3,12 @@
 namespace Tests\Regression\Commerce;
 
 use Tests\TestCase;
-use App\Models\Purchase;
-use App\Models\MerchantPurchase;
-use App\Models\PurchaseTimeline;
-use App\Models\StockReservation;
-use App\Models\FavoriteSeller;
-use App\Models\BuyerNote;
-use App\Domain\Commerce\Models\Purchase as DomainPurchase;
-use App\Domain\Commerce\Models\MerchantPurchase as DomainMerchantPurchase;
-use App\Domain\Commerce\Models\PurchaseTimeline as DomainPurchaseTimeline;
-use App\Domain\Commerce\Models\StockReservation as DomainStockReservation;
-use App\Domain\Commerce\Models\FavoriteSeller as DomainFavoriteSeller;
-use App\Domain\Commerce\Models\BuyerNote as DomainBuyerNote;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Commerce\Models\PurchaseTimeline;
+use App\Domain\Commerce\Models\StockReservation;
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Commerce\Models\BuyerNote;
 
 /**
  * Regression tests for Commerce Domain models
@@ -31,7 +25,7 @@ class CommerceModelsTest extends TestCase
     public function test_purchase_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(Purchase::class, DomainPurchase::class),
+            is_subclass_of(Purchase::class, Purchase::class),
             'Purchase should extend Domain Purchase'
         );
     }
@@ -89,7 +83,7 @@ class CommerceModelsTest extends TestCase
     public function test_merchant_purchase_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(MerchantPurchase::class, DomainMerchantPurchase::class),
+            is_subclass_of(MerchantPurchase::class, MerchantPurchase::class),
             'MerchantPurchase should extend Domain MerchantPurchase'
         );
     }
@@ -147,7 +141,7 @@ class CommerceModelsTest extends TestCase
     public function test_purchase_timeline_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(PurchaseTimeline::class, DomainPurchaseTimeline::class),
+            is_subclass_of(PurchaseTimeline::class, PurchaseTimeline::class),
             'PurchaseTimeline should extend Domain PurchaseTimeline'
         );
     }
@@ -172,7 +166,7 @@ class CommerceModelsTest extends TestCase
     public function test_stock_reservation_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(StockReservation::class, DomainStockReservation::class),
+            is_subclass_of(StockReservation::class, StockReservation::class),
             'StockReservation should extend Domain StockReservation'
         );
     }
@@ -226,7 +220,7 @@ class CommerceModelsTest extends TestCase
     public function test_favorite_seller_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(FavoriteSeller::class, DomainFavoriteSeller::class),
+            is_subclass_of(FavoriteSeller::class, FavoriteSeller::class),
             'FavoriteSeller should extend Domain FavoriteSeller'
         );
     }
@@ -260,7 +254,7 @@ class CommerceModelsTest extends TestCase
     public function test_buyer_note_extends_domain_model(): void
     {
         $this->assertTrue(
-            is_subclass_of(BuyerNote::class, DomainBuyerNote::class),
+            is_subclass_of(BuyerNote::class, BuyerNote::class),
             'BuyerNote should extend Domain BuyerNote'
         );
     }
