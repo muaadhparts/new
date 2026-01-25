@@ -134,6 +134,7 @@ class CatalogItemOffersService
             'slug' => $item->slug,
             'photo' => $photoUrl,
             'thumbnail' => $item->thumbnail ? asset('assets/images/' . $item->thumbnail) : null,
+            'weight' => $item->weight,
             'fitment_brands' => $fitmentBrands,
             'fitment_count' => count($fitmentBrands),
         ];

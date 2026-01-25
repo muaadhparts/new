@@ -284,11 +284,7 @@
             {{-- Shipping Quote Button --}}
             @if($mp)
                 <div class="mt-3">
-                    <x-shipping-quote-button
-                        :merchant-user-id="$merchantUserId"
-                        :catalog-item-name="$catalogItem->name ?? $catalogItem->part_number"
-                        class="w-100"
-                    />
+                    <x-shipping-quote-button :mp="$mp" class="w-100" />
                 </div>
             @endif
         </div>

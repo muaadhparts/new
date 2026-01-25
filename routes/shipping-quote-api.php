@@ -27,4 +27,9 @@ Route::prefix('api/customer-location')->group(function () {
 Route::prefix('api/shipping-quote')->group(function () {
     Route::post('/quote', [ShippingQuoteController::class, 'getQuote']);
     Route::post('/quick-estimate', [ShippingQuoteController::class, 'quickEstimate']);
+
+    // Location management (for shipping quote - uses coordinates from browser)
+    Route::post('/store-location', [ShippingQuoteController::class, 'storeLocation']);
+    Route::get('/location-status', [ShippingQuoteController::class, 'getLocationStatus']);
+    Route::post('/clear-location', [ShippingQuoteController::class, 'clearLocation']);
 });

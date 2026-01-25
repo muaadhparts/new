@@ -124,14 +124,18 @@
                                         @endif
 
                                         {{-- Shipping Quote --}}
+                                        @if($catalogItem->weight > 0 && ($offer['branch_id'] ?? null))
                                         <button type="button"
                                                 class="catalog-btn catalog-btn-outline"
                                                 data-shipping-quote
-                                                data-merchant-user-id="{{ $offer['user_id'] }}"
+                                                data-merchant-id="{{ $offer['user_id'] }}"
+                                                data-branch-id="{{ $offer['branch_id'] }}"
+                                                data-weight="{{ $catalogItem->weight }}"
                                                 data-catalog-item-name="{{ $catalogItem->showName() }}"
                                                 title="@lang('احسب الشحن')">
                                             <i class="fas fa-truck"></i>
                                         </button>
+                                        @endif
 
                                         {{-- Add to Favorites --}}
                                         @auth

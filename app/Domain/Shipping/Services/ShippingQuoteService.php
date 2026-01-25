@@ -4,45 +4,66 @@ namespace App\Domain\Shipping\Services;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Session;
 
 /**
  * ShippingQuoteService - Quote Only
  *
- * Single function: getCatalogItemQuote(merchantId, weight, cityId)
- * Uses same logic as Checkout (origin merchant → destination customer)
+ * MATCHES ShippingApiController logic EXACTLY:
+ * - Uses TryotoLocationService for city resolution
+ * - Uses GoogleMapsService for reverse geocoding
+ * - Requires FRESH coordinates from browser geolocation
+ * - NO reliance on stored city_name - always resolves from coordinates
+ *
+ * Single function: getCatalogItemQuote(merchantId, weight, coordinates)
  * NO shipment creation, NO COD, NO storage
  */
 class ShippingQuoteService
 {
     protected TryotoService $tryotoService;
-    protected CustomerLocationService $locationService;
+    protected TryotoLocationService $locationService;
+    protected GoogleMapsService $googleMapsService;
+
+    private const SESSION_KEY = 'shipping_quote_location';
 
     public function __construct(
         TryotoService $tryotoService,
-        CustomerLocationService $locationService
+        TryotoLocationService $locationService,
+        GoogleMapsService $googleMapsService
     ) {
         $this->tryotoService = $tryotoService;
         $this->locationService = $locationService;
+        $this->googleMapsService = $googleMapsService;
     }
 
     /**
      * Get shipping quote for a catalogItem
      *
-     * FAIL-FAST: weight is REQUIRED, no default values.
-     * The caller must provide the actual weight from the product.
+     * MATCHES ShippingApiController logic:
+     * 1. Get origin city from SPECIFIC merchant_branch (by branch_id)
+     * 2. Get destination from FRESH coordinates (browser geolocation)
+     * 3. Resolve city names using TryotoLocationService
+     * 4. Call Tryoto API with resolved names
      *
      * @param int $merchantId Merchant user_id
+     * @param int $branchId Specific branch ID (from merchant_item.merchant_branch_id)
      * @param float $weight CatalogItem weight in kg (REQUIRED)
-     * @param int|null $cityId Destination city (uses session if null)
+     * @param array|null $coordinates ['latitude' => float, 'longitude' => float] from browser
      * @return array Quote result
-     * @throws \InvalidArgumentException if weight is invalid
      */
-    public function getCatalogItemQuote(int $merchantId, float $weight, ?int $cityId = null): array
+    public function getCatalogItemQuote(int $merchantId, int $branchId, float $weight, ?array $coordinates = null): array
     {
         // FAIL-FAST: Validate inputs
         if ($merchantId <= 0) {
             throw new \InvalidArgumentException(
                 "Invalid merchantId: {$merchantId}. Must be > 0."
+            );
+        }
+
+        if ($branchId <= 0) {
+            throw new \InvalidArgumentException(
+                "Invalid branchId: {$branchId}. Must be > 0."
             );
         }
 
@@ -52,70 +73,304 @@ class ShippingQuoteService
                 "The caller must provide the actual product weight."
             );
         }
-        // 1. Get destination city
-        $destinationCityId = $cityId ?? $this->locationService->getCityId();
 
-        if (!$destinationCityId) {
+        // 1. Get coordinates - REQUIRE fresh coordinates from browser
+        $coords = $coordinates ?? $this->getStoredCoordinates();
+
+        if (!$coords || empty($coords['latitude']) || empty($coords['longitude'])) {
             return [
                 'success' => false,
                 'requires_location' => true,
-                'message' => __('يرجى تحديد موقعك أولاً'),
+                'location_type' => 'coordinates',
+                'message' => __('يرجى تفعيل خدمة الموقع في المتصفح لحساب تكلفة الشحن'),
+                'message_en' => 'Please enable location services in your browser to calculate shipping cost',
             ];
         }
 
-        // 2. Get origin city (merchant's city)
-        $originCity = $this->getMerchantCity($merchantId);
+        $latitude = (float) $coords['latitude'];
+        $longitude = (float) $coords['longitude'];
 
-        if (!$originCity) {
+        Log::info('═══════════════════════════════════════════════════════════');
+        Log::info('SHIPPING QUOTE REQUEST START', [
+            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
+            'weight_received' => $weight,
+            'customer_latitude' => $latitude,
+            'customer_longitude' => $longitude,
+        ]);
+
+        // 2. Get origin city from SPECIFIC branch - NO FALLBACK
+        $originResult = $this->resolveOriginCity($merchantId, $branchId);
+
+        if (!$originResult) {
             return [
                 'success' => false,
-                'message' => __('البائع لم يحدد مدينة الشحن'),
+                'error_code' => 'MERCHANT_CITY_NOT_SET',
+                'message' => __('البائع لم يحدد مدينة الشحن أو مدينته غير مدعومة'),
             ];
         }
 
-        // 3. Get destination city info
-        $destCity = DB::table('cities')->where('id', $destinationCityId)->first();
+        // 3. Resolve destination city from coordinates - NO FALLBACK
+        $destinationResult = $this->resolveDestinationCity($latitude, $longitude);
 
-        if (!$destCity) {
+        if (!$destinationResult['success']) {
             return [
                 'success' => false,
-                'message' => __('المدينة المحددة غير صالحة'),
+                'error_code' => $destinationResult['error_code'] ?? 'DESTINATION_ERROR',
+                'message' => $destinationResult['message'] ?? __('لم نتمكن من تحديد مدينتك'),
             ];
         }
 
-        // 4. Try to get quote, if fails try nearby supported cities
-        $result = $this->tryGetQuote($merchantId, $originCity, $destCity->city_name, $weight);
+        $originCity = $originResult['city_name'];
+        $destinationCity = $destinationResult['resolved_name'];
+
+        Log::info('SHIPPING QUOTE: Final Data for Tryoto API (ALL VERIFIED - NO FALLBACKS)', [
+            'origin_city' => $originCity,
+            'origin_city_id' => $originResult['city_id'],
+            'destination_city' => $destinationCity,
+            'destination_city_id' => $destinationResult['city_id'],
+            'weight_kg' => $weight,
+            'merchant_id' => $merchantId,
+        ]);
+
+        // 4. Get quote from Tryoto
+        $result = $this->tryGetQuote($merchantId, $originCity, $destinationCity, $weight);
 
         if ($result['success']) {
             return $result;
         }
 
-        // 5. If no route, try nearby supported cities
-        if ($destCity->latitude && $destCity->longitude) {
-            $alternativeCity = $this->findNearestWorkingCity(
-                $merchantId,
-                $originCity,
-                $destCity->latitude,
-                $destCity->longitude,
-                $weight,
-                $destinationCityId
-            );
-
-            if ($alternativeCity) {
-                $result = $alternativeCity;
-                $result['adjusted_city'] = true;
-                return $result;
-            }
-        }
-
+        // 5. If no route, return failure (don't try fallbacks here - the resolution already did)
         return [
             'success' => false,
             'message' => __('لا تتوفر خيارات شحن لهذه المنطقة'),
+            'debug' => [
+                'origin' => $originCity,
+                'destination' => $destinationCity,
+                'weight' => $weight,
+            ],
         ];
     }
 
     /**
-     * Try to get quote for a specific route
+     * Resolve origin city from SPECIFIC branch - NO FALLBACKS
+     *
+     * @param int $merchantId Merchant user_id
+     * @param int $branchId Specific branch ID
+     * @return array|null City info or null if not found/not supported
+     */
+    protected function resolveOriginCity(int $merchantId, int $branchId): ?array
+    {
+        // Get SPECIFIC branch data from database - NO FALLBACK to other branches
+        $branchCityData = ShippingCalculatorService::getBranchCity($branchId);
+
+        Log::info('SHIPPING QUOTE: Merchant Branch Data (from DB)', [
+            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
+            'branch_data' => $branchCityData,
+        ]);
+
+        // MUST have this specific branch
+        if (!$branchCityData) {
+            Log::error('SHIPPING QUOTE FAILED: Branch not found', [
+                'merchant_id' => $merchantId,
+                'branch_id' => $branchId,
+            ]);
+            return null;
+        }
+
+        // Verify branch belongs to this merchant
+        if (($branchCityData['merchant_id'] ?? null) != $merchantId) {
+            Log::error('SHIPPING QUOTE FAILED: Branch does not belong to merchant', [
+                'merchant_id' => $merchantId,
+                'branch_id' => $branchId,
+                'branch_merchant_id' => $branchCityData['merchant_id'] ?? null,
+            ]);
+            return null;
+        }
+
+        if (empty($branchCityData['city_name'])) {
+            Log::error('SHIPPING QUOTE FAILED: Branch has no city configured', [
+                'merchant_id' => $merchantId,
+                'branch_id' => $branchId,
+            ]);
+            return null;
+        }
+
+        $cityName = $branchCityData['city_name'];
+
+        // Check if this city is supported by Tryoto - NO FALLBACK to other cities
+        $city = DB::table('cities')
+            ->where('city_name', $cityName)
+            ->where('tryoto_supported', 1)
+            ->first();
+
+        if (!$city) {
+            // Try partial match but ONLY for the same city name
+            $city = DB::table('cities')
+                ->where(function ($q) use ($cityName) {
+                    $q->where('city_name', 'LIKE', $cityName . '%')
+                      ->orWhere('city_name', 'LIKE', '%' . $cityName);
+                })
+                ->where('tryoto_supported', 1)
+                ->first();
+        }
+
+        if (!$city) {
+            Log::error('SHIPPING QUOTE FAILED: Branch city not supported by shipping company', [
+                'merchant_id' => $merchantId,
+                'branch_id' => $branchId,
+                'city_name' => $cityName,
+            ]);
+            return null;
+        }
+
+        Log::info('SHIPPING QUOTE: Branch City Verified', [
+            'merchant_id' => $merchantId,
+            'branch_id' => $branchId,
+            'branch_name' => $branchCityData['branch_name'] ?? null,
+            'city_name' => $city->city_name,
+            'city_id' => $city->id,
+            'tryoto_supported' => true,
+        ]);
+
+        return [
+            'city_name' => $city->city_name,
+            'city_id' => $city->id,
+            'branch_id' => $branchId,
+            'branch_name' => $branchCityData['branch_name'] ?? null,
+        ];
+    }
+
+    /**
+     * Resolve destination city from coordinates - NO FALLBACKS
+     *
+     * Steps:
+     * 1. Reverse geocode coordinates using GoogleMapsService (REQUIRED)
+     * 2. Verify the city is supported by Tryoto (REQUIRED)
+     *
+     * NO FALLBACK to nearest city - customer's actual city must be supported
+     */
+    protected function resolveDestinationCity(float $latitude, float $longitude): array
+    {
+        // Step 1: Reverse geocode using GoogleMapsService - REQUIRED
+        $geocodeResult = $this->googleMapsService->reverseGeocode($latitude, $longitude, 'en');
+
+        if (!$geocodeResult['success'] || empty($geocodeResult['data'])) {
+            Log::error('SHIPPING QUOTE FAILED: Google Maps geocoding failed', [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'error' => $geocodeResult['error'] ?? 'Unknown error',
+            ]);
+            return [
+                'success' => false,
+                'error_code' => 'GEOCODING_FAILED',
+                'message' => __('لم نتمكن من تحديد موقعك. تأكد من تفعيل خدمة الموقع.'),
+            ];
+        }
+
+        $cityName = $geocodeResult['data']['city'] ?? null;
+        $stateName = $geocodeResult['data']['state'] ?? null;
+        $countryName = $geocodeResult['data']['country'] ?? null;
+
+        Log::info('SHIPPING QUOTE: Google Maps Geocoding Result', [
+            'city_from_google' => $cityName,
+            'state_from_google' => $stateName,
+            'country_from_google' => $countryName,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+        ]);
+
+        // Step 2: Check if country is supported
+        if (!$countryName) {
+            Log::error('SHIPPING QUOTE FAILED: Could not determine country', [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+            ]);
+            return [
+                'success' => false,
+                'error_code' => 'COUNTRY_NOT_FOUND',
+                'message' => __('لم نتمكن من تحديد دولتك'),
+            ];
+        }
+
+        $country = DB::table('countries')
+            ->where('country_name', $countryName)
+            ->first();
+
+        if (!$country) {
+            Log::error('SHIPPING QUOTE FAILED: Country not supported', [
+                'country' => $countryName,
+            ]);
+            return [
+                'success' => false,
+                'error_code' => 'COUNTRY_NOT_SUPPORTED',
+                'message' => __('الدولة ":country" غير مدعومة للشحن', ['country' => $countryName]),
+            ];
+        }
+
+        // Step 3: Find the EXACT city in our database - NO FALLBACK to other cities
+        $searchNames = array_filter([$cityName, $stateName]);
+
+        $city = null;
+        foreach ($searchNames as $name) {
+            if (!$name) continue;
+
+            $city = DB::table('cities')
+                ->where('country_id', $country->id)
+                ->where('tryoto_supported', 1)
+                ->where(function ($q) use ($name) {
+                    $q->where('city_name', $name)
+                      ->orWhere('city_name', 'LIKE', $name . '%')
+                      ->orWhere('city_name', 'LIKE', '%' . $name);
+                })
+                ->first();
+
+            if ($city) break;
+        }
+
+        if (!$city) {
+            Log::error('SHIPPING QUOTE FAILED: Customer city not supported by shipping company', [
+                'city_from_google' => $cityName,
+                'state_from_google' => $stateName,
+                'country' => $countryName,
+            ]);
+            return [
+                'success' => false,
+                'error_code' => 'CITY_NOT_SUPPORTED',
+                'message' => __('مدينتك ":city" غير مدعومة حالياً من خدمة الشحن', ['city' => $cityName ?: $stateName]),
+            ];
+        }
+
+        Log::info('SHIPPING QUOTE: Customer City Verified', [
+            'google_city' => $cityName,
+            'google_state' => $stateName,
+            'resolved_city' => $city->city_name,
+            'city_id' => $city->id,
+            'tryoto_supported' => true,
+        ]);
+
+        return [
+            'success' => true,
+            'resolved_name' => $city->city_name,
+            'city_id' => $city->id,
+        ];
+    }
+
+    /**
+     * Normalize city name for Tryoto API - MATCHES ShippingApiController
+     */
+    protected function normalizeCityName(string $cityName): string
+    {
+        $charsToReplace = ['ā', 'ī', 'ū', 'ē', 'ō', 'Ā', 'Ī', 'Ū', 'Ē', 'Ō'];
+        $replacements = ['a', 'i', 'u', 'e', 'o', 'A', 'I', 'U', 'E', 'O'];
+        $normalized = str_replace($charsToReplace, $replacements, $cityName);
+        $normalized = str_replace("'", '', $normalized);
+        return trim($normalized);
+    }
+
+    /**
+     * Try to get quote from Tryoto API
      */
     protected function tryGetQuote(int $merchantId, string $originCity, string $destinationCity, float $weight): array
     {
@@ -127,9 +382,21 @@ class ShippingQuoteService
         }
 
         try {
+            Log::info('SHIPPING QUOTE: Calling Tryoto API', [
+                'origin_city' => $originCity,
+                'destination_city' => $destinationCity,
+                'weight_kg' => $weight,
+                'merchant_id' => $merchantId,
+            ]);
+
             $result = $this->tryotoService
                 ->forMerchant($merchantId)
                 ->getDeliveryOptions($originCity, $destinationCity, $weight, 0, []);
+
+            Log::info('SHIPPING QUOTE: Tryoto API Response', [
+                'success' => $result['success'],
+                'options_count' => count($result['raw']['deliveryCompany'] ?? []),
+            ]);
 
             if (!$result['success']) {
                 return ['success' => false];
@@ -184,71 +451,6 @@ class ShippingQuoteService
     }
 
     /**
-     * Find nearest city with working shipping route
-     */
-    protected function findNearestWorkingCity(
-        int $merchantId,
-        string $originCity,
-        float $lat,
-        float $lng,
-        float $weight,
-        int $excludeCityId
-    ): ?array {
-        // Get nearby supported cities
-        $nearbyCities = DB::table('cities')
-            ->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->where('status', 1)
-            ->where('tryoto_supported', 1)
-            ->where('id', '!=', $excludeCityId)
-            ->get();
-
-        // Calculate distances and sort
-        $citiesWithDistance = [];
-        foreach ($nearbyCities as $city) {
-            $distance = $this->haversineDistance($lat, $lng, $city->latitude, $city->longitude);
-            if ($distance <= 100) { // Only within 100km
-                $citiesWithDistance[] = [
-                    'city' => $city,
-                    'distance' => $distance,
-                ];
-            }
-        }
-
-        usort($citiesWithDistance, fn($a, $b) => $a['distance'] <=> $b['distance']);
-
-        // Try top 5 nearest cities
-        foreach (array_slice($citiesWithDistance, 0, 5) as $item) {
-            $result = $this->tryGetQuote($merchantId, $originCity, $item['city']->city_name, $weight);
-
-            if ($result['success']) {
-                $result['destination'] = $item['city']->city_name;
-                $result['destination_id'] = $item['city']->id;
-                $result['distance_km'] = round($item['distance'], 1);
-                return $result;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Haversine distance formula
-     */
-    protected function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
-    {
-        $earthRadius = 6371;
-        $latDelta = deg2rad($lat2 - $lat1);
-        $lngDelta = deg2rad($lng2 - $lng1);
-
-        $a = sin($latDelta / 2) * sin($latDelta / 2) +
-            cos(deg2rad($lat1)) * cos(deg2rad($lat2)) *
-            sin($lngDelta / 2) * sin($lngDelta / 2);
-
-        return $earthRadius * 2 * atan2(sqrt($a), sqrt(1 - $a));
-    }
-
-    /**
      * Get cheapest option from quote result
      */
     public function getCheapestOption(array $result): ?array
@@ -258,33 +460,6 @@ class ShippingQuoteService
         }
 
         return $result['options'][0]; // Already sorted by price
-    }
-
-    /**
-     * Get merchant's origin city name from merchant_branches
-     */
-    protected function getMerchantCity(int $merchantId): ?string
-    {
-        // Get first active merchant branch (warehouse)
-        $merchantBranch = DB::table('merchant_branches')
-            ->where('user_id', $merchantId)
-            ->where('status', 1)
-            ->first();
-
-        if (!$merchantBranch || !$merchantBranch->city_id) {
-            return null;
-        }
-
-        return $this->getCityName((int) $merchantBranch->city_id);
-    }
-
-    /**
-     * Get city name by ID
-     */
-    protected function getCityName(int $cityId): ?string
-    {
-        $city = DB::table('cities')->where('id', $cityId)->first();
-        return $city->city_name ?? null;
     }
 
     /**
@@ -317,5 +492,79 @@ class ShippingQuoteService
         }
 
         return null;
+    }
+
+    // ========================================================================
+    // LOCATION STORAGE (for shipping quote - separate from checkout)
+    // ========================================================================
+
+    /**
+     * Store coordinates from browser geolocation
+     * Called by CustomerLocationController when user enables location
+     */
+    public function storeCoordinates(float $latitude, float $longitude): array
+    {
+        $data = [
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            'stored_at' => now()->toISOString(),
+            'source' => 'browser_geolocation',
+        ];
+
+        Session::put(self::SESSION_KEY, $data);
+
+        // Also resolve the city for display purposes
+        $resolution = $this->resolveDestinationCity($latitude, $longitude);
+
+        if ($resolution['success']) {
+            $data['resolved_city'] = $resolution['resolved_name'];
+            $data['city_id'] = $resolution['city_id'] ?? null;
+            Session::put(self::SESSION_KEY, $data);
+        }
+
+        return $data;
+    }
+
+    /**
+     * Get stored coordinates
+     */
+    public function getStoredCoordinates(): ?array
+    {
+        $data = Session::get(self::SESSION_KEY);
+
+        if (!$data || empty($data['latitude']) || empty($data['longitude'])) {
+            return null;
+        }
+
+        return [
+            'latitude' => $data['latitude'],
+            'longitude' => $data['longitude'],
+            'resolved_city' => $data['resolved_city'] ?? null,
+        ];
+    }
+
+    /**
+     * Check if coordinates are stored
+     */
+    public function hasStoredCoordinates(): bool
+    {
+        return $this->getStoredCoordinates() !== null;
+    }
+
+    /**
+     * Get resolved city name (for display)
+     */
+    public function getResolvedCityName(): ?string
+    {
+        $data = Session::get(self::SESSION_KEY);
+        return $data['resolved_city'] ?? null;
+    }
+
+    /**
+     * Clear stored coordinates
+     */
+    public function clearStoredCoordinates(): void
+    {
+        Session::forget(self::SESSION_KEY);
     }
 }

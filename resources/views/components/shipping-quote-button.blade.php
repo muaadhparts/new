@@ -1,48 +1,57 @@
 {{--
     Shipping Quote Button Component
     ================================
-    A reusable button that calculates and displays shipping costs.
+    تمرير MerchantItem مباشرة - البيانات من مصدرها
 
     Usage:
-    <x-shipping-quote-button :merchant-user-id="$merchantUserId" :weight="$weight" />
+    <x-shipping-quote-button :mp="$mp" />
 
-    Or with merchant item:
-    <x-shipping-quote-button :merchant-item="$merchantItem" />
-
-    Props:
-    - merchant-user-id (required): The merchant's user ID
-    - weight (optional): Catalog item weight in kg (default: 0.5)
-    - merchant-item (optional): MerchantItem object (will extract user_id and weight)
-    - catalog-item-name (optional): Catalog item name for modal name
-    - class (optional): Additional CSS classes
+    البيانات المستخرجة من MerchantItem:
+    - user_id → merchant_id
+    - merchant_branch_id → branch_id
+    - catalogItem->weight → weight
 --}}
 
 @props([
-    'merchantUserId' => null,
-    'weight' => 0.5,
-    'merchantItem' => null,
-    'catalogItemName' => '',
+    'mp' => null,
     'class' => '',
 ])
 
 @php
-    // Extract from merchant item if provided
-    if ($merchantItem) {
-        $merchantUserId = $merchantUserId ?? ($merchantItem->user_id ?? null);
-        $weight = $merchantItem->catalogItem?->weight ?? $weight;
-        $catalogItemName = $catalogItemName ?: (getLocalizedCatalogItemName($merchantItem->catalogItem) ?? '');
+    // كل البيانات من MerchantItem مباشرة - لا فلوباك
+    if (!$mp) {
+        $canRender = false;
+    } else {
+        $merchantId = $mp->user_id;
+        $branchId = $mp->merchant_branch_id;
+        $weight = $mp->catalogItem?->weight;
+        $catalogItemName = getLocalizedCatalogItemName($mp->catalogItem) ?? '';
+
+        // يجب أن تكون كل القيم موجودة
+        $canRender = $merchantId && $branchId && $weight && $weight > 0;
     }
 @endphp
 
-@if($merchantUserId)
+@if($canRender)
 <button type="button"
     class="m-shipping-quote-btn {{ $class }}"
     data-shipping-quote
-    data-merchant-user-id="{{ $merchantUserId }}"
+    data-merchant-id="{{ $merchantId }}"
+    data-branch-id="{{ $branchId }}"
     data-weight="{{ $weight }}"
     data-catalog-item-name="{{ $catalogItemName }}"
 >
     <i class="fas fa-truck m-shipping-quote-btn__icon"></i>
     <span class="m-shipping-quote-btn__text">@lang('احسب الشحن')</span>
+</button>
+@elseif($mp)
+{{-- MerchantItem موجود لكن بيانات ناقصة --}}
+<button type="button"
+    class="m-shipping-quote-btn m-shipping-quote-btn--disabled {{ $class }}"
+    disabled
+    title="@lang(!($mp->merchant_branch_id ?? null) ? 'فرع التاجر غير محدد' : 'وزن المنتج غير محدد')"
+>
+    <i class="fas fa-truck m-shipping-quote-btn__icon"></i>
+    <span class="m-shipping-quote-btn__text">@lang(!($mp->merchant_branch_id ?? null) ? 'الفرع غير محدد' : 'الوزن غير محدد')</span>
 </button>
 @endif

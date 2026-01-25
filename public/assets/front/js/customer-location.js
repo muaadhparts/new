@@ -4,23 +4,28 @@
  * Handles browser geolocation, manual city selection, and session storage.
  * Independent from Checkout/Cart.
  *
+ * IMPORTANT: Stores both city_id AND coordinates for shipping quote API.
+ *
  * Usage:
  * - CustomerLocation.init() - Initialize and check for existing location
  * - CustomerLocation.requestLocation() - Request location (geo first, then manual)
  * - CustomerLocation.showCitySelector() - Show manual city selector modal
  * - CustomerLocation.hasCity() - Check if city is set
  * - CustomerLocation.getCityId() - Get current city_id
+ * - CustomerLocation.getCoordinates() - Get { latitude, longitude } if available
  */
 const CustomerLocation = (function() {
     'use strict';
 
     const config = {
         apiBase: '/api/customer-location',
+        shippingApiBase: '/api/shipping-quote',
         geolocationTimeout: 10000,
         modalId: 'customerLocationModal',
     };
 
     let currentCity = null;
+    let currentCoordinates = null; // { latitude, longitude }
     let isInitialized = false;
     let citiesCache = null;
     let onChangeCallbacks = [];
@@ -32,6 +37,32 @@ const CustomerLocation = (function() {
         if (isInitialized) return currentCity;
 
         try {
+            // First check shipping quote location (has coordinates)
+            const shippingResponse = await fetch(config.shippingApiBase + '/location-status', {
+                headers: {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': getCSRFToken()
+                }
+            });
+            const shippingData = await shippingResponse.json();
+
+            if (shippingData.has_location) {
+                currentCoordinates = {
+                    latitude: shippingData.latitude,
+                    longitude: shippingData.longitude
+                };
+                if (shippingData.resolved_city) {
+                    currentCity = {
+                        city_id: null, // From coordinates, no city_id
+                        city_name: shippingData.resolved_city
+                    };
+                }
+                updateDisplay();
+                isInitialized = true;
+                return currentCity;
+            }
+
+            // Fallback to customer location API
             const response = await fetch(config.apiBase + '/status', {
                 headers: {
                     'Accept': 'application/json',
@@ -92,9 +123,58 @@ const CustomerLocation = (function() {
     }
 
     /**
+     * Request coordinates from browser geolocation
+     * Returns a promise with { latitude, longitude } or null
+     */
+    function requestBrowserGeolocation() {
+        return new Promise((resolve) => {
+            if (!navigator.geolocation) {
+                resolve(null);
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                },
+                (error) => {
+                    console.log('Geolocation error:', error.message);
+                    resolve(null);
+                },
+                {
+                    enableHighAccuracy: false,
+                    timeout: 10000,
+                    maximumAge: 300000
+                }
+            );
+        });
+    }
+
+    /**
      * Set location from geolocation coordinates
+     * Stores coordinates AND resolves city name
      */
     async function setFromGeolocation(lat, lng) {
+        // Store coordinates in shipping quote session
+        const shippingResponse = await fetch(config.shippingApiBase + '/store-location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': getCSRFToken()
+            },
+            body: JSON.stringify({ latitude: lat, longitude: lng })
+        });
+
+        const shippingData = await shippingResponse.json();
+
+        // Store coordinates locally
+        currentCoordinates = { latitude: lat, longitude: lng };
+
+        // Also store in customer location (for backward compatibility)
         const response = await fetch(config.apiBase + '/geolocation', {
             method: 'POST',
             headers: {
@@ -107,11 +187,19 @@ const CustomerLocation = (function() {
 
         const data = await response.json();
 
-        if (!data.success) {
-            throw new Error(data.message || 'Failed to set location');
+        if (data.success) {
+            currentCity = {
+                city_id: data.city_id,
+                city_name: data.city_name
+            };
+        } else if (shippingData.resolved_city) {
+            // Use resolved city from shipping API
+            currentCity = {
+                city_id: null,
+                city_name: shippingData.resolved_city
+            };
         }
 
-        currentCity = { city_id: data.city_id, city_name: data.city_name };
         updateDisplay();
         triggerCallbacks();
 
@@ -139,6 +227,9 @@ const CustomerLocation = (function() {
         }
 
         currentCity = { city_id: data.city_id, city_name: data.city_name };
+        // Clear coordinates since manual selection doesn't have them
+        currentCoordinates = null;
+
         updateDisplay();
         triggerCallbacks();
         closeModal();
@@ -190,7 +281,7 @@ const CustomerLocation = (function() {
 
         const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
         const t = {
-            name: isRtl ? 'اختر مدينتك' : 'Select Your City',
+            title: isRtl ? 'اختر مدينتك' : 'Select Your City',
             search: isRtl ? 'ابحث عن مدينتك...' : 'Search for your city...',
             cancel: isRtl ? 'إلغاء' : 'Cancel',
             noResults: isRtl ? 'لم يتم العثور على نتائج' : 'No results found',
@@ -203,8 +294,8 @@ const CustomerLocation = (function() {
             <div class="customer-location-modal__backdrop"></div>
             <div class="customer-location-modal__content">
                 <div class="customer-location-modal__header">
-                    <h3 class="customer-location-modal__name">
-                        <i class="fas fa-map-marker-alt"></i> ${t.name}
+                    <h3 class="customer-location-modal__title">
+                        <i class="fas fa-map-marker-alt"></i> ${t.title}
                     </h3>
                     <button type="button" class="customer-location-modal__close">
                         <i class="fas fa-times"></i>
@@ -301,7 +392,11 @@ const CustomerLocation = (function() {
     }
 
     function hasCity() {
-        return currentCity !== null && currentCity.city_id;
+        return currentCity !== null && (currentCity.city_id || currentCity.city_name);
+    }
+
+    function hasCoordinates() {
+        return currentCoordinates !== null && currentCoordinates.latitude && currentCoordinates.longitude;
     }
 
     function getCityId() {
@@ -312,6 +407,10 @@ const CustomerLocation = (function() {
         return currentCity ? currentCity.city_name : null;
     }
 
+    function getCoordinates() {
+        return currentCoordinates;
+    }
+
     function getCSRFToken() {
         return document.querySelector('meta[name="csrf-token"]')?.content || '';
     }
@@ -320,11 +419,15 @@ const CustomerLocation = (function() {
     return {
         init,
         requestLocation,
+        requestBrowserGeolocation,
         showCitySelector,
         setManually,
+        setFromGeolocation,
         hasCity,
+        hasCoordinates,
         getCityId,
         getCityName,
+        getCoordinates,
         onLocationChange,
     };
 })();

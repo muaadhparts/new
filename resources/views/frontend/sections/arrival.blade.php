@@ -157,11 +157,7 @@ Receives: $merchantItems (Collection of MerchantItem models)
                 @endif
 
                 {{-- Shipping Quote Button --}}
-                <x-shipping-quote-button
-                    :merchant-user-id="$merchantUserId"
-                    :catalog-item-name="$catalogItemName"
-                    class="mt-2"
-                />
+                <x-shipping-quote-button :mp="$merchantItem" class="mt-2" />
             </div>
         </div>
     </div>
