@@ -20,16 +20,13 @@
                         <li><a class="border px-3 py-1" href="{{route('courier.login')}}">{{__('Courier Login')}}</a></li>
                         @endif
 
-                        {{-- Using cached $languges from AppServiceProvider --}}
+                        {{-- Using $langg from UserPreferencesContext (Single Source of Truth) --}}
                         <li class="my-account-dropdown">
                             <div class="language-selector nice-select">
                                 <i class="fas fa-globe-americas text-dark"></i>
                                 <select name="language" class="language selectors nice select2-js-init">
                                     @foreach($languges as $language)
-                                    <option value="{{route('front.language',$language->id)}}" {{
-                                        Session::has('language') ? ( Session::get('language')==$language->id ?
-                                        'selected' : '' ) : ($languges->where('is_default','=',1)->first()->id ==
-                                        $language->id ? 'selected' : '') }} >
+                                    <option value="{{route('front.language',$language->id)}}" {{ ($langg->id ?? 0) == $language->id ? 'selected' : '' }}>
                                         {{$language->language}}
                                     </option>
                                     @endforeach
@@ -234,25 +231,13 @@
                         </div>
 
                         <div class="header-cart-1">
-                            <a href="{{ route('catalog-item.compare') }}" class="cart " name="Compare">
-                                <div class="cart-icon"><i class="flaticon-shuffle flat-mini mx-auto text-dark"></i>
-                                    <span class="header-cart-count " id="compare-count">{{ Session::has('compare') ?
-                                        count(Session::get('compare')->items) : '0' }}</span>
-                                </div>
-                            </a>
-                        </div>
-
-                        <div class="header-cart-1">
-                            @php
-                                $cart = Session::get('merchant_cart', ['items' => [], 'totals' => ['qty' => 0]]);
-                                $headerCartCount = (int) ($cart['totals']['qty'] ?? 0);
-                            @endphp
+                            {{-- Uses $merchantCartCount from HeaderComposer (Single Source of Truth) --}}
                             <a href="{{ route('merchant-cart.index') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
-                                        class="header-cart-count" id="cart-count1">{{ $headerCartCount }}</span></div>
+                                        class="header-cart-count" id="cart-count1">{{ $merchantCartCount ?? 0 }}</span></div>
                                 <div class="cart-wrap">
                                     <div class="cart-text">@lang('Merchant Cart')</div>
-                                    <span class="header-cart-count">{{ $headerCartCount }}</span>
+                                    <span class="header-cart-count">{{ $merchantCartCount ?? 0 }}</span>
                                 </div>
                             </a>
                             @include('load.merchant-cart')
@@ -410,19 +395,13 @@
                         </div>
                         @endif
 
-                        <div class="refresh-view">
-                            <a href="{{ route('catalog-item.compare') }}"
-                                class="position-relative top-quantity d-flex align-items-center text-dark text-decoration-none">
-                                <i class="flaticon-shuffle flat-mini text-dark mx-auto"></i>
-                            </a>
-                        </div>
                         <div class="header-cart-1">
                             <a href="{{ route('merchant-cart.index') }}" class="cart has-cart-data" name="View Cart">
                                 <div class="cart-icon"><i class="flaticon-shopping-cart flat-mini"></i> <span
-                                        class="header-cart-count" id="cart-count">{{ $headerCartCount }}</span></div>
+                                        class="header-cart-count" id="cart-count">{{ $merchantCartCount ?? 0 }}</span></div>
                                 <div class="cart-wrap">
                                     <div class="cart-text">@lang('Merchant Cart')</div>
-                                    <span class="header-cart-count">{{ $headerCartCount }}</span>
+                                    <span class="header-cart-count">{{ $merchantCartCount ?? 0 }}</span>
                                 </div>
                             </a>
                             @include('load.merchant-cart')

@@ -54,7 +54,6 @@
         $affiliateLink = $card->affiliateLink ?? null;
         $favoriteUrl = $card->favoriteUrl ?? null;
         $isInFavorites = $card->isInFavorites ?? false;
-        $compareUrl = $card->compareUrl;
         // Offers count
         $offersCount = $card->offersCount ?? 1;
         $hasMultipleOffers = $card->hasMultipleOffers ?? false;
@@ -138,12 +137,8 @@
         $affiliateLink = $merchantItem->affiliate_link ?? null;
         $favoriteUrl = $merchantItemId ? route('user-favorite-add-merchant', $merchantItemId) : '#';
         $isInFavorites = isset($favoriteProductIds) && $favoriteProductIds->contains($actualCatalogItem->id);
-        $compareUrl = $merchantItemId ? route('merchant.compare.add', $merchantItemId) : '#';
-        // Offers count
-        $offersCount = $actualCatalogItem->merchantItems()
-            ->where('status', 1)
-            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->count();
+        // Offers count - use passed parameter or get from model method
+        $offersCount = $offersCount ?? $actualCatalogItem->getActiveOffersCount();
         $hasMultipleOffers = $offersCount > 1;
     }
 

@@ -93,7 +93,14 @@
       "Bash(Get-Content \"C:\\\\Users\\\\hp\\\\.claude\\\\projects\\\\C--Users-hp-Herd-oldnew\\\\ee7b25ac-1e1b-4c82-8ffe-8aff81ac9259\\\\tool-results\\\\toolu_012wAJZUQAttggVSGVbQxjku.txt\" -Tail 30)",
       "Bash(for file in app/Http/Controllers/User/*.php)",
       "Bash(do php -l \"$file\")",
-      "Bash(for f in app/Http/Controllers/Front/*.php)"
+      "Bash(for f in app/Http/Controllers/Front/*.php)",
+      "Bash(if [ -d \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Models\" ])",
+      "Bash(then echo \"EXISTS: app/Models/\")",
+      "Bash(else echo \"DELETED: app/Models/\")",
+      "Bash(fi)",
+      "Bash(if [ -d \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Services\" ])",
+      "Bash(then echo \"EXISTS: app/Services/\")",
+      "Bash(else echo \"DELETED: app/Services/\")"
     ]
   }
 }

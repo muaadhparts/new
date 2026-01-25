@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Operator;
 
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Services\CatalogItemDeletionService;
 use App\Domain\Merchant\Models\MerchantItem;
 use Datatables;
 use Illuminate\Http\Request;
@@ -11,6 +12,11 @@ use Validator;
 
 class CatalogItemController extends OperatorBaseController
 {
+    public function __construct(
+        private CatalogItemDeletionService $deletionService
+    ) {
+        parent::__construct();
+    }
     /**
      * Datatables for merchant items listing (shows merchant offers)
      */
@@ -277,72 +283,7 @@ class CatalogItemController extends OperatorBaseController
      */
     public function destroy($id)
     {
-        $data = CatalogItem::findOrFail($id);
-
-        // Delete related merchant photos
-        if ($data->merchantPhotos->count() > 0) {
-            foreach ($data->merchantPhotos as $photo) {
-                if (file_exists(public_path() . '/assets/images/merchant-photos/' . $photo->photo)) {
-                    unlink(public_path() . '/assets/images/merchant-photos/' . $photo->photo);
-                }
-                $photo->delete();
-            }
-        }
-
-        // Delete related flags
-        if ($data->abuseFlags->count() > 0) {
-            foreach ($data->abuseFlags as $gal) {
-                $gal->delete();
-            }
-        }
-
-        // Delete related reviews
-        if ($data->catalogReviews->count() > 0) {
-            foreach ($data->catalogReviews as $gal) {
-                $gal->delete();
-            }
-        }
-
-        // Delete favorites
-        if ($data->favorites->count() > 0) {
-            foreach ($data->favorites as $gal) {
-                $gal->delete();
-            }
-        }
-
-        // Delete clicks
-        if ($data->clicks->count() > 0) {
-            foreach ($data->clicks as $gal) {
-                $gal->delete();
-            }
-        }
-
-        // Delete buyer notes and replies
-        if ($data->buyerNotes->count() > 0) {
-            foreach ($data->buyerNotes as $gal) {
-                if ($gal->replies->count() > 0) {
-                    foreach ($gal->replies as $key) {
-                        $key->delete();
-                    }
-                }
-                $gal->delete();
-            }
-        }
-
-        // Delete photo files
-        if (!filter_var($data->photo, FILTER_VALIDATE_URL)) {
-            if ($data->photo) {
-                if (file_exists(public_path() . '/assets/images/catalogItems/' . $data->photo)) {
-                    unlink(public_path() . '/assets/images/catalogItems/' . $data->photo);
-                }
-            }
-        }
-
-        if (file_exists(public_path() . '/assets/images/thumbnails/' . $data->thumbnail) && $data->thumbnail != "") {
-            unlink(public_path() . '/assets/images/thumbnails/' . $data->thumbnail);
-        }
-
-        $data->delete();
+        $this->deletionService->delete($id);
 
         return response()->json(__('CatalogItem Deleted Successfully.'));
     }

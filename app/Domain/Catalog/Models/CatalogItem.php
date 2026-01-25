@@ -337,6 +337,41 @@ class CatalogItem extends Model
     }
 
     /**
+     * Get count of active offers (merchant items) for this catalog item.
+     *
+     * Checks in order:
+     * 1. Pre-computed offers_count attribute (from withOffersData scope)
+     * 2. Eager-loaded merchantItems relation
+     * 3. Database query (fallback)
+     *
+     * @return int
+     */
+    public function getActiveOffersCount(): int
+    {
+        // 1. If withOffersData scope was used, use the pre-computed value
+        if (isset($this->attributes['offers_count'])) {
+            return (int) $this->attributes['offers_count'];
+        }
+
+        // 2. If merchantItems relation is loaded, count from it
+        if ($this->relationLoaded('merchantItems')) {
+            return $this->merchantItems
+                ->filter(fn($mi) => $mi->status == 1)
+                ->count();
+        }
+
+        // 3. Fallback: query database (logs warning in local env)
+        if (app()->environment('local')) {
+            \Log::debug("CatalogItem #{$this->id}: getActiveOffersCount() called without eager loading - consider using withOffersData() scope");
+        }
+
+        return $this->merchantItems()
+            ->where('status', 1)
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
+            ->count();
+    }
+
+    /**
      * Legacy compatibility (base price incl. commission) for first active merchant.
      */
     public function merchantPrice(?int $userId = null)

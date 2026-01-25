@@ -1272,7 +1272,7 @@ Route::group(['middleware' => 'maintenance'], function () {
     // ============ NEW MERCHANT CART SYSTEM (v4) ============
     // Clean, unified cart API - replaces all old cart routes
     // Uses: App\Http\Controllers\Front\MerchantCartController
-    // Service: App\Services\Cart\MerchantCartManager
+    // Service: App\Domain\Commerce\Services\Cart\MerchantCartManager
     // ALL operations are Branch-Scoped (except add which infers branch from item)
     Route::prefix('merchant-cart')->name('merchant-cart.')->group(function () {
         // Cart page view (grouped by branch)

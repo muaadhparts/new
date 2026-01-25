@@ -37,21 +37,17 @@
 
             {{-- Right: Language, Currency, Quick Links --}}
             <div class="muaadh-topbar-right">
-                {{-- Language Selector --}}
+                {{-- Language Selector (uses $langg from UserPreferencesContext) --}}
                 <div class="muaadh-dropdown">
                     <button class="muaadh-dropdown-toggle" type="button" data-bs-toggle="dropdown">
                         <i class="fas fa-globe"></i>
-                        <span>{{ Session::has('language')
-                            ? $languges->where('id', '=', Session::get('language'))->first()->language
-                            : $languges->where('is_default', '=', 1)->first()->language }}</span>
+                        <span>{{ $langg->language ?? __('Language') }}</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <ul class="muaadh-dropdown-menu">
                         @foreach ($languges as $language)
                             <li>
-                                <a class="muaadh-dropdown-item {{ Session::has('language')
-                                    ? (Session::get('language') == $language->id ? 'active' : '')
-                                    : ($languges->where('is_default', '=', 1)->first()->id == $language->id ? 'active' : '') }}"
+                                <a class="muaadh-dropdown-item {{ ($langg->id ?? 0) == $language->id ? 'active' : '' }}"
                                     href="{{ route('front.language', $language->id) }}">
                                     {{ $language->language }}
                                 </a>

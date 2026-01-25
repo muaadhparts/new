@@ -357,4 +357,140 @@ class NewCategoryTreeService
             ->distinct('catalog_items.part_number')
             ->count('catalog_items.part_number');
     }
+
+    /* =========================================================================
+     |  Multi-Step Category Selector Methods
+     | ========================================================================= */
+
+    /**
+     * Get catalogs for a specific brand (for category selector dropdown)
+     *
+     * @param int $brandId Brand ID
+     * @return Collection
+     */
+    public function getCatalogsForBrand(int $brandId): Collection
+    {
+        return Catalog::where('brand_id', $brandId)
+            ->where('status', 1)
+            ->orderBy('name')
+            ->get(['id', 'slug', 'name', 'name_ar']);
+    }
+
+    /**
+     * Get categories for a specific level (for category selector dropdown)
+     *
+     * @param int $catalogId Catalog ID
+     * @param int $level Category level (1, 2, or 3)
+     * @param int|null $parentId Parent category ID (required for levels 2+)
+     * @return Collection
+     */
+    public function getCategoriesForLevel(int $catalogId, int $level, ?int $parentId = null): Collection
+    {
+        $query = NewCategory::where('catalog_id', $catalogId)
+            ->where('level', $level)
+            ->orderBy('label_en');
+
+        if ($level > 1 && $parentId) {
+            $query->where('parent_id', $parentId);
+        } elseif ($level > 1) {
+            // No parent ID for level > 1 means no results
+            return collect();
+        }
+
+        return $query->get(['id', 'slug', 'label_en', 'label_ar']);
+    }
+
+    /**
+     * Build complete multi-step selector data from URL segments
+     *
+     * This method centralizes all the queries needed for the category
+     * multi-step selector, preventing database queries in blade files.
+     *
+     * @param Collection $brands All active brands (pre-loaded)
+     * @param string|null $brandSlug URL segment for brand
+     * @param string|null $catalogSlug URL segment for catalog
+     * @param string|null $level1Slug URL segment for level 1 category
+     * @param string|null $level2Slug URL segment for level 2 category
+     * @param string|null $level3Slug URL segment for level 3 category
+     * @return array Multi-step selector data
+     */
+    public function buildCategorySelectorData(
+        Collection $brands,
+        ?string $brandSlug = null,
+        ?string $catalogSlug = null,
+        ?string $level1Slug = null,
+        ?string $level2Slug = null,
+        ?string $level3Slug = null
+    ): array {
+        $result = [
+            'brandSlug' => $brandSlug,
+            'catalogSlug' => $catalogSlug,
+            'level1Slug' => $level1Slug,
+            'level2Slug' => $level2Slug,
+            'level3Slug' => $level3Slug,
+            'selectedBrand' => null,
+            'selectedCatalog' => null,
+            'selectedLevel1' => null,
+            'selectedLevel2' => null,
+            'selectedLevel3' => null,
+            'brandCatalogs' => collect(),
+            'catalogLevel1' => collect(),
+            'level1Level2' => collect(),
+            'level2Level3' => collect(),
+        ];
+
+        // Step 1: Resolve brand
+        if ($brandSlug) {
+            $result['selectedBrand'] = $brands->firstWhere('slug', $brandSlug);
+        }
+
+        // Step 2: Load catalogs for brand and resolve selected
+        if ($result['selectedBrand']) {
+            $result['brandCatalogs'] = $this->getCatalogsForBrand($result['selectedBrand']->id);
+
+            if ($catalogSlug) {
+                $result['selectedCatalog'] = $result['brandCatalogs']->firstWhere('slug', $catalogSlug);
+            }
+        }
+
+        // Step 3: Load Level 1 categories and resolve selected
+        if ($result['selectedCatalog']) {
+            $result['catalogLevel1'] = $this->getCategoriesForLevel(
+                $result['selectedCatalog']->id,
+                1
+            );
+
+            if ($level1Slug) {
+                $result['selectedLevel1'] = $result['catalogLevel1']->firstWhere('slug', $level1Slug);
+            }
+        }
+
+        // Step 4: Load Level 2 categories and resolve selected
+        if ($result['selectedLevel1']) {
+            $result['level1Level2'] = $this->getCategoriesForLevel(
+                $result['selectedCatalog']->id,
+                2,
+                $result['selectedLevel1']->id
+            );
+
+            if ($level2Slug) {
+                $result['selectedLevel2'] = $result['level1Level2']->firstWhere('slug', $level2Slug);
+            }
+        }
+
+        // Step 5: Load Level 3 categories and resolve selected
+        if ($result['selectedLevel2']) {
+            $result['level2Level3'] = $this->getCategoriesForLevel(
+                $result['selectedCatalog']->id,
+                3,
+                $result['selectedLevel2']->id
+            );
+
+            if ($level3Slug) {
+                $result['selectedLevel3'] = $result['level2Level3']->firstWhere('slug', $level3Slug);
+            }
+        }
+
+        return $result;
+    }
 }

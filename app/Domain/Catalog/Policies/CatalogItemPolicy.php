@@ -68,15 +68,6 @@ class CatalogItemPolicy
     }
 
     /**
-     * Determine if user can compare items
-     */
-    public function compare(?User $user): bool
-    {
-        // Anyone can compare
-        return true;
-    }
-
-    /**
      * Determine if user can request price alert
      */
     public function priceAlert(User $user, CatalogItem $item): bool

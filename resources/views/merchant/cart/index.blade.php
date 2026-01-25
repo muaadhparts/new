@@ -3,7 +3,7 @@
     MERCHANT CART PAGE - v5.0 (Per-Branch Summary)
     =====================================================================
     Controller: App\Http\Controllers\Front\MerchantCartController@index
-    Service: App\Services\Cart\MerchantCartManager
+    Service: App\Domain\Commerce\Services\Cart\MerchantCartManager
 
     Variables passed:
     - $byBranch: Items grouped by branch (each with items + totals)

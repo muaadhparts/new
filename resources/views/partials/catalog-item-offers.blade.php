@@ -219,14 +219,6 @@
                                                     </a>
                                                 @endauth
 
-                                                {{-- Compare Button --}}
-                                                <button type="button"
-                                                        class="catalog-btn catalog-btn-outline compare_product"
-                                                        data-href="{{ route('merchant.compare.add', $offer['merchant_item_id']) }}"
-                                                        title="@lang('Compare')">
-                                                    <i class="fas fa-exchange-alt"></i>
-                                                </button>
-
                                                 {{-- View Product Button --}}
                                                 <a href="{{ route('front.part-result', $catalog_item['part_number'] ?? '') }}"
                                                    class="catalog-btn catalog-btn-outline"

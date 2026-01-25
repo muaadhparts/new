@@ -39,6 +39,16 @@ class CatalogController extends FrontBaseController
             $currValue
         );
 
+        // Build category selector data (reads URL segments)
+        $data['categorySelector'] = $this->categoryTreeService->buildCategorySelectorData(
+            $data['brands'] ?? collect(),
+            $request->segment(2), // brand
+            $request->segment(3), // catalog
+            $request->segment(4), // cat1
+            $request->segment(5), // cat2
+            $request->segment(6)  // cat3
+        );
+
         if ($request->ajax()) {
             $data['ajax_check'] = 1;
             return view('frontend.ajax.category', $data);
@@ -81,6 +91,16 @@ class CatalogController extends FrontBaseController
             $cat1,
             $perPage,
             $currValue,
+            $cat2,
+            $cat3
+        );
+
+        // Build category selector data from route parameters
+        $data['categorySelector'] = $this->categoryTreeService->buildCategorySelectorData(
+            $data['brands'] ?? collect(),
+            $brand,
+            $catalog,
+            $cat1,
             $cat2,
             $cat3
         );

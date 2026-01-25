@@ -1,7 +1,5 @@
 <?php
 
-// merchantCompareCheck() function removed - Compare feature deleted
-
 function getMerchantDisplayName($merchantItem)
 {
     if (!$merchantItem || !$merchantItem->user) {

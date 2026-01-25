@@ -94,7 +94,7 @@ class PlatformModelsTest extends TestCase
      */
     public function test_monetary_unit_service_works(): void
     {
-        $service = app(\App\Services\MonetaryUnitService::class);
+        $service = app(\App\Domain\Platform\Services\MonetaryUnitService::class);
 
         $this->assertNotNull($service->getCurrent());
         $this->assertNotNull($service->getDefault());

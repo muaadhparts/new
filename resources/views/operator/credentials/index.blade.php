@@ -163,7 +163,7 @@
                                     <h5 class="mb-0"><i class="fas fa-code me-2"></i>{{ __('How to use in code') }}</h5>
                                 </div>
                                 <div class="card-body">
-                                    <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; direction: ltr; text-align: left;"><code>use App\Services\ApiCredentialService;
+                                    <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 5px; direction: ltr; text-align: left;"><code>use App\Domain\Merchant\Services\ApiCredentialService;
 
 $credService = new ApiCredentialService();
 

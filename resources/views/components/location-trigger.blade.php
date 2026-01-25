@@ -19,7 +19,7 @@
 
 @php
     $placeholder = $placeholder ?? __('حدد موقعك');
-    $locationService = app(\App\Services\CustomerLocationService::class);
+    $locationService = app(\App\Domain\Shipping\Services\CustomerLocationService::class);
     $hasLocation = $locationService->hasLocation();
     $displayText = $locationService->getDisplayText() ?? $placeholder;
 @endphp

@@ -149,13 +149,6 @@
                                             </a>
                                         @endauth
 
-                                        {{-- Compare --}}
-                                        <button type="button"
-                                                class="catalog-btn catalog-btn-outline compare_product"
-                                                data-href="{{ route('merchant.compare.add', $offer['merchant_item_id']) }}"
-                                                title="@lang('Compare')">
-                                            <i class="fas fa-exchange-alt"></i>
-                                        </button>
                                     </div>
                                 </div>
                             @endforeach

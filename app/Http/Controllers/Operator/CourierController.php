@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Operator;
 use App\Domain\Shipping\Models\Courier;
 use App\Domain\Accounting\Models\Withdraw;
 use App\Domain\Accounting\Models\WalletLog;
+use App\Domain\Shipping\Services\CourierDatatablesService;
 use App\Classes\MuaadhMailer;
 
 use Illuminate\{
@@ -19,14 +20,20 @@ use Datatables;
 
 class CourierController extends OperatorBaseController
 {
+    public function __construct(
+        protected CourierDatatablesService $datatablesService
+    ) {
+        parent::__construct();
+    }
     //*** JSON Request
     public function datatables()
     {
-        $datas = Courier::with('deliveries')->latest('id')->get();
-        //--- Integrating This Collection Into Datatables
+        // Optimized: uses withCount instead of loading all deliveries
+        $datas = $this->datatablesService->getCouriersWithDeliveryCount();
+
         return Datatables::of($datas)
             ->addColumn('total_delivery', function (Courier $data) {
-                return $data->deliveries->count();
+                return $data->deliveries_count;
             })
             ->addColumn('action', function (Courier $data) {
                 $class = $data->status == 0 ? 'drop-success' : 'drop-danger';
@@ -100,8 +107,9 @@ class CourierController extends OperatorBaseController
     //*** JSON Request
     public function withdrawdatatables()
     {
-        $datas = Withdraw::where('type', '=', 'courier')->latest('id')->get();
-        //--- Integrating This Collection Into Datatables
+        // Optimized: eager loads courier relationship to prevent N+1
+        $datas = $this->datatablesService->getCourierWithdraws();
+
         return Datatables::of($datas)
             ->addColumn('email', function (Withdraw $data) {
                 $email = $data->courier->email;

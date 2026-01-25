@@ -2,9 +2,7 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Domain\Commerce\Models\Purchase;
-use App\Domain\Catalog\Models\CatalogItem;
-use App\Domain\Identity\Models\User;
+use App\Domain\Platform\Services\DashboardStatisticsService;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -13,40 +11,16 @@ use Validator;
 
 class DashboardController extends OperatorBaseController
 {
+    public function __construct(
+        private DashboardStatisticsService $dashboardService
+    ) {
+        parent::__construct();
+    }
 
     public function index()
     {
-
-        $data['pending'] = Purchase::where('status', '=', 'pending')->get();
-        $data['processing'] = Purchase::where('status', '=', 'processing')->get();
-        $data['completed'] = Purchase::where('status', '=', 'completed')->get();
-        $data['days'] = "";
-        $data['sales'] = "";
-        for ($i = 0; $i < 30; $i++) {
-            $data['days'] .= "'" . date("d M", strtotime('-' . $i . ' days')) . "',";
-
-            $data['sales'] .= "'" . Purchase::where('status', '=', 'completed')->whereDate('created_at', '=', date("Y-m-d", strtotime('-' . $i . ' days')))->count() . "',";
-        }
-        $data['users'] = User::count();
-        $data['catalogItems'] = CatalogItem::count();
-
-        // CatalogItem-first: Get latest catalog items with active merchant offers
-        $data['latestCatalogItems'] = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
-            ->with(['merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price')])
-            ->latest('id')
-            ->take(5)
-            ->get();
-
-        $data['recentPurchases'] = Purchase::latest('id')->take(5)->get();
-
-        // CatalogItem-first: Get popular catalog items (by views)
-        $data['popularCatalogItems'] = CatalogItem::whereHas('merchantItems', fn($q) => $q->where('status', 1))
-            ->with(['merchantItems' => fn($q) => $q->where('status', 1)->orderBy('price')])
-            ->orderByDesc('views')
-            ->take(5)
-            ->get();
-
-        $data['recentUsers'] = User::latest('id')->take(5)->get();
+        // Get all dashboard data from service (optimized queries)
+        $data = $this->dashboardService->getDashboardData();
 
         return view('operator.dashboard', $data);
     }

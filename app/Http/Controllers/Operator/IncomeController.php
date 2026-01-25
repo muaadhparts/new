@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Operator;
 use App\Http\Controllers\Controller;
 use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Commerce\Models\MerchantPurchase;
-use App\Domain\Accounting\Models\Withdraw;
 use App\Domain\Accounting\Services\MerchantAccountingService;
+use App\Domain\Accounting\Services\WithdrawCalculationService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -21,12 +21,10 @@ use Illuminate\Http\Request;
  */
 class IncomeController extends Controller
 {
-    protected MerchantAccountingService $accountingService;
-
-    public function __construct(MerchantAccountingService $accountingService)
-    {
-        $this->accountingService = $accountingService;
-    }
+    public function __construct(
+        protected MerchantAccountingService $accountingService,
+        protected WithdrawCalculationService $withdrawService
+    ) {}
 
     /**
      * Tax Report - Based on MerchantPurchase.tax_amount
@@ -81,40 +79,22 @@ class IncomeController extends Controller
     public function withdrawIncome(Request $request)
     {
         $currency = monetaryUnit()->getDefault();
-        $currentDate = Carbon::now();
-        $firstDayOfMonth = Carbon::now()->startOfMonth();
-        $last30Days = Carbon::now()->subDays(30);
 
-        $last30DaysSum = Withdraw::whereDate('created_at', '>=', $last30Days)
-            ->whereDate('created_at', '<=', $currentDate)
-            ->where('status', 'completed')
-            ->sum('fee');
+        // Parse date filters
+        $startDate = $request->start_date ? Carbon::parse($request->start_date)->format('Y-m-d') : null;
+        $endDate = $request->end_date ? Carbon::parse($request->end_date)->format('Y-m-d') : null;
 
-        $currentMonthSum = Withdraw::whereDate('created_at', '>=', $firstDayOfMonth)
-            ->whereDate('created_at', '<=', $currentDate)
-            ->where('status', 'completed')
-            ->sum('fee');
-
-        // Build filtered query
-        $query = Withdraw::with('user')->where('status', 'completed');
-
-        if ($request->start_date && $request->end_date) {
-            $startDate = Carbon::parse($request->start_date);
-            $endDate = Carbon::parse($request->end_date);
-            $query->whereDate('created_at', '>=', $startDate)
-                  ->whereDate('created_at', '<=', $endDate);
-        }
-
-        $withdraws = $query->get();
+        // Get report data from service
+        $report = $this->withdrawService->getWithdrawIncomeReport($startDate, $endDate);
 
         return view('operator.earning.withdraw_income', [
-            'withdraws' => $withdraws,
-            'total' => $currency->sign . number_format($withdraws->sum('fee'), 2),
-            'start_date' => isset($startDate) ? $startDate : '',
-            'end_date' => isset($endDate) ? $endDate : '',
+            'withdraws' => $report['withdraws'],
+            'total' => $currency->sign . number_format($report['total_fee'], 2),
+            'start_date' => $startDate ? Carbon::parse($startDate) : '',
+            'end_date' => $endDate ? Carbon::parse($endDate) : '',
             'currency' => $currency,
-            'current_month' => $currency->sign . number_format($currentMonthSum, 2),
-            'last_30_days' => $currency->sign . number_format($last30DaysSum, 2),
+            'current_month' => $currency->sign . number_format($report['current_month_fee'], 2),
+            'last_30_days' => $currency->sign . number_format($report['last_30_days_fee'], 2),
         ]);
     }
 

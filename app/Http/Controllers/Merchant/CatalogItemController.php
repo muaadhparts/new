@@ -6,12 +6,18 @@ use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Merchant\Models\MerchantBranch;
 use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Merchant\Services\MerchantItemDuplicateCheckService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Validator;
 
 class CatalogItemController extends MerchantBaseController
 {
+    public function __construct(
+        private MerchantItemDuplicateCheckService $duplicateChecker
+    ) {
+        parent::__construct();
+    }
     public function index()
     {
         $user = $this->user;
@@ -76,9 +82,7 @@ class CatalogItemController extends MerchantBaseController
         }
 
         // Check if merchant already has an offer for this catalog item
-        $existingOffer = MerchantItem::where('catalog_item_id', $catalogItem->id)
-            ->where('user_id', $user->id)
-            ->first();
+        $existingOffer = $this->duplicateChecker->findExistingOffer($user->id, $catalogItem->id);
 
         if ($existingOffer) {
             return response()->json([
@@ -165,14 +169,11 @@ class CatalogItemController extends MerchantBaseController
         }
 
         // Check if merchant already has this catalog item in this branch
-        $existingItem = MerchantItem::where('catalog_item_id', $request->catalog_item_id)
-            ->where('user_id', $user->id)
-            ->where('merchant_branch_id', $request->merchant_branch_id)
-            ->first();
+        $check = $this->duplicateChecker->canCreate($user->id, $request->catalog_item_id, $request->merchant_branch_id);
 
-        if ($existingItem) {
-            return redirect()->route('merchant-catalog-item-edit', $existingItem->id)
-                ->with('unsuccess', __('You already have an offer for this catalog item in this branch.'));
+        if (!$check['can_create']) {
+            return redirect()->route('merchant-catalog-item-edit', $check['existing_item']->id)
+                ->with('unsuccess', $check['message']);
         }
 
         $sign = $this->curr;
@@ -257,15 +258,16 @@ class CatalogItemController extends MerchantBaseController
         }
 
         // Check for conflict (same item + branch + quality brand combination)
-        $conflict = MerchantItem::where('catalog_item_id', $merchantItem->catalog_item_id)
-            ->where('user_id', $user->id)
-            ->where('merchant_branch_id', $request->merchant_branch_id)
-            ->where('quality_brand_id', $request->quality_brand_id)
-            ->where('id', '<>', $merchantItem->id)
-            ->exists();
+        $check = $this->duplicateChecker->canUpdate(
+            $merchantItem->id,
+            $user->id,
+            $merchantItem->catalog_item_id,
+            $request->merchant_branch_id,
+            $request->quality_brand_id
+        );
 
-        if ($conflict) {
-            return redirect()->back()->withErrors(['quality_brand_id' => __('You already have an offer for this catalog item in this branch with this quality brand.')])->withInput();
+        if (!$check['can_update']) {
+            return redirect()->back()->withErrors(['quality_brand_id' => $check['message']])->withInput();
         }
 
         $merchantData = [

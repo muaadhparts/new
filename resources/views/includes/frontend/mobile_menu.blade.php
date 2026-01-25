@@ -136,10 +136,6 @@
                         <i class="fas fa-heart"></i>
                         <span>@lang('Favorites')</span>
                     </a>
-                    <a href="{{ route('catalog-item.compare') }}" class="muaadh-mobile-quick-item">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span>@lang('Compare')</span>
-                    </a>
                     <a href="{{ route('front.tracking') }}" class="muaadh-mobile-quick-item">
                         <i class="fas fa-truck"></i>
                         <span>@lang('Track')</span>
@@ -220,22 +216,8 @@
                 </button>
             </div>
 
-            {{-- Hidden JSON Data for JS --}}
-            @php
-                $mobileBrandsJson = $brands->map(function($brand) {
-                    return [
-                        'slug' => $brand->slug,
-                        'name' => app()->getLocale() == 'ar' ? ($brand->name_ar ?: $brand->name) : $brand->name,
-                        'subs' => $brand->catalogs ? $brand->catalogs->map(function($catalog) {
-                            return [
-                                'slug' => $catalog->slug,
-                                'name' => app()->getLocale() == 'ar' ? ($catalog->name_ar ?: $catalog->name) : $catalog->name,
-                            ];
-                        })->values()->toArray() : []
-                    ];
-                })->values();
-            @endphp
-            <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileBrandsJson) !!}</script>
+            {{-- Hidden JSON Data for JS (pre-computed in NavigationContext) --}}
+            <script type="application/json" id="mobile-categories-data">{!! json_encode($mobileBrandsJson ?? []) !!}</script>
         </div>
 
         {{-- Account Tab - Using $authUser/$courierUser from HeaderComposer --}}

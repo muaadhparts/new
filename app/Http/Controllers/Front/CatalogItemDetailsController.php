@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Front;
 
 use App\Helpers\CatalogItemContextHelper;
 use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\DTOs\QuickViewDTO;
 use App\Domain\Merchant\Models\MerchantItem;
 use App\Domain\Catalog\Models\AbuseFlag;
 use App\Domain\Catalog\Services\CatalogItemOffersService;
@@ -26,13 +27,13 @@ class CatalogItemDetailsController extends FrontBaseController
      */
     public function quickFragment(int $id)
     {
-        $catalogItem = CatalogItem::findOrFail($id);
+        $catalogItem = CatalogItem::with(['fitments.brand'])->findOrFail($id);
         $mp = null;
 
         // Get merchant from ?user= query param
         $merchantId = (int) request()->query('user', 0);
         if ($merchantId > 0) {
-            $mp = MerchantItem::with(['qualityBrand', 'user'])
+            $mp = MerchantItem::with(['qualityBrand', 'user', 'merchantBranch', 'catalogItem.fitments.brand'])
                 ->where('catalog_item_id', $catalogItem->id)
                 ->where('user_id', $merchantId)
                 ->first();
@@ -42,7 +43,15 @@ class CatalogItemDetailsController extends FrontBaseController
             }
         }
 
-        return response()->view('partials.catalog-item', ['catalogItem' => $catalogItem, 'mp' => $mp]);
+        // Build QuickViewDTO with pre-computed data
+        $quickView = QuickViewDTO::fromModels($catalogItem, $mp, $merchantId ?: null);
+
+        return response()->view('partials.catalog-item', [
+            'quickView' => $quickView,
+            // Legacy support
+            'catalogItem' => $catalogItem,
+            'mp' => $mp,
+        ]);
     }
 
     /**

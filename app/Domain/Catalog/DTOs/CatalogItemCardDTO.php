@@ -43,7 +43,6 @@ class CatalogItemCardDTO
     public string $detailsUrl;
     public bool $isInFavorites;
     public string $favoriteUrl;
-    public string $compareUrl;
 
     // Merchant
     public ?string $merchantName;
@@ -119,7 +118,6 @@ class CatalogItemCardDTO
         // Favorites
         $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantItemId);
         $dto->favoriteUrl = route('merchant.favorite.add', $dto->merchantItemId);
-        $dto->compareUrl = route('merchant.compare.add', $dto->merchantItemId);
 
         // Merchant (from eager-loaded relation) - localized
         $dto->merchantName = $merchant->user ? getLocalizedShopName($merchant->user) : null;
@@ -193,7 +191,6 @@ class CatalogItemCardDTO
         // Favorites (catalog item level - no merchant, so no actions available)
         $dto->isInFavorites = $favoriteCatalogItemIds->contains($dto->catalogItemId);
         $dto->favoriteUrl = '#';
-        $dto->compareUrl = '#';
 
         // No merchant info without merchant
         $dto->merchantName = null;
@@ -273,8 +270,7 @@ class CatalogItemCardDTO
             // Favorites (based on merchant item)
             $dto->isInFavorites = $favoriteMerchantIds->contains($dto->merchantItemId);
             $dto->favoriteUrl = route('merchant.favorite.add', $dto->merchantItemId);
-            $dto->compareUrl = route('merchant.compare.add', $dto->merchantItemId);
-
+    
             // Merchant info (from eager-loaded relation)
             $dto->merchantName = $bestMerchant->user ? getLocalizedShopName($bestMerchant->user) : null;
 
@@ -313,8 +309,7 @@ class CatalogItemCardDTO
             // Favorites (catalog item level)
             $dto->isInFavorites = $favoriteCatalogItemIds->contains($dto->catalogItemId);
             $dto->favoriteUrl = '#';
-            $dto->compareUrl = '#';
-
+    
             // No merchant info
             $dto->merchantName = null;
             $dto->branchId = null;

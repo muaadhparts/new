@@ -23,10 +23,9 @@
                     {{-- Mobile Toggle (hidden in merchant/admin where they have their own toggle) --}}
                     @if (!($hideMobileToggle ?? false))
                         @php
-                            $currentUrl = url()->current();
-                            $urlParts = explode('/', $currentUrl);
-                            $isUserDashboard = in_array('user', $urlParts);
-                            $isCourierDashboard = in_array('courier', $urlParts);
+                            // Use route pattern matching instead of URL string manipulation
+                            $isUserDashboard = request()->routeIs('user-*') || request()->is('user/*');
+                            $isCourierDashboard = request()->routeIs('courier.*') || request()->is('courier/*');
                             $isDashboardPage = $isUserDashboard || $isCourierDashboard;
                         @endphp
 
@@ -120,14 +119,6 @@
                     <a href="{{ $authUser ? route('user-favorites') : route('user.login') }}" class="muaadh-action-btn">
                         <i class="fas fa-heart"></i>
                         <span class="muaadh-badge" id="favorite-count">{{ $favoriteCount }}</span>
-                    </a>
-
-                    {{-- Compare --}}
-                    <a href="{{ route('catalog-item.compare') }}" class="muaadh-action-btn d-none d-sm-flex">
-                        <i class="fas fa-exchange-alt"></i>
-                        <span class="muaadh-badge" id="compare-count">
-                            {{ Session::has('compare') ? count(Session::get('compare')->items) : '0' }}
-                        </span>
                     </a>
 
                     {{-- Merchant Cart --}}

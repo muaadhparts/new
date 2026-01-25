@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Operator;
 
-use App\Domain\Platform\Models\ApiCredential;
-use App\Domain\Platform\Services\ApiCredentialService;
+use App\Domain\Merchant\Models\ApiCredential;
+use App\Domain\Merchant\Services\ApiCredentialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Crypt;
 

@@ -143,45 +143,20 @@
                             <h5 class="widget-name">@lang('CatalogItem categories')</h5>
                             <div class="catalogItem-cat-widget">
 
-                                {{-- Multi-Step Category Selector (5 Levels - Lightweight) --}}
+                                {{-- Multi-Step Category Selector (5 Levels - Pre-computed in Controller) --}}
                                 <div class="category-step-selector">
                                     @php
-                                        use App\Domain\Catalog\Models\Catalog;
-                                        use App\Domain\Catalog\Models\NewCategory;
-
-                                        // Read URL segments
-                                        $currentBrandSlug = Request::segment(2);
-                                        $currentCatalogSlug = Request::segment(3);
-                                        $currentLevel1Slug = Request::segment(4);
-                                        $currentLevel2Slug = Request::segment(5);
-                                        $currentLevel3Slug = Request::segment(6);
-
-                                        // Resolve ONLY what's needed (no recursive loading)
-                                        $selectedBrand = $currentBrandSlug ? $brands->firstWhere('slug', $currentBrandSlug) : null;
-
-                                        // Load catalogs ONLY for selected brand
-                                        $brandCatalogs = $selectedBrand
-                                            ? Catalog::where('brand_id', $selectedBrand->id)->where('status', 1)->orderBy('name')->get(['id', 'slug', 'name', 'name_ar'])
-                                            : collect();
-                                        $selectedCatalog = $currentCatalogSlug ? $brandCatalogs->firstWhere('slug', $currentCatalogSlug) : null;
-
-                                        // Load Level 1 ONLY for selected catalog
-                                        $catalogLevel1 = $selectedCatalog
-                                            ? NewCategory::where('catalog_id', $selectedCatalog->id)->where('level', 1)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
-                                            : collect();
-                                        $selectedLevel1 = $currentLevel1Slug ? $catalogLevel1->firstWhere('slug', $currentLevel1Slug) : null;
-
-                                        // Load Level 2 ONLY for selected Level 1
-                                        $level1Level2 = $selectedLevel1
-                                            ? NewCategory::where('parent_id', $selectedLevel1->id)->where('level', 2)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
-                                            : collect();
-                                        $selectedLevel2 = $currentLevel2Slug ? $level1Level2->firstWhere('slug', $currentLevel2Slug) : null;
-
-                                        // Load Level 3 ONLY for selected Level 2
-                                        $level2Level3 = $selectedLevel2
-                                            ? NewCategory::where('parent_id', $selectedLevel2->id)->where('level', 3)->orderBy('label_en')->get(['id', 'slug', 'label_en', 'label_ar'])
-                                            : collect();
-                                        $selectedLevel3 = $currentLevel3Slug ? $level2Level3->firstWhere('slug', $currentLevel3Slug) : null;
+                                        // Use pre-computed data from Controller (no DB queries here)
+                                        $cs = $categorySelector ?? [];
+                                        $currentBrandSlug = $cs['brandSlug'] ?? null;
+                                        $currentCatalogSlug = $cs['catalogSlug'] ?? null;
+                                        $currentLevel1Slug = $cs['level1Slug'] ?? null;
+                                        $currentLevel2Slug = $cs['level2Slug'] ?? null;
+                                        $currentLevel3Slug = $cs['level3Slug'] ?? null;
+                                        $brandCatalogs = $cs['brandCatalogs'] ?? collect();
+                                        $catalogLevel1 = $cs['catalogLevel1'] ?? collect();
+                                        $level1Level2 = $cs['level1Level2'] ?? collect();
+                                        $level2Level3 = $cs['level2Level3'] ?? collect();
                                     @endphp
 
                                     {{-- Step 1: Brand --}}

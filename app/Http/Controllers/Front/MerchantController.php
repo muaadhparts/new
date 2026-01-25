@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Front;
 
 use App\Domain\Identity\Models\User;
-use App\Domain\Catalog\Models\CatalogItem;
 use App\Classes\MuaadhMailer;
 use App\Domain\Commerce\Models\ChatThread;
 use App\Domain\Commerce\Models\ChatEntry;
-use App\Domain\Catalog\Models\QualityBrand;
-use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Services\MerchantCatalogService;
 use Illuminate\{
     Http\Request,
     Support\Facades\DB
@@ -16,15 +14,16 @@ use Illuminate\{
 
 class MerchantController extends FrontBaseController
 {
+    public function __construct(
+        private MerchantCatalogService $merchantCatalogService
+    ) {
+        parent::__construct();
+    }
+
     public function index(Request $request, $slug)
     {
-        $sort   = $request->sort;
-        $pageby = $request->pageby;
-        $qualityBrandFilter = $request->input('quality_brand', []);
-        $branchFilter = $request->input('branch', []);
-
-        $string = str_replace('-', ' ', $slug);
-        $merchant = User::where('shop_name', '=', $string)->first();
+        // Find merchant by slug
+        $merchant = $this->merchantCatalogService->findMerchantBySlug($slug);
 
         // If no merchant found, try static page or 404
         if (empty($merchant)) {
@@ -35,144 +34,32 @@ class MerchantController extends FrontBaseController
             return view('frontend.static-content', compact('page'));
         }
 
-        $data['merchant']     = $merchant;
+        $data['merchant'] = $merchant;
         $data['categories'] = collect();
 
-        // Get Brand Qualities available for this merchant
-        $merchantQualityIds = DB::table('merchant_items')
-            ->where('user_id', $merchant->id)
-            ->where('status', 1)
-            ->whereNotNull('quality_brand_id')
-            ->distinct()
-            ->pluck('quality_brand_id');
+        // Get filter options from service (merchant-scoped)
+        $data['quality_brands'] = $this->merchantCatalogService->getAvailableQualityBrands($merchant->id);
+        $data['branches'] = $this->merchantCatalogService->getAvailableBranches($merchant->id);
 
-        $data['quality_brands'] = QualityBrand::whereIn('id', $merchantQualityIds)->get();
+        // Get latest products (platform-wide)
+        $data['latest_products'] = $this->merchantCatalogService->getLatestProducts(5);
 
-        // Get branches for this merchant that have items
-        $merchantBranchIds = DB::table('merchant_items')
-            ->where('user_id', $merchant->id)
-            ->where('status', 1)
-            ->whereNotNull('merchant_branch_id')
-            ->distinct()
-            ->pluck('merchant_branch_id');
+        // Build filters from request
+        $filters = [
+            'quality_brand' => $request->input('quality_brand', []),
+            'branch' => $request->input('branch', []),
+            'sort' => $request->sort,
+            'pageby' => $request->pageby,
+            'type' => $request->has('type') ? $request->type : null,
+        ];
 
-        $data['branches'] = MerchantBranch::whereIn('id', $merchantBranchIds)
-            ->where('status', 1)
-            ->orderBy('branch_name', 'asc')
-            ->get();
-
-        // Latest items: based on merchant_items (active + merchant enabled)
-        $data['latest_products'] = CatalogItem::status(1)
-            ->whereLatest(1)
-            ->whereHas('merchantItems', function ($q) {
-                $q->where('status', 1)
-                  ->whereHas('user', function ($u) {
-                      $u->where('is_merchant', 2);
-                  });
-            })
-            ->with(['merchantItems' => function ($q) {
-                $q->where('status', 1)->with('user:id,is_merchant');
-            }])
-            ->withCount('catalogReviews')
-            ->withAvg('catalogReviews', 'rating')
-            ->latest('catalog_items.id')
-            ->take(5)
-            ->get();
-
-        // Build merchant items query with price, discount and sort filters
-        $prods = CatalogItem::query();
-
-        // Eager load merchantItems to avoid N+1 query
-        $prods = $prods->with([
-            'brand:id,name,name_ar,photo',
-            'merchantItems' => function ($q) use ($merchant) {
-                $q->where('user_id', $merchant->id)
-                  ->where('status', 1)
-                  ->with(['user:id,is_merchant,shop_name,shop_name_ar', 'qualityBrand:id,name_en,name_ar,logo']);
-            }
-        ]);
-
-        // Filter by specific merchant, Quality Brand, and Branch via merchant_items
-        $prods = $prods->whereHas('merchantItems', function ($q) use ($merchant, $qualityBrandFilter, $branchFilter, $request) {
-            $q->where('user_id', $merchant->id)
-              ->where('status', 1);
-
-            // Filter by Quality Brand
-            if (!empty($qualityBrandFilter)) {
-                $q->whereIn('quality_brand_id', (array) $qualityBrandFilter);
-            }
-
-            // Filter by Branch
-            if (!empty($branchFilter)) {
-                $q->whereIn('merchant_branch_id', (array) $branchFilter);
-            }
-
-            // Discount filter (type) from merchant_items
-            if ($request->has('type')) {
-                $q->where('is_discount', 1)
-                  ->where('discount_date', '>=', date('Y-m-d'));
-            }
-        });
-
-        // Sort results
-        $prods = $prods->when($sort, function ($query, $sort) use ($merchant) {
-            $isArabic = app()->getLocale() === 'ar';
-
-            if ($sort === 'name_asc') {
-                if ($isArabic) {
-                    return $query->orderByRaw("CASE WHEN catalog_items.label_ar IS NOT NULL AND catalog_items.label_ar != '' THEN 0 ELSE 1 END ASC")
-                                 ->orderByRaw("COALESCE(NULLIF(catalog_items.label_ar, ''), NULLIF(catalog_items.label_en, ''), catalog_items.name) ASC");
-                } else {
-                    return $query->orderByRaw("CASE WHEN catalog_items.label_en IS NOT NULL AND catalog_items.label_en != '' THEN 0 ELSE 1 END ASC")
-                                 ->orderByRaw("COALESCE(NULLIF(catalog_items.label_en, ''), NULLIF(catalog_items.label_ar, ''), catalog_items.name) ASC");
-                }
-            }
-
-            return match ($sort) {
-                'price_desc' => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) desc', [$merchant->id]),
-                'part_number' => $query->orderBy('catalog_items.part_number', 'asc'),
-                default => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]),
-            };
-        });
-
-        // Default sort if not specified (price_asc)
-        if (empty($sort)) {
-            $prods = $prods->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]);
-        }
-
-        // Load reviews
-        $prods = $prods->withCount('catalogReviews')
-                       ->withAvg('catalogReviews', 'rating');
-
-        // Pagination
-        $perPage = isset($pageby) ? (int) $pageby : (int) ($this->gs->page_count ?? 12);
-        $prods   = $prods->paginate($perPage);
-
-        // Set display price to be this merchant's price specifically
-        // Use preloaded relation instead of new query (avoid N+1)
-        $prods->getCollection()->transform(function ($item) use ($merchant) {
-            // Use preloaded relation
-            $mp = $item->merchantItems->first();
-
-            if ($mp) {
-                // Store merchant item for use in view
-                $item->merchant_merchant_item = $mp;
-
-                // Use merchant price calculation function from MerchantItem
-                if (method_exists($mp, 'merchantSizePrice')) {
-                    $item->price = $mp->merchantSizePrice();
-                } else {
-                    // Simple fallback if function not available
-                    $item->price = $mp->price;
-                }
-            } else {
-                $item->merchant_merchant_item = null;
-                $item->price = null;
-            }
-            return $item;
-        });
-
-        $data['vprods'] = $prods;
+        // Get filtered catalog items
+        $defaultPerPage = (int) ($this->gs->page_count ?? 12);
+        $data['vprods'] = $this->merchantCatalogService->getFilteredCatalogItems(
+            $merchant->id,
+            $filters,
+            $defaultPerPage
+        );
 
         if ($request->ajax()) {
             $data['ajax_check'] = 1;

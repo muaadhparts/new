@@ -24,6 +24,7 @@ class NavigationContext implements ContextInterface
     private $monetaryUnits = null;
     private $languages = null;
     private $connectConfig = null;
+    private $mobileBrandsJson = null;
 
     public function load(): void
     {
@@ -83,6 +84,38 @@ class NavigationContext implements ContextInterface
                 'gredirect' => $socialLogin['google_redirect'] ?? null,
             ];
         });
+
+        // Build mobile brands JSON (for mobile_menu.blade.php)
+        $this->mobileBrandsJson = $this->buildMobileBrandsJson();
+    }
+
+    /**
+     * Build JSON data for mobile navigation
+     * Pre-computed here to avoid logic in blade templates
+     *
+     * @return array
+     */
+    private function buildMobileBrandsJson(): array
+    {
+        if (!$this->brands) {
+            return [];
+        }
+
+        $locale = app()->getLocale();
+        $isArabic = $locale === 'ar';
+
+        return $this->brands->map(function($brand) use ($isArabic) {
+            return [
+                'slug' => $brand->slug,
+                'name' => $isArabic ? ($brand->name_ar ?: $brand->name) : $brand->name,
+                'subs' => $brand->catalogs ? $brand->catalogs->map(function($catalog) use ($isArabic) {
+                    return [
+                        'slug' => $catalog->slug,
+                        'name' => $isArabic ? ($catalog->name_ar ?: $catalog->name) : $catalog->name,
+                    ];
+                })->values()->toArray() : []
+            ];
+        })->values()->toArray();
     }
 
     public function toArray(): array
@@ -92,6 +125,8 @@ class NavigationContext implements ContextInterface
             'pages' => $this->pages,
             'monetaryUnits' => $this->monetaryUnits,
             'languges' => $this->languages,
+            // Mobile navigation JSON
+            'mobileBrandsJson' => $this->mobileBrandsJson,
             // Legacy alias - static_content table was dropped
             // Empty collection so views don't error
             'static_content' => collect([]),
@@ -108,6 +143,7 @@ class NavigationContext implements ContextInterface
         $this->monetaryUnits = null;
         $this->languages = null;
         $this->connectConfig = null;
+        $this->mobileBrandsJson = null;
         Cache::forget('connect_config_legacy');
     }
 

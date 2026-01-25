@@ -11,69 +11,41 @@ use App\Domain\Commerce\Models\ChatThread;
 use App\Domain\Commerce\Models\ChatEntry;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Identity\Models\User;
+use App\Domain\Merchant\Services\MerchantCatalogService;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Validator;
 
 class MerchantController extends Controller
 {
+    public function __construct(
+        protected MerchantCatalogService $merchantCatalogService
+    ) {}
+
     public function index(Request $request, $shop_name)
     {
         try {
-            $minprice = $request->min;
-            $maxprice = $request->max;
-            $sort = $request->sort;
-            $string = str_replace('-', ' ', $shop_name);
-            $merchant = User::where('shop_name', '=', $string)->first();
+            // Find merchant by slug
+            $merchant = $this->merchantCatalogService->findMerchantBySlug($shop_name);
+
             if (!$merchant) {
                 return response()->json(['status' => false, 'data' => [], 'error' => ["message" => "Shop name not found."]]);
             }
+
             $data['merchant'] = new MerchantResource($merchant);
 
-            // CatalogItem-first: Query catalog items that have merchant offers from this merchant
-            $query = CatalogItem::whereHas('merchantItems', function($q) use ($merchant) {
-                    $q->where('user_id', $merchant->id)->where('status', 1);
-                })
-                ->with(['merchantItems' => function($q) use ($merchant, $minprice, $maxprice) {
-                    $q->where('user_id', $merchant->id)->where('status', 1);
-                    if ($minprice) $q->where('price', '>=', $minprice);
-                    if ($maxprice) $q->where('price', '<=', $maxprice);
-                }]);
+            // Get filtered catalog items using service
+            $filters = [
+                'min' => $request->min,
+                'max' => $request->max,
+                'sort' => $request->sort,
+            ];
 
-            // Apply price filtering via whereHas
-            if ($minprice || $maxprice) {
-                $query->whereHas('merchantItems', function($q) use ($merchant, $minprice, $maxprice) {
-                    $q->where('user_id', $merchant->id)->where('status', 1);
-                    if ($minprice) $q->where('price', '>=', $minprice);
-                    if ($maxprice) $q->where('price', '<=', $maxprice);
-                });
-            }
-
-            // Apply sorting
-            $isArabic = app()->getLocale() === 'ar';
-
-            if ($sort === 'name_asc') {
-                if ($isArabic) {
-                    $query->orderByRaw("CASE WHEN catalog_items.label_ar IS NOT NULL AND catalog_items.label_ar != '' THEN 0 ELSE 1 END ASC")
-                          ->orderByRaw("COALESCE(NULLIF(catalog_items.label_ar, ''), NULLIF(catalog_items.label_en, ''), catalog_items.name) ASC");
-                } else {
-                    $query->orderByRaw("CASE WHEN catalog_items.label_en IS NOT NULL AND catalog_items.label_en != '' THEN 0 ELSE 1 END ASC")
-                          ->orderByRaw("COALESCE(NULLIF(catalog_items.label_en, ''), NULLIF(catalog_items.label_ar, ''), catalog_items.name) ASC");
-                }
-            } else {
-                match ($sort) {
-                    'price_desc' => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) desc', [$merchant->id]),
-                    'part_number' => $query->orderBy('catalog_items.part_number', 'asc'),
-                    default => $query->orderByRaw('(select min(mp.price) from merchant_items mp where mp.catalog_item_id = catalog_items.id and mp.user_id = ? and mp.status = 1) asc', [$merchant->id]),
-                };
-            }
-
-            $prods = $query->get();
+            $prods = $this->merchantCatalogService->getFilteredCatalogItemsForApi($merchant->id, $filters);
 
             // Inject merchant context for each catalog item
-            $prods->each(function($catalogItem) use ($merchant) {
+            $prods->each(function($catalogItem) {
                 $mp = $catalogItem->merchantItems->first();
                 if ($mp) {
                     CatalogItemContextHelper::apply($catalogItem, $mp);

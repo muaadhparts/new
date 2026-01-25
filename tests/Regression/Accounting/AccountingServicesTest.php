@@ -3,53 +3,35 @@
 namespace Tests\Regression\Accounting;
 
 use Tests\TestCase;
-use App\Services\AccountLedgerService;
-use App\Services\AccountingEntryService;
-use App\Services\AccountingReportService;
-use App\Services\MerchantAccountingService;
-use App\Services\CourierAccountingService;
-use App\Domain\Accounting\Services\AccountLedgerService as DomainAccountLedgerService;
-use App\Domain\Accounting\Services\AccountingEntryService as DomainAccountingEntryService;
-use App\Domain\Accounting\Services\AccountingReportService as DomainAccountingReportService;
-use App\Domain\Accounting\Services\MerchantAccountingService as DomainMerchantAccountingService;
-use App\Domain\Accounting\Services\CourierAccountingService as DomainCourierAccountingService;
+use App\Domain\Accounting\Services\AccountLedgerService;
+use App\Domain\Accounting\Services\AccountingEntryService;
+use App\Domain\Accounting\Services\AccountingReportService;
+use App\Domain\Accounting\Services\MerchantAccountingService;
+use App\Domain\Accounting\Services\CourierAccountingService;
 
 /**
  * Regression Tests for Accounting Domain Services
  *
- * Phase 8: Services Migration
- *
- * This test ensures backward compatibility after moving services
- * from App\Services to App\Domain\Accounting\Services.
+ * Tests to ensure all Accounting domain services are properly structured
+ * and can be resolved from the container.
  */
 class AccountingServicesTest extends TestCase
 {
-    // =========================================================================
-    // BACKWARD COMPATIBILITY TESTS
-    // =========================================================================
-
-    /** @test */
-    public function old_account_ledger_service_extends_domain_service()
-    {
-        $service = new AccountLedgerService();
-        $this->assertInstanceOf(DomainAccountLedgerService::class, $service);
-    }
-
-    /** @test */
-    public function old_accounting_entry_service_extends_domain_service()
-    {
-        $service = new AccountingEntryService();
-        $this->assertInstanceOf(DomainAccountingEntryService::class, $service);
-    }
-
     // =========================================================================
     // ACCOUNT LEDGER SERVICE TESTS
     // =========================================================================
 
     /** @test */
+    public function account_ledger_service_can_be_resolved()
+    {
+        $service = app(AccountLedgerService::class);
+        $this->assertInstanceOf(AccountLedgerService::class, $service);
+    }
+
+    /** @test */
     public function account_ledger_service_has_party_management_methods()
     {
-        $service = new AccountLedgerService();
+        $service = app(AccountLedgerService::class);
 
         $this->assertTrue(method_exists($service, 'getPlatformParty'));
         $this->assertTrue(method_exists($service, 'getPartyFromReference'));
@@ -62,7 +44,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function account_ledger_service_has_debt_recording_methods()
     {
-        $service = new AccountLedgerService();
+        $service = app(AccountLedgerService::class);
 
         $this->assertTrue(method_exists($service, 'recordDebt'));
         $this->assertTrue(method_exists($service, 'recordFee'));
@@ -72,7 +54,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function account_ledger_service_has_settlement_methods()
     {
-        $service = new AccountLedgerService();
+        $service = app(AccountLedgerService::class);
 
         $this->assertTrue(method_exists($service, 'recordSettlement'));
         $this->assertTrue(method_exists($service, 'createSettlementBatch'));
@@ -81,7 +63,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function account_ledger_service_has_report_methods()
     {
-        $service = new AccountLedgerService();
+        $service = app(AccountLedgerService::class);
 
         $this->assertTrue(method_exists($service, 'getPartySummary'));
         $this->assertTrue(method_exists($service, 'getAccountStatement'));
@@ -94,9 +76,16 @@ class AccountingServicesTest extends TestCase
     // =========================================================================
 
     /** @test */
+    public function accounting_entry_service_can_be_resolved()
+    {
+        $service = app(AccountingEntryService::class);
+        $this->assertInstanceOf(AccountingEntryService::class, $service);
+    }
+
+    /** @test */
     public function accounting_entry_service_has_party_management_methods()
     {
-        $service = new AccountingEntryService();
+        $service = app(AccountingEntryService::class);
 
         $this->assertTrue(method_exists($service, 'getPlatformParty'));
         $this->assertTrue(method_exists($service, 'getOrCreateMerchantParty'));
@@ -108,7 +97,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function accounting_entry_service_has_order_entry_methods()
     {
-        $service = new AccountingEntryService();
+        $service = app(AccountingEntryService::class);
 
         $this->assertTrue(method_exists($service, 'createOrderEntries'));
     }
@@ -116,7 +105,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function accounting_entry_service_has_collection_methods()
     {
-        $service = new AccountingEntryService();
+        $service = app(AccountingEntryService::class);
 
         $this->assertTrue(method_exists($service, 'recordCodCollection'));
     }
@@ -124,7 +113,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function accounting_entry_service_has_settlement_methods()
     {
-        $service = new AccountingEntryService();
+        $service = app(AccountingEntryService::class);
 
         $this->assertTrue(method_exists($service, 'recordSettlementToMerchant'));
         $this->assertTrue(method_exists($service, 'recordCourierSettlement'));
@@ -135,7 +124,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function accounting_entry_service_has_cancellation_methods()
     {
-        $service = new AccountingEntryService();
+        $service = app(AccountingEntryService::class);
 
         $this->assertTrue(method_exists($service, 'reversePurchaseEntries'));
     }
@@ -143,7 +132,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function accounting_entry_service_has_reporting_methods()
     {
-        $service = new AccountingEntryService();
+        $service = app(AccountingEntryService::class);
 
         $this->assertTrue(method_exists($service, 'getSalesSummaryFromLedger'));
         $this->assertTrue(method_exists($service, 'getMerchantStatement'));
@@ -152,87 +141,55 @@ class AccountingServicesTest extends TestCase
     }
 
     // =========================================================================
-    // DEPENDENCY INJECTION TESTS
-    // =========================================================================
-
-    /** @test */
-    public function account_ledger_service_can_be_resolved_from_container()
-    {
-        $service = app(AccountLedgerService::class);
-        $this->assertInstanceOf(DomainAccountLedgerService::class, $service);
-    }
-
-    /** @test */
-    public function accounting_entry_service_can_be_resolved_from_container()
-    {
-        $service = app(AccountingEntryService::class);
-        $this->assertInstanceOf(DomainAccountingEntryService::class, $service);
-    }
-
-    /** @test */
-    public function domain_account_ledger_service_can_be_resolved_from_container()
-    {
-        $service = app(DomainAccountLedgerService::class);
-        $this->assertInstanceOf(DomainAccountLedgerService::class, $service);
-    }
-
-    /** @test */
-    public function domain_accounting_entry_service_can_be_resolved_from_container()
-    {
-        $service = app(DomainAccountingEntryService::class);
-        $this->assertInstanceOf(DomainAccountingEntryService::class, $service);
-    }
-
-    // =========================================================================
     // ACCOUNTING REPORT SERVICE TESTS
     // =========================================================================
 
     /** @test */
-    public function old_accounting_report_service_extends_domain_service()
+    public function accounting_report_service_can_be_resolved()
     {
         $service = app(AccountingReportService::class);
-        $this->assertInstanceOf(DomainAccountingReportService::class, $service);
+        $this->assertInstanceOf(AccountingReportService::class, $service);
     }
 
     /** @test */
     public function accounting_report_service_has_platform_report_method()
     {
-        $service = new AccountingReportService(new AccountingEntryService());
+        $service = app(AccountingReportService::class);
         $this->assertTrue(method_exists($service, 'getPlatformReport'));
     }
 
     /** @test */
     public function accounting_report_service_has_tax_report_method()
     {
-        $service = new AccountingReportService(new AccountingEntryService());
+        $service = app(AccountingReportService::class);
         $this->assertTrue(method_exists($service, 'getTaxReport'));
     }
 
     /** @test */
     public function accounting_report_service_has_receivables_payables_method()
     {
-        $service = new AccountingReportService(new AccountingEntryService());
+        $service = app(AccountingReportService::class);
         $this->assertTrue(method_exists($service, 'getReceivablesPayablesReport'));
     }
 
     /** @test */
     public function accounting_report_service_has_merchants_summary_method()
     {
-        $service = new AccountingReportService(new AccountingEntryService());
+        $service = app(AccountingReportService::class);
         $this->assertTrue(method_exists($service, 'getMerchantsSummaryReport'));
     }
 
     /** @test */
     public function accounting_report_service_has_couriers_report_method()
     {
-        $service = new AccountingReportService(new AccountingEntryService());
+        $service = app(AccountingReportService::class);
         $this->assertTrue(method_exists($service, 'getCouriersReport'));
     }
 
     /** @test */
     public function accounting_report_service_has_shipping_companies_report_method()
     {
-        $service = new AccountingReportService(new AccountingEntryService());
+        $service = app(AccountingReportService::class);
         $this->assertTrue(method_exists($service, 'getShippingCompaniesReport'));
     }
 
@@ -241,37 +198,37 @@ class AccountingServicesTest extends TestCase
     // =========================================================================
 
     /** @test */
-    public function old_merchant_accounting_service_extends_domain_service()
+    public function merchant_accounting_service_can_be_resolved()
     {
-        $service = new MerchantAccountingService();
-        $this->assertInstanceOf(DomainMerchantAccountingService::class, $service);
+        $service = app(MerchantAccountingService::class);
+        $this->assertInstanceOf(MerchantAccountingService::class, $service);
     }
 
     /** @test */
     public function merchant_accounting_service_has_merchant_report_method()
     {
-        $service = new MerchantAccountingService();
+        $service = app(MerchantAccountingService::class);
         $this->assertTrue(method_exists($service, 'getMerchantReport'));
     }
 
     /** @test */
     public function merchant_accounting_service_has_merchant_statement_method()
     {
-        $service = new MerchantAccountingService();
+        $service = app(MerchantAccountingService::class);
         $this->assertTrue(method_exists($service, 'getMerchantStatement'));
     }
 
     /** @test */
     public function merchant_accounting_service_has_merchant_tax_report_method()
     {
-        $service = new MerchantAccountingService();
+        $service = app(MerchantAccountingService::class);
         $this->assertTrue(method_exists($service, 'getMerchantTaxReport'));
     }
 
     /** @test */
     public function merchant_accounting_service_has_admin_report_methods()
     {
-        $service = new MerchantAccountingService();
+        $service = app(MerchantAccountingService::class);
         $this->assertTrue(method_exists($service, 'getAdminMerchantReport'));
         $this->assertTrue(method_exists($service, 'getAdminTaxReport'));
         $this->assertTrue(method_exists($service, 'getAdminCommissionReport'));
@@ -280,7 +237,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function merchant_accounting_service_has_helper_methods()
     {
-        $service = new MerchantAccountingService();
+        $service = app(MerchantAccountingService::class);
         $this->assertTrue(method_exists($service, 'calculateCommission'));
         $this->assertTrue(method_exists($service, 'getMerchantTaxSetting'));
         $this->assertTrue(method_exists($service, 'getMerchantCommissionSetting'));
@@ -293,10 +250,10 @@ class AccountingServicesTest extends TestCase
     // =========================================================================
 
     /** @test */
-    public function old_courier_accounting_service_extends_domain_service()
+    public function courier_accounting_service_can_be_resolved()
     {
-        $service = new CourierAccountingService();
-        $this->assertInstanceOf(DomainCourierAccountingService::class, $service);
+        $service = app(CourierAccountingService::class);
+        $this->assertInstanceOf(CourierAccountingService::class, $service);
     }
 
     /** @test */
@@ -309,7 +266,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function courier_accounting_service_has_courier_methods()
     {
-        $service = new CourierAccountingService();
+        $service = app(CourierAccountingService::class);
         $this->assertTrue(method_exists($service, 'getAvailableCouriersForCity'));
         $this->assertTrue(method_exists($service, 'canDeliverToCity'));
         $this->assertTrue(method_exists($service, 'getCouriersWithPricesForCity'));
@@ -318,7 +275,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function courier_accounting_service_has_recording_methods()
     {
-        $service = new CourierAccountingService();
+        $service = app(CourierAccountingService::class);
         $this->assertTrue(method_exists($service, 'recordCodCollection'));
         $this->assertTrue(method_exists($service, 'recordDeliveryFeeEarned'));
     }
@@ -326,7 +283,7 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function courier_accounting_service_has_report_methods()
     {
-        $service = new CourierAccountingService();
+        $service = app(CourierAccountingService::class);
         $this->assertTrue(method_exists($service, 'getCourierBalance'));
         $this->assertTrue(method_exists($service, 'getCourierReport'));
         $this->assertTrue(method_exists($service, 'getAdminCouriersReport'));
@@ -335,34 +292,9 @@ class AccountingServicesTest extends TestCase
     /** @test */
     public function courier_accounting_service_has_settlement_methods()
     {
-        $service = new CourierAccountingService();
+        $service = app(CourierAccountingService::class);
         $this->assertTrue(method_exists($service, 'getUnsettledDeliveriesForCourier'));
         $this->assertTrue(method_exists($service, 'calculateSettlementAmount'));
         $this->assertTrue(method_exists($service, 'markDeliveryAsDelivered'));
-    }
-
-    // =========================================================================
-    // CONTAINER RESOLUTION TESTS
-    // =========================================================================
-
-    /** @test */
-    public function domain_accounting_report_service_can_be_resolved_from_container()
-    {
-        $service = app(DomainAccountingReportService::class);
-        $this->assertInstanceOf(DomainAccountingReportService::class, $service);
-    }
-
-    /** @test */
-    public function domain_merchant_accounting_service_can_be_resolved_from_container()
-    {
-        $service = app(DomainMerchantAccountingService::class);
-        $this->assertInstanceOf(DomainMerchantAccountingService::class, $service);
-    }
-
-    /** @test */
-    public function domain_courier_accounting_service_can_be_resolved_from_container()
-    {
-        $service = app(DomainCourierAccountingService::class);
-        $this->assertInstanceOf(DomainCourierAccountingService::class, $service);
     }
 }

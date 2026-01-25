@@ -6,18 +6,16 @@ use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Shipping\Models\ShipmentTracking;
 use App\Domain\Shipping\Services\TryotoService;
 use App\Domain\Shipping\Services\ShipmentTrackingService;
+use App\Domain\Shipping\Services\MerchantShipmentQueryService;
 use Illuminate\Http\Request;
 
 class ShipmentController extends MerchantBaseController
 {
-    protected $tryotoService;
-    protected $trackingService;
-
-    public function __construct()
-    {
+    public function __construct(
+        protected ShipmentTrackingService $trackingService,
+        protected MerchantShipmentQueryService $queryService
+    ) {
         parent::__construct();
-        $this->tryotoService = new TryotoService();
-        $this->trackingService = app(ShipmentTrackingService::class);
     }
 
     /**
@@ -31,20 +29,8 @@ class ShipmentController extends MerchantBaseController
         // Get statistics
         $stats = $this->trackingService->getMerchantStats($merchantId);
 
-        // Get unique tracking numbers with latest status
-        $shipments = ShipmentTracking::where('merchant_id', $merchantId)
-            ->whereIn('id', function ($sub) use ($merchantId, $status) {
-                $sub->selectRaw('MAX(id)')
-                    ->from('shipment_trackings')
-                    ->where('merchant_id', $merchantId)
-                    ->when($status, function ($q) use ($status) {
-                        $q->where('status', $status);
-                    })
-                    ->groupBy('tracking_number');
-            })
-            ->with('purchase:id,purchase_number,customer_name,pay_amount')
-            ->orderBy('occurred_at', 'desc')
-            ->paginate(20);
+        // Get paginated shipments using service
+        $shipments = $this->queryService->getPaginatedShipments($merchantId, $status);
 
         return view('merchant.shipments.index', compact('stats', 'shipments', 'status'));
     }
@@ -56,14 +42,12 @@ class ShipmentController extends MerchantBaseController
     {
         $merchantId = $this->user->id;
 
-        $shipment = ShipmentTracking::where('merchant_id', $merchantId)
-            ->where('tracking_number', $trackingNumber)
-            ->latest('occurred_at')
-            ->firstOrFail();
+        $shipment = $this->queryService->getLatestByTrackingNumber($merchantId, $trackingNumber);
+        if (!$shipment) {
+            abort(404);
+        }
 
-        $history = ShipmentTracking::where('tracking_number', $trackingNumber)
-            ->orderBy('occurred_at', 'desc')
-            ->get();
+        $history = $this->queryService->getTrackingHistory($trackingNumber);
 
         $purchase = Purchase::find($shipment->purchase_id);
 
@@ -84,9 +68,10 @@ class ShipmentController extends MerchantBaseController
     {
         $merchantId = $this->user->id;
 
-        $shipment = ShipmentTracking::where('merchant_id', $merchantId)
-            ->where('tracking_number', $trackingNumber)
-            ->firstOrFail();
+        $shipment = $this->queryService->getByTrackingNumber($merchantId, $trackingNumber);
+        if (!$shipment) {
+            abort(404);
+        }
 
         // Check if can be cancelled
         if (in_array($shipment->status, [ShipmentTracking::STATUS_DELIVERED, ShipmentTracking::STATUS_CANCELLED, ShipmentTracking::STATUS_RETURNED])) {
@@ -119,9 +104,10 @@ class ShipmentController extends MerchantBaseController
     {
         $merchantId = $this->user->id;
 
-        $shipment = ShipmentTracking::where('merchant_id', $merchantId)
-            ->where('tracking_number', $trackingNumber)
-            ->firstOrFail();
+        $shipment = $this->queryService->getByTrackingNumber($merchantId, $trackingNumber);
+        if (!$shipment) {
+            abort(404);
+        }
 
         // Only API shipments can be refreshed
         if ($shipment->integration_type !== ShipmentTracking::INTEGRATION_API) {
@@ -157,23 +143,14 @@ class ShipmentController extends MerchantBaseController
     public function export(Request $request)
     {
         $merchantId = $this->user->id;
-        $status = $request->get('status');
-        $dateFrom = $request->get('date_from');
-        $dateTo = $request->get('date_to');
 
-        $query = ShipmentTracking::where('merchant_id', $merchantId)
-            ->with('purchase:id,purchase_number,customer_name,pay_amount')
-            ->when($status, function ($q) use ($status) {
-                $q->where('status', $status);
-            })
-            ->when($dateFrom, function ($q) use ($dateFrom) {
-                $q->whereDate('occurred_at', '>=', $dateFrom);
-            })
-            ->when($dateTo, function ($q) use ($dateTo) {
-                $q->whereDate('occurred_at', '<=', $dateTo);
-            })
-            ->orderBy('occurred_at', 'desc')
-            ->get();
+        $filters = [
+            'status' => $request->get('status'),
+            'date_from' => $request->get('date_from'),
+            'date_to' => $request->get('date_to'),
+        ];
+
+        $shipments = $this->queryService->getShipmentsForExport($merchantId, $filters);
 
         $filename = 'shipments_' . date('Y-m-d_His') . '.csv';
 
@@ -182,7 +159,7 @@ class ShipmentController extends MerchantBaseController
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ];
 
-        $callback = function () use ($query) {
+        $callback = function () use ($shipments) {
             $file = fopen('php://output', 'w');
             // UTF-8 BOM for Excel
             fprintf($file, chr(0xEF) . chr(0xBB) . chr(0xBF));
@@ -199,7 +176,7 @@ class ShipmentController extends MerchantBaseController
                 'Date',
             ]);
 
-            foreach ($query as $shipment) {
+            foreach ($shipments as $shipment) {
                 fputcsv($file, [
                     $shipment->tracking_number,
                     $shipment->purchase->purchase_number ?? 'N/A',
@@ -229,21 +206,18 @@ class ShipmentController extends MerchantBaseController
         $updated = 0;
         $failed = 0;
 
+        // Fetch all API shipments at once
+        $apiShipments = $this->queryService->getApiShipmentsByTrackingNumbers($merchantId, $trackingNumbers);
+        $validTrackingNumbers = $apiShipments->pluck('tracking_number')->unique()->toArray();
+
         $tryotoService = (new TryotoService())->forMerchant($merchantId);
 
-        foreach ($trackingNumbers as $tracking) {
-            $shipment = ShipmentTracking::where('merchant_id', $merchantId)
-                ->where('tracking_number', $tracking)
-                ->where('integration_type', ShipmentTracking::INTEGRATION_API)
-                ->first();
-
-            if ($shipment) {
-                $result = $tryotoService->trackShipment($tracking);
-                if ($result['success']) {
-                    $updated++;
-                } else {
-                    $failed++;
-                }
+        foreach ($validTrackingNumbers as $tracking) {
+            $result = $tryotoService->trackShipment($tracking);
+            if ($result['success']) {
+                $updated++;
+            } else {
+                $failed++;
             }
         }
 

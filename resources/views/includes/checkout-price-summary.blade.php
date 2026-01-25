@@ -19,7 +19,7 @@
 --}}
 
 @php
-    use App\Services\CheckoutPriceService;
+    use App\Domain\Commerce\Services\CheckoutPriceService;
 
     $currentStep = $step ?? 1;
     $merchantId = $merchant_id ?? null;

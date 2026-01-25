@@ -1,68 +1,59 @@
-{{-- resources/views/partials/catalogItem.blade.php - Quick View Modal --}}
+{{-- resources/views/partials/catalog-item.blade.php - Quick View Modal --}}
 {{-- Uses catalog-unified.css for styling --}}
 
 @php
-    /**
-     * اختيار التاجر لعمليات السلة/العرض في المودال:
-     * - أولًا من ?user= في الاستعلام
-     * - أو من catalogItem->merchant_user_id (إذا حقنه الكنترولر)
-     * - أو من catalogItem->user_id كـ fallback أخير
-     */
-    // Alias: الكنترولر يرسل $catalogItem لكن المتغير الجديد هو $catalogItem
-    $catalogItem = $catalogItem;
-    $merchantUserId = (int) (request()->get('user') ?? ($catalogItem->merchant_user_id ?? $catalogItem->user_id ?? 0));
-
-    // صورة أساسية
-    $mainPhoto = filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL)
-        ? $catalogItem->photo
-        : (($catalogItem->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
-
-    // MerchantItem من الكنترولر
-    $mp = $mp ?? null;
-    $brand = $brand ?? null;
-
-    // السعر
-    $rawPrice = $catalogItem->price ?? null;
-    $rawPrev  = $catalogItem->previous_price ?? null;
-
-    $forceMerchant = request()->has('user') || isset($catalogItem->merchant_user_id);
-    if ($forceMerchant) {
-        $priceHtml = $rawPrice !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrice) : '-';
-        $prevHtml  = $rawPrev  !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrev)  : null;
+    // Use QuickViewDTO when available (pre-computed in Controller)
+    if (isset($quickView) && $quickView instanceof \App\Domain\Catalog\DTOs\QuickViewDTO) {
+        $catalogItem = $quickView->catalogItem;
+        $mp = $quickView->merchantItem;
+        $merchantUserId = $quickView->merchantUserId;
+        $mainPhoto = $quickView->mainPhoto;
+        $priceHtml = $quickView->priceHtml;
+        $prevHtml = $quickView->prevPriceHtml;
+        $avg = $quickView->avgRating;
+        $count = $quickView->reviewCount;
+        $qualityBrand = $quickView->qualityBrand;
+        $merchant = $quickView->merchant;
+        $minQty = $quickView->minQty;
+        $stock = $quickView->stock;
+        $inStock = $quickView->inStock;
+        $preordered = $quickView->preordered;
+        $canBuy = $quickView->canBuy;
     } else {
-        $priceHtml = method_exists($catalogItem, 'showPrice')
-            ? $catalogItem->showPrice()
-            : (\App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrice ?? 0));
-        $prevHtml  = (method_exists($catalogItem, 'showPreviousPrice') && $catalogItem->showPreviousPrice())
-            ? $catalogItem->showPreviousPrice()
-            : ($rawPrev !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrev) : null);
+        // Legacy fallback: compute data inline (for backward compatibility)
+        $mp = $mp ?? null;
+        $merchantUserId = (int) (request()->get('user') ?? ($catalogItem->merchant_user_id ?? $catalogItem->user_id ?? 0));
+
+        $mainPhoto = filter_var($catalogItem->photo ?? '', FILTER_VALIDATE_URL)
+            ? $catalogItem->photo
+            : (($catalogItem->photo ?? null) ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png'));
+
+        $rawPrice = $catalogItem->price ?? null;
+        $rawPrev  = $catalogItem->previous_price ?? null;
+        $forceMerchant = request()->has('user') || isset($catalogItem->merchant_user_id);
+
+        if ($forceMerchant) {
+            $priceHtml = $rawPrice !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrice) : '-';
+            $prevHtml  = $rawPrev  !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrev)  : null;
+        } else {
+            $priceHtml = method_exists($catalogItem, 'showPrice')
+                ? $catalogItem->showPrice()
+                : (\App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrice ?? 0));
+            $prevHtml  = (method_exists($catalogItem, 'showPreviousPrice') && $catalogItem->showPreviousPrice())
+                ? $catalogItem->showPreviousPrice()
+                : ($rawPrev !== null ? \App\Domain\Catalog\Models\CatalogItem::convertPrice($rawPrev) : null);
+        }
+
+        $avg = $catalogItem->catalog_reviews_avg_rating ?? null;
+        $count = null;
+        $qualityBrand = $mp?->qualityBrand;
+        $merchant = $mp?->user;
+        $minQty = max(1, (int)($mp?->minimum_qty ?? 1));
+        $stock = (int)($mp?->stock ?? ($catalogItem->stock ?? 999));
+        $inStock = $stock > 0;
+        $preordered = (bool)($mp?->preordered ?? 0);
+        $canBuy = $inStock || $preordered;
     }
-
-    // تقييمات
-    $avg   = $catalogItem->catalog_reviews_avg_rating ?? null;
-    $count = class_exists('App\\Models\\CatalogReview') && method_exists('App\\Models\\CatalogReview', 'reviewCount')
-        ? \App\Domain\Catalog\Models\CatalogTestimonial::reviewCount($catalogItem->id)
-        : null;
-
-    // Quality Brand
-    $qualityBrand = $mp?->qualityBrand;
-
-    // Merchant
-    $merchant = $mp?->user;
-
-    // الحد الأدنى للكمية
-    $minQty = $mp ? (int)($mp->minimum_qty ?? 1) : 1;
-    if ($minQty < 1) $minQty = 1;
-
-    // المخزون
-    $stock = $mp ? (int)($mp->stock ?? 999) : (int)($catalogItem->stock ?? 999);
-    $inStock = $stock > 0;
-
-    // Preorder
-    $preordered = $mp ? (int)($mp->preordered ?? 0) : 0;
-
-    // حالة التوفر
-    $canBuy = $inStock || $preordered;
 @endphp
 
 <div class="catalog-quickview ill-catalogItem" data-catalog-item-id="{{ $catalogItem->id }}" data-merchant-user-id="{{ $merchantUserId }}">
