@@ -458,16 +458,32 @@ class MuaadhSettingController extends OperatorBaseController
         ];
 
         // Save all theme settings to platform_settings
+        // Only save if value is provided in request (not empty)
         foreach ($themeDefaults as $key => $default) {
-            $value = $request->$key ?? $default;
-            PlatformSetting::set('theme', $key, $value);
+            $value = $request->input($key);
+
+            // If value is provided and not empty, save it
+            // If not provided, keep existing value or use default
+            if ($value !== null && $value !== '') {
+                PlatformSetting::set('theme', $key, $value);
+            } else {
+                // Check if value already exists in database
+                $existing = PlatformSetting::get('theme', $key);
+                if ($existing === null) {
+                    // No existing value, use default
+                    PlatformSetting::set('theme', $key, $default);
+                }
+                // If exists, keep the existing value (don't overwrite)
+            }
         }
 
         // Clear cache
         cache()->forget('platform_settings_context');
+        cache()->forget('platform_settings_service_all');
+        \App\Domain\Platform\Models\PlatformSetting::clearCache();
 
-        // Regenerate CSS file with all theme variables
-        $this->generateThemeCss(platformSettings());
+        // Regenerate CSS file using artisan command (reads directly from DB)
+        \Artisan::call('theme:generate-css');
 
         return back()->with('success', __('Theme Builder Settings Updated Successfully'));
     }

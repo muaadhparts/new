@@ -14,11 +14,6 @@
         <div class="d-flex align-items-center gap-3">
             <a href="{{route("front.index")}}"><img class="merchant-res-header-logo d-xl-none" src="{{asset("assets/images/".$gs->logo)}}" alt="logo"></a>
 
-            {{-- Store Menu Toggle (for shopping) --}}
-            <button class="muaadh-mobile-toggle d-xl-none" type="button" name="@lang('Store Menu')">
-                <i class="fas fa-store"></i>
-            </button>
-
             {{-- Dashboard Menu Toggle --}}
             <button class="header-toggle mobile-menu-toggle d-xl-none" type="button" name="@lang('Dashboard Menu')">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48" fill="none">

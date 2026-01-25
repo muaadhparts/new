@@ -13,49 +13,51 @@ class ThemeGenerateCss extends Command
     {
         $this->info('Regenerating theme-colors.css...');
 
-        $ps = platformSettings();
         $cssPath = public_path('assets/front/css/theme-colors.css');
+
+        // Helper to get theme setting directly from database
+        $getTheme = fn($key, $default) => \App\Domain\Platform\Models\PlatformSetting::get('theme', $key, $default);
 
         // ==================================
         // PRIMARY COLORS
         // ==================================
-        $primary = $ps->get('theme_primary', '#c3002f');
-        $primaryHover = $ps->get('theme_primary_hover', '#a00025');
-        $primaryDark = $ps->get('theme_primary_dark', '#8a0020');
-        $primaryLight = $ps->get('theme_primary_light', '#fef2f4');
+        $primary = $getTheme('theme_primary', '#c3002f');
+        $primaryHover = $getTheme('theme_primary_hover', '#a00025');
+        $primaryDark = $getTheme('theme_primary_dark', '#8a0020');
+        $primaryLight = $getTheme('theme_primary_light', '#fef2f4');
 
         // ==================================
         // SECONDARY COLORS
         // ==================================
-        $secondary = $ps->get('theme_secondary', '#1f0300');
-        $secondaryHover = $ps->get('theme_secondary_hover', '#351c1a');
-        $secondaryLight = $ps->get('theme_secondary_light', '#4c3533');
+        $secondary = $getTheme('theme_secondary', '#1f0300');
+        $secondaryHover = $getTheme('theme_secondary_hover', '#351c1a');
+        $secondaryLight = $getTheme('theme_secondary_light', '#4c3533');
 
         // ==================================
         // TEXT COLORS
         // ==================================
-        $textPrimary = $ps->get('theme_text_primary', '#1f0300');
-        $textSecondary = $ps->get('theme_text_secondary', '#4c3533');
-        $textMuted = $ps->get('theme_text_muted', '#796866');
-        $textLight = $ps->get('theme_text_light', '#9a8e8c');
+        $textPrimary = $getTheme('theme_text_primary', '#1f0300');
+        $textSecondary = $getTheme('theme_text_secondary', '#4c3533');
+        $textMuted = $getTheme('theme_text_muted', '#796866');
+        $textLight = $getTheme('theme_text_light', '#9a8e8c');
         $textLighter = '#b7aead';
 
         // ==================================
         // BACKGROUND COLORS
         // ==================================
-        $bgBody = $ps->get('theme_bg_body', '#ffffff');
-        $bgLight = $ps->get('theme_bg_light', '#f8f7f7');
+        $bgBody = $getTheme('theme_bg_body', '#ffffff');
+        $bgLight = $getTheme('theme_bg_light', '#f8f7f7');
         $bgLighter = '#f6f6f6';
-        $bgGray = $ps->get('theme_bg_gray', '#e9e6e6');
-        $bgDark = $ps->get('theme_bg_dark', '#030712');
+        $bgGray = $getTheme('theme_bg_gray', '#e9e6e6');
+        $bgDark = $getTheme('theme_bg_dark', '#030712');
 
         // ==================================
         // STATUS COLORS
         // ==================================
-        $success = $ps->get('theme_success', '#27be69');
-        $warning = $ps->get('theme_warning', '#fac03c');
-        $danger = $ps->get('theme_danger', '#f2415a');
-        $info = $ps->get('theme_info', '#0ea5e9');
+        $success = $getTheme('theme_success', '#27be69');
+        $warning = $getTheme('theme_warning', '#fac03c');
+        $danger = $getTheme('theme_danger', '#f2415a');
+        $info = $getTheme('theme_info', '#0ea5e9');
 
         // ==================================
         // AUTO-CALCULATED TEXT-ON COLORS (WCAG Contrast)
@@ -72,134 +74,134 @@ class ThemeGenerateCss extends Command
         // ==================================
         // BORDER COLORS
         // ==================================
-        $border = $ps->get('theme_border', '#d9d4d4');
-        $borderLight = $ps->get('theme_border_light', '#e9e6e6');
-        $borderDark = $ps->get('theme_border_dark', '#c7c0bf');
+        $border = $getTheme('theme_border', '#d9d4d4');
+        $borderLight = $getTheme('theme_border_light', '#e9e6e6');
+        $borderDark = $getTheme('theme_border_dark', '#c7c0bf');
 
         // ==================================
         // HEADER & FOOTER
         // ==================================
-        $headerBg = $ps->get('theme_header_bg', '#ffffff');
-        $footerBg = $ps->get('theme_footer_bg', '#030712');
-        $footerText = $ps->get('theme_footer_text', '#ffffff');
-        $footerLinkHover = $ps->get('theme_footer_link_hover') ?? $primary;
+        $headerBg = $getTheme('theme_header_bg', '#ffffff');
+        $footerBg = $getTheme('theme_footer_bg', '#030712');
+        $footerText = $getTheme('theme_footer_text', '#ffffff');
+        $footerLinkHover = $getTheme('theme_footer_link_hover', null) ?? $primary;
 
         // ==================================
         // TYPOGRAPHY
         // ==================================
-        $fontPrimary = $ps->get('theme_font_primary', 'Poppins');
-        $fontHeading = $ps->get('theme_font_heading', 'Saira');
-        $fontSizeBase = $ps->get('theme_font_size_base', '16px');
-        $fontSizeSm = $ps->get('theme_font_size_sm', '14px');
-        $fontSizeLg = $ps->get('theme_font_size_lg', '18px');
-        $lineHeight = $ps->get('theme_line_height', '1.5');
+        $fontPrimary = $getTheme('theme_font_primary', 'Poppins');
+        $fontHeading = $getTheme('theme_font_heading', 'Saira');
+        $fontSizeBase = $getTheme('theme_font_size_base', '16px');
+        $fontSizeSm = $getTheme('theme_font_size_sm', '14px');
+        $fontSizeLg = $getTheme('theme_font_size_lg', '18px');
+        $lineHeight = $getTheme('theme_line_height', '1.5');
 
         // ==================================
         // BORDER RADIUS
         // ==================================
-        $radiusXs = $ps->get('theme_radius_xs', '3px');
-        $radiusSm = $ps->get('theme_radius_sm', '4px');
-        $radius = $ps->get('theme_radius', '8px');
-        $radiusLg = $ps->get('theme_radius_lg', '12px');
-        $radiusXl = $ps->get('theme_radius_xl', '16px');
-        $radiusPill = $ps->get('theme_radius_pill', '50px');
+        $radiusXs = $getTheme('theme_radius_xs', '3px');
+        $radiusSm = $getTheme('theme_radius_sm', '4px');
+        $radius = $getTheme('theme_radius', '8px');
+        $radiusLg = $getTheme('theme_radius_lg', '12px');
+        $radiusXl = $getTheme('theme_radius_xl', '16px');
+        $radiusPill = $getTheme('theme_radius_pill', '50px');
 
         // ==================================
         // SHADOWS
         // ==================================
-        $shadowXs = $ps->get('theme_shadow_xs', '0 1px 2px rgba(0,0,0,0.04)');
-        $shadowSm = $ps->get('theme_shadow_sm', '0 1px 3px rgba(0,0,0,0.06)');
-        $shadow = $ps->get('theme_shadow', '0 2px 8px rgba(0,0,0,0.1)');
-        $shadowLg = $ps->get('theme_shadow_lg', '0 4px 16px rgba(0,0,0,0.15)');
-        $shadowXl = $ps->get('theme_shadow_xl', '0 8px 30px rgba(0,0,0,0.2)');
+        $shadowXs = $getTheme('theme_shadow_xs', '0 1px 2px rgba(0,0,0,0.04)');
+        $shadowSm = $getTheme('theme_shadow_sm', '0 1px 3px rgba(0,0,0,0.06)');
+        $shadow = $getTheme('theme_shadow', '0 2px 8px rgba(0,0,0,0.1)');
+        $shadowLg = $getTheme('theme_shadow_lg', '0 4px 16px rgba(0,0,0,0.15)');
+        $shadowXl = $getTheme('theme_shadow_xl', '0 8px 30px rgba(0,0,0,0.2)');
 
         // ==================================
         // BUTTONS
         // ==================================
-        $btnPaddingX = $ps->get('theme_btn_padding_x', '24px');
-        $btnPaddingY = $ps->get('theme_btn_padding_y', '12px');
-        $btnFontSize = $ps->get('theme_btn_font_size', '14px');
-        $btnFontWeight = $ps->get('theme_btn_font_weight', '600');
-        $btnRadius = $ps->get('theme_btn_radius', '8px');
-        $btnShadow = $ps->get('theme_btn_shadow', 'none');
+        $btnPaddingX = $getTheme('theme_btn_padding_x', '24px');
+        $btnPaddingY = $getTheme('theme_btn_padding_y', '12px');
+        $btnFontSize = $getTheme('theme_btn_font_size', '14px');
+        $btnFontWeight = $getTheme('theme_btn_font_weight', '600');
+        $btnRadius = $getTheme('theme_btn_radius', '8px');
+        $btnShadow = $getTheme('theme_btn_shadow', 'none');
 
         // ==================================
         // CARDS
         // ==================================
-        $cardBg = $ps->get('theme_card_bg', '#ffffff');
-        $cardBorder = $ps->get('theme_card_border', '#e9e6e6');
-        $cardRadius = $ps->get('theme_card_radius', '12px');
-        $cardShadow = $ps->get('theme_card_shadow', '0 2px 8px rgba(0,0,0,0.08)');
-        $cardHoverShadow = $ps->get('theme_card_hover_shadow', '0 4px 16px rgba(0,0,0,0.12)');
-        $cardPadding = $ps->get('theme_card_padding', '20px');
+        $cardBg = $getTheme('theme_card_bg', '#ffffff');
+        $cardBorder = $getTheme('theme_card_border', '#e9e6e6');
+        $cardRadius = $getTheme('theme_card_radius', '12px');
+        $cardShadow = $getTheme('theme_card_shadow', '0 2px 8px rgba(0,0,0,0.08)');
+        $cardHoverShadow = $getTheme('theme_card_hover_shadow', '0 4px 16px rgba(0,0,0,0.12)');
+        $cardPadding = $getTheme('theme_card_padding', '20px');
 
         // ==================================
         // HEADER
         // ==================================
-        $headerHeight = $ps->get('theme_header_height', '80px');
-        $headerShadow = $ps->get('theme_header_shadow', '0 2px 10px rgba(0,0,0,0.1)');
-        $headerText = $ps->get('theme_header_text', '#1f0300');
-        $navLinkColor = $ps->get('theme_nav_link_color', '#1f0300');
-        $navLinkHover = $ps->get('theme_nav_link_hover', '#c3002f');
-        $navFontSize = $ps->get('theme_nav_font_size', '15px');
-        $navFontWeight = $ps->get('theme_nav_font_weight', '500');
+        $headerHeight = $getTheme('theme_header_height', '80px');
+        $headerShadow = $getTheme('theme_header_shadow', '0 2px 10px rgba(0,0,0,0.1)');
+        $headerText = $getTheme('theme_header_text', '#1f0300');
+        $navLinkColor = $getTheme('theme_nav_link_color', '#1f0300');
+        $navLinkHover = $getTheme('theme_nav_link_hover', '#c3002f');
+        $navFontSize = $getTheme('theme_nav_font_size', '15px');
+        $navFontWeight = $getTheme('theme_nav_font_weight', '500');
 
         // ==================================
         // FOOTER
         // ==================================
-        $footerPadding = $ps->get('theme_footer_padding', '60px');
-        $footerTextMuted = $ps->get('theme_footer_text_muted', '#d9d4d4');
-        $footerLink = $ps->get('theme_footer_link', '#ffffff');
-        $footerBorder = $ps->get('theme_footer_border', '#374151');
+        $footerPadding = $getTheme('theme_footer_padding', '60px');
+        $footerTextMuted = $getTheme('theme_footer_text_muted', '#d9d4d4');
+        $footerLink = $getTheme('theme_footer_link', '#ffffff');
+        $footerBorder = $getTheme('theme_footer_border', '#374151');
 
         // ==================================
         // INPUTS
         // ==================================
-        $inputHeight = $ps->get('theme_input_height', '48px');
-        $inputBg = $ps->get('theme_input_bg', '#ffffff');
-        $inputBorder = $ps->get('theme_input_border', '#d9d4d4');
-        $inputRadius = $ps->get('theme_input_radius', '8px');
-        $inputFocusBorder = $ps->get('theme_input_focus_border') ?? $primary;
-        $inputFocusShadow = $ps->get('theme_input_focus_shadow') ?? "0 0 0 3px rgba({$this->hexToRgb($primary)},0.1)";
-        $inputPlaceholder = $ps->get('theme_input_placeholder', '#9a8e8c');
+        $inputHeight = $getTheme('theme_input_height', '48px');
+        $inputBg = $getTheme('theme_input_bg', '#ffffff');
+        $inputBorder = $getTheme('theme_input_border', '#d9d4d4');
+        $inputRadius = $getTheme('theme_input_radius', '8px');
+        $inputFocusBorder = $getTheme('theme_input_focus_border', null) ?? $primary;
+        $inputFocusShadow = $getTheme('theme_input_focus_shadow', null) ?? "0 0 0 3px rgba({$this->hexToRgb($primary)},0.1)";
+        $inputPlaceholder = $getTheme('theme_input_placeholder', '#9a8e8c');
 
         // ==================================
         // ITEM CARDS
         // ==================================
-        $itemNameSize = $ps->get('theme_item_name_size', '14px');
-        $itemNameWeight = $ps->get('theme_item_name_weight', '500');
-        $itemPriceSize = $ps->get('theme_item_price_size', '16px');
-        $itemHoverScale = $ps->get('theme_item_hover_scale', '1.02');
+        $itemNameSize = $getTheme('theme_item_name_size', '14px');
+        $itemNameWeight = $getTheme('theme_item_name_weight', '500');
+        $itemPriceSize = $getTheme('theme_item_price_size', '16px');
+        $itemHoverScale = $getTheme('theme_item_hover_scale', '1.02');
 
         // ==================================
         // MODALS
         // ==================================
-        $modalBg = $ps->get('theme_modal_bg', '#ffffff');
-        $modalRadius = $ps->get('theme_modal_radius', '16px');
-        $modalBackdrop = $ps->get('theme_modal_backdrop', 'rgba(0,0,0,0.5)');
+        $modalBg = $getTheme('theme_modal_bg', '#ffffff');
+        $modalRadius = $getTheme('theme_modal_radius', '16px');
+        $modalBackdrop = $getTheme('theme_modal_backdrop', 'rgba(0,0,0,0.5)');
 
         // ==================================
         // TABLES
         // ==================================
-        $tableHeaderBg = $ps->get('theme_table_header_bg', '#f8f7f7');
-        $tableBorder = $ps->get('theme_table_border', '#e9e6e6');
-        $tableHoverBg = $ps->get('theme_table_hover_bg', '#f8f7f7');
+        $tableHeaderBg = $getTheme('theme_table_header_bg', '#f8f7f7');
+        $tableBorder = $getTheme('theme_table_border', '#e9e6e6');
+        $tableHoverBg = $getTheme('theme_table_hover_bg', '#f8f7f7');
 
         // ==================================
         // BADGES
         // ==================================
-        $badgeRadius = $ps->get('theme_badge_radius', '20px');
-        $badgePadding = $ps->get('theme_badge_padding', '4px 12px');
-        $badgeFontSize = $ps->get('theme_badge_font_size', '12px');
-        $badgeFontWeight = $ps->get('theme_badge_font_weight', '600');
+        $badgeRadius = $getTheme('theme_badge_radius', '20px');
+        $badgePadding = $getTheme('theme_badge_padding', '4px 12px');
+        $badgeFontSize = $getTheme('theme_badge_font_size', '12px');
+        $badgeFontWeight = $getTheme('theme_badge_font_weight', '600');
 
         // ==================================
         // SCROLLBAR
         // ==================================
-        $scrollbarWidth = $ps->get('theme_scrollbar_width', '10px');
-        $scrollbarTrack = $ps->get('theme_scrollbar_track', '#f1f1f1');
-        $scrollbarThumb = $ps->get('theme_scrollbar_thumb', '#c1c1c1');
-        $scrollbarThumbHover = $ps->get('theme_scrollbar_thumb_hover', '#a1a1a1');
+        $scrollbarWidth = $getTheme('theme_scrollbar_width', '10px');
+        $scrollbarTrack = $getTheme('theme_scrollbar_track', '#f1f1f1');
+        $scrollbarThumb = $getTheme('theme_scrollbar_thumb', '#c1c1c1');
+        $scrollbarThumbHover = $getTheme('theme_scrollbar_thumb_hover', '#a1a1a1');
 
         // Convert hex to RGB
         $primaryRgb = $this->hexToRgb($primary);
@@ -209,16 +211,16 @@ class ThemeGenerateCss extends Command
         $infoRgb = $this->hexToRgb($info);
 
         // Calculate light colors for status
-        $successLight = $ps->get('theme_success_light') ?? $this->lightenColor($success, 0.9);
-        $warningLight = $ps->get('theme_warning_light') ?? $this->lightenColor($warning, 0.9);
-        $dangerLight = $ps->get('theme_danger_light') ?? $this->lightenColor($danger, 0.9);
-        $infoLight = $ps->get('theme_info_light') ?? $this->lightenColor($info, 0.9);
+        $successLight = $getTheme('theme_success_light', null) ?? $this->lightenColor($success, 0.9);
+        $warningLight = $getTheme('theme_warning_light', null) ?? $this->lightenColor($warning, 0.9);
+        $dangerLight = $getTheme('theme_danger_light', null) ?? $this->lightenColor($danger, 0.9);
+        $infoLight = $getTheme('theme_info_light', null) ?? $this->lightenColor($info, 0.9);
 
         // Calculate hover colors for status
-        $successHover = $ps->get('theme_success_hover') ?? $this->darkenColor($success, 0.15);
-        $warningHover = $ps->get('theme_warning_hover') ?? $this->darkenColor($warning, 0.15);
-        $dangerHover = $ps->get('theme_danger_hover') ?? $this->darkenColor($danger, 0.15);
-        $infoHover = $ps->get('theme_info_hover') ?? $this->darkenColor($info, 0.15);
+        $successHover = $getTheme('theme_success_hover', null) ?? $this->darkenColor($success, 0.15);
+        $warningHover = $getTheme('theme_warning_hover', null) ?? $this->darkenColor($warning, 0.15);
+        $dangerHover = $getTheme('theme_danger_hover', null) ?? $this->darkenColor($danger, 0.15);
+        $infoHover = $getTheme('theme_info_hover', null) ?? $this->darkenColor($info, 0.15);
 
         $timestamp = now()->format('Y-m-d H:i:s');
 

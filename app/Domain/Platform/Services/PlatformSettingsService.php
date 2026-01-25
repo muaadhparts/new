@@ -195,6 +195,12 @@ class PlatformSettingsService
             $flat['page_count'] = $stats['page_count'] ?? 0;
             $flat['favorite_count'] = $stats['favorite_count'] ?? 0;
 
+            // Theme - include all theme settings directly
+            $theme = $allSettings['theme'] ?? [];
+            foreach ($theme as $key => $value) {
+                $flat[$key] = $value;
+            }
+
             return (object) $flat;
         });
     }
