@@ -2,7 +2,7 @@
 
 namespace App\Domain\Shipping\Services;
 
-use App\Domain\Platform\Models\City;
+use App\Domain\Shipping\Models\City;
 use App\Domain\Identity\Models\User;
 use App\Domain\Merchant\Models\MerchantBranch;
 use Illuminate\Support\Facades\Log;

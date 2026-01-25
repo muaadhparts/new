@@ -66,7 +66,7 @@ class CheckoutMerchantController extends Controller
         }
 
         // Get Google Maps API key
-        $googleMapsApiKey = \App\Domain\Platform\Models\ApiCredential::getCredential('google_maps', 'api_key');
+        $googleMapsApiKey = \App\Domain\Merchant\Models\ApiCredential::getCredential('google_maps', 'api_key');
 
         // Get currency
         $curr = $this->checkoutService->getPriceCalculator()->getMonetaryUnit();

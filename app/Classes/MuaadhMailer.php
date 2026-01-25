@@ -3,8 +3,8 @@
 namespace App\Classes;
 
 use App\{
-    Models\Purchase,
-    Models\CommsBlueprint
+    Domain\Commerce\Models\Purchase,
+    Domain\Platform\Models\CommsBlueprint
 };
 use Barryvdh\DomPDF\Facade\Pdf;
 use PHPMailer\PHPMailer\PHPMailer;

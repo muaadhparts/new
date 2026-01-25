@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Domain\Platform\Models\Country;
-use App\Domain\Platform\Models\City;
+use App\Domain\Shipping\Models\Country;
+use App\Domain\Shipping\Models\City;
 use App\Domain\Shipping\Services\GoogleMapsService;
 use App\Domain\Shipping\Services\TryotoLocationService;
 use App\Domain\Shipping\Services\CountrySyncService;
@@ -669,7 +669,7 @@ class GeocodingController extends Controller
         if ($country) {
             $nearestCity = $this->findNearestCityInCountry($latitude, $longitude, $country->id, 100);
             if ($nearestCity) {
-                $city = \App\Domain\Platform\Models\City::find($nearestCity['id']);
+                $city = \App\Domain\Shipping\Models\City::find($nearestCity['id']);
                 Log::info('getTaxFromCoordinates: Found city by coordinates', [
                     'city_id' => $city->id,
                     'city_name' => $city->city_name,
@@ -680,7 +680,7 @@ class GeocodingController extends Controller
 
         // ثانياً: إذا لم نجد بالإحداثيات، نبحث بالاسم
         if (!$city && $cityName) {
-            $city = \App\Domain\Platform\Models\City::where('city_name', 'LIKE', '%' . $cityName . '%')
+            $city = \App\Domain\Shipping\Models\City::where('city_name', 'LIKE', '%' . $cityName . '%')
                 ->orWhere('city_name', 'LIKE', '%' . $this->normalizeArabicCity($cityName) . '%')
                 ->first();
 
@@ -890,7 +890,7 @@ class GeocodingController extends Controller
             sin(radians(latitude))
         ))";
 
-        $city = \App\Domain\Platform\Models\City::select('cities.*')
+        $city = \App\Domain\Shipping\Models\City::select('cities.*')
             ->selectRaw("{$haversine} AS distance_km", [$latitude, $longitude, $latitude])
             ->where('country_id', $countryId)
             ->whereNotNull('latitude')

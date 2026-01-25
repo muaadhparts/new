@@ -1642,8 +1642,8 @@
 
 /* Quality Brand Badge - Same as catalogItem cards */
 .catalog-quality-badge {
-    background: #dbeafe !important;
-    color: #1e40af !important;
+    background: var(--theme-primary-light, #dbeafe) !important;
+    color: var(--theme-primary, #1e40af) !important;
     padding: 2px 8px !important;
     border-radius: 4px !important;
     display: inline-flex !important;
@@ -3184,7 +3184,7 @@ select option {
 
 .modal-backdrop.show {
     opacity: 0.7 !important;
-    background: #000 !important;
+    background: var(--theme-bg-dark, #000) !important;
 }
 
 .muaadh-modal {
@@ -4116,8 +4116,8 @@ select option {
 }
 
 .m-cart__item-quality {
-    background: #dbeafe;
-    color: #1e40af;
+    background: var(--theme-primary-light, #dbeafe);
+    color: var(--theme-primary, #1e40af);
 }
 
 .m-cart__brand-logo,
@@ -4207,8 +4207,8 @@ select option {
     align-items: center;
     gap: 4px;
     font-size: 11px;
-    color: var(--action-warning, #f59e0b);
-    background: #fef3c7;
+    color: var(--action-warning, var(--theme-warning, #f59e0b));
+    background: var(--theme-warning-light, #fef3c7);
     padding: 2px 8px;
     border-radius: 4px;
     margin-top: 6px;
@@ -4369,8 +4369,8 @@ select option {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: #fef2f2;
-    color: var(--action-danger, #ef4444);
+    background: var(--theme-danger-light, #fef2f2);
+    color: var(--theme-danger, #ef4444);
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -4378,8 +4378,8 @@ select option {
 }
 
 .m-cart__remove-btn:hover {
-    background: var(--action-danger, #ef4444);
-    color: #fff;
+    background: var(--theme-danger, #ef4444);
+    color: var(--theme-text-on-danger, #fff);
 }
 
 /* Cart Summary */

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Shipping\Contracts;
 
-use App\Domain\Platform\Models\City;
+use App\Domain\Shipping\Models\City;
 use App\Domain\Merchant\Models\MerchantBranch;
 
 /**

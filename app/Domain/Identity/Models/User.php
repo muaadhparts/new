@@ -27,8 +27,8 @@ use App\Domain\Shipping\Models\Shipping;
 use App\Domain\Catalog\Models\AbuseFlag;
 use App\Domain\Merchant\Models\TrustBadge;
 use App\Domain\Identity\Models\NetworkPresence;
-use App\Domain\Platform\Models\City;
-use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
 
 /**
  * User Model - Buyers and Merchants

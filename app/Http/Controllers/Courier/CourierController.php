@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\Courier;
 
-use App\Domain\Platform\Models\City;
-use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
 use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Domain\Shipping\Models\CourierServiceArea;
-use App\Domain\Shipping\Services\CourierAccountingService;
+use App\Domain\Accounting\Services\CourierAccountingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 

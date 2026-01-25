@@ -3,7 +3,7 @@
 namespace App\Domain\Commerce\Services\MerchantCheckout;
 
 use App\Domain\Identity\Models\User;
-use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\Country;
 use App\Domain\Shipping\Models\Shipping;
 use App\Domain\Merchant\Models\MerchantPayment;
 use App\Domain\Shipping\Models\CourierServiceArea;

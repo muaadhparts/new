@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Domain\Identity\Models\User;
-use App\Domain\Platform\Models\City;
-use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Models\Country;
 use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Domain\Commerce\Models\MerchantPurchase;
 

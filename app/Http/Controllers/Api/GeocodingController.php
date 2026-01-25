@@ -8,7 +8,7 @@ use App\Domain\Shipping\Models\Country;
 use App\Domain\Shipping\Services\TryotoLocationService;
 use App\Domain\Shipping\Services\TryotoService;
 use App\Domain\Shipping\Services\CountrySyncService;
-use App\Domain\Platform\Services\ApiCredentialService;
+use App\Domain\Merchant\Services\ApiCredentialService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

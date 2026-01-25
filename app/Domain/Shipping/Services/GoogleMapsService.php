@@ -2,6 +2,7 @@
 
 namespace App\Domain\Shipping\Services;
 
+use App\Domain\Merchant\Services\ApiCredentialService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 

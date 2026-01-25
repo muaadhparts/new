@@ -4,7 +4,7 @@ namespace App\Domain\Commerce\Services\MerchantCheckout;
 
 use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Shipping\Models\Shipping;
-use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\Country;
 use App\Domain\Shipping\Models\CourierServiceArea;
 use Illuminate\Support\Facades\Session;
 

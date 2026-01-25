@@ -6,7 +6,7 @@ use App\Classes\MuaadhMailer;
 use App\Helpers\PurchaseHelper;
 use App\Http\Controllers\Controller;
 // MerchantCart removed - operator cart methods need rewrite
-use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\Country;
 use App\Domain\Platform\Models\MonetaryUnit;
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Platform\Models\FrontendSetting;

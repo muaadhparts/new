@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Front;
 
 use App\Http\Controllers\Controller;
-use App\Domain\Commerce\Services\CustomerLocationService;
+use App\Domain\Shipping\Services\CustomerLocationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
