@@ -894,14 +894,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/stock/progress/{id}', 'Merchant\StockManagementController@getUpdateProgress')->name('merchant-stock-progress');
             //------------ STOCK MANAGEMENT SECTION ENDS ------------
 
-            //------------ MERCHANT PHOTO SECTION ------------
-
-            Route::get('/merchant-photo/show', 'Merchant\MerchantPhotoController@show')->name('merchant-merchant-photo-show');
-            Route::post('/merchant-photo/store', 'Merchant\MerchantPhotoController@store')->name('merchant-merchant-photo-store');
-            Route::get('/merchant-photo/delete', 'Merchant\MerchantPhotoController@destroy')->name('merchant-merchant-photo-delete');
-
-            //------------ MERCHANT PHOTO SECTION ENDS------------
-
             //------------ MERCHANT MY ITEM IMAGES SECTION ------------
             Route::get('/my-items/images', 'Merchant\MyItemImageController@index')->name('merchant-my-item-images');
             Route::get('/my-items/images/datatables', 'Merchant\MyItemImageController@datatables')->name('merchant-my-item-images-datatables');
@@ -930,13 +922,6 @@ Route::group(['middleware' => 'maintenance'], function () {
             Route::get('/purchase/event/clear/{id}', 'Merchant\CatalogEventController@clearPurchaseEvents')->name('merchant-purchase-event-clear');
 
             //------------ MERCHANT CATALOG EVENT SECTION ENDS ------------
-
-            // Merchant Shipping Cost
-            Route::get('/banner', 'Merchant\MerchantController@banner')->name('merchant-banner');
-
-            // Merchant Social
-            Route::get('/social', 'Merchant\MerchantController@social')->name('merchant-social-index');
-            Route::post('/social/update', 'Merchant\MerchantController@socialupdate')->name('merchant-social-update');
 
             Route::get('/withdraw/datatables', 'Merchant\WithdrawController@datatables')->name('merchant-wt-datatables');
             Route::get('/withdraw', 'Merchant\WithdrawController@index')->name('merchant-wt-index');
@@ -1060,8 +1045,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         Route::post('/profile', 'User\UserController@profileupdate')->name('user-profile-update');
         // User Profile Ends
 
-        // Display important Codes For Payment Gatweways
-        Route::get('/payment/{slug1}/{slug2}', 'User\UserController@loadpayment')->name('user.load.payment');
         // Get cities by country (states removed) - moved to GeocodingController
         Route::get('/country/wise/city/{country_id}', [\App\Http\Controllers\Api\GeocodingController::class, 'getCitiesByCountry'])->name('country.wise.city');
         Route::get('/user/country/wise/city', [\App\Http\Controllers\Api\GeocodingController::class, 'getCitiesByCountry'])->name('country.wise.city.user');
@@ -1116,7 +1099,6 @@ Route::group(['middleware' => 'maintenance'], function () {
         // User Support Tickets Ends
 
         Route::get('/affilate/program', 'User\UserController@affilate_code')->name('user-affilate-program');
-        Route::get('/affilate/history', 'User\UserController@affilate_history')->name('user-affilate-history');
 
         Route::get('/affilate/withdraw', 'User\WithdrawController@index')->name('user-wwt-index');
         Route::get('/affilate/withdraw/create', 'User\WithdrawController@create')->name('user-wwt-create');
@@ -1395,8 +1377,6 @@ Route::group(['middleware' => 'maintenance'], function () {
     Route::get('/checkout/payment/{slug1}/{slug2}', function() {
         return redirect()->route('merchant-cart.index')->with('info', __('Please proceed with checkout from the cart page'));
     })->name('front.load.payment');
-
-    Route::get('/payment/successfull/{get}', 'Front\FrontendController@success')->name('front.payment.success');
 
     // MERCHANT SECTION
 

@@ -5,7 +5,6 @@ namespace App\Http\Controllers\User;
 use App\Domain\Accounting\Models\ReferralCommission;
 use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Domain\Commerce\Models\Purchase;
-use App\Domain\Merchant\Models\MerchantPayment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -68,11 +67,6 @@ class UserController extends UserBaseController
         return redirect()->route('user-profile')->with('success', __('Profile Updated Successfully!'));
     }
 
-    public function pricingPlans()
-    {
-        return view('user.pricing-plans');
-    }
-
     public function resetform()
     {
         return view('user.reset');
@@ -94,17 +88,6 @@ class UserController extends UserBaseController
         }
         $user->update($input);
         return back()->with('success', __('Password Updated Successfully!'));
-    }
-
-    public function loadpayment($slug1, $slug2)
-    {
-        $data['payment'] = $slug1;
-        $data['pay_id'] = $slug2;
-        $data['gateway'] = '';
-        if ($data['pay_id'] != 0) {
-            $data['gateway'] = MerchantPayment::findOrFail($data['pay_id']);
-        }
-        return view('load.payment-user', $data);
     }
 
     public function favorite($id1, $id2)

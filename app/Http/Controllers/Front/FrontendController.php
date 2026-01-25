@@ -380,9 +380,4 @@ class FrontendController extends FrontBaseController
             return redirect('/');
         }
     }
-
-    public function success(Request $request, $get)
-    {
-        return view('frontend.thank', compact('get'));
-    }
 }

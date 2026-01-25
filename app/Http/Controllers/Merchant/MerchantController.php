@@ -142,61 +142,11 @@ class MerchantController extends MerchantBaseController
 
     }
 
-    // Spcial Settings All post requests will be done in this method
-    public function socialupdate(Request $request)
-    {
-        //--- Logic Section
-        $input = $request->all();
-        $data = $this->user;
-        if ($request->f_check == "") {
-            $input['f_check'] = 0;
-        }
-        if ($request->t_check == "") {
-            $input['t_check'] = 0;
-        }
-
-        if ($request->g_check == "") {
-            $input['g_check'] = 0;
-        }
-
-        if ($request->l_check == "") {
-            $input['l_check'] = 0;
-        }
-        $data->update($input);
-        //--- Logic Section Ends
-        //--- Redirect Section
-        $msg = __('Data Updated Successfully.');
-        return response()->json($msg);
-        //--- Redirect Section Ends
-
-    }
-
     //*** GET Request
     public function profile()
     {
         $data = $this->user;
         return view('merchant.profile', compact('data'));
-    }
-
-    //*** GET Request
-    public function ship()
-    {
-        $data = $this->user;
-        return view('merchant.ship', compact('data'));
-    }
-
-    //*** GET Request
-    public function banner()
-    {
-        $data = $this->user;
-        return view('merchant.banner', compact('data'));
-    }
-
-    //*** GET Request
-    public function social()
-    {
-        $data = $this->user;
-        return view('merchant.social', compact('data'));
     }
 
     //*** GET Request
