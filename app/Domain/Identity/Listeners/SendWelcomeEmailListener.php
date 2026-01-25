@@ -3,7 +3,7 @@
 namespace App\Domain\Identity\Listeners;
 
 use App\Domain\Identity\Events\UserRegisteredEvent;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

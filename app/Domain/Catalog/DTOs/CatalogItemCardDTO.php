@@ -2,8 +2,8 @@
 
 namespace App\Domain\Catalog\DTOs;
 
-use App\Models\MerchantItem;
-use App\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\CatalogItem;
 use Illuminate\Support\Collection;
 
 /**

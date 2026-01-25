@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
-use App\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantItem;
 
 /**
  * QualityBrand Model - Aftermarket parts brands

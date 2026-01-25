@@ -2,7 +2,7 @@
 
 namespace App\Domain\Platform\Services;
 
-use App\Models\PlatformSetting;
+use App\Domain\Platform\Models\PlatformSetting;
 use Illuminate\Support\Facades\Cache;
 
 /**

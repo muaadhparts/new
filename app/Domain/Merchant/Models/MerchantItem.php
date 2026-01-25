@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\DB;
-use App\Models\User;
-use App\Models\CatalogItem;
-use App\Models\QualityBrand;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\QualityBrand;
 
 /**
  * MerchantItem Model - Merchant's inventory items

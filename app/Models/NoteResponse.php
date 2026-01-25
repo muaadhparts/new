@@ -2,26 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Domain\Commerce\Models\NoteResponse as DomainNoteResponse;
 
-class NoteResponse extends Model
+/**
+ * @deprecated Use App\Domain\Commerce\Models\NoteResponse directly
+ */
+class NoteResponse extends DomainNoteResponse
 {
-    protected $table = 'note_responses';
-
-    protected $fillable = ['buyer_note_id', 'user_id', 'text'];
-
-    public function user()
-    {
-        return $this->belongsTo('App\Models\User')->withDefault();
-    }
-
-    public function buyerNote()
-    {
-        return $this->belongsTo('App\Models\BuyerNote', 'buyer_note_id')->withDefault();
-    }
-
-    public function subResponses()
-    {
-        return $this->hasMany('App\Models\SubReply');
-    }
 }

@@ -4,6 +4,7 @@ namespace App\Domain\Identity\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Password;
+use App\Domain\Identity\Models\User;
 
 /**
  * Register Request
@@ -110,7 +111,7 @@ class RegisterRequest extends FormRequest
             return null;
         }
 
-        return \App\Models\User::where('referral_code', $this->referral_code)
+        return User::where('referral_code', $this->referral_code)
             ->value('id');
     }
 }

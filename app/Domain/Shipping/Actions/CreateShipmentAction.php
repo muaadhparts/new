@@ -3,8 +3,8 @@
 namespace App\Domain\Shipping\Actions;
 
 use App\Domain\Shipping\Services\ShipmentTrackingService;
-use App\Models\MerchantPurchase;
-use App\Models\ShipmentTracking;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Shipping\Models\ShipmentTracking;
 
 /**
  * CreateShipmentAction - Create shipment tracking record

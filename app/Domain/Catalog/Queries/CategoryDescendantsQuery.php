@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Queries;
 
-use App\Models\NewCategory;
+use App\Domain\Catalog\Models\NewCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 

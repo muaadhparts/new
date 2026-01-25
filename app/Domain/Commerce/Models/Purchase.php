@@ -7,8 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Log;
-use App\Models\User;
-use App\Models\Shipping;
+use App\Domain\Identity\Models\User;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Catalog\Models\CatalogEvent;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\DeliveryCourier;
 
 /**
  * Purchase Model - Customer orders
@@ -202,7 +205,7 @@ class Purchase extends Model
 
     public function catalogEvents(): HasMany
     {
-        return $this->hasMany(\App\Models\CatalogEvent::class, 'purchase_id');
+        return $this->hasMany(CatalogEvent::class, 'purchase_id');
     }
 
     public function notifications(): HasMany
@@ -222,12 +225,12 @@ class Purchase extends Model
 
     public function shipmentTrackings(): HasMany
     {
-        return $this->hasMany(\App\Models\ShipmentTracking::class, 'purchase_id')->orderBy('occurred_at', 'desc');
+        return $this->hasMany(ShipmentTracking::class, 'purchase_id')->orderBy('occurred_at', 'desc');
     }
 
     public function deliveryCouriers(): HasMany
     {
-        return $this->hasMany(\App\Models\DeliveryCourier::class, 'purchase_id');
+        return $this->hasMany(DeliveryCourier::class, 'purchase_id');
     }
 
     // =========================================================================

@@ -5,9 +5,9 @@ namespace App\Domain\Identity\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Models\DeliveryCourier;
-use App\Models\CourierServiceArea;
-use App\Models\AccountParty;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Accounting\Models\AccountParty;
 
 /**
  * Courier Model - Delivery couriers

@@ -4,8 +4,8 @@ namespace App\Domain\Shipping\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Purchase;
-use App\Models\User;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\Models\User;
 
 /**
  * ShipmentTracking Model - Unified tracking system

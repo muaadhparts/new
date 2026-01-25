@@ -2,7 +2,7 @@
 
 namespace App\Domain\Identity\Policies;
 
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

@@ -3,7 +3,7 @@
 namespace App\Domain\Shipping\Actions;
 
 use App\Domain\Shipping\Services\ShipmentTrackingService;
-use App\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\ShipmentTracking;
 
 /**
  * CancelShipmentAction - Cancel a shipment

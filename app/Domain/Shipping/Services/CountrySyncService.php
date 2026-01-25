@@ -2,8 +2,8 @@
 
 namespace App\Domain\Shipping\Services;
 
-use App\Models\City;
-use App\Models\Country;
+use App\Domain\Platform\Models\City;
+use App\Domain\Platform\Models\Country;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;

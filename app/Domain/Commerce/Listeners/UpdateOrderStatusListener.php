@@ -3,7 +3,7 @@
 namespace App\Domain\Commerce\Listeners;
 
 use App\Domain\Commerce\Events\PaymentReceivedEvent;
-use App\Models\Purchase;
+use App\Domain\Commerce\Models\Purchase;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

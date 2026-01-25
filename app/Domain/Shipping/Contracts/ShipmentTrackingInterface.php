@@ -2,7 +2,7 @@
 
 namespace App\Domain\Shipping\Contracts;
 
-use App\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\ShipmentTracking;
 use Illuminate\Support\Collection;
 
 /**

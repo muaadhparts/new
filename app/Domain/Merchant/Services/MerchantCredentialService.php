@@ -2,7 +2,7 @@
 
 namespace App\Domain\Merchant\Services;
 
-use App\Models\MerchantCredential;
+use App\Domain\Merchant\Models\MerchantCredential;
 use Illuminate\Support\Facades\Cache;
 
 class MerchantCredentialService

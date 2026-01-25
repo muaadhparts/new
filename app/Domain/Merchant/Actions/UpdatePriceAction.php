@@ -2,7 +2,7 @@
 
 namespace App\Domain\Merchant\Actions;
 
-use App\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantItem;
 
 /**
  * UpdatePriceAction - Update merchant item price

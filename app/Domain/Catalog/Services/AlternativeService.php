@@ -2,8 +2,9 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\Models\MerchantItem;
-use App\Models\SkuAlternative;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\SkuAlternative;
+use App\Domain\Catalog\Models\CatalogItem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -72,7 +73,7 @@ class AlternativeService
         }
 
         // جلب catalog_items مع العلاقات
-        $catalogItems = \App\Models\CatalogItem::whereIn('id', $alternativeCatalogItemIds)
+        $catalogItems = CatalogItem::whereIn('id', $alternativeCatalogItemIds)
             ->with(['fitments.brand'])
             ->get();
 
@@ -115,10 +116,10 @@ class AlternativeService
             $catalogItem->lowest_price = $stats['lowest_price'] ?? null;
             $catalogItem->highest_price = $stats['highest_price'] ?? null;
             $catalogItem->lowest_price_formatted = $stats
-                ? \App\Models\CatalogItem::convertPrice($stats['lowest_price'])
+                ? CatalogItem::convertPrice($stats['lowest_price'])
                 : null;
             $catalogItem->highest_price_formatted = $stats
-                ? \App\Models\CatalogItem::convertPrice($stats['highest_price'])
+                ? CatalogItem::convertPrice($stats['highest_price'])
                 : null;
             $catalogItem->offers_count = $stats['offers_count'] ?? 0;
             return $catalogItem;
@@ -139,7 +140,7 @@ class AlternativeService
      */
     protected function getSelfAsAlternative(int $catalogItemId): Collection
     {
-        $catalogItem = \App\Models\CatalogItem::with(['fitments.brand'])
+        $catalogItem = CatalogItem::with(['fitments.brand'])
             ->find($catalogItemId);
 
         if (!$catalogItem) {
@@ -176,10 +177,10 @@ class AlternativeService
         $catalogItem->lowest_price = $lowestPrice;
         $catalogItem->highest_price = $highestPrice;
         $catalogItem->lowest_price_formatted = $lowestPrice
-            ? \App\Models\CatalogItem::convertPrice($lowestPrice)
+            ? CatalogItem::convertPrice($lowestPrice)
             : null;
         $catalogItem->highest_price_formatted = $highestPrice
-            ? \App\Models\CatalogItem::convertPrice($highestPrice)
+            ? CatalogItem::convertPrice($highestPrice)
             : null;
         $catalogItem->offers_count = $merchantItems->count();
 

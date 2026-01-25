@@ -2,9 +2,9 @@
 
 namespace App\Domain\Shipping\Services;
 
-use App\Models\Purchase;
-use App\Models\ShipmentTracking;
-use App\Models\DeliveryCourier;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Shipping\Models\DeliveryCourier;
 
 /**
  * Service to prepare tracking data for views

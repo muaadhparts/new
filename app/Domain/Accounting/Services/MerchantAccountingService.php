@@ -2,14 +2,14 @@
 
 namespace App\Domain\Accounting\Services;
 
-use App\Models\MonetaryUnit;
-use App\Models\DeliveryCourier;
-use App\Models\MerchantCommission;
-use App\Models\MerchantPayment;
-use App\Models\MerchantPurchase;
-use App\Models\MerchantTaxSetting;
-use App\Models\Shipping;
-use App\Models\User;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Merchant\Models\MerchantPayment;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Merchant\Models\MerchantTaxSetting;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Identity\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**

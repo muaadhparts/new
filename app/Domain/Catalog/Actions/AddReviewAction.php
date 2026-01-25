@@ -2,8 +2,8 @@
 
 namespace App\Domain\Catalog\Actions;
 
-use App\Models\CatalogItem;
-use App\Models\CatalogReview;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogReview;
 use Illuminate\Support\Facades\Auth;
 
 /**

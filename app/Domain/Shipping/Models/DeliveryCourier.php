@@ -2,15 +2,15 @@
 
 namespace App\Domain\Shipping\Models;
 
-use App\Services\PaymentAccountingService;
+use App\Domain\Accounting\Services\PaymentAccountingService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Courier;
-use App\Models\Purchase;
-use App\Models\User;
-use App\Models\MerchantBranch;
-use App\Models\MerchantPurchase;
+use App\Domain\Identity\Models\Courier;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\Models\User;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Commerce\Models\MerchantPurchase;
 
 /**
  * DeliveryCourier - Local Courier Delivery Record

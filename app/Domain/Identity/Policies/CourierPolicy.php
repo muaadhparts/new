@@ -2,8 +2,8 @@
 
 namespace App\Domain\Identity\Policies;
 
-use App\Models\User;
-use App\Models\Courier;
+use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Models\Courier;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

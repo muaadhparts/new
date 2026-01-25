@@ -2,8 +2,8 @@
 
 namespace App\Domain\Commerce\Queries;
 
-use App\Models\Purchase;
-use App\Models\MerchantPurchase;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

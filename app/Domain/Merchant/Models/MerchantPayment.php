@@ -5,7 +5,7 @@ namespace App\Domain\Merchant\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\MonetaryUnit;
+use App\Domain\Platform\Models\MonetaryUnit;
 
 /**
  * MerchantPayment Model - Payment gateways for merchants

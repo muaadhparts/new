@@ -3,31 +3,32 @@
 namespace App\Domain\Identity\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\MerchantItem;
-use App\Models\CatalogItem;
-use App\Models\SupportThread;
-use App\Models\FavoriteSeller;
-use App\Models\MerchantCommission;
-use App\Models\Purchase;
-use App\Models\BuyerNote;
-use App\Models\NoteResponse;
-use App\Models\CatalogReview;
-use App\Models\Withdraw;
-use App\Models\CatalogEvent;
-use App\Models\UserCatalogEvent;
-use App\Models\ChatThread;
-use App\Models\MerchantPurchase;
-use App\Models\Shipping;
-use App\Models\AbuseFlag;
-use App\Models\TrustBadge;
-use App\Models\NetworkPresence;
-use App\Models\City;
-use App\Models\Country;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Commerce\Models\SupportThread;
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\BuyerNote;
+use App\Domain\Commerce\Models\NoteResponse;
+use App\Domain\Catalog\Models\CatalogReview;
+use App\Domain\Accounting\Models\Withdraw;
+use App\Domain\Identity\Models\UserCatalogEvent as CatalogEvent;
+use App\Domain\Identity\Models\UserCatalogEvent;
+use App\Domain\Commerce\Models\ChatThread;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Catalog\Models\AbuseFlag;
+use App\Domain\Merchant\Models\TrustBadge;
+use App\Domain\Identity\Models\NetworkPresence;
+use App\Domain\Platform\Models\City;
+use App\Domain\Platform\Models\Country;
 
 /**
  * User Model - Buyers and Merchants
@@ -45,6 +46,8 @@ use App\Models\Country;
  */
 class User extends Authenticatable implements JWTSubject
 {
+    use HasFactory;
+
     protected $fillable = [
         'name', 'photo', 'zip', 'city', 'city_id', 'country', 'address',
         'phone', 'fax', 'email', 'password', 'affilate_code', 'affilate_income',

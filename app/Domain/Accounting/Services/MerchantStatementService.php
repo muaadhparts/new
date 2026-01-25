@@ -2,10 +2,10 @@
 
 namespace App\Domain\Accounting\Services;
 
-use App\Models\AccountParty;
-use App\Models\AccountingLedger;
-use App\Models\AccountBalance;
-use App\Models\MonetaryUnit;
+use App\Domain\Accounting\Models\AccountParty;
+use App\Domain\Accounting\Models\AccountingLedger;
+use App\Domain\Accounting\Models\AccountBalance;
+use App\Domain\Platform\Models\MonetaryUnit;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 

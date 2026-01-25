@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Observers;
 
-use App\Models\NewCategory;
+use App\Domain\Catalog\Models\NewCategory;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 

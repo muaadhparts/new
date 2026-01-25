@@ -2,8 +2,8 @@
 
 namespace App\Domain\Platform\Services\GlobalData\Contexts;
 
-use App\Services\SEO\Schema\OrganizationSchema;
-use App\Services\SEO\Schema\WebsiteSchema;
+use App\Domain\Platform\Services\SEO\Schema\OrganizationSchema;
+use App\Domain\Platform\Services\SEO\Schema\WebsiteSchema;
 
 /**
  * SeoContext

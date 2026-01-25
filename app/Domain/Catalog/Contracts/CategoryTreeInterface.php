@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Contracts;
 
-use App\Models\NewCategory;
+use App\Domain\Catalog\Models\NewCategory;
 use Illuminate\Support\Collection;
 
 /**

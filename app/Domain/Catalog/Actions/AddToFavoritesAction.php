@@ -2,8 +2,8 @@
 
 namespace App\Domain\Catalog\Actions;
 
-use App\Models\FavoriteSeller;
-use App\Models\MerchantItem;
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Support\Facades\Auth;
 
 /**

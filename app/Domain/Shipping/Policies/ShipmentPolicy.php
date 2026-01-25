@@ -2,8 +2,8 @@
 
 namespace App\Domain\Shipping\Policies;
 
-use App\Models\User;
-use App\Models\ShipmentTracking;
+use App\Domain\Identity\Models\User;
+use App\Domain\Shipping\Models\ShipmentTracking;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

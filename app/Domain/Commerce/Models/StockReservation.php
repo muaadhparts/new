@@ -6,8 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-use App\Models\MerchantItem;
-use App\Models\User;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
 
 /**
  * StockReservation Model - Temporary cart stock reservations

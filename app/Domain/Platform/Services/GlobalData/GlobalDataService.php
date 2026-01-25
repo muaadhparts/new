@@ -2,12 +2,14 @@
 
 namespace App\Domain\Platform\Services\GlobalData;
 
-use App\Services\GlobalData\Contexts\CoreSettingsContext;
-use App\Services\GlobalData\Contexts\ExternalApisContext;
-use App\Services\GlobalData\Contexts\FooterContext;
-use App\Services\GlobalData\Contexts\NavigationContext;
-use App\Services\GlobalData\Contexts\SeoContext;
-use App\Services\GlobalData\Contexts\UserPreferencesContext;
+use App\Domain\Platform\Services\GlobalData\Contexts\CoreSettingsContext;
+use App\Domain\Platform\Services\GlobalData\Contexts\ExternalApisContext;
+use App\Domain\Platform\Services\GlobalData\Contexts\FooterContext;
+use App\Domain\Platform\Services\GlobalData\Contexts\NavigationContext;
+use App\Domain\Platform\Services\GlobalData\Contexts\SeoContext;
+use App\Domain\Platform\Services\GlobalData\Contexts\UserPreferencesContext;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Platform\Models\Language;
 
 /**
  * GlobalDataService - Orchestrator
@@ -122,12 +124,12 @@ class GlobalDataService
         return $this->coreSettings->getSettings();
     }
 
-    public function getMonetaryUnit(): ?\App\Models\MonetaryUnit
+    public function getMonetaryUnit(): ?MonetaryUnit
     {
         return $this->userPreferences->getMonetaryUnit();
     }
 
-    public function getLanguage(): ?\App\Models\Language
+    public function getLanguage(): ?Language
     {
         return $this->userPreferences->getLanguage();
     }

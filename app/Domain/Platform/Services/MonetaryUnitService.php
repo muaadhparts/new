@@ -2,7 +2,7 @@
 
 namespace App\Domain\Platform\Services;
 
-use App\Models\MonetaryUnit;
+use App\Domain\Platform\Models\MonetaryUnit;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;

@@ -5,9 +5,9 @@ namespace App\Domain\Accounting\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Str;
-use App\Models\Purchase;
-use App\Models\MerchantPurchase;
-use App\Models\User;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Identity\Models\User;
 
 /**
  * AccountingLedger Model - Financial transaction log

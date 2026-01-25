@@ -4,7 +4,7 @@ namespace App\Domain\Accounting\Listeners;
 
 use App\Domain\Accounting\Notifications\WithdrawRequestedNotification;
 use App\Domain\Accounting\Notifications\WithdrawApprovedNotification;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

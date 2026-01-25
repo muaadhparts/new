@@ -2,8 +2,8 @@
 
 namespace App\Domain\Commerce\Policies;
 
-use App\Models\User;
-use App\Models\Purchase;
+use App\Domain\Identity\Models\User;
+use App\Domain\Commerce\Models\Purchase;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

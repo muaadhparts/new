@@ -2,9 +2,11 @@
 
 namespace App\Domain\Catalog\Models;
 
-use App\Models\MerchantItem;
-use App\Models\MerchantPhoto;
-use App\Models\MerchantCommission;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantPhoto;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\Domain\Commerce\Models\BuyerNote;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
@@ -203,7 +205,7 @@ class CatalogItem extends Model
 
     public function favorite()
     {
-        return $this->belongsTo('App\Models\FavoriteSeller')->withDefault();
+        return $this->belongsTo(FavoriteSeller::class)->withDefault();
     }
 
     /**
@@ -254,22 +256,17 @@ class CatalogItem extends Model
 
     public function favorites()
     {
-        return $this->hasMany('App\Models\FavoriteSeller', 'catalog_item_id');
+        return $this->hasMany(FavoriteSeller::class, 'catalog_item_id');
     }
 
     public function buyerNotes()
     {
-        return $this->hasMany('App\Models\BuyerNote', 'catalog_item_id');
-    }
-
-    public function clicks()
-    {
-        return $this->hasMany('App\Models\CatalogItemClick', 'catalog_item_id');
+        return $this->hasMany(BuyerNote::class, 'catalog_item_id');
     }
 
     public function abuseFlags()
     {
-        return $this->hasMany('App\Models\AbuseFlag', 'catalog_item_id');
+        return $this->hasMany(AbuseFlag::class, 'catalog_item_id');
     }
 
     /* =========================================================================

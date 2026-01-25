@@ -2,12 +2,12 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\Models\Brand;
-use App\Models\Catalog;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\QualityBrand;
-use App\Models\NewCategory;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\QualityBrand;
+use App\Domain\Catalog\Models\NewCategory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

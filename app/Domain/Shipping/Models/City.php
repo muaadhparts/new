@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Domain\Merchant\Models\MerchantBranch;
 
 /**
  * City Model - City/location data
@@ -66,7 +67,7 @@ class City extends Model
 
     public function merchantBranches(): HasMany
     {
-        return $this->hasMany(\App\Models\MerchantBranch::class, 'city_id');
+        return $this->hasMany(MerchantBranch::class, 'city_id');
     }
 
     // =========================================================

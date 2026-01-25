@@ -2,11 +2,11 @@
 
 namespace App\Domain\Platform\Services\GlobalData\Contexts;
 
-use App\Models\Brand;
-use App\Models\MonetaryUnit;
-use App\Models\Language;
-use App\Models\Page;
-use App\Models\PlatformSetting;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Platform\Models\Language;
+use App\Domain\Platform\Models\Page;
+use App\Domain\Platform\Models\PlatformSetting;
 use Illuminate\Support\Facades\Cache;
 
 /**

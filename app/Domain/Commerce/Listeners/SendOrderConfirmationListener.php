@@ -3,8 +3,8 @@
 namespace App\Domain\Commerce\Listeners;
 
 use App\Domain\Commerce\Events\OrderPlacedEvent;
-use App\Models\Purchase;
-use App\Models\User;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

@@ -2,14 +2,15 @@
 
 namespace App\Domain\Commerce\Services;
 
-use App\Models\MonetaryUnit;
-use App\Models\Shipping;
-use App\Models\MerchantCommission;
-use App\Models\MerchantTaxSetting;
-use App\Models\CourierServiceArea;
-use App\Models\MerchantBranch;
-use App\Services\MonetaryUnitService;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Merchant\Models\MerchantTaxSetting;
+use App\Domain\Merchant\Models\MerchantPayment;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Platform\Services\MonetaryUnitService;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 
@@ -790,7 +791,7 @@ class CheckoutPriceService
             return 'platform';
         }
 
-        $gateway = \App\Models\MerchantPayment::find($paymentGatewayId);
+        $gateway = MerchantPayment::find($paymentGatewayId);
         if (!$gateway) {
             return 'platform';
         }

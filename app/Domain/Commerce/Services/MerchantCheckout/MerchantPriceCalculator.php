@@ -2,11 +2,10 @@
 
 namespace App\Domain\Commerce\Services\MerchantCheckout;
 
-use App\Models\MonetaryUnit;
-use App\Models\Shipping;
-use App\Models\Country;
-use App\Models\State;
-use App\Models\CourierServiceArea;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\CourierServiceArea;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -94,21 +93,14 @@ class MerchantPriceCalculator
 
     /**
      * Get tax rate for location
+     * Note: State-level tax removed as states table doesn't exist
      */
     public function getTaxRateForLocation(?int $countryId, ?int $stateId = null): array
     {
         $taxRate = 0;
         $taxLocation = '';
 
-        if ($stateId) {
-            $state = State::find($stateId);
-            if ($state && $state->tax > 0) {
-                $taxRate = $state->tax;
-                $taxLocation = $state->name;
-            }
-        }
-
-        if ($taxRate == 0 && $countryId) {
+        if ($countryId) {
             $country = Country::find($countryId);
             if ($country && $country->tax > 0) {
                 $taxRate = $country->tax;

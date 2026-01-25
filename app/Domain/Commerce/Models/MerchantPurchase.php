@@ -4,12 +4,12 @@ namespace App\Domain\Commerce\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\Shipping;
-use App\Models\Courier;
-use App\Models\MerchantBranch;
-use App\Models\MerchantPayment;
-use App\Models\SettlementBatch;
+use App\Domain\Identity\Models\User;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Identity\Models\Courier;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Models\MerchantPayment;
+use App\Domain\Accounting\Models\SettlementBatch;
 
 /**
  * MerchantPurchase Model - Per-merchant order record

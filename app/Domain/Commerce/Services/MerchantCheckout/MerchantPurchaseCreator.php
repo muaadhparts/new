@@ -2,18 +2,19 @@
 
 namespace App\Domain\Commerce\Services\MerchantCheckout;
 
-use App\Models\Purchase;
-use App\Models\MerchantPurchase;
-use App\Models\MerchantBranch;
-use App\Models\User;
-use App\Models\MonetaryUnit;
-use App\Models\DeliveryCourier;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Identity\Models\User;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Classes\MuaadhMailer;
 use App\Traits\SavesCustomerShippingChoice;
-use App\Services\PaymentAccountingService;
-use App\Services\AccountLedgerService;
-use App\Services\AccountingEntryService;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Accounting\Services\PaymentAccountingService;
+use App\Domain\Accounting\Services\AccountLedgerService;
+use App\Domain\Accounting\Services\AccountingEntryService;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -221,7 +222,7 @@ class MerchantPurchaseCreator
         array $paymentData
     ): MerchantPurchase {
         // === حساب العمولة من MerchantCommission (المصدر الموحد) ===
-        $commission = \App\Models\MerchantCommission::getOrCreateForMerchant($merchantId);
+        $commission = MerchantCommission::getOrCreateForMerchant($merchantId);
         $grossPrice = $totals['items_total'];
 
         // العمولة = ثابت + (نسبة مئوية * السعر)
@@ -549,7 +550,7 @@ class MerchantPurchaseCreator
             return (int) $paymentData['payment_owner_id'];
         }
 
-        $credentialService = app(\App\Services\MerchantCredentialService::class);
+        $credentialService = app(\App\Domain\Merchant\Services\MerchantCredentialService::class);
 
         $paymentKeyword = $paymentData['keyword'] ?? $paymentData['method'] ?? null;
         if ($paymentKeyword) {

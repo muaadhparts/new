@@ -2,8 +2,8 @@
 
 namespace App\Domain\Accounting\Contracts;
 
-use App\Models\AccountParty;
-use App\Models\AccountingLedger;
+use App\Domain\Accounting\Models\AccountParty;
+use App\Domain\Accounting\Models\AccountingLedger;
 use Illuminate\Support\Collection;
 
 /**

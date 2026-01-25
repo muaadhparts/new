@@ -2,16 +2,16 @@
 
 namespace App\Domain\Shipping\Services;
 
-use App\Models\Purchase;
-use App\Models\ShipmentTracking;
-use App\Models\User;
-use App\Models\City;
-use App\Models\UserCatalogEvent;
-use App\Models\MerchantItem;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Identity\Models\User;
+use App\Domain\Platform\Models\City;
+use App\Domain\Identity\Models\UserCatalogEvent;
+use App\Domain\Merchant\Models\MerchantItem;
 use App\Helpers\PriceHelper;
-use App\Services\ShippingCalculatorService;
-use App\Services\MerchantCredentialService;
-use App\Services\MonetaryUnitService;
+use App\Domain\Shipping\Services\ShippingCalculatorService;
+use App\Domain\Merchant\Services\MerchantCredentialService;
+use App\Domain\Platform\Services\MonetaryUnitService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;

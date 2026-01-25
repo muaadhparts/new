@@ -4,8 +4,8 @@ namespace App\Domain\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
+use App\Domain\Merchant\Models\MerchantItem;
 
 /**
  * CatalogReview Model - Product reviews

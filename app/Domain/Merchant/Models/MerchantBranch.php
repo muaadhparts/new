@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\User;
-use App\Models\City;
-use App\Models\Country;
-use App\Models\DeliveryCourier;
-use App\Models\MerchantPurchase;
+use App\Domain\Identity\Models\User;
+use App\Domain\Platform\Models\City;
+use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Commerce\Models\MerchantPurchase;
 
 /**
  * MerchantBranch Model - Merchant branch/warehouse locations

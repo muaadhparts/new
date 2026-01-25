@@ -2,8 +2,9 @@
 
 namespace App\Domain\Accounting\Services;
 
-use App\Models\MerchantPurchase;
-use App\Models\Purchase;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Models\DeliveryCourier;
 
 /**
  * PaymentAccountingService
@@ -300,7 +301,7 @@ class PaymentAccountingService
     public function getCourierDebtSummary(int $courierId): array
     {
         // Get from DeliveryCourier table for accurate courier-specific data
-        $query = \App\Models\DeliveryCourier::where('courier_id', $courierId)
+        $query = DeliveryCourier::where('courier_id', $courierId)
             ->where('settlement_status', '!=', 'settled');
 
         $codCollected = (clone $query)->where('payment_method', 'cod')->sum('cod_amount');

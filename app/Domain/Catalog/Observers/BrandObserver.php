@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Observers;
 
-use App\Models\Brand;
+use App\Domain\Catalog\Models\Brand;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 

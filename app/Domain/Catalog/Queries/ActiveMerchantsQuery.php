@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Queries;
 
-use App\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 

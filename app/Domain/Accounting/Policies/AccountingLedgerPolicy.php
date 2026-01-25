@@ -2,8 +2,8 @@
 
 namespace App\Domain\Accounting\Policies;
 
-use App\Models\User;
-use App\Models\AccountingLedger;
+use App\Domain\Identity\Models\User;
+use App\Domain\Accounting\Models\AccountingLedger;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

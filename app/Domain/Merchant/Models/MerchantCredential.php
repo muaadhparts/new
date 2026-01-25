@@ -5,7 +5,7 @@ namespace App\Domain\Merchant\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Crypt;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 
 /**
  * MerchantCredential Model - API credentials per merchant

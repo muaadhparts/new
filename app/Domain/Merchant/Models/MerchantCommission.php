@@ -4,7 +4,7 @@ namespace App\Domain\Merchant\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 
 /**
  * MerchantCommission Model - Commission settings per merchant

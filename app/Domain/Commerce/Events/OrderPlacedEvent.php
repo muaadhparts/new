@@ -3,7 +3,7 @@
 namespace App\Domain\Commerce\Events;
 
 use App\Domain\Platform\Events\DomainEvent;
-use App\Models\Purchase;
+use App\Domain\Commerce\Models\Purchase;
 
 /**
  * Event fired when an order is placed

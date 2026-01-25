@@ -3,8 +3,8 @@
 namespace App\Domain\Catalog\Listeners;
 
 use App\Domain\Catalog\Events\ProductReviewedEvent;
-use App\Models\CatalogItem;
-use App\Models\CatalogReview;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogReview;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

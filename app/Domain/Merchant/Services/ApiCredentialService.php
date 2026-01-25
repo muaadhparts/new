@@ -2,7 +2,7 @@
 
 namespace App\Domain\Merchant\Services;
 
-use App\Models\ApiCredential;
+use App\Domain\Merchant\Models\ApiCredential;
 use Illuminate\Support\Facades\Cache;
 
 class ApiCredentialService

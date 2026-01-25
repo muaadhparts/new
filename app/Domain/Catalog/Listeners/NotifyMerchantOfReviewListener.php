@@ -3,9 +3,9 @@
 namespace App\Domain\Catalog\Listeners;
 
 use App\Domain\Catalog\Events\ProductReviewedEvent;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\User;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

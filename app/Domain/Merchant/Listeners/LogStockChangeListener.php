@@ -3,7 +3,7 @@
 namespace App\Domain\Merchant\Listeners;
 
 use App\Domain\Merchant\Events\StockUpdatedEvent;
-use App\Models\MerchantStockUpdate;
+use App\Domain\Merchant\Models\MerchantStockUpdate;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;

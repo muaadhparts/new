@@ -5,9 +5,10 @@ namespace App\Domain\Commerce\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\User;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Commerce\Models\NoteResponse;
 
 /**
  * BuyerNote Model - Buyer notes/questions on items
@@ -48,7 +49,7 @@ class BuyerNote extends Model
 
     public function noteResponses(): HasMany
     {
-        return $this->hasMany(\App\Models\NoteResponse::class);
+        return $this->hasMany(NoteResponse::class);
     }
 
     // =========================================================================

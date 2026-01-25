@@ -2,8 +2,8 @@
 
 namespace App\Domain\Shipping\Contracts;
 
-use App\Models\City;
-use App\Models\MerchantBranch;
+use App\Domain\Platform\Models\City;
+use App\Domain\Merchant\Models\MerchantBranch;
 
 /**
  * ShippingCalculatorInterface - Contract for shipping calculations

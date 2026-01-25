@@ -2,14 +2,13 @@
 
 namespace App\Domain\Commerce\Services\MerchantCheckout;
 
-use App\Models\User;
-use App\Models\Country;
-use App\Models\State;
-use App\Models\Shipping;
-use App\Models\MerchantPayment;
-use App\Models\CourierServiceArea;
-use App\Models\MerchantBranch;
-use App\Services\Cart\MerchantCartManager;
+use App\Domain\Identity\Models\User;
+use App\Domain\Platform\Models\Country;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Merchant\Models\MerchantPayment;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -296,7 +295,7 @@ class MerchantCheckoutService
 
             // Fallback: If still no name, lookup from courier user
             if (empty($courierName) && $courierId > 0) {
-                $courier = \App\Models\User::find($courierId);
+                $courier = User::find($courierId);
                 $courierName = $courier ? ($courier->shop_name ?? $courier->name ?? 'Courier') : 'Courier';
             }
 

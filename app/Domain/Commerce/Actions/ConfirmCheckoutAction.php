@@ -4,7 +4,7 @@ namespace App\Domain\Commerce\Actions;
 
 use App\Domain\Commerce\Services\Cart\MerchantCartManager;
 use App\Domain\Commerce\Services\MerchantCheckout\MerchantPurchaseCreator;
-use App\Models\Purchase;
+use App\Domain\Commerce\Models\Purchase;
 use Illuminate\Support\Facades\DB;
 
 /**

@@ -2,9 +2,9 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\Models\Brand;
-use App\Models\Catalog;
-use App\Models\NewCategory;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\NewCategory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

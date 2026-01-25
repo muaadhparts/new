@@ -2,7 +2,7 @@
 
 namespace App\Domain\Merchant\Queries;
 
-use App\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 

@@ -2,8 +2,9 @@
 
 namespace App\Domain\Platform\Services\GlobalData\Contexts;
 
-use App\Models\FrontendSetting;
-use App\Services\PlatformSettingsService;
+use App\Domain\Platform\Models\FrontendSetting;
+use App\Domain\Platform\Models\PlatformSetting;
+use App\Domain\Platform\Services\PlatformSettingsService;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -51,7 +52,7 @@ class CoreSettingsContext implements ContextInterface
     private function loadSeoSettings(): array
     {
         return Cache::remember('platform_seo_settings', 3600, function () {
-            return \App\Models\PlatformSetting::getGroup('seo');
+            return PlatformSetting::getGroup('seo');
         });
     }
 
@@ -114,7 +115,7 @@ class CoreSettingsContext implements ContextInterface
     public function getSocialLinks(): ?object
     {
         return Cache::remember('platform_social_links', 3600, function () {
-            $socialLinks = \App\Models\PlatformSetting::getGroup('social_links');
+            $socialLinks = PlatformSetting::getGroup('social_links');
             return (object) $socialLinks;
         });
     }

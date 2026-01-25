@@ -4,8 +4,8 @@ namespace App\Domain\Accounting\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\Courier;
+use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Models\Courier;
 
 /**
  * Withdraw Model - Withdrawal requests

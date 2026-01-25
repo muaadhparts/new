@@ -2,7 +2,7 @@
 
 namespace App\Domain\Catalog\Queries;
 
-use App\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogItem;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

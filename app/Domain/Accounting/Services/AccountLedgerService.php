@@ -2,14 +2,14 @@
 
 namespace App\Domain\Accounting\Services;
 
-use App\Models\AccountParty;
-use App\Models\AccountingLedger;
-use App\Models\AccountBalance;
-use App\Models\SettlementBatch;
-use App\Models\MerchantPurchase;
-use App\Models\Purchase;
-use App\Models\User;
-use App\Models\Courier;
+use App\Domain\Accounting\Models\AccountParty;
+use App\Domain\Accounting\Models\AccountingLedger;
+use App\Domain\Accounting\Models\AccountBalance;
+use App\Domain\Accounting\Models\SettlementBatch;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Models\Courier;
 use Illuminate\Support\Facades\DB;
 
 /**

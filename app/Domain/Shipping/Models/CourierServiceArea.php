@@ -5,7 +5,7 @@ namespace App\Domain\Shipping\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Courier;
+use App\Domain\Identity\Models\Courier;
 
 /**
  * CourierServiceArea Model - Courier service coverage areas

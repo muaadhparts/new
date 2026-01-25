@@ -2,10 +2,10 @@
 
 namespace App\Domain\Accounting\Services;
 
-use App\Models\Courier;
-use App\Models\CourierServiceArea;
-use App\Models\DeliveryCourier;
-use App\Models\MerchantBranch;
+use App\Domain\Identity\Models\Courier;
+use App\Domain\Shipping\Models\CourierServiceArea;
+use App\Domain\Shipping\Models\DeliveryCourier;
+use App\Domain\Merchant\Models\MerchantBranch;
 
 /**
  * CourierAccountingService

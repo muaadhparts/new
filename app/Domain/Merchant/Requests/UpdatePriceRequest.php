@@ -3,6 +3,7 @@
 namespace App\Domain\Merchant\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Domain\Merchant\Models\MerchantItem;
 
 /**
  * Update Price Request
@@ -25,8 +26,8 @@ class UpdatePriceRequest extends FormRequest
         $itemId = $this->route('item') ?? $this->merchant_item_id;
 
         if ($itemId) {
-            return \App\Models\MerchantItem::where('id', $itemId)
-                ->where('merchant_id', $user->id)
+            return MerchantItem::where('id', $itemId)
+                ->where('user_id', $user->id)
                 ->exists();
         }
 

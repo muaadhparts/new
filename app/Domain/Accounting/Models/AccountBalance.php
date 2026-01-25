@@ -103,7 +103,7 @@ class AccountBalance extends Model
                 'total_amount' => 0,
                 'pending_amount' => 0,
                 'settled_amount' => 0,
-                'monetary_unit_code' => \App\Services\MonetaryUnitService::BASE_MONETARY_UNIT,
+                'monetary_unit_code' => \App\Domain\Platform\Services\MonetaryUnitService::BASE_MONETARY_UNIT,
                 'transaction_count' => 0,
             ]
         );

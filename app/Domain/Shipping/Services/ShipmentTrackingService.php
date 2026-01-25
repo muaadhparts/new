@@ -2,10 +2,10 @@
 
 namespace App\Domain\Shipping\Services;
 
-use App\Models\ShipmentTracking;
-use App\Models\Purchase;
-use App\Models\Shipping;
-use App\Models\MerchantPurchase;
+use App\Domain\Shipping\Models\ShipmentTracking;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Commerce\Models\MerchantPurchase;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 

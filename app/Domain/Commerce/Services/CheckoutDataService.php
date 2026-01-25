@@ -2,10 +2,10 @@
 
 namespace App\Domain\Commerce\Services;
 
-use App\Models\Country;
-use App\Models\MerchantBranch;
-use App\Models\Shipping;
-use App\Models\User;
+use App\Domain\Platform\Models\Country;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Shipping\Models\Shipping;
+use App\Domain\Identity\Models\User;
 use Illuminate\Support\Collection;
 
 /**

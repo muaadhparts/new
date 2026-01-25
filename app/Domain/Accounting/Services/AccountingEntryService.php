@@ -2,13 +2,15 @@
 
 namespace App\Domain\Accounting\Services;
 
-use App\Models\AccountParty;
-use App\Models\AccountingLedger;
-use App\Models\AccountBalance;
-use App\Models\MerchantPurchase;
-use App\Models\Purchase;
-use App\Models\SettlementBatch;
-use App\Services\MonetaryUnitService;
+use App\Domain\Accounting\Models\AccountParty;
+use App\Domain\Accounting\Models\AccountingLedger;
+use App\Domain\Accounting\Models\AccountBalance;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Accounting\Models\SettlementBatch;
+use App\Domain\Platform\Services\MonetaryUnitService;
+use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Models\Courier;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -53,7 +55,7 @@ class AccountingEntryService
                 'reference_id' => $merchantId,
             ],
             [
-                'name' => optional(\App\Models\User::find($merchantId))->shop_name ?? "Merchant #{$merchantId}",
+                'name' => optional(User::find($merchantId))->shop_name ?? "Merchant #{$merchantId}",
                 'code' => "merchant_{$merchantId}",
                 'is_active' => true,
             ]
@@ -72,7 +74,7 @@ class AccountingEntryService
                 'reference_id' => $courierId,
             ],
             [
-                'name' => optional(\App\Models\Courier::find($courierId))->name ?? "Courier #{$courierId}",
+                'name' => optional(Courier::find($courierId))->name ?? "Courier #{$courierId}",
                 'code' => "courier_{$courierId}",
                 'is_active' => true,
             ]

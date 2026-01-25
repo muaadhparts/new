@@ -2,8 +2,8 @@
 
 namespace App\Domain\Platform\Services\GlobalData\Contexts;
 
-use App\Models\MonetaryUnit;
-use App\Models\Language;
+use App\Domain\Platform\Models\MonetaryUnit;
+use App\Domain\Platform\Models\Language;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 

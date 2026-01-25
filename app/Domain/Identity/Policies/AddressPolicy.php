@@ -2,8 +2,8 @@
 
 namespace App\Domain\Identity\Policies;
 
-use App\Models\User;
-use App\Models\UserAddress;
+use App\Domain\Identity\Models\User;
+use App\Domain\Identity\Models\UserAddress;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

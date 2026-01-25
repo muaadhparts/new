@@ -3,9 +3,9 @@
 namespace App\Domain\Catalog\Services;
 
 use App\DataTransferObjects\CatalogItemCardDTO;
-use App\Models\MerchantItem;
-use App\Models\CatalogItem;
-use App\Models\FavoriteSeller;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Commerce\Models\FavoriteSeller;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;

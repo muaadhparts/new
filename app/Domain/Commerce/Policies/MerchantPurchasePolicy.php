@@ -2,8 +2,8 @@
 
 namespace App\Domain\Commerce\Policies;
 
-use App\Models\User;
-use App\Models\MerchantPurchase;
+use App\Domain\Identity\Models\User;
+use App\Domain\Commerce\Models\MerchantPurchase;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

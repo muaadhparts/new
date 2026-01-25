@@ -3,7 +3,7 @@
 namespace App\Domain\Platform\ViewComposers;
 
 use Illuminate\View\View;
-use App\Services\GlobalData\GlobalDataService;
+use App\Domain\Platform\Services\GlobalData\GlobalDataService;
 
 /**
  * Global Data Composer

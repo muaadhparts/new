@@ -2,7 +2,9 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\Models\Catalog;
+use App\Domain\Catalog\Models\Catalog;
+use App\Domain\Catalog\Models\Brand;
+use App\Domain\Catalog\Models\NewCategory;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
@@ -180,7 +182,7 @@ class CatalogSessionManager
      */
     public function loadBrandAndCatalog(string $brandName, string $catalogCode): array
     {
-        $brand = \App\Models\Brand::with('regions')
+        $brand = Brand::with('regions')
             ->where('name', $brandName)
             ->first();
 
@@ -188,7 +190,7 @@ class CatalogSessionManager
             return ['brand' => null, 'catalog' => null];
         }
 
-        $catalog = \App\Models\Catalog::with(['brand', 'brandRegion'])
+        $catalog = Catalog::with(['brand', 'brandRegion'])
             ->where('code', $catalogCode)
             ->where('brand_id', $brand->id)
             ->first();
@@ -205,7 +207,7 @@ class CatalogSessionManager
      */
     public function loadCategoryWithRelations(int $catalogId, int $brandId, string $fullCode, int $level)
     {
-        return \App\Models\NewCategory::with(['catalog', 'brand', 'periods'])
+        return NewCategory::with(['catalog', 'brand', 'periods'])
             ->where('catalog_id', $catalogId)
             ->where('brand_id', $brandId)
             ->where('full_code', $fullCode)

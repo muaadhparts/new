@@ -2,9 +2,9 @@
 
 namespace App\Domain\Catalog\Policies;
 
-use App\Models\User;
-use App\Models\CatalogReview;
-use App\Models\CatalogItem;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogReview;
+use App\Domain\Catalog\Models\CatalogItem;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

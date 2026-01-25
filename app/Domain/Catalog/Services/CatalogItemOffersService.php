@@ -2,9 +2,10 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
-use App\Models\MerchantPhoto;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantPhoto;
+use App\Domain\Platform\Services\MonetaryUnitService;
 use Illuminate\Support\Collection;
 
 /**
@@ -85,9 +86,9 @@ class CatalogItemOffersService
             'catalog_item' => $this->formatCatalogItem($catalogItem),
             'offers_count' => $merchantItems->count(),
             'lowest_price' => (float) $lowestPrice,
-            'lowest_price_formatted' => \App\Models\CatalogItem::convertPrice($lowestPrice),
+            'lowest_price_formatted' => CatalogItem::convertPrice($lowestPrice),
             'highest_price' => (float) $highestPrice,
-            'highest_price_formatted' => \App\Models\CatalogItem::convertPrice($highestPrice),
+            'highest_price_formatted' => CatalogItem::convertPrice($highestPrice),
             'grouped_offers' => $groupedOffers,
             'flat_offers' => $flatOffers,
             'current_sort' => $sort,
@@ -182,9 +183,9 @@ class CatalogItemOffersService
             // Pricing
             'price' => (float) $mi->price,
             'final_price' => $finalPrice,
-            'final_price_formatted' => \App\Models\CatalogItem::convertPrice($finalPrice),
+            'final_price_formatted' => CatalogItem::convertPrice($finalPrice),
             'previous_price' => $mi->previous_price ? (float) $mi->previous_price : null,
-            'previous_price_formatted' => $mi->previous_price ? \App\Models\CatalogItem::convertPrice($mi->previous_price) : null,
+            'previous_price_formatted' => $mi->previous_price ? CatalogItem::convertPrice($mi->previous_price) : null,
             'discount_percentage' => $mi->offPercentage(),
 
             // Stock
@@ -282,8 +283,8 @@ class CatalogItemOffersService
             foreach ($qualityData['merchants'] as &$merchantData) {
                 $merchantData['branches'] = array_values($merchantData['branches']);
             }
-            $qualityData['lowest_price_formatted'] = \App\Models\CatalogItem::convertPrice($qualityData['lowest_price']);
-            $qualityData['highest_price_formatted'] = \App\Models\CatalogItem::convertPrice($qualityData['highest_price']);
+            $qualityData['lowest_price_formatted'] = CatalogItem::convertPrice($qualityData['lowest_price']);
+            $qualityData['highest_price_formatted'] = CatalogItem::convertPrice($qualityData['highest_price']);
             $result[] = $qualityData;
         }
 

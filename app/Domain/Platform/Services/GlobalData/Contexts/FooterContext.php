@@ -2,7 +2,7 @@
 
 namespace App\Domain\Platform\Services\GlobalData\Contexts;
 
-use App\Models\Page;
+use App\Domain\Platform\Models\Page;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 

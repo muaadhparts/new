@@ -4,7 +4,7 @@ namespace App\Domain\Commerce\Rules;
 
 use Closure;
 use Illuminate\Contracts\Validation\ValidationRule;
-use App\Models\Coupon;
+use App\Domain\Commerce\Models\Coupon;
 
 /**
  * Valid Coupon Rule

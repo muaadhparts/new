@@ -2,8 +2,8 @@
 
 namespace App\Domain\Catalog\Policies;
 
-use App\Models\User;
-use App\Models\NewCategory;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\NewCategory;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 /**

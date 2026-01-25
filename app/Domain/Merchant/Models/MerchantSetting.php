@@ -5,7 +5,7 @@ namespace App\Domain\Merchant\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
-use App\Models\User;
+use App\Domain\Identity\Models\User;
 
 /**
  * MerchantSetting Model - Per-merchant configuration

@@ -2,7 +2,7 @@
 
 namespace App\Domain\Commerce\Services\Cart;
 
-use App\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantItem;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 

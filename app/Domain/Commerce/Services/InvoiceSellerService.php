@@ -2,8 +2,8 @@
 
 namespace App\Domain\Commerce\Services;
 
-use App\Models\MerchantPurchase;
-use App\Models\User;
+use App\Domain\Commerce\Models\MerchantPurchase;
+use App\Domain\Identity\Models\User;
 
 /**
  * InvoiceSellerService - Determines the seller info for invoices

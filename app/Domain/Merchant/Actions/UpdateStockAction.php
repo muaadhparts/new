@@ -2,8 +2,8 @@
 
 namespace App\Domain\Merchant\Actions;
 
-use App\Models\MerchantItem;
-use App\Models\MerchantStockUpdate;
+use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantStockUpdate;
 use Illuminate\Support\Facades\DB;
 
 /**

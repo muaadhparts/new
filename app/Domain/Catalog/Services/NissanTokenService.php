@@ -2,9 +2,9 @@
 
 namespace App\Domain\Catalog\Services;
 
-use App\Models\Token;
-use App\Models\TokenLog;
-use App\Models\NissanCredential;
+use App\Domain\Catalog\Models\Token;
+use App\Domain\Catalog\Models\TokenLog;
+use App\Domain\Catalog\Models\NissanCredential;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Carbon;
 

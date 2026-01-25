@@ -3,7 +3,7 @@
 namespace App\Domain\Catalog\Listeners;
 
 use App\Domain\Catalog\Events\ProductViewedEvent;
-use App\Models\CatalogItem;
+use App\Domain\Catalog\Models\CatalogItem;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\DB;

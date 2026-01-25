@@ -4,9 +4,9 @@ namespace App\Domain\Commerce\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\User;
-use App\Models\CatalogItem;
-use App\Models\MerchantItem;
+use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogItem;
+use App\Domain\Merchant\Models\MerchantItem;
 
 /**
  * FavoriteSeller Model - User's favorite sellers/items

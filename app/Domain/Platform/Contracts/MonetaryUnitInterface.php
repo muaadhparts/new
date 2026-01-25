@@ -2,7 +2,7 @@
 
 namespace App\Domain\Platform\Contracts;
 
-use App\Models\MonetaryUnit;
+use App\Domain\Platform\Models\MonetaryUnit;
 
 /**
  * MonetaryUnitInterface - Contract for monetary unit operations
