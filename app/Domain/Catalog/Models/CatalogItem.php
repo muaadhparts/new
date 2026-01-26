@@ -33,7 +33,6 @@ use Illuminate\Support\Facades\Session;
  * @property string|null $thumbnail
  * @property float|null $weight
  * @property int $views
- * @property string|null $tags
  */
 class CatalogItem extends Model
 {
@@ -52,16 +51,6 @@ class CatalogItem extends Model
         'thumbnail',
         'weight',
         'views',
-        'tags',
-        'is_meta',
-        'meta_tag',
-        'meta_description',
-        'youtube',
-        'measure',
-        'hot',
-        'latest',
-        'sale',
-        'cross_items',
     ];
 
     /**
@@ -605,45 +594,9 @@ class CatalogItem extends Model
         return $mi?->policy;
     }
 
-    /**
-     * Build tag cloud from catalog items that have at least one active merchant listing.
-     */
-    public static function showTags()
-    {
-        $raw = self::whereHas('merchantItems', fn ($q) => $q->where('status', 1))
-            ->pluck('tags')
-            ->toArray();
-
-        $joined = [];
-        foreach ($raw as $tagsStr) {
-            if (is_array($tagsStr)) {
-                $joined = array_merge($joined, $tagsStr);
-            } elseif (is_string($tagsStr) && $tagsStr !== '') {
-                $joined = array_merge($joined, explode(',', $tagsStr));
-            }
-        }
-
-        $joined = array_filter(array_map('trim', $joined), fn ($t) => $t !== '');
-        return array_values(array_unique($joined));
-    }
-
     public function is_decimal($val)
     {
         return is_numeric($val) && floor($val) != $val;
-    }
-
-    /* =========================================================================
-     |  Accessors
-     | ========================================================================= */
-
-    public function getTagsAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
-    }
-
-    public function getMetaTagAttribute($value)
-    {
-        return $value === null ? '' : explode(',', $value);
     }
 
     /* =========================================================================

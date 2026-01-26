@@ -97,13 +97,14 @@ class SeoService
         );
 
         // Set meta
+        $description = \Str::limit(strip_tags($catalogItem->label_en ?? $catalogItem->name ?? ''), 160);
         $this->setMeta([
             'name' => $catalogItem->name . ' - ' . config('app.name'),
-            'description' => $catalogItem->meta_description ?? \Str::limit(strip_tags($catalogItem->description ?? ''), 160),
-            'keywords' => $catalogItem->meta_tag ?? '',
+            'description' => $description,
+            'keywords' => $catalogItem->part_number ?? '',
             'og:type' => 'product',
             'og:name' => $catalogItem->name,
-            'og:description' => $catalogItem->meta_description ?? \Str::limit(strip_tags($catalogItem->description ?? ''), 200),
+            'og:description' => $description,
             'og:image' => $this->getProductImage($catalogItem),
             'product:price:amount' => $merchantItem->merchantSizePrice(),
             'product:price:currency' => $currency,

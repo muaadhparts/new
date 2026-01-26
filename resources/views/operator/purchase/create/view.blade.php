@@ -71,23 +71,12 @@
                                 <a target="_blank" href="{{ $createViewProductUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
                               </td>
                               <td class="catalogItem-price">
-                                 <span>{{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['item_price']) }}
+                                 <span>{{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['price'] ?? 0) }}
                                  </span>
                               </td>
                               <td>
-                                 @if($catalogItem['size'])
                                  <p>
-                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$catalogItem['size'])}}
-                                 </p>
-                                 @endif
-                                 @if($catalogItem['color'])
-                                 <p>
-                                    <strong>{{ __('color') }} :</strong> <span
-                                       style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{$catalogItem['color']}};"></span>
-                                 </p>
-                                 @endif
-                                 <p>
-                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
+                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty'] ?? 1}}
                                  </p>
                                  @if(!empty($catalogItem['keys']))
                                  @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
@@ -99,10 +88,10 @@
                               </td>
                               <td class="catalogItem-subtotal">
                                  <p class="d-inline-block"
-                                    id="prc{{$catalogItem['item']['id'].$catalogItem['size'].$catalogItem['color'].str_replace(str_split(' ,'),'',$catalogItem['values'])}}">
-                                    {{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['price']) }}
+                                    id="prc{{$catalogItem['item']['id'].str_replace(str_split(' ,'),'',$catalogItem['values'] ?? '')}}">
+                                    {{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['price'] ?? 0) }}
                                  </p>
-                                 @if ($catalogItem['discount'] != 0)
+                                 @if (($catalogItem['discount'] ?? 0) != 0)
                                  <strong>{{$catalogItem['discount']}} %{{__('off')}}</strong>
                                  @endif
                               </td>

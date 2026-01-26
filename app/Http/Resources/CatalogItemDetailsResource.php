@@ -76,7 +76,6 @@ class CatalogItemDetailsResource extends JsonResource
       'condition'      => $mp && $mp->item_condition
                             ? ($mp->item_condition == 2 ? 'New' : 'Used')
                             : null,
-      'video'          => $this->youtube,
       'stock_check'    => $mp ? $mp->stock_check : 0,
       'estimated_shipping_time' => $mp ? $mp->ship : null,
 

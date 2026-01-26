@@ -162,6 +162,18 @@ $catalogItem->price;    // Use $merchantItem->price
 $catalogItem->stock;    // Use $merchantItem->stock
 $catalogItem->color;    // Use $merchantItem->color
 $catalogItem->features; // Doesn't exist
+
+// CatalogItem DROPPED columns (2026-01-26) - NEVER recreate
+$catalogItem->tags;             // Column dropped from database
+$catalogItem->is_meta;          // Column dropped from database
+$catalogItem->meta_tag;         // Column dropped from database
+$catalogItem->meta_description; // Column dropped from database
+$catalogItem->youtube;          // Column dropped from database
+$catalogItem->measure;          // Column dropped from database
+$catalogItem->hot;              // Column dropped from database
+$catalogItem->latest;           // Column dropped from database
+$catalogItem->sale;             // Column dropped from database
+$catalogItem->cross_items;      // Column dropped from database
 ```
 
 ---

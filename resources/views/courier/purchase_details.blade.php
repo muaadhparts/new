@@ -231,20 +231,7 @@
                                                 <td>{{ $catalogItem['item']['id'] }}</td>
                                                 <td>{{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}</td>
                                                 <td>
-                                                    <strong>@lang('Qty'):</strong> {{ $catalogItem['qty'] }}
-                                                    @if (!empty($catalogItem['size']))
-                                                        <br><strong>@lang('Size'):</strong> {{ $catalogItem['item']['measure'] }}{{ str_replace('-', ' ', $catalogItem['size']) }}
-                                                    @endif
-                                                    @if (!empty($catalogItem['color']))
-                                                        @php
-                                                            $clr = $catalogItem['color'];
-                                                            $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
-                                                        @endphp
-                                                        @if($colorHex)
-                                                        <br><strong>@lang('Color'):</strong>
-                                                        <span style="width: 15px; height: 15px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"></span>
-                                                        @endif
-                                                    @endif
+                                                    <strong>@lang('Qty'):</strong> {{ $catalogItem['qty'] ?? 1 }}
                                                 </td>
                                             </tr>
                                         @endif

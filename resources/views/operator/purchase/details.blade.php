@@ -599,8 +599,7 @@
                                             \PriceHelper::showCurrencyPrice($unitPrice * $purchase->currency_value) }}
                                         </p>
                                         <p>
-                                            <strong>{{ __('Qty') }} :</strong> {{ $qty }} {{
-                                            $catalogItem['item']['measure'] ?? '' }}
+                                            <strong>{{ __('Qty') }} :</strong> {{ $qty }}
                                         </p>
                                     </td>
 

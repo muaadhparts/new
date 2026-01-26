@@ -189,23 +189,7 @@ class CatalogItemController extends OperatorBaseController
             'label_en' => $request->input('label_en'),
             'label_ar' => $request->input('label_ar'),
             'weight' => $request->input('weight', 1.00),
-            'youtube' => $request->input('youtube'),
-            'measure' => $request->input('measure'),
         ];
-
-        if (!empty($request->tags)) {
-            $input['tags'] = implode(',', $request->tags);
-        }
-
-        if (empty($request->seo_check)) {
-            $input['meta_tag'] = null;
-            $input['meta_description'] = null;
-        } else {
-            if (!empty($request->meta_tag)) {
-                $input['meta_tag'] = implode(',', $request->meta_tag);
-            }
-            $input['meta_description'] = $request->input('meta_description');
-        }
 
         $data = CatalogItem::create($input);
 
@@ -250,25 +234,7 @@ class CatalogItemController extends OperatorBaseController
             'label_en' => $request->input('label_en'),
             'label_ar' => $request->input('label_ar'),
             'weight' => $request->input('weight', $data->weight ?? 1.00),
-            'youtube' => $request->input('youtube'),
-            'measure' => $request->input('measure'),
         ];
-
-        if (!empty($request->tags)) {
-            $input['tags'] = implode(',', $request->tags);
-        } else {
-            $input['tags'] = null;
-        }
-
-        if (empty($request->seo_check)) {
-            $input['meta_tag'] = null;
-            $input['meta_description'] = null;
-        } else {
-            if (!empty($request->meta_tag)) {
-                $input['meta_tag'] = implode(',', $request->meta_tag);
-            }
-            $input['meta_description'] = $request->input('meta_description');
-        }
 
         $input['slug'] = Str::slug($request->input('name'), '-') . '-' . strtolower($request->input('part_number'));
 

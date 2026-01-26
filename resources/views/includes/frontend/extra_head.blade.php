@@ -26,10 +26,10 @@
     <meta name="description" content="{{ $blog->meta_description }}">
     <name>{{ $gs->site_name }}</name>
 @elseif(isset($catalogItem) && is_object($catalogItem) && !empty($catalogItem->name))
-    <meta name="keywords" content="{{ $catalogItem->meta_tag ?? '' }}">
-    <meta name="description" content="{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}">
+    <meta name="keywords" content="{{ $catalogItem->part_number ?? '' }}">
+    <meta name="description" content="{{ strip_tags($catalogItem->label_en ?? $catalogItem->name ?? '') }}">
     <meta property="og:name" content="{{ $catalogItem->name }}" />
-    <meta property="og:description" content="{{ $catalogItem->meta_description ?? strip_tags($catalogItem->description ?? '') }}" />
+    <meta property="og:description" content="{{ strip_tags($catalogItem->label_en ?? $catalogItem->name ?? '') }}" />
     <meta property="og:image" content="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}" />
     <meta name="author" content="Muaadh">
     <name>{{ substr($catalogItem->name, 0, 11) . '-' }}{{ $gs->site_name }}</name>

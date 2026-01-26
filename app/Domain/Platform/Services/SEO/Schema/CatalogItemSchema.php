@@ -108,9 +108,7 @@ class CatalogItemSchema extends SchemaBuilder
 
     protected function getDescription(): string
     {
-        $desc = $this->catalogItem->meta_description
-            ?? strip_tags($this->catalogItem->description ?? '')
-            ?? $this->catalogItem->name;
+        $desc = strip_tags($this->catalogItem->label_en ?? $this->catalogItem->name ?? '');
 
         return \Str::limit($desc, 500);
     }

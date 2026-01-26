@@ -1408,25 +1408,15 @@ table.dataTable thead .sorting_desc_disabled::after {
                                             </td>
 
                                             <td>
-                                                @if($catalogItem['size'])
-                                               <p>
-                                                   {{ __('Size') }} : {{str_replace('-',' ',$catalogItem['size'])}}
-                                               </p>
-                                               @endif
-                                               @if($catalogItem['color'])
                                                 <p>
-                                                    {{ __('Color') }} : <span style="margin-left: 40px; width: 20px; height: 0.2px; display: block; border: 10px solid {{$catalogItem['color'] == "" ? "white" : $catalogItem['color']}};"></span>
-                                                </p>
-                                                @endif
-                                                <p>
-                                                    {{ __('Price') }} : {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['item_price'] * $purchase->currency_value),$purchase->currency_sign) }}
+                                                    {{ __('Price') }} : {{ \PriceHelper::showOrderCurrencyPrice((($catalogItem['price'] ?? 0) * $purchase->currency_value),$purchase->currency_sign) }}
                                                 </p>
                                                <p>
-                                                {{ __('Qty') }} : {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
+                                                {{ __('Qty') }} : {{$catalogItem['qty'] ?? 1}}
                                                </p>
                                             </td>
 
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($catalogItem['price'] ?? 0) * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
                                             @php
                                             $subtotal += round($catalogItem['price'] * $purchase->currency_value, 2);
