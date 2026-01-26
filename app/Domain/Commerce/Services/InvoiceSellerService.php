@@ -2,6 +2,7 @@
 
 namespace App\Domain\Commerce\Services;
 
+use App\Domain\Catalog\Services\ImageService;
 use App\Domain\Commerce\Models\MerchantPurchase;
 use App\Domain\Identity\Models\User;
 

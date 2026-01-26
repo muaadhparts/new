@@ -3,7 +3,7 @@
 return [
     'pageCheckout'         => 'MyFatoorah - Checkout',
     'pageError'            => 'MyFatoorah Error',
-    'noMerchantPayments'   => 'There are no payment methods available on your account, please contact your account manager.',
+    'noPaymentGateways'    => 'There are no payment methods available on your account, please contact your account manager.',
     'howWouldYouLikeToPay' => 'How would you like to pay?',
     'or'                   => 'Or',
     'payWith'              => 'Pay With',
@@ -19,7 +19,7 @@ return [
     'securityCodeLabel'    => 'Security Code',
     'saveCard'             => 'Save card number for future payments',
     'addCard'              => 'Use another card',
-    'deleteAlert.name'    => 'Delete Card',
+    'deleteAlert.title'    => 'Delete Card',
     'deleteAlert.message'  => 'Are you sure you want to remove this card?',
     'deleteAlert.confirm'  => 'Yes',
     'deleteAlert.cancel'   => 'No',

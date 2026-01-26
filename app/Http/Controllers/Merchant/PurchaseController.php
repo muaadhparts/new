@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Merchant;
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Commerce\Models\MerchantPurchase;
 use App\Domain\Shipping\Models\ShipmentTracking;
-use App\Domain\Shipping\Services\InvoiceSellerService;
+use App\Domain\Commerce\Services\InvoiceSellerService;
 use App\Domain\Shipping\Services\ShipmentTrackingService;
 use App\Domain\Shipping\Services\TrackingViewService;
 use Illuminate\Http\Request;

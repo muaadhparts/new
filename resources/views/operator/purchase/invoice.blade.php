@@ -189,28 +189,11 @@
 
 
                                             <td>
-                                                @if($catalogItem['size'])
-                                               <p>
-                                                    <strong>{{ __('Size') }} :</strong> {{str_replace('-',' ',$catalogItem['size'])}}
-                                               </p>
-                                               @endif
-                                               @if($catalogItem['color'])
-                                                @php
-                                                    $clr = $catalogItem['color'];
-                                                    $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
-                                                @endphp
-                                                @if($colorHex)
                                                 <p>
-                                                        <strong>{{ __('color') }} :</strong> <span
-                                                        style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"></span>
-                                                </p>
-                                                @endif
-                                                @endif
-                                                <p>
-                                                        <strong>{{ __('Price') }} :</strong>{{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ) * $purchase->currency_value) }}
+                                                        <strong>{{ __('Price') }} :</strong>{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}
                                                 </p>
                                                <p>
-                                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty']}} {{ $catalogItem['item']['measure'] }}
+                                                    <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty'] ?? 1}}
                                                </p>
 
                                                     @if(!empty($catalogItem['keys']))
@@ -224,7 +207,7 @@
                                             </td>
 
 
-                                            <td>{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value)  }} <small>{{ $catalogItem['discount'] == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                            <td>{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value)  }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
                                             </td>
                                             @php
                                             $subtotal += round(($catalogItem['price'] / $purchase->currency_value) * $purchase->currency_value, 2);

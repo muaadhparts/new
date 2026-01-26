@@ -3,7 +3,7 @@
 return [
     'pageCheckout'         => 'ماي فاتورة - الدفع',
     'pageError'            => 'خطأ ماي فاتورة',
-    'noMerchantPayments'   => 'عذرا: لا توجد أي بوابات دفع في حسابك. تواصل مع مدير الحساب الخاص بك',
+    'noPaymentGateways'    => 'عذرا: لا توجد أي بوابات دفع في حسابك. تواصل مع مدير الحساب الخاص بك',
     'howWouldYouLikeToPay' => 'كيف تريد أن تدفع؟',
     'or'                   => 'أو',
     'payWith'              => 'ادفع بواسطة',
@@ -19,7 +19,7 @@ return [
     'securityCodeLabel'    => 'الرمز السري',
     'saveCard'             => 'حفظ بيانات البطاقة للاستخدام المستقبلي',
     'addCard'              => 'إضافة رقم بطاقة',
-    'deleteAlert.name'    => 'حذف البطاقة',
+    'deleteAlert.title'    => 'حذف البطاقة',
     'deleteAlert.message'  => 'هل أنت متأكد من حذف البطاقة؟',
     'deleteAlert.confirm'  => 'موافق',
     'deleteAlert.cancel'   => 'غير موافق',

@@ -441,29 +441,7 @@
 
                                         <td>
                                             <ul>
-                                                <li><b><span>@lang('Quantity:')</span></b> {{ $catalogItem['qty'] }}</li>
-                                                @if (!empty($catalogItem['size']))
-                                                    <li><b><span>@lang('Size:')</span></b>
-                                                        {{ $catalogItem['item']['measure'] }}{{ str_replace('-', '', $catalogItem['size']) }}
-                                                    </li>
-                                                @endif
-                                                @if (!empty($catalogItem['color']))
-                                                    @php
-                                                        $colorValue = $catalogItem['color'];
-                                                        // Handle both array and string formats
-                                                        if (is_array($colorValue)) {
-                                                            $colorCode = $colorValue['code'] ?? $colorValue['color'] ?? '';
-                                                        } else {
-                                                            $colorCode = $colorValue;
-                                                        }
-                                                    @endphp
-                                                    @if (!empty($colorCode))
-                                                    <li><b><span>Color:</span></b>
-                                                        <span id="color-bar"
-                                                            style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorCode }};"></span>
-                                                    </li>
-                                                    @endif
-                                                @endif
+                                                <li><b><span>@lang('Quantity:')</span></b> {{ $catalogItem['qty'] ?? 1 }}</li>
 
                                                 @if (!empty($catalogItem['keys']))
                                                     @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
@@ -475,10 +453,10 @@
                                         </td>
 
                                         <td><b><span
-                                                    class="td-name">{{ \PriceHelper::showCurrencyPrice(($catalogItem['item_price'] ?? ($catalogItem['price'] / max(1, $catalogItem['qty']))) * $purchase->currency_value) }}</span></b>
+                                                    class="td-name">{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}</span></b>
                                         </td>
                                         <td>
-                                            <b><span class="td-name">{{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }}
+                                            <b><span class="td-name">{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}
                                                     <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small></span></b>
                                         </td>
                                     </tr>

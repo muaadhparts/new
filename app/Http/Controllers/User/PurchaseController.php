@@ -6,7 +6,7 @@ use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Shipping\Models\DeliveryCourier;
 use App\Domain\Commerce\Services\InvoiceSellerService;
-use App\Domain\Commerce\Services\TrackingViewService;
+use App\Domain\Shipping\Services\TrackingViewService;
 use Illuminate\Http\Request;
 
 class PurchaseController extends UserBaseController

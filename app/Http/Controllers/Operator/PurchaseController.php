@@ -14,7 +14,7 @@ use App\Domain\Shipping\Models\Courier;
 use App\Domain\Shipping\Models\CourierServiceArea;
 use App\Domain\Shipping\Models\Shipping;
 use App\Domain\Identity\Models\User;
-use App\Domain\Shipping\Services\InvoiceSellerService;
+use App\Domain\Commerce\Services\InvoiceSellerService;
 use App\Domain\Shipping\Services\TrackingViewService;
 use Carbon\Carbon;
 use Datatables;

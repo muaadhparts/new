@@ -422,41 +422,15 @@
                                             <td class="text-start">
                                                 <div class="courier">
 
-                                                    @if ($catalogItem['size'])
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="key">@lang('Size :')</span>
-                                                            <span
-                                                                class="value">{{ str_replace('-', '', $catalogItem['size']) }}</span>
-                                                        </div>
-                                                    @endif
-
-                                                    @if ($catalogItem['color'])
-                                                        @php
-                                                            $clr = $catalogItem['color'];
-                                                            $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
-                                                        @endphp
-                                                        @if($colorHex)
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <span class="key">{{ __('Color') }} :</span>
-                                                            <span
-                                                                style="width: 20px; height: 20px; display: inline-block; vertical-align: middle; border-radius: 50%; background: #{{ $colorHex }};"
-                                                                class="value"></span>
-                                                        </div>
-                                                        @endif
-                                                    @endif
-
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Price :')</span>
                                                         <span
-                                                            class="value">{{ \PriceHelper::showOrderCurrencyPrice($catalogItem['item_price'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                                            class="value">{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                                     </div>
-
-
 
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Qty :')</span>
-                                                        <span class="value">{{ $catalogItem['qty'] }}
-                                                            {{ $catalogItem['item']['measure'] }}</span>
+                                                        <span class="value">{{ $catalogItem['qty'] ?? 1 }}</span>
                                                     </div>
 
                                                     @if (!empty($catalogItem['keys']))
@@ -475,8 +449,8 @@
                                             <!-- Total Price -->
                                             <td class="text-start">
                                                 <span class="content ">
-                                                    {{ \PriceHelper::showOrderCurrencyPrice($catalogItem['price'] * $purchase->currency_value, $purchase->currency_sign) }}
-                                                    <small>{{ $catalogItem['discount'] == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
+                                                    {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}
+                                                    <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
                                                 </span>
                                             </td>
 

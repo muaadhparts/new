@@ -502,7 +502,7 @@
                                     <td>
                                         @if($catalogItem['item']['user_id'] != 0)
                                         @php
-                                        $merchantPurchase = App\Domain\Merchant\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$catalogItem['item']['user_id'])->first();
+                                        $merchantPurchase = App\Domain\Commerce\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$catalogItem['item']['user_id'])->first();
 
 
                                         @endphp

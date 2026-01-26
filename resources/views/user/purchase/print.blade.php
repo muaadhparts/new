@@ -177,19 +177,7 @@ html {
                                              <td>{{ $catalogItem['item']['id'] }}</td>
                                              <td>{{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}</td>
                                              <td>
-                                                <b>{{ __('Quantity') }}</b>: {{$catalogItem['qty']}} <br>
-                                                @if(!empty($catalogItem['size']))
-                                                <b>{{ __('Size') }}</b>: {{ $catalogItem['item']['measure'] }}{{str_replace('-',' ',$catalogItem['size'])}} <br>
-                                                @endif
-                                                @if(!empty($catalogItem['color']))
-                                                @php
-                                                    $clr = $catalogItem['color'];
-                                                    $colorHex = is_array($clr) ? ($clr['code'] ?? $clr['color'] ?? '') : $clr;
-                                                @endphp
-                                                @if($colorHex)
-                                                <b>{{ __('Color') }}</b>:  <span id="color-bar" style="border-radius: 50%; vertical-align: bottom; border: 10px solid #{{ $colorHex }};"></span>
-                                                @endif
-                                                @endif
+                                                <b>{{ __('Quantity') }}</b>: {{$catalogItem['qty'] ?? 1}} <br>
                                                 @if(!empty($catalogItem['keys']))
                                                 @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
                                                 <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} <br>
@@ -197,8 +185,7 @@ html {
                                                 @endif
                                              </td>
                                              <td>
-                                                @php $unitPrice = $catalogItem['item_price'] ?? ($catalogItem['price'] / max(1, $catalogItem['qty'])); @endphp
-                                                {{ \PriceHelper::showCurrencyPrice($unitPrice * $purchase->currency_value) }}
+                                                {{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}
                                              </td>
                                              <td>
                                                 {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
