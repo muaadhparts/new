@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api\User;
 use App\Http\Controllers\Controller;
 
 use App\Http\Resources\UserResource;
-use App\Domain\Identity\Models\FavoriteSeller;
+use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Identity\Models\User;use Auth;
 use Hash;

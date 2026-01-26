@@ -54,8 +54,8 @@ class AddToFavoritesAction
 
         FavoriteSeller::create([
             'user_id' => $userId,
+            'catalog_item_id' => $merchantItem->catalog_item_id,
             'merchant_item_id' => $merchantItemId,
-            'seller_id' => $merchantItem->user_id,
         ]);
 
         return [
@@ -106,8 +106,8 @@ class AddToFavoritesAction
 
         FavoriteSeller::create([
             'user_id' => $userId,
+            'catalog_item_id' => $merchantItem->catalog_item_id,
             'merchant_item_id' => $merchantItemId,
-            'seller_id' => $merchantItem->user_id,
         ]);
 
         return [

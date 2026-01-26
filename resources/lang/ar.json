@@ -66,7 +66,7 @@
     "Search for spare parts inside the vehicle by VIN number": "البحث عن قطع الغيار داخل المركبة برقم الهيكل (VIN)",
     "Explore genuine OEM parts catalogues": "استكشف كتالوجات قطع الغيار الأصلية",
     "Select your vehicle brand to find the perfect parts": "اختر ماركة سيارتك للعثور على القطع المناسبة",
-    "Genuine Parts Catalogues": "كتالوجات قطع الغيار الأصلية",
+    "Genuine Parts Catalogues": "التصفح حسب فئات المركبات",
     "compatibility.part_number": "رقم القطعه",
     "compatibility.vehicle": "المركبة",
     "compatibility.catalog": "الكتالوج",
@@ -732,7 +732,7 @@
     "Full Name": "الاسم الكامل",
     "General Settings": "الإعدادات العامة",
     "Muaadh Shop": "متجر Muaadh",
-    "Genuine Parts Catalogues": "كتالوجات قطع الغيار الأصلية",
+    "Genuine Parts Catalogues": "التصفح حسب فئات المركبات",
     "Get in Touch": "ابقَ على تواصل",
     "Get More Details": "احصل على مزيد من التفاصيل",
     "Get Started": "ابدأ الآن",
@@ -3494,7 +3494,7 @@
     "Add New Merchant Payment": "إضافة طريقة دفع جديدة للتاجر",
 
     "CatalogItems": "الأصناف",
-    "Catalogs": "الكتالوجات",
+    "Catalogs": "أصناف قطع الغيار",
     "Catalogs Count": "عدد الكتالوجات",
     "Catalog Reviews": "مراجعات الكتالوج",
     "Catalog Settings": "إعدادات الكتالوج",
@@ -3918,7 +3918,7 @@
 
     "Apply Scope": "نطاق التطبيق",
     "All Brands": "جميع العلامات التجارية",
-    "All Catalogs": "جميع الكتالوجات",
+    "All Catalogs": "جميع أصناف قطع الغيار",
     "Usage Limit": "حد الاستخدام",
     "Enter Usage Limit": "أدخل حد الاستخدام",
     "View Discount Code Lists": "عرض قائمة أكواد الخصم",
@@ -4089,12 +4089,12 @@
     "This logo appears on invoices when you receive payments directly": "يظهر هذا الشعار على الفواتير عندما تستلم المدفوعات مباشرة",
     "Merchant logo updated successfully.": "تم تحديث شعار التاجر بنجاح.",
     "Merchant logo deleted successfully.": "تم حذف شعار التاجر بنجاح.",
-    "Shop by Catalog": "تصفح حسب الكتالوج",
-    "Browse Catalogs": "تصفح الكتالوجات",
+    "Shop by Catalog": "تصفح اصناف قطع الغيار",
+    "Browse Catalogs": "تصفح حسب المركبة",
     "Subscribe to Our Newsletter": "اشترك في نشرتنا البريدية",
     "Get the latest updates on new catalogItems and upcoming sales": "احصل على آخر التحديثات حول المنتجات الجديدة والعروض القادمة",
     "Subscribe": "اشترك",
-    "All Catalogs": "جميع الكتالوجات",
+    "All Catalogs": "جميع أصناف قطع الغيار",
     "View All": "عرض الكل"
 }
 

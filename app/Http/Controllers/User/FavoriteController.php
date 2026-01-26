@@ -3,11 +3,8 @@
 namespace App\Http\Controllers\User;
 
 use Illuminate\Http\Request;
-use App\{
-    Models\CatalogItem,
-    Models\FavoriteSeller,
-    View\Composers\HeaderComposer
-};
+use App\Domain\Commerce\Models\FavoriteSeller;
+use App\View\Composers\HeaderComposer;
 
 
 class FavoriteController extends UserBaseController

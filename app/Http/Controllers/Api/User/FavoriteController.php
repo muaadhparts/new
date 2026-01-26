@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\User;
 
 use App\Domain\Catalog\Models\CatalogItem;
-use App\Domain\Identity\Models\FavoriteSeller;
+use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CatalogItemListResource;
 use App\View\Composers\HeaderComposer;

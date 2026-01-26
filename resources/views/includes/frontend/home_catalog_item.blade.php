@@ -236,6 +236,15 @@
                 </span>
             @endif
 
+            {{-- Remove from Favorites Button --}}
+            @if(isset($favorite) && $favorite && isset($favoriteId))
+                <button type="button" class="catalogItem-card__delete removefavorite"
+                        data-href="{{ route('user-favorite-remove', $favoriteId) }}"
+                        title="@lang('Remove from Favorites')">
+                    <i class="fas fa-times"></i>
+                </button>
+            @endif
+
             <a href="{{ $catalogItemUrl }}" class="catalogItem-card__media-link">
                 <img src="{{ $photo }}" alt="{{ $catalogItemName }}" class="catalogItem-card__img"
                      loading="lazy" onerror="this.onerror=null; this.src='{{ $defaultImage }}';">
