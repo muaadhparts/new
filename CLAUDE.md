@@ -40,6 +40,37 @@ json_encode($data)                  {{-- Transform in view --}}
 
 **Lint Check:** `php artisan lint:blade --ci`
 
+### 7. Data Flow Policy (NEW)
+**Strict one-way data flow: Model -> Service -> DTO -> View**
+
+```
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│  Model  │ ──► │ Service │ ──► │   DTO   │ ──► │  View   │
+│ (Query) │     │ (Logic) │     │ (Data)  │     │(Display)│
+└─────────┘     └─────────┘     └─────────┘     └─────────┘
+```
+
+```php
+// FORBIDDEN in Controller
+return view('page', compact('product')); // Model to View!
+return view('page', ['item' => $model]); // Model to View!
+
+// REQUIRED
+return view('page', ['card' => $dto]);   // DTO only!
+return view('page', ['data' => $dto]);   // DTO only!
+```
+
+```php
+// FORBIDDEN in Helpers
+function getCount($id) { return Model::where(...)->count(); } // Query!
+
+// REQUIRED - Helpers are Service accessors only
+function monetaryUnit() { return app(MonetaryUnitService::class); }
+```
+
+**Full Policy:** `docs/rules/DATA_FLOW_POLICY.md`
+**Lint Check:** `php artisan lint:dataflow --ci`
+
 ---
 
 ## FORBIDDEN PATTERNS
@@ -201,11 +232,14 @@ $catalogItem->cross_items;      // Column dropped from database
 
 ### Common Commands
 ```bash
-npm run build             # Build with lint
-php artisan migrate       # Run migrations
-php artisan cache:clear   # Clear cache
-php artisan lint:blade    # Check Blade Display Only rule
-php artisan lint:blade --ci  # CI mode (exit code 1 on errors)
+npm run build                    # Build with lint
+php artisan migrate              # Run migrations
+php artisan cache:clear          # Clear cache
+php artisan lint:blade --ci      # Check Blade Display Only rule
+php artisan lint:dataflow --ci   # Check Data Flow Policy (all layers)
+php artisan lint:dataflow --layer=view     # Check views only
+php artisan lint:dataflow --layer=controller  # Check controllers only
+php artisan lint:dataflow --fix  # Show fix suggestions
 ```
 
 ### CSS Classes
@@ -236,3 +270,4 @@ php artisan lint:blade --ci  # CI mode (exit code 1 on errors)
 | Removed Features | `docs/reference/removed-features.md` |
 | Table Rename Method | `docs/standards/TABLE_RENAME_METHODOLOGY.md` |
 | Blade Display Only | `docs/plans/BLADE_DISPLAY_ONLY_PLAN.md` |
+| **Data Flow Policy** | `docs/rules/DATA_FLOW_POLICY.md` |
