@@ -78,7 +78,6 @@ class MerchantCatalogService
     public function getLatestProducts(int $limit = 5): Collection
     {
         return CatalogItem::status(1)
-            ->whereLatest(1)
             ->whereHas('merchantItems', function ($q) {
                 $q->where('status', 1)
                   ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
@@ -119,7 +118,6 @@ class MerchantCatalogService
 
         // Eager load merchantItems for this merchant
         $query->with([
-            'brand:id,name,name_ar,photo',
             'merchantItems' => function ($q) use ($merchantId) {
                 $q->where('user_id', $merchantId)
                   ->where('status', 1)

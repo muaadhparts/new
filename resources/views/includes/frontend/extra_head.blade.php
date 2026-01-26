@@ -17,30 +17,26 @@
 @if (isset($page->meta_tag) && isset($page->meta_description))
     <meta name="keywords" content="{{ $page->meta_tag }}">
     <meta name="description" content="{{ $page->meta_description }}">
-    <name>{{ $gs->site_name }}</name>
 @elseif(isset($blog->meta_tag) && isset($blog->meta_description))
-    <meta property="og:name" content="{{ $blog->name }}" />
+    <meta property="og:title" content="{{ $blog->name }}" />
     <meta property="og:description" content="{{ $blog->meta_description ?? strip_tags($blog->description ?? '') }}" />
     <meta property="og:image" content="{{ asset('assets/images/blogs/' . $blog->photo) }}" />
     <meta name="keywords" content="{{ $blog->meta_tag }}">
     <meta name="description" content="{{ $blog->meta_description }}">
-    <name>{{ $gs->site_name }}</name>
 @elseif(isset($catalogItem) && is_object($catalogItem) && !empty($catalogItem->name))
     <meta name="keywords" content="{{ $catalogItem->part_number ?? '' }}">
     <meta name="description" content="{{ strip_tags($catalogItem->label_en ?? $catalogItem->name ?? '') }}">
-    <meta property="og:name" content="{{ $catalogItem->name }}" />
+    <meta property="og:title" content="{{ $catalogItem->name }}" />
     <meta property="og:description" content="{{ strip_tags($catalogItem->label_en ?? $catalogItem->name ?? '') }}" />
     <meta property="og:image" content="{{ filter_var($catalogItem->photo, FILTER_VALIDATE_URL) ? $catalogItem->photo : ($catalogItem->photo ? \Illuminate\Support\Facades\Storage::url($catalogItem->photo) : asset('assets/images/noimage.png')) }}" />
     <meta name="author" content="Muaadh">
-    <name>{{ substr($catalogItem->name, 0, 11) . '-' }}{{ $gs->site_name }}</name>
 @else
-    <meta property="og:name" content="{{ $gs->site_name }}" />
+    <meta property="og:title" content="{{ $gs->site_name }}" />
     <meta property="og:image" content="{{ asset('assets/images/' . $gs->logo) }}" />
     @if(isset($seo) && $seo && !empty($seo->meta_keys))
         <meta name="keywords" content="{{ $seo->meta_keys }}">
     @endif
     <meta name="author" content="Muaadh">
-    <name>{{ $gs->site_name }}</name>
 @endif
 
 {{-- Typeface Loading --}}

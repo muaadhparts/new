@@ -22,7 +22,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <name>@lang('Merchant Dashboard')</name>
+    <title>@lang('Merchant Dashboard') - {{ $gs->site_name }}</title>
     <!--Essential css files-->
     @if($langg && $langg->rtl == 1)
         <link rel="stylesheet" href="{{ asset('assets/front') }}/css/bootstrap.rtl.min.css">
