@@ -9,6 +9,9 @@ use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\CatalogReview;
 use App\Domain\Platform\Models\MailingList;
+use App\Domain\Platform\Services\HomePageDataBuilder;
+use App\Domain\Catalog\Services\CatalogsPageDataBuilder;
+use App\Domain\Shipping\Services\TrackingDataBuilder;
 use Artisan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -19,6 +22,13 @@ use Illuminate\Support\Facades\Validator;
 
 class FrontendController extends FrontBaseController
 {
+    public function __construct(
+        private HomePageDataBuilder $homePageDataBuilder,
+        private CatalogsPageDataBuilder $catalogsPageDataBuilder,
+        private TrackingDataBuilder $trackingDataBuilder,
+    ) {
+        parent::__construct();
+    }
 
     // LANGUAGE SECTION
 
@@ -44,21 +54,16 @@ class FrontendController extends FrontBaseController
     // ================================================================================================
     // HOME PAGE SECTION
     // ================================================================================================
-    // Architecture: Section-based rendering controlled by HomePageTheme model
-    // All catalogItem data is merchant-only (is_merchant = 2)
-    // Each section loads data ONLY if enabled in the active theme
+    // Architecture: Section-based rendering controlled by HomePageDTO
+    // All data is pre-computed in HomePageDataBuilder service
+    // Views receive DTOs only - no models, no queries
     // ================================================================================================
 
     public function index(Request $request)
     {
         $gs = $this->gs;
-        $ps = $this->ps;
 
-        // Get active home page theme
-        $theme = HomePageTheme::getActive();
-        $data['theme'] = $theme;
-        $data['ps'] = $ps; // Keep for backward compatibility
-
+        // Handle affiliate referral
         if (!empty($request->reff)) {
             $affilate_user = DB::table('users')
                 ->where('affilate_code', '=', $request->reff)
@@ -70,42 +75,18 @@ class FrontendController extends FrontBaseController
                 }
             }
         }
+
+        // Handle forgot password success redirect
         if (!empty($request->forgot)) {
             if ($request->forgot == 'success') {
                 return redirect()->guest('/')->with('forgot-modal', __('Please Login Now !'));
             }
         }
 
-        // ============================================================================
-        // SECTION: Brand (if enabled in theme)
-        // ============================================================================
-        if ($theme->show_brands) {
-            $data['brands'] = Cache::remember('homepage_brands', 3600, function () {
-                return \App\Domain\Catalog\Models\Brand::all();
-            });
-        }
+        // Build home page DTO with all pre-computed data
+        $homePageDTO = $this->homePageDataBuilder->build();
 
-        // ============================================================================
-        // SECTION: Featured Catalogs (if enabled in theme)
-        // ============================================================================
-        if ($theme->show_categories) {
-            $catalogLimit = $theme->count_categories ?? 12;
-            $data['featured_categories'] = Cache::remember('featured_catalogs_for_home_' . $catalogLimit, 3600, function () use ($catalogLimit) {
-                return \App\Domain\Catalog\Models\Catalog::where('status', 1)
-                    ->with('brand:id,name,slug,photo')
-                    ->orderBy('sort')
-                    ->limit($catalogLimit)
-                    ->get();
-            });
-            // Check if there are more catalogs to show "View All" link
-            $data['total_catalogs_count'] = Cache::remember('total_catalogs_count', 3600, function () {
-                return \App\Domain\Catalog\Models\Catalog::where('status', 1)->count();
-            });
-        }
-
-        // PUBLICATIONS SECTION REMOVED - Feature deleted
-
-        return view('frontend.index', $data);
+        return view('frontend.index', ['page' => $homePageDTO]);
     }
 
     // ================================================================================================
@@ -118,18 +99,10 @@ class FrontendController extends FrontBaseController
 
     public function allCatalogs(Request $request)
     {
-        $theme = HomePageTheme::getActive();
-        $perPage = $theme->count_categories ?? 12;
+        // Build catalogs page DTO with all pre-computed data
+        $catalogsPageDTO = $this->catalogsPageDataBuilder->build();
 
-        $catalogs = \App\Domain\Catalog\Models\Catalog::where('status', 1)
-            ->with('brand:id,name,slug,photo')
-            ->orderBy('sort')
-            ->paginate($perPage);
-
-        return view('frontend.catalogs', [
-            'catalogs' => $catalogs,
-            'theme' => $theme,
-        ]);
+        return view('frontend.catalogs', ['page' => $catalogsPageDTO]);
     }
 
     // ================================================================================================
@@ -172,12 +145,15 @@ class FrontendController extends FrontBaseController
 
     public function contact()
     {
-
-        if (DB::table('frontend_settings')->first()->contact == 0) {
+        // Check if contact page is enabled using FrontBaseController's $ps
+        if (!$this->ps || $this->ps->contact == 0) {
             return redirect()->back();
         }
-        $ps = $this->ps;
-        return view('frontend.contact', compact('ps'));
+
+        // Pass platform settings for contact info
+        return view('frontend.contact', [
+            'contactEnabled' => true,
+        ]);
     }
 
     //Send email to admin
@@ -312,30 +288,15 @@ class FrontendController extends FrontBaseController
 
     public function trackload($id)
     {
-        // يمكن أن يكون $id هو purchase_number أو tracking_number
-        $purchase = Purchase::where('purchase_number', '=', $id)->first();
+        // Build tracking data using service (id can be purchase_number or tracking_number)
+        $trackingData = $this->trackingDataBuilder->build($id);
 
-        // إذا لم نجد Purchase، نبحث في tracking numbers
-        $shipmentLogs = [];
-        if (!$purchase) {
-            $shipmentLogs = \App\Domain\Shipping\Models\ShipmentTracking::where('tracking_number', $id)
-                           ->orderBy('occurred_at', 'desc')
-                           ->orderBy('created_at', 'desc')
-                           ->get();
-
-            if ($shipmentLogs->isNotEmpty()) {
-                $purchase = Purchase::find($shipmentLogs->first()->purchase_id);
-            }
-        } else {
-            // إذا وجدنا Purchase، نجلب جميع shipment logs له
-            $shipmentLogs = \App\Domain\Shipping\Models\ShipmentTracking::where('purchase_id', $purchase->id)
-                           ->orderBy('occurred_at', 'desc')
-                           ->orderBy('created_at', 'desc')
-                           ->get();
-        }
-
-        $datas = array('Pending', 'Processing', 'On Delivery', 'Completed');
-        return view('load.track-load', compact('purchase', 'datas', 'shipmentLogs'));
+        return view('load.track-load', [
+            'purchase' => $trackingData['purchase'],
+            'tracking' => $trackingData['tracking'],
+            'shipmentLogs' => $trackingData['shipmentLogs'],
+            'datas' => $trackingData['statuses'],
+        ]);
     }
 
     // -------------------------------- ORDER TRACK SECTION ENDS ----------------------------------------

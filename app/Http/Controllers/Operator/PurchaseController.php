@@ -15,6 +15,7 @@ use App\Domain\Shipping\Models\CourierServiceArea;
 use App\Domain\Shipping\Models\Shipping;
 use App\Domain\Identity\Models\User;
 use App\Domain\Commerce\Services\InvoiceSellerService;
+use App\Domain\Commerce\DataBuilders\OperatorPurchaseDataBuilder;
 use App\Domain\Shipping\Services\TrackingViewService;
 use Carbon\Carbon;
 use Datatables;
@@ -98,62 +99,23 @@ class PurchaseController extends OperatorBaseController
     public function show($id)
     {
         $purchase = Purchase::findOrFail($id);
-        $cart = $purchase->cart; // Model cast handles decoding
 
-        // Prepare tracking data for view (no logic in Blade)
-        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+        // Use DataBuilder to prepare all view data (no queries in Blade)
+        $dataBuilder = new OperatorPurchaseDataBuilder($purchase);
+        $data = $dataBuilder->forDetails();
 
-        // ✅ تحميل بيانات MerchantPurchases مع الفروع
-        $merchantPurchases = $purchase->merchantPurchases()
-            ->with(['user', 'merchantBranch'])
-            ->get();
-
-        // بناء lookup للفروع حسب التاجر
-        $branchesLookup = [];
-        foreach ($merchantPurchases as $mp) {
-            if ($mp->merchantBranch) {
-                $branchesLookup[$mp->user_id] = [
-                    'id' => $mp->merchantBranch->id,
-                    'name' => $mp->merchantBranch->name,
-                    'city' => $mp->merchantBranch->city ?? '',
-                    'address' => $mp->merchantBranch->address ?? '',
-                ];
-            }
-        }
-
-        return view('operator.purchase.details', compact('purchase', 'cart', 'trackingData', 'merchantPurchases', 'branchesLookup'));
+        return view('operator.purchase.details', $data);
     }
 
     public function invoice($id)
     {
         $purchase = Purchase::findOrFail($id);
-        $cart = $purchase->cart; // Model cast handles decoding
 
-        // Prepare tracking data for view (no logic in Blade)
-        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+        // Use DataBuilder to prepare all view data (no queries in Blade)
+        $dataBuilder = new OperatorPurchaseDataBuilder($purchase);
+        $data = $dataBuilder->forInvoice();
 
-        // ✅ تحميل بيانات MerchantPurchases مع الفروع
-        $merchantPurchases = $purchase->merchantPurchases()
-            ->with(['user', 'merchantBranch'])
-            ->get();
-
-        // بناء lookup للفروع حسب التاجر
-        $branchesLookup = [];
-        foreach ($merchantPurchases as $mp) {
-            if ($mp->merchantBranch) {
-                $branchesLookup[$mp->user_id] = [
-                    'id' => $mp->merchantBranch->id,
-                    'name' => $mp->merchantBranch->name,
-                    'city' => $mp->merchantBranch->city ?? '',
-                    'address' => $mp->merchantBranch->address ?? '',
-                ];
-            }
-        }
-
-        // Get seller info for each merchant purchase
-        $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
-
-        return view('operator.purchase.invoice', compact('purchase', 'cart', 'trackingData', 'merchantPurchases', 'branchesLookup', 'sellersInfoLookup'));
+        return view('operator.purchase.invoice', $data);
     }
 
     public function emailsub(Request $request)
@@ -183,33 +145,12 @@ class PurchaseController extends OperatorBaseController
     public function printpage($id)
     {
         $purchase = Purchase::findOrFail($id);
-        $cart = $purchase->cart; // Model cast handles decoding
 
-        // Prepare tracking data for view (no logic in Blade)
-        $trackingData = app(TrackingViewService::class)->forPurchase($purchase);
+        // Use DataBuilder to prepare all view data (no queries in Blade)
+        $dataBuilder = new OperatorPurchaseDataBuilder($purchase);
+        $data = $dataBuilder->forPrint();
 
-        // ✅ تحميل بيانات MerchantPurchases مع الفروع
-        $merchantPurchases = $purchase->merchantPurchases()
-            ->with(['user', 'merchantBranch'])
-            ->get();
-
-        // بناء lookup للفروع حسب التاجر
-        $branchesLookup = [];
-        foreach ($merchantPurchases as $mp) {
-            if ($mp->merchantBranch) {
-                $branchesLookup[$mp->user_id] = [
-                    'id' => $mp->merchantBranch->id,
-                    'name' => $mp->merchantBranch->name,
-                    'city' => $mp->merchantBranch->city ?? '',
-                    'address' => $mp->merchantBranch->address ?? '',
-                ];
-            }
-        }
-
-        // Get seller info for each merchant purchase
-        $sellersInfoLookup = app(InvoiceSellerService::class)->getSellerInfoBatch($merchantPurchases);
-
-        return view('operator.purchase.print', compact('purchase', 'cart', 'trackingData', 'branchesLookup', 'sellersInfoLookup'));
+        return view('operator.purchase.print', $data);
     }
 
     public function edit($id)

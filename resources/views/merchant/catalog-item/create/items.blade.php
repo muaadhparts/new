@@ -75,7 +75,7 @@
                         <div class="dropdown-container">
                             <select class="form-control nice-select form__control" name="merchant_branch_id" required>
                                 <option value="">@lang('Select Branch')</option>
-                                @foreach(\App\Domain\Merchant\Models\MerchantBranch::where('user_id', auth()->id())->where('status', 1)->get() as $branch)
+                                @foreach($branches as $branch)
                                     <option value="{{ $branch->id }}">{{ $branch->warehouse_name }}</option>
                                 @endforeach
                             </select>
@@ -89,7 +89,7 @@
                         <div class="dropdown-container">
                             <select class="form-control nice-select form__control" name="quality_brand_id" required>
                                 <option value="">@lang('Select Quality Brand')</option>
-                                @foreach(\App\Domain\Catalog\Models\QualityBrand::where('is_active', 1)->get() as $qb)
+                                @foreach($qualityBrands as $qb)
                                     <option value="{{ $qb->id }}">{{ $qb->name_en }} {{ $qb->name_ar ? '- ' . $qb->name_ar : '' }}</option>
                                 @endforeach
                             </select>

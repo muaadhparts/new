@@ -82,7 +82,28 @@ class PlatformSettingsService
      */
     public function getFromGroup(string $group, string $key, $default = null)
     {
-        return PlatformSetting::get($group, $key, $default);
+        $allSettings = $this->getAllGrouped();
+        return $allSettings[$group][$key] ?? $default;
+    }
+
+    /**
+     * Alias for getFromGroup (used by groupSetting() helper)
+     */
+    public function getGroupSetting(string $group, string $key, $default = null)
+    {
+        return $this->getFromGroup($group, $key, $default);
+    }
+
+    /**
+     * Get all settings grouped by category
+     *
+     * @return array
+     */
+    public function getAllGrouped(): array
+    {
+        return Cache::remember('platform_settings_grouped', 3600, function () {
+            return PlatformSetting::getAll();
+        });
     }
 
     /**

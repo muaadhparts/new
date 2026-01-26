@@ -1,8 +1,9 @@
 {{--
 ================================================================================
-ALL CATALOGS PAGE (with pagination)
+ALL CATALOGS PAGE - DTO-Based Architecture (Data Flow Policy Compliant)
 ================================================================================
-Shows all catalogs with pagination based on theme settings
+All data comes from CatalogsPageDTO ($page) - pre-computed in CatalogsPageDataBuilder
+Views only READ properties - no queries, no logic, no null coalescing
 ================================================================================
 --}}
 
@@ -31,29 +32,47 @@ Shows all catalogs with pagination based on theme settings
         <div class="container">
             <div class="muaadh-section-header">
                 <span class="muaadh-badge-primary">@lang('Browse Catalogs')</span>
-                <h2 class="muaadh-section-name">{{ $theme->name_categories ?? __('Shop by Catalog') }}</h2>
+                <h2 class="muaadh-section-name">@lang('Shop by Catalog')</h2>
             </div>
 
-            @if($catalogs->count() > 0)
+            @if(count($page->catalogs) > 0)
                 <div class="muaadh-categories-grid">
-                    @foreach ($catalogs as $catalog)
-                        <a href="{{ route('front.catalog', ['brand' => $catalog->brand->slug, 'catalog' => $catalog->slug]) }}" class="muaadh-category-card">
+                    @foreach ($page->catalogs as $catalog)
+                        <a href="{{ $catalog->detailsUrl }}" class="muaadh-category-card">
                             <div class="muaadh-category-img">
-                                <img src="{{ Storage::url($catalog->largeImagePath) }}" alt="{{ $catalog->localized_name }}" loading="lazy">
-                                <span class="muaadh-category-count">{{ $catalog->items_count }}</span>
+                                <img src="{{ $catalog->largeImageUrl }}" alt="{{ $catalog->name }}" loading="lazy">
+                                <span class="muaadh-category-count">{{ $catalog->itemsCount }}</span>
                             </div>
                             <div class="muaadh-category-info">
-                                <h6 class="muaadh-category-name">{{ $catalog->localized_name }}</h6>
-                                <span class="muaadh-category-catalogItems">{{ $catalog->items_count }} @lang('Items')</span>
+                                <h6 class="muaadh-category-name">{{ $catalog->name }}</h6>
+                                <span class="muaadh-category-catalogItems">{{ $catalog->itemsCount }} @lang('Items')</span>
                             </div>
                         </a>
                     @endforeach
                 </div>
 
                 {{-- Pagination --}}
-                @if($catalogs->hasPages())
+                @if($page->hasMorePages || $page->currentPage > 1)
                     <div class="d-flex justify-content-center mt-5">
-                        {!! $catalogs->links('includes.frontend.pagination') !!}
+                        <nav aria-label="Catalogs pagination">
+                            <ul class="pagination pagination-lg">
+                                @foreach($page->paginationLinks as $link)
+                                    @if($link['disabled'])
+                                        <li class="page-item disabled">
+                                            <span class="page-link">{!! $link['label'] !!}</span>
+                                        </li>
+                                    @elseif($link['active'])
+                                        <li class="page-item active" aria-current="page">
+                                            <span class="page-link">{{ $link['label'] }}</span>
+                                        </li>
+                                    @else
+                                        <li class="page-item">
+                                            <a class="page-link" href="{{ $link['url'] }}">{!! $link['label'] !!}</a>
+                                        </li>
+                                    @endif
+                                @endforeach
+                            </ul>
+                        </nav>
                     </div>
                 @endif
             @else

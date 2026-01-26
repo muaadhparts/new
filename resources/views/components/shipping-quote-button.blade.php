@@ -1,35 +1,41 @@
 {{--
     Shipping Quote Button
     =====================
+    Usage with explicit values (recommended):
+    <x-shipping-quote-button
+        :merchant-id="$merchantId"
+        :branch-id="$branchId"
+        :weight="$weight"
+        :item-name="$itemName" />
+
+    Usage with MerchantItem (requires eager loaded catalogItem):
     <x-shipping-quote-button :mp="$merchantItem" />
 
-    يستخرج من MerchantItem:
-    - user_id → merchant_id
-    - merchant_branch_id → branch_id
-    - catalogItem->weight → weight
+    DATA FLOW POLICY: Values should be pre-computed in controller.
+    If using :mp, ensure catalogItem relationship is eager loaded.
 --}}
 
-@props(['mp' => null, 'class' => ''])
+@props([
+    'mp' => null,
+    'merchantId' => null,
+    'branchId' => null,
+    'weight' => null,
+    'itemName' => '',
+    'class' => ''
+])
 
-@php
-    if (!$mp) {
-        $render = false;
-    } else {
-        $merchantId = $mp->user_id;
-        $branchId = $mp->merchant_branch_id;
-        $weight = $mp->catalogItem?->weight;
-        $name = getLocalizedCatalogItemName($mp->catalogItem) ?? '';
-        $render = $merchantId && $branchId && $weight && $weight > 0;
-    }
-@endphp
+@php $mId = $merchantId ?? ($mp->user_id ?? null); $bId = $branchId ?? ($mp->merchant_branch_id ?? null); @endphp
+@php $w = $weight ?? ($mp && $mp->relationLoaded('catalogItem') ? $mp->catalogItem?->weight : null); @endphp
+@php $name = $itemName ?: ($mp && $mp->relationLoaded('catalogItem') ? getLocalizedCatalogItemName($mp->catalogItem) : ''); $canRender = $mId && $bId && $w && $w > 0; @endphp
 
-@if($render)
+@if($canRender)
 <button type="button"
     class="m-shipping-quote-btn {{ $class }}"
     data-shipping-quote
-    data-merchant-id="{{ $merchantId }}"
-    data-branch-id="{{ $branchId }}"
-    data-weight="{{ $weight }}"
+    data-merchant-id="{{ $mId }}"
+    data-branch-id="{{ $bId }}"
+    data-weight="{{ $w }}"
+    data-catalog-item-name="{{ $name }}"
     title="@lang('احسب الشحن')">
     <i class="fas fa-truck"></i>
     <span>@lang('احسب الشحن')</span>

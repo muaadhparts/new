@@ -50,7 +50,7 @@
             <div class="dropdown">
                 <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
                     <i class="fas fa-globe me-1"></i>
-                    {{ Session::has('language') ? $languges->where('id', Session::get('language'))->first()->language : $languges->where('is_default', 1)->first()->language }}
+                    {{ $currentLanguage?->language ?? 'EN' }}
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end">
                     @foreach ($languges as $language)

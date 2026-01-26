@@ -37,20 +37,13 @@
         </div>
     </div>
 
-    {{-- Totals Summary --}}
-    @php
-        $totalFeesEarned = $companies->sum('fees_earned');
-        $totalCodCollected = $companies->sum('cod_collected');
-        $totalReceivable = $companies->sum('receivable_from_platform');
-        $totalPayable = $companies->sum('payable_to_platform');
-    @endphp
-
+    {{-- Totals Summary - Pre-computed in controller (DATA_FLOW_POLICY) --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Shipping Fees') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalFeesEarned, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['fees_earned'], 2) }}</h3>
                     <small>{{ __('Earned by providers') }}</small>
                 </div>
             </div>
@@ -59,7 +52,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('COD Collected') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['cod_collected'], 2) }}</h3>
                     <small>{{ __('By shipping companies') }}</small>
                 </div>
             </div>
@@ -68,7 +61,7 @@
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Receivable from Platform') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalReceivable, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['receivable_from_platform'], 2) }}</h3>
                     <small>{{ __('Platform owes them') }}</small>
                 </div>
             </div>
@@ -77,7 +70,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Payable to Platform') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalPayable, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['payable_to_platform'], 2) }}</h3>
                     <small>{{ __('They owe platform') }}</small>
                 </div>
             </div>
@@ -141,12 +134,12 @@
                     <tfoot class="table-dark">
                         <tr class="fw-bold">
                             <th>{{ __('Total') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalFeesEarned, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalReceivable, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalPayable, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalReceivable - $totalPayable, 2) }}</th>
-                            <th class="text-center">{{ $companies->sum('shipment_count') }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['fees_earned'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['cod_collected'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['receivable_from_platform'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['payable_to_platform'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['net_balance'], 2) }}</th>
+                            <th class="text-center">{{ $totals['shipment_count'] }}</th>
                             <th></th>
                         </tr>
                     </tfoot>

@@ -42,7 +42,7 @@
             @endforeach
         ],
         language: {
-            processing: '<img src="{{ asset('assets/images/' . ($ps->get('admin_loader', 'loader.gif'))) }}">'
+            processing: '<img src="{{ asset('assets/images/' . $adminLoader) }}">'
         }
     });
 

@@ -2,32 +2,7 @@
 {{-- Fitment Details: Shows brands and vehicles that a part fits --}}
 {{-- Uses same styling as catalog-item-offers.blade.php --}}
 
-@php
-    $locale = app()->getLocale();
-    $isArabic = str_starts_with($locale, 'ar');
-
-    $localizedName = function($vehicle) use ($isArabic) {
-        $en = $vehicle['name'] ?? '';
-        $ar = $vehicle['name_ar'] ?? '';
-        return $isArabic ? ($ar ?: $en ?: '—') : ($en ?: $ar ?: '—');
-    };
-
-    $formatYear = function($date) {
-        if (empty($date)) return '—';
-        $year = substr((string)$date, 0, 4);
-        return $year ?: '—';
-    };
-
-    $totalVehicles = 0;
-    // Reset array keys to ensure 0, 1, 2...
-    $brandsArray = is_array($brands) ? array_values($brands) : (method_exists($brands, 'values') ? $brands->values()->toArray() : []);
-    foreach ($brandsArray as $b) {
-        $totalVehicles += count($b['vehicles'] ?? []);
-    }
-    $brandCount = count($brandsArray);
-    $hasMultipleBrands = $brandCount > 1;
-    $uniqueId = 'fitment_' . uniqid();
-@endphp
+@php $isArabic = str_starts_with(app()->getLocale(), 'ar'); $localizedName = fn($v) => $isArabic ? ($v['name_ar'] ?? $v['name'] ?? '—') : ($v['name'] ?? $v['name_ar'] ?? '—'); $formatYear = fn($d) => empty($d) ? '—' : (substr((string)$d, 0, 4) ?: '—'); $brandsArray = is_array($brands) ? array_values($brands) : (method_exists($brands, 'values') ? $brands->values()->toArray() : []); $totalVehicles = array_reduce($brandsArray, fn($sum, $b) => $sum + count($b['vehicles'] ?? []), 0); $brandCount = count($brandsArray); $hasMultipleBrands = $brandCount > 1; $uniqueId = 'fitment_' . uniqid(); @endphp
 
 <div class="catalog-offers-content" id="{{ $uniqueId }}">
     @if($brandCount > 0)

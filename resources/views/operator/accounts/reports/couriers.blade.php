@@ -37,20 +37,13 @@
         </div>
     </div>
 
-    {{-- Totals Summary --}}
-    @php
-        $totalFeesEarned = $couriers->sum('fees_earned');
-        $totalCodCollected = $couriers->sum('cod_collected');
-        $totalCodPending = $couriers->sum('cod_pending');
-        $totalOwesToPlatform = $couriers->sum('owes_to_platform');
-    @endphp
-
+    {{-- Totals Summary - Pre-computed in controller (DATA_FLOW_POLICY) --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Fees Earned') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalFeesEarned, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['fees_earned'], 2) }}</h3>
                     <small>{{ __('Delivery fees') }}</small>
                 </div>
             </div>
@@ -59,7 +52,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('COD Collected') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['cod_collected'], 2) }}</h3>
                     <small>{{ __('Already collected') }}</small>
                 </div>
             </div>
@@ -68,7 +61,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('COD Pending') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalCodPending, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['cod_pending'], 2) }}</h3>
                     <small>{{ __('Not yet collected') }}</small>
                 </div>
             </div>
@@ -77,7 +70,7 @@
             <div class="card bg-danger text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Owes to Platform') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalOwesToPlatform, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['owes_to_platform'], 2) }}</h3>
                     <small>{{ __('Pending settlement') }}</small>
                 </div>
             </div>
@@ -149,12 +142,12 @@
                     <tfoot class="table-dark">
                         <tr class="fw-bold">
                             <th>{{ __('Total') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalFeesEarned, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalCodCollected, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalCodPending, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($couriers->sum('settlements_made'), 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalOwesToPlatform, 2) }}</th>
-                            <th class="text-center">{{ $couriers->sum('delivery_count') }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['fees_earned'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['cod_collected'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['cod_pending'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['settlements_made'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['owes_to_platform'], 2) }}</th>
+                            <th class="text-center">{{ $totals['delivery_count'] }}</th>
                             <th></th>
                         </tr>
                     </tfoot>

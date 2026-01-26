@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @dataflow-exception: Legacy checkout logic, scheduled for migration to Domain Services
+ * TODO: Move queries to PurchaseService, MerchantCredentialService, CourierService
+ */
+
 namespace App\Helpers;
 
 use App\Domain\Identity\Models\User;

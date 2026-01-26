@@ -102,11 +102,7 @@
                                             <div class="col-lg-7">
                                                 <select type="text" class="form-control" name="customer_country" required="">
                                                     <option value="">{{ __('Select Country') }}</option>
-                                                    @foreach (DB::table('countries')->get() as $data)
-                                                        <option value="{{ $data->country_name }}" {{ $purchase->customer_country == $data->country_name ? 'selected' : '' }}>
-                                                            {{ $data->country_name }}
-                                                        </option>
-                                                     @endforeach
+                                                    {!! $countriesHtml !!}
                                                 </select>
                                             </div>
                                         </div>

@@ -226,13 +226,7 @@
                                 <tr>
                                     <th width="45%">{{ __('Affilate User') }}</th>
                                     <th width="10%">:</th>
-                                    <td width="45%">
-                                        @if( App\Domain\Identity\Models\User::where('id', $purchase->affilate_user)->exists() )
-                                        {{ App\Domain\Identity\Models\User::where('id', $purchase->affilate_user)->first()->name }}
-                                        @else
-                                        {{ __('Deleted') }}
-                                        @endif
-                                    </td>
+                                    <td width="45%">{{ $affiliateUserName ?? __('Deleted') }}</td>
                                 </tr>
                                 @endif
                                 @if($purchase->affilate_charge != null)
@@ -410,33 +404,11 @@
         </div>
         @endif
 
-        @php
-        foreach ($cart['items'] as $key => $item) {
-        $userId = $item["user_id"];
-        if (!isset($resultArray[$userId])) {
-        $resultArray[$userId] = [];
-        }
-        $resultArray[$userId][$key] = $item;
-        }
-
-        @endphp
-
         <div class="row">
             <div class="col-lg-12 purchase-details-table">
 
-                @foreach($resultArray as $key1 => $catalogItem)
-
-                @php
-                $platformName = platformSettings()->get('site_name', __('Platform'));
-
-                if($key1 == 0){
-                    // Platform items (user_id = 0)
-                    $merchantName = $platformName;
-                }else{
-                    $merchant = App\Domain\Identity\Models\User::find($key1);
-                    $merchantName = $merchant->shop_name ?? $merchant->name ?? __('Unknown Merchant');
-                }
-                @endphp
+                @foreach($groupedItems as $key1 => $groupData)
+                @php $merchantName = $groupData['merchant']['shop_name'] ?? $groupData['merchant']['name'] ?? __('Unknown Merchant'); @endphp
                 <div class="mr-table">
                     <h4 class="name">
                         <a href="javascript:;" data-bs-toggle="modal" merchant="{{$key1}}"
@@ -461,10 +433,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @php
-                                $merchant_total = 0;
-                                @endphp
-                                @foreach ($catalogItem as $itemKey => $catalogItem)
+                                @php $merchant_total = 0; @endphp
+                                @foreach ($groupData['items'] as $itemKey => $catalogItem)
                                 @php
                                 $merchant_total += $catalogItem['price'];
                                 @endphp
@@ -473,21 +443,16 @@
 
                                     <td>
                                         @if($catalogItem['item']['user_id'] != 0)
-                                        @php
-                                        $user = App\Domain\Identity\Models\User::find($catalogItem['item']['user_id']);
-                                        $branchInfo = $branchesLookup[$catalogItem['item']['user_id']] ?? null;
-                                        @endphp
-                                        @if(isset($user))
+                                        @if($catalogItem['_merchant'])
                                         <a target="_blank"
-                                            href="{{route('operator-merchant-show',$user->id)}}">{{$user->shop_name}}</a>
-                                        {{-- Branch Info --}}
-                                        @if($branchInfo)
+                                            href="{{route('operator-merchant-show',$catalogItem['_merchant']['id'])}}">{{ $catalogItem['_merchant']['shop_name'] ?? $catalogItem['_merchant']['name'] }}</a>
+                                        @if($catalogItem['_branch'])
                                             <br>
                                             <small class="text-muted">
                                                 <i class="fas fa-warehouse"></i>
-                                                {{ $branchInfo['name'] }}
-                                                @if($branchInfo['city'])
-                                                    ({{ $branchInfo['city'] }})
+                                                {{ $catalogItem['_branch']['name'] }}
+                                                @if($catalogItem['_branch']['city'])
+                                                    ({{ $catalogItem['_branch']['city'] }})
                                                 @endif
                                             </small>
                                         @endif
@@ -500,36 +465,31 @@
 
                                     </td>
                                     <td>
-                                        @if($catalogItem['item']['user_id'] != 0)
-                                        @php
-                                        $merchantPurchase = App\Domain\Commerce\Models\MerchantPurchase::where('purchase_id','=',$purchase->id)->where('user_id','=',$catalogItem['item']['user_id'])->first();
-
-
-                                        @endphp
-
-                                        @if($merchantPurchase->status == 'pending')
-                                        <span class="badge badge-warning">{{ucwords($merchantPurchase->status)}}</span>
-                                        @elseif($merchantPurchase->status == 'processing')
-                                        <span class="badge badge-info">{{ucwords($merchantPurchase->status)}}</span>
-                                        @elseif($merchantPurchase->status == 'on delivery')
-                                        <span class="badge badge-primary">{{ucwords($merchantPurchase->status)}}</span>
-                                        @elseif($merchantPurchase->status == 'completed')
-                                        <span class="badge badge-success">{{ucwords($merchantPurchase->status)}}</span>
-                                        @elseif($merchantPurchase->status == 'declined')
-                                        <span class="badge badge-danger">{{ucwords($merchantPurchase->status)}}</span>
+                                        @if($catalogItem['item']['user_id'] != 0 && $catalogItem['_merchantPurchase'])
+                                        @php $mpStatus = $catalogItem['_merchantPurchase']['status'] ?? 'pending'; @endphp
+                                        @if($mpStatus == 'pending')
+                                        <span class="badge badge-warning">{{ucwords($mpStatus)}}</span>
+                                        @elseif($mpStatus == 'processing')
+                                        <span class="badge badge-info">{{ucwords($mpStatus)}}</span>
+                                        @elseif($mpStatus == 'on delivery')
+                                        <span class="badge badge-primary">{{ucwords($mpStatus)}}</span>
+                                        @elseif($mpStatus == 'completed')
+                                        <span class="badge badge-success">{{ucwords($mpStatus)}}</span>
+                                        @elseif($mpStatus == 'declined')
+                                        <span class="badge badge-danger">{{ucwords($mpStatus)}}</span>
                                         @endif
 
                                         {{-- Ownership Badges --}}
                                         <div class="mt-1">
-                                            @if($merchantPurchase->payment_owner_id === 0)
+                                            @if(($catalogItem['_merchantPurchase']['payment_owner_id'] ?? 0) === 0)
                                                 <span class="badge badge-primary" title="{{ __('Platform Payment') }}"><i class="fas fa-building"></i> {{ __('Pay') }}</span>
                                             @else
                                                 <span class="badge badge-success" title="{{ __('Merchant Payment') }}"><i class="fas fa-store"></i> {{ __('Pay') }}</span>
                                             @endif
 
-                                            @if($merchantPurchase->shipping_owner_id === 0)
+                                            @if(($catalogItem['_merchantPurchase']['shipping_owner_id'] ?? 0) === 0)
                                                 <span class="badge badge-primary" title="{{ __('Platform Shipping') }}"><i class="fas fa-truck"></i></span>
-                                            @elseif($merchantPurchase->shipping_type === 'courier')
+                                            @elseif(($catalogItem['_merchantPurchase']['shipping_type'] ?? '') === 'courier')
                                                 <span class="badge badge-warning" title="{{ __('Courier') }}"><i class="fas fa-motorcycle"></i></span>
                                             @else
                                                 <span class="badge badge-success" title="{{ __('Merchant Shipping') }}"><i class="fas fa-truck"></i></span>
@@ -542,22 +502,12 @@
 
 
                                     <td>
-                                        @php
-                                        $detailsCatalogItemUrl = !empty($catalogItem['item']['part_number'])
-                                            ? route('front.part-result', $catalogItem['item']['part_number'])
-                                            : '#';
-                                        @endphp
-                                        <a target="_blank" href="{{ $detailsCatalogItemUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
+                                        <a target="_blank" href="{{ $catalogItem['_productUrl'] }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
                                         <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
-                                        @php
-                                        $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
-                                            ? App\Domain\Identity\Models\User::find($catalogItem['item']['user_id'])
-                                            : null;
-                                        @endphp
-                                        @if(isset($user) || isset($catalogItem['merchant_name']))
+                                        @if($catalogItem['_merchantName'])
                                         <p class="mb-0 mt-1">
                                             <strong>{{ __('Merchant') }}:</strong>
-                                            {{ $catalogItem['merchant_name'] ?? ($user->shop_name ?? $user->name ?? '') }}
+                                            {{ $catalogItem['_merchantName'] }}
                                         </p>
                                         @endif
                                         @if(isset($catalogItem['item']['brand_name']))
@@ -565,45 +515,29 @@
                                             <strong>{{ __('Brand') }}:</strong> {{ $catalogItem['item']['brand_name'] }}
                                         </p>
                                         @endif
-                                        @php
-                                            // جودة البراند والشركة المصنعة
-                                            $qualityBrand = null;
-                                            // Check both new name (quality_brand_id) and old name (quality_brand_id) for backward compatibility
-                                            $qbId = $catalogItem['quality_brand_id'] ?? $catalogItem['quality_brand_id'] ?? null;
-                                            if ($qbId) {
-                                                $qualityBrand = \App\Domain\Catalog\Models\QualityBrand::find($qbId);
-                                            }
-                                            // حالة المنتج (جديد/مستعمل)
-                                            $itemCondition = isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? __('Used') : __('New');
-                                        @endphp
-                                        @if($qualityBrand)
+                                        @if($catalogItem['_qualityBrandName'])
                                         <p class="mb-0">
-                                            <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($qualityBrand) }}
+                                            <strong>{{ __('Quality Brand') }}:</strong> {{ $catalogItem['_qualityBrandName'] }}
                                         </p>
                                         @endif
                                         <p class="mb-0">
                                             <strong>{{ __('Condition') }}:</strong>
-                                            <span class="badge {{ isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $itemCondition }}</span>
+                                            <span class="badge {{ isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? 'badge-warning' : 'badge-success' }}">{{ $catalogItem['_condition'] }}</span>
                                         </p>
 
 
                                     </td>
                                     <td>
-                                        @php
-                                            $qty = (int) ($catalogItem['qty'] ?? 1);
-                                            $totalPrice = (float) ($catalogItem['price'] ?? 0);
-                                            $unitPrice = $qty > 0 ? $totalPrice / $qty : $totalPrice;
-                                        @endphp
                                         <p>
                                             <strong>{{ __('Price') }} :</strong> {{
-                                            \PriceHelper::showCurrencyPrice($unitPrice * $purchase->currency_value) }}
+                                            \PriceHelper::showCurrencyPrice($catalogItem['_unitPrice'] * $purchase->currency_value) }}
                                         </p>
                                         <p>
-                                            <strong>{{ __('Qty') }} :</strong> {{ $qty }}
+                                            <strong>{{ __('Qty') }} :</strong> {{ $catalogItem['_qty'] }}
                                         </p>
                                     </td>
 
-                                    <td> {{ \PriceHelper::showCurrencyPrice($totalPrice * $purchase->currency_value) }}
+                                    <td> {{ \PriceHelper::showCurrencyPrice($catalogItem['_totalPrice'] * $purchase->currency_value) }}
                                     </td>
 
 
@@ -631,33 +565,21 @@
                                 </tr>
 
                                 @endforeach
-                                @php
-
-                                $purchase_shipping = @json_decode($purchase->merchant_shipping_id, true);
-
-                                $merchant_shipping_id = @$purchase_shipping[$key1];
-                                if($merchant_shipping_id){
-                                $shipping = App\Domain\Shipping\Models\Shipping::findOrFail($merchant_shipping_id);
-                                }else{
-                                $shipping = [];
-                                }
-
-                                @endphp
                                 <td colspan="7">
                                     <div class="text-right mx-4">
-                                        @if ($shipping)
+                                        @if ($groupData['shipping'])
                                         <p>
                                             {{ __('Shipping Method') }} :
-                                            <strong>{{$shipping->name}} | {{
-                                                \PriceHelper::showCurrencyPrice($shipping->price *
+                                            <strong>{{ $groupData['shipping']['name'] }} | {{
+                                                \PriceHelper::showCurrencyPrice($groupData['shipping']['price'] *
                                                 $purchase->currency_value) }}</strong>
                                         </p>
                                         @endif
                                         <p>
                                             {{ __('Total Amount') }} :
                                             <strong>
-                                                {{ \PriceHelper::showCurrencyPrice(($merchant_total +
-                                                @$shipping->price) *
+                                                {{ \PriceHelper::showCurrencyPrice(($groupData['total'] +
+                                                ($groupData['shipping']['price'] ?? 0)) *
                                                 $purchase->currency_value )}}
                                             </strong>
                                         </p>

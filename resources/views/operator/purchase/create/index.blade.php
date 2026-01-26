@@ -66,7 +66,7 @@
                             <div class="input-group mb-2">
                               <select name="user_id" class="form-control order_create_user" id="order_create_user">
                                 <option value="">Select User</option>
-                                @foreach(App\Domain\Identity\Models\User::where('status','!=',2)->get() as $user)
+                                @foreach($users as $user)
                                     <option value="{{$user->id}}" {{Session::has('order_address') && Session::get('order_address')['user_id'] == $user->id ? 'selected' : ''}} >{{$user->name}} (Phone : {{$user->phone}})</option>
                                 @endforeach
                             </select>

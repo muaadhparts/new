@@ -72,8 +72,8 @@
 														<div class="col-lg-7">
 																<select  name="role_id" required="">
 																	<option value="">{{ __('Select Role') }}</option>
-																	  @foreach(DB::table('roles')->get() as $dta)
-																		<option value="{{ $dta->id }}" {{ $data->role_id == $dta->id ? 'selected' : '' }}>{{ $dta->name }}</option>
+																	  @foreach($roles as $role)
+																		<option value="{{ $role->id }}" {{ $operator->role_id == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
 																	  @endforeach
 																</select>
 														</div>

@@ -25,6 +25,8 @@ class NavigationContext implements ContextInterface
     private $languages = null;
     private $connectConfig = null;
     private $mobileBrandsJson = null;
+    private $socialLinksArray = null;
+    private $currentLanguage = null;
 
     public function load(): void
     {
@@ -52,6 +54,9 @@ class NavigationContext implements ContextInterface
         $this->languages = Cache::remember('all_languages', 3600, fn() =>
             Language::all()
         );
+
+        // Pre-compute current language from session (avoids query in layout views)
+        $this->currentLanguage = $this->resolveCurrentLanguage();
 
         // ConnectConfig - legacy variable from connect_configs table
         // Now loaded from platform_settings (social_links + social_login groups)
@@ -85,8 +90,57 @@ class NavigationContext implements ContextInterface
             ];
         });
 
+        // Pre-compute social links array for SEO schemas (avoids @php logic in views)
+        $this->socialLinksArray = $this->buildSocialLinksArray();
+
         // Build mobile brands JSON (for mobile_menu.blade.php)
         $this->mobileBrandsJson = $this->buildMobileBrandsJson();
+    }
+
+    /**
+     * Build filtered array of social links for SEO schema
+     * Pre-computed here to comply with DATA_FLOW_POLICY (no logic in views)
+     *
+     * @return array
+     */
+    private function buildSocialLinksArray(): array
+    {
+        if (!$this->connectConfig) {
+            return [];
+        }
+
+        return array_values(array_filter([
+            $this->connectConfig->facebook ?? null,
+            $this->connectConfig->twitter ?? null,
+            $this->connectConfig->instagram ?? null,
+            $this->connectConfig->youtube ?? null,
+            $this->connectConfig->linkedin ?? null,
+        ]));
+    }
+
+    /**
+     * Resolve the current language from session or default
+     * Pre-computed here to comply with DATA_FLOW_POLICY (no queries in views)
+     *
+     * @return \App\Domain\Platform\Models\Language|null
+     */
+    private function resolveCurrentLanguage(): ?Language
+    {
+        if (!$this->languages || $this->languages->isEmpty()) {
+            return null;
+        }
+
+        // Check session for selected language
+        if (\Illuminate\Support\Facades\Session::has('language')) {
+            $langId = \Illuminate\Support\Facades\Session::get('language');
+            $found = $this->languages->firstWhere('id', $langId);
+            if ($found) {
+                return $found;
+            }
+        }
+
+        // Fall back to default language
+        return $this->languages->firstWhere('is_default', 1);
     }
 
     /**
@@ -125,11 +179,18 @@ class NavigationContext implements ContextInterface
             'pages' => $this->pages,
             'monetaryUnits' => $this->monetaryUnits,
             'languges' => $this->languages,
+            // Pre-computed current language from session (avoids query in layouts)
+            'currentLanguage' => $this->currentLanguage,
             // Mobile navigation JSON
             'mobileBrandsJson' => $this->mobileBrandsJson,
+            // Pre-computed social links array for SEO schemas
+            'socialLinksArray' => $this->socialLinksArray,
             // Legacy alias - static_content table was dropped
             // Empty collection so views don't error
             'static_content' => collect([]),
+            // Pre-filtered collections for header/footer (avoids ->where() in views)
+            'static_content_header' => collect([]),
+            'static_content_footer' => collect([]),
             // Legacy alias - connect_configs table was dropped
             // Data now comes from platform_settings
             'connectConfig' => $this->connectConfig,
@@ -142,8 +203,10 @@ class NavigationContext implements ContextInterface
         $this->pages = null;
         $this->monetaryUnits = null;
         $this->languages = null;
+        $this->currentLanguage = null;
         $this->connectConfig = null;
         $this->mobileBrandsJson = null;
+        $this->socialLinksArray = null;
         Cache::forget('connect_config_legacy');
     }
 

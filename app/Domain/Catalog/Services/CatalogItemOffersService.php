@@ -188,6 +188,7 @@ class CatalogItemOffersService
             'previous_price' => $mi->previous_price ? (float) $mi->previous_price : null,
             'previous_price_formatted' => $mi->previous_price ? CatalogItem::convertPrice($mi->previous_price) : null,
             'discount_percentage' => $mi->offPercentage(),
+            'discount_percentage_formatted' => $mi->offPercentage() > 0 ? number_format($mi->offPercentage(), 0) . '%' : null,
 
             // Stock
             'stock' => (int) ($mi->stock ?? 0),

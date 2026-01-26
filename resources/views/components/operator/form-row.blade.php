@@ -15,16 +15,8 @@
         'optionLabel' => 'name',    // For select - which field to display
     ])
 --}}
-
-@php
-    $type = $type ?? 'text';
-    $required = $required ?? false;
-    $subheading = $subheading ?? null;
-    $placeholder = $placeholder ?? '';
-    $class = $class ?? 'input-field';
-    $colLeft = $colLeft ?? 'col-lg-4';
-    $colRight = $colRight ?? 'col-lg-7';
-@endphp
+@php $type = $type ?? 'text'; $required = $required ?? false; $subheading = $subheading ?? null; $placeholder = $placeholder ?? ''; @endphp
+@php $class = $class ?? 'input-field'; $colLeft = $colLeft ?? 'col-lg-4'; $colRight = $colRight ?? 'col-lg-7'; @endphp
 
 <div class="row">
     <div class="{{ $colLeft }}">

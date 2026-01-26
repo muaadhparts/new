@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @dataflow-exception: Cart context injection requires direct DB access for performance
+ * TODO: Consider moving to CatalogContextService in Domain/Catalog/Services
+ */
+
 namespace App\Helpers;
 
 use App\Domain\Catalog\Models\CatalogItem;

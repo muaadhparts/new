@@ -35,7 +35,13 @@ class PurchaseCreateController extends OperatorBaseController
         $sign = $this->curr;
         Session::forget('purchase_products');
 
-        return view('operator.purchase.create.index', compact('catalogItems', 'selectd_products', 'sign'));
+        // Pre-computed data for views
+        $users = User::where('status', '!=', 2)->get(['id', 'name', 'phone']);
+        // Country selection depends on whether session has saved address
+        $selectedCountry = Session::has('order_address') ? Session::get('order_address')['customer_country'] : null;
+        $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml($selectedCountry);
+
+        return view('operator.purchase.create.index', compact('catalogItems', 'selectd_products', 'sign', 'users', 'countriesHtml'));
     }
 
     public function datatables()
@@ -140,15 +146,16 @@ class PurchaseCreateController extends OperatorBaseController
     public function userAddress(Request $request)
     {
         Session::forget('purchase_address');
+
         if ($request->user_id == 'guest') {
             $isUser = 0;
-            $country = Country::all();
-            return view('operator.purchase.create.address_form', compact('country', 'isUser'));
+            $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml();
+            return view('operator.purchase.create.address_form', compact('countriesHtml', 'isUser'));
         } else {
             $isUser = 1;
             $user = User::findOrFail($request->user_id);
-            $country = Country::all();
-            return view('operator.purchase.create.address_form', compact('user', 'country', 'isUser'));
+            $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml($user->country);
+            return view('operator.purchase.create.address_form', compact('user', 'countriesHtml', 'isUser'));
         }
     }
 

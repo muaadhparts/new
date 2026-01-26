@@ -31,7 +31,17 @@ class PurchaseController extends MerchantBaseController
         ->orderby('id', 'desc')
         ->paginate(15);
 
-        return view('merchant.purchase.index', compact('purchases', 'user'));
+        // Pre-compute totals for each purchase (avoids queries in Blade)
+        $purchaseTotals = [];
+        foreach ($purchases as $purchase) {
+            $merchantItems = $purchase->merchantPurchases;
+            $purchaseTotals[$purchase->id] = [
+                'price' => $merchantItems->sum('price'),
+                'qty' => $merchantItems->sum('qty'),
+            ];
+        }
+
+        return view('merchant.purchase.index', compact('purchases', 'user', 'purchaseTotals'));
     }
 
     public function show($slug)

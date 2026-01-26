@@ -4,79 +4,88 @@ namespace App\Helpers;
 
 use App\Domain\Shipping\Models\Country;
 use App\Domain\Shipping\Models\City;
+use App\Domain\Shipping\Services\LocationDataService;
 
 /**
- * LocationHelper - مساعد موحد لعرض أسماء الدول والمدن
+ * LocationHelper - Unified Location Display Helper
  *
- * التوجيه المعماري:
- * - المدن: city_name فقط (إنجليزي) - لا يوجد city_name_ar (محذوف من قاعدة البيانات)
- * - الدول: country_name, country_name_ar
+ * DATA FLOW POLICY: This helper is a SERVICE ACCESSOR only.
+ * All queries are delegated to LocationDataService.
+ *
+ * Architecture:
+ * - Cities: city_name only (English) - no city_name_ar (dropped from database)
+ * - Countries: country_name, country_name_ar
  */
 class LocationHelper
 {
     /**
-     * الحصول على اسم الدولة حسب اللغة النشطة
-     *
-     * @param Country $country
-     * @return string
+     * Get the LocationDataService instance
+     */
+    private static function service(): LocationDataService
+    {
+        return app(LocationDataService::class);
+    }
+
+    /**
+     * Get country name based on active locale
      */
     public static function getCountryName(Country $country): string
     {
-        $locale = app()->getLocale();
-
-        if ($locale == 'ar') {
-            return $country->country_name_ar ?: $country->country_name;
-        }
-
-        return $country->country_name;
+        return self::service()->getCountryDisplayName($country);
     }
 
     /**
-     * الحصول على اسم المدينة
-     * ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
-     *
-     * @param City $city
-     * @return string
+     * Get city name
+     * Note: Cities have English name only - no city_name_ar
      */
     public static function getCityName(City $city): string
     {
-        return $city->city_name;
+        return self::service()->getCityDisplayName($city);
     }
 
     /**
-     * إنشاء HTML options للدول حسب اللغة النشطة
+     * Build HTML options for countries dropdown based on active locale
      *
-     * @param int|null $selectedCountryId
+     * @param int|string|null $selected Country ID or name
      * @param bool $includeEmptyOption
      * @return string
      */
-    public static function getCountriesOptionsHtml(?int $selectedCountryId = null, bool $includeEmptyOption = true): string
+    public static function getCountriesOptionsHtml(int|string|null $selected = null, bool $includeEmptyOption = true): string
     {
-        $locale = app()->getLocale();
-        $countries = Country::where('status', 1)->get();
+        $countries = self::service()->getActiveCountries();
 
         $html = '';
 
         if ($includeEmptyOption) {
-            $html .= '<option value="">Select Country</option>';
+            $html .= '<option value="">' . __('Select Country') . '</option>';
         }
 
         foreach ($countries as $country) {
-            $displayName = ($locale == 'ar')
-                ? ($country->country_name_ar ?: $country->country_name)
-                : $country->country_name;
-
-            $selected = ($selectedCountryId && $country->id == $selectedCountryId) ? 'selected' : '';
+            $label = self::service()->getCountryDisplayName($country);
             $hasCities = $country->cities->count() > 0 ? 1 : 0;
+            $isSelected = false;
+
+            if ($selected !== null) {
+                if (is_numeric($selected)) {
+                    $isSelected = $country->id == $selected;
+                } else {
+                    $isSelected = $country->country_name == $selected;
+                }
+            }
+
+            $selectedAttr = $isSelected ? 'selected' : '';
+            $isLoggedIn = \Illuminate\Support\Facades\Auth::check() ? 1 : 0;
 
             $html .= sprintf(
-                '<option value="%s" data="%d" rel="%d" data-href="%s" %s>%s</option>',
-                $country->country_name,
+                '<option value="%s" data="%d" rel="%d" rel1="%d" rel5="%d" data-href="%s" %s>%s</option>',
+                htmlspecialchars($country->country_name),
                 $country->id,
                 $hasCities,
+                $isLoggedIn,
+                $isLoggedIn,
                 route('country.wise.city', $country->id),
-                $selected,
-                htmlspecialchars($displayName)
+                $selectedAttr,
+                htmlspecialchars($label)
             );
         }
 
@@ -84,18 +93,14 @@ class LocationHelper
     }
 
     /**
-     * إنشاء HTML options للمدن
-     * ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
+     * Build HTML options for cities dropdown
+     * Note: Cities have English name only - no city_name_ar
      *
-     * @param int $countryId
-     * @param string|null $selectedCity
-     * @param bool $includeEmptyOption
-     * @param bool $useIdAsValue - استخدام ID بدلاً من الاسم
-     * @return string
+     * @deprecated Use LocationDataService::getCitiesDropdownData() with Blade component
      */
     public static function getCitiesOptionsHtml(int $countryId, ?string $selectedCity = null, bool $includeEmptyOption = true, bool $useIdAsValue = false): string
     {
-        $cities = City::where('country_id', $countryId)->get();
+        $dropdownData = self::service()->getCitiesDropdownData($countryId, $selectedCity, $useIdAsValue);
 
         $html = '';
 
@@ -103,16 +108,14 @@ class LocationHelper
             $html .= '<option value="">Select City</option>';
         }
 
-        foreach ($cities as $city) {
-            $displayName = $city->city_name;
-            $value = $useIdAsValue ? $city->id : $city->city_name;
-            $selected = ($selectedCity && $value == $selectedCity) ? 'selected' : '';
+        foreach ($dropdownData as $item) {
+            $selected = $item['selected'] ? 'selected' : '';
 
             $html .= sprintf(
                 '<option value="%s" %s>%s</option>',
-                htmlspecialchars($value),
+                htmlspecialchars((string)$item['value']),
                 $selected,
-                htmlspecialchars($displayName)
+                htmlspecialchars($item['label'])
             );
         }
 
@@ -120,20 +123,16 @@ class LocationHelper
     }
 
     /**
-     * الحصول على اسم العمود للدولة حسب اللغة النشطة
-     *
-     * @return string
+     * Get column name for country based on active locale
      */
     public static function getCountryColumnName(): string
     {
-        return app()->getLocale() == 'ar' ? 'country_name_ar' : 'country_name';
+        return app()->getLocale() === 'ar' ? 'country_name_ar' : 'country_name';
     }
 
     /**
-     * الحصول على اسم العمود للمدينة
-     * ملاحظة: المدن لها اسم إنجليزي فقط - لا يوجد city_name_ar
-     *
-     * @return string
+     * Get column name for city
+     * Note: Cities have English name only - no city_name_ar
      */
     public static function getCityColumnName(): string
     {
@@ -141,14 +140,11 @@ class LocationHelper
     }
 
     /**
-     * جلب اسم الدولة من قاعدة البيانات بالاسم
-     *
-     * @param string $countryName
-     * @return string|null
+     * Get country display name from database by name
      */
     public static function getCountryDisplayName(string $countryName): ?string
     {
-        $country = Country::where('country_name', $countryName)->first();
+        $country = self::service()->findCountryByName($countryName);
 
         if (!$country) {
             return $countryName;
@@ -158,14 +154,11 @@ class LocationHelper
     }
 
     /**
-     * جلب اسم المدينة من قاعدة البيانات بالاسم
-     *
-     * @param string $cityName
-     * @return string|null
+     * Get city display name from database by name
      */
     public static function getCityDisplayName(string $cityName): ?string
     {
-        $city = City::where('city_name', $cityName)->first();
+        $city = self::service()->findCityByName($cityName);
 
         if (!$city) {
             return $cityName;

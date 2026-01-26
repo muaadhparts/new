@@ -111,15 +111,8 @@
                                 {{-- Branches within Merchant --}}
                                 <div class="catalog-offers-branches">
                                     @foreach($merchantGroup['branches'] as $branchData)
-                                        @php
-                                            $offer = $branchData['offer'];
-                                            $canBuy = $offer['can_buy'] ?? false;
-                                            $inStock = $offer['in_stock'] ?? false;
-                                            $preordered = $offer['preordered'] ?? false;
-                                            $stock = $offer['stock'] ?? 0;
-                                            $minQty = $offer['minimum_qty'] ?? 1;
-                                            $uniqueId = 'offer_' . ($offer['merchant_item_id'] ?? rand());
-                                        @endphp
+                                        @php $offer = $branchData['offer']; $canBuy = $offer['can_buy'] ?? false; $inStock = $offer['in_stock'] ?? false; $preordered = $offer['preordered'] ?? false; @endphp
+                                        @php $stock = $offer['stock'] ?? 0; $minQty = $offer['minimum_qty'] ?? 1; $uniqueId = 'offer_' . ($offer['merchant_item_id'] ?? rand()); @endphp
 
                                         <div class="catalog-offers-branch {{ $canBuy ? 'catalog-offers-branch--available' : 'catalog-offers-branch--unavailable' }}">
                                             {{-- Branch Info --}}

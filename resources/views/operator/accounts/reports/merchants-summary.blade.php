@@ -37,20 +37,13 @@
         </div>
     </div>
 
-    {{-- Totals Summary --}}
-    @php
-        $totalSales = $merchants->sum('total_sales');
-        $totalCommission = $merchants->sum('total_commission');
-        $totalTax = $merchants->sum('total_tax');
-        $totalBalanceDue = $merchants->sum('balance_due');
-    @endphp
-
+    {{-- Totals Summary - Pre-computed in controller (DATA_FLOW_POLICY) --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <div class="card bg-success text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Sales') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalSales, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['total_sales'], 2) }}</h3>
                 </div>
             </div>
         </div>
@@ -58,7 +51,7 @@
             <div class="card bg-primary text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Commission') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalCommission, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['total_commission'], 2) }}</h3>
                 </div>
             </div>
         </div>
@@ -66,7 +59,7 @@
             <div class="card bg-info text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Tax') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalTax, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['total_tax'], 2) }}</h3>
                 </div>
             </div>
         </div>
@@ -74,7 +67,7 @@
             <div class="card bg-warning text-white">
                 <div class="card-body text-center">
                     <h6>{{ __('Total Balance Due') }}</h6>
-                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totalBalanceDue, 2) }}</h3>
+                    <h3 class="mb-0">{{ $currency->sign }}{{ number_format($totals['balance_due'], 2) }}</h3>
                 </div>
             </div>
         </div>
@@ -145,13 +138,13 @@
                     <tfoot class="table-dark">
                         <tr class="fw-bold">
                             <th>{{ __('Total') }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalSales, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalCommission, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalTax, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalSales - $totalCommission - $totalTax, 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($merchants->sum('settlements_received'), 2) }}</th>
-                            <th class="text-end">{{ $currency->sign }}{{ number_format($totalBalanceDue, 2) }}</th>
-                            <th class="text-center">{{ $merchants->sum('transaction_count') }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['total_sales'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['total_commission'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['total_tax'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['net_amount'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['settlements_received'], 2) }}</th>
+                            <th class="text-end">{{ $currency->sign }}{{ number_format($totals['balance_due'], 2) }}</th>
+                            <th class="text-center">{{ $totals['transaction_count'] }}</th>
                             <th></th>
                         </tr>
                     </tfoot>

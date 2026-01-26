@@ -211,19 +211,7 @@
                                             class="content">{{ \PriceHelper::showAdminCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
                                     </td>
                                     <td>
-                                        @php
-                                            if ($purchase->status == 'pending') {
-                                                $class = 'yellow-btn';
-                                            } elseif ($purchase->status == 'processing') {
-                                                $class = 'yellow-btn';
-                                            } elseif ($purchase->status == 'completed') {
-                                                $class = 'green-btn';
-                                            } elseif ($purchase->status == 'declined') {
-                                                $class = 'red-btn';
-                                            }else if($purchase->status == "on delivery"){
-                                                $class = 'black-btn';
-                                            }
-                                        @endphp
+                                        @php $class = in_array($purchase->status, ['pending', 'processing']) ? 'yellow-btn' : ($purchase->status == 'completed' ? 'green-btn' : ($purchase->status == 'declined' ? 'red-btn' : 'black-btn')); @endphp
                                         <button type="button" disabled class="template-btn md-btn {{ $class }}">
                                             {{ ucwords($purchase->status) }}
                                         </button>

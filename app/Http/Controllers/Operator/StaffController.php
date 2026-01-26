@@ -33,7 +33,8 @@ class StaffController extends OperatorBaseController
     }
 
     public function create(){
-        return view('operator.staff.create');
+        $roles = \DB::table('roles')->get();
+        return view('operator.staff.create', compact('roles'));
     }
 
     //*** POST Request
@@ -76,7 +77,8 @@ class StaffController extends OperatorBaseController
     public function edit($id)
     {
         $operator = Operator::findOrFail($id);
-        return view('operator.staff.edit',compact('operator'));
+        $roles = \DB::table('roles')->get();
+        return view('operator.staff.edit', compact('operator', 'roles'));
     }
 
     public function update(Request $request,$id)

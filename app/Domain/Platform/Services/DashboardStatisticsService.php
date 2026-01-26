@@ -87,13 +87,20 @@ class DashboardStatisticsService
     /**
      * Get basic counts for dashboard.
      *
-     * @return array ['users' => int, 'catalogItems' => int]
+     * @return array
      */
     public function getBasicCounts(): array
     {
+        $thirtyDaysAgo = now()->subDays(30);
+
         return [
             'users' => User::count(),
             'catalogItems' => CatalogItem::count(),
+            'newCustomersLast30Days' => User::where('created_at', '>', $thirtyDaysAgo)->count(),
+            'totalSalesLast30Days' => Purchase::where('status', 'completed')
+                ->where('created_at', '>', $thirtyDaysAgo)
+                ->count(),
+            'totalSalesAllTime' => Purchase::where('status', 'completed')->count(),
         ];
     }
 
@@ -167,6 +174,9 @@ class DashboardStatisticsService
             'sales' => $chartData['sales'],
             'users' => $counts['users'],
             'catalogItems' => $counts['catalogItems'],
+            'newCustomersLast30Days' => $counts['newCustomersLast30Days'],
+            'totalSalesLast30Days' => $counts['totalSalesLast30Days'],
+            'totalSalesAllTime' => $counts['totalSalesAllTime'],
             'latestCatalogItems' => $this->getLatestCatalogItems(5),
             'recentPurchases' => $this->getRecentPurchases(5),
             'popularCatalogItems' => $this->getPopularCatalogItems(5),

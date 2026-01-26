@@ -20,19 +20,8 @@
         "contactType": "customer service",
         "availableLanguage": ["Arabic", "English"]
     }
-    @if(isset($connectConfig))
-    ,"sameAs": [
-        @php
-            $socials = array_filter([
-                $connectConfig->facebook ?? null,
-                $connectConfig->twitter ?? null,
-                $connectConfig->instagram ?? null,
-                $connectConfig->youtube ?? null,
-                $connectConfig->linkedin ?? null
-            ]);
-        @endphp
-        {!! implode(',', array_map(fn($s) => json_encode($s), $socials)) !!}
-    ]
+    @if(!empty($socialLinksArray))
+    ,"sameAs": {!! json_encode($socialLinksArray) !!}
     @endif
 }
 </script>

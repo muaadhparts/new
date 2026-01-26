@@ -123,68 +123,33 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @php
-                                        $subtotal = 0;
-                                        $tax = 0;
-                                        @endphp
-                                        @foreach($cart['items'] as $catalogItem)
+                                        @php $subtotal = 0; @endphp
+                                        @foreach($cartItemsWithData as $catalogItem)
                                         <tr>
                                             <td width="40%">
-                                                @php
-                                                $user = isset($catalogItem['item']['user_id']) && $catalogItem['item']['user_id'] != 0
-                                                    ? App\Domain\Identity\Models\User::find($catalogItem['item']['user_id'])
-                                                    : null;
-                                                $invoiceProductUrl = !empty($catalogItem['item']['part_number'])
-                                                    ? route('front.part-result', $catalogItem['item']['part_number'])
-                                                    : '#';
-                                                @endphp
-                                                @if(isset($user))
-                                                <a target="_blank"
-                                                    href="{{ $invoiceProductUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item']) }}</a>
-                                                @else
-                                                <a href="javascript:;">{{ getLocalizedCatalogItemName($catalogItem['item']) }}</a>
-                                                @endif
+                                                <a target="_blank" href="{{ $catalogItem['_productUrl'] }}">{{ getLocalizedCatalogItemName($catalogItem['item']) }}</a>
                                                 <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
                                             </td>
                                             <td width="20%">
-                                                @if(isset($catalogItem['merchant_name']))
-                                                    <strong>{{ __('Merchant') }}:</strong> {{ $catalogItem['merchant_name'] }}<br>
-                                                @elseif(isset($user))
-                                                    <strong>{{ __('Merchant') }}:</strong> {{ $user->shop_name ?? $user->name }}<br>
+                                                @if($catalogItem['_merchantName'])
+                                                    <strong>{{ __('Merchant') }}:</strong> {{ $catalogItem['_merchantName'] }}<br>
                                                 @endif
-                                                {{-- Branch Info --}}
-                                                @php
-                                                    $itemMerchantId = $catalogItem['item']['user_id'] ?? 0;
-                                                    $branchInfo = $branchesLookup[$itemMerchantId] ?? null;
-                                                @endphp
-                                                @if($branchInfo)
-                                                    <strong><i class="fas fa-warehouse"></i> {{ __('Branch') }}:</strong> {{ $branchInfo['name'] }}
-                                                    @if($branchInfo['city'])
-                                                        <small>({{ $branchInfo['city'] }})</small>
+                                                @if($catalogItem['_branch'])
+                                                    <strong><i class="fas fa-warehouse"></i> {{ __('Branch') }}:</strong> {{ $catalogItem['_branch']['name'] }}
+                                                    @if($catalogItem['_branch']['city'])
+                                                        <small>({{ $catalogItem['_branch']['city'] }})</small>
                                                     @endif
                                                     <br>
                                                 @endif
                                                 @if(isset($catalogItem['item']['brand_name']))
                                                     <strong>{{ __('Brand') }}:</strong> {{ $catalogItem['item']['brand_name'] }}<br>
                                                 @endif
-                                                @php
-                                                    // جودة البراند والشركة المصنعة
-                                                    $invoiceQualityBrand = null;
-                                                    // Check both new name (quality_brand_id) and old name (quality_brand_id) for backward compatibility
-                                                    $qbId = $catalogItem['quality_brand_id'] ?? $catalogItem['quality_brand_id'] ?? null;
-                                                    if ($qbId) {
-                                                        $invoiceQualityBrand = \App\Domain\Catalog\Models\QualityBrand::find($qbId);
-                                                    }
-                                                @endphp
-                                                @if($invoiceQualityBrand)
-                                                    <strong>{{ __('Quality Brand') }}:</strong> {{ getLocalizedQualityName($invoiceQualityBrand) }}<br>
+                                                @if($catalogItem['_qualityBrandName'])
+                                                    <strong>{{ __('Quality Brand') }}:</strong> {{ $catalogItem['_qualityBrandName'] }}<br>
                                                 @elseif(isset($catalogItem['quality_name']))
                                                     <strong>{{ __('Quality') }}:</strong> {{ $catalogItem['quality_name'] }}<br>
                                                 @endif
-                                                @php
-                                                    $invoiceCondition = isset($catalogItem['item']['item_condition']) && $catalogItem['item']['item_condition'] == 1 ? __('Used') : __('New');
-                                                @endphp
-                                                <strong>{{ __('Condition') }}:</strong> {{ $invoiceCondition }}
+                                                <strong>{{ __('Condition') }}:</strong> {{ $catalogItem['_condition'] }}
                                             </td>
 
 
@@ -221,16 +186,11 @@
                                             <td colspan="2">{{ __('Subtotal') }}</td>
                                             <td>{{ \PriceHelper::showCurrencyPrice($subtotal  * $purchase->currency_value) }}</td>
                                         </tr>
-                                        @if($purchase->shipping_cost != 0)
-                                        @php
-                                        $price = round(($purchase->shipping_cost / $purchase->currency_value),2);
-                                        @endphp
-                                            @if(DB::table('shippings')->where('price','=',$price)->count() > 0)
+                                        @if($purchase->shipping_cost != 0 && $shippingMethodName)
                                             <tr>
-                                                <td colspan="2">{{ DB::table('shippings')->where('price','=',$price)->first()->name }}({{$purchase->currency_sign}})</td>
+                                                <td colspan="2">{{ $shippingMethodName }}({{$purchase->currency_sign}})</td>
                                                 <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost,$purchase->currency_sign) }}</td>
                                             </tr>
-                                            @endif
                                         @endif
 
                                         @if($purchase->tax != 0)

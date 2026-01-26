@@ -658,8 +658,23 @@ class AccountLedgerController extends OperatorBaseController
         $merchants = $this->reportService->getMerchantsSummaryReport($startDate, $endDate);
         $currency = monetaryUnit()->getDefault();
 
+        // Pre-compute totals for view (DATA_FLOW_POLICY)
+        $totalSales = $merchants->sum('total_sales');
+        $totalCommission = $merchants->sum('total_commission');
+        $totalTax = $merchants->sum('total_tax');
+        $totals = [
+            'total_sales' => $totalSales,
+            'total_commission' => $totalCommission,
+            'total_tax' => $totalTax,
+            'balance_due' => $merchants->sum('balance_due'),
+            'net_amount' => $totalSales - $totalCommission - $totalTax,
+            'settlements_received' => $merchants->sum('settlements_received'),
+            'transaction_count' => $merchants->sum('transaction_count'),
+        ];
+
         return view('operator.accounts.reports.merchants-summary', [
             'merchants' => $merchants,
+            'totals' => $totals,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
             'currency' => $currency,
@@ -698,8 +713,20 @@ class AccountLedgerController extends OperatorBaseController
         $couriers = $this->reportService->getCouriersReport($startDate, $endDate);
         $currency = monetaryUnit()->getDefault();
 
+        // Pre-compute totals for view (DATA_FLOW_POLICY)
+        $totals = [
+            'fees_earned' => $couriers->sum('fees_earned'),
+            'cod_collected' => $couriers->sum('cod_collected'),
+            'cod_pending' => $couriers->sum('cod_pending'),
+            'owes_to_platform' => $couriers->sum('owes_to_platform'),
+            'settlement_amount' => $couriers->sum('settlement_amount'),
+            'settlements_made' => $couriers->sum('settlements_made'),
+            'delivery_count' => $couriers->sum('delivery_count'),
+        ];
+
         return view('operator.accounts.reports.couriers', [
             'couriers' => $couriers,
+            'totals' => $totals,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
             'currency' => $currency,
@@ -717,8 +744,21 @@ class AccountLedgerController extends OperatorBaseController
         $companies = $this->reportService->getShippingCompaniesReport($startDate, $endDate);
         $currency = monetaryUnit()->getDefault();
 
+        // Pre-compute totals for view (DATA_FLOW_POLICY)
+        $receivable = $companies->sum('receivable_from_platform');
+        $payable = $companies->sum('payable_to_platform');
+        $totals = [
+            'fees_earned' => $companies->sum('fees_earned'),
+            'cod_collected' => $companies->sum('cod_collected'),
+            'receivable_from_platform' => $receivable,
+            'payable_to_platform' => $payable,
+            'net_balance' => $receivable - $payable,
+            'shipment_count' => $companies->sum('shipment_count'),
+        ];
+
         return view('operator.accounts.reports.shipping-companies', [
             'companies' => $companies,
+            'totals' => $totals,
             'startDate' => $startDate?->format('Y-m-d') ?? '',
             'endDate' => $endDate?->format('Y-m-d') ?? '',
             'currency' => $currency,

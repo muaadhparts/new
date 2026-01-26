@@ -168,12 +168,7 @@
                     </thead>
                     <tbody>
                         @forelse($statement['statement'] as $row)
-                        @php
-                            $txn = $row['transaction'];
-                            $isDebit = $row['is_debit'];
-                            $isCredit = $row['is_credit'];
-                            $counterparty = $isDebit ? $txn->toParty : $txn->fromParty;
-                        @endphp
+                        @php $txn = $row['transaction']; $isDebit = $row['is_debit']; $isCredit = $row['is_credit']; $counterparty = $isDebit ? $txn->toParty : $txn->fromParty; @endphp
                         <tr>
                             <td>{{ $txn->transaction_date->format('Y-m-d') }}</td>
                             <td>

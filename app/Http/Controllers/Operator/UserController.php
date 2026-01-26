@@ -66,7 +66,8 @@ class UserController extends OperatorBaseController
         }
 
         public function create(){
-            return view('operator.user.create');
+            $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml();
+            return view('operator.user.create', compact('countriesHtml'));
         }
 
         public function withdraws(){
@@ -135,11 +136,12 @@ class UserController extends OperatorBaseController
             return response()->json($msg);   
         }
 
-        //*** GET Request    
+        //*** GET Request
         public function edit($id)
         {
             $data = User::findOrFail($id);
-            return view('operator.user.edit',compact('data'));
+            $countriesHtml = \App\Helpers\LocationHelper::getCountriesOptionsHtml($data->country);
+            return view('operator.user.edit', compact('data', 'countriesHtml'));
         }
 
         //*** POST Request

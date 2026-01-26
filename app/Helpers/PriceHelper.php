@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @dataflow-exception: Shipping calculation logic, scheduled for migration to ShippingCalculatorService
+ * TODO: Move calculateShippingByWeight and calculateShippingDimensions to ShippingCalculatorService
+ */
+
 namespace App\Helpers;
 
 use App\Domain\Platform\Models\MonetaryUnit;

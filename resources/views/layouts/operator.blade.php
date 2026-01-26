@@ -17,13 +17,8 @@
 ================================================================================
 --}}
 <!doctype html>
-@php
-	// Get language from Session (same as frontend)
-	$adminLang = Session::has('language')
-		? \App\Domain\Platform\Models\Language::find(Session::get('language'))
-		: \App\Domain\Platform\Models\Language::where('is_default', 1)->first();
-@endphp
-<html lang="en" dir="{{ $adminLang && $adminLang->rtl == 1 ? 'rtl' : 'ltr' }}">
+{{-- $currentLanguage is pre-computed in NavigationContext (DATA_FLOW_POLICY) --}}
+<html lang="en" dir="{{ $currentLanguage && $currentLanguage->rtl == 1 ? 'rtl' : 'ltr' }}">
 
 <head>
 	<meta charset="UTF-8">

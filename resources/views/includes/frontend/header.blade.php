@@ -189,22 +189,7 @@
                             <span>@lang('CatalogItems')</span>
                         </a>
                     </li>
-                    @if ($static_content->where('header', '=', 1)->count() > 0)
-                        <li class="muaadh-nav-dropdown">
-                            <a href="javascript:void(0)">
-                                <i class="fas fa-file-alt"></i>
-                                <span>@lang('Pages')</span>
-                                <i class="fas fa-chevron-down"></i>
-                            </a>
-                            <ul class="muaadh-nav-submenu">
-                                @foreach ($static_content->where('header', '=', 1) as $content)
-                                    <li>
-                                        <a href="{{ route('front.merchant', $content->slug) }}">{{ $content->name }}</a>
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </li>
-                    @endif
+                    {{-- Static pages menu removed - feature deprecated --}}
                     @if ($ps->blog == 1)
                         <li class="{{ request()->path() == 'publications' ? 'active' : '' }}">
                             <a href="{{ route('front.publications') }}">

@@ -31,7 +31,7 @@ class MerchantController extends FrontBaseController
             if (empty($page)) {
                 return response()->view('errors.404', [], 404);
             }
-            return view('frontend.static-content', compact('page'));
+            return view('frontend.static-content', ['page' => $page]);
         }
 
         $data['merchant'] = $merchant;

@@ -181,13 +181,8 @@
                                 </thead>
                                 <tbody>
                                     @foreach($companiesPerformance as $company => $statuses)
-                                        @php
-                                            $delivered = $statuses->where('status', 'delivered')->first()->count ?? 0;
-                                            $failed = $statuses->where('status', 'failed')->first()->count ?? 0;
-                                            $returned = $statuses->where('status', 'returned')->first()->count ?? 0;
-                                            $companyTotal = $statuses->sum('count');
-                                            $companySuccess = $companyTotal > 0 ? round(($delivered / $companyTotal) * 100) : 0;
-                                        @endphp
+                                        @php $delivered = $statuses->where('status', 'delivered')->first()->count ?? 0; $failed = $statuses->where('status', 'failed')->first()->count ?? 0; @endphp
+                                        @php $returned = $statuses->where('status', 'returned')->first()->count ?? 0; $companyTotal = $statuses->sum('count'); $companySuccess = $companyTotal > 0 ? round(($delivered / $companyTotal) * 100) : 0; @endphp
                                         <tr>
                                             <td>{{ $company ?? 'Unknown' }}</td>
                                             <td class="text-center">

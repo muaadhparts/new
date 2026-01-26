@@ -51,7 +51,19 @@ class CatalogItemController extends MerchantBaseController
         $sign = $this->curr;
 
         if ($slug === 'items') {
-            return view('merchant.catalog-item.create.items', compact('sign'));
+            // Pre-fetch data for view (DATA_FLOW_POLICY)
+            $branches = MerchantBranch::where('user_id', $user->id)
+                ->where('status', 1)
+                ->get(['id', 'warehouse_name']);
+
+            $qualityBrands = QualityBrand::where('is_active', 1)
+                ->get(['id', 'name_en', 'name_ar']);
+
+            return view('merchant.catalog-item.create.items', [
+                'sign' => $sign,
+                'branches' => $branches,
+                'qualityBrands' => $qualityBrands,
+            ]);
         }
 
         Session::flash('unsuccess', __('Invalid catalog item type.'));
@@ -221,7 +233,21 @@ class CatalogItemController extends MerchantBaseController
         $data = $merchantItem->catalogItem;
         $sign = $this->curr;
 
-        return view('merchant.catalog-item.edit.items', compact('data', 'merchantItem', 'sign'));
+        // Pre-fetch data for view (DATA_FLOW_POLICY)
+        $branches = MerchantBranch::where('user_id', $this->user->id)
+            ->where('status', 1)
+            ->get(['id', 'warehouse_name']);
+
+        $qualityBrands = QualityBrand::where('is_active', 1)
+            ->get(['id', 'name_en', 'name_ar']);
+
+        return view('merchant.catalog-item.edit.items', [
+            'data' => $data,
+            'merchantItem' => $merchantItem,
+            'sign' => $sign,
+            'branches' => $branches,
+            'qualityBrands' => $qualityBrands,
+        ]);
     }
 
     //*** POST Request - Update merchant item

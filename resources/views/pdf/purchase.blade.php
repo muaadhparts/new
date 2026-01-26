@@ -1,3 +1,4 @@
+{{-- @dataflow-exception PDF generation via MuaadhMailer - data comes from email context --}}
 <!DOCTYPE html>
 <html>
 <head>
@@ -1392,19 +1393,7 @@ table.dataTable thead .sorting_desc_disabled::after {
                                         @foreach($cart['items'] as $catalogItem)
                                         <tr>
                                             <td width="50%">
-                                                @if($catalogItem['item']['user_id'] != 0)
-                                                @php
-                                                $user = App\Domain\Identity\Models\User::find($catalogItem['item']['user_id']);
-                                                @endphp
-                                                @if(isset($user))
-                                                <x-catalog-item-name :item="$catalogItem" :merchant-user-id="$catalogItem['item']['user_id']" />
-                                                @else
-                                                <x-catalog-item-name :item="$catalogItem" :merchant-user-id="$catalogItem['item']['user_id']" />
-                                                @endif
-
-                                                @else
-                                                <x-catalog-item-name :item="$catalogItem" :merchant-user-id="$catalogItem['item']['user_id']" />
-                                                @endif
+                                                <x-catalog-item-name :item="$catalogItem" :merchant-user-id="$catalogItem['item']['user_id'] ?? 0" />
                                             </td>
 
                                             <td>

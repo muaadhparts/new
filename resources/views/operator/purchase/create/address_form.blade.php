@@ -24,12 +24,7 @@
   <div class="col col-md-6 col-sm-6">
     <label for="customer_country">Country * </label>
     <select type="text" class="form-control" name="customer_country" id="customer_country" required>
-      <option value="">{{ __('Select Country') }}</option>
-      @foreach (DB::table('countries')->get() as $data)
-          <option value="{{ $data->country_name }}"  {{$user['customer_country'] == $data->country_name ? 'selected' : ''}}>
-              {{ $data->country_name }}
-          </option>		
-       @endforeach
+      {!! $countriesHtml !!}
   </select>
   </div>
   <div class="col col-md-6 col-sm-6">
@@ -80,12 +75,7 @@
     <div class="col col-md-6 col-sm-6">
       <label for="customer_country">Country * </label>
       <select type="text" class="form-control" name="customer_country" id="customer_country" required>
-        <option value="">{{ __('Select Country') }}</option>
-        @foreach (DB::table('countries')->get() as $data)
-            <option value="{{ $data->country_name }}"  {{$user['country'] == $data->country_name ? 'selected' : ''}}>
-                {{ $data->country_name }}
-            </option>		
-         @endforeach
+        {!! $countriesHtml !!}
     </select>
     </div>
     <div class="col col-md-6 col-sm-6">
@@ -127,12 +117,7 @@
     <div class="col col-md-6 col-sm-6">
       <label for="customer_country">Country * </label>
       <select  class="form-control" name="customer_country" id="customer_country" required>
-        <option value="">{{ __('Select Country') }}</option>
-        @foreach (DB::table('countries')->get() as $data)
-            <option value="{{ $data->country_name }}" >
-                {{ $data->country_name }}
-            </option>		
-         @endforeach
+        {!! $countriesHtml !!}
     </select>
     </div>
     <div class="col col-md-6 col-sm-6">

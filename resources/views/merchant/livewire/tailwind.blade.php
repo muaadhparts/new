@@ -1,14 +1,5 @@
-@php
-if (! isset($scrollTo)) {
-    $scrollTo = 'body';
-}
-
-$scrollIntoViewJsSnippet = ($scrollTo !== false)
-    ? <<<JS
-       (\$el.closest('{$scrollTo}') || document.querySelector('{$scrollTo}')).scrollIntoView()
-    JS
-    : '';
-@endphp
+{{-- Livewire Tailwind Pagination - No queries, pure UI --}}
+@php $scrollTo = $scrollTo ?? 'body'; $scrollIntoViewJsSnippet = $scrollTo !== false ? "(\$el.closest('{$scrollTo}') || document.querySelector('{$scrollTo}')).scrollIntoView()" : ''; @endphp
 
 <div>
     @if ($paginator->hasPages())

@@ -60,12 +60,7 @@
                                     </td>
 
                                     <td>
-                                        @php
-                                            $active = $data->status == 1 ? 'selected' : '';
-                                            $deactivated = $data->status == 0 ? 'selected' : '';
-                                            $activeClass = $data->status == 1 ? 'active' : 'deactive';
-
-                                        @endphp
+                                        @php $active = $data->status == 1 ? 'selected' : ''; $deactivated = $data->status == 0 ? 'selected' : ''; $activeClass = $data->status == 1 ? 'active' : 'deactive'; @endphp
                                         <div class="status position-relative">
                                             <div class="dropdown-container">
                                                 <select class="form-control nice-select form__control {{ $activeClass }}"

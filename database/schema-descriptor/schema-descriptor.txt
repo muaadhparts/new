@@ -229,7 +229,6 @@ KEY `catalog_reviews_merchant_item_id_index` (`merchant_item_id`)
 
 TABLE catalogs
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`new_id` int DEFAULT '0'
 `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `brand_id` bigint unsigned DEFAULT NULL
 `brand_region_id` bigint unsigned DEFAULT NULL

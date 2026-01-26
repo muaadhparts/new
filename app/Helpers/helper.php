@@ -467,6 +467,8 @@ if (! function_exists('setting')) {
 /**
  * Get a setting from a specific group
  *
+ * DATA FLOW POLICY: Uses PlatformSettingsService (not direct Model access)
+ *
  * @param string $group Group name (e.g., 'branding', 'mail', 'features')
  * @param string $key Setting key within the group
  * @param mixed $default Default value if not found
@@ -475,6 +477,6 @@ if (! function_exists('setting')) {
 if (! function_exists('groupSetting')) {
     function groupSetting(string $group, string $key, $default = null)
     {
-        return \App\Domain\Platform\Models\PlatformSetting::get($group, $key, $default);
+        return platformSettings()->getGroupSetting($group, $key, $default);
     }
 }

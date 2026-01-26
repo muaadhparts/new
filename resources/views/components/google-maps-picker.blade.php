@@ -3,11 +3,7 @@
     Usage: @include('components.google-maps-picker', ['showAsModal' => true])
 --}}
 
-@php
-    $showAsModal = $showAsModal ?? false;
-    $modalId = $modalId ?? 'google-maps-modal';
-    $mapHeight = $mapHeight ?? '400px';
-@endphp
+@props(['showAsModal' => false, 'modalId' => 'google-maps-modal', 'mapHeight' => '400px'])
 
 {{-- POLICY: Google Maps meta tag ONLY if API key exists in api_credentials table --}}
 @if(!empty($googleMapsApiKey))

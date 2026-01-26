@@ -143,7 +143,7 @@
                                 <li class="nav-item dropdown ">
                                     <a class="nav-link dropdown-toggle" href="#">{{ __('Pages') }}</a>
                                     <ul class="dropdown-menu">
-                                        @foreach($static_content->where('header','=',1) as $data)
+                                        @foreach($static_content_header as $data)
                                         <li><a class="dropdown-item" href="{{ route('front.merchant',$data->slug) }}">{{
                                                 $data->name }}</a></li>
                                         @endforeach
@@ -299,7 +299,7 @@
                                                             <a class="nav-link dropdown-toggle" href="#">{{ __('Pages')
                                                                 }}</a>
                                                             <ul class="dropdown-menu">
-                                                                @foreach($static_content->where('header','=',1) as $data)
+                                                                @foreach($static_content_header as $data)
                                                                 <li><a class="dropdown-item"
                                                                         href="{{ route('front.merchant',$data->slug) }}">{{
                                                                         $data->name }}</a></li>

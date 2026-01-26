@@ -79,6 +79,8 @@ class CoreSettingsContext implements ContextInterface
             'ps' => $this->frontendSettings,
             'platformSettings' => $this->settings,
             'seo' => (object) ($this->seoSettings ?? []),
+            // Pre-computed admin_loader to avoid ->get() calls in views
+            'adminLoader' => $this->frontendSettings->admin_loader ?? 'loader.gif',
         ];
     }
 

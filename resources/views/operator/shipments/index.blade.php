@@ -170,19 +170,7 @@
                             </thead>
                             <tbody>
                                 @forelse($shipments as $shipment)
-                                    @php
-                                        $statusColors = [
-                                            'created' => 'info',
-                                            'picked_up' => 'primary',
-                                            'in_transit' => 'warning',
-                                            'out_for_delivery' => 'warning',
-                                            'delivered' => 'success',
-                                            'failed' => 'danger',
-                                            'returned' => 'secondary',
-                                            'cancelled' => 'dark',
-                                        ];
-                                        $color = $statusColors[$shipment->status] ?? 'info';
-                                    @endphp
+                                    @php $statusColors = ['created' => 'info', 'picked_up' => 'primary', 'in_transit' => 'warning', 'out_for_delivery' => 'warning', 'delivered' => 'success', 'failed' => 'danger', 'returned' => 'secondary', 'cancelled' => 'dark']; $color = $statusColors[$shipment->status] ?? 'info'; @endphp
                                     <tr>
                                         <td>
                                             <a href="{{ route('operator.shipments.show', $shipment->tracking_number) }}"

@@ -49,17 +49,7 @@
                         {{-- Branches / Offers --}}
                         <div class="branches-list">
                             @foreach($merchantGroup['branches'] as $branchData)
-                                @php
-                                    $offer = $branchData['offer'];
-                                    $canBuy = $offer['can_buy'] ?? false;
-                                    $inStock = $offer['in_stock'] ?? false;
-                                    $preordered = $offer['preordered'] ?? false;
-                                    $stock = $offer['stock'] ?? 0;
-                                    $minQty = $offer['minimum_qty'] ?? 1;
-                                    $uniqueId = 'offer_' . ($offer['merchant_item_id'] ?? rand());
-                                @endphp
-
-                                <div class="branch-offer d-flex flex-wrap align-items-center gap-3 p-2 rounded {{ $canBuy ? 'bg-light' : 'bg-light opacity-75' }} mb-2">
+                                <div class="branch-offer d-flex flex-wrap align-items-center gap-3 p-2 rounded {{ $branchData['offer']['can_buy'] ? 'bg-light' : 'bg-light opacity-75' }} mb-2">
                                     {{-- Branch Info --}}
                                     <div class="branch-info flex-grow-1">
                                         <div class="d-flex align-items-center gap-2 mb-1">
@@ -67,9 +57,9 @@
                                             <span class="branch-name">{{ $branchData['branch_name'] }}</span>
 
                                             {{-- Stock Badge --}}
-                                            @if($inStock)
-                                                <span class="badge bg-success">{{ $stock }} @lang('Available')</span>
-                                            @elseif($preordered)
+                                            @if($branchData['offer']['in_stock'])
+                                                <span class="badge bg-success">{{ $branchData['offer']['stock'] }} @lang('Available')</span>
+                                            @elseif($branchData['offer']['preordered'])
                                                 <span class="badge bg-warning text-dark">@lang('Preorder')</span>
                                             @else
                                                 <span class="badge bg-secondary">@lang('Out of Stock')</span>
@@ -77,9 +67,9 @@
                                         </div>
 
                                         {{-- Merchant Photos --}}
-                                        @if(!empty($offer['photos']))
+                                        @if(!empty($branchData['offer']['photos']))
                                             <div class="offer-photos d-flex gap-1 mt-1">
-                                                @foreach(array_slice($offer['photos'], 0, 4) as $photo)
+                                                @foreach(array_slice($branchData['offer']['photos'], 0, 4) as $photo)
                                                     <img src="{{ $photo['url'] }}"
                                                          alt=""
                                                          class="offer-photo-thumb rounded"
@@ -93,29 +83,29 @@
                                     {{-- Price --}}
                                     <div class="branch-price text-end">
                                         <span class="price-current fw-bold fs-5 text-primary">
-                                            {{ $offer['final_price_formatted'] }}
+                                            {{ $branchData['offer']['final_price_formatted'] }}
                                         </span>
-                                        @if($offer['previous_price_formatted'] ?? null)
+                                        @if($branchData['offer']['previous_price_formatted'])
                                             <br>
-                                            <del class="price-old text-muted small">{{ $offer['previous_price_formatted'] }}</del>
-                                            @if(($offer['discount_percentage'] ?? 0) > 0)
-                                                <span class="badge bg-danger">-{{ number_format($offer['discount_percentage'], 0) }}%</span>
+                                            <del class="price-old text-muted small">{{ $branchData['offer']['previous_price_formatted'] }}</del>
+                                            @if($branchData['offer']['discount_percentage'] > 0)
+                                                <span class="badge bg-danger">-{{ $branchData['offer']['discount_percentage_formatted'] }}</span>
                                             @endif
                                         @endif
                                     </div>
 
                                     {{-- Actions --}}
                                     <div class="catalog-offers-branch-actions">
-                                        @if($canBuy)
+                                        @if($branchData['offer']['can_buy'])
                                             {{-- Add to Cart --}}
                                             <button type="button"
                                                     class="catalog-btn catalog-btn-success m-cart-add"
-                                                    data-merchant-item-id="{{ $offer['merchant_item_id'] }}"
-                                                    data-merchant-user-id="{{ $offer['user_id'] }}"
+                                                    data-merchant-item-id="{{ $branchData['offer']['merchant_item_id'] }}"
+                                                    data-merchant-user-id="{{ $branchData['offer']['user_id'] }}"
                                                     data-catalog-item-id="{{ $catalogItem->id }}"
-                                                    data-min-qty="{{ $minQty }}"
-                                                    data-stock="{{ $stock }}"
-                                                    data-preordered="{{ $preordered ? 1 : 0 }}">
+                                                    data-min-qty="{{ $branchData['offer']['minimum_qty'] }}"
+                                                    data-stock="{{ $branchData['offer']['stock'] }}"
+                                                    data-preordered="{{ $branchData['offer']['preordered'] ? 1 : 0 }}">
                                                 <i class="fas fa-cart-plus"></i>
                                                 <span class="d-none d-md-inline">@lang('Add')</span>
                                             </button>
@@ -124,12 +114,12 @@
                                         @endif
 
                                         {{-- Shipping Quote --}}
-                                        @if($catalogItem->weight > 0 && ($offer['branch_id'] ?? null))
+                                        @if($catalogItem->weight > 0 && $branchData['offer']['branch_id'])
                                         <button type="button"
                                                 class="catalog-btn catalog-btn-outline"
                                                 data-shipping-quote
-                                                data-merchant-id="{{ $offer['user_id'] }}"
-                                                data-branch-id="{{ $offer['branch_id'] }}"
+                                                data-merchant-id="{{ $branchData['offer']['user_id'] }}"
+                                                data-branch-id="{{ $branchData['offer']['branch_id'] }}"
                                                 data-weight="{{ $catalogItem->weight }}"
                                                 data-catalog-item-name="{{ $catalogItem->showName() }}"
                                                 title="@lang('احسب الشحن')">
@@ -141,7 +131,7 @@
                                         @auth
                                             <button type="button"
                                                     class="catalog-btn catalog-btn-outline favorite"
-                                                    data-href="{{ route('user-favorite-add-merchant', $offer['merchant_item_id']) }}"
+                                                    data-href="{{ route('user-favorite-add-merchant', $branchData['offer']['merchant_item_id']) }}"
                                                     title="@lang('Add to Favorites')">
                                                 <i class="far fa-heart"></i>
                                             </button>

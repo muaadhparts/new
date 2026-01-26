@@ -58,24 +58,16 @@
                 </thead>
                 <tbody>
                     @foreach ($purchases as $purchase)
-                    @php
-                    $price = $purchase
-                    ->merchantPurchases()
-                    ->where('user_id', '=', $user->id)
-                    ->sum('price');
-                    @endphp
+                    @php $totals = $purchaseTotals[$purchase->id] ?? ['price' => 0, 'qty' => 0]; @endphp
                     <tr>
                         <!-- Purchase Number -->
                         <td><span class="content">{{ $purchase->purchase_number }}</span></td>
                         <!-- Total Qty -->
                         <td class="text-start">
-                            <span class="content">
-                                {{ $purchase->merchantPurchases()->where('user_id', '=', $user->id)->sum('qty') }}
-                            </span>
+                            <span class="content">{{ $totals['qty'] }}</span>
                         </td>
                         <!-- Total Cost -->
-                        <td><span class="content">{{ PriceHelper::showOrderCurrencyPrice($price, $purchase->currency_sign)
-                                }}</span>
+                        <td><span class="content">{{ PriceHelper::showOrderCurrencyPrice($totals['price'], $purchase->currency_sign) }}</span>
                         </td>
                         <!-- Payment Method -->
                         <td>

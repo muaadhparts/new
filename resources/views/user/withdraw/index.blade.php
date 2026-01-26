@@ -67,15 +67,7 @@
 
                                         <td>
 
-                                            @php
-                                                if ($withdraw->status == 'pending') {
-                                                    $class = 'yellow-btn';
-                                                } elseif ($withdraw->status == 'completed') {
-                                                    $class = 'green-btn';
-                                                } else {
-                                                    $class = 'red-btn';
-                                                }
-                                            @endphp
+                                            @php $class = $withdraw->status == 'pending' ? 'yellow-btn' : ($withdraw->status == 'completed' ? 'green-btn' : 'red-btn'); @endphp
                                             <button type="button" disabled
                                                 class="template-btn md-btn {{ $class }}">
                                                 {{ ucfirst($withdraw->status) }}

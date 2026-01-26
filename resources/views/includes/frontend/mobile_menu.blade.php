@@ -89,22 +89,7 @@
                     <i class="fas fa-box-open"></i>
                     <span>@lang('CatalogItems')</span>
                 </a>
-                @if ($static_content->where('header', '=', 1)->count() > 0)
-                    <div class="muaadh-mobile-nav-accordion">
-                        <button class="muaadh-mobile-nav-item muaadh-accordion-toggle">
-                            <i class="fas fa-file-alt"></i>
-                            <span>@lang('Pages')</span>
-                            <i class="fas fa-chevron-down muaadh-accordion-icon"></i>
-                        </button>
-                        <div class="muaadh-accordion-content">
-                            @foreach ($static_content->where('header', '=', 1) as $content)
-                                <a href="{{ route('front.merchant', $content->slug) }}" class="muaadh-mobile-nav-subitem">
-                                    {{ $content->name }}
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                @endif
+                {{-- Static pages menu removed - feature deprecated --}}
                 @if ($ps->blog == 1)
                     <a href="{{ route('front.publications') }}" class="muaadh-mobile-nav-item {{ request()->path() == 'publications' ? 'active' : '' }}">
                         <i class="fas fa-newspaper"></i>

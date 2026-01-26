@@ -18,14 +18,9 @@
     @include('alerts.operator.form-both')
 
     {{-- Summary Totals --}}
-    @php
-        $totalShipments = collect($companies)->sum('shipment_count');
-        $totalFees = collect($companies)->sum('total_shipping_fees');
-        $totalCod = collect($companies)->sum('total_cod_collected');
-        $totalOwesToPlatform = collect($companies)->sum('owes_platform');
-        $totalOwesToMerchant = collect($companies)->sum('owes_merchant');
-        $totalPending = collect($companies)->sum('pending_count');
-    @endphp
+    @php $totalShipments = collect($companies)->sum('shipment_count'); $totalFees = collect($companies)->sum('total_shipping_fees'); @endphp
+    @php $totalCod = collect($companies)->sum('total_cod_collected'); $totalOwesToPlatform = collect($companies)->sum('owes_platform'); @endphp
+    @php $totalOwesToMerchant = collect($companies)->sum('owes_merchant'); $totalPending = collect($companies)->sum('pending_count'); @endphp
 
     <div class="row mb-4">
         <div class="col-md-2">

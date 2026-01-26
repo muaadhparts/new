@@ -66,13 +66,7 @@
 
                         @endforeach
                         <hr>
-                       @php
-                           $setMonetaryUnits = json_decode($data->monetary_unit_id);
-                           if($setMonetaryUnits == 0){
-                             $setMonetaryUnits = [];
-                           }
-                       @endphp
-                        @foreach(DB::table('monetary_units')->get() as $dcurr)
+                        @foreach($monetaryUnits as $dcurr)
                         <div class="row">
                           <div class="col-lg-4">
                             <div class="left-area">

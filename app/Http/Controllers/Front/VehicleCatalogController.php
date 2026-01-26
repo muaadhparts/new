@@ -69,7 +69,7 @@ class VehicleCatalogController extends Controller
                          ->orWhere('endYear', 0)
                   )
             )
-            ->orderBy('new_id', 'ASC')
+            ->orderBy('sort', 'ASC')
             ->paginate(12);
 
         // Year range for filter
@@ -80,15 +80,15 @@ class VehicleCatalogController extends Controller
             $r->code => getLocalizedLabel($r)
         ])->toArray();
 
-        return view('catalog.index', compact(
-            'brand',
-            'catalogs',
-            'years',
-            'regionOptions',
-            'region',
-            'searchName',
-            'searchYear'
-        ));
+        return view('catalog.index', [
+            'brand' => $brand,
+            'catalogs' => $catalogs,
+            'years' => $years,
+            'regionOptions' => $regionOptions,
+            'region' => $region,
+            'searchName' => $searchName,
+            'searchYear' => $searchYear,
+        ]);
     }
 
     // ========================================
@@ -373,28 +373,28 @@ class VehicleCatalogController extends Controller
         $parentCategory2 = $level2Category;
         $category = $level3Category;
 
-        return view('catalog.illustrations', compact(
-            'brand',
-            'catalog',
-            'parentCategory1',
-            'parentCategory2',
-            'category',
-            'section',
-            'illustration',
-            'callouts',
-            'filters',
-            'selectedFilters',
-            'chips',
-            'vin',
-            'isVinMode',
-            'key1',
-            'key2',
-            'key3',
-            'autoOpen',
-            'highlightCallout',
-            'sectionId',
-            'categoryId'
-        ));
+        return view('catalog.illustrations', [
+            'brand' => $brand,
+            'catalog' => $catalog,
+            'parentCategory1' => $parentCategory1,
+            'parentCategory2' => $parentCategory2,
+            'category' => $category,
+            'section' => $section,
+            'illustration' => $illustration,
+            'callouts' => $callouts,
+            'filters' => $filters,
+            'selectedFilters' => $selectedFilters,
+            'chips' => $chips,
+            'vin' => $vin,
+            'isVinMode' => $isVinMode,
+            'key1' => $key1,
+            'key2' => $key2,
+            'key3' => $key3,
+            'autoOpen' => $autoOpen,
+            'highlightCallout' => $highlightCallout,
+            'sectionId' => $sectionId,
+            'categoryId' => $categoryId,
+        ]);
     }
 
     // ========================================
