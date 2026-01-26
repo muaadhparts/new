@@ -101,7 +101,11 @@
       "Bash(if [ -d \"C:\\\\Users\\\\hp\\\\Herd\\\\oldnew\\\\app\\\\Services\" ])",
       "Bash(then echo \"EXISTS: app/Services/\")",
       "Bash(else echo \"DELETED: app/Services/\")",
-      "Bash(if exist .githubworkflows echo \"exists\" else echo \"not exists\")"
+      "Bash(if exist .githubworkflows echo \"exists\" else echo \"not exists\")",
+      "Bash(tr:*)",
+      "Bash(for file in suggest support-message track-load user-chat-message user-support-message)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(while read file)"
     ]
   }
 }
