@@ -60,7 +60,7 @@ class Withdraw extends Model
     // === Type Constants (per schema enum) ===
     const TYPE_USER = 'user';
     const TYPE_MERCHANT = 'merchant';
-    const TYPE_RIDER = 'rider';
+    const TYPE_COURIER = 'courier';
 
     // === Method Constants ===
     const METHOD_BANK_TRANSFER = 'bank_transfer';
@@ -162,7 +162,7 @@ class Withdraw extends Model
         return match ($this->type) {
             self::TYPE_USER => __('User'),
             self::TYPE_MERCHANT => __('Merchant'),
-            self::TYPE_RIDER => __('Rider'),
+            self::TYPE_COURIER => __('Courier'),
             default => $this->type,
         };
     }

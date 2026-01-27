@@ -8,14 +8,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Domain\Commerce\Models\Purchase;
-use App\Domain\Commerce\Notifications\OrderPlacedNotification;
+use App\Domain\Commerce\Notifications\PurchasePlacedNotification;
 
 /**
- * Send Order Confirmation Job
+ * Send Purchase Confirmation Job
  *
- * Sends order confirmation email to customer.
+ * Sends purchase confirmation email to customer.
  */
-class SendOrderConfirmationJob implements ShouldQueue
+class SendPurchaseConfirmationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -42,7 +42,7 @@ class SendOrderConfirmationJob implements ShouldQueue
             return;
         }
 
-        $user->notify(new OrderPlacedNotification($this->purchase));
+        $user->notify(new PurchasePlacedNotification($this->purchase));
     }
 
     /**

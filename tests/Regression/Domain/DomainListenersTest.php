@@ -3,9 +3,9 @@
 namespace Tests\Regression\Domain;
 
 use Tests\TestCase;
-use App\Domain\Commerce\Listeners\SendOrderConfirmationListener;
-use App\Domain\Commerce\Listeners\NotifyMerchantsListener;
-use App\Domain\Commerce\Listeners\UpdateOrderStatusListener;
+use App\Domain\Commerce\Listeners\SendPurchaseConfirmationListener;
+use App\Domain\Commerce\Listeners\NotifyMerchantsOfPurchaseListener;
+use App\Domain\Commerce\Listeners\UpdatePurchaseStatusListener;
 use App\Domain\Merchant\Listeners\LogStockChangeListener;
 use App\Domain\Merchant\Listeners\NotifyLowStockListener;
 use App\Domain\Merchant\Listeners\NotifyOutOfStockListener;
@@ -38,35 +38,35 @@ class DomainListenersTest extends TestCase
     // ============================================
 
     /** @test */
-    public function send_order_confirmation_listener_exists()
+    public function send_purchase_confirmation_listener_exists()
     {
-        $this->assertTrue(class_exists(SendOrderConfirmationListener::class));
+        $this->assertTrue(class_exists(SendPurchaseConfirmationListener::class));
     }
 
     /** @test */
-    public function send_order_confirmation_listener_is_queueable()
+    public function send_purchase_confirmation_listener_is_queueable()
     {
         $this->assertTrue(
-            in_array(ShouldQueue::class, class_implements(SendOrderConfirmationListener::class))
+            in_array(ShouldQueue::class, class_implements(SendPurchaseConfirmationListener::class))
         );
     }
 
     /** @test */
-    public function send_order_confirmation_listener_has_handle_method()
+    public function send_purchase_confirmation_listener_has_handle_method()
     {
-        $this->assertTrue(method_exists(SendOrderConfirmationListener::class, 'handle'));
+        $this->assertTrue(method_exists(SendPurchaseConfirmationListener::class, 'handle'));
     }
 
     /** @test */
-    public function notify_merchants_listener_exists()
+    public function notify_merchants_of_purchase_listener_exists()
     {
-        $this->assertTrue(class_exists(NotifyMerchantsListener::class));
+        $this->assertTrue(class_exists(NotifyMerchantsOfPurchaseListener::class));
     }
 
     /** @test */
-    public function update_order_status_listener_exists()
+    public function update_purchase_status_listener_exists()
     {
-        $this->assertTrue(class_exists(UpdateOrderStatusListener::class));
+        $this->assertTrue(class_exists(UpdatePurchaseStatusListener::class));
     }
 
     // ============================================
@@ -261,9 +261,9 @@ class DomainListenersTest extends TestCase
     public function all_listeners_exist()
     {
         $listeners = [
-            SendOrderConfirmationListener::class,
-            NotifyMerchantsListener::class,
-            UpdateOrderStatusListener::class,
+            SendPurchaseConfirmationListener::class,
+            NotifyMerchantsOfPurchaseListener::class,
+            UpdatePurchaseStatusListener::class,
             LogStockChangeListener::class,
             NotifyLowStockListener::class,
             NotifyOutOfStockListener::class,
@@ -293,8 +293,8 @@ class DomainListenersTest extends TestCase
     public function all_listeners_have_handle_method()
     {
         $listeners = [
-            SendOrderConfirmationListener::class,
-            NotifyMerchantsListener::class,
+            SendPurchaseConfirmationListener::class,
+            NotifyMerchantsOfPurchaseListener::class,
             NotifyLowStockListener::class,
             ProcessSettlementListener::class,
             UpdateMerchantBalanceListener::class,
@@ -316,7 +316,7 @@ class DomainListenersTest extends TestCase
     {
         $this->assertStringStartsWith(
             'App\\Domain\\Commerce\\Listeners',
-            SendOrderConfirmationListener::class
+            SendPurchaseConfirmationListener::class
         );
     }
 

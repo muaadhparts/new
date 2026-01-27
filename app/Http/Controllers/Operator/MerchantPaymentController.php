@@ -147,7 +147,7 @@ class MerchantPaymentController extends OperatorBaseController
     {
         // Only allow editing platform payment gateways (user_id = 0)
         $data = MerchantPayment::where('id', $id)->where('user_id', 0)->firstOrFail();
-        $monetaryUnits = \DB::table('monetary_units')->get();
+        $monetaryUnits = monetaryUnit()->getAll();
         $setMonetaryUnits = json_decode($data->monetary_unit_id) ?: [];
         return view('operator.merchant-payment.edit', compact('data', 'monetaryUnits', 'setMonetaryUnits'));
     }

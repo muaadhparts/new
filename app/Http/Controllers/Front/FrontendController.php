@@ -44,8 +44,8 @@ class FrontendController extends FrontBaseController
 
     public function monetaryUnit($id)
     {
-        Session::put('monetary_unit', $id);
-        cache()->forget('session_monetary_unit');
+        // Use MonetaryUnitService (SINGLE SOURCE OF TRUTH)
+        monetaryUnit()->setCurrent((int) $id);
         return redirect()->back();
     }
 

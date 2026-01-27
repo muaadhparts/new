@@ -55,7 +55,7 @@ class AccountLedgerService
     public function syncMerchantParties(): int
     {
         $count = 0;
-        User::where('is_vendor', 1)->chunk(100, function ($merchants) use (&$count) {
+        User::where('is_merchant', 2)->chunk(100, function ($merchants) use (&$count) {
             foreach ($merchants as $merchant) {
                 AccountParty::forMerchant($merchant);
                 $count++;

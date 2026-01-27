@@ -8,14 +8,14 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Domain\Commerce\Models\Purchase;
-use App\Domain\Commerce\Events\OrderPlacedEvent;
+use App\Domain\Commerce\Events\PurchasePlacedEvent;
 
 /**
- * Process Order Job
+ * Process Purchase Job
  *
- * Processes a new order after placement.
+ * Processes a new purchase after placement.
  */
-class ProcessOrderJob implements ShouldQueue
+class ProcessPurchaseJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -41,14 +41,14 @@ class ProcessOrderJob implements ShouldQueue
      */
     public function handle(): void
     {
-        // Update order status to confirmed
+        // Update purchase status to confirmed
         $this->purchase->update(['status' => 'confirmed']);
 
         // Create merchant purchases
         $this->createMerchantPurchases();
 
-        // Dispatch order placed event
-        event(new OrderPlacedEvent($this->purchase));
+        // Dispatch purchase placed event
+        event(PurchasePlacedEvent::fromPurchase($this->purchase));
     }
 
     /**
@@ -75,12 +75,12 @@ class ProcessOrderJob implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         // Log failure
-        \Log::error('ProcessOrderJob failed', [
+        \Log::error('ProcessPurchaseJob failed', [
             'purchase_id' => $this->purchase->id,
             'error' => $exception->getMessage(),
         ]);
 
-        // Mark order as failed
+        // Mark purchase as failed
         $this->purchase->update([
             'status' => 'failed',
             'notes' => 'Processing failed: ' . $exception->getMessage(),

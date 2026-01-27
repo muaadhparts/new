@@ -8,8 +8,8 @@ use Tests\TestCase;
 use App\Domain\Platform\Events\DomainEvent;
 
 // Commerce Events
-use App\Domain\Commerce\Events\OrderPlacedEvent;
-use App\Domain\Commerce\Events\OrderStatusChangedEvent;
+use App\Domain\Commerce\Events\PurchasePlacedEvent;
+use App\Domain\Commerce\Events\PurchaseStatusChangedEvent;
 use App\Domain\Commerce\Events\PaymentReceivedEvent;
 
 // Merchant Events
@@ -42,13 +42,13 @@ use App\Domain\Identity\Events\UserLoginEvent;
 class DomainEventsTest extends TestCase
 {
     // =========================================================================
-    // ORDER PLACED EVENT
+    // PURCHASE PLACED EVENT
     // =========================================================================
 
     /** @test */
-    public function order_placed_event_can_be_created()
+    public function purchase_placed_event_can_be_created()
     {
-        $event = new OrderPlacedEvent(
+        $event = new PurchasePlacedEvent(
             purchaseId: 1,
             customerId: 100,
             totalAmount: 500.00,
@@ -66,9 +66,9 @@ class DomainEventsTest extends TestCase
     }
 
     /** @test */
-    public function order_placed_event_has_domain_event_properties()
+    public function purchase_placed_event_has_domain_event_properties()
     {
-        $event = new OrderPlacedEvent(1, 100, 500.00, 'SAR', 3);
+        $event = new PurchasePlacedEvent(1, 100, 500.00, 'SAR', 3);
 
         $this->assertEquals('Purchase', $event->aggregateType());
         $this->assertEquals(1, $event->aggregateId());
@@ -77,9 +77,9 @@ class DomainEventsTest extends TestCase
     }
 
     /** @test */
-    public function order_placed_event_payload_is_correct()
+    public function purchase_placed_event_payload_is_correct()
     {
-        $event = new OrderPlacedEvent(1, 100, 500.00, 'SAR', 3, [10]);
+        $event = new PurchasePlacedEvent(1, 100, 500.00, 'SAR', 3, [10]);
 
         $payload = $event->payload();
 
@@ -89,13 +89,13 @@ class DomainEventsTest extends TestCase
     }
 
     // =========================================================================
-    // ORDER STATUS CHANGED EVENT
+    // PURCHASE STATUS CHANGED EVENT
     // =========================================================================
 
     /** @test */
-    public function order_status_changed_event_can_be_created()
+    public function purchase_status_changed_event_can_be_created()
     {
-        $event = new OrderStatusChangedEvent(
+        $event = new PurchaseStatusChangedEvent(
             purchaseId: 1,
             previousStatus: 'pending',
             newStatus: 'processing',
@@ -108,18 +108,18 @@ class DomainEventsTest extends TestCase
     }
 
     /** @test */
-    public function order_status_changed_detects_completion()
+    public function purchase_status_changed_detects_completion()
     {
-        $event = new OrderStatusChangedEvent(1, 'processing', 'completed');
+        $event = new PurchaseStatusChangedEvent(1, 'processing', 'completed');
 
         $this->assertTrue($event->isCompleted());
         $this->assertFalse($event->isCancelled());
     }
 
     /** @test */
-    public function order_status_changed_detects_cancellation()
+    public function purchase_status_changed_detects_cancellation()
     {
-        $event = new OrderStatusChangedEvent(1, 'pending', 'cancelled');
+        $event = new PurchaseStatusChangedEvent(1, 'pending', 'cancelled');
 
         $this->assertTrue($event->isCancelled());
         $this->assertFalse($event->isCompleted());
@@ -525,8 +525,8 @@ class DomainEventsTest extends TestCase
     /** @test */
     public function domain_event_generates_unique_event_id()
     {
-        $event1 = new OrderPlacedEvent(1, 100, 500.00, 'SAR', 3);
-        $event2 = new OrderPlacedEvent(1, 100, 500.00, 'SAR', 3);
+        $event1 = new PurchasePlacedEvent(1, 100, 500.00, 'SAR', 3);
+        $event2 = new PurchasePlacedEvent(1, 100, 500.00, 'SAR', 3);
 
         $this->assertNotEquals($event1->eventId, $event2->eventId);
     }
@@ -534,7 +534,7 @@ class DomainEventsTest extends TestCase
     /** @test */
     public function domain_event_can_convert_to_array()
     {
-        $event = new OrderPlacedEvent(1, 100, 500.00, 'SAR', 3);
+        $event = new PurchasePlacedEvent(1, 100, 500.00, 'SAR', 3);
 
         $array = $event->toArray();
 

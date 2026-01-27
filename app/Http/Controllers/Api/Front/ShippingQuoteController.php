@@ -71,7 +71,7 @@ class ShippingQuoteController extends Controller
         return response()->json([
             'success' => true,
             'price' => $cheapest['price'] ?? null,
-            'formatted_price' => $cheapest ? number_format($cheapest['price'], 2) . ' ' . __('ر.س') : null,
+            'formatted_price' => $cheapest ? monetaryUnit()->formatBase($cheapest['price']) : null,
             'name' => $cheapest['name'] ?? null,
             'estimated_days' => $cheapest['estimated_days'] ?? null,
         ]);

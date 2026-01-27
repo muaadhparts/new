@@ -12,12 +12,13 @@ class OperatorBaseController extends Controller
     protected $curr;
     protected $language_id;
     protected $language;
+
     public function __construct()
     {
         $this->middleware('auth:operator');
         $this->gs = platformSettings();
         $this->language = DB::table('languages')->where('is_default', '=', 1)->first();
-        $this->curr = DB::table('monetary_units')->where('is_default', '=', 1)->first();
+        $this->curr = monetaryUnit()->getCurrent();
 
         // Share common variables with views
         view()->share('langg', $this->language);

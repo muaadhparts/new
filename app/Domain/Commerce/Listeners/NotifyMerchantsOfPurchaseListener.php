@@ -2,7 +2,7 @@
 
 namespace App\Domain\Commerce\Listeners;
 
-use App\Domain\Commerce\Events\OrderPlacedEvent;
+use App\Domain\Commerce\Events\PurchasePlacedEvent;
 use App\Domain\Identity\Models\User;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 
 /**
- * Notify Merchants Listener
+ * Notify Merchants Of Purchase Listener
  *
- * Notifies merchants when they receive a new order.
+ * Notifies merchants when they receive a new purchase.
  */
-class NotifyMerchantsListener implements ShouldQueue
+class NotifyMerchantsOfPurchaseListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -24,7 +24,7 @@ class NotifyMerchantsListener implements ShouldQueue
     /**
      * Handle the event.
      */
-    public function handle(OrderPlacedEvent $event): void
+    public function handle(PurchasePlacedEvent $event): void
     {
         if (empty($event->merchantIds)) {
             return;
@@ -38,7 +38,7 @@ class NotifyMerchantsListener implements ShouldQueue
             $this->notifyMerchant($merchant, $event);
         }
 
-        Log::info('Merchants notified of new order', [
+        Log::info('Merchants notified of new purchase', [
             'purchase_id' => $event->purchaseId,
             'merchant_count' => $merchants->count(),
         ]);
@@ -47,12 +47,12 @@ class NotifyMerchantsListener implements ShouldQueue
     /**
      * Notify a single merchant
      */
-    protected function notifyMerchant(User $merchant, OrderPlacedEvent $event): void
+    protected function notifyMerchant(User $merchant, PurchasePlacedEvent $event): void
     {
         // Implementation depends on notification system
         // Could be database notification, email, SMS, push, etc.
 
-        Log::info('Would notify merchant of new order', [
+        Log::info('Would notify merchant of new purchase', [
             'merchant_id' => $merchant->id,
             'merchant_email' => $merchant->email,
             'purchase_id' => $event->purchaseId,
@@ -62,7 +62,7 @@ class NotifyMerchantsListener implements ShouldQueue
     /**
      * Handle a job failure.
      */
-    public function failed(OrderPlacedEvent $event, \Throwable $exception): void
+    public function failed(PurchasePlacedEvent $event, \Throwable $exception): void
     {
         Log::error('Failed to notify merchants', [
             'purchase_id' => $event->purchaseId,

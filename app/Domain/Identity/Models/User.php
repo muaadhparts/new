@@ -4,16 +4,19 @@ namespace App\Domain\Identity\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Domain\Merchant\Models\MerchantItem;
+use App\Domain\Merchant\Models\MerchantBranch;
+use App\Domain\Merchant\Models\MerchantCommission;
+use App\Domain\Merchant\Models\MerchantCredential;
 use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Commerce\Models\SupportThread;
 use App\Domain\Commerce\Models\FavoriteSeller;
-use App\Domain\Merchant\Models\MerchantCommission;
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Commerce\Models\BuyerNote;
 use App\Domain\Commerce\Models\NoteResponse;
@@ -43,6 +46,9 @@ use App\Domain\Shipping\Models\Country;
  * @property int $is_merchant (0=buyer, 1=pending, 2=approved merchant)
  * @property string|null $shop_name
  * @property string|null $shop_name_ar
+ * @property string|null $merchant_logo
+ * @property int $status
+ * @property int $ban
  */
 class User extends Authenticatable implements JWTSubject
 {
@@ -63,21 +69,83 @@ class User extends Authenticatable implements JWTSubject
         'password', 'remember_token'
     ];
 
-    // =========================================================
-    // MERCHANT CHECK
-    // =========================================================
+    protected $casts = [
+        'is_merchant' => 'integer',
+        'status' => 'integer',
+        'ban' => 'integer',
+        'balance' => 'decimal:2',
+    ];
+
+    /* =========================================================================
+     |  MERCHANT RELATIONSHIPS
+     | ========================================================================= */
 
     /**
-     * Check if user is an approved merchant
+     * All branches for this merchant.
      */
-    public function IsMerchant(): bool
+    public function merchantBranches(): HasMany
     {
-        return $this->is_merchant == 2;
+        return $this->hasMany(MerchantBranch::class, 'user_id');
     }
 
-    // =========================================================
-    // RELATIONS
-    // =========================================================
+    /**
+     * Active branches for this merchant.
+     */
+    public function activeBranches(): HasMany
+    {
+        return $this->merchantBranches()->where('status', 1);
+    }
+
+    /**
+     * All merchant items for this merchant.
+     */
+    public function merchantItems(): HasMany
+    {
+        return $this->hasMany(MerchantItem::class, 'user_id');
+    }
+
+    /**
+     * Active merchant items for this merchant.
+     */
+    public function activeMerchantItems(): HasMany
+    {
+        return $this->merchantItems()->where('status', 1);
+    }
+
+    /**
+     * Commission settings for this merchant.
+     */
+    public function merchantCommission(): HasOne
+    {
+        return $this->hasOne(MerchantCommission::class, 'user_id');
+    }
+
+    /**
+     * API credentials for this merchant.
+     */
+    public function merchantCredentials(): HasMany
+    {
+        return $this->hasMany(MerchantCredential::class, 'user_id');
+    }
+
+    /**
+     * Catalog items this merchant sells (via merchant_items).
+     */
+    public function catalogItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            CatalogItem::class,
+            MerchantItem::class,
+            'user_id',
+            'id',
+            'id',
+            'catalog_item_id'
+        );
+    }
+
+    /* =========================================================================
+     |  OTHER RELATIONSHIPS
+     | ========================================================================= */
 
     public function purchases(): HasMany
     {
@@ -124,26 +192,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(CatalogEvent::class);
     }
 
-    public function merchantCommission(): HasOne
-    {
-        return $this->hasOne(MerchantCommission::class);
-    }
-
-    /**
-     * @deprecated Use catalogItems() via hasManyThrough instead
-     */
-    public function merchantCatalogitem(): HasManyThrough
-    {
-        return $this->hasManyThrough(
-            CatalogItem::class,
-            MerchantItem::class,
-            'user_id',
-            'id',
-            'id',
-            'catalog_item_id'
-        );
-    }
-
     public function senders(): HasMany
     {
         return $this->hasMany(ChatThread::class, 'sent_user');
@@ -159,9 +207,6 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(UserCatalogEvent::class, 'user_id');
     }
 
-    /**
-     * Alias for catalogEvents() - backwards compatibility
-     */
     public function notifications(): HasMany
     {
         return $this->catalogEvents();
@@ -207,26 +252,118 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Country::class, 'country', 'country_name');
     }
 
-    public function merchantItems(): HasMany
+    /* =========================================================================
+     |  MERCHANT SCOPES
+     | ========================================================================= */
+
+    /**
+     * Scope: Only approved merchants.
+     */
+    public function scopeMerchants(Builder $query): Builder
     {
-        return $this->hasMany(MerchantItem::class, 'user_id');
+        return $query->where('is_merchant', 2);
     }
 
-    public function catalogItems(): HasManyThrough
+    /**
+     * Scope: Only pending merchants.
+     */
+    public function scopePendingMerchants(Builder $query): Builder
     {
-        return $this->hasManyThrough(
-            CatalogItem::class,
-            MerchantItem::class,
-            'user_id',
-            'id',
-            'id',
-            'catalog_item_id'
-        );
+        return $query->where('is_merchant', 1);
     }
 
-    // =========================================================
-    // HELPERS
-    // =========================================================
+    /**
+     * Scope: Only buyers (non-merchants).
+     */
+    public function scopeBuyers(Builder $query): Builder
+    {
+        return $query->where('is_merchant', 0);
+    }
+
+    /**
+     * Scope: Only active approved merchants (not banned).
+     */
+    public function scopeActiveMerchants(Builder $query): Builder
+    {
+        return $query->merchants()->where('status', 1)->where('ban', 0);
+    }
+
+    /* =========================================================================
+     |  MERCHANT ACCESSORS
+     | ========================================================================= */
+
+    /**
+     * Get localized shop name.
+     */
+    public function getLocalizedShopNameAttribute(): string
+    {
+        if (app()->getLocale() === 'ar' && !empty($this->shop_name_ar)) {
+            return $this->shop_name_ar;
+        }
+        return $this->shop_name ?: $this->name ?: '';
+    }
+
+    /**
+     * Check if user is an approved merchant.
+     */
+    public function getIsMerchantApprovedAttribute(): bool
+    {
+        return $this->is_merchant === 2;
+    }
+
+    /**
+     * Get merchant logo URL.
+     */
+    public function getMerchantLogoUrlAttribute(): ?string
+    {
+        if (empty($this->merchant_logo)) {
+            return null;
+        }
+        if (filter_var($this->merchant_logo, FILTER_VALIDATE_URL)) {
+            return $this->merchant_logo;
+        }
+        return asset($this->merchant_logo);
+    }
+
+    /* =========================================================================
+     |  MERCHANT HELPER METHODS
+     | ========================================================================= */
+
+    /**
+     * Check if user is an approved merchant.
+     */
+    public function IsMerchant(): bool
+    {
+        return $this->is_merchant == 2;
+    }
+
+    /**
+     * Get the default (first active) branch for this merchant.
+     */
+    public function getDefaultBranch(): ?MerchantBranch
+    {
+        return $this->activeBranches()->first();
+    }
+
+    /**
+     * Check if merchant has active listings.
+     */
+    public function hasActiveListings(): bool
+    {
+        return $this->activeMerchantItems()->exists();
+    }
+
+    /**
+     * Get count of active listings.
+     */
+    public function getActiveListingsCount(): int
+    {
+        return $this->activeMerchantItems()->count();
+    }
+
+    /* =========================================================================
+     |  OTHER HELPER METHODS
+     | ========================================================================= */
 
     public function favoriteCount(): int
     {
@@ -262,9 +399,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->trustBadges()->where('admin_warning', '=', '1')->latest('id')->first()?->warning_reason;
     }
 
-    // =========================================================
-    // JWT INTERFACE
-    // =========================================================
+    /* =========================================================================
+     |  JWT INTERFACE
+     | ========================================================================= */
 
     public function getJWTIdentifier()
     {

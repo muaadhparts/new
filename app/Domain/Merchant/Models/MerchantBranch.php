@@ -4,6 +4,7 @@ namespace App\Domain\Merchant\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Domain\Identity\Models\User;
@@ -52,133 +53,239 @@ class MerchantBranch extends Model
     ];
 
     protected $casts = [
-        'latitude' => 'float',
-        'longitude' => 'float',
+        'user_id' => 'integer',
+        'country_id' => 'integer',
+        'city_id' => 'integer',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
         'status' => 'integer',
     ];
 
-    // =========================================================
-    // RELATIONS
-    // =========================================================
+    /* =========================================================================
+     |  RELATIONSHIPS
+     | ========================================================================= */
 
+    /**
+     * The user (merchant) who owns this branch.
+     */
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * Alias for user() - merchant relationship.
+     */
     public function merchant(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /**
+     * The city this branch is located in.
+     */
     public function city(): BelongsTo
     {
         return $this->belongsTo(City::class, 'city_id');
     }
 
+    /**
+     * The country this branch is located in.
+     */
     public function country(): BelongsTo
     {
         return $this->belongsTo(Country::class, 'country_id');
     }
 
+    /**
+     * All merchant items in this branch.
+     */
     public function merchantItems(): HasMany
     {
         return $this->hasMany(MerchantItem::class, 'merchant_branch_id');
     }
 
+    /**
+     * Active merchant items in this branch.
+     */
+    public function activeMerchantItems(): HasMany
+    {
+        return $this->merchantItems()->where('status', 1);
+    }
+
+    /**
+     * Delivery couriers assigned to this branch.
+     */
     public function deliveryCouriers(): HasMany
     {
         return $this->hasMany(DeliveryCourier::class, 'merchant_branch_id');
     }
 
+    /**
+     * Merchant purchases from this branch.
+     */
     public function merchantPurchases(): HasMany
     {
         return $this->hasMany(MerchantPurchase::class, 'merchant_branch_id');
     }
 
-    // =========================================================
-    // SCOPES
-    // =========================================================
+    /* =========================================================================
+     |  SCOPES
+     | ========================================================================= */
 
-    public function scopeActive($query)
+    /**
+     * Scope: Only active branches.
+     */
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('status', 1);
     }
 
-    public function scopeByMerchant($query, $merchantId)
+    /**
+     * Scope: Filter by merchant ID.
+     */
+    public function scopeForMerchant(Builder $query, int $merchantId): Builder
     {
         return $query->where('user_id', $merchantId);
     }
 
-    public function scopeByCity($query, $cityId)
+    /**
+     * Scope: Alias for forMerchant.
+     */
+    public function scopeByMerchant(Builder $query, int $merchantId): Builder
+    {
+        return $query->where('user_id', $merchantId);
+    }
+
+    /**
+     * Scope: Filter by city ID.
+     */
+    public function scopeForCity(Builder $query, int $cityId): Builder
     {
         return $query->where('city_id', $cityId);
     }
 
-    public function scopeWithinRadius($query, float $lat, float $lng, int $radiusKm = 20)
+    /**
+     * Scope: Alias for forCity.
+     */
+    public function scopeByCity(Builder $query, int $cityId): Builder
     {
-        return $query->whereNotNull('latitude')
-            ->whereNotNull('longitude')
-            ->selectRaw("
-                merchant_branches.*,
-                (6371 * acos(
-                    cos(radians(?)) *
-                    cos(radians(latitude)) *
-                    cos(radians(longitude) - radians(?)) +
-                    sin(radians(?)) *
-                    sin(radians(latitude))
-                )) AS distance_km
-            ", [$lat, $lng, $lat])
-            ->havingRaw("distance_km <= ?", [$radiusKm])
-            ->orderBy('distance_km');
+        return $query->where('city_id', $cityId);
     }
 
-    // =========================================================
-    // HELPERS
-    // =========================================================
+    /**
+     * Scope: Filter by country ID.
+     */
+    public function scopeForCountry(Builder $query, int $countryId): Builder
+    {
+        return $query->where('country_id', $countryId);
+    }
 
-    public function isInCity($cityId): bool
+    /**
+     * Scope: Only branches with Tryoto warehouse code.
+     */
+    public function scopeWithTryoto(Builder $query): Builder
+    {
+        return $query->whereNotNull('tryoto_warehouse_code')
+            ->where('tryoto_warehouse_code', '!=', '');
+    }
+
+    /**
+     * Scope: Only branches with coordinates.
+     */
+    public function scopeWithCoordinates(Builder $query): Builder
+    {
+        return $query->whereNotNull('latitude')->whereNotNull('longitude');
+    }
+
+    /**
+     * Scope: Find branches within a radius (km) from a point.
+     */
+    public function scopeWithinRadius(Builder $query, float $lat, float $lng, float $radiusKm = 50): Builder
+    {
+        $haversine = "(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude))))";
+
+        return $query->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->selectRaw("merchant_branches.*, {$haversine} AS distance", [$lat, $lng, $lat])
+            ->havingRaw('distance <= ?', [$radiusKm])
+            ->orderBy('distance');
+    }
+
+    /* =========================================================================
+     |  ACCESSORS
+     | ========================================================================= */
+
+    /**
+     * Get the display name (localized).
+     */
+    public function getDisplayNameAttribute(): string
+    {
+        if (app()->getLocale() === 'ar') {
+            return $this->warehouse_name ?: $this->branch_name ?: __('Branch') . ' #' . $this->id;
+        }
+        return $this->branch_name ?: $this->warehouse_name ?: 'Branch #' . $this->id;
+    }
+
+    /**
+     * Get the city name.
+     */
+    public function getCityNameAttribute(): ?string
+    {
+        if ($this->relationLoaded('city')) {
+            return $this->city?->city_name;
+        }
+        return $this->city()->value('city_name');
+    }
+
+    /**
+     * Get the full address.
+     */
+    public function getFullAddressAttribute(): string
+    {
+        $parts = array_filter([
+            $this->location,
+            $this->city_name,
+        ]);
+        return implode(', ', $parts);
+    }
+
+    /**
+     * Check if this branch has coordinates.
+     */
+    public function getHasCoordinatesAttribute(): bool
+    {
+        return !empty($this->latitude) && !empty($this->longitude);
+    }
+
+    /* =========================================================================
+     |  HELPER METHODS
+     | ========================================================================= */
+
+    /**
+     * Check if branch has Tryoto warehouse code.
+     */
+    public function hasTryotoWarehouseCode(): bool
+    {
+        return !empty($this->tryoto_warehouse_code);
+    }
+
+    /**
+     * Check if branch is in a specific city.
+     */
+    public function isInCity(int $cityId): bool
     {
         return $this->city_id == $cityId;
     }
 
-    public function getDisplayName(): string
+    /**
+     * Check if branch is within a radius from a point.
+     */
+    public function isWithinRadius(float $lat, float $lng, float $radiusKm = 50): bool
     {
-        return $this->branch_name ?: $this->warehouse_name ?: __('Branch #') . $this->id;
-    }
-
-    public function getLocalizedDisplayName(): string
-    {
-        return $this->getDisplayName();
-    }
-
-    public function getCityName(): ?string
-    {
-        return $this->city?->city_name;
-    }
-
-    public function getFullAddress(): string
-    {
-        $parts = [];
-
-        if ($this->location) {
-            $parts[] = $this->location;
-        }
-
-        if ($cityName = $this->getCityName()) {
-            $parts[] = $cityName;
-        }
-
-        return implode(', ', $parts);
-    }
-
-    public function isWithinRadius(float $lat, float $lng, ?int $radiusKm = null): bool
-    {
-        if (!$this->latitude || !$this->longitude) {
+        if (!$this->has_coordinates) {
             return false;
         }
-
-        $radius = $radiusKm ?? 20;
 
         $earthRadius = 6371;
         $latFrom = deg2rad($this->latitude);
@@ -195,11 +302,28 @@ class MerchantBranch extends Model
 
         $distance = $earthRadius * $c;
 
-        return $distance <= $radius;
+        return $distance <= $radiusKm;
     }
 
-    public function hasTryotoWarehouseCode(): bool
+    /**
+     * Get the count of items in this branch.
+     */
+    public function getItemsCount(): int
     {
-        return !empty($this->tryoto_warehouse_code);
+        if ($this->relationLoaded('merchantItems')) {
+            return $this->merchantItems->count();
+        }
+        return $this->merchantItems()->count();
+    }
+
+    /**
+     * Get the count of active items in this branch.
+     */
+    public function getActiveItemsCount(): int
+    {
+        if ($this->relationLoaded('merchantItems')) {
+            return $this->merchantItems->where('status', 1)->count();
+        }
+        return $this->activeMerchantItems()->count();
     }
 }

@@ -6,7 +6,7 @@ use Tests\TestCase;
 use Illuminate\Events\Dispatcher;
 
 // Commerce Subscribers
-use App\Domain\Commerce\Subscribers\OrderEventSubscriber;
+use App\Domain\Commerce\Subscribers\PurchaseEventSubscriber;
 use App\Domain\Commerce\Subscribers\PaymentEventSubscriber;
 
 // Merchant Subscribers
@@ -44,21 +44,21 @@ class EventSubscribersTest extends TestCase
     // ============================================
 
     /** @test */
-    public function order_event_subscriber_exists()
+    public function purchase_event_subscriber_exists()
     {
-        $this->assertTrue(class_exists(OrderEventSubscriber::class));
+        $this->assertTrue(class_exists(PurchaseEventSubscriber::class));
     }
 
     /** @test */
-    public function order_event_subscriber_has_subscribe_method()
+    public function purchase_event_subscriber_has_subscribe_method()
     {
-        $this->assertTrue(method_exists(OrderEventSubscriber::class, 'subscribe'));
+        $this->assertTrue(method_exists(PurchaseEventSubscriber::class, 'subscribe'));
     }
 
     /** @test */
-    public function order_event_subscriber_returns_event_mappings()
+    public function purchase_event_subscriber_returns_event_mappings()
     {
-        $subscriber = new OrderEventSubscriber();
+        $subscriber = new PurchaseEventSubscriber();
         $mappings = $subscriber->subscribe(new Dispatcher());
 
         $this->assertIsArray($mappings);
@@ -66,14 +66,14 @@ class EventSubscribersTest extends TestCase
     }
 
     /** @test */
-    public function order_event_subscriber_has_handler_methods()
+    public function purchase_event_subscriber_has_handler_methods()
     {
-        $methods = ['handleOrderPlaced', 'handleOrderConfirmed', 'handleOrderCancelled', 'handleOrderCompleted'];
+        $methods = ['handlePurchasePlaced', 'handlePurchaseConfirmed', 'handlePurchaseCancelled', 'handlePurchaseCompleted'];
 
         foreach ($methods as $method) {
             $this->assertTrue(
-                method_exists(OrderEventSubscriber::class, $method),
-                "OrderEventSubscriber should have {$method} method"
+                method_exists(PurchaseEventSubscriber::class, $method),
+                "PurchaseEventSubscriber should have {$method} method"
             );
         }
     }
@@ -410,7 +410,7 @@ class EventSubscribersTest extends TestCase
     public function all_subscribers_exist()
     {
         $subscribers = [
-            OrderEventSubscriber::class,
+            PurchaseEventSubscriber::class,
             PaymentEventSubscriber::class,
             InventoryEventSubscriber::class,
             MerchantEventSubscriber::class,
@@ -434,7 +434,7 @@ class EventSubscribersTest extends TestCase
     public function all_subscribers_have_subscribe_method()
     {
         $subscribers = [
-            OrderEventSubscriber::class,
+            PurchaseEventSubscriber::class,
             PaymentEventSubscriber::class,
             InventoryEventSubscriber::class,
             MerchantEventSubscriber::class,
@@ -461,7 +461,7 @@ class EventSubscribersTest extends TestCase
     public function all_subscribers_return_array_from_subscribe()
     {
         $subscribers = [
-            OrderEventSubscriber::class,
+            PurchaseEventSubscriber::class,
             PaymentEventSubscriber::class,
             InventoryEventSubscriber::class,
             MerchantEventSubscriber::class,
@@ -493,7 +493,7 @@ class EventSubscribersTest extends TestCase
     /** @test */
     public function commerce_subscribers_are_in_correct_namespace()
     {
-        $this->assertStringStartsWith('App\\Domain\\Commerce\\Subscribers', OrderEventSubscriber::class);
+        $this->assertStringStartsWith('App\\Domain\\Commerce\\Subscribers', PurchaseEventSubscriber::class);
         $this->assertStringStartsWith('App\\Domain\\Commerce\\Subscribers', PaymentEventSubscriber::class);
     }
 

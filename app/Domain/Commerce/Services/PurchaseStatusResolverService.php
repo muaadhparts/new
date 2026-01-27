@@ -8,7 +8,7 @@ use App\Domain\Shipping\Models\ShipmentTracking;
 use Illuminate\Support\Facades\Log;
 
 /**
- * OrderStatusResolverService
+ * PurchaseStatusResolverService
  *
  * المصدر الوحيد للحقيقة لحالة الطلب
  * يُستدعى تلقائيًا بعد كل إدخال تتبع لحساب حالة الطلب مركزيًا
@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Log;
  * - إذا كانت أي شحنة created → الطلب processing
  * - الحالة الافتراضية pending
  */
-class OrderStatusResolverService
+class PurchaseStatusResolverService
 {
     /**
      * Purchase status constants
@@ -61,7 +61,7 @@ class OrderStatusResolverService
         $purchase = Purchase::find($purchaseId);
 
         if (!$purchase) {
-            Log::warning('OrderStatusResolver: Purchase not found', ['purchase_id' => $purchaseId]);
+            Log::warning('PurchaseStatusResolver: Purchase not found', ['purchase_id' => $purchaseId]);
             return self::STATUS_PENDING;
         }
 
@@ -74,7 +74,7 @@ class OrderStatusResolverService
             // استخدام updateQuietly لتجنب infinite loops
             $purchase->updateQuietly(['status' => $newStatus]);
 
-            Log::info('OrderStatusResolver: Purchase status updated', [
+            Log::info('PurchaseStatusResolver: Purchase status updated', [
                 'purchase_id' => $purchaseId,
                 'old_status' => $oldStatus,
                 'new_status' => $newStatus,
@@ -192,7 +192,7 @@ class OrderStatusResolverService
         if ($merchantPurchase->status !== $newStatus) {
             $merchantPurchase->updateQuietly(['status' => $newStatus]);
 
-            Log::info('OrderStatusResolver: MerchantPurchase status updated', [
+            Log::info('PurchaseStatusResolver: MerchantPurchase status updated', [
                 'purchase_id' => $purchaseId,
                 'merchant_id' => $merchantId,
                 'new_status' => $newStatus,
@@ -272,7 +272,7 @@ class OrderStatusResolverService
                 ),
             ]);
         } catch (\Exception $e) {
-            Log::warning('OrderStatusResolver: Failed to add track', [
+            Log::warning('PurchaseStatusResolver: Failed to add track', [
                 'purchase_id' => $purchase->id,
                 'error' => $e->getMessage(),
             ]);
@@ -306,7 +306,7 @@ class OrderStatusResolverService
                 $updated++;
             } catch (\Exception $e) {
                 $failed++;
-                Log::error('OrderStatusResolver: Failed to resolve', [
+                Log::error('PurchaseStatusResolver: Failed to resolve', [
                     'purchase_id' => $purchaseId,
                     'error' => $e->getMessage(),
                 ]);

@@ -9,11 +9,11 @@ use Illuminate\Notifications\Notification;
 use App\Domain\Commerce\Models\Purchase;
 
 /**
- * Order Placed Notification
+ * Purchase Placed Notification
  *
- * Sent to customer when order is successfully placed.
+ * Sent to customer when purchase is successfully placed.
  */
-class OrderPlacedNotification extends Notification implements ShouldQueue
+class PurchasePlacedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -35,12 +35,12 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject(__('notifications.order.placed_subject', ['order' => $this->purchase->order_number]))
-            ->greeting(__('notifications.order.placed_greeting', ['name' => $notifiable->name]))
-            ->line(__('notifications.order.placed_line1', ['order' => $this->purchase->order_number]))
-            ->line(__('notifications.order.placed_line2', ['total' => monetaryUnit()->format($this->purchase->total)]))
-            ->action(__('notifications.order.view_order'), url('/purchases/' . $this->purchase->id))
-            ->line(__('notifications.order.thank_you'));
+            ->subject(__('notifications.purchase.placed_subject', ['purchase' => $this->purchase->purchase_number]))
+            ->greeting(__('notifications.purchase.placed_greeting', ['name' => $notifiable->name]))
+            ->line(__('notifications.purchase.placed_line1', ['purchase' => $this->purchase->purchase_number]))
+            ->line(__('notifications.purchase.placed_line2', ['total' => monetaryUnit()->format($this->purchase->total)]))
+            ->action(__('notifications.purchase.view_purchase'), url('/purchases/' . $this->purchase->id))
+            ->line(__('notifications.purchase.thank_you'));
     }
 
     /**
@@ -49,9 +49,9 @@ class OrderPlacedNotification extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'type' => 'order_placed',
+            'type' => 'purchase_placed',
             'purchase_id' => $this->purchase->id,
-            'order_number' => $this->purchase->order_number,
+            'purchase_number' => $this->purchase->purchase_number,
             'total' => $this->purchase->total,
             'status' => $this->purchase->status,
         ];

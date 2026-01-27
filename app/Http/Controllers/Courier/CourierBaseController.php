@@ -38,7 +38,12 @@ class CourierBaseController extends Controller
                 $this->language = DB::table('languages')->where('is_default','=',1)->first();
             }
             view()->share('langg', $this->language);
-            App::setlocale($this->language->name);
+
+            if ($this->language) {
+                App::setlocale($this->language->name);
+            } else {
+                App::setlocale('en');
+            }
 
             // Use centralized MonetaryUnitService (SINGLE SOURCE OF TRUTH)
             $this->curr = monetaryUnit()->getCurrent();

@@ -10,8 +10,9 @@ use App\Domain\Commerce\Models\BuyerNote;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * CatalogItem Model - Main product catalog
@@ -53,6 +54,11 @@ class CatalogItem extends Model
         'views',
     ];
 
+    protected $casts = [
+        'weight' => 'decimal:2',
+        'views' => 'integer',
+    ];
+
     /**
      * Selectable columns for listing catalog items (catalog-level only).
      */
@@ -61,7 +67,109 @@ class CatalogItem extends Model
     ];
 
     /* =========================================================================
-     |  Scopes
+     |  RELATIONSHIPS
+     | ========================================================================= */
+
+    /**
+     * Vehicle fitments - which brands/vehicles this part fits.
+     */
+    public function fitments(): HasMany
+    {
+        return $this->hasMany(CatalogItemFitment::class, 'catalog_item_id');
+    }
+
+    /**
+     * Merchant listings for this catalog item (each row is one seller).
+     */
+    public function merchantItems(): HasMany
+    {
+        return $this->hasMany(MerchantItem::class, 'catalog_item_id');
+    }
+
+    /**
+     * Active merchant listings only (status=1, approved merchant).
+     */
+    public function activeMerchantItems(): HasMany
+    {
+        return $this->hasMany(MerchantItem::class, 'catalog_item_id')
+            ->where('status', 1)
+            ->whereHas('user', fn($q) => $q->where('is_merchant', 2));
+    }
+
+    /**
+     * Get all brands this catalog item fits (via fitments).
+     */
+    public function brands(): BelongsToMany
+    {
+        return $this->belongsToMany(Brand::class, 'catalog_item_fitments', 'catalog_item_id', 'brand_id');
+    }
+
+    /**
+     * Get all catalogs this catalog item fits (via fitments).
+     */
+    public function catalogs(): BelongsToMany
+    {
+        return $this->belongsToMany(Catalog::class, 'catalog_item_fitments', 'catalog_item_id', 'catalog_id');
+    }
+
+    /**
+     * Reviews for this catalog item.
+     */
+    public function catalogReviews(): HasMany
+    {
+        return $this->hasMany(CatalogReview::class, 'catalog_item_id');
+    }
+
+    /**
+     * Get all merchant photos for this catalog item (via merchant_items).
+     */
+    public function merchantPhotos(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            MerchantPhoto::class,
+            MerchantItem::class,
+            'catalog_item_id',
+            'merchant_item_id',
+            'id',
+            'id'
+        )->where('merchant_photos.status', 1)
+         ->orderBy('merchant_photos.sort_order');
+    }
+
+    /**
+     * Favorites relation.
+     */
+    public function favorites(): HasMany
+    {
+        return $this->hasMany(FavoriteSeller::class, 'catalog_item_id');
+    }
+
+    /**
+     * Single favorite (legacy).
+     */
+    public function favorite()
+    {
+        return $this->belongsTo(FavoriteSeller::class)->withDefault();
+    }
+
+    /**
+     * Buyer notes for this catalog item.
+     */
+    public function buyerNotes(): HasMany
+    {
+        return $this->hasMany(BuyerNote::class, 'catalog_item_id');
+    }
+
+    /**
+     * Abuse flags for this catalog item.
+     */
+    public function abuseFlags(): HasMany
+    {
+        return $this->hasMany(AbuseFlag::class, 'catalog_item_id');
+    }
+
+    /* =========================================================================
+     |  SCOPES
      | ========================================================================= */
 
     /**
@@ -82,6 +190,50 @@ class CatalogItem extends Model
     {
         return $query->whereHas('merchantItems', function ($q) use ($status) {
             $q->where('status', $status);
+        });
+    }
+
+    /**
+     * Scope: Only catalog items with at least one active merchant listing.
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->whereHas('merchantItems', fn($q) => $q->where('status', 1));
+    }
+
+    /**
+     * Scope: Catalog items for a specific merchant.
+     */
+    public function scopeForMerchant(Builder $query, int $merchantId): Builder
+    {
+        return $query->whereHas('merchantItems', fn($q) => $q->where('user_id', $merchantId));
+    }
+
+    /**
+     * Scope: Catalog items for a specific brand (via fitments).
+     */
+    public function scopeForBrand(Builder $query, int $brandId): Builder
+    {
+        return $query->whereHas('fitments', fn($q) => $q->where('brand_id', $brandId));
+    }
+
+    /**
+     * Scope: Catalog items for a specific catalog (via fitments).
+     */
+    public function scopeForCatalog(Builder $query, int $catalogId): Builder
+    {
+        return $query->whereHas('fitments', fn($q) => $q->where('catalog_id', $catalogId));
+    }
+
+    /**
+     * Scope: Search catalog items by name, part number, or attributes.
+     */
+    public function scopeSearch(Builder $query, string $term): Builder
+    {
+        return $query->where(function ($q) use ($term) {
+            $q->where('name', 'LIKE', "%{$term}%")
+              ->orWhere('part_number', 'LIKE', "%{$term}%")
+              ->orWhere('attributes', 'LIKE', "%{$term}%");
         });
     }
 
@@ -139,9 +291,10 @@ class CatalogItem extends Model
             $q->where('status', 1)
                 ->whereHas('user', fn($u) => $u->where('is_merchant', 2))
                 ->with([
-                    'user:id,is_merchant,name,shop_name,shop_name_ar,email',
-                    'qualityBrand:id,name_en,name_ar,logo',
-                    'merchantBranch:id,warehouse_name,branch_name',
+                    'user:id,is_merchant,name,shop_name,shop_name_ar,email,merchant_logo',
+                    'qualityBrand:id,code,name_en,name_ar,logo',
+                    'merchantBranch:id,warehouse_name,branch_name,city_id',
+                    'merchantBranch.city:id,city_name',
                 ])
                 ->orderByRaw('CASE WHEN stock > 0 THEN 0 ELSE 1 END')
                 ->orderBy('price', 'asc');
@@ -165,123 +318,23 @@ class CatalogItem extends Model
     }
 
     /* =========================================================================
-     |  Relations
+     |  ACCESSORS
      | ========================================================================= */
 
     /**
-     * Vehicle fitments - which brands/vehicles this part fits.
+     * Get localized catalog item name based on current locale.
      */
-    public function fitments()
+    public function getLocalizedNameAttribute(): string
     {
-        return $this->hasMany(CatalogItemFitment::class, 'catalog_item_id');
-    }
+        $isAr = app()->getLocale() === 'ar';
+        $labelAr = trim((string)($this->label_ar ?? ''));
+        $labelEn = trim((string)($this->label_en ?? ''));
+        $name = trim((string)($this->name ?? ''));
 
-    /**
-     * Get all brands this catalog item fits (via fitments)
-     */
-    public function brands()
-    {
-        return $this->belongsToMany(Brand::class, 'catalog_item_fitments', 'catalog_item_id', 'brand_id');
-    }
-
-    /**
-     * Merchant listings for this catalog item (each row is one seller).
-     */
-    public function merchantItems()
-    {
-        return $this->hasMany(MerchantItem::class, 'catalog_item_id');
-    }
-
-    public function favorite()
-    {
-        return $this->belongsTo(FavoriteSeller::class)->withDefault();
-    }
-
-    /**
-     * Get all merchant photos for this catalog item (via merchant_items).
-     */
-    public function merchantPhotos()
-    {
-        return $this->hasManyThrough(
-            MerchantPhoto::class,
-            MerchantItem::class,
-            'catalog_item_id',
-            'merchant_item_id',
-            'id',
-            'id'
-        )->where('merchant_photos.status', 1)
-         ->orderBy('merchant_photos.sort_order');
-    }
-
-    /**
-     * Get merchant photos filtered by merchant user_id.
-     */
-    public function merchantPhotosForMerchant(?int $userId, int $limit = 3)
-    {
-        if (!$userId) {
-            return collect();
+        if ($isAr) {
+            return $labelAr !== '' ? $labelAr : ($labelEn !== '' ? $labelEn : $name);
         }
-
-        $merchantItemIds = MerchantItem::where('catalog_item_id', $this->id)
-            ->where('user_id', $userId)
-            ->where('status', 1)
-            ->pluck('id');
-
-        if ($merchantItemIds->isEmpty()) {
-            return collect();
-        }
-
-        return MerchantPhoto::whereIn('merchant_item_id', $merchantItemIds)
-            ->where('status', 1)
-            ->orderBy('sort_order')
-            ->take($limit)
-            ->get();
-    }
-
-    public function catalogReviews()
-    {
-        return $this->hasMany(CatalogReview::class, 'catalog_item_id');
-    }
-
-    public function favorites()
-    {
-        return $this->hasMany(FavoriteSeller::class, 'catalog_item_id');
-    }
-
-    public function buyerNotes()
-    {
-        return $this->hasMany(BuyerNote::class, 'catalog_item_id');
-    }
-
-    public function abuseFlags()
-    {
-        return $this->hasMany(AbuseFlag::class, 'catalog_item_id');
-    }
-
-    /* =========================================================================
-     |  Helpers (Merchant-aware)
-     | ========================================================================= */
-
-    /**
-     * UI helper (admin): show first active merchant badge/link.
-     */
-    public function checkMerchant(): string
-    {
-        $mi = $this->merchantItems()->where('status', 1)->first();
-        return $mi
-            ? '<small class="ml-2"> ' . __("MERCHANT") . ': <a href="' . route('operator-merchant-show', $mi->user_id) . '" target="_blank">' . optional($mi->user)->shop_name . '</a></small>'
-            : '';
-    }
-
-    /**
-     * Resolve active merchant listing for this catalog item.
-     */
-    public function activeMerchant(?int $userId = null): ?MerchantItem
-    {
-        return $this->merchantItems()
-            ->when($userId, fn ($q) => $q->where('user_id', $userId))
-            ->where('status', 1)
-            ->first();
+        return $labelEn !== '' ? $labelEn : ($labelAr !== '' ? $labelAr : $name);
     }
 
     /**
@@ -326,16 +379,9 @@ class CatalogItem extends Model
     }
 
     /**
-     * Get count of active offers (merchant items) for this catalog item.
-     *
-     * Checks in order:
-     * 1. Pre-computed offers_count attribute (from withOffersData scope)
-     * 2. Eager-loaded merchantItems relation
-     * 3. Database query (fallback)
-     *
-     * @return int
+     * Get count of active offers.
      */
-    public function getActiveOffersCount(): int
+    public function getOffersCountAttribute(): int
     {
         // 1. If withOffersData scope was used, use the pre-computed value
         if (isset($this->attributes['offers_count'])) {
@@ -349,16 +395,206 @@ class CatalogItem extends Model
                 ->count();
         }
 
-        // 3. Fallback: query database (logs warning in local env)
-        if (app()->environment('local')) {
-            \Log::debug("CatalogItem #{$this->id}: getActiveOffersCount() called without eager loading - consider using withOffersData() scope");
+        // 3. Fallback: query database
+        return $this->activeMerchantItems()->count();
+    }
+
+    /**
+     * Get lowest price from active offers.
+     */
+    public function getLowestPriceAttribute(): ?float
+    {
+        if (isset($this->attributes['lowest_price'])) {
+            return (float) $this->attributes['lowest_price'];
+        }
+        return $this->best_merchant_item?->price;
+    }
+
+    /**
+     * Get photo URL with fallback.
+     */
+    public function getPhotoUrlAttribute(): string
+    {
+        if (empty($this->photo)) {
+            return asset('assets/images/noimage.png');
+        }
+        if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
+            return $this->photo;
+        }
+        return asset($this->photo);
+    }
+
+    /**
+     * Get thumbnail URL with fallback.
+     */
+    public function getThumbnailUrlAttribute(): string
+    {
+        if (empty($this->thumbnail)) {
+            return $this->photo_url;
+        }
+        if (filter_var($this->thumbnail, FILTER_VALIDATE_URL)) {
+            return $this->thumbnail;
+        }
+        return asset($this->thumbnail);
+    }
+
+    /* =========================================================================
+     |  HELPER METHODS
+     | ========================================================================= */
+
+    /**
+     * Get active offers count (alias for accessor).
+     */
+    public function getActiveOffersCount(): int
+    {
+        return $this->offers_count;
+    }
+
+    /**
+     * Check if this catalog item has any active offers.
+     */
+    public function hasActiveOffers(): bool
+    {
+        return $this->offers_count > 0;
+    }
+
+    /**
+     * Get average rating for this catalog item.
+     */
+    public function getAverageRating(): float
+    {
+        if ($this->relationLoaded('catalogReviews')) {
+            return round($this->catalogReviews->avg('rating') ?? 0, 1);
+        }
+        return round($this->catalogReviews()->avg('rating') ?? 0, 1);
+    }
+
+    /**
+     * Get merchant item for a specific merchant.
+     */
+    public function getMerchantItem(int $merchantId): ?MerchantItem
+    {
+        if ($this->relationLoaded('merchantItems')) {
+            return $this->merchantItems
+                ->where('user_id', $merchantId)
+                ->where('status', 1)
+                ->first();
+        }
+        return $this->activeMerchantItems()
+            ->where('user_id', $merchantId)
+            ->first();
+    }
+
+    /**
+     * Get merchant item ID for a specific merchant.
+     */
+    public function getMerchantItemId(int $merchantId): ?int
+    {
+        $merchant = $this->getMerchantItem($merchantId);
+        return $merchant?->id;
+    }
+
+    /**
+     * Get merchant photos filtered by merchant user_id.
+     */
+    public function merchantPhotosForMerchant(?int $userId, int $limit = 3)
+    {
+        if (!$userId) {
+            return collect();
         }
 
+        $merchantItemIds = MerchantItem::where('catalog_item_id', $this->id)
+            ->where('user_id', $userId)
+            ->where('status', 1)
+            ->pluck('id');
+
+        if ($merchantItemIds->isEmpty()) {
+            return collect();
+        }
+
+        return MerchantPhoto::whereIn('merchant_item_id', $merchantItemIds)
+            ->where('status', 1)
+            ->orderBy('sort_order')
+            ->take($limit)
+            ->get();
+    }
+
+    /**
+     * Resolve active merchant listing for this catalog item.
+     */
+    public function activeMerchant(?int $userId = null): ?MerchantItem
+    {
+        return $this->merchantItems()
+            ->when($userId, fn ($q) => $q->where('user_id', $userId))
+            ->where('status', 1)
+            ->first();
+    }
+
+    /**
+     * Get best merchant for this catalog item.
+     */
+    public function bestMerchant(): ?MerchantItem
+    {
         return $this->merchantItems()
             ->where('status', 1)
             ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->count();
+            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
+            ->orderBy('price')
+            ->first();
     }
+
+    /**
+     * Get the catalog item URL.
+     */
+    public function getCatalogItemUrl(): string
+    {
+        if ($this->part_number) {
+            return route('front.part-result', $this->part_number);
+        }
+        return '#';
+    }
+
+    /**
+     * UI helper (admin): show first active merchant badge/link.
+     */
+    public function checkMerchant(): string
+    {
+        $mi = $this->merchantItems()->where('status', 1)->first();
+        return $mi
+            ? '<small class="ml-2"> ' . __("MERCHANT") . ': <a href="' . route('operator-merchant-show', $mi->user_id) . '" target="_blank">' . optional($mi->user)->shop_name . '</a></small>'
+            : '';
+    }
+
+    /**
+     * Show truncated localized name for display.
+     */
+    public function showName()
+    {
+        $displayName = $this->localized_name;
+        return mb_strlen($displayName, 'UTF-8') > 50 ? mb_substr($displayName, 0, 50, 'UTF-8') . '...' : $displayName;
+    }
+
+    /**
+     * Out of stock if no active merchant listing OR that listing has zero stock.
+     */
+    public function emptyStock(?int $userId = null): bool
+    {
+        if ($userId) {
+            $mi = $this->activeMerchant($userId);
+            return !$mi || (string) $mi->stock === "0";
+        }
+
+        $hasStock = $this->merchantItems()
+            ->where('status', 1)
+            ->where('stock', '>', 0)
+            ->exists();
+
+        return !$hasStock;
+    }
+
+    /* =========================================================================
+     |  PRICE METHODS (Merchant-aware)
+     | ========================================================================= */
 
     /**
      * Legacy compatibility (base price incl. commission) for first active merchant.
@@ -378,22 +614,6 @@ class CatalogItem extends Model
         }
 
         return $price;
-    }
-
-    /**
-     * Get commission settings for a specific merchant user.
-     */
-    protected function getMerchantCommissionFor(?int $userId)
-    {
-        if (!$userId) {
-            return null;
-        }
-
-        return cache()->remember(
-            "merchant_commission_{$userId}",
-            now()->addHours(1),
-            fn () => MerchantCommission::where('user_id', $userId)->first()
-        );
     }
 
     /**
@@ -462,6 +682,52 @@ class CatalogItem extends Model
     }
 
     /**
+     * Off percentage based on current vs previous price (both merchant-aware).
+     */
+    public function offPercentage(?int $userId = null)
+    {
+        $mi = $this->activeMerchant($userId);
+        if (!$mi || !$mi->previous_price) {
+            return 0;
+        }
+
+        $current = $this->merchantSizePrice($userId);
+        if ($current === null) {
+            return 0;
+        }
+
+        $prev = (float) $mi->previous_price;
+
+        $commission = $this->getMerchantCommissionFor($mi->user_id);
+        if ($commission && $commission->is_active) {
+            $prev = $prev + (float) ($commission->fixed_commission ?? 0) + ($prev * (float) ($commission->percentage_commission ?? 0) / 100);
+        }
+
+        if ($prev <= 0) {
+            return 0;
+        }
+
+        $percentage = ((float) $prev - (float) $current) * 100 / (float) $prev;
+        return $percentage;
+    }
+
+    /**
+     * Get commission settings for a specific merchant user.
+     */
+    protected function getMerchantCommissionFor(?int $userId)
+    {
+        if (!$userId) {
+            return null;
+        }
+
+        return cache()->remember(
+            "merchant_commission_{$userId}",
+            now()->addHours(1),
+            fn () => MerchantCommission::where('user_id', $userId)->first()
+        );
+    }
+
+    /**
      * Convert a raw price (base currency) into current session currency, formatted.
      */
     public static function convertPrice($price)
@@ -479,48 +745,9 @@ class CatalogItem extends Model
         return monetaryUnit()->convert((float) ($price ?? 0));
     }
 
-    /**
-     * Get localized catalog item name based on current locale.
-     */
-    public function getLocalizedNameAttribute(): string
-    {
-        $isAr = app()->getLocale() === 'ar';
-        $labelAr = trim((string)($this->label_ar ?? ''));
-        $labelEn = trim((string)($this->label_en ?? ''));
-        $name = trim((string)($this->name ?? ''));
-
-        if ($isAr) {
-            return $labelAr !== '' ? $labelAr : ($labelEn !== '' ? $labelEn : $name);
-        }
-        return $labelEn !== '' ? $labelEn : ($labelAr !== '' ? $labelAr : $name);
-    }
-
-    /**
-     * Show truncated localized name for display.
-     */
-    public function showName()
-    {
-        $displayName = $this->localized_name;
-        return mb_strlen($displayName, 'UTF-8') > 50 ? mb_substr($displayName, 0, 50, 'UTF-8') . '...' : $displayName;
-    }
-
-    /**
-     * Out of stock if no active merchant listing OR that listing has zero stock.
-     */
-    public function emptyStock(?int $userId = null): bool
-    {
-        if ($userId) {
-            $mi = $this->activeMerchant($userId);
-            return !$mi || (string) $mi->stock === "0";
-        }
-
-        $hasStock = $this->merchantItems()
-            ->where('status', 1)
-            ->where('stock', '>', 0)
-            ->exists();
-
-        return !$hasStock;
-    }
+    /* =========================================================================
+     |  MERCHANT-AWARE HELPERS
+     | ========================================================================= */
 
     /**
      * Get merchant-aware stock quantity.
@@ -600,41 +827,7 @@ class CatalogItem extends Model
     }
 
     /* =========================================================================
-     |  Discount helpers (merchant-aware)
-     | ========================================================================= */
-
-    /**
-     * Off percentage based on current vs previous price (both merchant-aware).
-     */
-    public function offPercentage(?int $userId = null)
-    {
-        $mi = $this->activeMerchant($userId);
-        if (!$mi || !$mi->previous_price) {
-            return 0;
-        }
-
-        $current = $this->merchantSizePrice($userId);
-        if ($current === null) {
-            return 0;
-        }
-
-        $prev = (float) $mi->previous_price;
-
-        $commission = $this->getMerchantCommissionFor($mi->user_id);
-        if ($commission && $commission->is_active) {
-            $prev = $prev + (float) ($commission->fixed_commission ?? 0) + ($prev * (float) ($commission->percentage_commission ?? 0) / 100);
-        }
-
-        if ($prev <= 0) {
-            return 0;
-        }
-
-        $percentage = ((float) $prev - (float) $current) * 100 / (float) $prev;
-        return $percentage;
-    }
-
-    /* =========================================================================
-     |  Collections filters (legacy)
+     |  COLLECTION FILTERS (Legacy)
      | ========================================================================= */
 
     /**
@@ -697,54 +890,5 @@ class CatalogItem extends Model
 
         $converted = monetaryUnit()->convert($price);
         return \PriceHelper::apishowPrice($converted);
-    }
-
-    /* =========================================================================
-     |  Misc
-     | ========================================================================= */
-
-    /**
-     * Get the best merchant for this catalog item.
-     */
-    public function bestMerchant(): ?MerchantItem
-    {
-        return $this->merchantItems()
-            ->where('status', 1)
-            ->whereHas('user', fn($q) => $q->where('is_merchant', 2))
-            ->orderByRaw('CASE WHEN (stock IS NULL OR stock = 0) THEN 1 ELSE 0 END ASC')
-            ->orderBy('price')
-            ->first();
-    }
-
-    /**
-     * Get the catalog item URL.
-     */
-    public function getCatalogItemUrl(): string
-    {
-        if ($this->part_number) {
-            return route('front.part-result', $this->part_number);
-        }
-        return '#';
-    }
-
-    /**
-     * Get merchant item data for a specific merchant
-     */
-    public function getMerchantItem(int $merchantId)
-    {
-        return $this->merchantItems()
-            ->with('user')
-            ->where('user_id', $merchantId)
-            ->where('status', 1)
-            ->first();
-    }
-
-    /**
-     * Get merchant item ID for a specific merchant
-     */
-    public function getMerchantItemId(int $merchantId): ?int
-    {
-        $merchant = $this->getMerchantItem($merchantId);
-        return $merchant ? $merchant->id : null;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Domain\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -29,12 +30,18 @@ class CatalogItemFitment extends Model
         'brand_id',
     ];
 
-    // =========================================================
-    // RELATIONS
-    // =========================================================
+    protected $casts = [
+        'catalog_item_id' => 'integer',
+        'catalog_id' => 'integer',
+        'brand_id' => 'integer',
+    ];
+
+    /* =========================================================================
+     |  RELATIONSHIPS
+     | ========================================================================= */
 
     /**
-     * The catalog item this fitment belongs to
+     * The catalog item this fitment belongs to.
      */
     public function catalogItem(): BelongsTo
     {
@@ -42,7 +49,7 @@ class CatalogItemFitment extends Model
     }
 
     /**
-     * The vehicle brand (Toyota, Nissan, etc.)
+     * The vehicle brand (Toyota, Nissan, etc.).
      */
     public function brand(): BelongsTo
     {
@@ -50,30 +57,86 @@ class CatalogItemFitment extends Model
     }
 
     /**
-     * The catalog this fitment belongs to
+     * The catalog this fitment belongs to.
      */
     public function catalog(): BelongsTo
     {
         return $this->belongsTo(Catalog::class, 'catalog_id');
     }
 
-    // =========================================================
-    // ACCESSORS
-    // =========================================================
+    /* =========================================================================
+     |  SCOPES
+     | ========================================================================= */
 
     /**
-     * Get localized brand name
+     * Scope: Filter by catalog item ID.
      */
-    public function getBrandNameAttribute(): ?string
+    public function scopeForCatalogItem(Builder $query, int $catalogItemId): Builder
     {
-        return $this->brand?->localized_name;
+        return $query->where('catalog_item_id', $catalogItemId);
     }
 
     /**
-     * Get brand logo URL
+     * Scope: Filter by brand ID.
+     */
+    public function scopeForBrand(Builder $query, int $brandId): Builder
+    {
+        return $query->where('brand_id', $brandId);
+    }
+
+    /**
+     * Scope: Filter by catalog ID.
+     */
+    public function scopeForCatalog(Builder $query, int $catalogId): Builder
+    {
+        return $query->where('catalog_id', $catalogId);
+    }
+
+    /* =========================================================================
+     |  ACCESSORS
+     | ========================================================================= */
+
+    /**
+     * Get localized brand name.
+     */
+    public function getBrandNameAttribute(): string
+    {
+        if ($this->relationLoaded('brand')) {
+            return $this->brand?->localized_name ?? '';
+        }
+        return '';
+    }
+
+    /**
+     * Get brand logo URL.
      */
     public function getBrandLogoAttribute(): ?string
     {
-        return $this->brand?->photo_url;
+        if ($this->relationLoaded('brand')) {
+            return $this->brand?->photo_url;
+        }
+        return null;
+    }
+
+    /**
+     * Get localized catalog name.
+     */
+    public function getCatalogNameAttribute(): string
+    {
+        if ($this->relationLoaded('catalog')) {
+            return $this->catalog?->localized_name ?? '';
+        }
+        return '';
+    }
+
+    /**
+     * Get catalog year range.
+     */
+    public function getYearRangeAttribute(): string
+    {
+        if ($this->relationLoaded('catalog') && $this->catalog) {
+            return $this->catalog->year_range;
+        }
+        return '';
     }
 }

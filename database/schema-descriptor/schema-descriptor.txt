@@ -3,7 +3,7 @@ TABLE abuse_flags
 `user_id` int NOT NULL
 `catalog_item_id` int NOT NULL
 `merchant_item_id` int unsigned DEFAULT NULL
-`name` text
+`name` text COLLATE utf8mb4_unicode_ci
 `note` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -14,11 +14,11 @@ TABLE account_balances
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `party_id` bigint unsigned NOT NULL
 `counterparty_id` bigint unsigned NOT NULL
-`balance_type` enum('receivable','payable') COLLATE utf8mb4_unicode_ci NOT NULL
+`balance_type` enum('receivable','payable') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `total_amount` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Total outstanding balance'
 `pending_amount` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Amount pending collection/settlement'
 `settled_amount` decimal(12,2) NOT NULL DEFAULT '0.00' COMMENT 'Amount already settled'
-`monetary_unit_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR'
+`monetary_unit_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR'
 `transaction_count` int unsigned NOT NULL DEFAULT '0'
 `last_transaction_at` timestamp NULL DEFAULT NULL
 `last_calculated_at` timestamp NULL DEFAULT NULL
@@ -33,13 +33,13 @@ CONSTRAINT `account_balances_party_id_foreign` FOREIGN KEY (`party_id`) REFERENC
 
 TABLE account_parties
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`party_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
-`reference_type` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source table: users, couriers, shippings, etc'
+`party_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`reference_type` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source table: users, couriers, shippings, etc'
 `reference_id` bigint unsigned DEFAULT NULL COMMENT 'ID in source table'
-`name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
-`code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique code: platform, merchant_5, courier_12, shipping_tryoto'
-`email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`phone` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique code: platform, merchant_5, courier_12, shipping_tryoto'
+`email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`phone` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `is_active` tinyint(1) NOT NULL DEFAULT '1'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -51,21 +51,21 @@ KEY `account_parties_is_active_index` (`is_active`)
 
 TABLE accounting_ledger
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`transaction_ref` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique transaction reference: TXN-20260113-XXXXX'
+`transaction_ref` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique transaction reference: TXN-20260113-XXXXX'
 `purchase_id` bigint unsigned DEFAULT NULL
 `merchant_purchase_id` bigint unsigned DEFAULT NULL
 `from_party_id` bigint unsigned NOT NULL
 `to_party_id` bigint unsigned NOT NULL
 `amount` decimal(12,2) NOT NULL
-`monetary_unit_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR'
-`transaction_type` enum('debt','collection','settlement','fee','refund','reversal','adjustment') COLLATE utf8mb4_unicode_ci NOT NULL
-`entry_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Specific entry type: SALE_REVENUE, COMMISSION_EARNED, TAX_COLLECTED, etc.'
-`direction` enum('DEBIT','CREDIT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'CREDIT'
-`description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`description_ar` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`monetary_unit_code` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR'
+`transaction_type` enum('debt','collection','settlement','fee','refund','reversal','adjustment') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`entry_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Specific entry type: SALE_REVENUE, COMMISSION_EARNED, TAX_COLLECTED, etc.'
+`direction` enum('DEBIT','CREDIT') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'CREDIT'
+`description` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`description_ar` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `metadata` json DEFAULT NULL COMMENT 'Additional data: payment_method, tracking_number, etc'
-`status` enum('pending','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending'
-`debt_status` enum('PENDING','SETTLED','CANCELLED','REVERSED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING'
+`status` enum('pending','completed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending'
+`debt_status` enum('PENDING','SETTLED','CANCELLED','REVERSED') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING'
 `original_entry_id` bigint unsigned DEFAULT NULL
 `transaction_date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 `settled_at` timestamp NULL DEFAULT NULL
@@ -126,9 +126,9 @@ TABLE brands
 `photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `name_ar` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `is_featured` int DEFAULT NULL
 `status` tinyint(1) NOT NULL DEFAULT '1'
-`slug` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
 PRIMARY KEY (`id`)
 
 TABLE buyer_notes
@@ -137,7 +137,7 @@ TABLE buyer_notes
 `catalog_item_id` int unsigned DEFAULT NULL
 `merchant_item_id` int unsigned DEFAULT NULL
 `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
+`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 PRIMARY KEY (`id`)
 
@@ -170,7 +170,7 @@ PRIMARY KEY (`id`)
 
 TABLE catalog_item_code_mappings
 `id` int unsigned NOT NULL AUTO_INCREMENT
-`item_code` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL
+`item_code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `catalog_item_id` int unsigned DEFAULT NULL
 `quality_brand_id` bigint unsigned NOT NULL
 PRIMARY KEY (`id`)
@@ -199,13 +199,13 @@ TABLE catalog_items
 `id` int unsigned NOT NULL AUTO_INCREMENT
 `part_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `weight` decimal(10,2) DEFAULT '1.00'
-`label_en` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`label_ar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`attributes` text COLLATE utf8mb4_unicode_ci
-`name` text COLLATE utf8mb4_unicode_ci NOT NULL
-`slug` text COLLATE utf8mb4_unicode_ci
-`photo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT 'LargePNG/SVG/noimage.png'
-`thumbnail` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT 'SmallPNG/SVG/noimage.png'
+`label_en` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`label_ar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`attributes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`slug` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`photo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'LargePNG/SVG/noimage.png'
+`thumbnail` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'SmallPNG/SVG/noimage.png'
 `views` int unsigned NOT NULL DEFAULT '0'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -229,19 +229,19 @@ KEY `catalog_reviews_merchant_item_id_index` (`merchant_item_id`)
 
 TABLE catalogs
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
+`sort` int DEFAULT '0'
 `code` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `brand_id` bigint unsigned DEFAULT NULL
 `brand_region_id` bigint unsigned DEFAULT NULL
 `label_en` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `label_ar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`name_ar` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`name_ar` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `slug` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `public_id` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`sort` int DEFAULT '0'
-`status` tinyint NOT NULL DEFAULT '1'
 `beginDate` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `endDate` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`status` tinyint NOT NULL DEFAULT '1'
 `beginYear` int NOT NULL
 `endYear` int NOT NULL
 `dateRangeDescription` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
@@ -340,7 +340,7 @@ PRIMARY KEY (`id`)
 
 TABLE countries
 `id` int NOT NULL AUTO_INCREMENT
-`country_code` varchar(2) NOT NULL DEFAULT ''
+`country_code` varchar(2) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT ''
 `country_name` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL DEFAULT ''
 `country_name_ar` varchar(100) CHARACTER SET utf8mb3 COLLATE utf8mb3_general_ci NOT NULL
 `tax` double NOT NULL DEFAULT '0'
@@ -391,9 +391,9 @@ TABLE delivery_couriers
 `delivery_fee` decimal(10,2) NOT NULL DEFAULT '0.00'
 `cod_amount` decimal(10,2) NOT NULL DEFAULT '0.00'
 `purchase_amount` decimal(10,2) NOT NULL DEFAULT '0.00'
-`payment_method` enum('online','cod') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'cod'
-`fee_status` enum('pending','paid','collected') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending'
-`settlement_status` enum('pending','settled') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending'
+`payment_method` enum('online','cod') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'cod'
+`fee_status` enum('pending','paid','collected') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending'
+`settlement_status` enum('pending','settled') CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending'
 `delivered_at` timestamp NULL DEFAULT NULL
 `approved_at` timestamp NULL DEFAULT NULL
 `ready_at` timestamp NULL DEFAULT NULL
@@ -401,8 +401,8 @@ TABLE delivery_couriers
 `confirmed_at` timestamp NULL DEFAULT NULL
 `customer_confirmed` tinyint(1) NOT NULL DEFAULT '0'
 `settled_at` timestamp NULL DEFAULT NULL
-`notes` text COLLATE utf8mb4_general_ci
-`rejection_reason` text COLLATE utf8mb4_general_ci
+`notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
+`rejection_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -491,7 +491,7 @@ TABLE languages
 `is_default` tinyint(1) NOT NULL DEFAULT '0'
 `language` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `file` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`name` varchar(100) NOT NULL
+`name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL
 `rtl` tinyint(1) NOT NULL DEFAULT '0'
 PRIMARY KEY (`id`)
 
@@ -505,7 +505,7 @@ TABLE merchant_branches
 `user_id` int DEFAULT NULL
 `branch_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 `warehouse_name` text CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
-`tryoto_warehouse_code` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Warehouse Code from Tryoto dashboard'
+`tryoto_warehouse_code` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci DEFAULT NULL COMMENT 'Warehouse Code from Tryoto dashboard'
 `country_id` bigint unsigned DEFAULT NULL
 `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL
 `city_id` int unsigned DEFAULT NULL
@@ -522,7 +522,7 @@ TABLE merchant_commissions
 `fixed_commission` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Fixed amount added to price'
 `percentage_commission` decimal(5,2) NOT NULL DEFAULT '0.00' COMMENT 'Percentage markup on price'
 `is_active` tinyint(1) NOT NULL DEFAULT '1'
-`notes` text COLLATE utf8mb4_unicode_ci
+`notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -556,20 +556,20 @@ TABLE merchant_items
 `price` decimal(10,2) DEFAULT NULL
 `previous_price` decimal(10,2) DEFAULT NULL
 `stock` int DEFAULT NULL
-`whole_sell_qty` text COLLATE utf8mb4_unicode_ci
-`whole_sell_discount` text COLLATE utf8mb4_unicode_ci
+`whole_sell_qty` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`whole_sell_discount` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `preordered` tinyint NOT NULL DEFAULT '0'
-`minimum_qty` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`minimum_qty` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `stock_check` int NOT NULL DEFAULT '0'
 `status` tinyint unsigned NOT NULL DEFAULT '1'
 `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-`ship` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`ship` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `item_condition` tinyint(1) NOT NULL DEFAULT '2'
-`details` text COLLATE utf8mb4_unicode_ci
-`policy` text COLLATE utf8mb4_unicode_ci
-`item_type` enum('normal','affiliate') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal'
-`affiliate_link` text COLLATE utf8mb4_unicode_ci
+`details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`policy` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`item_type` enum('normal','affiliate') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'normal'
+`affiliate_link` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 PRIMARY KEY (`id`)
 UNIQUE KEY `uniq_catalog_item_user` (`catalog_item_id`,`user_id`,`merchant_branch_id`,`quality_brand_id`,`item_condition`)
 KEY `fk_mi_user` (`user_id`)
@@ -591,7 +591,7 @@ TABLE merchant_payments
 `name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `type` enum('manual','automatic') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'manual'
 `information` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`keyword` varchar(191) DEFAULT NULL
+`keyword` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `monetary_unit_id` varchar(191) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT '*'
 `checkout` int NOT NULL DEFAULT '1'
 `deposit` int NOT NULL DEFAULT '1'
@@ -602,7 +602,7 @@ PRIMARY KEY (`id`)
 TABLE merchant_photos
 `id` int unsigned NOT NULL AUTO_INCREMENT
 `merchant_item_id` int unsigned NOT NULL
-`photo` varchar(191) NOT NULL
+`photo` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
 `sort_order` int unsigned NOT NULL DEFAULT '0'
 `is_primary` tinyint(1) NOT NULL DEFAULT '0'
 `status` tinyint(1) NOT NULL DEFAULT '1'
@@ -631,26 +631,26 @@ TABLE merchant_purchases
 `shipping_company_owes_merchant` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Amount shipping company owes to merchant (COD collected)'
 `shipping_company_owes_platform` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Amount shipping company owes to platform (if platform gateway)'
 `cod_amount` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Total COD amount (purchase + delivery fee)'
-`money_holder` enum('platform','merchant','courier','shipping_company','pending') NOT NULL DEFAULT 'pending' COMMENT 'Entity currently holding the payment'
-`delivery_method` enum('local_courier','shipping_company','pickup','digital','none') DEFAULT NULL COMMENT 'How the order is delivered'
-`delivery_provider` varchar(100) DEFAULT NULL COMMENT 'Specific provider: courier_id or tryoto/aramex/etc'
-`collection_status` enum('not_applicable','pending','collected','failed') NOT NULL DEFAULT 'not_applicable' COMMENT 'COD collection status'
+`money_holder` enum('platform','merchant','courier','shipping_company','pending') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending' COMMENT 'Entity currently holding the payment'
+`delivery_method` enum('local_courier','shipping_company','pickup','digital','none') COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'How the order is delivered'
+`delivery_provider` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Specific provider: courier_id or tryoto/aramex/etc'
+`collection_status` enum('not_applicable','pending','collected','failed') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'not_applicable' COMMENT 'COD collection status'
 `collected_at` timestamp NULL DEFAULT NULL COMMENT 'When COD was collected'
-`collected_by` varchar(100) DEFAULT NULL COMMENT 'Who collected COD (courier_id or shipping_company_name)'
-`payment_type` enum('merchant','platform') NOT NULL DEFAULT 'platform'
-`shipping_type` enum('merchant','platform','courier','pickup') DEFAULT NULL
-`money_received_by` enum('merchant','platform','courier') NOT NULL DEFAULT 'platform'
+`collected_by` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Who collected COD (courier_id or shipping_company_name)'
+`payment_type` enum('merchant','platform') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'platform'
+`shipping_type` enum('merchant','platform','courier','pickup') COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`money_received_by` enum('merchant','platform','courier') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'platform'
 `payment_owner_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'Owner of payment gateway: 0=platform, else=merchant'
 `shipping_owner_id` bigint unsigned NOT NULL DEFAULT '0' COMMENT 'Owner of shipping service: 0=platform, else=merchant'
-`payment_method` varchar(20) DEFAULT NULL COMMENT 'Payment method: cod or online'
+`payment_method` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Payment method: cod or online'
 `payment_gateway_id` int unsigned DEFAULT NULL
 `shipping_id` int unsigned DEFAULT NULL
 `courier_id` int unsigned DEFAULT NULL
 `merchant_branch_id` int unsigned DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
-`purchase_number` varchar(191) NOT NULL
+`purchase_number` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
 `status` enum('pending','processing','completed','declined','on delivery') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending'
-`settlement_status` enum('unsettled','pending','settled') NOT NULL DEFAULT 'unsettled'
+`settlement_status` enum('unsettled','pending','settled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'unsettled'
 `settled_at` timestamp NULL DEFAULT NULL
 `merchant_settlement_id` bigint unsigned DEFAULT NULL
 `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
@@ -665,10 +665,10 @@ KEY `merchant_purchases_settlement_status_money_holder_index` (`settlement_statu
 TABLE merchant_settings
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `merchant_id` int unsigned NOT NULL COMMENT 'FK to users.id (merchant)'
-`group` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting group'
-`key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting key within group'
+`group` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting group'
+`key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting key within group'
 `value` json DEFAULT NULL COMMENT 'Setting value (JSON)'
-`type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'string'
+`type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'string'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -701,8 +701,8 @@ TABLE merchant_tax_settings
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `user_id` int unsigned NOT NULL
 `tax_rate` decimal(5,2) NOT NULL DEFAULT '0.00'
-`tax_number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`tax_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'VAT'
+`tax_number` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`tax_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'VAT'
 `is_active` tinyint(1) NOT NULL DEFAULT '1'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -712,7 +712,7 @@ KEY `merchant_tax_settings_user_id_index` (`user_id`)
 
 TABLE migrations
 `id` int unsigned NOT NULL AUTO_INCREMENT
-`migration` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
 `batch` int NOT NULL
 PRIMARY KEY (`id`)
 
@@ -759,27 +759,26 @@ TABLE newcategories
 `label_ar` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `thumbnail` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `images` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`keywords` text COLLATE utf8mb4_unicode_ci
-`path` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`keywords` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`path` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 PRIMARY KEY (`id`)
 UNIQUE KEY `uq_newcategories_unique` (`parent_id`,`brand_region_id`,`catalog_id`,`full_code`)
 KEY `brand_region_id` (`brand_region_id`)
 KEY `brand_id` (`brand_id`)
 KEY `catalog_id` (`catalog_id`)
 KEY `idx_newcategories_level_fullcode` (`level`,`full_code`(50))
-KEY `idx_nc_catalog_brand_level` (`catalog_id`,`brand_id`,`level`)
-KEY `idx_nc_full_code` (`full_code`)
-KEY `idx_nc_spec_key` (`catalog_id`,`spec_key`,`level`)
-CONSTRAINT `fk_nc_brand` FOREIGN KEY (`brand_id`) REFERENCES `brands` (`id`)
+KEY `idx_nc_catalog_brand_level` (`catalog_id`,`brand_id`,`level`) USING BTREE
+KEY `idx_nc_full_code` (`full_code`) USING BTREE
+KEY `idx_nc_spec_key` (`catalog_id`,`spec_key`,`level`) USING BTREE
 CONSTRAINT `fk_nc_brand_region` FOREIGN KEY (`brand_region_id`) REFERENCES `brand_regions` (`id`)
 CONSTRAINT `fk_nc_catalog` FOREIGN KEY (`catalog_id`) REFERENCES `catalogs` (`id`)
 CONSTRAINT `fk_nc_parent` FOREIGN KEY (`parent_id`) REFERENCES `newcategories` (`id`)
 
 TABLE nissan_credentials
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`email` varchar(255) NOT NULL
-`password` varchar(255) NOT NULL
-`cookie` text
+`email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+`password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+`cookie` text COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 PRIMARY KEY (`id`)
@@ -789,15 +788,15 @@ TABLE note_responses
 `user_id` int unsigned NOT NULL
 `buyer_note_id` int unsigned DEFAULT NULL
 `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
-`created_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00'
-`updated_at` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP
+`created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+`updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 PRIMARY KEY (`id`)
 
 TABLE oauth_accounts
 `id` int unsigned NOT NULL AUTO_INCREMENT
 `user_id` int unsigned NOT NULL
-`provider_id` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
-`provider` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
+`provider_id` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`provider` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -806,8 +805,8 @@ KEY `oauth_accounts_provider_provider_id_index` (`provider`,`provider_id`)
 
 TABLE operator_roles
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`section` text COLLATE utf8mb4_unicode_ci
+`name` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`section` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 PRIMARY KEY (`id`)
 
 TABLE operators
@@ -829,11 +828,11 @@ UNIQUE KEY `admins_email_unique` (`email`)
 
 TABLE pages
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`slug` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'URL slug: terms, privacy, refund'
-`title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Page title'
-`title_ar` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Arabic title'
-`content` longtext COLLATE utf8mb4_unicode_ci COMMENT 'Page content (HTML)'
-`content_ar` longtext COLLATE utf8mb4_unicode_ci COMMENT 'Arabic content'
+`slug` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'URL slug: terms, privacy, refund'
+`title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Page title'
+`title_ar` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Arabic title'
+`content` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Page content (HTML)'
+`content_ar` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Arabic content'
 `is_active` tinyint(1) NOT NULL DEFAULT '1'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -900,14 +899,29 @@ KEY `idx_label_en` (`label_en`(100))
 KEY `idx_label_ar` (`label_ar`(100))
 KEY `idx_part_callout` (`part_number`(50),`callout`(50))
 
+TABLE personal_access_tokens
+`id` bigint unsigned NOT NULL AUTO_INCREMENT
+`tokenable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+`tokenable_id` bigint unsigned NOT NULL
+`name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
+`token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL
+`abilities` text COLLATE utf8mb4_unicode_ci
+`last_used_at` timestamp NULL DEFAULT NULL
+`expires_at` timestamp NULL DEFAULT NULL
+`created_at` timestamp NULL DEFAULT NULL
+`updated_at` timestamp NULL DEFAULT NULL
+PRIMARY KEY (`id`)
+UNIQUE KEY `personal_access_tokens_token_unique` (`token`)
+KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
+
 TABLE platform_revenue_log
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `date` date NOT NULL
-`source` enum('commission','tax','shipping_markup','courier_fee','other') COLLATE utf8mb4_unicode_ci NOT NULL
-`reference_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`source` enum('commission','tax','shipping_markup','courier_fee','other') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`reference_type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `reference_id` bigint unsigned DEFAULT NULL
 `amount` decimal(12,2) NOT NULL
-`description` text COLLATE utf8mb4_unicode_ci
+`description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -916,11 +930,11 @@ KEY `platform_revenue_log_source_index` (`source`)
 
 TABLE platform_settings
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`group` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting group: branding, mail, payment, etc'
-`key` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting key within group'
+`group` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting group: branding, mail, payment, etc'
+`key` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Setting key within group'
 `value` json DEFAULT NULL COMMENT 'Setting value (JSON for flexibility)'
-`type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'string' COMMENT 'Value type: string, boolean, integer, json, file'
-`description` text COLLATE utf8mb4_unicode_ci COMMENT 'Human-readable description'
+`type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'string' COMMENT 'Value type: string, boolean, integer, json, file'
+`description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci COMMENT 'Human-readable description'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -930,7 +944,7 @@ KEY `platform_settings_group_index` (`group`)
 TABLE purchase_timelines
 `id` int NOT NULL AUTO_INCREMENT
 `purchase_id` int NOT NULL
-`name` text
+`name` text COLLATE utf8mb4_unicode_ci
 `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -946,7 +960,7 @@ TABLE purchases
 `pay_amount` double NOT NULL
 `txnid` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `charge_id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`purchase_number` varchar(255) NOT NULL
+`purchase_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL
 `payment_status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'Pending'
 `customer_email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `customer_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL
@@ -964,9 +978,9 @@ TABLE purchases
 `shipping_address` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
 `shipping_city` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
 `shipping_zip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
-`purchase_note` text
-`discount_code` varchar(191) DEFAULT NULL
-`discount_amount` varchar(191) DEFAULT NULL
+`purchase_note` text COLLATE utf8mb4_unicode_ci
+`discount_code` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`discount_amount` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `status` enum('pending','processing','completed','declined','on delivery') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -979,9 +993,9 @@ TABLE purchases
 `tax` double NOT NULL
 `tax_location` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `pay_id` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`merchant_shipping_id` text
-`merchant_packing_id` text
-`merchant_ids` varchar(255) DEFAULT NULL
+`merchant_shipping_id` text COLLATE utf8mb4_unicode_ci
+`merchant_packing_id` text COLLATE utf8mb4_unicode_ci
+`merchant_ids` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `wallet_price` double NOT NULL DEFAULT '0'
 `is_shipping` tinyint NOT NULL DEFAULT '1'
 `shipping_title` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -993,7 +1007,7 @@ TABLE purchases
 `discount` int NOT NULL DEFAULT '0'
 `affilate_users` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `commission` double NOT NULL DEFAULT '0'
-`couriers` text
+`couriers` text COLLATE utf8mb4_unicode_ci
 PRIMARY KEY (`id`)
 
 TABLE quality_brands
@@ -1075,15 +1089,15 @@ PRIMARY KEY (`id`)
 
 TABLE settlement_batches
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`batch_ref` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique batch reference: SET-20260113-XXXXX'
+`batch_ref` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Unique batch reference: SET-20260113-XXXXX'
 `from_party_id` bigint unsigned NOT NULL
 `to_party_id` bigint unsigned NOT NULL
 `total_amount` decimal(12,2) NOT NULL
-`currency` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR'
-`payment_method` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'bank_transfer, cash, wallet, etc'
-`payment_reference` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bank transfer ref, cheque number, etc'
-`notes` text COLLATE utf8mb4_unicode_ci
-`status` enum('draft','pending','completed','cancelled') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft'
+`currency` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'SAR'
+`payment_method` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'bank_transfer, cash, wallet, etc'
+`payment_reference` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Bank transfer ref, cheque number, etc'
+`notes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`status` enum('draft','pending','completed','cancelled') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft'
 `settlement_date` date DEFAULT NULL
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -1103,23 +1117,23 @@ TABLE shipment_trackings
 `purchase_id` int unsigned NOT NULL
 `merchant_id` int unsigned NOT NULL
 `shipping_id` int unsigned DEFAULT NULL
-`integration_type` enum('api','manual') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manual'
-`provider` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`tracking_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`external_shipment_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`company_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
-`status_ar` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`status_en` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`message` text COLLATE utf8mb4_unicode_ci
-`message_ar` text COLLATE utf8mb4_unicode_ci
-`location` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`integration_type` enum('api','manual') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'manual'
+`provider` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`tracking_number` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`external_shipment_id` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`company_name` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`status` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`status_ar` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`status_en` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`message_ar` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+`location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `latitude` decimal(10,7) DEFAULT NULL
 `longitude` decimal(10,7) DEFAULT NULL
 `occurred_at` timestamp NULL DEFAULT NULL
-`source` enum('api','merchant','system','operator') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'system'
+`source` enum('api','merchant','system','operator') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'system'
 `raw_payload` json DEFAULT NULL
-`awb_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`awb_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `shipping_cost` decimal(10,2) DEFAULT NULL
 `cod_amount` decimal(10,2) DEFAULT NULL
 `created_at` timestamp NULL DEFAULT NULL
@@ -1143,8 +1157,8 @@ TABLE shippings
 `user_id` int NOT NULL DEFAULT '0'
 `integration_type` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci NOT NULL DEFAULT 'manual'
 `provider` varchar(50) CHARACTER SET latin1 COLLATE latin1_swedish_ci DEFAULT NULL
-`name` text
-`subtitle` text
+`name` text COLLATE utf8mb4_unicode_ci
+`subtitle` text COLLATE utf8mb4_unicode_ci
 `price` double NOT NULL DEFAULT '0'
 `free_above` double NOT NULL DEFAULT '0'
 `status` int NOT NULL DEFAULT '1'
@@ -1164,7 +1178,7 @@ KEY `idx_group_id` (`group_id`)
 TABLE spec_values
 `id` int NOT NULL AUTO_INCREMENT
 `attribute_id` int DEFAULT NULL
-`name` varchar(255) DEFAULT NULL
+`name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -1198,9 +1212,9 @@ KEY `idx_specifications_id_name` (`id`,`name`)
 TABLE specs
 `id` int NOT NULL AUTO_INCREMENT
 `attributable_id` int DEFAULT NULL
-`attributable_type` varchar(255) DEFAULT NULL
-`name` varchar(255) DEFAULT NULL
-`input_name` varchar(255) DEFAULT NULL
+`attributable_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`input_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `price_status` int NOT NULL DEFAULT '1' COMMENT '0 - hide, 1- show	'
 `details_status` int NOT NULL DEFAULT '1' COMMENT '0 - hide, 1- show	'
 `created_at` timestamp NULL DEFAULT NULL
@@ -1216,7 +1230,7 @@ TABLE stock_reservations
 `qty` int unsigned NOT NULL DEFAULT '1'
 `cart_key` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `reserved_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-`expires_at` timestamp NOT NULL
+`expires_at` timestamp NULL DEFAULT NULL
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -1225,7 +1239,7 @@ KEY `stock_reservations_expires_at_merchant_item_id_index` (`expires_at`,`mercha
 TABLE support_messages
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
 `thread_id` bigint unsigned NOT NULL
-`message` text COLLATE utf8mb4_unicode_ci NOT NULL
+`message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `user_id` int DEFAULT NULL
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -1235,11 +1249,11 @@ KEY `support_messages_user_id_index` (`user_id`)
 
 TABLE support_threads
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`subject` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
+`subject` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
 `user_id` int NOT NULL
-`message` text COLLATE utf8mb4_unicode_ci NOT NULL
-`type` enum('Ticket','Dispute') COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`purchase_number` text COLLATE utf8mb4_unicode_ci
+`message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL
+`type` enum('Ticket','Dispute') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`purchase_number` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -1275,9 +1289,9 @@ PRIMARY KEY (`tag`)
 
 TABLE token_logs
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`type` varchar(50) NOT NULL
-`status` varchar(50) NOT NULL
-`message` text
+`type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+`status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL
+`message` text COLLATE utf8mb4_unicode_ci
 `executed_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -1285,9 +1299,9 @@ PRIMARY KEY (`id`)
 
 TABLE tokens
 `id` bigint unsigned NOT NULL AUTO_INCREMENT
-`accessToken` text NOT NULL
-`refreshToken` text NOT NULL
-`expires_at` timestamp NOT NULL
+`accessToken` text COLLATE utf8mb4_unicode_ci NOT NULL
+`refreshToken` text COLLATE utf8mb4_unicode_ci NOT NULL
+`expires_at` timestamp NULL DEFAULT NULL
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
 PRIMARY KEY (`id`)
@@ -1296,7 +1310,7 @@ TABLE trust_badges
 `id` int NOT NULL AUTO_INCREMENT
 `user_id` int NOT NULL
 `attachments` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
-`status` enum('Pending','Trusted','Rejected') DEFAULT 'Pending'
+`status` enum('Pending','Trusted','Rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'Pending'
 `text` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `admin_warning` tinyint(1) NOT NULL DEFAULT '0'
 `warning_reason` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -1307,7 +1321,7 @@ PRIMARY KEY (`id`)
 TABLE user_catalog_events
 `id` int NOT NULL AUTO_INCREMENT
 `user_id` int NOT NULL
-`purchase_number` text
+`purchase_number` text COLLATE utf8mb4_unicode_ci
 `is_read` tinyint(1) NOT NULL DEFAULT '0'
 `created_at` timestamp NULL DEFAULT NULL
 `updated_at` timestamp NULL DEFAULT NULL
@@ -1344,7 +1358,7 @@ TABLE users
 `shop_message` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `shop_details` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `shop_image` varchar(191) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
-`merchant_logo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL
+`merchant_logo` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 `f_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `g_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 `t_url` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
@@ -1460,7 +1474,7 @@ TABLE withdraws
 `fee` float DEFAULT '0'
 `created_at` datetime DEFAULT NULL
 `updated_at` datetime DEFAULT NULL
-`status` enum('pending','completed','rejected') NOT NULL DEFAULT 'pending'
-`type` enum('user','merchant','rider') NOT NULL
+`status` enum('pending','completed','rejected') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending'
+`type` enum('user','merchant','rider') COLLATE utf8mb4_unicode_ci NOT NULL
 PRIMARY KEY (`id`)
 

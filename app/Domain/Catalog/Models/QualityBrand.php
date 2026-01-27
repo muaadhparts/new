@@ -4,12 +4,13 @@ namespace App\Domain\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use App\Domain\Merchant\Models\MerchantItem;
 
 /**
- * QualityBrand Model - Aftermarket parts brands
+ * QualityBrand Model - Aftermarket parts brands (Bosch, Denso, etc.)
  *
  * Domain: Catalog
  * Table: quality_brands
@@ -31,36 +32,71 @@ class QualityBrand extends Model
     protected $table = 'quality_brands';
 
     protected $fillable = [
-        'code', 'name_en', 'name_ar', 'logo', 'country', 'website', 'description', 'is_active',
+        'code',
+        'name_en',
+        'name_ar',
+        'logo',
+        'country',
+        'website',
+        'description',
+        'is_active',
     ];
 
-    // =========================================================
-    // RELATIONS
-    // =========================================================
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    /* =========================================================================
+     |  RELATIONSHIPS
+     | ========================================================================= */
 
     /**
-     * Merchant items for this quality brand
+     * All merchant items for this quality brand.
      */
     public function merchantItems(): HasMany
     {
         return $this->hasMany(MerchantItem::class, 'quality_brand_id');
     }
 
-    // =========================================================
-    // SCOPES
-    // =========================================================
+    /**
+     * Active merchant items for this quality brand.
+     */
+    public function activeMerchantItems(): HasMany
+    {
+        return $this->merchantItems()->where('status', 1);
+    }
+
+    /* =========================================================================
+     |  SCOPES
+     | ========================================================================= */
 
     /**
-     * Filter active brands only
+     * Scope: Only active quality brands.
      */
-    public function scopeActive($query)
+    public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', 1);
     }
 
-    // =========================================================
-    // ACCESSORS
-    // =========================================================
+    /**
+     * Scope: Filter by code.
+     */
+    public function scopeByCode(Builder $query, string $code): Builder
+    {
+        return $query->where('code', $code);
+    }
+
+    /**
+     * Scope: Include count of active merchant items.
+     */
+    public function scopeWithItemsCount(Builder $query): Builder
+    {
+        return $query->withCount(['merchantItems' => fn($q) => $q->where('status', 1)]);
+    }
+
+    /* =========================================================================
+     |  ACCESSORS
+     | ========================================================================= */
 
     /**
      * Get localized quality brand name based on current locale.
@@ -78,7 +114,7 @@ class QualityBrand extends Model
     }
 
     /**
-     * Displayable name (unifies language selection) - legacy alias
+     * Get display name (alias for localized_name).
      */
     public function getDisplayNameAttribute(): string
     {
@@ -86,10 +122,18 @@ class QualityBrand extends Model
     }
 
     /**
-     * Logo URL from Storage
+     * Get logo URL from Storage.
      */
     public function getLogoUrlAttribute(): ?string
     {
-        return $this->logo ? Storage::url($this->logo) : null;
+        if (empty($this->logo)) {
+            return null;
+        }
+
+        if (filter_var($this->logo, FILTER_VALIDATE_URL)) {
+            return $this->logo;
+        }
+
+        return Storage::disk('do')->url($this->logo);
     }
 }

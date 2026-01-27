@@ -39,10 +39,10 @@ class SeoService
     }
 
     /**
-     * Smart canonical for products with multiple merchants
+     * Smart canonical for catalog items with multiple merchants
      * يختار الـ Canonical الأمثل بناءً على: السعر الأقل، التقييم الأعلى، أو المخزون
      */
-    public function setProductCanonical($catalogItem, $currentMerchantItem = null, string $strategy = 'lowest_price'): self
+    public function setCatalogItemCanonical($catalogItem, $currentMerchantItem = null, string $strategy = 'lowest_price'): self
     {
         $merchantItems = $catalogItem->merchantItems()
             ->where('status', 1)
@@ -75,12 +75,12 @@ class SeoService
     }
 
     /**
-     * Build product page SEO
+     * Build catalog item page SEO
      */
-    public function forProduct($catalogItem, $merchantItem, $currency = 'SAR'): self
+    public function forCatalogItem($catalogItem, $merchantItem, $currency = 'SAR'): self
     {
         // Set smart canonical
-        $this->setProductCanonical($catalogItem, $merchantItem, 'lowest_price');
+        $this->setCatalogItemCanonical($catalogItem, $merchantItem, 'lowest_price');
 
         // Add CatalogItem Schema
         $this->addSchema(
@@ -93,7 +93,7 @@ class SeoService
         // Add Breadcrumb Schema
         $this->addSchema(
             BreadcrumbSchema::create()
-                ->forProduct($catalogItem)
+                ->forCatalogItem($catalogItem)
         );
 
         // Set meta
@@ -102,10 +102,10 @@ class SeoService
             'name' => $catalogItem->name . ' - ' . config('app.name'),
             'description' => $description,
             'keywords' => $catalogItem->part_number ?? '',
-            'og:type' => 'product',
+            'og:type' => 'website',
             'og:name' => $catalogItem->name,
             'og:description' => $description,
-            'og:image' => $this->getProductImage($catalogItem),
+            'og:image' => $this->getCatalogItemImage($catalogItem),
             'product:price:amount' => $merchantItem->merchantSizePrice(),
             'product:price:currency' => $currency,
             'product:availability' => ($merchantItem->stock > 0 || is_null($merchantItem->stock)) ? 'in stock' : 'out of stock',
@@ -212,9 +212,9 @@ class SeoService
     }
 
     /**
-     * Get product image URL
+     * Get catalog item image URL
      */
-    protected function getProductImage($catalogItem): string
+    protected function getCatalogItemImage($catalogItem): string
     {
         if (!$catalogItem->photo) {
             return asset('assets/images/noimage.png');

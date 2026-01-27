@@ -71,7 +71,7 @@ class ShipmentTrackingService
         ]);
 
         // Note: Purchase status is now updated automatically via ShipmentTrackingObserver
-        // calling OrderStatusResolverService - NO direct status modification here
+        // calling PurchaseStatusResolverService - NO direct status modification here
 
         return $tracking;
     }

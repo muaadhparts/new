@@ -4,6 +4,7 @@ namespace App\Domain\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Auth;
@@ -15,31 +16,74 @@ use Illuminate\Support\Facades\Auth;
  * Table: catalogs
  *
  * @property int $id
+ * @property string $code
  * @property int $brand_id
  * @property int|null $brand_region_id
+ * @property string|null $label_en
+ * @property string|null $label_ar
  * @property string $name
  * @property string|null $name_ar
- * @property string $code
+ * @property string|null $slug
+ * @property int $sort
  * @property int $status
  * @property string|null $beginDate
  * @property string|null $endDate
+ * @property int|null $beginYear
+ * @property int|null $endYear
+ * @property string|null $dateRangeDescription
+ * @property string|null $type
+ * @property string|null $vehicleType
+ * @property string|null $shortName
+ * @property string|null $models
+ * @property string|null $imagePath
+ * @property string|null $largeImagePath
  */
 class Catalog extends Model
 {
     use HasFactory;
 
     protected $table = 'catalogs';
-    protected $guarded = ['id'];
-
-    protected $with = ['brand:id,name,slug'];
 
     public $timestamps = true;
 
-    protected $appends = ['localized_name'];
+    protected $fillable = [
+        'code',
+        'brand_id',
+        'brand_region_id',
+        'label_en',
+        'label_ar',
+        'name',
+        'name_ar',
+        'slug',
+        'sort',
+        'status',
+        'beginDate',
+        'endDate',
+        'beginYear',
+        'endYear',
+        'dateRangeDescription',
+        'type',
+        'vehicleType',
+        'shortName',
+        'models',
+        'imagePath',
+        'largeImagePath',
+    ];
 
-    // =========================================================
-    // BOOT
-    // =========================================================
+    protected $casts = [
+        'brand_id' => 'integer',
+        'brand_region_id' => 'integer',
+        'sort' => 'integer',
+        'status' => 'integer',
+        'beginYear' => 'integer',
+        'endYear' => 'integer',
+    ];
+
+    protected $with = ['brand:id,name,name_ar,slug,photo'];
+
+    /* =========================================================================
+     |  BOOT
+     | ========================================================================= */
 
     protected static function boot()
     {
@@ -54,12 +98,12 @@ class Catalog extends Model
         });
     }
 
-    // =========================================================
-    // RELATIONS
-    // =========================================================
+    /* =========================================================================
+     |  RELATIONSHIPS
+     | ========================================================================= */
 
     /**
-     * The brand this catalog belongs to
+     * The brand this catalog belongs to.
      */
     public function brand(): BelongsTo
     {
@@ -67,7 +111,7 @@ class Catalog extends Model
     }
 
     /**
-     * Brand region for this catalog
+     * The brand region for this catalog.
      */
     public function brandRegion(): BelongsTo
     {
@@ -75,7 +119,7 @@ class Catalog extends Model
     }
 
     /**
-     * All categories in this catalog
+     * All categories in this catalog.
      */
     public function newCategories(): HasMany
     {
@@ -83,40 +127,81 @@ class Catalog extends Model
     }
 
     /**
-     * Root categories (level 1)
+     * Root categories (level 1) in this catalog.
      */
     public function rootCategories(): HasMany
     {
         return $this->hasMany(NewCategory::class, 'catalog_id')
-                    ->where('level', 1);
+            ->where('level', 1);
     }
 
     /**
-     * Sections in this catalog
+     * Sections in this catalog.
      */
     public function sections(): HasMany
     {
         return $this->hasMany(Section::class, 'catalog_id');
     }
 
-    // =========================================================
-    // ACCESSORS
-    // =========================================================
+    /**
+     * Fitments for this catalog.
+     */
+    public function fitments(): HasMany
+    {
+        return $this->hasMany(CatalogItemFitment::class, 'catalog_id');
+    }
+
+    /* =========================================================================
+     |  SCOPES
+     | ========================================================================= */
 
     /**
-     * Alias: childs -> newCategories Level 1 (compatibility)
+     * Scope: Only active catalogs.
      */
-    public function getChildsAttribute()
+    public function scopeActive(Builder $query): Builder
     {
-        return $this->newCategories()
-            ->where('level', 1)
-            ->orderBy('label_en')
-            ->limit(10)
-            ->get();
+        return $query->where('status', 1);
     }
 
     /**
-     * Localized name
+     * Scope: Filter by brand ID.
+     */
+    public function scopeForBrand(Builder $query, int $brandId): Builder
+    {
+        return $query->where('brand_id', $brandId);
+    }
+
+    /**
+     * Scope: Filter by year (within begin/end year range).
+     */
+    public function scopeForYear(Builder $query, int $year): Builder
+    {
+        return $query->where('beginYear', '<=', $year)
+            ->where('endYear', '>=', $year);
+    }
+
+    /**
+     * Scope: Filter by code.
+     */
+    public function scopeByCode(Builder $query, string $code): Builder
+    {
+        return $query->where('code', $code);
+    }
+
+    /**
+     * Scope: Order by sort then name.
+     */
+    public function scopeOrdered(Builder $query): Builder
+    {
+        return $query->orderBy('sort')->orderBy('name');
+    }
+
+    /* =========================================================================
+     |  ACCESSORS
+     | ========================================================================= */
+
+    /**
+     * Get localized catalog name.
      */
     public function getLocalizedNameAttribute(): string
     {
@@ -131,7 +216,77 @@ class Catalog extends Model
     }
 
     /**
-     * Items count (CatalogItems with active merchant_items)
+     * Get localized catalog label.
+     */
+    public function getLocalizedLabelAttribute(): string
+    {
+        $isAr = app()->getLocale() === 'ar';
+        $labelAr = trim((string)($this->label_ar ?? ''));
+        $labelEn = trim((string)($this->label_en ?? ''));
+        $name = $this->localized_name;
+
+        if ($isAr) {
+            return $labelAr !== '' ? $labelAr : ($labelEn !== '' ? $labelEn : $name);
+        }
+        return $labelEn !== '' ? $labelEn : ($labelAr !== '' ? $labelAr : $name);
+    }
+
+    /**
+     * Get year range as string.
+     */
+    public function getYearRangeAttribute(): string
+    {
+        if (!$this->beginYear) {
+            return '';
+        }
+        if ($this->beginYear === $this->endYear) {
+            return (string) $this->beginYear;
+        }
+        return "{$this->beginYear}-{$this->endYear}";
+    }
+
+    /**
+     * Get image URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        if (empty($this->imagePath)) {
+            return null;
+        }
+        if (filter_var($this->imagePath, FILTER_VALIDATE_URL)) {
+            return $this->imagePath;
+        }
+        return asset($this->imagePath);
+    }
+
+    /**
+     * Get large image URL.
+     */
+    public function getLargeImageUrlAttribute(): ?string
+    {
+        if (empty($this->largeImagePath)) {
+            return $this->image_url;
+        }
+        if (filter_var($this->largeImagePath, FILTER_VALIDATE_URL)) {
+            return $this->largeImagePath;
+        }
+        return asset($this->largeImagePath);
+    }
+
+    /**
+     * Get child categories (level 1) - legacy compatibility.
+     */
+    public function getChildsAttribute()
+    {
+        return $this->newCategories()
+            ->where('level', 1)
+            ->orderBy('label_en')
+            ->limit(10)
+            ->get();
+    }
+
+    /**
+     * Get items count (CatalogItems with active merchant_items).
      */
     public function getItemsCountAttribute(): int
     {
@@ -156,12 +311,12 @@ class Catalog extends Model
             ->count();
     }
 
-    // =========================================================
-    // HELPERS
-    // =========================================================
+    /* =========================================================================
+     |  HELPER METHODS
+     | ========================================================================= */
 
     /**
-     * Get production years from catalog dates
+     * Get production years from catalog dates.
      */
     public function getProductionYears(): array
     {
@@ -186,7 +341,7 @@ class Catalog extends Model
     }
 
     /**
-     * Factory support
+     * Factory support.
      */
     protected static function factory()
     {

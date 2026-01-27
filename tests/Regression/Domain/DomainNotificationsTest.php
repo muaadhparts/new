@@ -7,8 +7,8 @@ use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 // Commerce Notifications
-use App\Domain\Commerce\Notifications\OrderPlacedNotification;
-use App\Domain\Commerce\Notifications\OrderStatusChangedNotification;
+use App\Domain\Commerce\Notifications\PurchasePlacedNotification;
+use App\Domain\Commerce\Notifications\PurchaseStatusChangedNotification;
 use App\Domain\Commerce\Notifications\PaymentReceivedNotification;
 
 // Merchant Notifications
@@ -62,38 +62,38 @@ class DomainNotificationsTest extends TestCase
     // =========================================================================
 
     /** @test */
-    public function order_placed_notification_extends_notification()
+    public function purchase_placed_notification_extends_notification()
     {
-        $this->assertTrue(is_subclass_of(OrderPlacedNotification::class, Notification::class));
+        $this->assertTrue(is_subclass_of(PurchasePlacedNotification::class, Notification::class));
     }
 
     /** @test */
-    public function order_placed_notification_implements_should_queue()
+    public function purchase_placed_notification_implements_should_queue()
     {
-        $reflection = new \ReflectionClass(OrderPlacedNotification::class);
+        $reflection = new \ReflectionClass(PurchasePlacedNotification::class);
         $this->assertTrue($reflection->implementsInterface(ShouldQueue::class));
     }
 
     /** @test */
-    public function order_placed_notification_has_required_methods()
+    public function purchase_placed_notification_has_required_methods()
     {
-        $this->assertTrue(method_exists(OrderPlacedNotification::class, 'via'));
-        $this->assertTrue(method_exists(OrderPlacedNotification::class, 'toMail'));
-        $this->assertTrue(method_exists(OrderPlacedNotification::class, 'toArray'));
-        $this->assertTrue(method_exists(OrderPlacedNotification::class, 'getPurchase'));
+        $this->assertTrue(method_exists(PurchasePlacedNotification::class, 'via'));
+        $this->assertTrue(method_exists(PurchasePlacedNotification::class, 'toMail'));
+        $this->assertTrue(method_exists(PurchasePlacedNotification::class, 'toArray'));
+        $this->assertTrue(method_exists(PurchasePlacedNotification::class, 'getPurchase'));
     }
 
     /** @test */
-    public function order_status_changed_notification_extends_notification()
+    public function purchase_status_changed_notification_extends_notification()
     {
-        $this->assertTrue(is_subclass_of(OrderStatusChangedNotification::class, Notification::class));
+        $this->assertTrue(is_subclass_of(PurchaseStatusChangedNotification::class, Notification::class));
     }
 
     /** @test */
-    public function order_status_changed_notification_has_status_methods()
+    public function purchase_status_changed_notification_has_status_methods()
     {
-        $this->assertTrue(method_exists(OrderStatusChangedNotification::class, 'getPreviousStatus'));
-        $this->assertTrue(method_exists(OrderStatusChangedNotification::class, 'getNewStatus'));
+        $this->assertTrue(method_exists(PurchaseStatusChangedNotification::class, 'getPreviousStatus'));
+        $this->assertTrue(method_exists(PurchaseStatusChangedNotification::class, 'getNewStatus'));
     }
 
     /** @test */
@@ -341,8 +341,8 @@ class DomainNotificationsTest extends TestCase
     public function all_notifications_have_via_method()
     {
         $notifications = [
-            OrderPlacedNotification::class,
-            OrderStatusChangedNotification::class,
+            PurchasePlacedNotification::class,
+            PurchaseStatusChangedNotification::class,
             PaymentReceivedNotification::class,
             NewOrderNotification::class,
             LowStockNotification::class,
@@ -370,8 +370,8 @@ class DomainNotificationsTest extends TestCase
     public function all_notifications_have_to_mail_method()
     {
         $notifications = [
-            OrderPlacedNotification::class,
-            OrderStatusChangedNotification::class,
+            PurchasePlacedNotification::class,
+            PurchaseStatusChangedNotification::class,
             PaymentReceivedNotification::class,
             NewOrderNotification::class,
             LowStockNotification::class,
@@ -399,8 +399,8 @@ class DomainNotificationsTest extends TestCase
     public function most_notifications_implement_should_queue()
     {
         $queuedNotifications = [
-            OrderPlacedNotification::class,
-            OrderStatusChangedNotification::class,
+            PurchasePlacedNotification::class,
+            PurchaseStatusChangedNotification::class,
             PaymentReceivedNotification::class,
             NewOrderNotification::class,
             LowStockNotification::class,

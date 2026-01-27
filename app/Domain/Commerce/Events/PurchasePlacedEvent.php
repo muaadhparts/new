@@ -6,9 +6,9 @@ use App\Domain\Platform\Events\DomainEvent;
 use App\Domain\Commerce\Models\Purchase;
 
 /**
- * Event fired when an order is placed
+ * Event fired when a purchase is placed
  */
-class OrderPlacedEvent extends DomainEvent
+class PurchasePlacedEvent extends DomainEvent
 {
     public function __construct(
         public readonly int $purchaseId,

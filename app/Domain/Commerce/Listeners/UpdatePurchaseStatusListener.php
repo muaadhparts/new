@@ -9,11 +9,11 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Update Order Status Listener
+ * Update Purchase Status Listener
  *
- * Updates order status when payment is received.
+ * Updates purchase status when payment is received.
  */
-class UpdateOrderStatusListener implements ShouldQueue
+class UpdatePurchaseStatusListener implements ShouldQueue
 {
     use InteractsWithQueue;
 
@@ -27,7 +27,7 @@ class UpdateOrderStatusListener implements ShouldQueue
         $purchase = Purchase::find($event->purchaseId);
 
         if (!$purchase) {
-            Log::warning('UpdateOrderStatus: Purchase not found', [
+            Log::warning('UpdatePurchaseStatus: Purchase not found', [
                 'purchase_id' => $event->purchaseId,
             ]);
             return;
@@ -35,7 +35,7 @@ class UpdateOrderStatusListener implements ShouldQueue
 
         // Only update if currently pending payment
         if ($purchase->status !== 'pending') {
-            Log::info('UpdateOrderStatus: Order not in pending status', [
+            Log::info('UpdatePurchaseStatus: Purchase not in pending status', [
                 'purchase_id' => $event->purchaseId,
                 'current_status' => $purchase->status,
             ]);
@@ -50,7 +50,7 @@ class UpdateOrderStatusListener implements ShouldQueue
                 'paid_at' => now(),
             ]);
 
-            Log::info('Order status updated to processing', [
+            Log::info('Purchase status updated to processing', [
                 'purchase_id' => $event->purchaseId,
                 'payment_amount' => $event->amount,
             ]);
@@ -68,7 +68,7 @@ class UpdateOrderStatusListener implements ShouldQueue
      */
     public function failed(PaymentReceivedEvent $event, \Throwable $exception): void
     {
-        Log::error('Failed to update order status after payment', [
+        Log::error('Failed to update purchase status after payment', [
             'purchase_id' => $event->purchaseId,
             'error' => $exception->getMessage(),
         ]);

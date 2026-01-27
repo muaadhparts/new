@@ -5,9 +5,9 @@ namespace App\Domain\Commerce\Events;
 use App\Domain\Platform\Events\DomainEvent;
 
 /**
- * Event fired when an order status changes
+ * Event fired when a purchase status changes
  */
-class OrderStatusChangedEvent extends DomainEvent
+class PurchaseStatusChangedEvent extends DomainEvent
 {
     public function __construct(
         public readonly int $purchaseId,

@@ -90,7 +90,7 @@ class TryotoWebhookController extends Controller
             $statusAr = $this->getStatusArabic($status);
 
             // Note: Purchase status is now automatically updated via:
-            // ShipmentTrackingService → ShipmentTrackingObserver → OrderStatusResolverService
+            // ShipmentTrackingService → ShipmentTrackingObserver → PurchaseStatusResolverService
             // No direct status modification needed here
 
             // === COD Collection Status Update ===

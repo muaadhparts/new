@@ -3,7 +3,7 @@
 namespace App\Observers;
 
 use App\Domain\Shipping\Models\ShipmentTracking;
-use App\Domain\Commerce\Services\OrderStatusResolverService;
+use App\Domain\Commerce\Services\PurchaseStatusResolverService;
 use App\Events\ShipmentStatusChanged;
 use Illuminate\Support\Facades\Log;
 
@@ -11,13 +11,13 @@ use Illuminate\Support\Facades\Log;
  * ShipmentTrackingObserver
  *
  * يراقب التغييرات على جدول shipment_trackings
- * ويستدعي OrderStatusResolverService تلقائيًا بعد كل إدخال
+ * ويستدعي PurchaseStatusResolverService تلقائيًا بعد كل إدخال
  */
 class ShipmentTrackingObserver
 {
-    protected OrderStatusResolverService $statusResolver;
+    protected PurchaseStatusResolverService $statusResolver;
 
-    public function __construct(OrderStatusResolverService $statusResolver)
+    public function __construct(PurchaseStatusResolverService $statusResolver)
     {
         $this->statusResolver = $statusResolver;
     }

@@ -3,7 +3,9 @@
 namespace App\Domain\Catalog\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -22,34 +24,46 @@ use Illuminate\Support\Facades\Storage;
  */
 class Brand extends Model
 {
-    protected $fillable = ['name', 'name_ar', 'slug', 'status', 'is_featured', 'photo'];
+    protected $table = 'brands';
 
     public $timestamps = false;
 
-    protected $appends = ['localized_name', 'photo_url'];
+    protected $fillable = [
+        'name',
+        'name_ar',
+        'slug',
+        'status',
+        'is_featured',
+        'photo',
+    ];
 
-    // =========================================================
-    // RELATIONS
-    // =========================================================
+    protected $casts = [
+        'status' => 'integer',
+        'is_featured' => 'boolean',
+    ];
+
+    /* =========================================================================
+     |  RELATIONSHIPS
+     | ========================================================================= */
 
     /**
-     * Catalogs belonging to this brand
+     * All catalogs belonging to this brand.
      */
     public function catalogs(): HasMany
     {
-        return $this->hasMany(Catalog::class, 'brand_id', 'id');
+        return $this->hasMany(Catalog::class, 'brand_id');
     }
 
     /**
-     * NewCategories belonging to this brand
+     * Active catalogs belonging to this brand.
      */
-    public function newCategories(): HasMany
+    public function activeCatalogs(): HasMany
     {
-        return $this->hasMany(NewCategory::class, 'brand_id');
+        return $this->catalogs()->where('status', 1);
     }
 
     /**
-     * Brand regions
+     * Brand regions for this brand.
      */
     public function regions(): HasMany
     {
@@ -57,7 +71,15 @@ class Brand extends Model
     }
 
     /**
-     * Vehicle fitments - which catalog items fit this brand's vehicles
+     * NewCategories belonging to this brand.
+     */
+    public function newCategories(): HasMany
+    {
+        return $this->hasMany(NewCategory::class, 'brand_id');
+    }
+
+    /**
+     * Vehicle fitments for this brand.
      */
     public function fitments(): HasMany
     {
@@ -65,27 +87,57 @@ class Brand extends Model
     }
 
     /**
-     * Get catalog items that fit this brand's vehicles (via fitments)
+     * Catalog items that fit this brand's vehicles (via fitments).
      */
-    public function catalogItems()
+    public function catalogItems(): BelongsToMany
     {
-        return $this->belongsToMany(CatalogItem::class, 'catalog_item_fitments', 'brand_id', 'catalog_item_id');
+        return $this->belongsToMany(
+            CatalogItem::class,
+            'catalog_item_fitments',
+            'brand_id',
+            'catalog_item_id'
+        );
     }
 
-    // =========================================================
-    // ACCESSORS
-    // =========================================================
+    /* =========================================================================
+     |  SCOPES
+     | ========================================================================= */
 
     /**
-     * Alias: subs -> catalogs (compatibility with Category model)
+     * Scope: Only active brands.
      */
-    public function getSubsAttribute()
+    public function scopeActive(Builder $query): Builder
     {
-        if ($this->relationLoaded('catalogs')) {
-            return $this->catalogs->where('status', 1)->values();
-        }
-        return $this->catalogs()->where('status', 1)->get();
+        return $query->where('status', 1);
     }
+
+    /**
+     * Scope: Only featured brands.
+     */
+    public function scopeFeatured(Builder $query): Builder
+    {
+        return $query->where('is_featured', 1);
+    }
+
+    /**
+     * Scope: Include count of active catalogs.
+     */
+    public function scopeWithCatalogsCount(Builder $query): Builder
+    {
+        return $query->withCount(['catalogs' => fn($q) => $q->where('status', 1)]);
+    }
+
+    /**
+     * Scope: Include count of catalog items.
+     */
+    public function scopeWithItemsCount(Builder $query): Builder
+    {
+        return $query->withCount('catalogItems');
+    }
+
+    /* =========================================================================
+     |  ACCESSORS
+     | ========================================================================= */
 
     /**
      * Get localized brand name based on current locale.
@@ -111,23 +163,30 @@ class Brand extends Model
             return null;
         }
 
-        // Check if it's already a full URL
         if (filter_var($this->photo, FILTER_VALIDATE_URL)) {
             return $this->photo;
         }
 
-        // Check in assets/images/brand/ (legacy location)
         $legacyPath = public_path('assets/images/brand/' . $this->photo);
         if (file_exists($legacyPath)) {
             return asset('assets/images/brand/' . $this->photo);
         }
 
-        // Check in storage
         if (Storage::disk('public')->exists('brands/' . $this->photo)) {
             return Storage::url('brands/' . $this->photo);
         }
 
-        // Fallback to legacy path
         return asset('assets/images/brand/' . $this->photo);
+    }
+
+    /**
+     * Get active sub-catalogs (legacy compatibility).
+     */
+    public function getSubsAttribute()
+    {
+        if ($this->relationLoaded('catalogs')) {
+            return $this->catalogs->where('status', 1)->values();
+        }
+        return $this->catalogs()->where('status', 1)->get();
     }
 }

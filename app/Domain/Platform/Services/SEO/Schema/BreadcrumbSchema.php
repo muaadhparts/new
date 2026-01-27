@@ -27,21 +27,21 @@ class BreadcrumbSchema extends SchemaBuilder
     }
 
     /**
-     * Build breadcrumb for product page
+     * Build breadcrumb for catalog item page
      */
-    public function forProduct($product): self
+    public function forCatalogItem($catalogItem): self
     {
         $this->addItem(__('Home'), url('/'));
         $this->addItem(__('Catalog'), route('front.catalog'));
 
-        if ($product->brand) {
+        if ($catalogItem->brand) {
             $this->addItem(
-                $product->brand->name,
-                route('front.catalog', ['category' => $product->brand->slug])
+                $catalogItem->brand->name,
+                route('front.catalog', ['category' => $catalogItem->brand->slug])
             );
         }
 
-        $this->addItem($product->name, url()->current());
+        $this->addItem($catalogItem->name, url()->current());
 
         return $this->build();
     }

@@ -5,9 +5,9 @@ namespace Tests\Regression\Domain;
 use Tests\TestCase;
 
 // Commerce Listeners
-use App\Domain\Commerce\Listeners\SendOrderConfirmationListener;
-use App\Domain\Commerce\Listeners\NotifyMerchantsListener;
-use App\Domain\Commerce\Listeners\UpdateOrderStatusListener;
+use App\Domain\Commerce\Listeners\SendPurchaseConfirmationListener;
+use App\Domain\Commerce\Listeners\NotifyMerchantsOfPurchaseListener;
+use App\Domain\Commerce\Listeners\UpdatePurchaseStatusListener;
 
 // Merchant Listeners
 use App\Domain\Merchant\Listeners\LogStockChangeListener;
@@ -30,7 +30,7 @@ use App\Domain\Catalog\Listeners\NotifyMerchantOfReviewListener;
 use App\Domain\Catalog\Listeners\TrackProductViewListener;
 
 // Events for type checking
-use App\Domain\Commerce\Events\OrderPlacedEvent;
+use App\Domain\Commerce\Events\PurchasePlacedEvent;
 use App\Domain\Commerce\Events\PaymentReceivedEvent;
 use App\Domain\Merchant\Events\StockUpdatedEvent;
 use App\Domain\Shipping\Events\ShipmentCreatedEvent;
@@ -57,58 +57,58 @@ class EventListenersTest extends TestCase
     // =========================================================================
 
     /** @test */
-    public function send_order_confirmation_listener_can_be_instantiated()
+    public function send_purchase_confirmation_listener_can_be_instantiated()
     {
-        $listener = new SendOrderConfirmationListener();
-        $this->assertInstanceOf(SendOrderConfirmationListener::class, $listener);
+        $listener = new SendPurchaseConfirmationListener();
+        $this->assertInstanceOf(SendPurchaseConfirmationListener::class, $listener);
     }
 
     /** @test */
-    public function send_order_confirmation_listener_is_queueable()
+    public function send_purchase_confirmation_listener_is_queueable()
     {
         $this->assertTrue(
-            in_array(ShouldQueue::class, class_implements(SendOrderConfirmationListener::class))
+            in_array(ShouldQueue::class, class_implements(SendPurchaseConfirmationListener::class))
         );
     }
 
     /** @test */
-    public function send_order_confirmation_listener_has_handle_method()
+    public function send_purchase_confirmation_listener_has_handle_method()
     {
-        $this->assertTrue(method_exists(SendOrderConfirmationListener::class, 'handle'));
+        $this->assertTrue(method_exists(SendPurchaseConfirmationListener::class, 'handle'));
 
-        $reflection = new \ReflectionMethod(SendOrderConfirmationListener::class, 'handle');
+        $reflection = new \ReflectionMethod(SendPurchaseConfirmationListener::class, 'handle');
         $parameters = $reflection->getParameters();
 
         $this->assertCount(1, $parameters);
-        $this->assertEquals(OrderPlacedEvent::class, $parameters[0]->getType()->getName());
+        $this->assertEquals(PurchasePlacedEvent::class, $parameters[0]->getType()->getName());
     }
 
     /** @test */
-    public function notify_merchants_listener_can_be_instantiated()
+    public function notify_merchants_of_purchase_listener_can_be_instantiated()
     {
-        $listener = new NotifyMerchantsListener();
-        $this->assertInstanceOf(NotifyMerchantsListener::class, $listener);
+        $listener = new NotifyMerchantsOfPurchaseListener();
+        $this->assertInstanceOf(NotifyMerchantsOfPurchaseListener::class, $listener);
     }
 
     /** @test */
-    public function notify_merchants_listener_is_queueable()
+    public function notify_merchants_of_purchase_listener_is_queueable()
     {
         $this->assertTrue(
-            in_array(ShouldQueue::class, class_implements(NotifyMerchantsListener::class))
+            in_array(ShouldQueue::class, class_implements(NotifyMerchantsOfPurchaseListener::class))
         );
     }
 
     /** @test */
-    public function update_order_status_listener_can_be_instantiated()
+    public function update_purchase_status_listener_can_be_instantiated()
     {
-        $listener = new UpdateOrderStatusListener();
-        $this->assertInstanceOf(UpdateOrderStatusListener::class, $listener);
+        $listener = new UpdatePurchaseStatusListener();
+        $this->assertInstanceOf(UpdatePurchaseStatusListener::class, $listener);
     }
 
     /** @test */
-    public function update_order_status_listener_handles_payment_event()
+    public function update_purchase_status_listener_handles_payment_event()
     {
-        $reflection = new \ReflectionMethod(UpdateOrderStatusListener::class, 'handle');
+        $reflection = new \ReflectionMethod(UpdatePurchaseStatusListener::class, 'handle');
         $parameters = $reflection->getParameters();
 
         $this->assertEquals(PaymentReceivedEvent::class, $parameters[0]->getType()->getName());
@@ -326,8 +326,8 @@ class EventListenersTest extends TestCase
     public function listeners_have_retry_configuration()
     {
         $listeners = [
-            SendOrderConfirmationListener::class,
-            NotifyMerchantsListener::class,
+            SendPurchaseConfirmationListener::class,
+            NotifyMerchantsOfPurchaseListener::class,
             LogStockChangeListener::class,
             SendShippingNotificationListener::class,
             SendWelcomeEmailListener::class,
@@ -345,9 +345,9 @@ class EventListenersTest extends TestCase
     public function listeners_have_failed_method()
     {
         $listeners = [
-            SendOrderConfirmationListener::class,
-            NotifyMerchantsListener::class,
-            UpdateOrderStatusListener::class,
+            SendPurchaseConfirmationListener::class,
+            NotifyMerchantsOfPurchaseListener::class,
+            UpdatePurchaseStatusListener::class,
             LogStockChangeListener::class,
             NotifyLowStockListener::class,
             NotifyOutOfStockListener::class,

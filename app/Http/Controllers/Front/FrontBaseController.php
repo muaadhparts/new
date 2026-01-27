@@ -45,7 +45,12 @@ class FrontBaseController extends Controller
             view()->share('gs', $this->gs);
             view()->share('ps', $this->ps);
             view()->share('curr', $this->curr);
-            App::setlocale($this->language->name);
+
+            if ($this->language) {
+                App::setlocale($this->language->name);
+            } else {
+                App::setlocale('en');
+            }
 
 
             // Set Popup

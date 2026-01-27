@@ -3,8 +3,8 @@
 namespace Tests\Regression\Domain;
 
 use Tests\TestCase;
-use App\Domain\Commerce\Jobs\ProcessOrderJob;
-use App\Domain\Commerce\Jobs\SendOrderConfirmationJob;
+use App\Domain\Commerce\Jobs\ProcessPurchaseJob;
+use App\Domain\Commerce\Jobs\SendPurchaseConfirmationJob;
 use App\Domain\Commerce\Jobs\ReleaseExpiredReservationsJob;
 use App\Domain\Merchant\Jobs\NotifyMerchantNewOrderJob;
 use App\Domain\Merchant\Jobs\SyncStockJob;
@@ -32,31 +32,31 @@ class DomainJobsTest extends TestCase
     // ============================================
 
     /** @test */
-    public function process_order_job_exists()
+    public function process_purchase_job_exists()
     {
-        $this->assertTrue(class_exists(ProcessOrderJob::class));
+        $this->assertTrue(class_exists(ProcessPurchaseJob::class));
     }
 
     /** @test */
-    public function process_order_job_implements_should_queue()
+    public function process_purchase_job_implements_should_queue()
     {
-        $reflection = new \ReflectionClass(ProcessOrderJob::class);
+        $reflection = new \ReflectionClass(ProcessPurchaseJob::class);
         $interfaces = $reflection->getInterfaceNames();
         $this->assertContains('Illuminate\Contracts\Queue\ShouldQueue', $interfaces);
     }
 
     /** @test */
-    public function process_order_job_uses_required_traits()
+    public function process_purchase_job_uses_required_traits()
     {
-        $traits = array_keys(class_uses(ProcessOrderJob::class));
+        $traits = array_keys(class_uses(ProcessPurchaseJob::class));
         $this->assertContains('Illuminate\Foundation\Bus\Dispatchable', $traits);
         $this->assertContains('Illuminate\Queue\InteractsWithQueue', $traits);
     }
 
     /** @test */
-    public function send_order_confirmation_job_exists()
+    public function send_purchase_confirmation_job_exists()
     {
-        $this->assertTrue(class_exists(SendOrderConfirmationJob::class));
+        $this->assertTrue(class_exists(SendPurchaseConfirmationJob::class));
     }
 
     /** @test */
@@ -277,8 +277,8 @@ class DomainJobsTest extends TestCase
     public function all_jobs_exist()
     {
         $jobs = [
-            ProcessOrderJob::class,
-            SendOrderConfirmationJob::class,
+            ProcessPurchaseJob::class,
+            SendPurchaseConfirmationJob::class,
             ReleaseExpiredReservationsJob::class,
             NotifyMerchantNewOrderJob::class,
             SyncStockJob::class,
@@ -304,8 +304,8 @@ class DomainJobsTest extends TestCase
     public function all_jobs_have_handle_method()
     {
         $jobs = [
-            ProcessOrderJob::class,
-            SendOrderConfirmationJob::class,
+            ProcessPurchaseJob::class,
+            SendPurchaseConfirmationJob::class,
             ReleaseExpiredReservationsJob::class,
             NotifyMerchantNewOrderJob::class,
             SyncStockJob::class,
@@ -335,7 +335,7 @@ class DomainJobsTest extends TestCase
     {
         $this->assertStringStartsWith(
             'App\\Domain\\Commerce\\Jobs',
-            ProcessOrderJob::class
+            ProcessPurchaseJob::class
         );
     }
 
