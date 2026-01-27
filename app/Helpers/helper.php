@@ -365,6 +365,31 @@ if (! function_exists('space_path')) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
+// MerchantDisplay Helper - API-Ready Merchant Formatting
+// ═══════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get MerchantDisplayService instance (SINGLE SOURCE OF TRUTH for merchant formatting)
+ *
+ * This is the main entry point for all merchant display formatting.
+ * Use this helper instead of formatting in controllers or views.
+ *
+ * Usage:
+ *   merchantDisplay()->forProfile($merchant)       // Get profile display data
+ *   merchantDisplay()->forCard($merchant)          // Get card DTO
+ *   merchantDisplay()->getShopName($merchant)      // Get localized shop name
+ *   merchantDisplay()->getVerificationBadge($m)    // Get verification status
+ *
+ * @return \App\Domain\Merchant\Services\MerchantDisplayService
+ */
+if (! function_exists('merchantDisplay')) {
+    function merchantDisplay(): \App\Domain\Merchant\Services\MerchantDisplayService
+    {
+        return app(\App\Domain\Merchant\Services\MerchantDisplayService::class);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
 // PurchaseDisplay Helper - API-Ready Purchase Formatting
 // ═══════════════════════════════════════════════════════════════════════════
 
