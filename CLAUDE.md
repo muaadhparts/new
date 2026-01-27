@@ -21,7 +21,31 @@ All new CSS in `muaadh-system.css`. Use `m-*` prefix classes and CSS variables.
 ### 5. Migrations Only
 All database changes via Laravel migrations. `database/schema/` is READ-ONLY reference.
 
-### 6. Blade Display Only
+### 6. Schema-Descriptor is Source of Truth
+**`database/schema-descriptor/schema-descriptor.txt` defines the ACTUAL database schema.**
+
+```
+CRITICAL RULES:
+1. Any column NOT in schema-descriptor.txt MUST NOT be used in code
+2. Any table NOT in schema-descriptor.txt MUST NOT be referenced
+3. Any discovered mismatch MUST be fixed immediately
+4. Before using a column, VERIFY it exists in schema-descriptor.txt
+```
+
+```php
+// FORBIDDEN - Column doesn't exist in schema
+$item->is_discount;      // ❌ Not in schema-descriptor
+$item->discount_date;    // ❌ Not in schema-descriptor
+$page->meta_tag;         // ❌ Not in schema-descriptor
+
+// REQUIRED - Only use columns from schema-descriptor
+$item->previous_price;   // ✅ Exists in schema-descriptor
+$item->price;            // ✅ Exists in schema-descriptor
+```
+
+**Check schema:** `database/schema-descriptor/schema-descriptor.txt`
+
+### 7. Blade Display Only
 **Blade files are DISPLAY ONLY.** All data must arrive pre-computed from Controller/Service via DTO or ViewData.
 
 ```blade
@@ -40,7 +64,7 @@ json_encode($data)                  {{-- Transform in view --}}
 
 **Lint Check:** `php artisan lint:blade --ci`
 
-### 7. Data Flow Policy (NEW)
+### 8. Data Flow Policy
 **Strict one-way data flow: Model -> Service -> DTO -> View**
 
 ```
@@ -71,7 +95,7 @@ function monetaryUnit() { return app(MonetaryUnitService::class); }
 **Full Policy:** `docs/rules/DATA_FLOW_POLICY.md`
 **Lint Check:** `php artisan lint:dataflow --ci`
 
-### 8. Multi-Platform Architecture (CRITICAL)
+### 9. Multi-Platform Architecture (CRITICAL)
 **This project will serve multiple platforms. ALL code must be reusable.**
 
 ```
