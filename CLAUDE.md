@@ -24,7 +24,16 @@ All database changes via Laravel migrations. `database/schema/` is READ-ONLY ref
 ### 6. Schema-Descriptor is Source of Truth
 **`database/schema-descriptor/schema-descriptor.txt` defines the ACTUAL database schema.**
 
+> **لا كود يعيش بدون عقد بيانات واضح**
+
 ```
+WORKFLOW RULES:
+┌─────────────────────────────────────────────────────────────┐
+│  NEW FEATURE  → Start from schema-descriptor               │
+│  BUG FIX      → Verify against schema-descriptor           │
+│  REFACTOR     → Reject if violates schema-descriptor       │
+└─────────────────────────────────────────────────────────────┘
+
 CRITICAL RULES:
 1. Any column NOT in schema-descriptor.txt MUST NOT be used in code
 2. Any table NOT in schema-descriptor.txt MUST NOT be referenced
