@@ -75,7 +75,7 @@ html {
 
                         <p><strong>{{ __('Purchase Details') }} </strong></p>
                         <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $purchase->id) }}</span><br>
-                        <span><strong>{{ __('Purchase Date') }} :</strong> {{ date('d-M-Y',strtotime($purchase->created_at)) }}</span><br>
+                        <span><strong>{{ __('Purchase Date') }} :</strong> {{ $purchaseDisplay['created_at_date_only'] }}</span><br>
                         <span><strong>{{  __('Purchase ID')}} :</strong> {{ $purchase->purchase_number }}</span><br>
                         <span> <strong>{{ __('Shipping Method') }} :</strong>
                             {{ __('Ship To Address') }}
@@ -156,7 +156,7 @@ html {
 
                                             <td>
                                                 <p>
-                                                        <strong>{{ __('Price') }} :</strong> {{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}
+                                                        <strong>{{ __('Price') }} :</strong> {{ $catalogItem['_totalPrice_formatted'] }}
                                                 </p>
                                                <p>
                                                     <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty'] ?? 1}}
@@ -168,16 +168,16 @@ html {
                                                     @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
                                                     <p>
 
-                                                        <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} 
+                                                        <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }}
 
                                                     </p>
                                                     @endforeach
 
                                                     @endif
-                                               
+
                                             </td>
 
-                                            <td> {{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value)  }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                            <td>{{ $catalogItem['_totalPrice_formatted'] }} <small>{{ $catalogItem['_discount_text'] }}</small>
                                             </td>
                                         </tr>
 
@@ -186,14 +186,14 @@ html {
                                         <tr class="semi-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Subtotal') }}</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($subtotal) * $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                            <td>{{ $subtotal_formatted }}</td>
 
                                         </tr>
                                         @if($purchase->shipping_cost != 0 && $shippingMethodName)
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
                                                 <td><strong>{{ $shippingMethodName }}({{$purchase->currency_sign}})</strong></td>
-                                                <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost,$purchase->currency_sign) }}</td>
+                                                <td>{{ $purchaseDisplay['shipping_cost_formatted'] }}</td>
                                             </tr>
                                         @endif
 
@@ -201,14 +201,14 @@ html {
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td>{{ __('Tax') }} </td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($purchase->tax) / $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                            <td>{{ $purchaseDisplay['tax_formatted'] }}</td>
                                         </tr>
                                         @endif
                                         @if($purchase->discount_amount != null)
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Discount Amount') }}({{$purchase->currency_sign}})</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice($purchase->discount_amount,$purchase->currency_sign) }}</td>
+                                            <td>{{ $purchaseDisplay['discount_amount_formatted'] }}</td>
                                         </tr>
                                         @endif
 
@@ -216,14 +216,13 @@ html {
                                         <tr class="no-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Paid From Wallet') }}</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice(($purchase->wallet_price * $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                            <td>{{ $purchaseDisplay['wallet_price_formatted'] }}</td>
                                         </tr>
                                             @if($purchase->method != "Wallet")
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
                                                 <td><strong>{{$purchase->method}}</strong></td>
-                                                <td>{{ \PriceHelper::showOrderCurrencyPrice(($purchase->pay_amount * $purchase->currency_value),$purchase->currency_sign) }}
-                                                </td>
+                                                <td>{{ $purchaseDisplay['pay_amount_formatted'] }}</td>
                                             </tr>
                                             @endif
 
@@ -233,8 +232,7 @@ html {
                                         <tr class="final-border">
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Total') }}</strong></td>
-                                            <td>{{ \PriceHelper::showOrderCurrencyPrice((($purchase->pay_amount + $purchase->wallet_price) * $purchase->currency_value),$purchase->currency_sign) }}
-                                            </td>
+                                            <td>{{ $purchaseDisplay['total_cost_formatted'] }}</td>
                                         </tr>
 
                                     </tbody>

@@ -1,10 +1,11 @@
 {
-    "name": "muaadh/epc",
+    "name": "Auto Parts Offers Platform/epc",
     "type": "project",
-    "description": "MUAADH EPC \u2014 AI-assisted OEM/Aftermarket parts catalog (callout-first search, Laravel + Livewire)",
+    "description": "Auto Parts Offers Platform \u2014 AI-assisted OEM/Aftermarket parts catalog (callout-first search, Laravel + Livewire)",
     "keywords": [
-        "muaadh",
+        "Auto Parts Offers Platform",
         "epc",
+        "Offers",
         "auto-parts",
         "catalog",
         "laravel",

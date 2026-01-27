@@ -88,12 +88,10 @@
                                 </span>
                             </td>
                             <td class="text-end">
-                                @php
-                                    $netBalance = ($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0);
-                                @endphp
-                                <span class="fw-bold {{ $netBalance >= 0 ? 'text-success' : 'text-danger' }}">
-                                    {{ $currency->sign }}{{ number_format(abs($netBalance), 2) }}
-                                    @if($netBalance >= 0)
+                                {{-- Inline calculation - no @php (DATA_FLOW_POLICY) --}}
+                                <span class="fw-bold {{ (($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0)) >= 0 ? 'text-success' : 'text-danger' }}">
+                                    {{ $currency->sign }}{{ number_format(abs(($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0)), 2) }}
+                                    @if((($party->summary['total_receivable'] ?? 0) - ($party->summary['total_payable'] ?? 0)) >= 0)
                                         <i class="fas fa-arrow-up text-success"></i>
                                     @else
                                         <i class="fas fa-arrow-down text-danger"></i>

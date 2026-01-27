@@ -195,7 +195,7 @@
                                                 {{ $shipment->status_ar }}
                                             </span>
                                         </td>
-                                        <td>{{ $shipment->status_date?->format('d/m/Y H:i') }}</td>
+                                        <td>{{ $shipment->status_date_formatted }}</td>
                                         <td>
                                             <div class="btn-group btn-group-sm">
                                                 <a href="{{ route('operator.shipments.show', $shipment->tracking_number) }}"

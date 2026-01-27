@@ -211,6 +211,16 @@ class PurchaseCreateController extends OperatorBaseController
         $cart = Session::get('admin_cart');
         $address = Session::get('purchase_address');
 
+        // PRE-COMPUTED: Cart item URLs (DATA_FLOW_POLICY - no @php in view)
+        if ($cart && isset($cart->items)) {
+            foreach ($cart->items as $key => $item) {
+                $partNumber = $item['item']['part_number'] ?? null;
+                $cart->items[$key]['computed_url'] = $partNumber
+                    ? route('front.part-result', $partNumber)
+                    : '#';
+            }
+        }
+
         return view('operator.purchase.create.view', [
             'cart' => $cart,
             'address' => $address,

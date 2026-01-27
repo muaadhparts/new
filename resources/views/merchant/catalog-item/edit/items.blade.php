@@ -52,7 +52,7 @@
                                     <p class="mb-2 text-muted"><strong>@lang('Part Number'):</strong> {{ $data->part_number }}</p>
                                     <div>
                                         <span class="badge bg-secondary me-1">@lang('ID'): {{ $merchantItem->id }}</span>
-                                        <span class="badge bg-secondary">@lang('Created'): {{ $merchantItem->created_at->format('Y-m-d') }}</span>
+                                        <span class="badge bg-secondary">@lang('Created'): {{ $displayData['created_at_formatted'] }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -237,13 +237,13 @@
                         <!-- Price -->
                         <div class="input-label-wrapper">
                             <label>@lang('Price') <span class="text-danger">*</span> ({{ $sign->name }})</label>
-                            <input type="number" step="0.01" class="form-control" name="price" value="{{ round($merchantItem->price * $sign->value, 2) }}" placeholder="@lang('Enter Price')" required>
+                            <input type="number" step="0.01" class="form-control" name="price" value="{{ $displayData['price_converted'] }}" placeholder="@lang('Enter Price')" required>
                         </div>
 
                         <!-- Previous Price -->
                         <div class="input-label-wrapper">
                             <label>@lang('Previous Price') ({{ $sign->name }}) <small class="text-muted">@lang('Optional')</small></label>
-                            <input type="number" step="0.01" class="form-control" name="previous_price" value="{{ $merchantItem->previous_price ? round($merchantItem->previous_price * $sign->value, 2) : '' }}" placeholder="@lang('Enter Previous Price')">
+                            <input type="number" step="0.01" class="form-control" name="previous_price" value="{{ $displayData['previous_price_converted'] }}" placeholder="@lang('Enter Previous Price')">
                         </div>
 
                         <!-- Item Type -->

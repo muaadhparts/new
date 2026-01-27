@@ -45,7 +45,7 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ $dashboardStats['totalPurchases'] ?? 0 }}</h5>
+                                <h5>{{ $dashboard->totalPurchases }}</h5>
                                 <p>@lang('Total Purchases')</p>
                             </div>
                         </div>
@@ -76,7 +76,7 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ $dashboardStats['pendingPurchases'] ?? 0 }}</h5>
+                                <h5>{{ $dashboard->pendingPurchases }}</h5>
                                 <p>@lang('Pending Purchases')</p>
                             </div>
                         </div>
@@ -120,7 +120,7 @@
                                     </svg>
                                 </div>
                                
-                                <h5>{{ PriceHelper::showCurrencyPrice($user->affilate_income*$curr->value) }}</h5>
+                                <h5>{{ $dashboard->affiliateBonusFormatted }}</h5>
                                 <p>@lang('Affiliate Bonus')</p>
                             </div>
                         </div>
@@ -163,14 +163,14 @@
                                         </defs>
                                     </svg>
                                 </div>
-                                <h5>{{ PriceHelper::showCurrencyPrice(Auth::user()->balance*$curr->value) }}</h5>
+                                <h5>{{ $dashboard->walletBalanceFormatted }}</h5>
                                 <p>@lang('Wallet Balance')</p>
                             </div>
                         </div>
                     </div>
 
                     {{-- قسم التقديم كتاجر - للمستخدمين العاديين فقط --}}
-                    @if(auth()->user()->is_merchant == 0)
+                    @if($dashboard->isMerchant == 0)
                         <div class="m-card mt-4">
                             <div class="m-card__body">
                                 <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -202,22 +202,22 @@
                                 <th><span class="header-name">@lang('Purchase Status')</span></th>
                                 <th><span class="header-name">@lang('View')</span></th>
                             </tr>
-                            @foreach ($recentPurchases as $purchase)
+                            @foreach ($dashboard->recentPurchases as $purchase)
                                 <tr>
-                                    <td><span class="content">{{ $purchase->purchase_number }}</span></td>
-                                    <td><span class="content">{{ date('d M Y', strtotime($purchase->created_at)) }}</span>
+                                    <td><span class="content">{{ $purchase['purchase_number'] }}</span></td>
+                                    <td><span class="content">{{ $purchase['created_at'] }}</span>
                                     </td>
                                     <td><span
-                                            class="content">{{ \PriceHelper::showAdminCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                            class="content">{{ $purchase['total_formatted'] }}</span>
                                     </td>
                                     <td>
-                                        {{-- Status class pre-computed in Controller (DATA_FLOW_POLICY) --}}
-                                        <button type="button" disabled class="template-btn md-btn {{ $purchase->status_class }}">
-                                            {{ ucwords($purchase->status) }}
+                                        {{-- Status class pre-computed in Service (DATA_FLOW_POLICY) --}}
+                                        <button type="button" disabled class="template-btn md-btn {{ $purchase['status_class'] }}">
+                                            {{ $purchase['status_label'] }}
                                         </button>
                                     </td>
                                     <td class="view-btn-wrapper">
-                                        <a href="{{route('user-purchase',$purchase->id)}}" class="view-btn">
+                                        <a href="{{ $purchase['details_url'] }}" class="view-btn">
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <g clip-path="url(#clip0_548_16589)">

@@ -59,9 +59,7 @@
                                 <tr>
                                     <th width="45%">{{ __('Shipping Cost') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{
-                                        \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost,$purchase->currency_sign)
-                                        }}</td>
+                                    <td width="45%">{{ $purchaseDisplay['shipping_cost_formatted'] }}</td>
                                 </tr>
                                 @endif
 
@@ -69,8 +67,7 @@
                                 <tr>
                                     <th width="45%">{{ __('Tax :') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%"> {{ \PriceHelper::showOrderCurrencyPrice((($purchase->tax) /
-                                        $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                    <td width="45%">{{ $purchaseDisplay['tax_formatted'] }}</td>
                                 </tr>
                                 @endif
 
@@ -78,16 +75,14 @@
                                 <tr>
                                     <th width="45%">{{ __('Paid From Wallet') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{ \PriceHelper::showOrderCurrencyPrice(($purchase->wallet_price *
-                                        $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                    <td width="45%">{{ $purchaseDisplay['wallet_price_formatted'] }}</td>
                                 </tr>
 
                                 @if($purchase->method != "Wallet")
                                 <tr>
                                     <th width="45%">{{$purchase->method}}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{ \PriceHelper::showOrderCurrencyPrice(($purchase->pay_amount *
-                                        $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                    <td width="45%">{{ $purchaseDisplay['pay_amount_formatted'] }}</td>
                                 </tr>
                                 @endif
 
@@ -96,13 +91,12 @@
                                 <tr>
                                     <th width="45%">{{ __('Total Cost') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{ \PriceHelper::showOrderCurrencyPrice((($purchase->pay_amount +
-                                        $purchase->wallet_price) * $purchase->currency_value),$purchase->currency_sign) }}</td>
+                                    <td width="45%">{{ $purchaseDisplay['total_cost_formatted'] }}</td>
                                 </tr>
                                 <tr>
                                     <th width="45%">{{ __('Purchase Date') }}</th>
                                     <td width="10%">:</td>
-                                    <td width="45%">{{date('d-M-Y H:i:s a',strtotime($purchase->created_at))}}</td>
+                                    <td width="45%">{{ $purchaseDisplay['created_at_formatted'] }}</td>
                                 </tr>
                                 <tr>
                                     <th width="45%">{{ __('Payment Method') }}</th>
@@ -233,11 +227,7 @@
                                 <tr>
                                     <th width="45%">{{ __('Affilate Charge') }}</th>
                                     <th width="10%">:</th>
-                                    <td width="45%">
-                                        {{ \PriceHelper::showOrderCurrencyPrice(($purchase->affilate_charge *
-                                        $purchase->currency_value),$purchase->currency_sign) }}
-                                    </td>
-
+                                    <td width="45%">{{ $purchaseDisplay['affilate_charge_formatted'] }}</td>
                                 </tr>
                                 @endif
                             </tbody>
@@ -526,23 +516,21 @@
                                     </td>
                                     <td>
                                         <p>
-                                            <strong>{{ __('Price') }} :</strong> {{
-                                            \PriceHelper::showCurrencyPrice($catalogItem['_unitPrice'] * $purchase->currency_value) }}
+                                            <strong>{{ __('Price') }} :</strong> {{ $catalogItem['_unitPrice_formatted'] }}
                                         </p>
                                         <p>
                                             <strong>{{ __('Qty') }} :</strong> {{ $catalogItem['_qty'] }}
                                         </p>
                                     </td>
 
-                                    <td> {{ \PriceHelper::showCurrencyPrice($catalogItem['_totalPrice'] * $purchase->currency_value) }}
-                                    </td>
+                                    <td>{{ $catalogItem['_totalPrice_formatted'] }}</td>
 
 
                                     <td>
 
                                         <div class="action-list">
 
-                                            @if (App\Domain\Catalog\Models\CatalogItem::whereId($catalogItem['item']['id'])->exists())
+                                            @if ($catalogItem['_catalogItemExists'])
                                             <a class="btn btn-primary btn-sm edit-catalogItem" data-href="{{ route('operator-purchase-catalogItem-edit',[$itemKey, $catalogItem['item']['id'] ,$purchase->id]) }}"
                                                 data-bs-toggle="modal" data-bs-target="#edit-catalogItem-modal">
                                                 <i class="fas fa-edit"></i> {{ __("Edit") }}
@@ -567,18 +555,12 @@
                                         @if ($groupData['shipping'])
                                         <p>
                                             {{ __('Shipping Method') }} :
-                                            <strong>{{ $groupData['shipping']['name'] }} | {{
-                                                \PriceHelper::showCurrencyPrice($groupData['shipping']['price'] *
-                                                $purchase->currency_value) }}</strong>
+                                            <strong>{{ $groupData['shipping']['name'] }} | {{ $groupData['_shipping_formatted'] }}</strong>
                                         </p>
                                         @endif
                                         <p>
                                             {{ __('Total Amount') }} :
-                                            <strong>
-                                                {{ \PriceHelper::showCurrencyPrice(($groupData['total'] +
-                                                ($groupData['shipping']['price'] ?? 0)) *
-                                                $purchase->currency_value )}}
-                                            </strong>
+                                            <strong>{{ $groupData['_total_formatted'] }}</strong>
                                         </p>
 
                                     </div>

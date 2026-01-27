@@ -55,9 +55,9 @@
                         <div class="col-md-3">
                             <select name="status" class="form-control">
                                 <option value="">@lang('All Statuses')</option>
-                                @foreach(\App\Domain\Shipping\Models\ShipmentTracking::getAllStatuses() as $status)
-                                    <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>
-                                        {{ \App\Domain\Shipping\Models\ShipmentTracking::getStatusTranslation($status) }}
+                                @foreach($allStatusOptions as $statusOption)
+                                    <option value="{{ $statusOption['value'] }}" {{ request('status') == $statusOption['value'] ? 'selected' : '' }}>
+                                        {{ $statusOption['label'] }}
                                     </option>
                                 @endforeach
                             </select>

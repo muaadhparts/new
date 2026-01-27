@@ -47,6 +47,12 @@ class IncomeController extends Controller
         // Get statement for ledger view
         $statement = $this->accountingService->getMerchantStatement($merchantId, $startDate, $endDate);
 
+        // PRE-COMPUTED: Add date_formatted to purchases (DATA_FLOW_POLICY)
+        $report['purchases']->transform(function ($purchase) {
+            $purchase->date_formatted = $purchase->created_at?->format('d-m-Y') ?? 'N/A';
+            return $purchase;
+        });
+
         return view('merchant.earning', [
             'currency' => $currency,
             'currencySign' => $currencySign,
@@ -111,6 +117,12 @@ class IncomeController extends Controller
         // Get tax report from service (NO direct calculations in controller)
         $report = $this->accountingService->getMerchantTaxReport($merchantId, $startDate, $endDate);
 
+        // PRE-COMPUTED: Add date_formatted to purchases (DATA_FLOW_POLICY)
+        $report['purchases']->transform(function ($purchase) {
+            $purchase->date_formatted = $purchase->created_at?->format('d-m-Y') ?? 'N/A';
+            return $purchase;
+        });
+
         return view('merchant.tax_report', [
             'currency' => $currency,
             'currencySign' => $currencySign,
@@ -139,12 +151,18 @@ class IncomeController extends Controller
         // Get statement from accounting service
         $statement = $this->accountingService->getMerchantStatement($merchantId, $startDate, $endDate);
 
+        // PRE-COMPUTED: Add date_formatted to statement entries (DATA_FLOW_POLICY)
+        $statementEntries = collect($statement['statement'])->map(function ($entry) {
+            $entry['date_formatted'] = isset($entry['date']) ? $entry['date']->format('d-m-Y') : 'N/A';
+            return $entry;
+        })->toArray();
+
         return view('merchant.statement', [
             'currency' => $currency,
             'currencySign' => $currencySign,
             'start_date' => $startDate ?? '',
             'end_date' => $endDate ?? '',
-            'statement' => $statement['statement'],
+            'statement' => $statementEntries,
             'opening_balance' => $statement['opening_balance'],
             'closing_balance' => $statement['closing_balance'],
             'total_credit' => $currencySign . number_format($statement['total_credit'], 2),
@@ -231,6 +249,12 @@ class IncomeController extends Controller
             ]);
         }
 
+        // PRE-COMPUTED: Add date_formatted to statement entries (DATA_FLOW_POLICY)
+        $statementEntries = collect($statement['statement'])->map(function ($entry) {
+            $entry['date_formatted'] = isset($entry['date']) ? $entry['date']->format('d-m-Y') : 'N/A';
+            return $entry;
+        })->toArray();
+
         return view('merchant.monthly_ledger', [
             'currency' => $currency,
             'currencySign' => $currencySign,
@@ -239,7 +263,7 @@ class IncomeController extends Controller
             'months' => $months,
 
             // Statement data
-            'statement' => $statement['statement'],
+            'statement' => $statementEntries,
             'opening_balance' => $statement['opening_balance'],
             'closing_balance' => $statement['closing_balance'],
             'total_credit' => $currencySign . number_format($statement['total_credit'], 2),
@@ -326,6 +350,17 @@ class IncomeController extends Controller
             $pendingAmount = \App\Domain\Commerce\Models\MerchantPurchase::where('user_id', $merchantId)
                 ->where('settlement_status', '!=', 'settled')
                 ->sum('platform_owes_merchant');
+
+            // PRE-COMPUTED: Add formatted display values to payouts (DATA_FLOW_POLICY)
+            $payouts->getCollection()->transform(function ($payout) {
+                $payout->date_formatted = $payout->settlement_date
+                    ? $payout->settlement_date->format('d-m-Y')
+                    : ($payout->created_at ? $payout->created_at->format('d-m-Y') : 'N/A');
+                $payout->amount_formatted = $payout->getFormattedAmount();
+                $payout->status_color = $payout->getStatusColor();
+                $payout->status_name_ar = $payout->getStatusNameAr();
+                return $payout;
+            });
         }
 
         return view('merchant.payouts', [

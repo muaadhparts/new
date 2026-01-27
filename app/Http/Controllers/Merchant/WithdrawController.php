@@ -12,14 +12,23 @@ class WithdrawController extends MerchantBaseController
     {
         $withdraws = Withdraw::where('user_id', '=', $this->user->id)->where('type', '=', 'merchant')->latest('id')->get();
         $sign = $this->curr;
-        return view('merchant.withdraw.index', compact('withdraws', 'sign'));
+
+        // PRE-COMPUTED: Display values (DATA_FLOW_POLICY - no date()/calculations in view)
+        $withdraws->transform(function ($withdraw) use ($sign) {
+            $withdraw->date_formatted = $withdraw->created_at?->format('d-M-Y') ?? 'N/A';
+            $withdraw->amount_formatted = $sign->sign . round($withdraw->amount * $sign->value, 2);
+            return $withdraw;
+        });
+
+        return view('merchant.withdraw.index', [
+            'withdraws' => $withdraws,
+        ]);
     }
 
 
     public function create()
     {
-        $sign = $this->curr;
-        return view('merchant.withdraw.create', compact('sign'));
+        return view('merchant.withdraw.create', ['sign' => $this->curr]);
     }
 
 

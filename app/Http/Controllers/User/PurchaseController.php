@@ -20,8 +20,9 @@ class PurchaseController extends UserBaseController
             ->latest('id')
             ->paginate(12);
 
-        // PRE-COMPUTED: Status CSS class for each purchase (DATA_FLOW_POLICY - no @php in view)
+        // PRE-COMPUTED: All display values (DATA_FLOW_POLICY - no formatting in view)
         $purchases->getCollection()->transform(function ($purchase) {
+            // Status CSS class
             $purchase->status_class = in_array($purchase->status, ['pending', 'processing'])
                 ? 'yellow-btn'
                 : ($purchase->status == 'completed'
@@ -29,25 +30,31 @@ class PurchaseController extends UserBaseController
                     : ($purchase->status == 'declined'
                         ? 'red-btn'
                         : 'black-btn'));
+            // Pre-formatted values
+            $purchase->status_label = ucwords($purchase->status);
+            $purchase->date_formatted = $purchase->created_at?->format('d M Y') ?? 'N/A';
+            $purchase->total_formatted = \PriceHelper::showAdminCurrencyPrice(
+                $purchase->pay_amount * $purchase->currency_value,
+                $purchase->currency_sign
+            );
+            $purchase->details_url = route('user-purchase', $purchase->id);
             return $purchase;
         });
 
-        return view('user.purchase.index', compact('user', 'purchases'));
+        return view('user.purchase.index', ['purchases' => $purchases]);
     }
 
     public function purchasetrack()
     {
-        $user = $this->user;
-
         // Get user's purchases (no eager loading - service handles all)
-        $purchases = Purchase::where('user_id', $user->id)
+        $purchases = Purchase::where('user_id', $this->user->id)
             ->latest('id')
             ->get();
 
         // Prepare tracking DTOs via service (no models in Blade)
         $purchasesData = app(TrackingViewService::class)->forPurchasesList($purchases);
 
-        return view('user.purchase-track', compact('user', 'purchasesData'));
+        return view('user.purchase-track', ['purchasesData' => $purchasesData]);
     }
 
     public function trackload($id)
@@ -74,8 +81,7 @@ class PurchaseController extends UserBaseController
 
     public function purchase($id)
     {
-        $user = $this->user;
-        $purchase = $user->purchases()->whereId($id)->firstOrFail();
+        $purchase = $this->user->purchases()->whereId($id)->firstOrFail();
         $cart = $purchase->cart; // Model cast handles decoding
 
         // Prepare tracking data for view (no logic in Blade)
@@ -84,20 +90,47 @@ class PurchaseController extends UserBaseController
         // Pre-compute shipping names for view (DATA_FLOW_POLICY)
         $shippingNamesFormatted = $purchase->getFormattedShippingNames();
 
+        // PRE-COMPUTED: All display data (DATA_FLOW_POLICY - no formatting in view)
+        $purchaseDisplay = [
+            'date_formatted' => $purchase->created_at?->format('d-M-Y') ?? 'N/A',
+            'tax_formatted' => \PriceHelper::showOrderCurrencyPrice($purchase->tax / $purchase->currency_value, $purchase->currency_sign),
+            'paid_amount_formatted' => \PriceHelper::showOrderCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign),
+            'shipping_cost_formatted' => \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost * $purchase->currency_value, $purchase->currency_sign),
+            'payment_status_label' => $purchase->payment_status == 'Pending' ? __('Unpaid') : __('Paid'),
+            'payment_status_class' => $purchase->payment_status == 'Pending' ? 'text-danger' : 'text-success',
+            'print_url' => route('user-purchase-print', $purchase->id),
+            'confirm_url' => route('user-confirm-delivery', $purchase->id),
+        ];
+
         // PRE-COMPUTED: Cart items display data (DATA_FLOW_POLICY - no @php in view)
         $cartItemsDisplay = [];
         if (!empty($cart['items'])) {
             foreach ($cart['items'] as $key => $catalogItem) {
                 $partNumber = $catalogItem['item']['part_number'] ?? '';
+                $itemPrice = ($catalogItem['price'] ?? 0) * $purchase->currency_value;
+                $discount = $catalogItem['discount'] ?? 0;
+                $discountText = $discount == 0 ? '' : '(' . $discount . '% ' . __('Off') . ')';
+
                 $cartItemsDisplay[$key] = [
                     'productUrl' => !empty($partNumber) ? route('front.part-result', $partNumber) : '#',
+                    'unit_price_formatted' => \PriceHelper::showCurrencyPrice($itemPrice),
+                    'total_price_formatted' => \PriceHelper::showCurrencyPrice($itemPrice),
+                    'discount_text' => $discountText,
                 ];
             }
         }
 
+        // Pre-compute delivery fee if exists
+        if (isset($trackingData['firstDelivery']['deliveryFee'])) {
+            $trackingData['firstDelivery']['delivery_fee_formatted'] = \PriceHelper::showOrderCurrencyPrice(
+                $trackingData['firstDelivery']['deliveryFee'] * $purchase->currency_value,
+                $purchase->currency_sign
+            );
+        }
+
         return view('user.purchase.details', [
-            'user' => $user,
             'purchase' => $purchase,
+            'purchaseDisplay' => $purchaseDisplay,
             'cart' => $cart,
             'trackingData' => $trackingData,
             'shippingNamesFormatted' => $shippingNamesFormatted,
@@ -113,9 +146,8 @@ class PurchaseController extends UserBaseController
 
     public function purchaseprint($id)
     {
-        $user = $this->user;
         // Security: Only allow printing own purchases
-        $purchase = $user->purchases()->whereId($id)->firstOrFail();
+        $purchase = $this->user->purchases()->whereId($id)->firstOrFail();
         $cart = $purchase->cart; // Model cast handles decoding
 
         // Prepare tracking data for view (no logic in Blade)
@@ -127,13 +159,48 @@ class PurchaseController extends UserBaseController
 
         // PRE-COMPUTED: Invoice header display data (DATA_FLOW_POLICY - no @php in view)
         $firstSeller = isset($sellersInfoLookup) && count($sellersInfoLookup) > 0 ? reset($sellersInfoLookup) : null;
-        // Show platform if: no seller found, multiple sellers, or first seller is platform
+
+        // PRE-COMPUTED: All print display values (DATA_FLOW_POLICY - no formatting in view)
         $printDisplayData = [
             'firstSeller' => $firstSeller,
             'showPlatform' => !$firstSeller || count($sellersInfoLookup) > 1 || ($firstSeller['is_platform'] ?? true),
+            'date_formatted' => $purchase->created_at?->format('d-M-Y') ?? 'N/A',
+            'tax_formatted' => \PriceHelper::showOrderCurrencyPrice($purchase->tax / $purchase->currency_value, $purchase->currency_sign),
+            'paid_amount_formatted' => \PriceHelper::showOrderCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign),
         ];
 
-        return view('user.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'sellersInfoLookup', 'printDisplayData'));
+        // Pre-compute delivery fee if exists
+        if (isset($trackingData['firstDelivery']['deliveryFee'])) {
+            $printDisplayData['delivery_fee_formatted'] = \PriceHelper::showOrderCurrencyPrice(
+                $trackingData['firstDelivery']['deliveryFee'] * $purchase->currency_value,
+                $purchase->currency_sign
+            );
+        }
+
+        // PRE-COMPUTED: Cart items display data
+        $cartItemsDisplay = [];
+        if (!empty($cart['items'])) {
+            foreach ($cart['items'] as $key => $catalogItem) {
+                $itemPrice = ($catalogItem['price'] ?? 0) * $purchase->currency_value;
+                $discount = $catalogItem['discount'] ?? 0;
+                $discountText = $discount == 0 ? '' : '(' . $discount . '% ' . __('Off') . ')';
+
+                $cartItemsDisplay[$key] = [
+                    'unit_price_formatted' => \PriceHelper::showCurrencyPrice($itemPrice),
+                    'total_price_formatted' => \PriceHelper::showCurrencyPrice($itemPrice),
+                    'discount_text' => $discountText,
+                ];
+            }
+        }
+
+        return view('user.purchase.print', [
+            'purchase' => $purchase,
+            'cart' => $cart,
+            'trackingData' => $trackingData,
+            'sellersInfoLookup' => $sellersInfoLookup,
+            'printDisplayData' => $printDisplayData,
+            'cartItemsDisplay' => $cartItemsDisplay,
+        ]);
     }
 
     public function trans()

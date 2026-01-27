@@ -57,11 +57,18 @@ class MerchantController extends MerchantBaseController
                 ->take(5)
                 ->get();
 
-            // Recent purchases (limited to 10)
-            $data['recentMerchantPurchases'] = MerchantPurchase::where('user_id', $userId)
+            // Recent purchases (limited to 10) - PRE-COMPUTED display data
+            $recentPurchases = MerchantPurchase::where('user_id', $userId)
                 ->latest('id')
                 ->take(10)
                 ->get();
+
+            // Pre-compute display values (DATA_FLOW_POLICY - no date() in view)
+            $data['recentMerchantPurchases'] = $recentPurchases->map(function ($purchase) {
+                $purchase->date_formatted = $purchase->created_at?->format('Y-m-d') ?? 'N/A';
+                $purchase->details_url = route('merchant-purchase-show', $purchase->purchase_number);
+                return $purchase;
+            });
 
             $data['user'] = $this->user;
 

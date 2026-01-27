@@ -67,7 +67,7 @@ html {
                     <div class="invoice__orderDetails">
                         <p><strong>{{ __('Purchase Details') }} </strong></p>
                         <span><strong>{{ __('Invoice Number') }} :</strong> {{ sprintf("%'.08d", $purchase->id) }}</span><br>
-                        <span><strong>{{ __('Purchase Date') }} :</strong> {{ date('d-M-Y',strtotime($purchase->created_at)) }}</span><br>
+                        <span><strong>{{ __('Purchase Date') }} :</strong> {{ $printDisplay['date_formatted'] }}</span><br>
                         <span><strong>{{  __('Purchase ID')}} :</strong> {{ $purchase->purchase_number }}</span><br>
                         {{-- Branch Info --}}
                         @if(!empty($branchData))
@@ -127,7 +127,7 @@ html {
                                     </thead>
                                     <tbody>
                                         {{-- All calculations pre-computed in Controller (DATA_FLOW_POLICY) --}}
-                                        @foreach($cart['items'] as $catalogItem)
+                                        @foreach($cart['items'] as $cartKey => $catalogItem)
                                         @if($catalogItem['item']['user_id'] != 0)
                                             @if($catalogItem['item']['user_id'] == $user->id)
                                         <tr>
@@ -139,7 +139,7 @@ html {
                                             <td>
                                                 <p>
                                                         <strong>{{ __('Price') }} :</strong>
-                                                        {{ \PriceHelper::showOrderCurrencyPrice((($catalogItem['price'] ?? 0) * $purchase->currency_value),$purchase->currency_sign) }}
+                                                        {{ $cartItemsDisplay[$cartKey]['price_formatted'] }}
                                                 </p>
                                                <p>
                                                     <strong>{{ __('Qty') }} :</strong> {{$catalogItem['qty'] ?? 1}}
@@ -159,7 +159,7 @@ html {
                                             </td>
 
                                             <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice((($catalogItem['price'] ?? 0) * $purchase->currency_value),$purchase->currency_sign) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                                {{ $cartItemsDisplay[$cartKey]['price_formatted'] }} <small>{{ $cartItemsDisplay[$cartKey]['discount_text'] }}</small>
                                             </td>
                                         </tr>
 
@@ -172,24 +172,24 @@ html {
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Subtotal') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['subtotal'],$purchase->currency_sign) }}
+                                            {{ $printCalculations['subtotal_formatted'] }}
                                             </td>
                                         </tr>
                                         @if($printCalculations['showShippingCost'])
                                             <tr class="no-border">
                                                 <td colspan="1"></td>
-                                                <td><strong>{{ __('Shipping Cost') }}({{$purchase->currency_sign}})</strong></td>
+                                                <td><strong>{{ __('Shipping Cost') }}</strong></td>
                                                 <td>
-                                                {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['shippingCost'],$purchase->currency_sign) }}
+                                                {{ $printCalculations['shippingCost_formatted'] }}
                                                 </td>
                                             </tr>
                                         @endif
                                         @if($printCalculations['showTax'])
                                         <tr class="no-border">
                                             <td colspan="1"></td>
-                                            <td><strong>{{ __('TAX') }}({{$purchase->currency_sign}})</strong></td>
+                                            <td><strong>{{ __('TAX') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['tax'],$purchase->currency_sign) }}
+                                            {{ $printCalculations['tax_formatted'] }}
                                             </td>
                                         </tr>
                                         @endif
@@ -198,7 +198,7 @@ html {
                                             <td colspan="1"></td>
                                             <td><strong>{{ __('Total') }}</strong></td>
                                             <td>
-                                            {{ \PriceHelper::showOrderCurrencyPrice($printCalculations['total'],$purchase->currency_sign) }}
+                                            {{ $printCalculations['total_formatted'] }}
                                             </td>
                                         </tr>
 

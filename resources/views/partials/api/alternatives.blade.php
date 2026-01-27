@@ -2,33 +2,7 @@
 {{-- Simplified alternatives list with offers button --}}
 {{-- Uses unified catalog-modal CSS classes from muaadh-system.css --}}
 {{-- Integrates with illustrated.js navigation system --}}
-
-@php
-    // Helper function to resolve photo URL
-    $resolvePhoto = function($photo) {
-        if (!$photo) {
-            return asset('assets/images/noimage.png');
-        }
-        if (filter_var($photo, FILTER_VALIDATE_URL)) {
-            return $photo;
-        }
-        return \Illuminate\Support\Facades\Storage::url($photo);
-    };
-
-    // Separate original part from alternatives
-    $originalPart = null;
-    $otherAlternatives = collect();
-
-    if ($alternatives && $alternatives->count() > 0) {
-        foreach ($alternatives as $item) {
-            if ($item->part_number === $part_number) {
-                $originalPart = $item;
-            } else {
-                $otherAlternatives->push($item);
-            }
-        }
-    }
-@endphp
+{{-- Pre-computed: $originalPart, $otherAlternatives in CatalogItemApiController (DATA_FLOW_POLICY) --}}
 
 <div class="catalog-offers-content ill-alt">
     @if($originalPart || $otherAlternatives->count() > 0)
@@ -36,7 +10,7 @@
         @if($originalPart)
             <div class="catalog-original-part mb-3">
                 <div class="catalog-original-part__inner">
-                    <img src="{{ $resolvePhoto($originalPart->photo) }}"
+                    <img src="{{ $originalPart->resolved_photo }}"
                          alt="{{ $originalPart->part_number }}"
                          class="catalog-original-part__photo"
                          loading="lazy">
@@ -86,7 +60,7 @@
                 @foreach($otherAlternatives as $catalogItem)
                     <div class="catalog-original-part {{ $catalogItem->offers_count > 0 ? '' : 'catalog-original-part--no-offers' }}">
                         <div class="catalog-original-part__inner">
-                            <img src="{{ $resolvePhoto($catalogItem->photo) }}"
+                            <img src="{{ $catalogItem->resolved_photo }}"
                                  alt="{{ $catalogItem->part_number }}"
                                  class="catalog-original-part__photo"
                                  loading="lazy">

@@ -196,6 +196,12 @@ class MerchantCredentialController extends OperatorBaseController
         $credential = MerchantCredential::with('user')->findOrFail($id);
         $environments = $this->environments;
 
+        // PRE-COMPUTED: Masked value (DATA_FLOW_POLICY - no @php in view)
+        $decrypted = $credential->decrypted_value;
+        $credential->masked_value = $decrypted
+            ? substr($decrypted, 0, 8) . '••••••••' . substr($decrypted, -4)
+            : '••••••••';
+
         return view('operator.merchant-credentials.edit', compact('credential', 'environments'));
     }
 

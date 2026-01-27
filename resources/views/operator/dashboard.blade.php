@@ -155,7 +155,7 @@
                                 @foreach($recentPurchases as $data)
                                 <tr>
                                     <td>{{ $data->purchase_number }}</td>
-                                    <td>{{ date('Y-m-d',strtotime($data->created_at)) }}</td>
+                                    <td>{{ $data->created_at_formatted }}</td>
                                     <td>
                                         <div class="action-list"><a href="{{ route('operator-purchase-show',$data->id) }}"><i
                                                     class="fas fa-eye"></i> {{ __('Details') }}</a>

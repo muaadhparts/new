@@ -63,14 +63,15 @@
 
                                     <td>
                                         <span class="content">
-                                            {{ PriceHelper::showAdminCurrencyPrice(round($data->price * $curr->value, 2)) }}
+                                            {{-- Pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                            {{ $data->price_formatted }}
                                         </span>
                                     </td>
 
 
                                     <td>
                                         <div class="table-icon-btns-wrapper">
-                                            <a href="{{ route('merchant-shipping-edit', $data->id) }}"
+                                            <a href="{{ $data->edit_url }}"
                                                 class="view-btn edit-btn">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                                     viewBox="0 0 24 24" fill="none">

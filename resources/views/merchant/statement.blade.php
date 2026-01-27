@@ -110,7 +110,7 @@
                         <tbody>
                             @forelse($statement as $entry)
                             <tr>
-                                <td>{{ $entry['date']->format('d-m-Y') }}</td>
+                                <td>{{ $entry['date_formatted'] }}</td>
                                 <td>{{ $entry['description'] }}</td>
                                 <td>
                                     @if(isset($entry['purchase_number']))

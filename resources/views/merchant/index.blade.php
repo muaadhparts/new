@@ -219,11 +219,11 @@
                                     <!-- table data row 1 start  -->
                                     <tr>
                                         <td><span class="content">{{ $data->purchase_number }}</span></td>
-                                        <td><span class="content">{{ date('Y-m-d', strtotime($data->created_at)) }}</span>
+                                        <td><span class="content">{{ $data->date_formatted }}</span>
                                         </td>
                                         <td>
                                             <div class="table-icon-btns-wrapper">
-                                                <a href="{{ route('merchant-purchase-show', $data->purchase_number) }}"
+                                                <a href="{{ $data->details_url }}"
                                                     class="view-btn">
                                                     <svg width="24" height="24" viewBox="0 0 24 24"
                                                         fill="none" xmlns="http://www.w3.org/2000/svg">

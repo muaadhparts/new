@@ -60,6 +60,7 @@
                             </div>
 
                             {{-- Current Value (Masked) --}}
+                            {{-- Pre-computed in ApiCredentialController (DATA_FLOW_POLICY) --}}
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-4">
                                     <div class="left-area">
@@ -67,12 +68,8 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    @php
-                                        $decrypted = $credential->decrypted_value;
-                                        $masked = $decrypted ? substr($decrypted, 0, 8) . '••••••••' . substr($decrypted, -4) : 'N/A';
-                                    @endphp
                                     <div class="input-group">
-                                        <input type="text" class="form-control" value="{{ $masked }}" readonly style="background: #f8f9fa;">
+                                        <input type="text" class="form-control" value="{{ $credential->masked_value }}" readonly style="background: #f8f9fa;">
                                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
                                     </div>
                                 </div>

@@ -66,12 +66,12 @@
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Total Cost')</span> <span
-                                class="info">{{ \PriceHelper::showOrderCurrencyPrice(($purchaseStats['totalPrice'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                class="info">{{ $purchaseDisplay['total_formatted'] }}</span>
                         </li>
 
                         <li class="info-list-item">
                             <span class="info-type">@lang('Purchase Date')</span> <span
-                                class="info">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
+                                class="info">{{ $purchaseDisplay['date_formatted'] }}</span>
                         </li>
 
                         {{-- Branch Info (Branch-scoped checkout) --}}
@@ -259,7 +259,7 @@
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Delivery Cost')</span>
-                                    <span class="info">{{ PriceHelper::showAdminCurrencyPrice($trackingData['deliveryFee']) }}</span>
+                                    <span class="info">{{ $purchaseDisplay['delivery_fee_formatted'] }}</span>
                                 </li>
                                 <li class="info-list-item">
                                     <span class="info-type">@lang('Status')</span>
@@ -316,7 +316,7 @@
                     </thead>
                     <tbody>
 
-                        @foreach ($cart['items'] as $key => $catalogItem)
+                        @foreach ($cart['items'] as $cartKey => $catalogItem)
                             @if ($catalogItem['item']['user_id'] != 0)
                                 @if ($catalogItem['item']['user_id'] == $user->id)
                                     <tr>
@@ -327,9 +327,9 @@
                                         <td class="text-start">
                                                 @if ($catalogItem['item']['user_id'] != 0)
                                                     {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
-                                                    @if ($cartItemsDisplay[$key]['merchant'])
+                                                    @if ($cartItemsDisplay[$cartKey]['merchant'])
                                                         <a class="name-hover-color content" target="_blank"
-                                                            href="{{ route('operator-merchant-show', $cartItemsDisplay[$key]['merchant']['id']) }}">{{ $cartItemsDisplay[$key]['merchant']['shop_name'] }}</a>
+                                                            href="{{ route('operator-merchant-show', $cartItemsDisplay[$cartKey]['merchant']['id']) }}">{{ $cartItemsDisplay[$cartKey]['merchant']['shop_name'] }}</a>
                                                     @else
                                                         {{ __('Merchant Removed') }}
                                                     @endif
@@ -339,17 +339,17 @@
                                         <td>
                                             @if ($catalogItem['item']['user_id'] != 0)
                                                 {{-- ✅ استخدام البيانات المحملة من الـ Controller --}}
-                                                @if ($cartItemsDisplay[$key]['merchantPurchase'])
-                                                    @if ($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'pending')
-                                                        <span class="m-badge m-badge--pending">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
-                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'processing')
-                                                        <span class="m-badge m-badge--processing">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
-                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'on delivery')
-                                                        <span class="m-badge m-badge--shipped">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
-                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'completed')
-                                                        <span class="m-badge m-badge--completed">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
-                                                    @elseif($cartItemsDisplay[$key]['merchantPurchase']['status'] == 'declined')
-                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($cartItemsDisplay[$key]['merchantPurchase']['status']) }}</span>
+                                                @if ($cartItemsDisplay[$cartKey]['merchantPurchase'])
+                                                    @if ($cartItemsDisplay[$cartKey]['merchantPurchase']['status'] == 'pending')
+                                                        <span class="m-badge m-badge--pending">{{ ucwords($cartItemsDisplay[$cartKey]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$cartKey]['merchantPurchase']['status'] == 'processing')
+                                                        <span class="m-badge m-badge--processing">{{ ucwords($cartItemsDisplay[$cartKey]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$cartKey]['merchantPurchase']['status'] == 'on delivery')
+                                                        <span class="m-badge m-badge--shipped">{{ ucwords($cartItemsDisplay[$cartKey]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$cartKey]['merchantPurchase']['status'] == 'completed')
+                                                        <span class="m-badge m-badge--completed">{{ ucwords($cartItemsDisplay[$cartKey]['merchantPurchase']['status']) }}</span>
+                                                    @elseif($cartItemsDisplay[$cartKey]['merchantPurchase']['status'] == 'declined')
+                                                        <span class="m-badge m-badge--cancelled">{{ ucwords($cartItemsDisplay[$cartKey]['merchantPurchase']['status']) }}</span>
                                                     @endif
                                                 @endif
                                             @endif
@@ -360,7 +360,7 @@
                                             @if ($catalogItem['item']['user_id'] != 0)
                                             {{-- ✅ URL الرابط يُحسب في Controller - البيانات موجودة في cartItemsDisplay --}}
                                             <a class="name-hover-color content catalogItem-name d-inline-block" target="_blank"
-                                                href="{{ $cartItemsDisplay[$key]['productUrl'] }}">
+                                                href="{{ $cartItemsDisplay[$cartKey]['productUrl'] }}">
                                                 {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                             </a>
                                             <br><small class="text-muted">PART_NUMBER: {{ $catalogItem['item']['part_number'] ?? 'N/A' }}</small>
@@ -377,7 +377,7 @@
 
                                                 <div class="d-flex align-items-center gap-2">
                                                     <span class="key">@lang('Price :')</span>
-                                                    <span class="value">{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                                    <span class="value">{{ $cartItemsDisplay[$cartKey]['price_formatted'] }}</span>
                                                 </div>
 
                                                 <div class="d-flex align-items-center gap-2">
@@ -386,9 +386,9 @@
                                                 </div>
 
                                                 @if (!empty($catalogItem['keys']))
-                                                            @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $key => $value)
+                                                            @foreach (array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values'])) as $attrKey => $value)
                                                 <div class="d-flex align-items-center gap-2">
-                                                    <span class="key">{{ ucwords(str_replace('_', ' ', $key)) }} :</span>
+                                                    <span class="key">{{ ucwords(str_replace('_', ' ', $attrKey)) }} :</span>
                                                     <span class="value">{{ $value }}</span>
                                                 </div>
                                                 @endforeach
@@ -399,8 +399,8 @@
                                         <!-- Total Price -->
                                         <td class="text-start">
                                             <span class="content ">
-                                                {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}
-                                                        <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
+                                                {{ $cartItemsDisplay[$cartKey]['price_formatted'] }}
+                                                        <small>{{ $cartItemsDisplay[$cartKey]['discount_text'] }}</small>
                                             </span>
                                         </td>
                                     </tr>

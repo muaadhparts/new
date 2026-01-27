@@ -78,10 +78,11 @@
                                                 <h5 class="mb-0">@lang('Your Information')</h5>
                                             </div>
                                             <div class="m-card__body">
-                                                <p class="mb-2"><strong>@lang('Name'):</strong> {{ $user->name }}</p>
-                                                <p class="mb-2"><strong>@lang('Email'):</strong> {{ $user->email }}</p>
-                                                <p class="mb-2"><strong>@lang('Phone'):</strong> {{ $user->phone ?: '-' }}</p>
-                                                <p class="mb-0"><strong>@lang('Address'):</strong> {{ $user->address ?: '-' }}</p>
+                                                {{-- User info pre-computed via DTO (DATA_FLOW_POLICY) --}}
+                                                <p class="mb-2"><strong>@lang('Name'):</strong> {{ $profile->name }}</p>
+                                                <p class="mb-2"><strong>@lang('Email'):</strong> {{ $profile->email }}</p>
+                                                <p class="mb-2"><strong>@lang('Phone'):</strong> {{ $profile->phone ?: '-' }}</p>
+                                                <p class="mb-0"><strong>@lang('Address'):</strong> {{ $profile->address ?: '-' }}</p>
                                             </div>
                                         </div>
                                     </div>

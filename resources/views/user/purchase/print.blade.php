@@ -90,7 +90,7 @@ html {
                         <div class="col-md-10">
                            <div class="dashboard-content">
                               <div class="view-purchase-page" id="print">
-                                 <p class="purchase-date" style="margin-left: 2%">{{ __('Purchase Date') }} {{date('d-M-Y',strtotime($purchase->created_at))}}</p>
+                                 <p class="purchase-date" style="margin-left: 2%">{{ __('Purchase Date') }} {{ $printDisplayData['date_formatted'] }}</p>
                                  <div class="invoice__metaInfo">
                                     <div class="col-md-6">
                                        <h5>{{ __('Billing Address') }}</h5>
@@ -102,8 +102,9 @@ html {
                                           {{$purchase->customer_city}}-{{$purchase->customer_zip}}
                                        </address>
                                        <h5>{{ __('Payment Information') }}</h5>
-                                       <p>{{ __('Tax:') }}  {{ \PriceHelper::showOrderCurrencyPrice((($purchase->tax) / $purchase->currency_value),$purchase->currency_sign) }}</p>
-                                       <p>{{ __('Paid Amount:') }} {{ \PriceHelper::showOrderCurrencyPrice(($purchase->pay_amount  * $purchase->currency_value),$purchase->currency_sign) }}</p>
+                                       {{-- Pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                       <p>{{ __('Tax:') }} {{ $printDisplayData['tax_formatted'] }}</p>
+                                       <p>{{ __('Paid Amount:') }} {{ $printDisplayData['paid_amount_formatted'] }}</p>
                                        <p>{{ __('Payment Method:') }} {{$purchase->method}}</p>
                                        @if($purchase->method != "Cash On Delivery")
                                        @if($purchase->method=="Stripe")
@@ -132,7 +133,7 @@ html {
                                              @if($trackingData['firstDelivery']['hasCourierPhone'])
                                              {{ __('Phone:') }} {{ $trackingData['firstDelivery']['courierPhone'] }}<br>
                                              @endif
-                                             {{ __('Delivery Fee:') }} {{ \PriceHelper::showOrderCurrencyPrice($trackingData['firstDelivery']['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}<br>
+                                             {{ __('Delivery Fee:') }} {{ $printDisplayData['delivery_fee_formatted'] ?? '' }}<br>
                                              {{ __('Status:') }} {{ $trackingData['firstDelivery']['statusLabel'] }}
                                           </p>
                                        @else
@@ -167,23 +168,24 @@ html {
                                           </tr>
                                        </thead>
                                        <tbody>
-                                          @foreach($cart['items'] as $catalogItem)
+                                          {{-- Pre-computed prices in Controller (DATA_FLOW_POLICY) --}}
+                                          @foreach($cart['items'] as $key => $catalogItem)
                                           <tr>
                                              <td>{{ $catalogItem['item']['id'] }}</td>
                                              <td>{{ getLocalizedCatalogItemName($catalogItem['item'], 50) }}</td>
                                              <td>
                                                 <b>{{ __('Quantity') }}</b>: {{$catalogItem['qty'] ?? 1}} <br>
                                                 @if(!empty($catalogItem['keys']))
-                                                @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $key => $value)
-                                                <b>{{ ucwords(str_replace('_', ' ', $key))  }} : </b> {{ $value }} <br>
+                                                @foreach( array_combine(explode(',', $catalogItem['keys']), explode(',', $catalogItem['values']))  as $attrKey => $value)
+                                                <b>{{ ucwords(str_replace('_', ' ', $attrKey))  }} : </b> {{ $value }} <br>
                                                 @endforeach
                                                 @endif
                                              </td>
                                              <td>
-                                                {{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}
+                                                {{ $cartItemsDisplay[$key]['unit_price_formatted'] ?? '' }}
                                              </td>
                                              <td>
-                                                {{ \PriceHelper::showCurrencyPrice($catalogItem['price'] * $purchase->currency_value) }} <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '('.$catalogItem['discount'].'% '.__('Off').')' }}</small>
+                                                {{ $cartItemsDisplay[$key]['total_price_formatted'] ?? '' }} <small>{{ $cartItemsDisplay[$key]['discount_text'] ?? '' }}</small>
                                              </td>
                                           </tr>
                                           @endforeach

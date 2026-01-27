@@ -314,6 +314,10 @@ class CatalogItemController extends MerchantBaseController
             'hasWholesale' => $hasWholesale,
             'wholesaleQty' => $wholesaleQty,
             'wholesaleDiscount' => $wholesaleDiscount,
+            // PRE-COMPUTED: Form field values (DATA_FLOW_POLICY)
+            'price_converted' => round($merchantItem->price * $sign->value, 2),
+            'previous_price_converted' => $merchantItem->previous_price ? round($merchantItem->previous_price * $sign->value, 2) : '',
+            'created_at_formatted' => $merchantItem->created_at?->format('Y-m-d') ?? 'N/A',
         ];
 
         return view('merchant.catalog-item.edit.items', [

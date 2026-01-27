@@ -84,6 +84,8 @@ class DeliveryController extends MerchantBaseController
                 'customerChoice' => $customerChoice,
                 'customerChoiceDisplay' => $customerChoiceDisplay,
                 'price' => $price,
+                'price_formatted' => \PriceHelper::showOrderCurrencyPrice($price, $purchase->currency_sign),
+                'date_formatted' => $purchase->created_at?->format('Y-m-d') ?? 'N/A',
             ];
         }
 

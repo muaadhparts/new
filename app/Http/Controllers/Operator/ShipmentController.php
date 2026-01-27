@@ -84,9 +84,10 @@ class ShipmentController extends OperatorBaseController
             'cancelled' => 'dark',
         ];
 
-        // Add status_color attribute to each shipment
+        // Add status_color and formatted date to each shipment (DATA_FLOW_POLICY)
         $shipments->getCollection()->transform(function ($shipment) use ($statusColors) {
             $shipment->status_color = $statusColors[$shipment->status] ?? 'info';
+            $shipment->status_date_formatted = $shipment->status_date?->format('d/m/Y H:i') ?? 'N/A';
             return $shipment;
         });
 
@@ -105,6 +106,13 @@ class ShipmentController extends OperatorBaseController
         $history = ShipmentTracking::where('tracking_number', $trackingNumber)
             ->orderBy('occurred_at', 'desc')
             ->get();
+
+        // PRE-COMPUTED: Add formatted dates to history items (DATA_FLOW_POLICY)
+        $history->transform(function ($log) {
+            $log->status_date_date_formatted = $log->status_date?->format('d/m/Y') ?? 'N/A';
+            $log->status_date_time_formatted = $log->status_date?->format('H:i') ?? 'N/A';
+            return $log;
+        });
 
         $purchase = Purchase::with('user')->find($shipment->purchase_id);
         $merchant = User::find($shipment->merchant_id);
@@ -163,6 +171,8 @@ class ShipmentController extends OperatorBaseController
             // Keep mappings for history items
             'statusColors' => $statusColors,
             'statusIcons' => $statusIcons,
+            // PRE-COMPUTED: Formatted date (DATA_FLOW_POLICY)
+            'status_date_formatted' => $shipment->status_date?->format('d/m/Y H:i') ?? 'N/A',
         ];
     }
 

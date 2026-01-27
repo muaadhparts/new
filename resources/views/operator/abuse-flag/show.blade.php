@@ -45,12 +45,8 @@
                                             </tr>
                                             <tr>
                                                 <th>{{ __('Brand') }}</th>
-                                                @php
-                                                    $fitments = $data->catalogItem?->fitments ?? collect();
-                                                    $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
-                                                    $firstBrand = $brands->first();
-                                                @endphp
-                                                <td>{{ $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A') }}</td>
+                                                {{-- Pre-computed in AbuseFlagController (DATA_FLOW_POLICY) --}}
+                                                <td>{{ $data->firstBrandName }}</td>
                                             </tr>
                                             @if($data->merchantItem && $data->merchantItem->id)
                                             <tr>

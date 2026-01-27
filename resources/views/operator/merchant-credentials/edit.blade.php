@@ -110,6 +110,7 @@
                             </div>
 
                             {{-- Current Value --}}
+                            {{-- Pre-computed in MerchantCredentialController (DATA_FLOW_POLICY) --}}
                             <div class="row justify-content-center mt-3">
                                 <div class="col-lg-4">
                                     <div class="left-area">
@@ -117,9 +118,8 @@
                                     </div>
                                 </div>
                                 <div class="col-lg-7">
-                                    @php $decrypted = $credential->decrypted_value; $masked = $decrypted ? substr($decrypted, 0, 8) . '••••••••' . substr($decrypted, -4) : '••••••••'; @endphp
                                     <div class="alert alert-secondary">
-                                        <code>{{ $masked }}</code>
+                                        <code>{{ $credential->masked_value }}</code>
                                     </div>
                                 </div>
                             </div>

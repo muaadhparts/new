@@ -60,15 +60,11 @@
                           
                            <tr>
                               <td><input type="hidden" value="{{$key1}}">{{ $catalogItem['item']['id'] }}</td>
+                              {{-- URL pre-computed in PurchaseCreateController (DATA_FLOW_POLICY) --}}
                               <td>
                                 <img src="{{ filter_var($catalogItem['item']['photo'] ?? '', FILTER_VALIDATE_URL) ? $catalogItem['item']['photo'] : ($catalogItem['item']['photo'] ?? null ? \Illuminate\Support\Facades\Storage::url($catalogItem['item']['photo']) : asset('assets/images/noimage.png')) }}" alt="">
                                 <br>
-                                 @php
-                                    $createViewProductUrl = !empty($catalogItem['item']['part_number'])
-                                        ? route('front.part-result', $catalogItem['item']['part_number'])
-                                        : '#';
-                                 @endphp
-                                <a target="_blank" href="{{ $createViewProductUrl }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
+                                <a target="_blank" href="{{ $catalogItem['computed_url'] ?? '#' }}">{{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}</a>
                               </td>
                               <td class="catalogItem-price">
                                  <span>{{ App\Domain\Catalog\Models\CatalogItem::convertPrice($catalogItem['price'] ?? 0) }}

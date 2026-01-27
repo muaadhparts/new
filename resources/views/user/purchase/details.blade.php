@@ -26,10 +26,10 @@
                     <div class="user-purchase-name-wrapper">
                         <div>
                             <h4 class="purchase-number">@lang("Purchase")# {{ $purchase->purchase_number }}[{{ $purchase->status }}]</h4>
-                            <span>@lang('Purchase Date') {{ date('d-M-Y', strtotime($purchase->created_at)) }}</span>
+                            <span>@lang('Purchase Date') {{ $purchaseDisplay['date_formatted'] }}</span>
                         </div>
 
-                        <a class="template-btn dark-btn" href="{{ route('user-purchase-print', $purchase->id) }}" target="_blank">
+                        <a class="template-btn dark-btn" href="{{ $purchaseDisplay['print_url'] }}" target="_blank">
                             @lang('Print Purchase')
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
@@ -170,20 +170,17 @@
                                 <li>
                                     <span>@lang('Payment Status :') </span>
                                     <span class="pay-status">
-                                        @if ($purchase->payment_status == 'Pending')
-                                            <strong class="text-danger">{{ __('Unpaid') }}</strong>
-                                        @else
-                                            <strong class="text-success">{{ __('Paid') }}</strong>
-                                        @endif
+                                        {{-- Pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                        <strong class="{{ $purchaseDisplay['payment_status_class'] }}">{{ $purchaseDisplay['payment_status_label'] }}</strong>
                                     </span>
                                 </li>
 
 
                                 <li><span>@lang('Tax :') </span>
-                                    {{ \PriceHelper::showOrderCurrencyPrice($purchase->tax / $purchase->currency_value, $purchase->currency_sign) }}
+                                    {{ $purchaseDisplay['tax_formatted'] }}
                                 </li>
                                 <li><span>@lang('Paid Amount :') </span>
-                                    {{ \PriceHelper::showOrderCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign) }}
+                                    {{ $purchaseDisplay['paid_amount_formatted'] }}
                                 </li>
                                 <li><span>@lang('Payment Method:') </span>
                                     {{ $purchase->method }}
@@ -238,7 +235,7 @@
                                                     <i class="fas fa-money-bill-wave me-2 text-muted"></i>
                                                     <strong>@lang('Delivery Fee'):</strong>
                                                     <span class="text-success fw-bold">
-                                                        {{ \PriceHelper::showOrderCurrencyPrice($trackingData['firstDelivery']['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}
+                                                        {{ $trackingData['firstDelivery']['delivery_fee_formatted'] ?? '' }}
                                                     </span>
                                                 </li>
 
@@ -329,7 +326,7 @@
                                                     <i class="fas fa-money-bill-wave me-2 text-muted"></i>
                                                     <strong>@lang('Shipping Cost'):</strong>
                                                     <span class="text-primary fw-bold">
-                                                        {{ \PriceHelper::showOrderCurrencyPrice($purchase->shipping_cost * $purchase->currency_value, $purchase->currency_sign) }}
+                                                        {{ $purchaseDisplay['shipping_cost_formatted'] }}
                                                     </span>
                                                 </li>
                                                 @endif
@@ -449,11 +446,12 @@
                                         </td>
 
                                         <td><b><span
-                                                    class="td-name">{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}</span></b>
+                                                    class="td-name">{{ $cartItemsDisplay[$key]['unit_price_formatted'] }}</span></b>
                                         </td>
                                         <td>
-                                            <b><span class="td-name">{{ \PriceHelper::showCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value) }}
-                                                    <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small></span></b>
+                                            {{-- Pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                            <b><span class="td-name">{{ $cartItemsDisplay[$key]['total_price_formatted'] }}
+                                                    <small>{{ $cartItemsDisplay[$key]['discount_text'] }}</small></span></b>
                                         </td>
                                     </tr>
                                 @endforeach

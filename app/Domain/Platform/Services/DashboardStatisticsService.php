@@ -148,7 +148,15 @@ class DashboardStatisticsService
      */
     public function getRecentPurchases(int $limit = 5): Collection
     {
-        return Purchase::latest('id')->take($limit)->get();
+        $purchases = Purchase::latest('id')->take($limit)->get();
+
+        // PRE-COMPUTED: Add formatted date (DATA_FLOW_POLICY)
+        $purchases->transform(function ($purchase) {
+            $purchase->created_at_formatted = $purchase->created_at?->format('Y-m-d') ?? 'N/A';
+            return $purchase;
+        });
+
+        return $purchases;
     }
 
     /**

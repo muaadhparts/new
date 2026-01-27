@@ -74,6 +74,13 @@ class BuyerNoteController extends OperatorBaseController
 	{
 		// Brand from catalog item fitments
 		$data = BuyerNote::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.merchantBranch'])->findOrFail($id);
+
+		// PRE-COMPUTED: First brand name from fitments (DATA_FLOW_POLICY)
+		$fitments = $data->catalogItem?->fitments ?? collect();
+		$brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+		$firstBrand = $brands->first();
+		$data->firstBrandName = $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A');
+
 		return view('operator.buyer-note.show', compact('data'));
 	}
 

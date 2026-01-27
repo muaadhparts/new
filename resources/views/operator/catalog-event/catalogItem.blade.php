@@ -5,12 +5,8 @@
 		</a>
 		<ul>
 		@foreach($datas as $data)
-			@php
-				$catalogItem = $data->catalogItem;
-				$catalogItemName = $catalogItem ? getLocalizedCatalogItemName($catalogItem, 30) : __('N/A');
-			@endphp
 			<li>
-				<a href="{{ route('operator-catalog-item-edit', $catalogItem->id ?? 0) }}"> <i class="icofont-cart"></i> {{ $catalogItemName }}</a>
+				<a href="{{ route('operator-catalog-item-edit', $data->catalogItem->id ?? 0) }}"> <i class="icofont-cart"></i> {{ $data->catalogItem ? getLocalizedCatalogItemName($data->catalogItem, 30) : __('N/A') }}</a>
 				<a class="clear">{{ __('Stock') }} : {{ $data->total_stock ?? 0 }}</a>
 			</li>
 		@endforeach

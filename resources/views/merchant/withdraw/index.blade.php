@@ -58,14 +58,14 @@
                     <tbody>
                         @forelse($withdraws as $withdraw)
                             <tr>
-                                <td>{{ date('d-M-Y', strtotime($withdraw->created_at)) }}</td>
+                                <td>{{ $withdraw->date_formatted }}</td>
                                 <td>{{ $withdraw->method }}</td>
                                 @if ($withdraw->method != 'Bank')
                                     <td>{{ $withdraw->acc_email }}</td>
                                 @else
                                     <td>{{ $withdraw->iban }}</td>
                                 @endif
-                                <td>{{ $sign->sign }}{{ round($withdraw->amount * $sign->value, 2) }}</td>
+                                <td>{{ $withdraw->amount_formatted }}</td>
                                 <td>{{ ucfirst($withdraw->status) }}</td>
                             </tr>
                         @empty

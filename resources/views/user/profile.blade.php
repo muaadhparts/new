@@ -19,14 +19,14 @@
                                                 <div class="form-group">
                                                     <label for="name">@lang('User Name')</label>
                                                     <input type="text" id="name" name="name" class="form-control"
-                                                        placeholder="@lang('User Name')" value="{{ $user->name }}">
+                                                        placeholder="@lang('User Name')" value="{{ $profile->name }}">
                                                 </div>
                                             </div>
                                             <div class="single-form-wrapper flex-grow-1">
                                                 <div class="form-group">
                                                     <label for="Email">@lang('Email')</label>
                                                     <input type="text" id="Email" class="form-control"
-                                                        placeholder="@lang('Email')" value="{{ $user->email }}"
+                                                        placeholder="@lang('Email')" value="{{ $profile->email }}"
                                                         name="email">
                                                 </div>
                                             </div>
@@ -36,7 +36,7 @@
                                                 <div class="form-group">
                                                     <label for="Phone-Number">@lang('Phone Number')</label>
                                                     <input type="text" id="Phone-Number" class="form-control"
-                                                        placeholder="@lang('Phone Number')" value="{{ $user->phone }}"
+                                                        placeholder="@lang('Phone Number')" value="{{ $profile->phone }}"
                                                         name="phone">
                                                 </div>
                                             </div>
@@ -44,14 +44,14 @@
                                                 <div class="form-group">
                                                     <label for="Fax">@lang('Fax')</label>
                                                     <input type="text" id="Fax" class="form-control"
-                                                        placeholder="@lang('Fax')" value="{{ $user->fax }}"
+                                                        placeholder="@lang('Fax')" value="{{ $profile->fax }}"
                                                         name="fax">
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="form-group">
                                             <label for="address">@lang('Address')</label>
-                                            <textarea id="address" class="form-control" name="address" placeholder="@lang('Address')" style="height: 122px">{{ $user->address }}</textarea>
+                                            <textarea id="address" class="form-control" name="address" placeholder="@lang('Address')" style="height: 122px">{{ $profile->address }}</textarea>
                                             <button type="button" class="btn btn-outline-primary btn-sm mt-2"
                                                 onclick="openMapPicker({ addressField: '#address' })">
                                                 <i class="fas fa-map-marker-alt me-1"></i> @lang('Select on Map')
@@ -64,13 +64,8 @@
                                     </div>
                                     <div class="col-lg-4 col-12 purchase-1 purchase-lg-2">
                                         <div class="profile-img">
-                                            @if ($user->is_provider == 1)
-                                                <img src="{{ $user->photo ? asset($user->photo) : asset('assets/images/' . $gs->user_image) }}"
-                                                    alt="">
-                                            @else
-                                                <img src="{{ $user->photo ? asset('assets/images/users/' . $user->photo) : asset('assets/images/' . $gs->user_image) }}"
-                                                    alt="">
-                                            @endif
+                                            {{-- Photo URL pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                            <img src="{{ $profile->photoUrl }}" alt="">
                                             <input type="file" class="d-none" name="photo" id="photo">
                                             <label for="photo" class="template-btn dark-btn pro-btn-forms">
                                                 @lang('Upload Picture')

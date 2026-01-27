@@ -71,6 +71,78 @@ function monetaryUnit() { return app(MonetaryUnitService::class); }
 **Full Policy:** `docs/rules/DATA_FLOW_POLICY.md`
 **Lint Check:** `php artisan lint:dataflow --ci`
 
+### 8. Multi-Platform Architecture (CRITICAL)
+**This project will serve multiple platforms. ALL code must be reusable.**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    SINGLE CODEBASE                          │
+│                                                             │
+│  ┌─────────┐   ┌─────────┐   ┌─────────┐   ┌─────────┐    │
+│  │ Desktop │   │ Mobile  │   │ Mobile  │   │WhatsApp │    │
+│  │   Web   │   │   App   │   │ Browser │   │  Bot    │    │
+│  └────┬────┘   └────┬────┘   └────┬────┘   └────┬────┘    │
+│       │             │             │             │          │
+│       └─────────────┴──────┬──────┴─────────────┘          │
+│                            │                                │
+│                    ┌───────▼───────┐                        │
+│                    │   Services    │  ← ALL LOGIC HERE      │
+│                    │   (Shared)    │                        │
+│                    └───────────────┘                        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Platforms:**
+- 🖥️ Desktop Web (current)
+- 📱 Mobile App (API - future)
+- 📲 Mobile Browser (different routes - future)
+- 💬 WhatsApp Integration (future)
+
+**GOLDEN RULE:** Any logic written MUST be reusable across all platforms.
+
+```php
+// FORBIDDEN - Logic in Controller (not reusable)
+class WebController {
+    public function show($id) {
+        $purchase = Purchase::find($id);
+        $purchase->date_formatted = $purchase->created_at->format('d-m-Y');  // ❌
+        $purchase->total_formatted = PriceHelper::show(...);                  // ❌
+        $items = $this->calculateItems($purchase);                            // ❌
+        return view('...', compact('purchase', 'items'));
+    }
+}
+
+// REQUIRED - Logic in Service (reusable)
+class PurchaseDisplayService {
+    public function getDisplayData(Purchase $purchase): PurchaseDisplayDTO {
+        return new PurchaseDisplayDTO(
+            dateFormatted: $purchase->created_at->format('d-m-Y'),
+            totalFormatted: PriceHelper::show(...),
+            items: $this->calculateItems($purchase),
+        );
+    }
+}
+
+// Web Controller - uses Service
+$dto = $service->getDisplayData($purchase);
+return view('...', ['data' => $dto]);
+
+// API Controller - reuses SAME Service
+$dto = $service->getDisplayData($purchase);
+return response()->json($dto);
+
+// WhatsApp Handler - reuses SAME Service
+$dto = $service->getDisplayData($purchase);
+return $this->formatForWhatsApp($dto);
+```
+
+**When you discover misplaced logic:**
+1. Note it as technical debt
+2. Move it to the correct Service
+3. Update all consumers (Controllers) to use the Service
+
+**Current Technical Debt:** See `WORK_PLAN.md` Phase 5
+
 ---
 
 ## FORBIDDEN PATTERNS
@@ -271,3 +343,4 @@ php artisan lint:dataflow --fix  # Show fix suggestions
 | Table Rename Method | `docs/standards/TABLE_RENAME_METHODOLOGY.md` |
 | Blade Display Only | `docs/plans/BLADE_DISPLAY_ONLY_PLAN.md` |
 | **Data Flow Policy** | `docs/rules/DATA_FLOW_POLICY.md` |
+| **Work Plan** | `WORK_PLAN.md` |

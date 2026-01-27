@@ -39,7 +39,7 @@
                                     <tr>
 
                                         <td><span
-                                                class="content">{{ date('d-M-Y', strtotime($withdraw->created_at)) }}</span>
+                                                class="content">{{ $withdraw->date_formatted }}</span>
                                         </td>
                                         <td><span class="content">{{ $withdraw->method }}</span>
                                         </td>

@@ -1,8 +1,7 @@
 {{-- resources/views/partials/api/fitment-details.blade.php --}}
 {{-- Fitment Details: Shows brands and vehicles that a part fits --}}
 {{-- Uses same styling as catalog-item-offers.blade.php --}}
-
-@php $isArabic = str_starts_with(app()->getLocale(), 'ar'); $localizedName = fn($v) => $isArabic ? ($v['name_ar'] ?? $v['name'] ?? '—') : ($v['name'] ?? $v['name_ar'] ?? '—'); $formatYear = fn($d) => empty($d) ? '—' : (substr((string)$d, 0, 4) ?: '—'); $brandsArray = is_array($brands) ? array_values($brands) : (method_exists($brands, 'values') ? $brands->values()->toArray() : []); $totalVehicles = array_reduce($brandsArray, fn($sum, $b) => $sum + count($b['vehicles'] ?? []), 0); $brandCount = count($brandsArray); $hasMultipleBrands = $brandCount > 1; $uniqueId = 'fitment_' . uniqid(); @endphp
+{{-- Pre-computed: $brandCount, $totalVehicles, $hasMultipleBrands, $uniqueId in CatalogItemApiController (DATA_FLOW_POLICY) --}}
 
 <div class="catalog-offers-content" id="{{ $uniqueId }}">
     @if($brandCount > 0)
@@ -23,7 +22,7 @@
         @if($hasMultipleBrands)
             {{-- Brand Tabs for Multiple Brands --}}
             <div class="fitment-brand-tabs d-flex flex-wrap gap-2 mb-3">
-                @foreach($brandsArray as $index => $brand)
+                @foreach($brands as $index => $brand)
                     <button type="button"
                             class="fitment-brand-tab {{ $loop->first ? 'active' : '' }}"
                             data-brand-index="{{ $index }}"
@@ -41,7 +40,7 @@
         @endif
 
         {{-- Brand Content Panels --}}
-        @foreach($brandsArray as $index => $brand)
+        @foreach($brands as $index => $brand)
             <div class="fitment-brand-panel {{ $loop->first ? 'active' : '' }}"
                  data-brand-panel="{{ $index }}"
                  data-parent="{{ $uniqueId }}">
@@ -86,16 +85,16 @@
                                     <tr>
                                         <td>
                                             <i class="fas fa-car-side text-muted me-2" style="font-size: 0.75rem;"></i>
-                                            {{ $localizedName($vehicle) }}
+                                            {{ $vehicle['localized_name'] ?? '—' }}
                                         </td>
                                         <td class="text-center">
                                             <code class="text-muted">{{ $vehicle['code'] ?? '—' }}</code>
                                         </td>
                                         <td class="text-center">
-                                            <span class="text-muted">{{ $formatYear($vehicle['begin_date']) }}</span>
+                                            <span class="text-muted">{{ $vehicle['formatted_begin'] ?? '—' }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <span class="text-muted">{{ $formatYear($vehicle['end_date']) }}</span>
+                                            <span class="text-muted">{{ $vehicle['formatted_end'] ?? '—' }}</span>
                                         </td>
                                     </tr>
                                 @endforeach

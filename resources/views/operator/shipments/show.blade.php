@@ -83,7 +83,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="text-muted small">{{ __('Last Update') }}</label>
-                            <p class="font-weight-bold mb-0">{{ $shipment->status_date?->format('d/m/Y H:i') ?? 'N/A' }}</p>
+                            <p class="font-weight-bold mb-0">{{ $status_date_formatted }}</p>
                         </div>
                         @if($shipment->location)
                         <div class="col-12">
@@ -129,8 +129,8 @@
                                             </div>
                                             <div class="text-right">
                                                 <small class="text-muted">
-                                                    {{ $log->status_date?->format('d/m/Y') }}<br>
-                                                    <strong>{{ $log->status_date?->format('H:i') }}</strong>
+                                                    {{ $log->status_date_date_formatted }}<br>
+                                                    <strong>{{ $log->status_date_time_formatted }}</strong>
                                                 </small>
                                             </div>
                                         </div>

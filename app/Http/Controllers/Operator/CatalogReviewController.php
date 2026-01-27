@@ -76,6 +76,13 @@ class CatalogReviewController extends OperatorBaseController
 	    {
 	        // Brand from catalog item fitments
 	        $data = CatalogReview::with(['catalogItem.fitments.brand', 'merchantItem.user', 'merchantItem.qualityBrand', 'merchantItem.merchantBranch'])->findOrFail($id);
+
+	        // PRE-COMPUTED: First brand name from fitments (DATA_FLOW_POLICY)
+	        $fitments = $data->catalogItem?->fitments ?? collect();
+	        $brands = $fitments->map(fn($f) => $f->brand)->filter()->unique('id')->values();
+	        $firstBrand = $brands->first();
+	        $data->firstBrandName = $firstBrand ? getLocalizedBrandName($firstBrand) : __('N/A');
+
 	        return view('operator.catalog-review.show',compact('data'));
 	    }
 

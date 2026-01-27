@@ -225,11 +225,11 @@
                     </div>
                     <div class="col-md-3">
                         <h6 class="text-muted">{{ __('Net Amount') }}</h6>
-                        @php $netAmount = $settlementCalc['net_amount'] ?? 0; @endphp
-                        <h4 class="{{ $netAmount >= 0 ? 'text-success' : 'text-danger' }}">
-                            {{ $currency->sign }}{{ number_format(abs($netAmount), 2) }}
+                        {{-- Direct access - no @php (DATA_FLOW_POLICY) --}}
+                        <h4 class="{{ ($settlementCalc['net_amount'] ?? 0) >= 0 ? 'text-success' : 'text-danger' }}">
+                            {{ $currency->sign }}{{ number_format(abs($settlementCalc['net_amount'] ?? 0), 2) }}
                             <small class="d-block text-muted fs-6">
-                                @if($netAmount >= 0)
+                                @if(($settlementCalc['net_amount'] ?? 0) >= 0)
                                     {{ __('(Platform owes)') }}
                                 @else
                                     {{ __('(Courier owes)') }}

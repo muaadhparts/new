@@ -168,39 +168,39 @@
                     </thead>
                     <tbody>
                         @forelse($statement['statement'] as $row)
-                        @php $txn = $row['transaction']; $isDebit = $row['is_debit']; $isCredit = $row['is_credit']; $counterparty = $isDebit ? $txn->toParty : $txn->fromParty; @endphp
+                        {{-- Direct array access - no @php extraction (DATA_FLOW_POLICY) --}}
                         <tr>
-                            <td>{{ $txn->transaction_date->format('Y-m-d') }}</td>
+                            <td>{{ $row['transaction']->transaction_date->format('Y-m-d') }}</td>
                             <td>
-                                <a href="{{ route('operator.accounts.transaction', $txn) }}">
-                                    {{ $txn->transaction_ref }}
+                                <a href="{{ route('operator.accounts.transaction', $row['transaction']) }}">
+                                    {{ $row['transaction']->transaction_ref }}
                                 </a>
                             </td>
                             <td>
-                                <i class="{{ $counterparty->getIcon() }} me-1"></i>
-                                {{ $counterparty->name }}
+                                <i class="{{ ($row['is_debit'] ? $row['transaction']->toParty : $row['transaction']->fromParty)->getIcon() }} me-1"></i>
+                                {{ ($row['is_debit'] ? $row['transaction']->toParty : $row['transaction']->fromParty)->name }}
                             </td>
                             <td>
-                                <span class="badge bg-secondary">{{ $txn->getTypeNameAr() }}</span>
+                                <span class="badge bg-secondary">{{ $row['transaction']->getTypeNameAr() }}</span>
                             </td>
                             <td>
-                                <small>{{ $txn->description_ar ?: $txn->description }}</small>
+                                <small>{{ $row['transaction']->description_ar ?: $row['transaction']->description }}</small>
                             </td>
                             <td class="text-end">
-                                @if($isDebit)
-                                    <span class="text-danger">{{ $currency->sign }}{{ number_format($txn->amount, 2) }}</span>
+                                @if($row['is_debit'])
+                                    <span class="text-danger">{{ $currency->sign }}{{ number_format($row['transaction']->amount, 2) }}</span>
                                 @endif
                             </td>
                             <td class="text-end">
-                                @if($isCredit)
-                                    <span class="text-success">{{ $currency->sign }}{{ number_format($txn->amount, 2) }}</span>
+                                @if($row['is_credit'])
+                                    <span class="text-success">{{ $currency->sign }}{{ number_format($row['transaction']->amount, 2) }}</span>
                                 @endif
                             </td>
                             <td class="text-end fw-bold">
                                 {{ $currency->sign }}{{ number_format($row['running_balance'], 2) }}
                             </td>
                             <td>
-                                <span class="badge bg-{{ $txn->getStatusColor() }}">{{ $txn->getStatusNameAr() }}</span>
+                                <span class="badge bg-{{ $row['transaction']->getStatusColor() }}">{{ $row['transaction']->getStatusNameAr() }}</span>
                             </td>
                         </tr>
                         @empty

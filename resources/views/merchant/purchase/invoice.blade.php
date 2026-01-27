@@ -88,7 +88,7 @@
                         </li>
                         <li>
                             <span class="fw-semibold">@lang('Purchase Date :')</span>
-                            <span class="fw-normal">{{ date('d-M-Y H:i:s a', strtotime($purchase->created_at)) }}</span>
+                            <span class="fw-normal">{{ $invoiceDisplay['date_formatted'] }}</span>
                         </li>
 
                         {{-- Branch Info (Branch-scoped checkout) --}}
@@ -119,7 +119,7 @@
                                 <span class="fw-normal">
                                     {{ $trackingData['customerChoiceCompany'] ?? 'N/A' }}
                                     @if($trackingData['customerChoicePrice'])
-                                    | {{ \PriceHelper::showOrderCurrencyPrice($trackingData['customerChoicePrice'] * $purchase->currency_value, $purchase->currency_sign) }}
+                                    | {{ $invoiceDisplay['customer_choice_formatted'] }}
                                     @endif
                                 </span>
                             </li>
@@ -191,7 +191,7 @@
                             @endif
                             <li>
                                 <span class="fw-semibold">@lang('Delivery Fee :')</span>
-                                <span class="fw-normal">{{ \PriceHelper::showOrderCurrencyPrice($trackingData['deliveryFee'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                <span class="fw-normal">{{ $invoiceDisplay['delivery_fee_formatted'] }}</span>
                             </li>
                             @if($trackingData['hasWarehouseLocation'])
                             <li>
@@ -222,7 +222,7 @@
                             @if($trackingData['isCod'])
                             <li>
                                 <span class="fw-semibold">@lang('COD Amount :')</span>
-                                <span class="fw-normal text-warning">{{ \PriceHelper::showOrderCurrencyPrice($trackingData['purchaseAmount'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                <span class="fw-normal text-warning">{{ $invoiceDisplay['purchase_amount_formatted'] }}</span>
                             </li>
                             @endif
                         @endif
@@ -378,7 +378,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($cart['items'] as $key => $catalogItem)
+                            @foreach ($cart['items'] as $cartKey => $catalogItem)
                                 @if ($catalogItem['item']['user_id'] != 0)
                                     @if ($catalogItem['item']['user_id'] == $user->id)
                                         <tr>
@@ -386,7 +386,7 @@
                                                 @if ($catalogItem['item']['user_id'] != 0)
                                                     {{-- ✅ URL pre-computed in Controller --}}
                                                     <span class="content catalogItem-name d-inline-block">
-                                                        <a target="_blank" href="{{ $cartItemsDisplay[$key]['productUrl'] }}">
+                                                        <a target="_blank" href="{{ $cartItemsDisplay[$cartKey]['productUrl'] }}">
                                                             {{ getLocalizedCatalogItemName($catalogItem['item'], 30) }}
                                                         </a>
                                                     </span>
@@ -398,7 +398,7 @@
                                                 <div class="courier">
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Price :')</span>
-                                                        <span class="value">{{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                                                        <span class="value">{{ $cartItemsDisplay[$cartKey]['price_formatted'] }}</span>
                                                     </div>
                                                     <div class="d-flex align-items-center gap-2">
                                                         <span class="key">@lang('Qty :')</span>
@@ -417,8 +417,8 @@
                                             <!-- Total Price -->
                                             <td class="text-start">
                                                 <span class="content ">
-                                                    {{ \PriceHelper::showOrderCurrencyPrice(($catalogItem['price'] ?? 0) * $purchase->currency_value, $purchase->currency_sign) }}
-                                                    <small>{{ ($catalogItem['discount'] ?? 0) == 0 ? '' : '(' . $catalogItem['discount'] . '% ' . __('Off') . ')' }}</small>
+                                                    {{ $cartItemsDisplay[$cartKey]['price_formatted'] }}
+                                                    <small>{{ $cartItemsDisplay[$cartKey]['discount_text'] }}</small>
                                                 </span>
                                             </td>
                                         </tr>
@@ -433,13 +433,13 @@
             <ul class="calculation-list">
                 <li class="calculation-list-item">
                     <span class="amount-type">@lang('Subtotal')</span>
-                    <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['subtotal'], $purchase->currency_sign) }}</span>
+                    <span class="amount">{{ $invoiceCalculations['subtotal_formatted'] }}</span>
                 </li>
 
                 @if($invoiceCalculations['showShippingCost'])
                     <li class="calculation-list-item">
                         <span class="amount-type">@lang('Shipping Cost')</span>
-                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['shippingCost'], $purchase->currency_sign) }}</span>
+                        <span class="amount">{{ $invoiceCalculations['shippingCost_formatted'] }}</span>
                     </li>
                 @endif
 
@@ -450,33 +450,33 @@
                             <i class="fas fa-motorcycle"></i>
                             @lang('Courier Delivery Fee')
                         </span>
-                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['deliveryFee'], $purchase->currency_sign) }}</span>
+                        <span class="amount">{{ $invoiceCalculations['deliveryFee_formatted'] }}</span>
                     </li>
                 @endif
 
                 @if($invoiceCalculations['showTax'])
                     <li class="calculation-list-item">
-                        <span class="amount-type">@lang('TAX')({{ $purchase->currency_sign }})</span>
-                        <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['tax'], $purchase->currency_sign) }}</span>
+                        <span class="amount-type">@lang('TAX')</span>
+                        <span class="amount">{{ $invoiceCalculations['tax_formatted'] }}</span>
                     </li>
                 @endif
 
                 <li class="calculation-list-item">
                     <span class="amount-type">@lang('Total')</span>
-                    <span class="amount">{{ \PriceHelper::showOrderCurrencyPrice($invoiceCalculations['total'], $purchase->currency_sign) }}</span>
+                    <span class="amount">{{ $invoiceCalculations['total_formatted'] }}</span>
                 </li>
 
                 {{-- Commission & Net Amount Section --}}
                 @if($merchantInvoiceData['commission_amount'] > 0)
                     <li class="calculation-list-item" style="background-color: rgba(var(--theme-danger-rgb, 220, 53, 69), 0.1);">
                         <span class="amount-type text-danger">@lang('Platform Commission')</span>
-                        <span class="amount text-danger">-{{ \PriceHelper::showOrderCurrencyPrice($merchantInvoiceData['commission_amount'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                        <span class="amount text-danger">-{{ $invoiceDisplay['commission_formatted'] }}</span>
                     </li>
                 @endif
 
                 <li class="calculation-list-item" style="background-color: rgba(var(--theme-success-rgb, 25, 135, 84), 0.1); font-weight: bold;">
                     <span class="amount-type text-success">@lang('Your Net Earnings')</span>
-                    <span class="amount text-success">{{ \PriceHelper::showOrderCurrencyPrice($merchantInvoiceData['net_amount'] * $purchase->currency_value, $purchase->currency_sign) }}</span>
+                    <span class="amount text-success">{{ $invoiceDisplay['net_amount_formatted'] }}</span>
                 </li>
 
                 {{-- Payment Status Note --}}

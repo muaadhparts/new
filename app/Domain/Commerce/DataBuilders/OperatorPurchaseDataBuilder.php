@@ -5,6 +5,7 @@ namespace App\Domain\Commerce\DataBuilders;
 use App\Domain\Commerce\Models\Purchase;
 use App\Domain\Commerce\Models\MerchantPurchase;
 use App\Domain\Identity\Models\User;
+use App\Domain\Catalog\Models\CatalogItem;
 use App\Domain\Catalog\Models\QualityBrand;
 use App\Domain\Shipping\Models\Shipping;
 use App\Domain\Commerce\Services\InvoiceSellerService;
@@ -28,6 +29,7 @@ class OperatorPurchaseDataBuilder
     private array $merchantPurchasesLookup = [];
     private array $branchesLookup = [];
     private array $shippingsLookup = [];
+    private array $catalogItemExistsLookup = [];
 
     public function __construct(Purchase $purchase)
     {
@@ -48,6 +50,7 @@ class OperatorPurchaseDataBuilder
         // Collect all IDs needed
         $merchantIds = [];
         $qualityBrandIds = [];
+        $catalogItemIds = [];
 
         foreach ($cartItems as $item) {
             $userId = $item['item']['user_id'] ?? $item['user_id'] ?? 0;
@@ -59,6 +62,12 @@ class OperatorPurchaseDataBuilder
             if ($qbId) {
                 $qualityBrandIds[] = $qbId;
             }
+
+            // Collect catalog item IDs for existence check
+            $catalogItemId = $item['item']['id'] ?? null;
+            if ($catalogItemId) {
+                $catalogItemIds[] = $catalogItemId;
+            }
         }
 
         // Add affiliate user
@@ -68,6 +77,7 @@ class OperatorPurchaseDataBuilder
 
         $merchantIds = array_unique($merchantIds);
         $qualityBrandIds = array_unique($qualityBrandIds);
+        $catalogItemIds = array_unique($catalogItemIds);
 
         // Load merchants
         if (!empty($merchantIds)) {
@@ -83,6 +93,12 @@ class OperatorPurchaseDataBuilder
                 ->get(['id', 'name', 'name_ar'])
                 ->keyBy('id')
                 ->toArray();
+        }
+
+        // Load catalog item existence (for edit button in view - DATA_FLOW_POLICY)
+        if (!empty($catalogItemIds)) {
+            $existingIds = CatalogItem::whereIn('id', $catalogItemIds)->pluck('id')->toArray();
+            $this->catalogItemExistsLookup = array_flip($existingIds);
         }
 
         // Load merchant purchases with branches
@@ -139,6 +155,8 @@ class OperatorPurchaseDataBuilder
             'shippingsLookup' => $this->shippingsLookup,
             'platformName' => platformSettings()->get('site_name', __('Platform')),
             'countriesHtml' => $countriesHtml,
+            // PRE-COMPUTED: All formatted display values (DATA_FLOW_POLICY)
+            'purchaseDisplay' => $this->buildPurchaseDisplay(),
         ];
     }
 
@@ -170,6 +188,9 @@ class OperatorPurchaseDataBuilder
             'showPlatform' => $sellerDisplay['showPlatform'],
             'firstSeller' => $sellerDisplay['firstSeller'],
             'subtotal' => $subtotal,
+            // PRE-COMPUTED: All formatted display values (DATA_FLOW_POLICY)
+            'purchaseDisplay' => $this->buildPurchaseDisplay(),
+            'subtotal_formatted' => \PriceHelper::showCurrencyPrice($subtotal * ($this->purchase->currency_value ?: 1)),
         ];
     }
 
@@ -201,6 +222,9 @@ class OperatorPurchaseDataBuilder
             'showPlatform' => $sellerDisplay['showPlatform'],
             'firstSeller' => $sellerDisplay['firstSeller'],
             'subtotal' => $subtotal,
+            // PRE-COMPUTED: All formatted display values (DATA_FLOW_POLICY)
+            'purchaseDisplay' => $this->buildPurchaseDisplay(),
+            'subtotal_formatted' => \PriceHelper::showOrderCurrencyPrice(($subtotal * ($this->purchase->currency_value ?: 1)), $this->purchase->currency_sign),
         ];
     }
 
@@ -224,27 +248,38 @@ class OperatorPurchaseDataBuilder
     {
         $grouped = [];
         $cartItems = $this->cart['items'] ?? [];
+        $currencyValue = $this->purchase->currency_value ?: 1;
 
         foreach ($cartItems as $key => $item) {
             $userId = $item['item']['user_id'] ?? $item['user_id'] ?? 0;
 
             if (!isset($grouped[$userId])) {
                 $merchantData = $this->getMerchantData($userId);
+                $shipping = $this->getMerchantShipping($userId);
                 $grouped[$userId] = [
                     'merchant' => $merchantData,
                     'merchantPurchase' => $this->getMerchantPurchaseData($userId),
                     'branch' => $this->branchesLookup[$userId] ?? null,
-                    'shipping' => $this->getMerchantShipping($userId),
+                    'shipping' => $shipping,
                     'items' => [],
                     'total' => 0,
                     // PRE-COMPUTED: Merchant display name (DATA_FLOW_POLICY - no @php in view)
                     '_merchantDisplayName' => $merchantData['shop_name'] ?? $merchantData['name'] ?? __('Unknown Merchant'),
+                    // PRE-COMPUTED: Shipping formatted price (DATA_FLOW_POLICY)
+                    '_shipping_formatted' => $shipping ? \PriceHelper::showCurrencyPrice($shipping['price'] * $currencyValue) : null,
                 ];
             }
 
             $itemWithData = $this->enrichCartItem($item, $key);
             $grouped[$userId]['items'][$key] = $itemWithData;
             $grouped[$userId]['total'] += (float) ($item['price'] ?? 0);
+        }
+
+        // PRE-COMPUTED: Total formatted prices for each group (DATA_FLOW_POLICY)
+        foreach ($grouped as $userId => &$groupData) {
+            $shippingPrice = $groupData['shipping']['price'] ?? 0;
+            $totalWithShipping = $groupData['total'] + $shippingPrice;
+            $groupData['_total_formatted'] = \PriceHelper::showCurrencyPrice($totalWithShipping * $currencyValue);
         }
 
         return $grouped;
@@ -307,6 +342,19 @@ class OperatorPurchaseDataBuilder
         $item['_unitPrice'] = $qty > 0 ? $totalPrice / $qty : $totalPrice;
         $item['_totalPrice'] = $totalPrice;
         $item['_qty'] = $qty;
+
+        // PRE-COMPUTED: Formatted prices (DATA_FLOW_POLICY)
+        $currencyValue = $this->purchase->currency_value ?: 1;
+        $item['_unitPrice_formatted'] = \PriceHelper::showCurrencyPrice($item['_unitPrice'] * $currencyValue);
+        $item['_totalPrice_formatted'] = \PriceHelper::showCurrencyPrice($item['_totalPrice'] * $currencyValue);
+
+        // PRE-COMPUTED: Catalog item existence check (DATA_FLOW_POLICY - no query in view)
+        $catalogItemId = $item['item']['id'] ?? null;
+        $item['_catalogItemExists'] = $catalogItemId ? $this->catalogItemExists($catalogItemId) : false;
+
+        // PRE-COMPUTED: Discount text (DATA_FLOW_POLICY)
+        $discount = $item['discount'] ?? 0;
+        $item['_discount_text'] = $discount == 0 ? '' : '(' . $discount . '% ' . __('Off') . ')';
 
         // Product URL
         $item['_productUrl'] = !empty($item['item']['part_number'])
@@ -461,5 +509,36 @@ class OperatorPurchaseDataBuilder
         }
 
         return $subtotal;
+    }
+
+    /**
+     * Build pre-computed purchase display values
+     * PRE-COMPUTED: All formatted values for purchase (DATA_FLOW_POLICY)
+     */
+    private function buildPurchaseDisplay(): array
+    {
+        $p = $this->purchase;
+        $currencySign = $p->currency_sign;
+        $currencyValue = $p->currency_value ?: 1;
+
+        return [
+            'shipping_cost_formatted' => \PriceHelper::showOrderCurrencyPrice($p->shipping_cost, $currencySign),
+            'tax_formatted' => \PriceHelper::showOrderCurrencyPrice(($p->tax / $currencyValue), $currencySign),
+            'wallet_price_formatted' => \PriceHelper::showOrderCurrencyPrice(($p->wallet_price * $currencyValue), $currencySign),
+            'pay_amount_formatted' => \PriceHelper::showOrderCurrencyPrice(($p->pay_amount * $currencyValue), $currencySign),
+            'total_cost_formatted' => \PriceHelper::showOrderCurrencyPrice((($p->pay_amount + $p->wallet_price) * $currencyValue), $currencySign),
+            'affilate_charge_formatted' => \PriceHelper::showOrderCurrencyPrice(($p->affilate_charge * $currencyValue), $currencySign),
+            'discount_amount_formatted' => \PriceHelper::showOrderCurrencyPrice($p->discount_amount, $currencySign),
+            'created_at_formatted' => $p->created_at ? $p->created_at->format('d-M-Y H:i:s a') : 'N/A',
+            'created_at_date_only' => $p->created_at ? $p->created_at->format('d-M-Y') : 'N/A',
+        ];
+    }
+
+    /**
+     * Check if catalog item exists
+     */
+    private function catalogItemExists(int $id): bool
+    {
+        return isset($this->catalogItemExistsLookup[$id]);
     }
 }

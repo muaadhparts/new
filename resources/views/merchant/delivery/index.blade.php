@@ -88,14 +88,15 @@
                                 $shipment = $pData['shipment'] ?? null;
                                 $customerChoice = $pData['customerChoice'] ?? null;
                                 $customerChoiceDisplay = $pData['customerChoiceDisplay'] ?? null;
-                                $price = $pData['price'] ?? 0;
+                                $priceFormatted = $pData['price_formatted'] ?? '';
+                                $dateFormatted = $pData['date_formatted'] ?? '';
                             @endphp
                             <tr>
                                 <!-- Purchase Number -->
                                 <td>
                                     <span class="content">{{ $data->purchase_number }}</span>
                                     <br>
-                                    <small class="text-muted">{{ $data->created_at->format('Y-m-d') }}</small>
+                                    <small class="text-muted">{{ $dateFormatted }}</small>
                                 </td>
 
                                 <!-- Customer Info -->
@@ -111,7 +112,7 @@
 
                                 <!-- Total Cost -->
                                 <td>
-                                    <span class="content">{{ PriceHelper::showOrderCurrencyPrice($price, $data->currency_sign) }}</span>
+                                    <span class="content">{{ $priceFormatted }}</span>
                                 </td>
 
                                 <!-- Payment Method -->

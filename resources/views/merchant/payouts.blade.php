@@ -90,11 +90,11 @@
                                     <strong>{{ $payout->batch_ref }}</strong>
                                 </td>
                                 <td>
-                                    {{ $payout->settlement_date ? $payout->settlement_date->format('d-m-Y') : $payout->created_at->format('d-m-Y') }}
+                                    {{ $payout->date_formatted }}
                                 </td>
                                 <td>
                                     <span class="text-success fw-bold">
-                                        {{ $payout->getFormattedAmount() }}
+                                        {{ $payout->amount_formatted }}
                                     </span>
                                 </td>
                                 <td>
@@ -113,8 +113,8 @@
                                     @endswitch
                                 </td>
                                 <td class="text-center">
-                                    <span class="badge bg-{{ $payout->getStatusColor() }}">
-                                        {{ $payout->getStatusNameAr() }}
+                                    <span class="badge bg-{{ $payout->status_color }}">
+                                        {{ $payout->status_name_ar }}
                                     </span>
                                 </td>
                                 <td>

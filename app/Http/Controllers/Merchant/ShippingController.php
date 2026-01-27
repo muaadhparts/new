@@ -14,15 +14,24 @@ class ShippingController extends MerchantBaseController
 
 
     public function index(){
+        $curr = monetaryUnit()->getCurrent();
         $datas = Shipping::where('user_id', $this->user->id)->get();
-        return view('merchant.shipping.index', compact('datas'));
+
+        // PRE-COMPUTED: Price formatting (DATA_FLOW_POLICY - no PriceHelper in view)
+        $datas->transform(function ($shipping) use ($curr) {
+            $shipping->price_formatted = \PriceHelper::showAdminCurrencyPrice(round($shipping->price * $curr->value, 2));
+            $shipping->edit_url = route('merchant-shipping-edit', $shipping->id);
+            $shipping->delete_url = route('merchant-shipping-delete', $shipping->id);
+            return $shipping;
+        });
+
+        return view('merchant.shipping.index', ['datas' => $datas]);
     }
 
     //*** GET Request
     public function create()
     {
-        $sign = $this->curr;
-        return view('merchant.shipping.create',compact('sign'));
+        return view('merchant.shipping.create', ['sign' => $this->curr]);
     }
 
     //*** POST Request
@@ -56,9 +65,8 @@ class ShippingController extends MerchantBaseController
     //*** GET Request
     public function edit($id)
     {
-        $sign = $this->curr;
         $data = Shipping::findOrFail($id);
-        return view('merchant.shipping.edit',compact('data','sign'));
+        return view('merchant.shipping.edit', ['data' => $data, 'sign' => $this->curr]);
     }
 
     //*** POST Request

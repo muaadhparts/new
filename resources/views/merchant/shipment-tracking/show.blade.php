@@ -117,9 +117,9 @@
                                     <label>@lang('New Status')</label>
                                     <select name="status" class="form-control" required>
                                         <option value="">@lang('Select...')</option>
-                                        @foreach(\App\Domain\Shipping\Models\ShipmentTracking::getManualUpdateStatuses() as $status)
-                                            <option value="{{ $status }}">
-                                                {{ \App\Domain\Shipping\Models\ShipmentTracking::getStatusTranslation($status) }}
+                                        @foreach($manualUpdateStatuses as $statusOption)
+                                            <option value="{{ $statusOption['value'] }}">
+                                                {{ $statusOption['label'] }}
                                             </option>
                                         @endforeach
                                     </select>
@@ -177,7 +177,7 @@
                                             @endif
                                             <small class="text-muted">
                                                 <i class="far fa-clock"></i>
-                                                {{ $event['occurred_at'] ? \Carbon\Carbon::parse($event['occurred_at'])->format('Y-m-d H:i') : '-' }}
+                                                {{ $event['occurred_at_formatted'] }}
                                                 @if($event['source'] !== 'system')
                                                     <span class="badge badge-light">{{ $event['source'] }}</span>
                                                 @endif

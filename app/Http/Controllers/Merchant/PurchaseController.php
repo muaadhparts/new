@@ -141,13 +141,24 @@ class PurchaseController extends MerchantBaseController
         foreach ($cartItems as $key => $catalogItem) {
             $itemUserId = $catalogItem['item']['user_id'] ?? 0;
             $partNumber = $catalogItem['item']['part_number'] ?? '';
+            $itemPrice = ($catalogItem['price'] ?? 0) * $purchase->currency_value;
+            $discount = $catalogItem['discount'] ?? 0;
 
             $cartItemsDisplay[$key] = [
                 'productUrl' => !empty($partNumber) ? route('front.part-result', $partNumber) : '#',
                 'merchant' => $merchantsLookup[$itemUserId] ?? null,
                 'merchantPurchase' => $merchantPurchasesLookup[$itemUserId] ?? null,
+                'price_formatted' => \PriceHelper::showOrderCurrencyPrice($itemPrice, $purchase->currency_sign),
+                'discount_text' => $discount == 0 ? '' : '(' . $discount . '% ' . __('Off') . ')',
             ];
         }
+
+        // PRE-COMPUTED: Display data (DATA_FLOW_POLICY - no date()/PriceHelper in view)
+        $purchaseDisplay = [
+            'date_formatted' => $purchase->created_at?->format('d-M-Y H:i:s a') ?? 'N/A',
+            'total_formatted' => \PriceHelper::showOrderCurrencyPrice(($purchaseStats['totalPrice'] ?? 0) * $purchase->currency_value, $purchase->currency_sign),
+            'delivery_fee_formatted' => isset($trackingData['deliveryFee']) ? \PriceHelper::showAdminCurrencyPrice($trackingData['deliveryFee']) : null,
+        ];
 
         return view('merchant.purchase.details', compact(
             'user',
@@ -155,6 +166,7 @@ class PurchaseController extends MerchantBaseController
             'cart',
             'trackingData',
             'purchaseStats',
+            'purchaseDisplay',
             'cartItemsDisplay',
             'branchData'
         ));
@@ -264,7 +276,32 @@ class PurchaseController extends MerchantBaseController
             'showShippingCost' => $shippingCostForThisMerchant > 0,
             'showDeliveryFee' => $deliveryFee > 0,
             'showTax' => $purchase->tax != 0,
+            // Pre-formatted values (DATA_FLOW_POLICY)
+            'subtotal_formatted' => \PriceHelper::showOrderCurrencyPrice($subtotal, $purchase->currency_sign),
+            'shippingCost_formatted' => \PriceHelper::showOrderCurrencyPrice($shippingCostForThisMerchant, $purchase->currency_sign),
+            'deliveryFee_formatted' => \PriceHelper::showOrderCurrencyPrice($deliveryFee, $purchase->currency_sign),
+            'tax_formatted' => \PriceHelper::showOrderCurrencyPrice($tax, $purchase->currency_sign),
+            'total_formatted' => \PriceHelper::showOrderCurrencyPrice($total, $purchase->currency_sign),
         ];
+
+        // PRE-COMPUTED: Display data (DATA_FLOW_POLICY - no date()/PriceHelper in view)
+        $invoiceDisplay = [
+            'date_formatted' => $purchase->created_at?->format('d-M-Y H:i:s a') ?? 'N/A',
+            'purchase_amount_formatted' => \PriceHelper::showOrderCurrencyPrice(($trackingData['purchaseAmount'] ?? 0) * $purchase->currency_value, $purchase->currency_sign),
+            'delivery_fee_formatted' => \PriceHelper::showOrderCurrencyPrice(($trackingData['deliveryFee'] ?? 0) * $purchase->currency_value, $purchase->currency_sign),
+            'customer_choice_formatted' => \PriceHelper::showOrderCurrencyPrice(($trackingData['customerChoicePrice'] ?? 0) * $purchase->currency_value, $purchase->currency_sign),
+            'commission_formatted' => \PriceHelper::showOrderCurrencyPrice(($merchantInvoiceData['commission_amount'] ?? 0) * $purchase->currency_value, $purchase->currency_sign),
+            'net_amount_formatted' => \PriceHelper::showOrderCurrencyPrice(($merchantInvoiceData['net_amount'] ?? 0) * $purchase->currency_value, $purchase->currency_sign),
+        ];
+
+        // Pre-compute cart items prices and discount text
+        foreach ($cartItemsDisplay as $key => &$display) {
+            $itemPrice = ($cart['items'][$key]['price'] ?? 0) * $purchase->currency_value;
+            $discount = $cart['items'][$key]['discount'] ?? 0;
+            $display['price_formatted'] = \PriceHelper::showOrderCurrencyPrice($itemPrice, $purchase->currency_sign);
+            $display['discount_text'] = $discount == 0 ? '' : '(' . $discount . '% ' . __('Off') . ')';
+        }
+        unset($display);
 
         return view('merchant.purchase.invoice', compact(
             'user',
@@ -275,7 +312,8 @@ class PurchaseController extends MerchantBaseController
             'branchData',
             'sellerInfo',
             'cartItemsDisplay',
-            'invoiceCalculations'
+            'invoiceCalculations',
+            'invoiceDisplay'
         ));
     }
 
@@ -318,7 +356,24 @@ class PurchaseController extends MerchantBaseController
         // PRE-COMPUTED: Print calculations (DATA_FLOW_POLICY - no @php in view)
         $printCalculations = $this->calculatePrintTotals($purchase, $cart, $user->id);
 
-        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData', 'sellerInfo', 'printCalculations'));
+        // PRE-COMPUTED: Display data (DATA_FLOW_POLICY - no date()/PriceHelper in view)
+        $printDisplay = [
+            'date_formatted' => $purchase->created_at?->format('d-M-Y') ?? 'N/A',
+        ];
+
+        // Pre-compute cart items prices
+        $cartItemsDisplay = [];
+        foreach (($cart['items'] ?? []) as $key => $catalogItem) {
+            $itemPrice = ($catalogItem['price'] ?? 0) * $purchase->currency_value;
+            $discount = $catalogItem['discount'] ?? 0;
+            $discountText = $discount == 0 ? '' : '(' . $discount . '% ' . __('Off') . ')';
+            $cartItemsDisplay[$key] = [
+                'price_formatted' => \PriceHelper::showOrderCurrencyPrice($itemPrice, $purchase->currency_sign),
+                'discount_text' => $discountText,
+            ];
+        }
+
+        return view('merchant.purchase.print', compact('user', 'purchase', 'cart', 'trackingData', 'branchData', 'sellerInfo', 'printCalculations', 'printDisplay', 'cartItemsDisplay'));
     }
 
     /**
@@ -364,6 +419,11 @@ class PurchaseController extends MerchantBaseController
             'tax' => $tax,
             'showTax' => $showTax,
             'total' => $total,
+            // Pre-formatted values (DATA_FLOW_POLICY)
+            'subtotal_formatted' => \PriceHelper::showOrderCurrencyPrice($subtotal, $purchase->currency_sign),
+            'shippingCost_formatted' => \PriceHelper::showOrderCurrencyPrice($shippingCost, $purchase->currency_sign),
+            'tax_formatted' => \PriceHelper::showOrderCurrencyPrice($tax, $purchase->currency_sign),
+            'total_formatted' => \PriceHelper::showOrderCurrencyPrice($total, $purchase->currency_sign),
         ];
     }
 

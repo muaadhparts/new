@@ -74,7 +74,16 @@ class ShipmentTrackingController extends MerchantBaseController
         // Stats
         $stats = $this->trackingService->getMerchantStats($merchantId);
 
-        return view('merchant.shipment-tracking.index', compact('shipments', 'stats'));
+        // PRE-COMPUTED: All status options (DATA_FLOW_POLICY - no static Model calls in view)
+        $allStatusOptions = [];
+        foreach (ShipmentTracking::getAllStatuses() as $status) {
+            $allStatusOptions[] = [
+                'value' => $status,
+                'label' => ShipmentTracking::getStatusTranslation($status),
+            ];
+        }
+
+        return view('merchant.shipment-tracking.index', compact('shipments', 'stats', 'allStatusOptions'));
     }
 
     /**
@@ -91,10 +100,29 @@ class ShipmentTrackingController extends MerchantBaseController
                 ->with('error', __('Shipment not found'));
         }
 
+        // PRE-COMPUTED: Add occurred_at_formatted to events (DATA_FLOW_POLICY)
+        if (isset($shipmentInfo['events'])) {
+            $shipmentInfo['events'] = array_map(function ($event) {
+                $event['occurred_at_formatted'] = $event['occurred_at']
+                    ? \Carbon\Carbon::parse($event['occurred_at'])->format('Y-m-d H:i')
+                    : '-';
+                return $event;
+            }, $shipmentInfo['events']);
+        }
+
+        // PRE-COMPUTED: Manual update status options (DATA_FLOW_POLICY - no static Model calls in view)
+        $manualUpdateStatuses = [];
+        foreach (ShipmentTracking::getManualUpdateStatuses() as $status) {
+            $manualUpdateStatuses[] = [
+                'value' => $status,
+                'label' => ShipmentTracking::getStatusTranslation($status),
+            ];
+        }
+
         $purchase = Purchase::with('merchantPurchases')
             ->find($purchaseId);
 
-        return view('merchant.shipment-tracking.show', compact('shipmentInfo', 'purchase'));
+        return view('merchant.shipment-tracking.show', compact('shipmentInfo', 'purchase', 'manualUpdateStatuses'));
     }
 
     /**

@@ -5,47 +5,30 @@ namespace App\Http\Controllers\User;
 use App\Domain\Accounting\Models\ReferralCommission;
 use App\Domain\Commerce\Models\FavoriteSeller;
 use App\Domain\Commerce\Models\Purchase;
+use App\Domain\Identity\DTOs\UserProfileDTO;
+use App\Domain\Identity\Services\UserDashboardBuilder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends UserBaseController
 {
 
-    public function index()
+    public function index(UserDashboardBuilder $dashboardBuilder)
     {
-        $user = $this->user;
+        // DATA_FLOW_POLICY: Build DTO in Controller, pass only DTO to View
+        $dashboard = $dashboardBuilder->build($this->user);
 
-        // ✅ حساب الإحصائيات في الـ Controller بدلاً من الـ View
-        $dashboardStats = [
-            'totalPurchases' => $user->purchases()->count(),
-            'pendingPurchases' => $user->purchases()->where('status', 'pending')->count(),
-        ];
-
-        // ✅ Pre-compute recent purchases for the view
-        $recentPurchases = $user->purchases()
-            ->latest()
-            ->take(6)
-            ->get();
-
-        // PRE-COMPUTED: Status CSS class for each purchase (DATA_FLOW_POLICY - no @php in view)
-        $recentPurchases->transform(function ($purchase) {
-            $purchase->status_class = in_array($purchase->status, ['pending', 'processing'])
-                ? 'yellow-btn'
-                : ($purchase->status == 'completed'
-                    ? 'green-btn'
-                    : ($purchase->status == 'declined'
-                        ? 'red-btn'
-                        : 'black-btn'));
-            return $purchase;
-        });
-
-        return view('user.dashboard', compact('user', 'dashboardStats', 'recentPurchases'));
+        return view('user.dashboard', [
+            'dashboard' => $dashboard,
+        ]);
     }
 
     public function profile()
     {
-        $user = $this->user;
-        return view('user.profile', compact('user'));
+        // DATA_FLOW_POLICY: Build DTO from User model
+        $profile = UserProfileDTO::fromUser($this->user);
+
+        return view('user.profile', ['profile' => $profile]);
     }
 
     public function profileupdate(Request $request)
@@ -121,8 +104,7 @@ class UserController extends UserBaseController
 
     public function favorites()
     {
-        $user = $this->user;
-        $favorites = FavoriteSeller::where('user_id', '=', $user->id)
+        $favorites = FavoriteSeller::where('user_id', '=', $this->user->id)
             ->with(['catalogItem', 'merchantItem', 'effective_merchant_item'])
             ->paginate(12);
 
@@ -135,7 +117,10 @@ class UserController extends UserBaseController
             ];
         }
 
-        return view('user.favorite', compact('user', 'favorites', 'favoritesDisplay'));
+        return view('user.favorite', [
+            'favorites' => $favorites,
+            'favoritesDisplay' => $favoritesDisplay,
+        ]);
     }
 
     public function favdelete($id)
@@ -148,8 +133,28 @@ class UserController extends UserBaseController
     public function affilate_code()
     {
         $user = $this->user;
-        $final_affilate_users =ReferralCommission::whereReferId(auth()->id())->get();
-        return view('user.affilate.affilate-program', compact('user', 'final_affilate_users'));
+        $referralCommissions = ReferralCommission::whereReferId(auth()->id())->get();
+
+        // PRE-COMPUTED: Affiliate data (DATA_FLOW_POLICY - no PriceHelper in view)
+        $curr = monetaryUnit()->getCurrent();
+        $affiliateData = [
+            'affiliate_link' => url('/') . '/?reff=' . $user->affilate_code,
+            'affiliate_code' => $user->affilate_code,
+        ];
+
+        // Pre-compute referral display data
+        $referralsDisplay = $referralCommissions->map(function ($commission) use ($curr) {
+            return [
+                'customer_email' => $commission->customer_email,
+                'bonus_formatted' => \PriceHelper::showCurrencyPrice($commission->bonus * $curr->value),
+                'created_at_formatted' => $commission->created_at?->format('d-m-Y') ?? 'N/A',
+            ];
+        })->toArray();
+
+        return view('user.affilate.affilate-program', [
+            'affiliateData' => $affiliateData,
+            'referralsDisplay' => $referralsDisplay,
+        ]);
     }
 
     /**
@@ -157,14 +162,15 @@ class UserController extends UserBaseController
      */
     public function applyMerchant()
     {
-        $user = $this->user;
-
         // إذا كان المستخدم تاجر بالفعل، وجهه إلى لوحة التاجر
-        if ($user->is_merchant >= 1) {
+        if ($this->user->is_merchant >= 1) {
             return redirect()->route('merchant.dashboard');
         }
 
-        return view('user.apply-merchant', compact('user'));
+        // DATA_FLOW_POLICY: Build DTO from User model
+        $profile = UserProfileDTO::fromUser($this->user);
+
+        return view('user.apply-merchant', ['profile' => $profile]);
     }
 
     /**

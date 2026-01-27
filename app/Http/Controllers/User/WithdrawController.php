@@ -15,23 +15,24 @@ class WithdrawController extends UserBaseController
         $withdraws = Withdraw::where('user_id', '=', $this->user->id)->where('type', '=', 'user')->latest('id')->paginate(12);
         $sign = monetaryUnit()->getDefault();
 
-        // PRE-COMPUTED: Status CSS class for each withdraw (DATA_FLOW_POLICY - no @php in view)
+        // PRE-COMPUTED: All display values (DATA_FLOW_POLICY - no formatting in view)
         $withdraws->getCollection()->transform(function ($withdraw) {
             $withdraw->status_class = $withdraw->status == 'pending'
                 ? 'yellow-btn'
                 : ($withdraw->status == 'completed'
                     ? 'green-btn'
                     : 'red-btn');
+            $withdraw->date_formatted = $withdraw->created_at?->format('d-M-Y') ?? 'N/A';
             return $withdraw;
         });
 
-        return view('user.withdraw.index', compact('withdraws', 'sign'));
+        return view('user.withdraw.index', ['withdraws' => $withdraws, 'sign' => $sign]);
     }
 
     public function create()
     {
         $sign = monetaryUnit()->getDefault();
-        return view('user.withdraw.withdraw', compact('sign'));
+        return view('user.withdraw.withdraw', ['sign' => $sign]);
     }
 
     public function store(Request $request)

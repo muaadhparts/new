@@ -270,7 +270,7 @@
                                         <span class="text-muted">{{ $currencySign }}0.00</span>
                                     @endif
                                 </td>
-                                <td>{{ $purchase->created_at->format('d-m-Y') }}</td>
+                                <td>{{ $purchase->date_formatted }}</td>
                             </tr>
                             @empty
                             <tr>

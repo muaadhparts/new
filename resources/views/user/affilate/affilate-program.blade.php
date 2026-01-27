@@ -21,7 +21,7 @@
                             </div>
                             <div class="copy-box">
                                 <p class="copy-text" id="text-to-copy">
-                                    {{ url('/') . '/?reff=' . $user->affilate_code }}
+                                    {{ $affiliateData['affiliate_link'] }}
                                 </p>
                                 <button class="copy-btn" id="copy-button">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
@@ -55,7 +55,7 @@
                                 </p>
                             </div>
                             <div class="copy-box">
-                                <textarea id="banner_code" class="affiliate-text w-100 from-control" name="address" readonly=""><a href="{{ url('/') . '/?reff=' . $user->affilate_code }}" target="_blank"><img src="{{ asset('assets/images/' . $gs->affilate_banner) }}"></a></textarea>
+                                <textarea id="banner_code" class="affiliate-text w-100 from-control" name="address" readonly=""><a href="{{ $affiliateData['affiliate_link'] }}" target="_blank"><img src="{{ asset('assets/images/' . $gs->affilate_banner) }}"></a></textarea>
                                 <button class="copy-btn" id="banner_code_copy">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                                         viewBox="0 0 24 24" fill="none">
@@ -89,18 +89,12 @@
                                     </th>
                                 </tr>
 
-                                @forelse($final_affilate_users as $key => $fuser)
+                                {{-- All values pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                @forelse($referralsDisplay as $referral)
                                     <tr>
-
-                                        <td><span class="content"> {{ $fuser->customer_email }}</span></td>
-
-                                        <td><span
-                                                class="content">{{ PriceHelper::showCurrencyPrice($fuser->bonus * $curr->value) }}</span>
-                                        </td>
-
-                                        <td><span
-                                                class="content">{{ Carbon\Carbon::parse($fuser->created_at)->format('d-m-Y') }}</span>
-                                        </td>
+                                        <td><span class="content">{{ $referral['customer_email'] }}</span></td>
+                                        <td><span class="content">{{ $referral['bonus_formatted'] }}</span></td>
+                                        <td><span class="content">{{ $referral['created_at_formatted'] }}</span></td>
                                     </tr>
                                 @empty
                                     <tr>

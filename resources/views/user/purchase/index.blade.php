@@ -38,23 +38,21 @@
                                     <!-- table data row 1 start  -->
                                     <tr>
                                         <td><span class="content">{{ $purchase->purchase_number }}</span></td>
-                                        <td><span class="content">{{ date('d M Y', strtotime($purchase->created_at)) }}</span>
+                                        <td><span class="content">{{ $purchase->date_formatted }}</span>
                                         </td>
                                         <td class="text-center">
-                                            <span
-                                                class="content ">{{ \PriceHelper::showAdminCurrencyPrice($purchase->pay_amount * $purchase->currency_value, $purchase->currency_sign) }}
-                                            </span>
+                                            <span class="content">{{ $purchase->total_formatted }}</span>
                                         </td>
 
                                         <td>
-                                            {{-- Status class pre-computed in Controller (DATA_FLOW_POLICY) --}}
+                                            {{-- All values pre-computed in Controller (DATA_FLOW_POLICY) --}}
                                             <button type="button" disabled class="template-btn md-btn {{ $purchase->status_class }}">
-                                                {{ ucwords($purchase->status) }}
+                                                {{ $purchase->status_label }}
                                             </button>
                                         </td>
 
                                         <td class="view-btn-wrapper">
-                                            <a href="{{ route('user-purchase', $purchase->id) }}" class="view-btn">
+                                            <a href="{{ $purchase->details_url }}" class="view-btn">
                                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <g clip-path="url(#clip0_548_16589)">

@@ -110,9 +110,28 @@ class CatalogItemApiController extends Controller
             returnSelfIfNoAlternatives: true  // ✅ إرجاع الصنف نفسه إذا لم يكن له بدائل
         );
 
+        // PRE-COMPUTED: Separate original part from alternatives (DATA_FLOW_POLICY)
+        $originalPart = null;
+        $otherAlternatives = collect();
+
+        if ($alternatives && $alternatives->count() > 0) {
+            foreach ($alternatives as $item) {
+                // PRE-COMPUTED: Resolve photo URL (DATA_FLOW_POLICY)
+                $item->resolved_photo = $this->resolvePhotoUrl($item->photo ?? null);
+
+                if ($item->part_number === $part_number) {
+                    $originalPart = $item;
+                } else {
+                    $otherAlternatives->push($item);
+                }
+            }
+        }
+
         $html = view('partials.api.alternatives', [
             'alternatives' => $alternatives,
             'part_number' => $part_number,
+            'originalPart' => $originalPart,
+            'otherAlternatives' => $otherAlternatives,
         ])->render();
 
         $response = [
@@ -148,6 +167,11 @@ class CatalogItemApiController extends Controller
                 'html' => view('partials.api.fitment-details', [
                     'brands' => collect(),
                     'catalogItem' => null,
+                    // PRE-COMPUTED: Empty state (DATA_FLOW_POLICY)
+                    'brandCount' => 0,
+                    'totalVehicles' => 0,
+                    'hasMultipleBrands' => false,
+                    'uniqueId' => 'fitment_' . uniqid(),
                 ])->render(),
             ]);
         }
@@ -206,9 +230,31 @@ class CatalogItemApiController extends Controller
         // Reset array keys to 0, 1, 2...
         $brandData = array_values($brandData);
 
+        // PRE-COMPUTED: Statistics and computed values (DATA_FLOW_POLICY)
+        $isArabic = str_starts_with(app()->getLocale(), 'ar');
+        $brandCount = count($brandData);
+        $totalVehicles = array_reduce($brandData, fn($sum, $b) => $sum + count($b['vehicles'] ?? []), 0);
+
+        // Pre-compute localized names and formatted years for each vehicle
+        foreach ($brandData as &$brand) {
+            foreach ($brand['vehicles'] as &$vehicle) {
+                $vehicle['localized_name'] = $isArabic
+                    ? ($vehicle['name_ar'] ?? $vehicle['name'] ?? '—')
+                    : ($vehicle['name'] ?? $vehicle['name_ar'] ?? '—');
+                $vehicle['formatted_begin'] = empty($vehicle['begin_date']) ? '—' : (substr((string)$vehicle['begin_date'], 0, 4) ?: '—');
+                $vehicle['formatted_end'] = empty($vehicle['end_date']) ? '—' : (substr((string)$vehicle['end_date'], 0, 4) ?: '—');
+            }
+        }
+        unset($brand, $vehicle);
+
         $html = view('partials.api.fitment-details', [
             'brands' => collect($brandData),
             'catalogItem' => $catalogItem,
+            // PRE-COMPUTED: View statistics (DATA_FLOW_POLICY)
+            'brandCount' => $brandCount,
+            'totalVehicles' => $totalVehicles,
+            'hasMultipleBrands' => $brandCount > 1,
+            'uniqueId' => 'fitment_' . uniqid(),
         ])->render();
 
         return response()->json([
@@ -216,5 +262,20 @@ class CatalogItemApiController extends Controller
             'brands' => $brandData,
             'html' => $html,
         ]);
+    }
+
+    /**
+     * Resolve photo URL for display
+     * Helper for DATA_FLOW_POLICY - no logic in views
+     */
+    protected function resolvePhotoUrl(?string $photo): string
+    {
+        if (!$photo) {
+            return asset('assets/images/noimage.png');
+        }
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            return $photo;
+        }
+        return \Illuminate\Support\Facades\Storage::url($photo);
     }
 }
