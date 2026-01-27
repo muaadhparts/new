@@ -14,16 +14,7 @@
 @include('includes.seo.global-schemas')
 
 {{-- Page-specific Meta Tags --}}
-@if (isset($page->meta_tag) && isset($page->meta_description))
-    <meta name="keywords" content="{{ $page->meta_tag }}">
-    <meta name="description" content="{{ $page->meta_description }}">
-@elseif(isset($blog->meta_tag) && isset($blog->meta_description))
-    <meta property="og:title" content="{{ $blog->name }}" />
-    <meta property="og:description" content="{{ $blog->meta_description ?? strip_tags($blog->description ?? '') }}" />
-    <meta property="og:image" content="{{ asset('assets/images/blogs/' . $blog->photo) }}" />
-    <meta name="keywords" content="{{ $blog->meta_tag }}">
-    <meta name="description" content="{{ $blog->meta_description }}">
-@elseif(isset($catalogItem) && is_object($catalogItem) && !empty($catalogItem->name))
+@if(isset($catalogItem) && is_object($catalogItem) && !empty($catalogItem->name))
     <meta name="keywords" content="{{ $catalogItem->part_number ?? '' }}">
     <meta name="description" content="{{ strip_tags($catalogItem->label_en ?? $catalogItem->name ?? '') }}">
     <meta property="og:title" content="{{ $catalogItem->name }}" />

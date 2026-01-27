@@ -128,7 +128,7 @@ class SeoService
 
         $this->setMeta([
             'name' => $category->name . ' - ' . config('app.name'),
-            'description' => $category->meta_description ?? "تصفح منتجات {$category->name}",
+            'description' => $category->label_ar ?? $category->label_en ?? "تصفح منتجات {$category->name}",
             'og:type' => 'website',
             'og:name' => $category->name,
         ]);

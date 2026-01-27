@@ -139,8 +139,8 @@ class MerchantCatalogService
             }
 
             if ($hasDiscountFilter) {
-                $q->where('is_discount', 1)
-                  ->where('discount_date', '>=', date('Y-m-d'));
+                $q->whereNotNull('previous_price')
+                  ->whereColumn('previous_price', '>', 'price');
             }
         });
 

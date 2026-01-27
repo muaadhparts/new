@@ -558,14 +558,15 @@ class CatalogItemFilterService
 
     /**
      * Apply discount filter for CatalogItem query
+     * Discount is determined by: previous_price > price
      */
     public function applyCatalogItemDiscountFilter(Builder $query, bool $hasDiscount): void
     {
         if ($hasDiscount) {
             $query->whereHas('merchantItems', function ($q) {
                 $q->where('status', 1)
-                    ->where('is_discount', 1)
-                    ->where('discount_date', '>=', date('Y-m-d'))
+                    ->whereNotNull('previous_price')
+                    ->whereColumn('previous_price', '>', 'price')
                     ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
             });
         }

@@ -9,6 +9,8 @@ use App\Domain\Merchant\Models\MerchantItem;
  *
  * Single-responsibility action for price updates.
  * Handles previous price tracking for discount display.
+ *
+ * Discount is determined by: previous_price > price
  */
 class UpdatePriceAction
 {
@@ -63,13 +65,11 @@ class UpdatePriceAction
      *
      * @param int $merchantItemId
      * @param float $discountPercent Discount percentage (0-100)
-     * @param string|null $expiryDate Discount expiry date
      * @return array
      */
     public function applyDiscount(
         int $merchantItemId,
-        float $discountPercent,
-        ?string $expiryDate = null
+        float $discountPercent
     ): array {
         $merchantItem = MerchantItem::find($merchantItemId);
 
@@ -92,8 +92,6 @@ class UpdatePriceAction
 
         $merchantItem->previous_price = $originalPrice;
         $merchantItem->price = round($newPrice, 2);
-        $merchantItem->is_discount = 1;
-        $merchantItem->discount_date = $expiryDate ?? now()->addDays(30)->toDateString();
         $merchantItem->save();
 
         return [
@@ -126,8 +124,6 @@ class UpdatePriceAction
         }
 
         $merchantItem->previous_price = null;
-        $merchantItem->is_discount = 0;
-        $merchantItem->discount_date = null;
         $merchantItem->save();
 
         return [

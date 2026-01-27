@@ -213,7 +213,7 @@ class CatalogItemQuery
     }
 
     /**
-     * Filter only discounted items
+     * Filter items with discount (previous_price > price)
      */
     public function withDiscount(): self
     {
@@ -221,8 +221,8 @@ class CatalogItemQuery
 
         $this->query->whereHas('merchantItems', function ($q) {
             $q->where('status', 1)
-                ->where('is_discount', 1)
-                ->where('discount_date', '>=', date('Y-m-d'))
+                ->whereNotNull('previous_price')
+                ->whereColumn('previous_price', '>', 'price')
                 ->whereHas('user', fn($u) => $u->where('is_merchant', 2));
         });
 

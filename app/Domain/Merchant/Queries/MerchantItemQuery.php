@@ -114,12 +114,12 @@ class MerchantItemQuery
     }
 
     /**
-     * Filter discounted items
+     * Filter discounted items (previous_price > price)
      */
     public function onDiscount(): self
     {
-        $this->query->where('is_discount', 1)
-            ->where('discount_date', '>=', date('Y-m-d'));
+        $this->query->whereNotNull('previous_price')
+            ->whereColumn('previous_price', '>', 'price');
         return $this;
     }
 
