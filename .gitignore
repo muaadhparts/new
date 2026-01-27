@@ -19,6 +19,8 @@ nul
 !README.md
 !DEVELOPMENT_PLAN.md
 !CLAUDE.md
+!WORK_PLAN.md
+!docs/**/*.md
 /bootstrap/cache/*.php
 /bootstrap/cache/*.tmp
 /storage/*.key
